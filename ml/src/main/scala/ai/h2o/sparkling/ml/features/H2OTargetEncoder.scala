@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.automl.targetencoding._
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.targetencoding._
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
@@ -45,11 +45,13 @@ class H2OTargetEncoder(override val uid: String)
 
   private def trainTargetEncodingModel(trainingFrame: Frame) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
-    targetEncoderParameters._withBlending = getBlendedAvgEnabled()
-    targetEncoderParameters._blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
+    targetEncoderParameters._blending = getBlendedAvgEnabled()
+    targetEncoderParameters._blending_parameters = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
     targetEncoderParameters._response_column = getLabelCol()
-    targetEncoderParameters._teFoldColumnName = getFoldCol()
-    targetEncoderParameters._columnNamesToEncode = getInputCols()
+    targetEncoderParameters._fold_column = getFoldCol()
+    targetEncoderParameters._encoded_columns = getInputCols().map {
+      column => new water.fvec.Frame.VecSpecifier(trainingFrame._key, column)
+    }
     targetEncoderParameters.setTrain(trainingFrame._key)
 
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
@@ -73,7 +75,7 @@ class H2OTargetEncoder(override val uid: String)
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[H2OTargetEncoderHoldoutStrategy](value))
+    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)
