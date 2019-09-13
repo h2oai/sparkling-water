@@ -21,14 +21,14 @@ jar {
     }
 }
 
-dependencies {
-    // Sparkling Water Core
-    compile(project(":sparkling-water-core")) {
-        exclude group: "javax.servlet", module: "servlet-api"
-    }
+configurations {
+    sparklingWaterAssemblyJar
+}
 
-    // Sparkling Water ML
-    compile project(":sparkling-water-ml")
+dependencies {
+
+    sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+    compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 
     // And Scala library
     compile "org.scala-lang:scala-library:${scalaVersion}"
@@ -44,18 +44,15 @@ dependencies {
     testCompile "junit:junit:4.11"
     // to reuse some utils test classes defined in the core
     testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-    testCompile project(":sparkling-water-extension-stack-trace")
 
     // Integration tests requirements
     integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     integTestCompile "junit:junit:4.11"
     // to reuse some utils test classes defined in the core
     integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-    integTestCompile project(":sparkling-water-extension-stack-trace")
-
 
     // To enable Idea compiler even for integTestCode which use mllib
-    /*integTestCompile*/ compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
     // Put Spark Assembly on runtime path
     integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar')
@@ -68,7 +65,7 @@ integTest {
     systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
 
     // Pass list of jars required for testing
-    systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
     systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
     systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion} ${extraJVMArgs}"
     systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion} ${extraJVMArgs}"
@@ -90,7 +87,7 @@ scriptsTest {
     systemProperty "spark.executor.extraJavaOptions", "${extraJVMArgs}"
 
     // Set sparkling water assembly jar location
-    systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
+    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
     // Run with assertions ON
     enableAssertions = true
     // For a new JVM for each test class
