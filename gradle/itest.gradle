@@ -5,8 +5,12 @@
 
 sourceSets {
     integTest {
-        scala.srcDir file('src/integTest/scala')
-        resources.srcDir file('src/integTest/resources')
+        scala {
+            srcDirs = ['src/integTest/scala', 'src/main/scala']
+        }
+        resources {
+            srcDirs = ['src/integTest/resources', 'src/main/resources']
+        }
 
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
