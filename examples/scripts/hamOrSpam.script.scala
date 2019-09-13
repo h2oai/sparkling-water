@@ -22,7 +22,7 @@ import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
 import water.api.TestUtils
 
 // Register files to SparkContext
-SparkContextSupport.addFiles(sc, "/Users/kuba/devel/repos/sparkling-water/examples/smalldata/smsData.txt")//TestUtils.locate("smalldata/smsData.txt"))
+SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/smsData.txt"))
 
 // Data loader
 def load(dataFile: String): RDD[Array[String]] = {
