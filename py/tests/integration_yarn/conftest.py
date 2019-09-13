@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 import pytest
+from tests import integ_test_utils
 
 
 @pytest.fixture(scope="module")
@@ -24,4 +25,4 @@ def integ_spark_conf(spark_conf, dist):
     # Configure YARN environment
     spark_conf["spark.yarn.max.executor.failures"] = "1"  # In fail of executor, fail the test
     spark_conf["spark.executor.instances"] = "1"
-    return spark_conf
+    return integ_test_utils.get_default_spark_conf(spark_conf)
