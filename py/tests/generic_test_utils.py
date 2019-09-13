@@ -17,8 +17,6 @@
 
 import os
 import socket
-import sys
-import unittest
 from random import randrange
 
 
@@ -31,43 +29,6 @@ def locate(file_name):
         return os.path.abspath("/home/0xdiag/" + file_name)
     else:
         return os.path.abspath("../examples/" + file_name)
-
-
-def parse_spark_options_to_map(args):
-    m = {}
-
-    for arg in args:
-        split = arg.split("=", 1)
-        m[split[0]] = split[1]
-    return m
-
-
-# Runs python tests and by default reports to console.
-# If filename is specified it additionally reports output to file with that name into py/build directory
-def run_tests(cases, file_name=None):
-    for case in cases:
-        case._spark_options_from_params = parse_spark_options_to_map(sys.argv[2:])
-
-    alltests = [unittest.TestLoader().loadTestsFromTestCase(case) for case in cases]
-    testsuite = unittest.TestSuite(alltests)
-
-    result = None
-    if file_name is not None:
-        reports_file = 'build' + os.sep + file_name + ".txt"
-        f = open(os.path.abspath(reports_file), "w+")
-        result = unittest.TextTestRunner(f, verbosity=2).run(testsuite)
-        f.close()
-
-        # Print output to console without running the tests again
-        with open(reports_file, 'r') as fin:
-            print(fin.read())
-    else:
-        # Run tests and print to console
-        result = unittest.TextTestRunner(verbosity=2).run(testsuite)
-
-    if result is not None:
-        if len(result.errors) > 0 or len(result.failures) > 0:
-            raise Exception(result)
 
 
 def local_ip():
