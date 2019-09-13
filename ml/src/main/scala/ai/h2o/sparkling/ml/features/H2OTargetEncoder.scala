@@ -38,20 +38,20 @@ class H2OTargetEncoder(override val uid: String)
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
-    val targetEncoderModel = trainTargetEncodingModel(input)
+    val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
+    val ignoredColumns = dataset.columns.diff(columnsToKeep)
+    val targetEncoderModel = trainTargetEncodingModel(input, ignoredColumns)
     val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
     copyValues(model)
   }
 
-  private def trainTargetEncodingModel(trainingFrame: Frame) = try {
+  private def trainTargetEncodingModel(trainingFrame: Frame, ignoredColumns: Array[String]) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
     targetEncoderParameters._blending = getBlendedAvgEnabled()
     targetEncoderParameters._blending_parameters = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
     targetEncoderParameters._response_column = getLabelCol()
     targetEncoderParameters._fold_column = getFoldCol()
-    targetEncoderParameters._encoded_columns = getInputCols().map {
-      column => new water.fvec.Frame.VecSpecifier(trainingFrame._key, column)
-    }
+    targetEncoderParameters._ignored_columns = ignoredColumns
     targetEncoderParameters.setTrain(trainingFrame._key)
 
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
