@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.automl.targetencoding.TargetEncoderModel
-import ai.h2o.sparkling.ml.features.{H2OTargetEncoderHoldoutStrategy, H2OTargetEncoderModelUtils}
+import ai.h2o.targetencoding.{BlendingParams, TargetEncoder, TargetEncoderModel}
+import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
@@ -57,8 +57,15 @@ class H2OTargetEncoderModel(
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = h2oContext.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
-    val holdoutStrategyId = H2OTargetEncoderHoldoutStrategy.valueOf(getHoldoutStrategy()).ordinal().asInstanceOf[Byte]
-    val outputFrame = targetEncoderModel.transform(input, holdoutStrategyId, getNoise(), getNoiseSeed())
+    val holdoutStrategyId = TargetEncoder.DataLeakageHandlingStrategy.valueOf(getHoldoutStrategy()).ordinal().asInstanceOf[Byte]
+    val blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
+    val outputFrame = targetEncoderModel.transform(
+      input,
+      holdoutStrategyId,
+      getNoise(),
+      getBlendedAvgEnabled(),
+      blendingParams,
+      getNoiseSeed())
     val outputColumnsOnlyFrame = outputFrame.subframe(getOutputCols() ++ Array(temporaryColumn))
     val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
     withIdDF

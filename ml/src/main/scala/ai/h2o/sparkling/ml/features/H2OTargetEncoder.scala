@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.automl.targetencoding._
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.targetencoding._
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
@@ -38,18 +38,20 @@ class H2OTargetEncoder(override val uid: String)
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
-    val targetEncoderModel = trainTargetEncodingModel(input)
+    val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
+    val ignoredColumns = dataset.columns.diff(columnsToKeep)
+    val targetEncoderModel = trainTargetEncodingModel(input, ignoredColumns)
     val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
     copyValues(model)
   }
 
-  private def trainTargetEncodingModel(trainingFrame: Frame) = try {
+  private def trainTargetEncodingModel(trainingFrame: Frame, ignoredColumns: Array[String]) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
-    targetEncoderParameters._withBlending = getBlendedAvgEnabled()
-    targetEncoderParameters._blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
+    targetEncoderParameters._blending = getBlendedAvgEnabled()
+    targetEncoderParameters._blending_parameters = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
     targetEncoderParameters._response_column = getLabelCol()
-    targetEncoderParameters._teFoldColumnName = getFoldCol()
-    targetEncoderParameters._columnNamesToEncode = getInputCols()
+    targetEncoderParameters._fold_column = getFoldCol()
+    targetEncoderParameters._ignored_columns = ignoredColumns
     targetEncoderParameters.setTrain(trainingFrame._key)
 
     val builder = new TargetEncoderBuilder(targetEncoderParameters)
@@ -73,7 +75,7 @@ class H2OTargetEncoder(override val uid: String)
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[H2OTargetEncoderHoldoutStrategy](value))
+    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)
