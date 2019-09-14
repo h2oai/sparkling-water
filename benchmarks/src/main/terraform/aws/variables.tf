@@ -16,6 +16,9 @@ variable "aws_availability_zone" {
 variable "aws_emr_version" {
   default = "SUBST_EMR_VERSION"
 }
+variable "aws_emr_timeout" {
+  default = "4 hours"
+}
 variable "aws_core_instance_count" {
   default = "2"
 }
