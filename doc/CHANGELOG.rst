@@ -1,6 +1,73 @@
 Change Log
 ==========
 
+v3.26.5 (2019-09-16)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.5-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.5-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.5-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.5-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.5-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.5-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.5-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.5-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1570 <https://0xdata.atlassian.net/browse/SW-1570>`__ - Fix typo contribution -&gt; contributions on SHAPLY documentation page
+   -  `SW-1580 <https://0xdata.atlassian.net/browse/SW-1580>`__ - importing pysparkling in Zeppelin fails on SW for 3.26.3
+   -  `SW-1583 <https://0xdata.atlassian.net/browse/SW-1583>`__ - Add missing namedMojoOutputParameter to PySparkling Algo constructors
+   -  `SW-1584 <https://0xdata.atlassian.net/browse/SW-1584>`__ - Remove extra asserts for types already covered by type converters
+   -  `SW-1585 <https://0xdata.atlassian.net/browse/SW-1585>`__ - Improve H2oGridSearch internal handling of Algo + improve API of ordering
+   -  `SW-1592 <https://0xdata.atlassian.net/browse/SW-1592>`__ - [BUILD] Use numpy compatible with python 2 and python 3
+   -  `SW-1596 <https://0xdata.atlassian.net/browse/SW-1596>`__ - Jupyter notebook is unable to start kernel for Spark 2.4
+   -  `SW-1598 <https://0xdata.atlassian.net/browse/SW-1598>`__ - Deprecate cases in H2OMojoPrediction where the prediction column does not directly contain the predicted value.
+   -  `SW-1600 <https://0xdata.atlassian.net/browse/SW-1600>`__ - Fix IIOB when using calibrated probabilities on MOJO
+   -  `SW-1604 <https://0xdata.atlassian.net/browse/SW-1604>`__ - PySparkling fails to parse pyspark version with build number, such as 2.3.1.dev0
+   -  `SW-1605 <https://0xdata.atlassian.net/browse/SW-1605>`__ - Gradle reported success even though the python test failed
+   -  `SW-1610 <https://0xdata.atlassian.net/browse/SW-1610>`__ - Fix running python tests by changing the env directly
+   -  `SW-1611 <https://0xdata.atlassian.net/browse/SW-1611>`__ - Script tests are not being executed correctly - some tests are not being executed
+   -  `SW-1614 <https://0xdata.atlassian.net/browse/SW-1614>`__ - Fix running python integ tests on external backend
+                
+-  Epic
+        
+   -  `SW-1291 <https://0xdata.atlassian.net/browse/SW-1291>`__ - Benchmarks
+                
+-  New Feature
+        
+   -  `SW-1547 <https://0xdata.atlassian.net/browse/SW-1547>`__ - Update H2OTargetEncoder according to changes in H2O-3 3.26.0.4 
+   -  `SW-1593 <https://0xdata.atlassian.net/browse/SW-1593>`__ - Upgrade to Spark 2.4.4
+   -  `SW-1609 <https://0xdata.atlassian.net/browse/SW-1609>`__ - Automatically configure H2OContext in case we run on DBC in order to correctly show Flow
+                
+-  Task
+        
+   -  `SW-1295 <https://0xdata.atlassian.net/browse/SW-1295>`__ - Benchmarks: Configuration for External Backend
+   -  `SW-1296 <https://0xdata.atlassian.net/browse/SW-1296>`__ - Benchmarks: Code Clean up
+   -  `SW-1553 <https://0xdata.atlassian.net/browse/SW-1553>`__ - Benchmarks: Jenkins Pipeline
+   -  `SW-1616 <https://0xdata.atlassian.net/browse/SW-1616>`__ - Benchmarks: Automatic Cluster Shutdown after Timeout
+                
+-  Improvement
+        
+   -  `SW-1564 <https://0xdata.atlassian.net/browse/SW-1564>`__ - Create  gradle task to build scala image for kubernetes
+   -  `SW-1573 <https://0xdata.atlassian.net/browse/SW-1573>`__ - Remove use of deprecated option spark.ext.h2o.external.cluster.num.h2o.nodes
+   -  `SW-1582 <https://0xdata.atlassian.net/browse/SW-1582>`__ - Make sure H2OGLM API is consistent with others and does not use the labmda_ hack
+   -  `SW-1591 <https://0xdata.atlassian.net/browse/SW-1591>`__ - Don&#39;t use strings to define algo name
+   -  `SW-1597 <https://0xdata.atlassian.net/browse/SW-1597>`__ - Add a note to documentation informing that terraform template is available only for Spark 2.4
+   -  `SW-1613 <https://0xdata.atlassian.net/browse/SW-1613>`__ - Upgrade H2O to 3.26.0.4
+   -  `SW-1615 <https://0xdata.atlassian.net/browse/SW-1615>`__ - Remove examples from assembly jar
+                
+-  Engineering Story
+        
+   -  `SW-1567 <https://0xdata.atlassian.net/browse/SW-1567>`__ - Upgrade version of h2o docker image from 58 to the 64
+   -  `SW-1571 <https://0xdata.atlassian.net/browse/SW-1571>`__ - Upgrade CI docker image for 19 ( build on latest hadoop docker image hd2.2:64)
+   -  `SW-1576 <https://0xdata.atlassian.net/browse/SW-1576>`__ - Retrain sms_pipeline_model for PipelinePredictionTest so it uses ai.h2o package
+   -  `SW-1577 <https://0xdata.atlassian.net/browse/SW-1577>`__ - Generic logic to test parametr passing to algo wrappers on PySParkling
+   -  `SW-1594 <https://0xdata.atlassian.net/browse/SW-1594>`__ - Upgrade to a docker image with Spark 2.4.4
+   -  `SW-1599 <https://0xdata.atlassian.net/browse/SW-1599>`__ - Target Encoder Tests Covering Various Order of Columns
+   -  `SW-1603 <https://0xdata.atlassian.net/browse/SW-1603>`__ - Install Terraform to Docker Image Running Tests 
+                
+-  Docs
+        
+   -  `SW-1581 <https://0xdata.atlassian.net/browse/SW-1581>`__ - Add Rule of Thumb for Data Conversion
+   -  `SW-1595 <https://0xdata.atlassian.net/browse/SW-1595>`__ - Document How to Generate Prediction Contributions from an Existing MOJO 
+                
+    
 v3.26.3 (2019-08-28)
 --------------------
 Downloads:
