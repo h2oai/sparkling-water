@@ -54,11 +54,11 @@ withLockAndUpdate(bikesDF){ fr =>
 // Transform start time to days from Epoch
 //
 // Select column 'startime'
-val startTimeF = bikesDF('starttime)
-// Add a new column
-bikesDF.add(new TimeSplit().doIt(startTimeF))
-// Do not forget to update frame in K/V store
-bikesDF.update()
+withLockAndUpdate(bikesDF) { fr =>
+  val startTimeF = fr('starttime)
+  // Add a new column
+  fr.add(new TimeSplit().doIt(startTimeF))
+}
 
 //
 // Transform H2OFrame into DataFrame
