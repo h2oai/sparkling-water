@@ -92,13 +92,13 @@ val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv")
 val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv")
 val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip")
 
-val weatherTable = asDataFrame(createWeatherTable(weatherFile))(sqlContext)
+val weatherTable = asDataFrame(createWeatherTable(weatherFile))
 weatherTable.createOrReplaceTempView("chicagoWeather")
 // Census data
-val censusTable = asDataFrame(createCensusTable(censusFile))(sqlContext)
+val censusTable = asDataFrame(createCensusTable(censusFile))
 censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
-val crimeTable  = asDataFrame(createCrimeTable(crimesFile, "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))(sqlContext)
+val crimeTable  = asDataFrame(createCrimeTable(crimesFile, "MM/dd/yyyy hh:mm:ss a", "Etc/UTC"))
 crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //
@@ -310,5 +310,3 @@ plot (g) -> g(
   g.from inspect "data", getFrame "frame_rdd_83"
 )
 */
-
-h2oContext.stop()

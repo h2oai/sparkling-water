@@ -30,6 +30,16 @@ dependencies {
     sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
     compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
 
+    // H2O HDFS Persistent layer
+    compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
+        // Cannot use here: transitive = false since Gradle is producing wrong POM file
+        // Hence the exclusions are listed manually
+        exclude(group: "org.apache.hadoop", module: "hadoop-client")
+        exclude(group: "org.apache.hadoop", module: "hadoop-hdfs-client")
+        exclude(group: "org.apache.hadoop", module: "hadoop-aws")
+    }
+
+
     // And Scala library
     compile "org.scala-lang:scala-library:${scalaVersion}"
 
