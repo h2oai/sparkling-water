@@ -48,5 +48,5 @@ spark-submit --class $EXAMPLE \
 --driver-memory "$EXAMPLE_DRIVER_MEMORY" \
 --driver-java-options "$EXAMPLE_H2O_SYS_OPS" \
 --deploy-mode "$EXAMPLE_DEPLOY_MODE" \
---conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS $EXTRA_JVM_ARGS" \
+--conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS" \
 $VERBOSE "$FAT_JAR_FILE" "$@"

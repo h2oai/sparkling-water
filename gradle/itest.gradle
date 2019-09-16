@@ -42,10 +42,6 @@ task integTest(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    if (!jvmArgs.isEmpty()) {
-        jvmArgs extraJVMArgs.split(" ")
-    }
-
     def testEnv = detectEnvironment()
     // Decide which tests should be launch here based on environment
     switch (testEnv) {

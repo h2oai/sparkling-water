@@ -41,7 +41,7 @@ spark-submit \
 --driver-java-options "$SCRIPT_H2O_SYS_OPS" \
 --deploy-mode "$SCRIPT_DEPLOY_MODE" \
 --py-files "$PY_ZIP_FILE" \
---conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS $EXTRA_JVM_ARGS" \
+--conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS" \
 $VERBOSE \
 "$@"
 
