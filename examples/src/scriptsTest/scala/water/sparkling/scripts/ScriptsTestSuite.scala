@@ -196,7 +196,7 @@ class ScriptPipelineHamOrSpamGBM extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam GBM Pipeline") {
+  ignore("Ham or Spam GBM Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "gbm")
   }
 }
@@ -210,7 +210,7 @@ class ScriptPipelineHamOrSpamDL extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam DeepLearning Pipeline") {
+  ignore("Ham or Spam DeepLearning Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "dl")
   }
 }
@@ -224,7 +224,7 @@ class ScriptPipelineHamOrSpamXGBoost extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam XGBoost Pipeline") {
+  ignore("Ham or Spam XGBoost Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "xgboost")
   }
 }
@@ -238,7 +238,7 @@ class ScriptPipelineHamOrSpamGridSearch extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam Grid Search Pipeline") {
+  ignore("Ham or Spam Grid Search Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "grid_gbm")
   }
 }
@@ -252,7 +252,7 @@ class ScriptPipelineHamOrSpamAutoML extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("Ham or Spam AutoML Pipeline") {
+  ignore("Ham or Spam AutoML Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "automl")
   }
 }
