@@ -25,7 +25,6 @@ call %LIBSW% :banner
 call %SPARK_HOME%/bin/spark-shell2.cmd ^
  --driver-memory %DRIVER_MEMORY% ^
  --jars %FAT_JAR_FILE% ^
- --conf spark.driver.extraJavaOptions="%EXTRA_JVM_ARGS%" ^
  %*
 
 exit /b %ERRORLEVEL%

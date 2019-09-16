@@ -33,10 +33,6 @@ task bench(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    if (!jvmArgs.isEmpty()) {
-        jvmArgs extraJVMArgs.split(" ")
-    }
-
     systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-bench/nodes")
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-bench/client")
 
