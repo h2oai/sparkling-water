@@ -25,5 +25,5 @@ fi
 # Show banner
 banner 
 
-spark-submit "$@" $VERBOSE --driver-memory "$DRIVER_MEMORY" --master "$MASTER" --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS $EXTRA_JVM_ARGS" --class "$DRIVER_CLASS" "$FAT_JAR_FILE"
+spark-submit "$@" $VERBOSE --driver-memory "$DRIVER_MEMORY" --master "$MASTER" --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS" --class "$DRIVER_CLASS" "$FAT_JAR_FILE"
 

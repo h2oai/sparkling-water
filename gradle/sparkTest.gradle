@@ -16,9 +16,6 @@ test {
     // Increase heap size
     maxHeapSize = "4g"
 
-    if (!jvmArgs.isEmpty()) {
-        jvmArgs extraJVMArgs.split(" ")
-    }
     // Working dir will be root project
     workingDir = rootDir
     // testLogging.showStandardStreams = true

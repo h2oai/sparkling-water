@@ -148,7 +148,6 @@ configure(allprojects) { project ->
         junitVersion = '4.11'
         minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
-        extraJVMArgs = loadVersionSpecificProp("extraJVMArgs", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
     }
 
