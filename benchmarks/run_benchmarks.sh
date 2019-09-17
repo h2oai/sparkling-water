@@ -48,11 +48,13 @@ if [ "$outputs_header" == "Outputs:" ]; then
         fi
     done
 
-    cd "$script_path"
-    mkdir output
-    curl "$results_url" --output output/results.tar.gz
-    tar -zxvf output/results.tar.gz -C output
-    rm output/results.tar.gz
+    if [ "$current_timeout" -gt 0 ]; then
+        cd "$script_path"
+        mkdir output
+        curl "$results_url" --output output/results.tar.gz
+        tar -zxvf output/results.tar.gz -C output
+        rm output/results.tar.gz
+    fi
 else
     echo "Ignoring execution of benchmarks!" > /dev/stderr
 fi
@@ -65,3 +67,12 @@ terraform destroy \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
     -auto-approve
 echo "The cluster destroyed."
+
+if [ ! -d "$script_path/output" ]; then
+    echo "The execution of benchmarks on AWS EMR went wrong!" > /dev/stderr
+    exit 1
+fi
+if [ -z "$(ls -A $script_path/output)" ]; then
+    echo "The output directory is empty!" > /dev/stderr
+    exit 1
+fi
