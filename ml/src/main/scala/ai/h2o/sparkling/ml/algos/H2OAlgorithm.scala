@@ -44,7 +44,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     parameters._train = train._key
     parameters._valid = valid.map(_._key).orNull
 
@@ -60,7 +60,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
       mojoData,
       Identifiable.randomUID(binaryModel._parms.algoName()),
       modelSettings,
-      getFeaturesCols())
+      internalFeatureCols)
   }
 
   private def trainModel(params: P): H2OBaseModel = {
