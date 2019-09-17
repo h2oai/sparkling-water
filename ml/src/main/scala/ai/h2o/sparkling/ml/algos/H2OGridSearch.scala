@@ -121,10 +121,12 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val binaryModel = selectModelFromGrid(grid)
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
-    H2OMOJOModel.createFromMojo(
+    val model = H2OMOJOModel.createFromMojo(
       mojoData,
       Identifiable.randomUID(binaryModel._parms.algoName()),
       modelSettings)
+    model.set(model.featuresCols, getFeaturesCols())
+
   }
 
   //noinspection ComparingUnrelatedTypes
