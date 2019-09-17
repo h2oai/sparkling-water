@@ -322,4 +322,6 @@ object SharedBackendConf {
     * to the user.
     */
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE = ("spark.ext.h2o.client.flow.baseurl.override", None)
+
+  val PROP_RUNNING_FROM_NON_JVM_CLIENT = ("spark.ext.h2o.running.from.non.jvm.client", false)
 }

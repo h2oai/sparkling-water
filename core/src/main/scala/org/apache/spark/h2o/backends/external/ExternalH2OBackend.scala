@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.{File, FileInputStream}
+  import java.io.{File, FileInputStream}
 import java.util.Properties
 import java.util.jar.JarFile
 
@@ -37,12 +37,17 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with ExternalBackendRestApiUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
   private var cloudHealthCheckKillThread: Option[Thread] = None
   private var cloudHealthCheckThread: Option[Thread] = None
+
+  private def runningFromNonJVMClient(hc: H2OContext): Boolean = {
+    hc._conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
+      SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)
+  }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
     import ExternalH2OBackend._
@@ -210,49 +215,56 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       hc._conf.setClientIp(getHostname(SparkEnv.get))
     }
 
-    logTrace("Starting H2O client node and connecting to external H2O cluster.")
+    logInfo("Connecting to external H2O cluster.")
 
-    val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
-    logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
+    val expectedClusterSize = hc.getConf.clusterSize.get.toInt
+    val clusterBuildTimeout = hc.getConf.cloudTimeout
+    val nodes = if(runningFromNonJVMClient(hc)) {
+      val endpoint = s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}"
+      waitForCloudSizeViaRestAPI(endpoint, expectedClusterSize, clusterBuildTimeout)
+    } else {
+      val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
+      logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    H2OStarter.start(h2oClientArgs, false)
+      H2OStarter.start(h2oClientArgs, false)
+      H2O.waitForCloudSize(expectedClusterSize, clusterBuildTimeout)
 
-    H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
-
-    if (hc._conf.isManualClusterStartUsed) {
-      ExternalH2OBackend.verifyVersionFromRuntime()
-    }
-
-    // Register web API for client
-    RestAPIManager(hc).registerAll()
-    H2O.startServingRestApi()
-
-    if (cloudMembers.length == 0) {
-      if (hc.getConf.isManualClusterStartUsed) {
-        throw new H2OClusterNotRunning(
-          s"""
-             |External H2O cluster is not running or could not be connected to. Provided configuration:
-             |  cluster name            : ${hc.getConf.cloudName.get}
-             |  cluster representative  : ${hc.getConf.h2oCluster.getOrElse("Using multi-cast discovery!")}
-             |  cluster start timeout   : ${hc.getConf.clusterStartTimeout} sec
-             |
-             |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
-             |because multi-cast communication is limited in your network. In that case, please consider starting the
-             |external H2O cluster with flatfile and set the following configuration '${
-            ExternalBackendConf.
-              PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1
-          }'
-        """.stripMargin)
-      } else {
-        throw new H2OClusterNotRunning("Problem with connecting to external H2O cluster started on yarn." +
-          "Please check the YARN logs.")
+      if (hc._conf.isManualClusterStartUsed) {
+        ExternalH2OBackend.verifyVersionFromRuntime()
       }
+      // Register web API for client
+      RestAPIManager(hc).registerAll()
+      H2O.startServingRestApi()
+      val cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
+      if (cloudMembers.length == 0) {
+        if (hc.getConf.isManualClusterStartUsed) {
+          throw new H2OClusterNotRunning(
+            s"""
+               |External H2O cluster is not running or could not be connected to. Provided configuration:
+               |  cluster name            : ${hc.getConf.cloudName.get}
+               |  cluster representative  : ${hc.getConf.h2oCluster.getOrElse("Using multi-cast discovery!")}
+               |  cluster start timeout   : ${hc.getConf.clusterStartTimeout} sec
+               |
+               |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
+               |because multi-cast communication is limited in your network. In that case, please consider starting the
+               |external H2O cluster with flatfile and set the following configuration '${
+              ExternalBackendConf.
+                PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1
+            }'
+        """.stripMargin)
+        } else {
+          throw new H2OClusterNotRunning("Problem with connecting to external H2O cluster started on yarn." +
+            "Please check the YARN logs.")
+        }
+      }
+
+      startUnhealthyStateKillThread()
+      startUnhealthyStateCheckThread()
+
+      cloudMembers
     }
 
-    startUnhealthyStateKillThread()
-    startUnhealthyStateCheckThread()
-
-    cloudMembers
+    nodes
   }
 
   def startUnhealthyStateKillThread(): Unit = {

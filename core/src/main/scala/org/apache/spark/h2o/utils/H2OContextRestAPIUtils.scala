@@ -15,27 +15,27 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.ui
+package org.apache.spark.h2o.utils
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OConf
-import water.H2O
-import water.util.PrettyPrint
+import com.google.gson.Gson
+import water.api.schemas3.CloudV3
 
-/**
-  * Periodically publish information to Spark UI
-  */
-class UIHeartbeatThread(sc: SparkContext, conf: H2OConf) extends Thread {
-  override def run(): Unit = {
-    while (!Thread.interrupted()) {
-      val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)
-      val memoryInfo = nodes.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
-      sc.listenerBus.post(SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo))
-      try {
-        Thread.sleep(conf.uiUpdateInterval)
-      } catch {
-        case _: InterruptedException => Thread.currentThread.interrupt()
-      }
+trait H2OContextRestAPIUtils {
+
+  def getCloudInfo(endpoint: String): CloudV3 = {
+    import scala.io.Source
+    val html = Source.fromURL(s"$endpoint/3/Cloud")
+    val content = html.mkString
+    html.close()
+    new Gson().fromJson(content, classOf[CloudV3])
+  }
+
+  def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
+    cloudV3.nodes.zipWithIndex.map { case (node, idx) =>
+      val splits = node.ip_port.split(":")
+      val ip = splits(0)
+      val port = splits(1).toInt
+      NodeDesc(idx.toString, ip, port)
     }
   }
 }
