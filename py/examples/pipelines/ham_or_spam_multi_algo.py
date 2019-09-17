@@ -117,7 +117,10 @@ def isSpam(smsText, model):
     prediction = model.transform(smsTextDF)
     return prediction.select("prediction").first() == "spam"
 
+resultHam = isSpam("Michal, h2oworld party tonight in MV?", loaded_model)
+assert resultHam
+print(resultHam)
 
-print(isSpam("Michal, h2oworld party tonight in MV?", loaded_model))
-
-print(isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loaded_model))
+resultSpam = isSpam("Michal, h2oworld party tonight in MV?", loaded_model)
+assert resultSpam
+print(resultSpam)
