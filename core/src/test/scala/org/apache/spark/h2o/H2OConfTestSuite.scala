@@ -50,11 +50,7 @@ class H2OConfTestSuite extends FunSuite
 
     val spark = SparkSession.builder().master("local").appName("test-local").config(sparkConf).getOrCreate()
 
-    // We don't need to have H2OContext here started and since it has private constructor
-    // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
-    val ctor = classOf[H2OContext].getDeclaredConstructor(classOf[SparkSession], classOf[H2OConf])
-    ctor.setAccessible(true)
-    val hc = ctor.newInstance(spark, new H2OConf(spark).setClusterSize(1))
+    val hc = H2OContext.getOrCreate(spark, new H2OConf(spark).setClusterSize(1))
     val conf = hc.getConf
 
     // Test passed values
