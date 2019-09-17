@@ -115,12 +115,12 @@ loaded_model = PipelineModel.load("examples/build/model")
 def isSpam(smsText, model):
     smsTextDF = spark.createDataFrame([(smsText,)], ["text"]) # create one element tuple
     prediction = model.transform(smsTextDF)
-    return prediction.select("prediction").first() == "spam"
+    return prediction.select("prediction").first()["prediction"] == "spam"
 
-resultHam = isSpam("Michal, h2oworld party tonight in MV?", loaded_model)
-assert resultHam
-print(resultHam)
+isSpamMsg = isSpam("Michal, h2oworld party tonight in MV?", loaded_model)
+assert not isSpamMsg
+print(isSpamMsg)
 
-resultSpam = isSpam("Michal, h2oworld party tonight in MV?", loaded_model)
-assert resultSpam
-print(resultSpam)
+isSpamMsg = isSpam("We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", loaded_model)
+assert isSpamMsg
+print(isSpamMsg)
