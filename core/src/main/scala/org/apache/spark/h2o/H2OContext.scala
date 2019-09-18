@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
@@ -30,6 +31,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
+import water.api.schemas3.CloudV3
 import water.util.{Log, LogBridge, PrettyPrint}
 
 import scala.collection.mutable
@@ -411,9 +413,20 @@ object H2OContext extends Logging {
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
+    def getCloudInfo(nodes: Array[NodeDesc]): CloudV3 = {
+      val endpoint = new URI(
+        getScheme(_conf),
+        null,
+        getFlowIp(nodes),
+        getFlowPort(nodes),
+        _conf.contextPath.orNull,
+        null,
+        null)
+      getCloudInfo(endpoint)
+    }
+
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val endpoint = s"${getScheme(_conf)}://${getFlowIp(nodes)}:${getFlowPort(nodes)}"
-      val cloudV3 = getCloudInfo(endpoint)
+      val cloudV3 = getCloudInfo(nodes)
       H2OClusterInfo(
         s"${getFlowIp(nodes)}:${getFlowPort(nodes)}",
         cloudV3.cloud_healthy,
@@ -424,8 +437,7 @@ object H2OContext extends Logging {
     }
 
     override protected def getSparklingWaterHeartBeatEvent(nodes: Array[NodeDesc]): SparklingWaterHeartbeatEvent = {
-      val endpoint = s"${getScheme(_conf)}://${getFlowIp(nodes)}:${getFlowPort(nodes)}"
-      val cloudV3 = getCloudInfo(endpoint)
+      val cloudV3 = getCloudInfo(nodes)
       val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
     }
