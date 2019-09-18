@@ -344,8 +344,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
-  // TODO: Enable the test once the functionality is fixed in H2O-3.
-  ignore("TargetEncoderMOJOModel returns the same result regardless the order of the inputCols specification") {
+  test("TargetEncoderMOJOModel returns the same result regardless the order of the inputCols specification") {
     import spark.implicits._
 
     def transformTestingDataset(inputCols: Array[String]): DataFrame = {
