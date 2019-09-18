@@ -141,7 +141,9 @@ def isSpam(msg: String,
     hashingTF.transform (
       tokenize (msgRdd))).map(v => ("?", v)).toDF("target", "fv")
   val msgTable: H2OFrame = h2oContext.asH2OFrame(msgVector)
-  msgTable.remove(0) // remove first column
+  H2OFrameSupport.withLockAndUpdate(msgTable) {
+    _.remove(0) // remove first column
+  }
   val prediction = dlModel.score(msgTable)
   //println(prediction)
   prediction.vecs()(1).at(0) < hamThreshold
