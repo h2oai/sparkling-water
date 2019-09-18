@@ -36,7 +36,7 @@ cancelPreviousBuilds()
 
 def pipeline
 def sparkVersions
-node("docker") {
+node("sparkling-water-ec2") {
     cleanWs()
     checkout scm
     pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
