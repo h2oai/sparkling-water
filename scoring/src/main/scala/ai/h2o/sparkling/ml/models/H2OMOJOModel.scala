@@ -136,8 +136,10 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   }
 
   // Internal method used only within Sparkling Water pipelines.
-  // When H2OMOJOModel is created from existing mojo created in H2O-3, we do not need to set original features, but as in Spark, data frames can be nested, we need to handle it
-  private[h2o] def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings, originalFeatures: Array[String]): H2OMOJOModel = {
+  // When H2OMOJOModel is created from existing mojo created in H2O-3, we do not need to set original features,
+  // but as in Spark, data frames can be nested, we need to handle it
+  private[h2o] def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings,
+                                  originalFeatures: Array[String]): H2OMOJOModel = {
     val model = createFromMojo(mojoData, uid, settings)
     // Override the feature cols with the original features as Spark sees them.
     // Internally, we expand the arrays and vectors
