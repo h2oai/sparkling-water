@@ -180,7 +180,9 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
       hashingTF.transform(
         tokenize(msgRdd))).map(v => SMS("?", v)).toDF
     val msgTable: H2OFrame = msgVector
-    msgTable.remove(0) // remove first column
+    H2OFrameSupport.withLockAndUpdate(msgTable) {
+      _.remove(0) // remove first column
+    }
     val prediction = dlModel.score(msgTable)
     //println(prediction)
     prediction.vecs()(1).at(0) < hamThreshold
