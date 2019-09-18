@@ -19,6 +19,7 @@ package org.apache.spark.h2o.backends.external
 
 
   import java.io.{File, FileInputStream}
+import org.apache.http.client.utils.URIBuilder
 import java.util.Properties
 import java.util.jar.JarFile
 
@@ -167,12 +168,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         s"""
            |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
            |
-          |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
+           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
            |   to increase the timeout for starting the external cluster as:
            |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
            |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
            |
-          |2) The file could not be created because of missing write rights.""".stripMargin
+           |2) The file could not be created because of missing write rights.""".stripMargin
       )
     }
     // get ip port
@@ -220,7 +221,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     val expectedClusterSize = hc.getConf.clusterSize.get.toInt
     val clusterBuildTimeout = hc.getConf.cloudTimeout
     val nodes = if(runningFromNonJVMClient(hc)) {
-      val endpoint = s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}"
+      val uriBuilder = new URIBuilder(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}")
+      uriBuilder.setPath(hc._conf.contextPath.orNull)
+      val endpoint = uriBuilder.build()
       waitForCloudSizeViaRestAPI(endpoint, expectedClusterSize, clusterBuildTimeout)
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray

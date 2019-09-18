@@ -19,10 +19,11 @@ package org.apache.spark.h2o.utils
 
 import com.google.gson.Gson
 import water.api.schemas3.CloudV3
+import java.net.URI
 
 trait H2OContextRestAPIUtils {
 
-  def getCloudInfo(endpoint: String): CloudV3 = {
+  def getCloudInfo(endpoint: URI): CloudV3 = {
     import scala.io.Source
     val html = Source.fromURL(s"$endpoint/3/Cloud")
     val content = html.mkString

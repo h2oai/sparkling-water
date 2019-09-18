@@ -17,11 +17,12 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.utils.{NodeDesc, H2OContextRestAPIUtils}
+import java.net.URI
+import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
 
 trait ExternalBackendRestApiUtils extends H2OContextRestAPIUtils {
 
-  protected def waitForCloudSizeViaRestAPI(endpoint: String, extected: Int, timeout: Long): Array[NodeDesc] = {
+  protected def waitForCloudSizeViaRestAPI(endpoint: URI, extected: Int, timeout: Long): Array[NodeDesc] = {
     val start = System.currentTimeMillis()
     val cloudV3 = getCloudInfo(endpoint)
 
