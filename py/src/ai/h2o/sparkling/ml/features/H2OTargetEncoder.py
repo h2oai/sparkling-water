@@ -32,6 +32,7 @@ class H2OTargetEncoder(H2OTargetEncoderParams, H2OStageBase, JavaEstimator):
                  foldCol=None,
                  labelCol="label",
                  inputCols=[],
+                 outputCols=[],
                  holdoutStrategy="None",
                  blendedAvgEnabled=False,
                  blendedAvgInflectionPoint=10.0,
@@ -59,6 +60,9 @@ class H2OTargetEncoder(H2OTargetEncoderParams, H2OStageBase, JavaEstimator):
 
     def setInputCols(self, value):
         return self._set(inputCols=value)
+
+    def setOutputCols(self, value):
+        return self._set(outputCols=value)
 
     def setHoldoutStrategy(self, value):
         return self._set(holdoutStrategy=value)

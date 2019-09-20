@@ -26,6 +26,7 @@ trait H2OTargetEncoderParams extends Params {
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
   protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed")
+  protected final val outputCols = new StringArrayParam(this, "outputCols", "Names of columns representing the result of target encoding")
   protected final val holdoutStrategy = new Param[String](this,
     "holdoutStrategy",
     """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
@@ -58,6 +59,7 @@ trait H2OTargetEncoderParams extends Params {
     foldCol -> null,
     labelCol -> "label",
     inputCols -> Array[String](),
+    outputCols -> Array[String](),
     holdoutStrategy -> "None",
     blendedAvgEnabled -> false,
     blendedAvgInflectionPoint -> 10.0,
@@ -75,7 +77,14 @@ trait H2OTargetEncoderParams extends Params {
 
   def getInputCols(): Array[String] = $(inputCols)
 
-  def getOutputCols(): Array[String] = getInputCols().map(_ + "_te")
+  def getOutputCols(): Array[String] = {
+    val columns = $(outputCols)
+    if (columns == null || columns.isEmpty) {
+      getInputCols().map(_ + "_te")
+    } else {
+      columns
+    }
+  }
 
   def getHoldoutStrategy(): String = $(holdoutStrategy)
 
