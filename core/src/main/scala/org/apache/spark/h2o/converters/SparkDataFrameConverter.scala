@@ -53,8 +53,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     import ai.h2o.sparkling.ml.utils.SchemaUtils._
 
     val flatDataFrameOriginal = flattenDataFrame(dataFrame)
-    val flatDataFrame = if (flatDataFrameOriginal.count() < flatDataFrameOriginal.rdd.partitions.length) {
-      flatDataFrameOriginal.coalesce(flatDataFrameOriginal.rdd.partitions.length)
+    val numPartitions = flatDataFrameOriginal.rdd.partitions.length
+    val flatDataFrame = if (flatDataFrameOriginal.count() < numPartitions) {
+      flatDataFrameOriginal.coalesce(numPartitions)
     } else {
       flatDataFrameOriginal
     }
