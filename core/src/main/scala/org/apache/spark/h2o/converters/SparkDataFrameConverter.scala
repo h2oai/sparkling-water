@@ -52,7 +52,12 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     import ai.h2o.sparkling.ml.utils.SchemaUtils._
 
-    val flatDataFrame = flattenDataFrame(dataFrame)
+    val flatDataFrameOriginal = flattenDataFrame(dataFrame)
+    val flatDataFrame = if (flatDataFrameOriginal.count() < flatDataFrameOriginal.rdd.partitions.length) {
+      flatDataFrameOriginal.coalesce(flatDataFrameOriginal.rdd.partitions.length)
+    } else {
+      flatDataFrameOriginal
+    }
     val dfRdd = flatDataFrame.rdd
     val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
