@@ -81,6 +81,8 @@ trait SharedBackendConf {
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_EXTERNAL
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
+  def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
+
   /** Setters */
 
   /** Generic parameters */
@@ -182,6 +184,9 @@ trait SharedBackendConf {
   private[this] def setBackendClusterMode(backendClusterMode: String) = {
     set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
   }
+
+  def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
+
 }
 
 object SharedBackendConf {
@@ -322,4 +327,8 @@ object SharedBackendConf {
     * to the user.
     */
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE = ("spark.ext.h2o.client.flow.baseurl.override", None)
+
+  /** Timeout in milliseconds specifying how often we check whether the client is still connected */
+  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
+
 }
