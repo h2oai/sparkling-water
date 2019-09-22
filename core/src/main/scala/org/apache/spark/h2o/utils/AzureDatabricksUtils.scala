@@ -23,7 +23,7 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
 private[h2o] object AzureDatabricksUtils extends Logging {
-  val externalFlowPort = 9009 // This port is exposed in Azure DBC
+  private val externalFlowPort = 9009 // This port is exposed in Azure DBC
 
   def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = {
     conf.getOption("spark.databricks.cloudProvider").contains("Azure")
@@ -33,7 +33,8 @@ private[h2o] object AzureDatabricksUtils extends Logging {
     val clusterId = conf.get("spark.databricks.clusterUsageTags.clusterId")
     val orgId = conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
     val azureHost = s"https://${azureRegion()}.azuredatabricks.net"
-    s"$azureHost/driver-proxy/o/$orgId/$clusterId/$externalFlowPort/flow/index.html"
+    val port = if (conf.clientWebPort == -1) externalFlowPort else conf.clientWebPort
+    s"$azureHost/driver-proxy/o/$orgId/$clusterId/$port/flow/index.html"
   }
 
   private def azureRegion(): String = {
