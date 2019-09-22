@@ -17,7 +17,6 @@
 
 package org.apache.spark.h2o
 
-import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
@@ -70,7 +69,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   val uiUpdateThread = new Thread {
     override def run(): Unit = {
       while (!Thread.interrupted()) {
-        val swHeartBeatInfo = getSparklingWaterHeartBeatEvent(h2oNodes.toArray)
+        val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
         sparkContext.listenerBus.post(swHeartBeatInfo)
         try {
           Thread.sleep(conf.uiUpdateInterval)
@@ -85,8 +84,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   private var localClientIp: String = _
   /** REST port of H2O client */
   private var localClientPort: Int = _
-  /** Runtime list of active H2O nodes */
-  protected val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   private var stopped = false
 
   /** Used backend */
@@ -110,6 +107,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   protected def getSelfNodeDesc(): Option[NodeDesc]
 
   def getH2ONodes(): Array[NodeDesc]
+
+  protected def initBackend(): Unit
 
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
@@ -148,9 +147,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
 
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
-    val nodes = backend.init()
-    // Fill information about H2O client and H2O nodes in the cluster
-    h2oNodes.append(nodes: _*)
+    initBackend()
     localClientIp = getFlowIp()
 
     localClientPort = getFlowPort()
@@ -167,7 +164,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     // Announce Flow UI location
     announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, getScheme(conf), localClientIp, localClientPort))
-    updateUIAfterStart(nodes) // updates the spark UI
+    updateUIAfterStart() // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
 
     this
@@ -186,15 +183,16 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
 
   protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo
 
-  protected def getSparklingWaterHeartBeatEvent(nodes: Array[NodeDesc]): SparklingWaterHeartbeatEvent
+  protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent
 
-  private[this] def updateUIAfterStart(nodes: Array[NodeDesc]): Unit = {
+  private[this] def updateUIAfterStart(): Unit = {
+    val nodes = getH2ONodes()
     val h2oBuildInfo = getH2OBuildInfo(nodes)
     val h2oClusterInfo = getH2OClusterInfo(nodes)
     val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
     // Initial update
-    val swHeartBeatEvent = getSparklingWaterHeartBeatEvent(nodes)
+    val swHeartBeatEvent = getSparklingWaterHeartBeatEvent()
     sparkSession.sparkContext.listenerBus.post(swHeartBeatEvent)
     sparkSession.sparkContext.listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
@@ -343,11 +341,11 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
          |Sparkling Water Context:
          | * Sparkling Water Version: ${BuildInfo.SWVersion}
          | * H2O name: ${H2O.ARGS.name}
-         | * cluster size: ${h2oNodes.size}
+         | * cluster size: ${getH2ONodes().length}
          | * list of used nodes:
          |  (executorId, host, port)
          |  ------------------------
-         |  ${h2oNodes.mkString("\n  ")}
+         |  ${getH2ONodes().mkString("\n  ")}
          |  ------------------------
          |
          |  Open H2O Flow in browser: ${flowURL()} (CMD + click in Mac OSX)
@@ -377,6 +375,10 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
 object H2OContext extends Logging {
 
   private class H2OContextClientBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) {
+
+    /** Runtime list of active H2O nodes */
+    protected val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+
     override protected def getFlowIp(): String = {
       if (conf.ignoreSparkPublicDNS) {
         H2O.getIpPortString.split(":")(0)
@@ -400,13 +402,18 @@ object H2OContext extends Logging {
       )
     }
 
-    override protected def getSparklingWaterHeartBeatEvent(nodes: Array[NodeDesc]): SparklingWaterHeartbeatEvent = {
+    override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
       val members = H2O.CLOUD.members() ++ Array(H2O.SELF)
       val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
     }
 
     override def getH2ONodes(): Array[NodeDesc] = h2oNodes.toArray
+
+    override protected def initBackend(): Unit = {
+      val nodes = backend.init()
+      h2oNodes.append(nodes: _*)
+    }
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
@@ -417,10 +424,10 @@ object H2OContext extends Logging {
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
-    def getCloudInfo(nodes: Array[NodeDesc]): CloudV3 = getCloudInfo(this)
+    def getCloudInfo(): CloudV3 = getCloudInfo(this)
 
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val cloudV3 = getCloudInfo(nodes)
+      val cloudV3 = getCloudInfo()
       H2OClusterInfo(
         s"${getFlowIp()}:${getFlowPort()}",
         cloudV3.cloud_healthy,
@@ -430,27 +437,15 @@ object H2OContext extends Logging {
         cloudV3.cloud_uptime_millis)
     }
 
-    override protected def getSparklingWaterHeartBeatEvent(nodes: Array[NodeDesc]): SparklingWaterHeartbeatEvent = {
-      val cloudV3 = getCloudInfo(nodes)
+    override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
+      val cloudV3 = getCloudInfo()
       val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
     }
 
-    private var checkForNewH2ONodes = true
-    // Get current H2O Nodes and update the array buffer if the nodes have changed
-    override def getH2ONodes(): Array[NodeDesc] = {
-      // check for new H2O nodes until the cluster is locked as from that point, we have fixed number of H2O nodes
-      if (checkForNewH2ONodes) {
-        val cloudV3 = getCloudInfo(this)
-        val nodes = getNodes(cloudV3)
-        h2oNodes.clear()
-        h2oNodes.append(nodes: _*)
-        if (cloudV3.locked) {
-          checkForNewH2ONodes = false
-        }
-      }
-      h2oNodes.toArray
-    }
+    override def getH2ONodes(): Array[NodeDesc] = getNodes(this)
+
+    override protected def initBackend(): Unit = backend.init()
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
