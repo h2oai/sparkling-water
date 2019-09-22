@@ -21,12 +21,12 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
+import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui._
-import org.apache.spark.h2o.utils.{AzureDatabricksUtils, H2OContextRestAPIUtils, H2OContextUtils, LogUtil, NodeDesc}
+import org.apache.spark.h2o.utils._
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -86,7 +86,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   /** REST port of H2O client */
   private var localClientPort: Int = _
   /** Runtime list of active H2O nodes */
-  val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+  protected val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
   private var stopped = false
 
   /** Used backend */
@@ -108,6 +108,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   protected def getFlowPort(nodes: Array[NodeDesc]): Int
 
   protected def getSelfNodeDesc(): Option[NodeDesc]
+
+  def getH2ONodes(): Array[NodeDesc]
 
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
@@ -403,6 +405,8 @@ object H2OContext extends Logging {
       val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
     }
+
+    override def getH2ONodes(): Array[NodeDesc] = h2oNodes.toArray
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
@@ -413,17 +417,7 @@ object H2OContext extends Logging {
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
-    def getCloudInfo(nodes: Array[NodeDesc]): CloudV3 = {
-      val endpoint = new URI(
-        getScheme(_conf),
-        null,
-        getFlowIp(nodes),
-        getFlowPort(nodes),
-        _conf.contextPath.orNull,
-        null,
-        null)
-      getCloudInfo(endpoint)
-    }
+    def getCloudInfo(nodes: Array[NodeDesc]): CloudV3 = getCloudInfo(this)
 
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
       val cloudV3 = getCloudInfo(nodes)
@@ -440,6 +434,22 @@ object H2OContext extends Logging {
       val cloudV3 = getCloudInfo(nodes)
       val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
+    }
+
+    private var checkForNewH2ONodes = true
+    // Get current H2O Nodes and update the array buffer if the nodes have changed
+    override def getH2ONodes(): Array[NodeDesc] = {
+      // check for new H2O nodes until the cluster is locked as from that point, we have fixed number of H2O nodes
+      if (checkForNewH2ONodes) {
+        val cloudV3 = getCloudInfo(this)
+        val nodes = getNodes(cloudV3)
+        h2oNodes.clear()
+        h2oNodes.append(nodes: _*)
+        if (cloudV3.locked) {
+          checkForNewH2ONodes = false
+        }
+      }
+      h2oNodes.toArray
     }
   }
 
