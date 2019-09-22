@@ -126,10 +126,6 @@ Configuration properties independent of selected backend
 |                                                    |                | client node;                           |
 |                                                    |                | ``api_port + port_offset = h2o_port``  |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.cluster.client.retry.timeout``     | ``60000ms``    | Timeout in milliseconds specifying     |
-|                                                    |                | how often we check whether the         |
-|                                                    |                | the client is still connected.         |
-+----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
@@ -251,6 +247,11 @@ External backend configuration properties
 |                                                       |                | ``manual`` mode when starting       |
 |                                                       |                | Sparkling Water in external H2O     |
 |                                                       |                | cluster mode.                       |
++-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.cluster.client.retry.timeout``        | ``60000ms``    | Timeout in milliseconds specifying  |
+|                                                       |                | how often the check for             |
+|                                                       |                | availability of connected watchdog  |
+|                                                       |                | client is done.                     |
 +-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.cluster.client.connect.timeout``      | ``180000ms``   | Timeout in milliseconds for         |
 |                                                       |                | watchdog client connection. If the  |
