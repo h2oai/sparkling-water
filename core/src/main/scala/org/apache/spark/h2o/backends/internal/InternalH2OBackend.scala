@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.SparklingBackend
-import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.h2o.utils.{AzureDatabricksUtils, NodeDesc}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
@@ -62,6 +62,10 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Setup properties for H2O configuration
     if (conf.cloudName.isEmpty) {
       conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
+    }
+
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
+      conf.setClientCheckRetryTimeout(600000)
     }
 
     InternalBackendUtils.checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
