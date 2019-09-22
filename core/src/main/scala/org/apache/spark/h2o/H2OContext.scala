@@ -103,9 +103,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   /** H2O and Spark configuration */
   val _conf: H2OConf = backend.checkAndUpdateConf(conf).clone()
 
-  protected def getFlowIp(nodes: Array[NodeDesc]): String
+  protected def getFlowIp(): String
 
-  protected def getFlowPort(nodes: Array[NodeDesc]): Int
+  protected def getFlowPort(): Int
 
   protected def getSelfNodeDesc(): Option[NodeDesc]
 
@@ -151,9 +151,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     val nodes = backend.init()
     // Fill information about H2O client and H2O nodes in the cluster
     h2oNodes.append(nodes: _*)
-    localClientIp = getFlowIp(nodes)
+    localClientIp = getFlowIp()
 
-    localClientPort = getFlowPort(nodes)
+    localClientPort = getFlowPort()
 
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
 
@@ -377,7 +377,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
 object H2OContext extends Logging {
 
   private class H2OContextClientBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) {
-    override protected def getFlowIp(nodes: Array[NodeDesc]): String = {
+    override protected def getFlowIp(): String = {
       if (conf.ignoreSparkPublicDNS) {
         H2O.getIpPortString.split(":")(0)
       } else {
@@ -385,7 +385,7 @@ object H2OContext extends Logging {
       }
     }
 
-    override protected def getFlowPort(nodes: Array[NodeDesc]): Int = H2O.API_PORT
+    override protected def getFlowPort(): Int = H2O.API_PORT
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = Some(NodeDesc(H2O.SELF))
 
@@ -411,9 +411,9 @@ object H2OContext extends Logging {
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
     // Once H2O exposes leader node via rest api, remove the nodes argument
-    override protected def getFlowIp(nodes: Array[NodeDesc]): String = nodes.head.hostname
+    override protected def getFlowIp(): String = conf.h2oCluster.get.split(":")(0)
 
-    override protected def getFlowPort(nodes: Array[NodeDesc]): Int = nodes.head.port
+    override protected def getFlowPort(): Int = conf.h2oCluster.get.split(":")(1).toInt
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
@@ -422,7 +422,7 @@ object H2OContext extends Logging {
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
       val cloudV3 = getCloudInfo(nodes)
       H2OClusterInfo(
-        s"${getFlowIp(nodes)}:${getFlowPort(nodes)}",
+        s"${getFlowIp()}:${getFlowPort()}",
         cloudV3.cloud_healthy,
         cloudV3.internal_security_enabled,
         nodes.map(_.ipPort()),
