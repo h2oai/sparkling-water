@@ -21,11 +21,20 @@ import com.google.gson.Gson
 import water.api.schemas3.CloudV3
 import java.net.URI
 
+import org.apache.http.client.utils.URIBuilder
+import org.apache.spark.h2o.H2OContext
+
 trait H2OContextRestAPIUtils {
 
-  def getCloudInfo(endpoint: URI): CloudV3 = {
+  def getClusterEndpoint(hc: H2OContext): URI = {
+    val uriBuilder = new URIBuilder(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}")
+    uriBuilder.setPath(hc._conf.contextPath.orNull)
+    uriBuilder.build()
+  }
+
+  def getCloudInfo(hc: H2OContext): CloudV3 = {
     import scala.io.Source
-    val html = Source.fromURL(s"$endpoint/3/Cloud")
+    val html = Source.fromURL(s"${getClusterEndpoint(hc)}/3/Cloud")
     val content = html.mkString
     html.close()
     new Gson().fromJson(content, classOf[CloudV3])
@@ -39,4 +48,10 @@ trait H2OContextRestAPIUtils {
       NodeDesc(idx.toString, ip, port)
     }
   }
+
+  def getNodes(hc: H2OContext): Array[NodeDesc] = {
+    val cloudV3 = getCloudInfo(hc)
+    getNodes(cloudV3)
+  }
+
 }

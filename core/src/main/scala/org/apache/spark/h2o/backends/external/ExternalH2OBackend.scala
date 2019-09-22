@@ -19,26 +19,25 @@ package org.apache.spark.h2o.backends.external
 
 
   import java.io.{File, FileInputStream}
-import org.apache.http.client.utils.URIBuilder
-import java.util.Properties
-import java.util.jar.JarFile
+  import java.util.Properties
+  import java.util.jar.JarFile
 
-import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
-import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
-import org.apache.spark.internal.Logging
-import water.api.RestAPIManager
-import water.init.{AbstractBuildVersion, NetworkUtils}
-import water.util.Log
-import water.{H2O, H2OStarter, MRTask}
+  import org.apache.spark.SparkEnv
+  import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
+  import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
+  import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
+  import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
+  import org.apache.spark.internal.Logging
+  import water.api.RestAPIManager
+  import water.init.{AbstractBuildVersion, NetworkUtils}
+  import water.util.Log
+  import water.{H2O, H2OStarter, MRTask}
 
-import scala.io.Source
-import scala.util.control.NoStackTrace
+  import scala.io.Source
+  import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with ExternalBackendRestApiUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with H2OContextRestAPIUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
@@ -220,11 +219,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     val expectedClusterSize = hc.getConf.clusterSize.get.toInt
     val clusterBuildTimeout = hc.getConf.cloudTimeout
-    val nodes = if (runningFromNonJVMClient(hc)) {
-      val uriBuilder = new URIBuilder(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}")
-      uriBuilder.setPath(hc._conf.contextPath.orNull)
-      val endpoint = uriBuilder.build()
-      waitForCloudSizeViaRestAPI(endpoint, expectedClusterSize, clusterBuildTimeout)
+    val nodes = if(runningFromNonJVMClient(hc)) {
+      getNodes(hc)
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
