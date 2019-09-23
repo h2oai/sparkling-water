@@ -48,7 +48,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     val input = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
-    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*).toDF).columns
+    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(input)
     }
