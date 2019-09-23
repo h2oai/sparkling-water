@@ -101,7 +101,7 @@ object WriteConverterCtxUtils {
 
     val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse)
     val nonEmptyPartitions = rdd.mapPartitionsWithIndex{
-      case (idx, it) => if (it.isEmpty) Iterator.single(idx) else Iterator.empty
+      case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
     }.collect().toSeq
     val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
