@@ -449,7 +449,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
   test("TargetEncoderModel supports custom outputCols") {
     val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setInputCols(Array("DPROS", "DCAPS", "RACE"))
       .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
@@ -469,7 +469,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
   test("TargetEncoderMOJOModel supports custom outputCols") {
     val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setInputCols(Array("DPROS", "DCAPS", "RACE"))
       .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")

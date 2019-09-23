@@ -48,6 +48,8 @@ class H2OTargetEncoderModel(
     }
   }
 
+  private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
+
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
@@ -66,10 +68,14 @@ class H2OTargetEncoderModel(
       getBlendedAvgEnabled(),
       blendingParams,
       getNoiseSeed())
-    val outputColumnsOnlyFrame = outputFrame.subframe(getOutputCols() ++ Array(temporaryColumn))
+    val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
+    val outputColumnsOnlyFrame = outputFrame.subframe(internalOutputColumns ++ Array(temporaryColumn))
     val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
+    val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
+      case (df, (to, from)) => df.withColumnRenamed(from, to)
+    }
     withIdDF
-      .join(outputColumnsOnlyDF, Seq(temporaryColumn), joinType="left")
+      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType="left")
       .drop(temporaryColumn)
   }
 
