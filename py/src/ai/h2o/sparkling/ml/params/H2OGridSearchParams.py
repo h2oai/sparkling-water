@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.params.H2OCommonSupervisedParams import H2OCommonSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
@@ -79,12 +78,6 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
         H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
 
-    selectBestModelDecreasing = Param(
-        Params._dummy(),
-        "selectBestModelDecreasing",
-        "selectBestModelDecreasing",
-        H2OTypeConverters.toBoolean())
-
     ##
     # Getters
     ##
@@ -135,10 +128,6 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     def getSelectBestModelBy(self):
         return self.getOrDefault(self.selectBestModelBy)
 
-    def getSelectBestModelDecreasing(self):
-        Utils.methodDeprecationWarning("getSelectBestModelDecreasing")
-        return self.getOrDefault(self.selectBestModelDecreasing)
-
     ##
     # Setters
     ##
@@ -168,7 +157,3 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     def setSelectBestModelBy(self, value):
         return self._set(selectBestModelBy=value)
-
-    def setSelectBestModelDecreasing(self, value):
-        Utils.methodDeprecationWarning("setSelectBestModelDecreasing")
-        return self._set(selectBestModelDecreasing=value)

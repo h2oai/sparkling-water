@@ -58,7 +58,6 @@ class H2OGridSearch(H2OGridSearchParams, H2OAlgoBase):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
-        Utils.fieldDeprecationWarning(kwargs, "selectBestModelDecreasing")
         self._set(**kwargs)
 
     def get_grid_models(self):
