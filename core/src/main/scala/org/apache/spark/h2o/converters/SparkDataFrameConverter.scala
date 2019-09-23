@@ -55,7 +55,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     val flatDataFrameOriginal = flattenDataFrame(dataFrame)
     val numPartitions = flatDataFrameOriginal.rdd.partitions.length
     val flatDataFrame = if (flatDataFrameOriginal.count() < numPartitions) {
-      flatDataFrameOriginal.coalesce(numPartitions)
+      flatDataFrameOriginal.repartition(numPartitions)
     } else {
       flatDataFrameOriginal
     }
