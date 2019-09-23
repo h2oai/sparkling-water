@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 import java.lang.reflect.Field
 import java.util
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -384,8 +383,6 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
   private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
-  private val selectBestModelDecreasing = new BooleanParam(this, "selectBestModelDecreasing",
-    "True if sort in decreasing order accordingto selected metrics")
 
   //
   // Default values
@@ -399,8 +396,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
-    selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
-    selectBestModelDecreasing -> true
+    selectBestModelBy -> H2OGridSearchMetric.AUTO.name()
   )
 
   //
@@ -423,9 +419,6 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   def getStoppingMetric(): String = $(stoppingMetric)
 
   def getSelectBestModelBy(): String = $(selectBestModelBy)
-
-  @DeprecatedMethod()
-  def getSelectBestModelDecreasing(): Boolean = $(selectBestModelDecreasing)
 
   //
   // Setters
@@ -463,7 +456,4 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OGridSearchMetric](value)
     set(selectBestModelBy, validated)
   }
-
-  @DeprecatedMethod()
-  def setSelectBestModelDecreasing(value: Boolean): this.type = set(selectBestModelDecreasing, value)
 }
