@@ -56,7 +56,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
-      conf.setClientWebPort(AzureDatabricksUtils.externalFlowPort)
+      conf.setClientWebPort(AzureDatabricksUtils.getPort(conf))
     }
 
     if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
