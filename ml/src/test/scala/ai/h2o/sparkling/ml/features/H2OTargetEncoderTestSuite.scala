@@ -446,4 +446,42 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
+
+  test("TargetEncoderModel supports custom outputCols") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy("None")
+      .setNoise(0.0)
+    val expected = expectedTestingDataset
+      .withColumnRenamed("DPROS_te", "DPROS_out")
+      .withColumnRenamed("DCAPS_te", "DCAPS_out")
+      .withColumnRenamed("RACE_te", "RACE_out")
+    val model = targetEncoder.fit(trainingDataset)
+
+
+    val transformedTestingDataset = model.transformTrainingDataset(testingDataset)
+
+
+    TestFrameUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+  }
+
+  test("TargetEncoderMOJOModel supports custom outputCols") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
+      .setLabelCol("CAPSULE")
+      .setHoldoutStrategy("None")
+      .setNoise(0.0)
+    val expected = expectedTestingDataset
+      .withColumnRenamed("DPROS_te", "DPROS_out")
+      .withColumnRenamed("DCAPS_te", "DCAPS_out")
+      .withColumnRenamed("RACE_te", "RACE_out")
+
+    val model = targetEncoder.fit(trainingDataset)
+    val transformedTestingDataset = model.transform(testingDataset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+  }
 }
