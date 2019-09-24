@@ -33,7 +33,7 @@ import scala.reflect.runtime.universe._
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean]) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
@@ -99,10 +99,10 @@ object WriteConverterCtxUtils {
       rddInput
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse)
     val nonEmptyPartitions = rdd.mapPartitionsWithIndex{
       case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
-    }.collect().toSeq
+    }.collect().toSeq.sorted
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
     val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
     val res = new Array[Long](rdd.partitions.length)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }

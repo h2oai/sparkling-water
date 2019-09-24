@@ -96,7 +96,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   private[this]
   def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean])
+                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
@@ -106,7 +106,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunk(keyName, dataSize, expectedTypes, context.partitionId(), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
+    con.createChunk(keyName, dataSize, expectedTypes, partitions.indexOf(context.partitionId()), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>
