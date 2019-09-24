@@ -40,6 +40,10 @@ labelCol
 inputCols
     Names of columns that will be transformed to Target Encoding
 
+outputCols
+    Names of columns representing the result of target encoding. If the parameter is not specified by user, the output
+    column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.
+
 holdoutStrategy
     A strategy deciding what records will be excluded when calculating the target average on the training dataset.
 
