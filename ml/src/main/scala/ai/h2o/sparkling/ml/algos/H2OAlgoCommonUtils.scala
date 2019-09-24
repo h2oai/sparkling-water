@@ -17,6 +17,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OCommonParams
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
@@ -26,7 +27,7 @@ import water.support.H2OFrameSupport
 
 trait H2OAlgoCommonUtils extends H2OCommonParams {
 
-  protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame]) = {
+  protected def prepareDatasetForFitting(dataset: Dataset[_]): (Frame, Option[Frame], Array[String]) = {
     val excludedCols = getExcludedCols()
 
     if ($(featuresCols).isEmpty) {
@@ -46,6 +47,8 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
     val input = h2oContext.asH2OFrame(dataset.select(cols: _*).toDF())
 
+    // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
+    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(input)
     }
@@ -55,12 +58,12 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
       // need to do splitting
       val keys = H2OFrameSupport.split(input, Seq(Key.rand(), Key.rand()), Seq(getSplitRatio()))
       if (keys.length > 1) {
-        (keys(0), Some(keys(1)))
+        (keys(0), Some(keys(1)), internalFeatureCols)
       } else {
-        (keys(0), None)
+        (keys(0), None, internalFeatureCols)
       }
     } else {
-      (input, None)
+      (input, None, internalFeatureCols)
     }
   }
 }
