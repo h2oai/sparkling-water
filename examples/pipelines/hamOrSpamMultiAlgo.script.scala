@@ -139,14 +139,12 @@ val loadedModel = PipelineModel.load("examples/build/model")
  * Make predictions on unlabeled data
  * Spam detector
  */
-def isSpam(smsText: String,
-           model: PipelineModel,
-           hamThreshold: Double = 0.5) = {
+def isSpam(smsText: String, model: PipelineModel) = {
   val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
   val smsTextRowRDD = sc.parallelize(Seq(smsText)).map(Row(_))
   val smsTextDF = spark.createDataFrame(smsTextRowRDD, smsTextSchema)
   val prediction = model.transform(smsTextDF)
-  prediction.select("prediction").first == "spam"
+  prediction.select("prediction").first.getString(0) == "spam"
 }
 
 println(isSpam("Michal, h2oworld party tonight in MV?", loadedModel))

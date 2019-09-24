@@ -53,7 +53,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec
 
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     spec.input_spec.training_frame = train._key
     spec.input_spec.validation_frame = valid.map(_._key).orNull
 
@@ -103,7 +103,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OMOJOModel.createFromMojo(
       mojoData,
       Identifiable.randomUID(aml.leader()._parms.algoName()),
-      modelSettings)
+      modelSettings,
+      internalFeatureCols)
   }
 
   private def determineIncludedAlgos(): Array[Algo] = {

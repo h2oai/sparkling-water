@@ -69,7 +69,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
 
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     algoParams._train = train._key
     algoParams._valid = valid.map(_._key).orNull
 
@@ -123,7 +123,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OMOJOModel.createFromMojo(
       mojoData,
       Identifiable.randomUID(binaryModel._parms.algoName()),
-      modelSettings)
+      modelSettings,
+      internalFeatureCols)
   }
 
   //noinspection ComparingUnrelatedTypes
