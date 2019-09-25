@@ -104,7 +104,7 @@ object WriteConverterCtxUtils {
     }.collect().toSeq.sorted
     val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
     val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
-    val res = new Array[Long](rdd.partitions.length)
+    val res = new Array[Long](nonEmptyPartitions.size)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
     // Add Vec headers per-Chunk, and finalize the H2O Frame
 
