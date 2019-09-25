@@ -77,4 +77,3 @@ def testParseSparkVersionWithHadoopSuffix():
     assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
     assert components.suffix == "hadoop2.6"
-    
