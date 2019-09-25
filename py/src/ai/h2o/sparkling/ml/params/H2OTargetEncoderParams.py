@@ -107,7 +107,7 @@ class H2OTargetEncoderParams(Params):
 
     def getOutputCols(self):
         columns = self.getOrDefault(self.outputCols)
-        if columns is None or not columns:
+        if not columns:
             return list(map(lambda c: c + "_te", self.getInputCols()))
         else:
             return columns

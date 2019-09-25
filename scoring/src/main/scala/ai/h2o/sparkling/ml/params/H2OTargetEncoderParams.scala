@@ -79,7 +79,7 @@ trait H2OTargetEncoderParams extends Params {
 
   def getOutputCols(): Array[String] = {
     val columns = $(outputCols)
-    if (columns == null || columns.isEmpty) {
+    if (columns.isEmpty) {
       getInputCols().map(_ + "_te")
     } else {
       columns
