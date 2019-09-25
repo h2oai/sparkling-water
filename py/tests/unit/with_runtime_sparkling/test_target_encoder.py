@@ -162,7 +162,7 @@ def testTargetEncoderMOJOModelProduceSameResultsRegardlessSpecificationOfOutputC
 
     targetEncoderCustomOutputCols = H2OTargetEncoder() \
         .setInputCols(["RACE", "DPROS", "DCAPS"]) \
-        .setInputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
+        .setOutputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
         .setLabelCol("CAPSULE") \
         .setHoldoutStrategy("None") \
         .setNoise(0.0)
@@ -188,7 +188,7 @@ def testTargetEncoderModelProduceSameResultsRegardlessSpecificationOfOutputCols(
 
     targetEncoderCustomOutputCols = H2OTargetEncoder() \
         .setInputCols(["RACE", "DPROS", "DCAPS"]) \
-        .setInputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
+        .setOutputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
         .setLabelCol("CAPSULE") \
         .setHoldoutStrategy("None") \
         .setNoise(0.0)
