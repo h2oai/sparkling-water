@@ -83,12 +83,7 @@ object WriteConverterCtxUtils {
 
     writerClient.initFrame(keyName, colNames)
 
-    // prepare required metadata based on the used backend
-    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
-      Some(ExternalWriteConverterCtx.scheduleUpload(rddInput.getNumPartitions))
-    } else {
-      None
-    }
+
     val rdd = if (hc.getConf.runsInInternalClusterMode) {
       // this is only required in internal cluster mode
       val prefs = hc.h2oNodes.map { nodeDesc =>
@@ -102,6 +97,13 @@ object WriteConverterCtxUtils {
     val nonEmptyPartitions = rdd.mapPartitionsWithIndex {
       case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
     }.collect().toSeq.sorted
+
+    // prepare required metadata based on the used backend
+    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
+      Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
+    } else {
+      None
+    }
     val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
     val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
     val res = new Array[Long](nonEmptyPartitions.size)
