@@ -99,14 +99,15 @@ private[h2o] object SparkDataFrameConverter extends Logging {
                       writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
+    val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, context.partitionId(), writeTimeout, driverTimeStamp)
+    val con = WriteConverterCtxUtils.create(uploadPlan, chunkIdx , writeTimeout, driverTimeStamp)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
     // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunk(keyName, dataSize, expectedTypes, partitions.indexOf(context.partitionId()), vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
+    con.createChunk(keyName, dataSize, expectedTypes, chunkIdx, vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
     var localRowIdx = 0
     iterator.foreach { row =>
@@ -117,8 +118,8 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     //Compress & write data in partitions to H2O Chunks
     con.closeChunks(localRowIdx)
 
-    // Return Partition number and number of rows in this partition
-    (context.partitionId, con.numOfRows())
+    // Return H2O chunk index and number of rows in this chunk
+    (chunkIdx, con.numOfRows())
   }
 
   /**

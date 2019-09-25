@@ -99,7 +99,7 @@ object WriteConverterCtxUtils {
       rddInput
     }
 
-    val nonEmptyPartitions = rdd.mapPartitionsWithIndex{
+    val nonEmptyPartitions = rdd.mapPartitionsWithIndex {
       case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
     }.collect().toSeq.sorted
     val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
