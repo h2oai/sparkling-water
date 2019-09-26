@@ -18,23 +18,23 @@
 package org.apache.spark.h2o.backends.external
 
 
-  import java.io.{File, FileInputStream}
-  import java.util.Properties
-  import java.util.jar.JarFile
+import java.io.{File, FileInputStream}
+import java.util.Properties
+import java.util.jar.JarFile
 
-  import org.apache.spark.SparkEnv
-  import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
-  import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-  import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
-  import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
-  import org.apache.spark.internal.Logging
-  import water.api.RestAPIManager
-  import water.init.{AbstractBuildVersion, NetworkUtils}
-  import water.util.Log
-  import water.{H2O, H2OStarter, MRTask}
+import org.apache.spark.SparkEnv
+import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
+import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
+import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
+import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
+import org.apache.spark.internal.Logging
+import water.api.RestAPIManager
+import water.init.{AbstractBuildVersion, NetworkUtils}
+import water.util.Log
+import water.{H2O, H2OStarter, MRTask}
 
-  import scala.io.Source
-  import scala.util.control.NoStackTrace
+import scala.io.Source
+import scala.util.control.NoStackTrace
 
 
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with H2OContextRestAPIUtils {
@@ -105,12 +105,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
     }
 
-    if (hc.getConf.h2oNodeWebEnabled) {
-      if (hc.getConf.contextPath.isDefined) {
-        cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
-      }
-    } else {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-disable_web")
+    if (hc.getConf.contextPath.isDefined) {
+      cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
     }
 
     if (hc.getConf.nodeNetworkMask.isDefined) {
@@ -191,8 +187,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
   override def init(): Array[NodeDesc] = {
     if (hc.getConf.isAutoClusterStartUsed) {
-      // For automatic mode we can check the driver version early
-      ExternalH2OBackend.verifyVersionFromDriverJAR(hc.getConf.h2oDriverPath.get)
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(hc.getConf)
@@ -228,9 +222,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       H2OStarter.start(h2oClientArgs, false)
       H2O.waitForCloudSize(expectedClusterSize, clusterBuildTimeout)
 
-      if (hc._conf.isManualClusterStartUsed) {
-        ExternalH2OBackend.verifyVersionFromRuntime()
-      }
       // Register web API for client
       RestAPIManager(hc).registerAll()
       H2O.startServingRestApi()
@@ -262,7 +253,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
       cloudMembers
     }
-
+    verifyVersionFromRestCall(nodes)
     nodes
   }
 
@@ -411,46 +402,28 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     } else {
       ""
     }
+
+  private def verifyVersionFromRestCall(nodes: Array[NodeDesc]) = {
+    val referencedVersion = BuildInfo.H2OVersion
+    for (node <- nodes) {
+      val externalVersion = getCloudInfo(node, hc._conf).version
+      if (referencedVersion != externalVersion) {
+        throw new RuntimeException(
+          s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
+             |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
+      }
+    }
+  }
 }
 
 object ExternalH2OBackend {
 
-  private def throwWrongVersionException(clientVersion: String, externalVersion: String, driverPath: Option[String] = None) = {
-    val driverPathStr = if (driverPath.isDefined) s"(=$driverPath)" else ""
-    if (clientVersion != externalVersion) {
-      throw new RuntimeException(
-        s"""
-            The external H2O cluster$driverPathStr is of version $externalVersion but Sparkling Water
-            is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR.
-          """
-      )
-    }
-  }
-
-  private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
-    val clientVersion = BuildInfo.H2OVersion
-    val jarFile = new JarFile(driverPath)
-    val entry = jarFile.getJarEntry("h2o.version")
-    val is = jarFile.getInputStream(entry)
-    val externalVersion = scala.io.Source.fromInputStream(is).mkString
-    jarFile.close()
-    throwWrongVersionException(clientVersion, externalVersion, Some(driverPath))
-  }
-
-  private def verifyVersionFromRuntime(): Unit = {
-    val clientVersion = BuildInfo.H2OVersion
-    new MRTask() {
-      override def setupLocal(): Unit = {
-        val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
-        throwWrongVersionException(clientVersion, externalVersion)
-      }
-    }.doAllNodes()
-  }
-
   // This string tags instances of H2O launched from Sparkling Water
   val TAG_EXTERNAL_H2O = "H2O/Sparkling-Water"
+
   // Another tag which identifies launcher - aka Spark application
   val TAG_SPARK_APP = "Sparkling-Water/Spark/%s"
+
   // Job name for H2O Yarn job
   val H2O_JOB_NAME = "H2O_via_SparklingWater_%s"
 

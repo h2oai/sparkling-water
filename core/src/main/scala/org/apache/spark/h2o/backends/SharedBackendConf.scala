@@ -56,7 +56,6 @@ trait SharedBackendConf {
   def h2oNodeLogDir  = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
-  def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
   def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
@@ -144,9 +143,6 @@ trait SharedBackendConf {
   def setH2ONodeLogDir(dir: String) = set(PROP_NODE_LOG_DIR._1, dir)
   def setUiUpdateInterval(interval: Int) = set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
   def setCloudTimeout(timeout: Int) = set(PROP_CLOUD_TIMEOUT._1, timeout.toString)
-
-  def setH2ONodeWebEnabled() = set(PROP_NODE_ENABLE_WEB._1, true)
-  def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
 
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
@@ -264,9 +260,6 @@ object SharedBackendConf {
 
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60 * 1000)
-
-  /** Enable or disable web on h2o worker nodes. It is disabled by default for security reasons. */
-  val PROP_NODE_ENABLE_WEB = ("spark.ext.h2o.node.enable.web", false)
 
   /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
   val PROP_NODE_NETWORK_MASK = ("spark.ext.h2o.node.network.mask", None)
