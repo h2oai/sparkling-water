@@ -33,7 +33,7 @@ import scala.reflect.runtime.universe._
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean]) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(uploadPlan: Option[UploadPlan],
@@ -83,12 +83,7 @@ object WriteConverterCtxUtils {
 
     writerClient.initFrame(keyName, colNames)
 
-    // prepare required metadata based on the used backend
-    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
-      Some(ExternalWriteConverterCtx.scheduleUpload(rddInput.getNumPartitions))
-    } else {
-      None
-    }
+
     val rdd = if (hc.getConf.runsInInternalClusterMode) {
       // this is only required in internal cluster mode
       val prefs = hc.h2oNodes.map { nodeDesc =>
@@ -99,10 +94,19 @@ object WriteConverterCtxUtils {
       rddInput
     }
 
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse)
+    val nonEmptyPartitions = rdd.mapPartitionsWithIndex {
+      case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
+    }.collect().toSeq.sorted
 
-    val rows = hc.sparkContext.runJob(rdd, operation) // eager, not lazy, evaluation
-    val res = new Array[Long](rdd.partitions.length)
+    // prepare required metadata based on the used backend
+    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
+      Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
+    } else {
+      None
+    }
+    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
+    val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
+    val res = new Array[Long](nonEmptyPartitions.size)
     rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
     // Add Vec headers per-Chunk, and finalize the H2O Frame
 

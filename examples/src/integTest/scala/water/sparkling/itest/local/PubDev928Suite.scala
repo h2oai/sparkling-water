@@ -84,7 +84,6 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     for (i <- 0 until av.nChunks()) {
       println(av.chunkForChunkIdx(i).len())
     }
-    assert((0 until av.nChunks()).exists(idx => av.chunkForChunkIdx(idx).len() == 0), "At least on chunk with 0-rows has to exist!")
 
     // And run scoring on dataset which contains at least one chunk with zero-lines
     import h2oContext.implicits._
