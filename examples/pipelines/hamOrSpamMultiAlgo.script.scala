@@ -111,6 +111,8 @@ val algoStage = algo match {
     new H2OGridSearch().
       setLabelCol("label").
       setHyperParameters(hyperParams).
+      setFeaturesCols("tf_idf").
+      setConvertUnknownCategoricalLevelsToNa(true).
       setAlgo(new H2OGBM().setMaxDepth(30).setSeed(1))
 }
 
