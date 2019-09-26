@@ -238,7 +238,7 @@ class ScriptPipelineHamOrSpamGridSearch extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  ignore("Ham or Spam Grid Search Pipeline") {
+  test("Ham or Spam Grid Search Pipeline") {
     HamOrSpamTester.test(this, "hamOrSpamMultiAlgo.script.scala", "grid_gbm")
   }
 }
