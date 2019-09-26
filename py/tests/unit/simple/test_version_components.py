@@ -64,7 +64,7 @@ def testParseSparkVersionWithBuildNumber():
     assert components.sparkMajorVersion == "2"
     assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
-    assert components.suffix == "dev0"
+    assert components.suffix == ".dev0"
 
 def testParseSparkVersionWithHadoopSuffix():
     version = "2.4.1+hadoop2.6"
@@ -76,4 +76,16 @@ def testParseSparkVersionWithHadoopSuffix():
     assert components.sparkMajorVersion == "2"
     assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
-    assert components.suffix == "hadoop2.6"
+    assert components.suffix == "+hadoop2.6"
+
+def testParseSparkVersionWithComplexSuffix():
+    version = "2.4.1.a.b.c"
+
+    components = VersionComponents.parseFromPySparkVersion(version)
+
+    assert components.fullVersion == version
+    assert components.sparkMajorMinorVersion == "2.4"
+    assert components.sparkMajorVersion == "2"
+    assert components.sparkMinorVersion == "4"
+    assert components.sparkPatchVersion == "1"
+    assert components.suffix == ".a.b.c"

@@ -33,12 +33,12 @@ class VersionComponents(object):
 
     @staticmethod
     def parseFromPySparkVersion(version):
-        match = re.search(r"^((\d+)\.(\d+))\.(\d+)([\\.\\+]+([0-9A-Za-z\\+\\.]+))?$", version)
+        match = re.search(r"^((\d+)\.(\d+))\.(\d+)(.+)?$", version)
         result = VersionComponents()
         result.fullVersion = match.group(0)
         result.sparkMajorMinorVersion = match.group(1)
         result.sparkMajorVersion = match.group(2)
         result.sparkMinorVersion = match.group(3)
         result.sparkPatchVersion = match.group(4)
-        result.suffix = match.group(6)
+        result.suffix = match.group(5)
         return result
