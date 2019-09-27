@@ -99,7 +99,7 @@ object ExternalWriteConverterCtx extends ExternalBackendUtils {
   import scala.language.postfixOps
 
   def scheduleUpload(numPartitions: Int): UploadPlan = {
-    val nodes = H2OContext.ensure("H2OContext needs to be running").h2oNodes
+    val nodes = H2OContext.ensure("H2OContext needs to be running").getH2ONodes()
     val uploadPlan = (0 until numPartitions).zip(Stream.continually(nodes).flatten).toMap
     uploadPlan
   }

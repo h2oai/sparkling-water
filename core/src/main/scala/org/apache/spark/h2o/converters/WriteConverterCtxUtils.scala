@@ -86,7 +86,7 @@ object WriteConverterCtxUtils {
 
     val rdd = if (hc.getConf.runsInInternalClusterMode) {
       // this is only required in internal cluster mode
-      val prefs = hc.h2oNodes.map { nodeDesc =>
+      val prefs = hc.getH2ONodes().map { nodeDesc =>
         s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
       }
       new H2OAwareRDD(prefs, rddInput)
