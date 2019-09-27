@@ -64,10 +64,6 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
     }
 
-    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
-      conf.setClientCheckRetryTimeout(600000)
-    }
-
     InternalBackendUtils.checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
     conf
   }
