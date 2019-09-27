@@ -219,7 +219,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     val expectedClusterSize = hc.getConf.clusterSize.get.toInt
     val clusterBuildTimeout = hc.getConf.cloudTimeout
-    val nodes = if(runningFromNonJVMClient(hc)) {
+    val nodes = if (runningFromNonJVMClient(hc)) {
       getNodes(hc)
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
