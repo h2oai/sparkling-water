@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.SparklingBackend
-import org.apache.spark.h2o.utils.{AzureDatabricksUtils, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
