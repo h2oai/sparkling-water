@@ -299,15 +299,11 @@ External backend configuration properties
 | ``spark.ext.h2o.external.kill.on.unhealthy``          | ``true``       | If true, the client will try to     |
 |                                                       |                | kill the cluster and then itself in |
 |                                                       |                | case some nodes in the cluster      |
-|                                                       |                | report unhealthy status. Has effect |
-|                                                       |                | only in automatic cluster start     |
-|                                                       |                | mode.                               |
+|                                                       |                | report unhealthy status.            |
 +-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.kill.on.unhealthy.interval`` | ``HeartBeatThr | How often check the healthy status  |
 |                                                       | ead.TIMEOUT    | for the decision whether to kill    |
-|                                                       | * 3``          | the cloud or not. Has effect        |
-|                                                       |                | only in automatic cluster start     |
-|                                                       |                | mode.                               |
+|                                                       | * 3``          | the cloud or not.                   |
 +-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | Kerberos Principal.                 |
 +-------------------------------------------------------+----------------+-------------------------------------+
