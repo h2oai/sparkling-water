@@ -30,6 +30,8 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
   private def validateSchema(flatSchema: StructType): Unit = {
     require(getLabelCol() != null, "Label column can't be null!")
     require(getInputCols() != null && getInputCols().nonEmpty, "The list of input columns can't be null or empty!")
+    require(getOutputCols() != null && getOutputCols().nonEmpty, "The list of output columns can't be null or empty!")
+    require(getInputCols().length == getOutputCols().length, "The number of input columns and output columns should be equal!")
     val fields = flatSchema.fields
     val fieldNames = fields.map(_.name)
     require(fieldNames.contains(getLabelCol()),
@@ -38,9 +40,13 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
       require(fieldNames.contains(inputCol),
         s"The specified input column '$inputCol' was not found in the input dataset!")
     }
-    val ioIntersection = getInputCols().intersect(getOutputCols())
-    require(ioIntersection.isEmpty,
-      s"""The columns [${ioIntersection.map(i => s"'$i'").mkString(", ")}] are specified
+    val inputAndOutputIntersection = getInputCols().intersect(getOutputCols())
+    require(inputAndOutputIntersection.isEmpty,
+      s"""The columns [${inputAndOutputIntersection.map(i => s"'$i'").mkString(", ")}] are specified
          |as input columns and also as output columns. There can't be an overlap.""".stripMargin)
+    val schemaAndOutputIntersection = fieldNames.intersect(getOutputCols())
+    require(schemaAndOutputIntersection.isEmpty,
+      s"""The output columns [[${schemaAndOutputIntersection.map(i => s"'$i'").mkString(", ")}]] are present already
+         |in the input dataset.""".stripMargin)
   }
 }
