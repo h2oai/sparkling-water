@@ -42,6 +42,12 @@ class H2OTargetEncoderParams(Params):
         "Names of columns that will be transformed",
         H2OTypeConverters.toListString())
 
+    outputCols = Param(
+        Params._dummy(),
+        "outputCols",
+        "Names of columns representing the result of target encoding",
+        H2OTypeConverters.toListString())
+
     holdoutStrategy = Param(
         Params._dummy(),
         "holdoutStrategy",
@@ -100,7 +106,11 @@ class H2OTargetEncoderParams(Params):
         return self.getOrDefault(self.inputCols)
 
     def getOutputCols(self):
-        return list(map(lambda c: c + "_te", self.getInputCols()))
+        columns = self.getOrDefault(self.outputCols)
+        if not columns:
+            return list(map(lambda c: c + "_te", self.getInputCols()))
+        else:
+            return columns
 
     def getHoldoutStrategy(self):
         return self.getOrDefault(self.holdoutStrategy)

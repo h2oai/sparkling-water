@@ -74,6 +74,8 @@ class H2OTargetEncoder(override val uid: String)
 
   def setInputCols(values: Array[String]): this.type = set(inputCols, values)
 
+  def setOutputCols(values: Array[String]): this.type = set(outputCols, values)
+
   def setHoldoutStrategy(value: String): this.type = {
     set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
   }

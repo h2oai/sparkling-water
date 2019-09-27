@@ -53,7 +53,7 @@ def assertTargetEncoderAndMOJOModelParamsAreEqual(expected, produced):
 
 def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(trainingDataset):
     targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
-                                     holdoutStrategy="KFold",
+                                     outputCols=["RACE_out", "DPROS_out", "DCAPS_out"], holdoutStrategy="KFold",
                                      blendedAvgEnabled=True, blendedAvgInflectionPoint=15.0, blendedAvgSmoothing=25.0,
                                      noise=0.05, noiseSeed=123)
     pipeline = Pipeline(stages=[targetEncoder])
@@ -68,7 +68,7 @@ def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(trainin
 
 def testPipelineWithTargetEncoderIsSerializable():
     targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
-                                     holdoutStrategy="KFold",
+                                     outputCols=["RACE_out", "DPROS_out", "DCAPS_out"], holdoutStrategy="KFold",
                                      blendedAvgEnabled=True, blendedAvgInflectionPoint=15.0, blendedAvgSmoothing=25.0,
                                      noise=0.05, noiseSeed=123)
     gbm = H2OGBM() \
@@ -90,6 +90,7 @@ def testTargetEncoderSetterParametersGetPropagatedToLoadedMOJOModel(trainingData
         .setFoldCol("ID") \
         .setLabelCol("CAPSULE") \
         .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setOutputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
         .setHoldoutStrategy("KFold") \
         .setBlendedAvgEnabled(True) \
         .setBlendedAvgInflectionPoint(15.0) \
@@ -130,8 +131,7 @@ def testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult(trainingDataset, te
     unit_test_utils.assert_data_frames_are_identical(transformedByProducedModel, transformedByLoadedModel)
 
 
-def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformTheTrainingDatasetSameWay(trainingDataset,
-                                                                                                       testingDataset):
+def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformTheTrainingDatasetSameWay(trainingDataset):
     targetEncoder = H2OTargetEncoder() \
         .setInputCols(["RACE", "DPROS", "DCAPS"]) \
         .setLabelCol("CAPSULE") \
@@ -143,3 +143,55 @@ def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformThe
     transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
     unit_test_utils.assert_data_frames_are_identical(transformedByModel, transformedByMOJOModel)
+
+
+def testTargetEncoderMOJOModelProduceSameResultsRegardlessSpecificationOfOutputCols(trainingDataset, testingDataset):
+    def trainAndReturnTranformedTestingDataset(targetEncoder):
+        targetEncoderModel = targetEncoder.fit(trainingDataset)
+        return targetEncoderModel.transform(testingDataset)
+
+    targetEncoderDefaultOutputCols = H2OTargetEncoder() \
+        .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setLabelCol("CAPSULE") \
+        .setHoldoutStrategy("None") \
+        .setNoise(0.0)
+    dataFrameDefaultOutputCols = trainAndReturnTranformedTestingDataset(targetEncoderDefaultOutputCols) \
+        .withColumnRenamed("RACE_te", "RACE_out") \
+        .withColumnRenamed("DPROS_te", "DPROS_out") \
+        .withColumnRenamed("DCAPS_te", "DCAPS_out")
+
+    targetEncoderCustomOutputCols = H2OTargetEncoder() \
+        .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setOutputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
+        .setLabelCol("CAPSULE") \
+        .setHoldoutStrategy("None") \
+        .setNoise(0.0)
+    dataFrameCustomOutputCols = trainAndReturnTranformedTestingDataset(targetEncoderCustomOutputCols)
+
+    unit_test_utils.assert_data_frames_are_identical(dataFrameDefaultOutputCols, dataFrameCustomOutputCols)
+
+
+def testTargetEncoderModelProduceSameResultsRegardlessSpecificationOfOutputCols(trainingDataset, testingDataset):
+    def trainAndReturnTranformedTestingDataset(targetEncoder):
+        targetEncoderModel = targetEncoder.fit(trainingDataset)
+        return targetEncoderModel.transformTrainingDataset(testingDataset)
+
+    targetEncoderDefaultOutputCols = H2OTargetEncoder() \
+        .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setLabelCol("CAPSULE") \
+        .setHoldoutStrategy("None") \
+        .setNoise(0.0)
+    dataFrameDefaultOutputCols = trainAndReturnTranformedTestingDataset(targetEncoderDefaultOutputCols) \
+        .withColumnRenamed("RACE_te", "RACE_out") \
+        .withColumnRenamed("DPROS_te", "DPROS_out") \
+        .withColumnRenamed("DCAPS_te", "DCAPS_out")
+
+    targetEncoderCustomOutputCols = H2OTargetEncoder() \
+        .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setOutputCols(["RACE_out", "DPROS_out", "DCAPS_out"]) \
+        .setLabelCol("CAPSULE") \
+        .setHoldoutStrategy("None") \
+        .setNoise(0.0)
+    dataFrameCustomOutputCols = trainAndReturnTranformedTestingDataset(targetEncoderCustomOutputCols)
+
+    unit_test_utils.assert_data_frames_are_identical(dataFrameDefaultOutputCols, dataFrameCustomOutputCols)
