@@ -377,7 +377,7 @@ object H2OContext extends Logging {
   private class H2OContextClientBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) {
 
     /** Runtime list of active H2O nodes */
-    protected val h2oNodes = mutable.ArrayBuffer.empty[NodeDesc]
+    protected var h2oNodes: Array[NodeDesc] = _
 
     override protected def getFlowIp(): String = {
       if (conf.ignoreSparkPublicDNS) {
@@ -408,11 +408,10 @@ object H2OContext extends Logging {
       SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
     }
 
-    override def getH2ONodes(): Array[NodeDesc] = h2oNodes.toArray
+    override def getH2ONodes(): Array[NodeDesc] = h2oNodes
 
     override protected def initBackend(): Unit = {
-      val nodes = backend.init()
-      h2oNodes.append(nodes: _*)
+      h2oNodes = backend.init()
     }
   }
 
