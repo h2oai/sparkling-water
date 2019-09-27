@@ -27,24 +27,20 @@ private[h2o] object AzureDatabricksUtils extends Logging {
   private val externalFlowPort = 9009 // This port is exposed in Azure DBC
   private val defaultIncreasedTimeout = 600000
 
-  def setClientWebPort(conf: H2OConf): H2OConf = {
-    val port = if (conf.clientWebPort == SharedBackendConf.PROP_CLIENT_WEB_PORT._2) {
+  def setClientWebPort(conf: H2OConf): Int = {
+    if (conf.clientWebPort == SharedBackendConf.PROP_CLIENT_WEB_PORT._2) {
       logInfo("Overriding client web port to " + externalFlowPort)
-      externalFlowPort
-    } else {
-      conf.clientWebPort
+      conf.setClientWebPort(externalFlowPort)
     }
-    conf.setClientWebPort(port)
+    conf.clientWebPort
   }
 
-  def setClientCheckRetryTimeout(conf: H2OConf): H2OConf = {
-    val timeout = if (conf.clientCheckRetryTimeout == SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2) {
+  def setClientCheckRetryTimeout(conf: H2OConf): Int = {
+    if (conf.clientCheckRetryTimeout == SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2) {
       logInfo("Overriding client check retry timeout to " + defaultIncreasedTimeout)
-      defaultIncreasedTimeout
-    } else {
-      conf.clientCheckRetryTimeout
+      conf.setClientCheckRetryTimeout(defaultIncreasedTimeout)
     }
-    conf.setClientCheckRetryTimeout(timeout)
+    conf.clientCheckRetryTimeout
   }
 
   def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = {
