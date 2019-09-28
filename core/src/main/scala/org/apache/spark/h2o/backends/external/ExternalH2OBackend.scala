@@ -256,12 +256,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   }
 
   def startUnhealthyStateKillThread(): Unit = {
-    if (hc.getConf.isKillOnUnhealthyClusterEnabled && !hc.getConf.isManualClusterStartUsed) {
+    if (hc.getConf.isKillOnUnhealthyClusterEnabled) {
       cloudHealthCheckKillThread = Some(new Thread {
         override def run(): Unit = {
           while (true) {
             Thread.sleep(hc.getConf.killOnUnhealthyClusterInterval)
-            if (!H2O.CLOUD.healthy()) {
+            if (!H2O.CLOUD.healthy() && hc.getConf.isKillOnUnhealthyClusterEnabled) {
               Log.err("Exiting! External H2O cluster not healthy!!")
               H2O.shutdown(-1)
             }
@@ -279,8 +279,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         while (true) {
           Thread.sleep(hc.getConf.healthCheckInterval)
           if (!H2O.CLOUD.healthy()) {
-            val level = if (hc.getConf.isManualClusterStartUsed) Log.WARN else Log.ERRR
-            Log.log(level, "External H2O cluster not healthy!")
+            Log.err("External H2O cluster not healthy!!")
           }
         }
       }
