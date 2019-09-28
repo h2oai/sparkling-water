@@ -40,7 +40,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def numOfExternalH2ONodes = clusterSize
 
   def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
-  def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
   def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
   @DeprecatedMethod
   def externalReadConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_READ_TIMEOUT._1, PROP_EXTERNAL_READ_TIMEOUT._2)
@@ -93,7 +92,6 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setClusterSize(clusterSize: Int) = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
 
-  def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
   def setClientConnectionTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
   @DeprecatedMethod
   def setExternalReadConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_READ_TIMEOUT._1, timeout.toString)
@@ -168,9 +166,6 @@ object ExternalBackendConf {
   /** Number of nodes to wait for when connecting to external H2O cluster in manual mode. In auto mode, number
     * of nodes to be started. */
   val PROP_EXTERNAL_CLUSTER_SIZE = ("spark.ext.h2o.external.cluster.size", None)
-
-  /** Timeout in milliseconds specifying how often the check for connected watchdog client is done */
-  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
 
   /** Timeout in milliseconds for watchdog client connection. If client is not connected
     * to the external cluster in the given time, the cluster is killed */
