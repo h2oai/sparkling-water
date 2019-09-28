@@ -21,12 +21,26 @@ import java.io.FileNotFoundException
 
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.backends.SharedBackendConf
 
 private[h2o] object AzureDatabricksUtils extends Logging {
   private val externalFlowPort = 9009 // This port is exposed in Azure DBC
+  private val defaultIncreasedTimeout = 600000
 
-  def getPort(conf: H2OConf): Int = {
-    if (conf.clientWebPort == -1) externalFlowPort else conf.clientWebPort
+  def setClientWebPort(conf: H2OConf): Int = {
+    if (conf.clientWebPort == SharedBackendConf.PROP_CLIENT_WEB_PORT._2) {
+      logInfo("Overriding client web port to " + externalFlowPort)
+      conf.setClientWebPort(externalFlowPort)
+    }
+    conf.clientWebPort
+  }
+
+  def setClientCheckRetryTimeout(conf: H2OConf): Int = {
+    if (conf.clientCheckRetryTimeout == SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2) {
+      logInfo("Overriding client check retry timeout to " + defaultIncreasedTimeout)
+      conf.setClientCheckRetryTimeout(defaultIncreasedTimeout)
+    }
+    conf.clientCheckRetryTimeout
   }
 
   def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = {
