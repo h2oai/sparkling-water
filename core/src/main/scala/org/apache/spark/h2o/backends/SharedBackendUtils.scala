@@ -56,7 +56,8 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
-      conf.setClientWebPort(AzureDatabricksUtils.getPort(conf))
+      AzureDatabricksUtils.setClientWebPort(conf)
+      AzureDatabricksUtils.setClientCheckRetryTimeout(conf)
     }
 
     if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
@@ -121,6 +122,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0))
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-internal_security_conf", conf.sslConf)
+      .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
       .buildArgs()
   }
 
