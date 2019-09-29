@@ -20,7 +20,6 @@ package org.apache.spark.h2o.backends.external
 
 import java.io.{File, FileInputStream}
 import java.util.Properties
-import java.util.jar.JarFile
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
@@ -29,9 +28,9 @@ import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
-import water.init.{AbstractBuildVersion, NetworkUtils}
+import water.init.NetworkUtils
 import water.util.Log
-import water.{H2O, H2OStarter, MRTask}
+import water.{H2O, H2OStarter}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -406,7 +405,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private def verifyVersionFromRestCall(nodes: Array[NodeDesc]) = {
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
-      val externalVersion = getCloudInfo(node, hc._conf).version
+      val externalVersion = getCloudInfoFromNode(node, hc._conf).version
       if (referencedVersion != externalVersion) {
         throw new RuntimeException(
           s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water

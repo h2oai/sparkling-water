@@ -22,9 +22,9 @@ import water.api.schemas3.CloudV3
 import java.net.URI
 
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 
-trait H2OContextRestAPIUtils {
+trait H2OContextRestAPIUtils extends H2OContextUtils  {
 
   def getClusterEndpoint(hc: H2OContext): URI = {
     val uriBuilder = new URIBuilder(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}")
@@ -32,12 +32,29 @@ trait H2OContextRestAPIUtils {
     uriBuilder.build()
   }
 
-  def getCloudInfo(hc: H2OContext): CloudV3 = {
+  def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
+    val endpoint = new URI(
+      getScheme(conf),
+      null,
+      node.hostname,
+      node.port,
+      conf.contextPath.orNull,
+      null,
+      null)
+    getCloudInfoFromNode(endpoint)
+  }
+
+  def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
     import scala.io.Source
-    val html = Source.fromURL(s"${getClusterEndpoint(hc)}/3/Cloud")
+    val html = Source.fromURL(s"$endpoint/3/Cloud")
     val content = html.mkString
     html.close()
     new Gson().fromJson(content, classOf[CloudV3])
+  }
+
+  def getCloudInfo(hc: H2OContext): CloudV3 = {
+    val endpoint = getClusterEndpoint(hc)
+    getCloudInfoFromNode(endpoint)
   }
 
   def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
