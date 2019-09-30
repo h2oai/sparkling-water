@@ -53,7 +53,7 @@ String getDockerImageVersion() {
 }
 
 def withDocker(config, code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
+    def image = 'harbor.h2o.ai/opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
     //retryWithDelay(3, 120,{
     //    withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
     //        sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
@@ -68,7 +68,7 @@ def withDocker(config, code) {
 
 def withSharedSetup(sparkMajorVersion, config, code) {
     node('sparkling') {
-        docker.withRegistry("http://harbor.h2o.ai") {
+        //docker.withRegistry("http://harbor.h2o.ai") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
                 config.put("sparkMajorVersion", sparkMajorVersion)
 
@@ -100,7 +100,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                     }
                 }
             }
-        }
+        //}
     }
 }
 
