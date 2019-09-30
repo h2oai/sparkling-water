@@ -72,13 +72,10 @@ class H2OGLM(H2OGLMParams, H2OAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True,
-                 **DeprecatedParams):
+                 namedMojoOutputColumns=True):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGLM", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
-        Utils.propagateValueFromDeprecatedProperty(kwargs, "alpha", "alphaValue")
-        Utils.propagateValueFromDeprecatedProperty(kwargs, "lambda_", "lambdaValue")
         self._set(**kwargs)

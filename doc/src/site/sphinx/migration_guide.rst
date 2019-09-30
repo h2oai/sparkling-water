@@ -76,3 +76,8 @@ Removal of Deprecated Methods and Classes
 
 - TargetEncoder transformer now accepts the ``outputCols`` parameter which can be used to override the default output
   column names.
+
+- On PySparkling ``H2OGLM``, remove deprecated parameter ``alpha`` in favor of ``alphaValue`` and ``lambda_`` in favor of
+  ``lambdaValue``. On Both PySparkling and Sparkling Water ``H2OGLM``, remove ``getAlpha`` in favor of
+  ``getAlphaValue``, ``getLambda`` in favor of ``getLambdaValue``, ``setAlpha`` in favor of ``setAlphaValue`` and
+  ``setLambda`` in favor of ``setLambdaValue``. These changes ensure the consistency across Python and Scala APIs.
