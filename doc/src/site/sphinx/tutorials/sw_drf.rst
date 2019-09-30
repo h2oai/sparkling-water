@@ -1,3 +1,5 @@
+.. _drf:
+
 Train DRF Model in Sparkling Water
 ----------------------------------
 
