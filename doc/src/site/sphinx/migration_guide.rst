@@ -38,14 +38,19 @@ DRF exposed into Sparkling Water Algorithm API
 
 DRF is now exposed in the Sparkling Water. Please see our documentation to learn how to use it :ref:`drf`.
 
+Change Default Name of Prediction Column
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The default name of the prediction column is changed to ``prediction`` from ``prediction_output``.
+
 Single value in prediction column
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The default name of the prediction column is changed to ``prediction`` from ``prediction_output``. Also, the
-prediction output now contains always directly the predicted value. In case of regression issue the predicted numeric value
-and in case of classification the predicted label. If you are interested in more details created during the prediction,
-please make sure to set ``withDetailedPredictionCol`` to ``true`` via the setters on both PySparkling Scala side.
-When enabled, additional column ``detailed_prediction`` is created which contains additional prediction details, such as
+The prediction column contains directly the predicted value. For example, before this change, the prediction column contained
+another struct field called ``value`` (in case of regression issue), which contained the value. From now on, the predicted value
+is always stored directly in the prediction column. In case of regression issue,  the predicted numeric value
+and in case of classification, the predicted label. If you are interested in more details created during the prediction,
+please make sure to set ``withDetailedPredictionCol`` to ``true`` via the setters on both PySparkling and Sparkling Water.
+When enabled, additional column named ``detailed_prediction`` is created which contains additional prediction details, such as
 probabilities, contributions and so on.
 
 Removal of Deprecated Methods and Classes
