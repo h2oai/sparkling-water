@@ -27,6 +27,7 @@ import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
 import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscreteValueSearchCriteria}
 import hex.grid.{Grid, GridSearch, HyperSpaceSearchCriteria}
+import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.{Model, ModelMetricsBinomial, ModelMetricsBinomialGLM, ModelMetricsMultinomial, ModelMetricsRegression, ModelMetricsRegressionGLM, ScoreKeeper}
@@ -105,6 +106,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       case _: DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
       case _: GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
       case _: XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
+      case _: DRFParameters => new SimpleParametersBuilderFactory[DRFParameters]
       case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
@@ -355,7 +357,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF = Value
 
     def checkIfSupported(algo: H2OAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
       val exists = values.exists(_.toString == algo.getClass.getSimpleName)
