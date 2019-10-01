@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -131,13 +130,7 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def getTweedieLinkPower(): Double = $(tweedieLinkPower)
 
-  @DeprecatedMethod("getAlphaValue")
-  def getAlpha(): Array[Double] = getAlphaValue()
-
   def getAlphaValue(): Array[Double] = $(alphaValue)
-
-  @DeprecatedMethod("getLambdaValue")
-  def getLambda(): Array[Double] = getLambdaValue()
 
   def getLambdaValue(): Array[Double] = $(lambdaValue)
 
@@ -202,13 +195,7 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def setTweedieLinkPower(value: Double): this.type = set(tweedieLinkPower, value)
 
-  @DeprecatedMethod("setAlphaValue")
-  def setAlpha(value: Array[Double]): this.type = setAlphaValue(value)
-
   def setAlphaValue(value: Array[Double]): this.type = set(alphaValue, value)
-
-  @DeprecatedMethod("setLambdaValue")
-  def setLambda(value: Array[Double]): this.type = setLambdaValue(value)
 
   def setLambdaValue(value: Array[Double]): this.type = set(lambdaValue, value)
 
