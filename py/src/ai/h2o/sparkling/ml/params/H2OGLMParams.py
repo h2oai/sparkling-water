@@ -15,12 +15,11 @@
 # limitations under the License.
 #
 
+from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
-from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
-from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from ai.h2o.sparkling.ml.Utils import Utils
 
 class H2OGLMParams(H2OAlgoSupervisedParams):
     ##
@@ -203,16 +202,8 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getTweedieLinkPower(self):
         return self.getOrDefault(self.tweedieLinkPower)
 
-    def getAlpha(self):
-        Utils.methodDeprecationWarning("getAlpha", "getAlphaValue")
-        return self.getAlphaValue()
-
     def getAlphaValue(self):
         return self.getOrDefault(self.alphaValue)
-
-    def getLambda(self):
-        Utils.methodDeprecationWarning("getLambda", "getLambdaValue")
-        return self.getLambdaValue()
 
     def getLambdaValue(self):
         return self.getOrDefault(self.lambdaValue)
@@ -292,16 +283,8 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def setTweedieLinkPower(self, value):
         return self._set(tweedieLinkPower=value)
 
-    def setAlpha(self, value):
-        Utils.methodDeprecationWarning("setAlpha", "setAlphaValue")
-        return self.setAlphaValue(value)
-
     def setAlphaValue(self, value):
         return self._set(alphaValue=value)
-
-    def setLambda(self, value):
-        Utils.methodDeprecationWarning("setLambda", "setLambdaValue")
-        return self.setLambdaValue(value)
 
     def setLambdaValue(self, value):
         return self._set(lambdaValue=value)
