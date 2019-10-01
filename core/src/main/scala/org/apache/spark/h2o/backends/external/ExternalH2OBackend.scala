@@ -195,13 +195,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         hc._conf.setClientIp(clientIp.get)
       }
     } else {
-      // manual mode, check if the user specified the cluster representative
-      if (hc._conf.h2oCluster.isDefined) {
         val clientIp = NetworkUtils.indentifyClientIp(hc._conf.h2oClusterHost.get)
         if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
           hc._conf.setClientIp(clientIp.get)
         }
-      }
     }
 
     if (hc._conf.clientIp.isEmpty) {
@@ -388,6 +385,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           s"""Cluster name has to be specified when using the external H2O cluster mode in the manual start mode.
              |It can be set either on the configuration object or via '${SharedBackendConf.PROP_CLOUD_NAME._1}'
              |spark configuration property""".stripMargin)
+      }
+
+      if (conf.h2oCluster.isEmpty) {
+        throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
       }
     }
     conf
