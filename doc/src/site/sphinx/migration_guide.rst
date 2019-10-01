@@ -1,14 +1,14 @@
 Migration Guide
 ===============
 
-Migration guide between major Sparkling Water versions
+Migration guide between major Sparkling Water versions.
 
 From 3.26 To 3.28
 -----------------
 
 String instead of enums in Sparkling Water Algo API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- In scala, Setters on the pipeline wrappers for H2O algorithms now accepts strings in places where they accepted
+- In scala, setters of the pipeline wrappers for H2O algorithms now accepts strings in places where they accepted
   enum values before. Before, we called, for example:
 
 .. code-block:: scala
@@ -25,8 +25,8 @@ Now, the correct code is:
     val gbm = H2OGBM()
     gbm.setDistribution("multinomial")
 
-which makes the Python and Scala consistent. Both upper case and lower case values are valid and if a wrong
-input is entered, user is warned with correct possible values.
+which makes the Python and Scala APIs consistent. Both upper case and lower case values are valid and if a wrong
+input is entered, warning is printed out with correct possible values.
 
 Switch to Java 1.8 on Spark 2.1
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,22 +51,22 @@ probabilities, contributions and so on.
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- ``getColsampleBytree and setColsampleBytree`` methods are removed on our algorithm API. Please use
-  the new ``getColSampleByTree`` and ``setColSampleByTree``
+- ``getColsampleBytree`` and ``setColsampleBytree`` methods are removed from the XGBoost API. Please use
+  the new ``getColSampleByTree`` and ``setColSampleByTree``.
 
-- Remove deprecated option ``spark.ext.h2o.external.cluster.num.h2o.nodes`` and corresponding setters.
-  Please use ``spark.ext.h2o.external.cluster.size`` or corresponding setter ``setClusterSize``
+- Removal of deprecated option ``spark.ext.h2o.external.cluster.num.h2o.nodes`` and corresponding setters.
+  Please use ``spark.ext.h2o.external.cluster.size`` or the corresponding setter ``setClusterSize``.
 
-- Deprecated Algorithm classes in package ``org.apache.spark.h2o.ml.algos`` have been removed. Please
-  use the classes from the package ``ai.h2o.sparkling.ml.algos``. Their API remains the same. This is the
-  beginning of moving Sparkling Water classes to our distinct package.
+- Removal of of deprecated algorithm classes in package ``org.apache.spark.h2o.ml.algos``. Please
+  use the classes from the package ``ai.h2o.sparkling.ml.algos``. Their API remains the same as before. This is the
+  beginning of moving Sparkling Water classes to our distinct package ``ai.h2o.sparkling``
 
-- Remove deprecated option ``spark.ext.h2o.external.read.confirmation.timeout`` and related setters.
-  This option is removed without replacement as it is no longer needed.
+- Removal of deprecated option ``spark.ext.h2o.external.read.confirmation.timeout`` and related setters.
+  This option is removed without a replacement as it is no longer needed.
 
-- Remove deprecated parameter ``SelectBestModelDecreasing`` on our Grid Search API. Related getters and setters
-  have been also removed. This method is removed without replacement as we now internally correctly sort
-  the models according to what is best for the specified metric.
+- Removal of deprecated parameter ``SelectBestModelDecreasing`` on the Grid Search API. Related getters and setters
+  have been also removed. This method is removed without replacement as we now internally sort
+  the models with the ordering meaningful for the specified sort metric.
 
-- TargetEncoder transformer now accepts outputCols parameter which you can use to override the default output
+- TargetEncoder transformer now accepts the ``outputCols`` parameter which can be used to override the default output
   column names.
