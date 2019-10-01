@@ -40,14 +40,15 @@ DRF is now exposed in the Sparkling Water. Please see our documentation to learn
 
 Change Default Name of Prediction Column
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The default name of the prediction column is changed to ``prediction`` from ``prediction_output``.
+
+The default name of the prediction column has been changed from ``prediction_output`` to ``prediction``.
 
 Single value in prediction column
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The prediction column contains directly the predicted value. For example, before this change, the prediction column contained
 another struct field called ``value`` (in case of regression issue), which contained the value. From now on, the predicted value
-is always stored directly in the prediction column. In case of regression issue,  the predicted numeric value
+is always stored directly in the prediction column. In case of regression issue, the predicted numeric value
 and in case of classification, the predicted label. If you are interested in more details created during the prediction,
 please make sure to set ``withDetailedPredictionCol`` to ``true`` via the setters on both PySparkling and Sparkling Water.
 When enabled, additional column named ``detailed_prediction`` is created which contains additional prediction details, such as
@@ -62,7 +63,7 @@ Removal of Deprecated Methods and Classes
 - Removal of deprecated option ``spark.ext.h2o.external.cluster.num.h2o.nodes`` and corresponding setters.
   Please use ``spark.ext.h2o.external.cluster.size`` or the corresponding setter ``setClusterSize``.
 
-- Removal of of deprecated algorithm classes in package ``org.apache.spark.h2o.ml.algos``. Please
+- Removal of deprecated algorithm classes in package ``org.apache.spark.h2o.ml.algos``. Please
   use the classes from the package ``ai.h2o.sparkling.ml.algos``. Their API remains the same as before. This is the
   beginning of moving Sparkling Water classes to our distinct package ``ai.h2o.sparkling``
 
