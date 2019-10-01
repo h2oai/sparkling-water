@@ -29,6 +29,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    devel/devel
    pysparkling
    rsparkling
+   migration_guide
    FAQ
    CHANGELOG
 
