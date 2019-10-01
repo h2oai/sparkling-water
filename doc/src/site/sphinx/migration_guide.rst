@@ -72,7 +72,7 @@ Removal of Deprecated Methods and Classes
 
 - Removal of deprecated parameter ``SelectBestModelDecreasing`` on the Grid Search API. Related getters and setters
   have been also removed. This method is removed without replacement as we now internally sort
-  the models with the ordering meaningful for the specified sort metric.
+  the models with the ordering meaningful to the specified sort metric.
 
 - TargetEncoder transformer now accepts the ``outputCols`` parameter which can be used to override the default output
   column names.
