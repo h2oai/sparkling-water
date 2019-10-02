@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+v3.26.6 (2019-10-02)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.6-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.6-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.6-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.6-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.6-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.6-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.6-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.6-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1618 <https://0xdata.atlassian.net/browse/SW-1618>`__ - HamOrSparm tests return false for both predictions in scripts tests
+   -  `SW-1623 <https://0xdata.atlassian.net/browse/SW-1623>`__ -  Fix intermittent NPE in PySparkling with rollups on external backend
+   -  `SW-1624 <https://0xdata.atlassian.net/browse/SW-1624>`__ - H2OTargetEncoderMOJOModel Returns Wrong Results If Input Cols Are Not Ordered According To Training Dataset
+   -  `SW-1626 <https://0xdata.atlassian.net/browse/SW-1626>`__ - Intermittent failure during conversion to h2o frame on External backend in PySparking
+   -  `SW-1642 <https://0xdata.atlassian.net/browse/SW-1642>`__ - Prevent sending empty partitions to external H2O backend
+   -  `SW-1643 <https://0xdata.atlassian.net/browse/SW-1643>`__ - Fix script test - ham or spam pipeline on grid search
+   -  `SW-1644 <https://0xdata.atlassian.net/browse/SW-1644>`__ - Pysparkling 2.1 fails on parsing PySpark version
+   -  `SW-1645 <https://0xdata.atlassian.net/browse/SW-1645>`__ - Revert SW-1337
+                
+-  Task
+        
+   -  `SW-1617 <https://0xdata.atlassian.net/browse/SW-1617>`__ - Benchmarks: Report Failure if Execution Goes Wrong 
+                
+-  Improvement
+        
+   -  `SW-1619 <https://0xdata.atlassian.net/browse/SW-1619>`__ - [Spark2.3]Upgrade to Spark 2.3.4
+   -  `SW-1631 <https://0xdata.atlassian.net/browse/SW-1631>`__ - Automatically increase client timeout on top of Azure
+   -  `SW-1638 <https://0xdata.atlassian.net/browse/SW-1638>`__ - Make port 9009 configurable on Azure
+   -  `SW-1659 <https://0xdata.atlassian.net/browse/SW-1659>`__ - Upgrade H2O to 3.26.0.6
+                
+-  Engineering Story
+        
+   -  `SW-1602 <https://0xdata.atlassian.net/browse/SW-1602>`__ - Enable all TargetEncoder tests
+                
+                            
 v3.26.5 (2019-09-16)
 --------------------
 Downloads:
