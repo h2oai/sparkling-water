@@ -23,33 +23,39 @@ Follow the steps below to create a new H2O Artificial Intelligence for Azure HDI
 
 2. Click the **Create** button, and follow the UI instructions.
 
-   **Note**: H2O for HDInsight is exclusively for Spark HDI clusters version 3.5 (HDI v3.5).
-
    .. figure:: ../images/azure_select_h2o_hdinsight.png
       :alt: Select H2O Artificial Intelligence for HDInsight
 
-3. In the next screen, under **Basics**, change the Cluster Type to Spark SUBST_SPARK_VERSION. (Note that Sparkling Water is currently configured to work only on Spark SUBST_SPARK_MAJOR_VERSION and above.)
+3. In the next screen, under **Basics**:
+  - Change Cluster Type to Spark SUBST_SPARK_VERSION. (Note that Sparkling Water is currently configured to work only on Spark SUBST_SPARK_MAJOR_VERSION and above.)
+  - Change Cluster Login username and password. These are used to connect to your cluster.
+  - Change SSH Username and password. These are used to connect directly to the VM present in the cluster.
+  - Create or specify your Resource Group
 
-4. On the **Applications** tab, select and accept the Terms of Use for H2O.
+4. On the **Storage** tab, you can configure either an Azure Storage Account or an Azure Data Lake Store Gen2 Account. This is where your HDFS system will be located.
+
+  **Note**: Refer to the following links for more information about the Azure Storage and the Azure Data Lake Store Gen2:
+
+  - `Azure Storage <https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage>`__
+  - `Azure Data Lake Storage Gen2 <https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-data-lake-storage-gen2>`__
+
+5. On the **H2O SparklingWater for HDInsight** tab, select and accept the Terms of Use for H2O.
 
    .. figure:: ../images/azure_terms_of_use.png
       :alt: Terms of Use for H2O
 
-5. On the **Credentials** tab, specify the following:
+6. On the **Summary** tab, you can edit the number of workers nodes you want on your HDI Cluster. Note that you can resize your cluster any time after creation.
+   If you want to change the machine profile that HDI Cluster will run on (Worker Node Size), you should choose only among the recommended ones.
 
-   - Cluster Login username and password. These are used to connect to your cluster.
-   - SSH Username and password. These are used to connect directly to the VM present in the cluster.
+   .. figure:: ../images/azure_recommended_machines.png
+      :alt: Worker Node Size Dialog
 
-6. On the **Data Source** tab, you can configure either a Blob Storage Account or a Data Lake Store. This is where your HDFS system will be located. 
+7. On the **Summary** tab, click **Create** to begin the cluster creation. Note that the cluster creation process can take up to 30 minutes.
 
-  **Note**: Refer to the following links for more information about Blob Storage and the Data Lake Store:
+8. Watch the **Notifications** tab for the progress of deployment. If the deployment fails, delete created resources and repeat the points above.
 
-  - `Blob Storage <https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage>`__ for more information about Blob Storage
-  - `Data Lake Store <https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-process-data-lake-walkthrough>`__ for a walkthrough describing the Data Lake Store
-
-7. On the **Cluster Size** tab, select the number of workers nodes you want on your HDI Cluster. Note that you can resize your cluster any time after creation.
-
-8. Click **Create** to begin the cluster creation. Note that the cluster creation process can take up to 30 minutes.
+   .. figure:: ../images/azure_failed_deployment.png
+      :alt: Azure Failed Deployment
 
 9. Connect to your Jupyter Notebooks through
    **https://<ClusterName>.azurehdinsight.net/jupyter**, and log in using the Cluster Login username and password that you previously created.
