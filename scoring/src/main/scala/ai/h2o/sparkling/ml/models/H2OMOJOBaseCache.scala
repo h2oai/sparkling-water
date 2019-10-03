@@ -22,10 +22,10 @@ import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
 
-trait H2OMOJOBaseCache[T] extends Logging {
+trait H2OMOJOBaseCache[B, M] extends Logging {
   private object Lock
 
-  private val pipelineCache = mutable.Map.empty[String, T]
+  private val pipelineCache = mutable.Map.empty[String, B]
   private val lastAccessMap = mutable.Map.empty[String, Long]
 
   private lazy val sparkConf = SparkSession.builder().getOrCreate().sparkContext.getConf
@@ -67,13 +67,13 @@ trait H2OMOJOBaseCache[T] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, bytes: Array[Byte]): T = Lock.synchronized {
+  def getMojoBackend(uid: String, bytes: Array[Byte], model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      pipelineCache.put(uid, loadMojoBackend(bytes))
+      pipelineCache.put(uid, loadMojoBackend(bytes, model))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
     pipelineCache(uid)
   }
 
-  def loadMojoBackend(mojoData: Array[Byte]): T
+  def loadMojoBackend(mojoData: Array[Byte], model: M): B
 }

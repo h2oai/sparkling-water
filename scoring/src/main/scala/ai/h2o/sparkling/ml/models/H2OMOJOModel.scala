@@ -32,22 +32,6 @@ import org.apache.spark.sql._
 import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
-
-  protected object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper] {
-    override def loadMojoBackend(mojoData: Array[Byte]): EasyPredictModelWrapper = {
-      val config = new EasyPredictModelWrapper.Config()
-      config.setModel(Utils.getMojoModel(mojoData))
-      config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
-      config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
-      if (canGenerateContributions(config.getModel)) {
-        config.setEnableContributions(getWithDetailedPredictionCol())
-      }
-      // always let H2O produce full output, filter later if required
-      config.setUseExtendedOutput(true)
-      new EasyPredictModelWrapper(config)
-    }
-  }
-
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
@@ -58,15 +42,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   def getModelDetails(): String = $(modelDetails)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
-
-  private def canGenerateContributions(model: GenModel): Boolean = {
-    model match {
-      case _: PredictContributionsFactory =>
-        val modelCategory = model.getModelCategory
-        modelCategory == ModelCategory.Regression || modelCategory == ModelCategory.Binomial
-      case _ => false
-    }
-  }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 
@@ -146,5 +121,30 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     // Override the feature cols with the original features as Spark sees them.
     // Internally, we expand the arrays and vectors
     model.set(model.featuresCols -> originalFeatures)
+  }
+}
+
+object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOModel] {
+
+  private def canGenerateContributions(model: GenModel): Boolean = {
+    model match {
+      case _: PredictContributionsFactory =>
+        val modelCategory = model.getModelCategory
+        modelCategory == ModelCategory.Regression || modelCategory == ModelCategory.Binomial
+      case _ => false
+    }
+  }
+
+  override def loadMojoBackend(mojoData: Array[Byte], model: H2OMOJOModel): EasyPredictModelWrapper = {
+    val config = new EasyPredictModelWrapper.Config()
+    config.setModel(Utils.getMojoModel(mojoData))
+    config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
+    config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
+    if (canGenerateContributions(config.getModel)) {
+      config.setEnableContributions(model.getWithDetailedPredictionCol())
+    }
+    // always let H2O produce full output, filter later if required
+    config.setUseExtendedOutput(true)
+    new EasyPredictModelWrapper(config)
   }
 }

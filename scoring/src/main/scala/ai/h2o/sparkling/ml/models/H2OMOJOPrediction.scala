@@ -34,7 +34,8 @@ trait H2OMOJOPrediction
   self: H2OMOJOModel =>
 
   def extractPredictionColContent(): Column = {
-    easyPredictModelWrapper.getModelCategory match {
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => extractBinomialPredictionColContent()
       case ModelCategory.Regression => extractRegressionPredictionColContent()
       case ModelCategory.Multinomial => extractMultinomialPredictionColContent()
@@ -43,12 +44,13 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => extractDimReductionSimplePredictionColContent()
       case ModelCategory.WordEmbedding => extractWordEmbeddingPredictionColContent()
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
-      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
 
   def getPredictionUDF(): UserDefinedFunction = {
-    easyPredictModelWrapper.getModelCategory match {
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionUDF()
       case ModelCategory.Regression => getRegressionPredictionUDF()
       case ModelCategory.Multinomial => getMultinomialPredictionUDF()
@@ -57,12 +59,13 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionPredictionUDF()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionUDF()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF()
-      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
 
   override def getPredictionColSchema(): Seq[StructField] = {
-    easyPredictModelWrapper.getModelCategory match {
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionColSchema()
       case ModelCategory.Regression => getRegressionPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionColSchema()
@@ -71,12 +74,13 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionPredictionColSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
-      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
 
   override def getDetailedPredictionColSchema(): Seq[StructField] = {
-    easyPredictModelWrapper.getModelCategory match {
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialDetailedPredictionColSchema()
       case ModelCategory.Regression => getRegressionDetailedPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialDetailedPredictionColSchema()
@@ -85,7 +89,7 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionDetailedPredictionColSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingDetailedPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyDetailedPredictionColSchema()
-      case _ => throw new RuntimeException("Unknown model category " + easyPredictModelWrapper.getModelCategory)
+      case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
 }

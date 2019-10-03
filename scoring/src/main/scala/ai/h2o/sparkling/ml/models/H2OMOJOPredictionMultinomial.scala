@@ -28,12 +28,12 @@ trait H2OMOJOPredictionMultinomial {
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData()).predictMultinomial(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictMultinomial(RowConverter.toH2ORowData(r))
         Detailed(pred.label, pred.classProbabilities)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData()).predictMultinomial(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictMultinomial(RowConverter.toH2ORowData(r))
         Base(pred.label)
       }
     }
