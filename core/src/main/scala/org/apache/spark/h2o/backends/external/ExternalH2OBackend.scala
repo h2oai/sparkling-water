@@ -321,7 +321,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       """)
     }
 
-    if (conf.clusterSize.isEmpty) {
+    if (conf.clusterSize.isEmpty && !runningFromNonJVMClient(hc)) {
       throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
     }
 
