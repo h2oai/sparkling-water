@@ -33,6 +33,22 @@ import scala.collection.JavaConverters._
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
 
+  protected object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper] {
+    override def loadMojoBackend(mojoData: Array[Byte]): EasyPredictModelWrapper = {
+      val config = new EasyPredictModelWrapper.Config()
+      config.setModel(Utils.getMojoModel(mojoData))
+      config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
+      config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
+      if (canGenerateContributions(config.getModel)) {
+        config.setEnableContributions(getWithDetailedPredictionCol())
+      }
+      // always let H2O produce full output, filter later if required
+      config.setUseExtendedOutput(true)
+      new EasyPredictModelWrapper(config)
+    }
+  }
+
+  H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
   setDefault(
@@ -42,20 +58,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   def getModelDetails(): String = $(modelDetails)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
-
-  // Some MojoModels are not serializable ( DeepLearning ), so we are reusing the mojoData to keep information about mojo model
-  @transient protected lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
-    val config = new EasyPredictModelWrapper.Config()
-    config.setModel(Utils.getMojoModel(getMojoData()))
-    config.setConvertUnknownCategoricalLevelsToNa(getConvertUnknownCategoricalLevelsToNa())
-    config.setConvertInvalidNumbersToNa(getConvertInvalidNumbersToNa())
-    if (canGenerateContributions(config.getModel)) {
-      config.setEnableContributions(getWithDetailedPredictionCol())
-    }
-    // always let H2O produce full output, filter later if required
-    config.setUseExtendedOutput(true)
-    new EasyPredictModelWrapper(config)
-  }
 
   private def canGenerateContributions(model: GenModel): Boolean = {
     model match {

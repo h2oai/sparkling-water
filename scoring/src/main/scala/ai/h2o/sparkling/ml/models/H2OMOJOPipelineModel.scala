@@ -33,6 +33,14 @@ import scala.util.Random
 
 class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
 
+  private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline] {
+    override def loadMojoBackend(mojoData: Array[Byte]): MojoPipeline = {
+      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+      MojoPipeline.loadFrom(reader)
+    }
+  }
+
+  H2OMOJOPipelineCache.startCleanupThread()
   // private parameter used to store MOJO output columns
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
@@ -61,7 +69,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val mojoPipeline = H2OMOJOPipelineCache.getMojoPipeline(uid, getMojoData())
+        val mojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData())
         val builder = mojoPipeline.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => mojoPipeline.getInputMeta.contains(n) }
@@ -198,20 +206,5 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.setMojoData(mojoData)
     model
-  }
-}
-
-object H2OMOJOPipelineCache {
-
-  private object Lock
-
-  private val pipelineCache = mutable.Map.empty[String, MojoPipeline]
-
-  def getMojoPipeline(uid: String, bytes: Array[Byte]): MojoPipeline = Lock.synchronized {
-    if (!pipelineCache.contains(uid)) {
-      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(bytes))
-      pipelineCache.put(uid, MojoPipeline.loadFrom(reader))
-    }
-    pipelineCache(uid)
   }
 }

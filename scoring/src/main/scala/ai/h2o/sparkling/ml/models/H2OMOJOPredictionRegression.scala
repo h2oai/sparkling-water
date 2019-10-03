@@ -28,12 +28,12 @@ trait H2OMOJOPredictionRegression {
   def getRegressionPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData()).predictRegression(RowConverter.toH2ORowData(r))
         WithContributions(pred.value, pred.contributions)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData()).predictRegression(RowConverter.toH2ORowData(r))
         Base(pred.value)
       }
     }
