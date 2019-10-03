@@ -29,7 +29,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
   private val lastAccessMap = mutable.Map.empty[String, Long]
 
   private lazy val sparkConf = SparkSession.builder().getOrCreate().sparkContext.getConf
-  private lazy val cleanupRetryTimeout = sparkConf.getInt("spark.ext.h2o.mojo.destroy.timeout",  10 * 60 * 1000)
+  private lazy val cleanupRetryTimeout = sparkConf.getInt("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
   private val cleanerThread = new Thread() {
     override def run(): Unit = {
       while (!Thread.interrupted()) {
