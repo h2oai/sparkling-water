@@ -148,6 +148,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-baseport", conf.clientBasePort)
       .add("-context_path", conf.contextPath)
       .add("-flow_dir", conf.flowDir)
+      .add(getExtraHttpHeaderArgs(conf))
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .add("-jks", conf.jks)
@@ -156,6 +157,20 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-network", conf.clientNetworkMask)
       .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
       .buildArgs()
+  }
+
+  def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {
+    val headerPattern = """^\s*([^:]+)\:\s*(.+)$""".r
+    headers.split('\n').flatMap{ header =>
+      header match {
+        case headerPattern(key, value) => Seq("-add_http_header", key, value)
+        case _ => Seq.empty
+      }
+    }
+  }
+
+  def getExtraHttpHeaderArgs(conf: H2OConf): Seq[String] = {
+    conf.flowExtraHttpHeaders.map(parseStringToHttpHeaderArgs).getOrElse(Seq.empty)
   }
 
   /**
