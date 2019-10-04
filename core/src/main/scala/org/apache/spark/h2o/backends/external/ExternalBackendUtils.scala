@@ -29,10 +29,11 @@ import water.{ExternalFrameUtils, H2O, Paxos}
 private[external] trait ExternalBackendUtils extends SharedBackendUtils {
 
   protected def waitForCloudSize(x: Int, ms: Long): Int = {
-    val start = System.currentTimeMillis();
+    val start = System.currentTimeMillis()
     while (System.currentTimeMillis() - start < ms) {
-      if (H2O.CLOUD.size() >= x && Paxos._commonKnowledge)
+      if (H2O.CLOUD.size() >= x && Paxos._commonKnowledge) {
         return H2O.CLOUD.size()
+      }
       try {
         Thread.sleep(100)
       } catch {
@@ -54,7 +55,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
       .buildArgs()
   }
 
-  def cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
+  def cloudMembers : Array[NodeDesc] = H2O.CLOUD.members().map(NodeDesc(_))
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
     *
