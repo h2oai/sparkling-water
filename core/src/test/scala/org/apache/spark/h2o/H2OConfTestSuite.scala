@@ -16,12 +16,16 @@
 */
 package org.apache.spark.h2o
 
+import java.net.{HttpURLConnection, URL}
+
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+
+import collection.JavaConverters._
 
 /**
   * Test passing parameters via SparkConf.
@@ -73,6 +77,27 @@ class H2OConfTestSuite extends FunSuite
     assert(conf.nthreads == 7)
     assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
+
+    resetSparkContext()
+  }
+
+  test("test extra HTTP headers are propagated to FLOW UI") {
+    val h2oConf = new H2OConf(spark)
+    val extraHttpHeaders = Map(
+      "X-MyCustomHeaderA" -> "A",
+      "X-MyCustomHeaderB" -> "B")
+    h2oConf.setFlowExtraHttpHeaders(extraHttpHeaders)
+    val h2oContext = H2OContext.getOrCreate(spark, h2oConf)
+
+    val url = new URL(h2oContext.flowURL())
+    val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+    try {
+      val flowHeaders = connection.getHeaderFields.asScala.filterKeys(key => extraHttpHeaders.contains(key)).toMap
+      flowHeaders shouldEqual extraHttpHeaders.mapValues(List(_).asJava)
+    }
+    finally {
+      connection.disconnect()
+    }
 
     resetSparkContext()
   }
