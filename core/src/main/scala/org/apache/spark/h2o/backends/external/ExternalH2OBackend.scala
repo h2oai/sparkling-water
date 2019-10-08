@@ -162,12 +162,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         s"""
            |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
            |
-          |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
+           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
            |   to increase the timeout for starting the external cluster as:
            |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
            |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
            |
-          |2) The file could not be created because of missing write rights.""".stripMargin
+           |2) The file could not be created because of missing write rights.""".stripMargin
       )
     }
     // get ip port
@@ -387,6 +387,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           s"""Cluster name has to be specified when using the external H2O cluster mode in the manual start mode.
              |It can be set either on the configuration object or via '${SharedBackendConf.PROP_CLOUD_NAME._1}'
              |spark configuration property""".stripMargin)
+      }
+
+      if (conf.h2oCluster.isEmpty) {
+        logWarning(
+          """
+             Starting from the next major release 3.30,
+             it will be mandatory to specify H2O cluster endpoint in manual cluster
+             mode of external backend. Broadcast search for the external backend won't be
+             no longer supported!""")
       }
     }
     conf
