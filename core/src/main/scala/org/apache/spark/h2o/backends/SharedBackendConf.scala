@@ -166,7 +166,7 @@ trait SharedBackendConf {
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
     setFlowExtraHttpHeaders(headers.asScala.toMap[String, String])
   }
-  def setFlowExtraHttpHeaders(headers: Map[String, String]):H2OConf = {
+  def setFlowExtraHttpHeaders(headers: Map[String, String]): H2OConf = {
     val stringRepresentation =  headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
   }
