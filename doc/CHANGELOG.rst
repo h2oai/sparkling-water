@@ -1,7 +1,13 @@
 Change Log
 ==========
 
-v3.26.6 (2019-10-02)
+v3.27.7 (2019-10-08)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.27.7-wf-off-cycle-rel/3.27.7-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.27.7-wf-off-cycle-rel/3.27.7-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.27.7-wf-off-cycle-rel/3.27.7-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.27.7-wf-off-cycle-rel/3.27.7-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.27.7-wf-off-cycle-rel/3.27.7-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.27.7-wf-off-cycle-rel/3.27.7-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.27.7-wf-off-cycle-rel/3.27.7-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.27.7-wf-off-cycle-rel/3.27.7-2.4/index.html>`__v3.26.6 (2019-10-02)
 --------------------
 Downloads:
    - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.6-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.6-2.1/index.html>`__
