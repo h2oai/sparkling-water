@@ -27,9 +27,9 @@ import org.apache.spark.sql.types._
 import water._
 import water.fvec.Frame
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short) extends WriteConverterCtx {
+class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short, blockSize: Long) extends WriteConverterCtx {
 
-  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout)
+  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout, blockSize)
 
   override def closeChunks(numRows: Int): Unit = {
     externalFrameWriter.close()
