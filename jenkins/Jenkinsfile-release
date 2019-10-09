@@ -438,6 +438,22 @@ def publishToPipy() {
     }
 }
 
+def publishCondaArtifact(arch, pkgName) {
+    retryWithDelay(3, 120, {
+        sh "yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}"
+        sh "anaconda upload --force ../../../dist/build/dist/py/conda/${arch}/${pkgName}"
+    })
+}
+
+
+def getCondaPkgName(params, pyVersion) {
+    return sh(returnStdout: true, script:
+            """
+            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
+            basename \$CONDA_PKG_CURRENT_ARCH_PATH
+            """).trim()
+}
+
 def publishToConda() {
     return { params ->
         stage('Publish to Conda') {
@@ -446,20 +462,10 @@ def publishToConda() {
                     withCredentials([usernamePassword(credentialsId: 'anaconda-credentials', usernameVariable: 'ANACONDA_USERNAME', passwordVariable: 'ANACONDA_PASSWORD')]) {
                         def pythonVersions = ['2.7', '3.6']
                         for (pyVersion in pythonVersions) {
-                            sh """
-            
-                                CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
-                                PKG_NAME=\$(basename \$CONDA_PKG_CURRENT_ARCH_PATH)
-
-                                # Upload Conda packages of PySparkling
-                                yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}
-
-                                anaconda upload --force ../../../dist/build/dist/py/conda/osx-64/\${PKG_NAME}
-                                anaconda upload --force ../../../dist/build/dist/py/conda/linux-32/\${PKG_NAME}
-                                anaconda upload --force ../../../dist/build/dist/py/conda/linux-64/\${PKG_NAME}
-                                anaconda upload --force ../../../dist/build/dist/py/conda/win-32/\${PKG_NAME}
-                                anaconda upload --force ../../../dist/build/dist/py/conda/win-64/\${PKG_NAME}
-                                """
+                            def pkgName = getCondaPkgName(params, pyVersion)
+                            for (arch in ['osx-64', 'linux-32', 'linux-64', 'win-32', 'win-64']) {
+                                publishCondaArtifact(arch, pkgName)
+                            }
                         }
                     }
                 }
