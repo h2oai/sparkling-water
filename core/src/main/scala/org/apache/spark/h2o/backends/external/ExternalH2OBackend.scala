@@ -217,7 +217,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     H2OStarter.start(h2oClientArgs, false)
 
-    H2O.waitForCloudSize(hc.getConf.clusterSize.get.toInt, hc.getConf.cloudTimeout)
+    val expectedSize = hc.getConf.clusterSize.get.toInt
+    val discoveredSize = waitForCloudSize(expectedSize, hc.getConf.cloudTimeout)
+    if (discoveredSize < expectedSize) {
+      if (hc.getConf.isAutoClusterStartUsed) {
+        Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+        H2O.shutdown(-1)
+      }
+      throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
+    }
 
     if (hc._conf.isManualClusterStartUsed) {
       ExternalH2OBackend.verifyVersionFromRuntime()
