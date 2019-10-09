@@ -21,13 +21,27 @@ import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendUtils}
 import org.apache.spark.h2o.utils.NodeDesc
-import water.{ExternalFrameUtils, H2O}
+import water.{ExternalFrameUtils, H2O, Paxos}
 
 /**
   * Various helper methods used in the external backend
   */
 private[external] trait ExternalBackendUtils extends SharedBackendUtils {
 
+  protected def waitForCloudSize(x: Int, ms: Long): Int = {
+    val start = System.currentTimeMillis()
+    while (System.currentTimeMillis() - start < ms) {
+      if (H2O.CLOUD.size() >= x && Paxos._commonKnowledge) {
+        return H2O.CLOUD.size()
+      }
+      try {
+        Thread.sleep(100)
+      } catch {
+        case _: InterruptedException =>
+      }
+    }
+    H2O.CLOUD.size()
+  }
   /**
     * Get arguments for H2O client
     *
