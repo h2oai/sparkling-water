@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.InputStream
 
+import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.SparkSession
@@ -39,7 +40,8 @@ trait H2OMOJOLoader[T] {
   def createFromMojo(is: InputStream, uid: String): T = createFromMojo(is, uid, H2OMOJOSettings.default)
 
   def createFromMojo(is: InputStream, uid: String, settings: H2OMOJOSettings): T = {
-    createFromMojo(Stream.continually(is.read).takeWhile(_ != -1).map(_.toByte).toArray, uid, settings)
+    val byteArray = IOUtils.toByteArray(is)
+    createFromMojo(byteArray, uid, settings)
   }
 
   def createFromMojo(mojoData: Array[Byte], uid: String): T = createFromMojo(mojoData, uid, H2OMOJOSettings.default)
