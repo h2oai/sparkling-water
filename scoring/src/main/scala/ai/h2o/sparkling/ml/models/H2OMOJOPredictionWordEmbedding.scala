@@ -29,7 +29,7 @@ trait H2OMOJOPredictionWordEmbedding {
 
   def getWordEmbeddingPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
+      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictWord2Vec(RowConverter.toH2ORowData(r))
       Base(pred.wordEmbeddings)
     }
   }
