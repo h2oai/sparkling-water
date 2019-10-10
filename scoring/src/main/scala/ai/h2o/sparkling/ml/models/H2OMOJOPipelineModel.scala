@@ -33,13 +33,14 @@ import scala.util.Random
 
 class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
 
-  @transient private lazy val mojoPipeline: MojoPipeline = {
-    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(getMojoData()))
-    MojoPipeline.loadFrom(reader)
-  }
+  H2OMOJOPipelineCache.startCleanupThread()
 
   // private parameter used to store MOJO output columns
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
+
+  @transient private lazy val mojoPipeline: MojoPipeline = {
+    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData, this)
+  }
 
   case class Mojo2Prediction(preds: List[Double])
 
@@ -60,7 +61,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     } else {
       colData
     }
-
   }
 
   private val modelUdf = (names: Array[String]) =>
@@ -202,5 +202,12 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     model.setMojoData(mojoData)
     model
+  }
+}
+
+private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
+  override def loadMojoBackend(mojoData: Array[Byte], model: H2OMOJOPipelineModel): MojoPipeline = {
+    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+    MojoPipeline.loadFrom(reader)
   }
 }
