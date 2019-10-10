@@ -86,7 +86,10 @@ class H2OConfTestSuite extends FunSuite
     val extraHttpHeaders = Map(
       "X-MyCustomHeaderA" -> "A",
       "X-MyCustomHeaderB" -> "B")
-    h2oConf.setFlowExtraHttpHeaders(extraHttpHeaders)
+    h2oConf
+      .setFlowExtraHttpHeaders(extraHttpHeaders)
+      .set("spark.ext.h2o.external.start.mode", "auto")
+      .setClusterSize(1)
     val h2oContext = H2OContext.getOrCreate(spark, h2oConf)
 
     val url = new URL(h2oContext.flowURL())
