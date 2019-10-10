@@ -36,10 +36,10 @@ trait H2OMOJOPredictionBinomial {
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
       " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted label.")
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+    if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
       if (getWithDetailedPredictionCol()) {
         udf[WithCalibrationAndContribution, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
           WithCalibrationAndContribution(
             pred.classProbabilities(0),
             pred.classProbabilities(1),
@@ -50,7 +50,7 @@ trait H2OMOJOPredictionBinomial {
         }
       } else {
         udf[WithCalibration, Row] { r: Row =>
-          val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
           WithCalibration(
             pred.classProbabilities(0),
             pred.classProbabilities(1),
@@ -61,7 +61,7 @@ trait H2OMOJOPredictionBinomial {
       }
     } else if (getWithDetailedPredictionCol()) {
       udf[WithContribution, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
         WithContribution(
           pred.classProbabilities(0),
           pred.classProbabilities(1),
@@ -70,7 +70,7 @@ trait H2OMOJOPredictionBinomial {
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictBinomial(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
         Base(
           pred.classProbabilities(0),
           pred.classProbabilities(1)
@@ -82,7 +82,7 @@ trait H2OMOJOPredictionBinomial {
   private val baseFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
 
   def getBinomialPredictionColSchema(): Seq[StructField] = {
-    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+    val fields = if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
       baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
     } else {
       baseFields
@@ -92,7 +92,7 @@ trait H2OMOJOPredictionBinomial {
   }
 
   def getBinomialDetailedPredictionColSchema(): Seq[StructField] = {
-    val fields = if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+    val fields = if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
       val base = baseFields ++ Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
       if (getWithDetailedPredictionCol()) {
         base ++ Seq(StructField("contributions", ArrayType(FloatType)))
@@ -109,7 +109,7 @@ trait H2OMOJOPredictionBinomial {
   }
 
   def extractBinomialPredictionColContent(): Column = {
-    if (supportsCalibratedProbabilities(easyPredictModelWrapper)) {
+    if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
       extractColumnsAsNested(Seq("p0", "p1", "p0_calibrated", "p1_calibrated"))
     } else {
       extractColumnsAsNested(Seq("p0", "p1"))

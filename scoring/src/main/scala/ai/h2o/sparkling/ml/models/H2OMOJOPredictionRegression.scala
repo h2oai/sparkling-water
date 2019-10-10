@@ -30,12 +30,12 @@ trait H2OMOJOPredictionRegression {
       " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted value.")
     if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
         WithContributions(pred.value, pred.contributions)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = easyPredictModelWrapper.predictRegression(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
         Base(pred.value)
       }
     }

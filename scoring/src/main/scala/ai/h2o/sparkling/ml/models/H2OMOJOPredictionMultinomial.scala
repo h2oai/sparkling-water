@@ -29,7 +29,7 @@ trait H2OMOJOPredictionMultinomial {
     logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
       " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted label.")
     udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictMultinomial(RowConverter.toH2ORowData(r))
+      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictMultinomial(RowConverter.toH2ORowData(r))
       Base(pred.classProbabilities)
     }
   }

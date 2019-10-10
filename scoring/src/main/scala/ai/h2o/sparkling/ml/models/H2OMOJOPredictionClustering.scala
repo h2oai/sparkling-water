@@ -27,7 +27,7 @@ trait H2OMOJOPredictionClustering {
 
   def getClusteringPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictClustering(RowConverter.toH2ORowData(r))
+      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictClustering(RowConverter.toH2ORowData(r))
       Base(pred.cluster, pred.distances)
     }
   }

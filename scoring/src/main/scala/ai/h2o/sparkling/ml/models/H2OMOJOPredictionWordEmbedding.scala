@@ -31,7 +31,7 @@ trait H2OMOJOPredictionWordEmbedding {
     logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
       " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted word embeddings.")
     udf[Base, Row] { r: Row =>
-      val pred = easyPredictModelWrapper.predictWord2Vec(RowConverter.toH2ORowData(r))
+      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictWord2Vec(RowConverter.toH2ORowData(r))
       Base(pred.wordEmbeddings)
     }
   }
