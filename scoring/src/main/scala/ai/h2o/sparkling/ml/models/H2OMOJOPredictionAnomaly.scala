@@ -27,13 +27,13 @@ trait H2OMOJOPredictionAnomaly {
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
         Detailed(pred.score, pred.normalizedScore)
       }
     }
     else {
       udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
         Base(pred.score)
       }
     }

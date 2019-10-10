@@ -28,12 +28,12 @@ trait H2OMOJOPredictionClustering {
   def getClusteringPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictClustering(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictClustering(RowConverter.toH2ORowData(r))
         Detailed(pred.cluster, pred.distances)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictClustering(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictClustering(RowConverter.toH2ORowData(r))
         Base(pred.cluster)
       }
     }

@@ -38,6 +38,10 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   // private parameter used to store MOJO output columns
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
+  @transient private lazy val mojoPipeline: MojoPipeline = {
+    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData, this)
+  }
+
   case class Mojo2Prediction(preds: List[Double])
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
@@ -57,13 +61,11 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     } else {
       colData
     }
-
   }
 
   private val modelUdf = (names: Array[String]) =>
     udf[Mojo2Prediction, Row] {
       r: Row =>
-        val mojoPipeline = H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData(), this)
         val builder = mojoPipeline.getInputFrameBuilder
         val rowBuilder = builder.getMojoRowBuilder
         val filtered = r.getValuesMap[Any](names).filter { case (n, _) => mojoPipeline.getInputMeta.contains(n) }

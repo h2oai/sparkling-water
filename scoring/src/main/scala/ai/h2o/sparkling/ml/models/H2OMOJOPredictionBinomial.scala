@@ -35,9 +35,9 @@ trait H2OMOJOPredictionBinomial {
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData(), this))) {
+      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         udf[DetailedWithCalibration, Row] { r: Row =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictBinomial(RowConverter.toH2ORowData(r))
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
           DetailedWithCalibration(
             pred.label,
             pred.classProbabilities(0),
@@ -49,7 +49,7 @@ trait H2OMOJOPredictionBinomial {
         }
       } else {
         udf[Detailed, Row] { r: Row =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictBinomial(RowConverter.toH2ORowData(r))
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
           Detailed(
             pred.label,
             pred.classProbabilities(0),
@@ -60,7 +60,7 @@ trait H2OMOJOPredictionBinomial {
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictBinomial(RowConverter.toH2ORowData(r))
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
         Base(pred.label)
       }
     }
@@ -79,7 +79,7 @@ trait H2OMOJOPredictionBinomial {
     val fields = if (getWithDetailedPredictionCol()) {
       val probabilitiesFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
       val contributionsField = StructField("contributions", ArrayType(FloatType))
-      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData(), this))) {
+      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         val calibratedProbabilitiesFields = Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
         Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField) ++ calibratedProbabilitiesFields
       } else {

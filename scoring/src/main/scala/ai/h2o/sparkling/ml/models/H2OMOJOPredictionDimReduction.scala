@@ -26,7 +26,7 @@ trait H2OMOJOPredictionDimReduction {
   self: H2OMOJOModel =>
   def getDimReductionPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
-      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this).predictDimReduction(RowConverter.toH2ORowData(r))
+      val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictDimReduction(RowConverter.toH2ORowData(r))
       Base(pred.dimensions)
     }
   }

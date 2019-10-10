@@ -67,9 +67,10 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, bytes: Array[Byte], model: M): B = Lock.synchronized {
+  def getMojoBackend(uid: String, bytesGetter: ()=> Array[Byte], model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      pipelineCache.put(uid, loadMojoBackend(bytes, model))
+      //println(s"MISS MOJO pipeline: thread=${Thread.currentThread().getName}, this=${this}")
+      pipelineCache.put(uid, loadMojoBackend(bytesGetter(), model))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
     pipelineCache(uid)

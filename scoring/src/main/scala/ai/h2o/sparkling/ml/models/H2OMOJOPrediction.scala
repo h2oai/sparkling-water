@@ -34,7 +34,7 @@ trait H2OMOJOPrediction
   self: H2OMOJOModel =>
 
   def extractPredictionColContent(): Column = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => extractBinomialPredictionColContent()
       case ModelCategory.Regression => extractRegressionPredictionColContent()
@@ -49,7 +49,7 @@ trait H2OMOJOPrediction
   }
 
   def getPredictionUDF(): UserDefinedFunction = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionUDF()
       case ModelCategory.Regression => getRegressionPredictionUDF()
@@ -64,7 +64,7 @@ trait H2OMOJOPrediction
   }
 
   override def getPredictionColSchema(): Seq[StructField] = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionColSchema()
       case ModelCategory.Regression => getRegressionPredictionColSchema()
@@ -79,7 +79,7 @@ trait H2OMOJOPrediction
   }
 
   override def getDetailedPredictionColSchema(): Seq[StructField] = {
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData(), this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialDetailedPredictionColSchema()
       case ModelCategory.Regression => getRegressionDetailedPredictionColSchema()
