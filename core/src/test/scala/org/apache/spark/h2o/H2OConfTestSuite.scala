@@ -52,7 +52,11 @@ class H2OConfTestSuite extends FunSuite
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
-    val spark = SparkSession.builder().master("local").appName("test-local").config(sparkConf).getOrCreate()
+    val spark = SparkSession.builder()
+      .master("local")
+      .appName(this.getClass.getName)
+      .config(sparkConf)
+      .getOrCreate()
 
     // We don't need to have H2OContext here started and since it has private constructor
     // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection
@@ -82,14 +86,17 @@ class H2OConfTestSuite extends FunSuite
   }
 
   test("test extra HTTP headers are propagated to FLOW UI") {
+    defaultSparkConf
+    val spark = SparkSession.builder()
+      .master("local")
+      .appName(this.getClass.getName)
+      .config(defaultSparkConf)
+      .getOrCreate()
     val h2oConf = new H2OConf(spark)
     val extraHttpHeaders = Map(
       "X-MyCustomHeaderA" -> "A",
       "X-MyCustomHeaderB" -> "B")
-    h2oConf
-      .setFlowExtraHttpHeaders(extraHttpHeaders)
-      .set("spark.ext.h2o.external.start.mode", "auto")
-      .setClusterSize(1)
+    h2oConf.setFlowExtraHttpHeaders(extraHttpHeaders)
     val h2oContext = H2OContext.getOrCreate(spark, h2oConf)
 
     val url = new URL(h2oContext.flowURL())
@@ -100,8 +107,7 @@ class H2OConfTestSuite extends FunSuite
     }
     finally {
       connection.disconnect()
+      spark.stop()
     }
-
-    resetSparkContext()
   }
 }
