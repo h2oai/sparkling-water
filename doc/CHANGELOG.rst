@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+v3.26.7 (2019-10-11)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.7-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.7-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.7-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.7-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.7-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.7-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.7-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.7-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1635 <https://0xdata.atlassian.net/browse/SW-1635>`__ - Update Documentation of Deploying SW to Azure HDI
+   -  `SW-1656 <https://0xdata.atlassian.net/browse/SW-1656>`__ - Ensure that after `Cloud size X under Y` failure the rest of the external cluster is killed
+                
+-  Improvement
+        
+   -  `SW-1658 <https://0xdata.atlassian.net/browse/SW-1658>`__ - Figure out better way of caching MOJO Pipelines in H2OMOJOPipelineModel transformer
+   -  `SW-1666 <https://0xdata.atlassian.net/browse/SW-1666>`__ - Improve Performance of Loading Pipeline MOJO Files  
+                
+                                                                                                                                                                                        
 v3.26.6 (2019-10-02)
 --------------------
 Downloads:
