@@ -35,16 +35,16 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
       while (!Thread.interrupted()) {
         try {
           Thread.sleep(cleanupRetryTimeout)
-          val toDestroy = lastAccessMap.flatMap { case (uid, lastAccess) =>
-            val currentDiff = System.currentTimeMillis() - lastAccess
-            if (currentDiff > cleanupRetryTimeout) {
-              logDebug(s"Removing mojo $uid from cache as it has not been used for $cleanupRetryTimeout ms.")
-              Some(uid)
-            } else {
-              None
-            }
-          }
           Lock.synchronized {
+            val toDestroy = lastAccessMap.flatMap { case (uid, lastAccess) =>
+              val currentDiff = System.currentTimeMillis() - lastAccess
+              if (currentDiff > cleanupRetryTimeout) {
+                logDebug(s"Removing mojo $uid from cache as it has not been used for $cleanupRetryTimeout ms.")
+                Some(uid)
+              } else {
+                None
+              }
+            }
             toDestroy.map { uid =>
               lastAccessMap.remove(uid)
               pipelineCache.remove(uid)
@@ -57,9 +57,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-
   logDebug("Cleaner thread for unused MOJOs started.")
-
 
   def startCleanupThread(): Unit = {
     if (!cleanerThread.isAlive) {
@@ -69,7 +67,6 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
 
   def getMojoBackend(uid: String, bytesGetter: ()=> Array[Byte], model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      //println(s"MISS MOJO pipeline: thread=${Thread.currentThread().getName}, this=${this}")
       pipelineCache.put(uid, loadMojoBackend(bytesGetter(), model))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
