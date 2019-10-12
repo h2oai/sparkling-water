@@ -28,10 +28,10 @@ import water.{ExternalFrameUtils, H2O, Paxos}
   */
 private[external] trait ExternalBackendUtils extends SharedBackendUtils {
 
-  protected def waitForCloudSize(x: Int, ms: Long): Int = {
+  protected def waitForCloudSize(expectedSize: Int, timeoutInMilliseconds: Long): Int = {
     val start = System.currentTimeMillis()
-    while (System.currentTimeMillis() - start < ms) {
-      if (H2O.CLOUD.size() >= x && Paxos._commonKnowledge) {
+    while (System.currentTimeMillis() - start < timeoutInMilliseconds) {
+      if (H2O.CLOUD.size() >= expectedSize && Paxos._commonKnowledge) {
         return H2O.CLOUD.size()
       }
       try {
