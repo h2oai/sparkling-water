@@ -42,7 +42,6 @@ class ConfigurationPropertiesTestSuite extends FunSuite with Matchers with Spark
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
       .setClusterSize(1)
-      .set("spark.ext.h2o.backend.cluster.mode", "external")
     hc = H2OContext.getOrCreate(spark, h2oConf)
 
     val url = new URL(hc.flowURL())
