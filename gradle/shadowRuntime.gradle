@@ -18,6 +18,7 @@ configurations {
         exclude group: 'commons-io', module: 'commons-io' // a dependency of org.apache.spark:spark-core_2.11
         exclude group: 'commons-logging', module: 'commons-logging' // a dependency of org.apache.hadoop:hadoop-auth
         exclude group: 'log4j', module: 'log4j' // a dependency of org.apache.hadoop:hadoop-auth
+        exclude group: 'com.google.protobuf' // a dependency of org.apache.hadoop:hadoop-common
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
         // a dependency of org.apache.spark:spark-sql_2.11
         exclude group: 'org.apache.httpcomponents' // a dependency of org.apache.hadoop:hadoop-auth
