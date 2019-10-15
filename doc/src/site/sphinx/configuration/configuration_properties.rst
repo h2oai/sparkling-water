@@ -126,7 +126,13 @@ Configuration properties independent of selected backend
 |                                                    |                | client node;                           |
 |                                                    |                | ``api_port + port_offset = h2o_port``  |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.cluster.client.retry.timeout``     | ``60000ms``    | Timeout in milliseconds specifying     |
+| ``spark.ext.h2o.mojo.destroy.timeout``             | ``600000``     | If a scoring MOJO instance is not used |
+|                                                    |                | within a Spark executor JVM for        |
+|                                                    |                | a given timeout in milliseconds, it's  |
+|                                                    |                | evicted from executor's cache. Default |
+|                                                    |                | timeout value is 10 minutes.           |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.cluster.client.retry.timeout``     | ``60000``      | Timeout in milliseconds specifying     |
 |                                                    |                | how often we check whether the         |
 |                                                    |                | the client is still connected.         |
 +----------------------------------------------------+----------------+----------------------------------------+

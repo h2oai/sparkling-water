@@ -62,6 +62,7 @@ trait SharedBackendConf {
   def flowScalaCellAsync = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
   def maxParallelScalaCellJobs = sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
   def internalPortOffset = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
+  def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -154,6 +155,8 @@ trait SharedBackendConf {
 
   def setMaxParallelScalaCellJobs(limit: Int) = set(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, limit.toString)
   def setInternalPortOffset(offset: Int) = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
+
+  def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
@@ -279,6 +282,12 @@ object SharedBackendConf {
   /** Offset between the API(=web) port and the internal communication port; api_port + port_offset = h2o_port */
   val PROP_INTERNAL_PORT_OFFSET = ("spark.ext.h2o.internal.port.offset", 1)
 
+  /**
+    * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
+    * it's evicted from executor's cache.
+    */
+  val PROP_MOJO_DESTROY_TIMEOUT = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
+
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
 
@@ -312,7 +321,8 @@ object SharedBackendConf {
 
   /** Enable or disable web on h2o client node. It is enabled by default. Disabling the web just
     * on the client node just restricts everybody from accessing flow, the internal ports
-    * between client and rest of the cluster remain open*/
+    * between client and rest of the cluster remain open
+    */
   val PROP_CLIENT_ENABLE_WEB = ("spark.ext.h2o.client.enable.web", true)
 
   /**
