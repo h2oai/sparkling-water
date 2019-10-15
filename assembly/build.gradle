@@ -33,7 +33,6 @@ shadowJar {
 
     relocate 'javassist', 'ai.h2o.javassist'
     relocate 'com.google.common', 'ai.h2o.com.google.common'
-    relocate 'com.google.protobuf', 'ai.h2o.com.google.protobuf'
     relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
     relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
 
