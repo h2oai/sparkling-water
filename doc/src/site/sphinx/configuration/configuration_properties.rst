@@ -141,6 +141,14 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
 |                                                    |                | are saved.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.flow.extra.http.headers``   | ``None``       | Extra HTTP headers that will be used   |
+|                                                    |                | in communication between the front-end |
+|                                                    |                | and back-end part of Flow UI.          |
+|                                                    |                | The headers should be delimited by     |
+|                                                    |                | a new line. Don't forget to escape     |
+|                                                    |                | special characters when passing        |
+|                                                    |                | the parameter from a command line.     |
++----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | IP of H2O client node.                 |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.iced.dir``                  | ``None``       | Location of iced directory for the     |
