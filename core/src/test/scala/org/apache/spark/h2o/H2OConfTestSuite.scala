@@ -21,14 +21,13 @@ import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
+import org.scalatest.FunSuite
 
 /**
   * Test passing parameters via SparkConf.
   */
 @RunWith(classOf[JUnitRunner])
-class H2OConfTestSuite extends FunSuite
-  with Matchers with BeforeAndAfter with SparkTestContext {
+class H2OConfTestSuite extends FunSuite with SparkTestContext {
 
   test("test H2OConf parameters") {
     val sparkConf = new SparkConf()
@@ -48,7 +47,11 @@ class H2OConfTestSuite extends FunSuite
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
-    val spark = SparkSession.builder().master("local").appName("test-local").config(sparkConf).getOrCreate()
+    val spark = SparkSession.builder()
+      .master("local")
+      .appName(this.getClass.getName)
+      .config(sparkConf)
+      .getOrCreate()
 
     // We don't need to have H2OContext here started and since it has private constructor
     // and getOrCreate methods automatically start H2OContext, we use a little bit of reflection

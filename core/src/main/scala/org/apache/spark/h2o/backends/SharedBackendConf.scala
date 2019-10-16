@@ -22,6 +22,7 @@ import java.io.File
 import org.apache.spark.SparkFiles
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
+import collection.JavaConverters._
 
 /**
   * Shared configuration independent on used backend
@@ -67,6 +68,7 @@ trait SharedBackendConf {
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
+  def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
   def clientIp      = sparkConf.getOption(PROP_CLIENT_IP._1)
   def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
@@ -164,6 +166,13 @@ trait SharedBackendConf {
 
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
+  def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
+    setFlowExtraHttpHeaders(headers.asScala.toMap[String, String])
+  }
+  def setFlowExtraHttpHeaders(headers: Map[String, String]): H2OConf = {
+    val stringRepresentation =  headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
+    set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
+  }
   def setClientIp(ip: String) = set(PROP_CLIENT_IP._1, ip)
   def setClientIcedDir(icedDir: String) = set(PROP_CLIENT_ICED_DIR._1, icedDir)
   def setH2OClientLogLevel(level: String) = set(PROP_CLIENT_LOG_LEVEL._1, level)
@@ -297,6 +306,9 @@ object SharedBackendConf {
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
+
+  /** Extra http headers for Flow UI */
+  val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.client.flow.extra.http.headers", None)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
