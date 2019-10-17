@@ -60,7 +60,9 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalH2ODriverPort = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT._1)
   def externalH2ODriverPortRange = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT_RANGE._1)
   def externalExtraMemoryPercent = sparkConf.getInt(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._2)
-  def externalCommunicationBlockSizeAsBytes: Long = sparkConf.getSizeAsBytes(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
+  def externalCommunicationBlockSizeAsBytes: Long = sparkConf.getSizeAsBytes(
+    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1,
+    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
 
   /** Setters */
