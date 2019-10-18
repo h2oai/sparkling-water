@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v3.26.8 (2019-10-18)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.8-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.8-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.8-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.8-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.8-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.8-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.8-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.8-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1670 <https://0xdata.atlassian.net/browse/SW-1670>`__ - Improve Synchronization in H2OMOJOBaseCache
+                
+-  New Feature
+        
+   -  `SW-1664 <https://0xdata.atlassian.net/browse/SW-1664>`__ - Enable Users to Specify Extra Http Headers for H2O Flow as SW Parameter 
+   -  `SW-1667 <https://0xdata.atlassian.net/browse/SW-1667>`__ - Enable Users to Specify Block Size of Communication in External Backend
+   -  `SW-1671 <https://0xdata.atlassian.net/browse/SW-1671>`__ - Expose Property for Setting Lifetime of MOJOs in Cache
+                
+-  Improvement
+        
+   -  `SW-1669 <https://0xdata.atlassian.net/browse/SW-1669>`__ - Improve Variable Names in the ExternalBackendUtils Class
+   -  `SW-1672 <https://0xdata.atlassian.net/browse/SW-1672>`__ - Remove Relocation of com.google.protobuf in Assembly Jar
+   -  `SW-1674 <https://0xdata.atlassian.net/browse/SW-1674>`__ - Upgrade to H2O 3.26.0.8
+                
+                                                                                                                                                                                        
 v3.26.7 (2019-10-11)
 --------------------
 Downloads:
