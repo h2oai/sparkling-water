@@ -77,8 +77,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
     }
 
+    val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
     WriteConverterCtxUtils.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices))
+      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices, blockSize))
   }
 
   /**
@@ -94,14 +95,14 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]
-  def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
+  def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int], blockSize: Long)
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
                       writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
 
     val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, chunkIdx , writeTimeout, driverTimeStamp)
+    val con = WriteConverterCtxUtils.create(uploadPlan, chunkIdx , writeTimeout, driverTimeStamp, blockSize)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))

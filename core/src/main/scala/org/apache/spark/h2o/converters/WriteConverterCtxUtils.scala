@@ -36,10 +36,10 @@ object WriteConverterCtxUtils {
   type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
-  def create(uploadPlan: Option[UploadPlan],
-             partitionId: Int, writeTimeout: Int, driverTimeStamp: Short): WriteConverterCtx = {
+  def create(uploadPlan: Option[UploadPlan], partitionId: Int, writeTimeout: Int, driverTimeStamp: Short,
+             blockSize: Long): WriteConverterCtx = {
     uploadPlan
-      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), writeTimeout, driverTimeStamp) }
+      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), writeTimeout, driverTimeStamp, blockSize) }
       .getOrElse(new InternalWriteConverterCtx())
   }
 
@@ -78,7 +78,8 @@ object WriteConverterCtxUtils {
       new InternalWriteConverterCtx()
     } else {
       val leader = H2O.CLOUD.leader()
-      new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp)
+      val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
+      new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp, blockSize)
     }
 
     writerClient.initFrame(keyName, colNames)
