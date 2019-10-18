@@ -342,6 +342,14 @@ External backend configuration properties
 |                                                       |                | specifies memory for internal JVM   |
 |                                                       |                | use outside of Java heap.           |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.communication.blockSize``    | ``1m``         | The size of blocks representing     |
+|                                                       |                | data traffic from Spark nodes to    |
+|                                                       |                | H2O-3 nodes. The value must be      |
+|                                                       |                | represented in the same format as   |
+|                                                       |                | JVM memory strings with a size unit |
+|                                                       |                | suffix "k", "m" or "g" (e.g.        |
+|                                                       |                | ``450k``, ``3m``)                   |
++-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
 

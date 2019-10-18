@@ -60,6 +60,10 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalH2ODriverPort = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT._1)
   def externalH2ODriverPortRange = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT_RANGE._1)
   def externalExtraMemoryPercent = sparkConf.getInt(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._2)
+  def externalCommunicationBlockSizeAsBytes: Long = sparkConf.getSizeAsBytes(
+    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1,
+    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
+  def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
 
   /** Setters */
 
@@ -124,6 +128,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalH2ODriverPort(port: Int): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT._1, port.toString)
   def setExternalH2ODriverPortRange(portRange: String): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT_RANGE._1, portRange)
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
+  def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -210,7 +215,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_KERBEROS_PRINCIPAL = ("spark.ext.h2o.external.kerberos.principal", None)
 
   /**
-    * Kerberos principal
+    * Path to Kerberos key tab
     */
   val PROP_EXTERNAL_KERBEROS_KEYTAB = ("spark.ext.h2o.external.kerberos.keytab", None)
 
@@ -218,5 +223,10 @@ object ExternalBackendConf {
     * Impersonated Hadoop user
     */
   val PROP_EXTERNAL_RUN_AS_USER = ("spark.ext.h2o.external.run.as.user", None)
+
+  /**
+    * The size of blocks representing data traffic from Spark nodes to H2O-3 nodes.
+    */
+  val PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE = ("spark.ext.h2o.external.communication.blockSize", "1m")
 
 }
