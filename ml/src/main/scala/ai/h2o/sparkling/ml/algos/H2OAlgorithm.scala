@@ -75,7 +75,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
       constructor.newInstance(params, convertModelIdToKey(modelId))
     }
     try {
-      builder.asInstanceOf[B].trainModel().get()
+      builder.asInstanceOf[B].trainModelOnH2ONode().get()
     } catch {
       case e: H2OModelBuilderIllegalArgumentException
         if e.getMessage.contains("There are no usable columns to generate") =>
