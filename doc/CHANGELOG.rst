@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+v3.26.9 (2019-10-30)
+--------------------
+Downloads:
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/jh-sw-1680/3.26.9-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/jh-sw-1680/3.26.9-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1676 <https://0xdata.atlassian.net/browse/SW-1676>`__ - The getGridModelsParams() Method of H2OGridSearch Returns Incorrect Values for Nested Hyper-Paremeter Types 
+   -  `SW-1678 <https://0xdata.atlassian.net/browse/SW-1678>`__ - Scoring package is not published to nexus
+   -  `SW-1680 <https://0xdata.atlassian.net/browse/SW-1680>`__ - Docs page is always missing last changelog
+                
+-  Improvement
+        
+   -  `SW-1646 <https://0xdata.atlassian.net/browse/SW-1646>`__ - Run H2O Nodes With Security Parameters
+   -  `SW-1662 <https://0xdata.atlassian.net/browse/SW-1662>`__ - Retry for conda upload in release pipeline
+   -  `SW-1675 <https://0xdata.atlassian.net/browse/SW-1675>`__ - Expose base port in sparkling water
+   -  `SW-1677 <https://0xdata.atlassian.net/browse/SW-1677>`__ - Upgrade to H2O 3.26.0.9
+                
+                                                                                                                                                                                        
 v3.26.8 (2019-10-18)
 --------------------
 Downloads:
