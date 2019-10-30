@@ -41,6 +41,7 @@ def getParallelStageDefinition(params){
                                 cleanWs()
                                 checkout scm
                                 withDocker {
+                                    sh "git pull"
                                     build()(params)
                                     buildConda()(params)
                                     publishToNexus()(params)
