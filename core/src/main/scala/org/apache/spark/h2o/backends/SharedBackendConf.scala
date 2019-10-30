@@ -64,6 +64,7 @@ trait SharedBackendConf {
   def flowScalaCellAsync = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
   def maxParallelScalaCellJobs = sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
   def internalPortOffset = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
+  def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
 
   /** H2O Client parameters */
@@ -161,6 +162,8 @@ trait SharedBackendConf {
 
   def setMaxParallelScalaCellJobs(limit: Int) = set(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, limit.toString)
   def setInternalPortOffset(offset: Int) = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
+
+  def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
@@ -297,6 +300,9 @@ object SharedBackendConf {
 
   /** Offset between the API(=web) port and the internal communication port; api_port + port_offset = h2o_port */
   val PROP_INTERNAL_PORT_OFFSET = ("spark.ext.h2o.internal.port.offset", 1)
+
+  /** Configuration property - base port used for individual H2O nodes configuration. */
+  val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321)
 
   /**
     * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
