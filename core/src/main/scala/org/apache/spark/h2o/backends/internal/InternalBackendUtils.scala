@@ -91,6 +91,7 @@ object InternalBackendUtils extends InternalBackendUtils {
       .add("-log_dir", InternalBackendUtils.getH2ONodeLogDir(conf, SparkEnv.get))
       .addIf("-network", conf.nodeNetworkMask, conf.nodeNetworkMask.isDefined)
       .addIf("-ip", ip, conf.nodeNetworkMask.isEmpty)
+      .add(conf.nodeExtraProperties)
       .buildArgs()
   }
 
