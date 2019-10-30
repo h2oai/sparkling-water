@@ -35,7 +35,7 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext {
       .set("spark.ext.h2o.client.ip", "10.0.0.100")
       .set("spark.ext.h2o.client.port.base", "1267")
       .set("spark.ext.h2o.node.port.base", "32333")
-      .set("spark.ext.h2o.cloud.timeout", (10*1000).toString)
+      .set("spark.ext.h2o.cloud.timeout", (10 * 1000).toString)
       .set("spark.ext.h2o.spreadrdd.retries", "2")
       .set("spark.ext.h2o.cloud.name", "test-sparkling-cloud-")
       .set("spark.ext.h2o.node.log.level", "DEBUG")
@@ -53,15 +53,15 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext {
       .config(sparkConf)
       .getOrCreate()
 
-    val hc = H2OContext.getOrCreate(spark, new H2OConf(spark).setClusterSize(1))
-    val conf = hc.getConf
+
+    val conf = new H2OConf(spark).setClusterSize(1)
 
     // Test passed values
     assert(conf.numH2OWorkers == Some(42))
     assert(conf.clientBasePort == 1267)
     assert(conf.nodeBasePort == 32333)
     assert(conf.clientIp == Some("10.0.0.100"))
-    assert(conf.cloudTimeout == 10*1000)
+    assert(conf.cloudTimeout == 10 * 1000)
     assert(conf.numRddRetries == 2)
     assert(conf.cloudName.isDefined)
     assert(conf.cloudName == Some("test-sparkling-cloud-"))
