@@ -62,6 +62,23 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(deeplearning, hyperParams)
   }
 
+  test("The getGridModelsParams() is able return nested hyper-parameter values") {
+    val deeplearning = new H2ODeepLearning().setSeed(1)
+    val hyperParams = Map[String, Array[AnyRef]](
+      "_hidden" -> Array(Array(10, 20, 30)),
+      "_epochs" -> Array[AnyRef](new java.lang.Double(3.0)))
+    val grid = new H2OGridSearch()
+      .setLabelCol("AGE")
+      .setHyperParameters(hyperParams)
+      .setAlgo(deeplearning)
+
+    val model = grid.fit(dataset)
+    val result = grid.getGridModelsParams().first()
+
+    result.getAs[String]("_hidden") shouldEqual "[10, 20, 30]"
+    result.getAs[String]("_epochs") shouldEqual "3.0"
+  }
+
   test("H2O Grid Search XGBoost Pipeline") {
     val xgboost = new H2OXGBoost()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()

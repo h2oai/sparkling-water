@@ -287,13 +287,24 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     ) ++ metricPairs
   }
 
+  private def ensureGridSearchIsFitted() : Unit = {
+    require(gridMojoModels != null, "The fit method of the grid search must be called first to be able to obtain a list of models.")
+  }
 
   def getGridModelsParams() = {
+    ensureGridSearchIsFitted()
+
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
     val rows = gridModels.zip(gridMojoModels.map(_.uid)).map { case (m, id) =>
 
+    def fieldValueToString(value: Any): String = value match {
+      case a: Array[_] => a.map(fieldValueToString).mkString("[", ", ", "]")
+      case v => v.toString
+    }
+
       val paramValues = Seq(id) ++ hyperParamNames.map { param =>
-        PojoUtils.getFieldEvenInherited(m._parms, param).get(m._parms).toString
+        val value = PojoUtils.getFieldEvenInherited(m._parms, param).get(m._parms)
+        fieldValueToString(value)
       }
 
       Row(paramValues: _*)
@@ -306,12 +317,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   def getGridModelsMetrics() = {
-    if (grid == null) {
-      throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
-    }
-    if (gridModels.isEmpty) {
-      throw new IllegalArgumentException("No model returned.")
-    }
+    ensureGridSearchIsFitted()
+    require(gridMojoModels.nonEmpty, "No model returned.")
 
     val rows = gridModels.zip(gridMojoModels.map(_.uid)).map { case (m, id) =>
       val metrics = extractMetrics(m)
@@ -329,9 +336,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   def getGridModels() = {
-    if (gridMojoModels == null) {
-      throw new IllegalArgumentException("The model must be first fit to be able to obtain list of grid search algorithms")
-    }
+    ensureGridSearchIsFitted()
     gridMojoModels
   }
 
