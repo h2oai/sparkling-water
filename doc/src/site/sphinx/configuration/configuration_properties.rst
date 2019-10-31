@@ -126,6 +126,9 @@ Configuration properties independent of selected backend
 |                                                    |                | client node;                           |
 |                                                    |                | ``api_port + port_offset = h2o_port``  |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.node.port.base``                   | ``54321``      | Base port used for individual H2O      |
+|                                                    |                | nodes.                                 |
++----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.mojo.destroy.timeout``             | ``600000``     | If a scoring MOJO instance is not used |
 |                                                    |                | within a Spark executor JVM for        |
 |                                                    |                | a given timeout in milliseconds, it's  |
@@ -241,9 +244,6 @@ Internal backend configuration properties
 |                                                    |                | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                        |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.node.port.base``                   | ``54321``      | Base port used for individual H2O      |
-|                                                    |                | nodes.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.iced.dir``                    | ``None``       | Location of iced directory for H2O     |
 |                                                    |                | nodes on the Spark executors.          |

@@ -214,6 +214,10 @@ class H2OConf(object):
         self._jconf.setInternalPortOffset(offset)
         return self
 
+    def set_node_base_port(self, port):
+        self._jconf.setNodeBasePort(port)
+        return self
+
     def set_flow_dir(self, dir):
         self._jconf.setFlowDir(dir)
         return self
@@ -306,10 +310,6 @@ class H2OConf(object):
 
     def set_subseq_tries(self, subseq_tries_num):
         self._jconf.setSubseqTries(subseq_tries_num)
-        return self
-
-    def set_node_base_port(self, port):
-        self._jconf.setNodeBasePort(port)
         return self
 
     def set_node_iced_dir(self, dir):
@@ -553,6 +553,9 @@ class H2OConf(object):
     def internal_port_offset(self):
         return self._jconf.internalPortOffset()
 
+    def node_base_port(self):
+        return self._jconf.nodeBasePort()
+
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
 
@@ -612,9 +615,6 @@ class H2OConf(object):
 
     def subseq_tries(self):
         return self._jconf.subseqTries()
-
-    def node_base_port(self):
-        return self._jconf.nodeBasePort()
 
     def node_iced_dir(self):
         return self._get_option(self._jconf.nodeIcedDir())

@@ -39,7 +39,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def defaultCloudSize = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def subseqTries = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
 
-  def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def nodeIcedDir = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
@@ -57,7 +56,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def setDefaultCloudSize(defaultClusterSize: Int) = set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
   def setSubseqTries(subseqTriesNum: Int) = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
 
-  def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
 
   def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
@@ -97,9 +95,6 @@ object InternalBackendConf {
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
-
-  /** Configuration property - base port used for individual H2O nodes configuration. */
-  val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321)
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
