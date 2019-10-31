@@ -214,8 +214,16 @@ class H2OConf(object):
         self._jconf.setInternalPortOffset(offset)
         return self
 
+    def set_mojo_destroy_timeout(self, timeoutInMilliseconds):
+        self._jconf.setMojoDestroyTimeout(timeoutInMilliseconds)
+        return self
+
     def set_node_base_port(self, port):
         self._jconf.setNodeBasePort(port)
+        return self
+
+    def set_node_extra_properties(self, extraProperties):
+        self._jconf.setNodeExtraProperties(extraProperties)
         return self
 
     def set_flow_dir(self, dir):
@@ -280,6 +288,10 @@ class H2OConf(object):
 
     def set_client_flow_baseurl_override(self, value):
         self._jconf.setClientFlowBaseurlOverride(value)
+        return self
+
+    def set_client_extra_properties(self, extraProperties):
+        self._jconf.setClientExtraProperties(extraProperties)
         return self
 
     # setters for internal backend
@@ -553,8 +565,14 @@ class H2OConf(object):
     def internal_port_offset(self):
         return self._jconf.internalPortOffset()
 
+    def mojo_destroy_timeout(self):
+        return self._jconf.mojoDestroyTimeout()
+
     def node_base_port(self):
         return self._jconf.nodeBasePort()
+
+    def node_extra_properties(self):
+        return self._get_option(self._jconf.nodeExtraProperties())
 
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
@@ -594,6 +612,9 @@ class H2OConf(object):
 
     def client_flow_baseurl_override(self):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
+
+    def client_extra_properties(self):
+        return self._get_option(self._jconf.clientExtraProperties())
 
     # Getters for internal backend
 
