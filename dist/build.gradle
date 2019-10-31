@@ -30,7 +30,7 @@ def getMavenRepoLink() {
 }
 
 def getMavenRepoHtml() {
-    if (isNightlyBuild.toBoolean()) {
+    if (isNightlyBuild()) {
         return """
                 &nbsp;maven {</br>
                 &nbsp;&nbsp;url "${getMavenRepoLink()}"</br>
@@ -42,7 +42,7 @@ def getMavenRepoHtml() {
 }
 
 def getExtraSparkRepo() {
-    if (isNightlyBuild.toBoolean()) {
+    if (isNightlyBuild()) {
         return "--repositories ${getMavenRepoLink()}"
     } else {
         return ""

@@ -25,17 +25,11 @@ task substitute() {
     doLast {
         def siteDir = "${buildDir}/site"
 
-        def swOnlyVersion = version.tokenize("-")[0]
-        def (first, second, minorVersion) = swOnlyVersion.tokenize(".")
-        def majorVersion = "${first}.${second}"
-
         new File(siteDir).eachFileRecurse(FILES) {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
                 contents = contents
                         .replaceAll("SUBST_SW_VERSION", version)
-                        .replaceAll("SUBST_SW_MAJOR_VERSION", majorVersion)
-                        .replaceAll("SUBST_SW_MINOR_VERSION", minorVersion)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
                         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
                         .replaceAll("SUBST_H2O_VERSION", h2oVersion)

@@ -10,21 +10,18 @@ def getS3Path(config) {
 
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    def version = versionLine.split("=")[1]
-    if (config.uploadNightly.toBoolean()) {
-        def buildNumber
-        try {
-            def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
-            def splits = lastVersion.split("-")
-            buildNumber = splits[1].toInteger() + 1
-        } catch (Exception ignored) {
-            buildNumber = 1
-        }
-        return "${version.split("-")[0]}-${buildNumber}-${sparkMajorVersion}"
-    } else {
-        return version
+    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith(prop) }.split("=")[1]
+    def h2oPart = version.split("-")[0]
+    def swIteration = version.split("-")[1]
+    def swNightlyBuildNumber
+    try {
+        def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
+        def latestSWPart = lastVersion.split("-")[1]
+        swNightlyBuildNumber = latestSWPart.contains(".") ? latestSWPart.split(".")[1].toInteger() + 1 : 1
+    } catch (Exception ignored) {
+        swNightlyBuildNumber = 1
     }
+    return "${h2oPart}-${swIteration}.${swNightlyBuildNumber}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(config) {
@@ -34,7 +31,7 @@ String getSparkVersion(config) {
 }
 
 def getGradleCommand(config) {
-    def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+    def cmd = "${env.WORKSPACE}/gradlew -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
         return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} --include-build ${env.WORKSPACE}/h2o-3"
     } else if(config.buildAgainstNightlyH2O.toBoolean()) {

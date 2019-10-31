@@ -81,6 +81,15 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
     }
 }
 
+def isNightlyBuild() {
+    // build is nightly if the sparkling water version part is in format x.y where y is the nightly build number
+    // non nighly build has this part just as x. Examples:
+    // Normal version: 3.26.0.9-1-2.4
+    // Nightly: 3.26.0.9-1.1-2.4
+    def swPart = version.split("-")[1]
+    return swPart.contains(".")
+}
+
 def getS3Path() {
     def branch = getGitBranch()
     def formattedSWBranch = branch.replaceAll("/", "-")
@@ -98,7 +107,7 @@ def getS3Path() {
             path = "${formattedSWBranch}"
         }
     }
-    if (isNightlyBuild.toBoolean()) {
+    if (isNightlyBuild()) {
         if (path != "") {
             path = "${path}/nightly"
         } else {
@@ -125,4 +134,5 @@ ext {
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
     getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
     getS3Path = this.&getS3Path
+    isNightlyBuild = this.&isNightlyBuild
 }

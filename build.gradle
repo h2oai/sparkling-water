@@ -115,7 +115,6 @@ def loadVersion(versionSpecificProps) {
     }
 }
 
-
 def getSparkMajorVersion(versionSpecificProps) {
     def sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
     return sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
