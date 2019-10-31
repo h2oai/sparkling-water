@@ -65,6 +65,7 @@ trait SharedBackendConf {
   def internalPortOffset = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
   def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
+  def nodeExtraProperties = sparkConf.getOption(PROP_NODE_EXTRA_PROPERTIES._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -80,6 +81,7 @@ trait SharedBackendConf {
   def ignoreSparkPublicDNS = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
   def clientWebEnabled = sparkConf.getBoolean(PROP_CLIENT_ENABLE_WEB._1, PROP_CLIENT_ENABLE_WEB._2)
   def clientFlowBaseurlOverride = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
+  def clientExtraProperties = sparkConf.getOption(PROP_CLIENT_EXTRA_PROPERTIES._1)
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_EXTERNAL
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
@@ -163,6 +165,8 @@ trait SharedBackendConf {
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
+  def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
+
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
@@ -198,6 +202,7 @@ trait SharedBackendConf {
 
   def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 
+  def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 }
 
 object SharedBackendConf {
@@ -303,6 +308,9 @@ object SharedBackendConf {
     */
   val PROP_MOJO_DESTROY_TIMEOUT = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
 
+  /** Extra properties passed to H2O nodes during startup. */
+  val PROP_NODE_EXTRA_PROPERTIES = ("spark.ext.h2o.node.extra", None)
+
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
 
@@ -353,4 +361,7 @@ object SharedBackendConf {
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
 
   val PROP_RUNNING_FROM_NON_JVM_CLIENT = ("spark.ext.h2o.running.from.non.jvm.client", false)
+
+  /** Extra properties passed to H2O client during startup. */
+  val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)
 }

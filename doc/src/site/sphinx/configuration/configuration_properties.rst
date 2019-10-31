@@ -139,6 +139,13 @@ Configuration properties independent of selected backend
 |                                                    |                | how often we check whether the         |
 |                                                    |                | the client is still connected.         |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.node.extra``                       | ``None``       | A string containing extra parameters   |
+|                                                    |                | passed to H2O nodes during startup.    |
+|                                                    |                | This parameter should be configured    |
+|                                                    |                | only if H2O parameters do not have any |
+|                                                    |                | corresponding parameters in Sparkling  |
+|                                                    |                | Water.                                 |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
@@ -198,6 +205,13 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.client.flow.baseurl.override``     | ``None``       | Allows to override the base URL        |
 |                                                    |                | address of Flow UI, including the      |
 |                                                    |                | scheme, which is showed to the user.   |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.extra``                     | ``None``       | A string containing extra parameters   |
+|                                                    |                | passed to H2O client during startup.   |
+|                                                    |                | This parameter should be configured    |
+|                                                    |                | only if H2O parameters do not have any |
+|                                                    |                | corresponding parameters in Sparkling  |
+|                                                    |                | Water.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
