@@ -80,6 +80,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-nthreads", conf.nthreads.toString,
       "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
       "-port_offset", conf.internalPortOffset.toString,
+      "-baseport", conf.nodeBasePort.toString,
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
       "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
