@@ -106,17 +106,17 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config) {
                 withDocker(config) {
-                    sh "sudo -E /usr/sbin/startup.sh"
+                    //sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
                     prepareSparklingWaterEnvironment()(config)
-                    buildAndLint()(config)
-                    unitTests()(config)
-                    pyUnitTests()(config)
-                    rUnitTests()(config)
-                    localIntegTest()(config)
-                    localPyIntegTest()(config)
-                    scriptsTest()(config)
-                    pysparklingIntegTest()(config)
+                    //buildAndLint()(config)
+                    //unitTests()(config)
+                    //pyUnitTests()(config)
+                    //rUnitTests()(config)
+                    //localIntegTest()(config)
+                    //localPyIntegTest()(config)
+                    //scriptsTest()(config)
+                    //pysparklingIntegTest()(config)
                 }
                 // Run Integration on real Hadoop Cluster
                 node("dX-hadoop") {
@@ -130,7 +130,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
                         withEnv(customEnvNew) {
-                            integTest()(config)
+                            //integTest()(config)
                         }
                     }
                 }
