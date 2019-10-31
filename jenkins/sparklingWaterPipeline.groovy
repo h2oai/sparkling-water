@@ -10,7 +10,7 @@ def getS3Path(config) {
 
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith(prop) }.split("=")[1]
+    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
     def h2oPart = version.split("-")[0]
     def swIteration = version.split("-")[1]
     def swNightlyBuildNumber
