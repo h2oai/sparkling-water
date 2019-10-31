@@ -81,3 +81,14 @@ Removal of Deprecated Methods and Classes
   ``lambdaValue``. On Both PySparkling and Sparkling Water ``H2OGLM`` API, we removed methods ``getAlpha`` in favor of
   ``getAlphaValue``, ``getLambda`` in favor of ``getLambdaValue``, ``setAlpha`` in favor of ``setAlphaValue`` and
   ``setLambda`` in favor of ``setLambdaValue``. These changes ensure the consistency across Python and Scala APIs.
+
+Change of Versioning Scheme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Version of Sparkling Water is changed to the following pattern: ``H2OVersion-SWPatchVersion-SparkVersion``, where:
+``H2OVersion`` is full H2O Version which is integrated with this Sparkling Water. ``SWPatchVersion`` is used to specify
+patch version and ``SparkVersion`` is Spark version. This change of scheme allows us to do releases of Sparkling Water
+without the need of releasing H2O if there is only change on Sparkling Water side. In that case we just increment the
+``SWPatchVersion``. The new version therefore looks, for example, like ``3.26.0.9-2-2.4``. This version tells us this
+Sparkling Water is integrating H2O ``3.26.0.9``, it is second release with ``3.26.0.9`` version and is for Spark ``2.4``.
+

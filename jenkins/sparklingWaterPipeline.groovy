@@ -10,21 +10,28 @@ def getS3Path(config) {
 
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    def version = versionLine.split("=")[1]
-    if (config.uploadNightly.toBoolean()) {
-        def buildNumber
-        try {
-            def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
-            def splits = lastVersion.split("-")
-            buildNumber = splits[1].toInteger() + 1
-        } catch (Exception ignored) {
-            buildNumber = 1
+    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
+    def h2oPart = version.split("-")[0].toString()
+    def swPatch = version.split("-")[1].toString()
+    def swNightlyBuildNumber
+    try {
+        def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
+        def lastH2OPart = lastVersion.split("-")[0].toString()
+        def lastSWPart = lastVersion.split("-")[1]
+        if (lastSWPart.contains(".")) {
+            def lastSWPatch = lastSWPart.split("\\.")[0].toString()
+            if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
+                swNightlyBuildNumber = 1 // reset the nightly build number
+            } else {
+                swNightlyBuildNumber = lastSWPatch.toInteger() + 1
+            }
+        } else {
+            swNightlyBuildNumber = 1
         }
-        return "${version.split("-")[0]}-${buildNumber}-${sparkMajorVersion}"
-    } else {
-        return version
+    } catch (Exception ignored) {
+        swNightlyBuildNumber = 1
     }
+    return "${h2oPart}-${swPatch}.${swNightlyBuildNumber}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(config) {
