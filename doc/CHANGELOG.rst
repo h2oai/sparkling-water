@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+v3.26.9 (2019-10-31)
+--------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.9-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.9-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.9-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.9-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.9-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.9-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.9-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.9-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1676 <https://0xdata.atlassian.net/browse/SW-1676>`__ - The getGridModelsParams() Method of H2OGridSearch Returns Incorrect Values for Nested Hyper-Paremeter Types 
+   -  `SW-1678 <https://0xdata.atlassian.net/browse/SW-1678>`__ - Scoring package is not published to nexus
+   -  `SW-1680 <https://0xdata.atlassian.net/browse/SW-1680>`__ - Docs page is always missing last changelog
+                
+-  Improvement
+        
+   -  `SW-1662 <https://0xdata.atlassian.net/browse/SW-1662>`__ - Retry for conda upload in release pipeline
+   -  `SW-1675 <https://0xdata.atlassian.net/browse/SW-1675>`__ - Expose Base Port for Worker Nodes in External Backend
+   -  `SW-1677 <https://0xdata.atlassian.net/browse/SW-1677>`__ - Upgrade to H2O 3.26.0.9
+   -  `SW-1682 <https://0xdata.atlassian.net/browse/SW-1682>`__ - Enable Users to Specify Extra H2O Parameters 
+                
+                                                                                                                                                                                        
 v3.26.8 (2019-10-18)
 --------------------
 Downloads:
