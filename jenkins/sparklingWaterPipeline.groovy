@@ -11,15 +11,17 @@ def getS3Path(config) {
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
     def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
-    def h2oPart = version.split("-")[0].toString()
-    def swPatch = version.split("-")[1].toString()
+    def versionParts = version.split("-")
+    def h2oPart = versionParts[0]
+    def swPatch = versionParts[1]
     def swNightlyBuildNumber
     try {
         def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
-        def lastH2OPart = lastVersion.split("-")[0].toString()
-        def lastSWPart = lastVersion.split("-")[1]
+        def lastVersionParts = lastVersion.split("-")
+        def lastH2OPart = lastVersionParts[0]
+        def lastSWPart = lastVersionParts[1]
         if (lastSWPart.contains(".")) {
-            def lastSWPatch = lastSWPart.split("\\.")[0].toString()
+            def lastSWPatch = lastSWPart.split("\\.")[0]
             if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
                 swNightlyBuildNumber = 1 // reset the nightly build number
             } else {
