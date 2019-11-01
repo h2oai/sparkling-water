@@ -45,11 +45,6 @@ class ArgumentBuilder() {
     addIf(arg, condition = true)
   }
 
-  def add(argOption: Option[String]): ArgumentBuilder = argOption match {
-    case Some(arg) => add(arg)
-    case None => this
-  }
-
   def addIf(arg: String, value: String, condition: Boolean): ArgumentBuilder = {
     if (condition) {
       add(arg, value)
@@ -71,6 +66,16 @@ class ArgumentBuilder() {
       arguments = arguments ++ Seq(arg)
     }
     this
+  }
+
+  def addAsString(args: String): ArgumentBuilder = {
+    val array = args.split("\\s+")
+    add(array)
+  }
+
+  def addAsString(argsOption: Option[String]): ArgumentBuilder = argsOption match {
+    case Some(args) => addAsString(args)
+    case None => this
   }
 
   def buildArgs(): Seq[String] = {
