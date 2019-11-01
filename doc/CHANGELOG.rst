@@ -1,6 +1,44 @@
 Change Log
 ==========
 
+v3.28.0.1-1 (2019-11-01)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/jh-sw-1681/3.28.0.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/jh-sw-1681/3.28.0.1-1-2.1/index.html>`__
+-  Bug
+        
+   -  `SW-1492 <https://0xdata.atlassian.net/browse/SW-1492>`__ - [Spark-2.1] Switch minimal java version for Java 1.8
+                
+-  New Feature
+        
+   -  `SW-1496 <https://0xdata.atlassian.net/browse/SW-1496>`__ - Expose H2O-3 DRF in Sparkling Water
+   -  `SW-1588 <https://0xdata.atlassian.net/browse/SW-1588>`__ - Add DRF to grid search
+   -  `SW-1606 <https://0xdata.atlassian.net/browse/SW-1606>`__ - Create gradle task to create pysparkling docker image for kubernetes
+   -  `SW-1607 <https://0xdata.atlassian.net/browse/SW-1607>`__ - Create gradle task to create rsparkling docker image for kubernetes
+   -  `SW-1652 <https://0xdata.atlassian.net/browse/SW-1652>`__ - Expose H2O SVM into Sparkling Water Algorithm API
+                
+-  Improvement
+        
+   -  `SW-1407 <https://0xdata.atlassian.net/browse/SW-1407>`__ - Distinguish between classification and regression mode for all H2O algorithms.
+   -  `SW-1445 <https://0xdata.atlassian.net/browse/SW-1445>`__ - Remove Deprecated setters on algorithms which has enum as argument
+   -  `SW-1495 <https://0xdata.atlassian.net/browse/SW-1495>`__ - Expose getNTreeGroups() in SW MOJO
+   -  `SW-1518 <https://0xdata.atlassian.net/browse/SW-1518>`__ - Remove deprecated parameter colsampleBytree and related methods from H2OXGBoost
+   -  `SW-1519 <https://0xdata.atlassian.net/browse/SW-1519>`__ - Switch to single value in the predictionCol and put all the details on the detailedPredictionCol
+   -  `SW-1572 <https://0xdata.atlassian.net/browse/SW-1572>`__ - Remove deprecated option spark.ext.h2o.external.cluster.num.h2o.nodes and related methods
+   -  `SW-1574 <https://0xdata.atlassian.net/browse/SW-1574>`__ - Remove algos and features in deprecated org.apache.spark.h2o.ml.algos package
+   -  `SW-1575 <https://0xdata.atlassian.net/browse/SW-1575>`__ - Remove deprecated option spark.ext.h2o.external.read.confirmation.timeout and related getters and setters
+   -  `SW-1586 <https://0xdata.atlassian.net/browse/SW-1586>`__ - Remove deprecated getLambda &amp; getAlpha getters and related setters
+   -  `SW-1587 <https://0xdata.atlassian.net/browse/SW-1587>`__ - Remove deprecated getter and setter SelectBestModelDecreasing on H2OGridSearch
+   -  `SW-1589 <https://0xdata.atlassian.net/browse/SW-1589>`__ - Deprecate Sparkling Water SVM in favor of H2O one
+   -  `SW-1608 <https://0xdata.atlassian.net/browse/SW-1608>`__ - GridSearch Should Reference Hyper Parameters with SW Names
+   -  `SW-1628 <https://0xdata.atlassian.net/browse/SW-1628>`__ - Create breaking changes document in doc there breaking changes so far in 3.28
+   -  `SW-1636 <https://0xdata.atlassian.net/browse/SW-1636>`__ - Enable to specify outputCols on H2OTargetEncoder
+   -  `SW-1661 <https://0xdata.atlassian.net/browse/SW-1661>`__ - Deprecate multicast search for cluster in external backend in manual mode
+   -  `SW-1668 <https://0xdata.atlassian.net/browse/SW-1668>`__ - Structure Contributions in the &#39;deteailed_prediction&#39; Column Better
+   -  `SW-1679 <https://0xdata.atlassian.net/browse/SW-1679>`__ - Create scoring package for pysparkling
+   -  `SW-1681 <https://0xdata.atlassian.net/browse/SW-1681>`__ - Change sw version to include also patch within one h2o version
+                
+                                                                                                                                                                                        
 v3.26.9 (2019-10-31)
 --------------------
 Downloads:
