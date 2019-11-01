@@ -54,7 +54,6 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
       resetSparkContext()
       super.afterAll()
       System.setSecurityManager(null)
-      SparkSession.cleanupAnyExistingSession()
     }
 
   }
