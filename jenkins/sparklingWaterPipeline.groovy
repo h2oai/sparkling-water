@@ -119,7 +119,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 withDocker(config) {
                     //sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
-                    prepareSparklingWaterEnvironment()(config)
+                    //prepareSparklingWaterEnvironment()(config)
                     //buildAndLint()(config)
                     //unitTests()(config)
                     //pyUnitTests()(config)
