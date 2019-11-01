@@ -21,14 +21,15 @@ class VersionComponents(object):
 
     @staticmethod
     def parseFromSparklingWaterVersion(version):
-        match = re.search(r"^((\d+\.\d+)\.(\d+))(-(\d+))?-(\d+\.\d+)$", version)
+        match = re.search(r"^((\d+\.\d+\.\d+)\.(\d+)-(\d+))(\.(\d+))?-(\d+\.\d+)$", version)
         result = VersionComponents()
         result.fullVersion = match.group(0)
         result.sparklingVersion = match.group(1)
         result.sparklingMajorVersion = match.group(2)
         result.sparklingMinorVersion = match.group(3)
-        result.nightlyVersion = match.group(5)
-        result.sparkMajorMinorVersion = match.group(6)
+        result.sparklingPatchVersion = match.group(4)
+        result.nightlyVersion = match.group(6)
+        result.sparkMajorMinorVersion = match.group(7)
         return result
 
     @staticmethod
