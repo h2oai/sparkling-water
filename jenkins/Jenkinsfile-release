@@ -5,7 +5,8 @@
 properties(
         [
                 parameters(
-                        [       booleanParam(name: 'updateChangeLog', defaultValue: true, description: "Update change log"),
+                        [       booleanParam(name: 'wasH2OUpgraded', defaultValue: true, description: "True if H2O was upgraded in this release or not"),
+                                booleanParam(name: 'updateChangeLog', defaultValue: true, description: "Update change log"),
                                 string(name: 'releaseFor', defaultValue: 'all', description: "For which Spark Major version" +
                                         " do a release. By default, do release for all supported released versions"),
                                 booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda'),
@@ -90,21 +91,32 @@ String getVersionNoSuffix() {
 
 String getNextVersionNoSuffix(params) {
     def majorVersion = getMajorVersion(params)
+    def minorVersion = getMinorVersion(params)
     def patchVersion = getPatchVersion(params)
-    return "${majorVersion}.${patchVersion.toInteger() + 1}-SNAPSHOT"
+    if (params.wasH2OUpgraded.toBoolean()) {
+        return "${majorVersion}.${minorVersion.toInteger() + 1}-1-SNAPSHOT"
+    } else {
+        return "${majorVersion}.${minorVersion}-${patchVersion.toInteger() + 1}-SNAPSHOT"
+    }
 }
 
 
 String getMajorVersion(params) {
     def v = getVersion(params)
     def split = v.split("\\.")
-    return "${split[0]}.${split[1]}".toString()
+    return "${split[0]}.${split[1]}.${split[2]}".toString()
+}
+
+String getMinorVersion(params) {
+    def v = getVersion(params)
+    def split = v.split("\\.")
+    return "${split[3]}".toString()
 }
 
 String getPatchVersion(params) {
     def v = getVersion(params)
     def split = v.split("-")
-    return "${split[0].split("\\.")[2]}"
+    return "${split[1]}".toString()
 }
 
 def prepareReleaseNotes(sparkMajorVersions) {
