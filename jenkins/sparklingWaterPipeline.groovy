@@ -21,11 +21,13 @@ String getNightlyVersion(config) {
         def lastH2OPart = lastVersionParts[0]
         def lastSWPart = lastVersionParts[1]
         if (lastSWPart.contains(".")) {
-            def lastSWPatch = lastSWPart.split("\\.")[0]
+            def lastSWParts = lastSWPart.split("\\.")
+            def lastSWPatch = lastSWParts[0]
+            def lastSWBuild = lastSWParts[1]
             if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
                 swNightlyBuildNumber = 1 // reset the nightly build number
             } else {
-                swNightlyBuildNumber = lastSWPatch.toInteger() + 1
+                swNightlyBuildNumber = lastSWBuild.toInteger() + 1
             }
         } else {
             swNightlyBuildNumber = 1
