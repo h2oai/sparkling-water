@@ -110,9 +110,13 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
     sc = new SparkContext(master, getClass.getSimpleName, conf)
     val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
 
-    val tmpDir = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
-    tmpDir.toFile.deleteOnExit()
-    val filePath = tmpDir.resolve("file")
+    val tmpDirPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
+    val tmpDir = tmpDirPath.toFile
+    tmpDir.setWritable(true, false)
+    tmpDir.setReadable(true, false)
+    tmpDir.setExecutable(true, false)
+    tmpDir.deleteOnExit()
+    val filePath = tmpDirPath.resolve("file")
     val file = filePath.toFile
     file.deleteOnExit()
 
