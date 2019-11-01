@@ -19,7 +19,7 @@ String getNightlyVersion(config) {
         def lastH2OPart = lastVersion.split("-")[0].toString()
         def lastSWPart = lastVersion.split("-")[1]
         if (lastSWPart.contains(".")) {
-            def lastSWPatch = lastSWPart.split("\\.").toString()
+            def lastSWPatch = lastSWPart.split("\\.")[1].toString()
             if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
                 swNightlyBuildNumber = 1
             } else {
