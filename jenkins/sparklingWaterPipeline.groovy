@@ -11,17 +11,27 @@ def getS3Path(config) {
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
     def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
-    def h2oPart = version.split("-")[0]
-    def swIteration = version.split("-")[1]
+    def h2oPart = version.split("-")[0].toString()
+    def swPatch = version.split("-")[1].toString()
     def swNightlyBuildNumber
     try {
         def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
-        def latestSWPart = lastVersion.split("-")[1]
-        swNightlyBuildNumber = latestSWPart.contains(".") ? latestSWPart.split(".")[1].toInteger() + 1 : 1
+        def lastH2OPart = lastVersion.split("-")[0].toString()
+        def lastSWPart = lastVersion.split("-")[1]
+        if (lastSWPart.contains(".")) {
+            def lastSWPatch = lastSWPart.split("\\.").toString()
+            if (lastH2OPart != h2oPart || lastSWPart != swPatch) {
+                swNightlyBuildNumber = 1
+            } else {
+                swNightlyBuildNumber = lastSWPatch.toInteger() + 1
+            }
+        } else {
+            swNightlyBuildNumber = 1
+        }
     } catch (Exception ignored) {
         swNightlyBuildNumber = 1
     }
-    return "${h2oPart}-${swIteration}.${swNightlyBuildNumber}-${sparkMajorVersion}"
+    return "${h2oPart}-${swPatch}.${swNightlyBuildNumber}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(config) {
@@ -106,17 +116,17 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config) {
                 withDocker(config) {
-                    sh "sudo -E /usr/sbin/startup.sh"
+                    //sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
                     prepareSparklingWaterEnvironment()(config)
-                    buildAndLint()(config)
-                    unitTests()(config)
-                    pyUnitTests()(config)
-                    rUnitTests()(config)
-                    localIntegTest()(config)
-                    localPyIntegTest()(config)
-                    scriptsTest()(config)
-                    pysparklingIntegTest()(config)
+                    //buildAndLint()(config)
+                    //unitTests()(config)
+                    //pyUnitTests()(config)
+                    //rUnitTests()(config)
+                    //localIntegTest()(config)
+                    //localPyIntegTest()(config)
+                    //scriptsTest()(config)
+                    //pysparklingIntegTest()(config)
                 }
                 // Run Integration on real Hadoop Cluster
                 node("dX-hadoop") {
@@ -130,7 +140,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
                         withEnv(customEnvNew) {
-                            integTest()(config)
+                            //integTest()(config)
                         }
                     }
                 }
