@@ -56,10 +56,10 @@ please make sure to set ``withDetailedPredictionCol`` to ``true`` via the setter
 When enabled, additional column named ``detailed_prediction`` is created which contains additional prediction details, such as
 probabilities, contributions and so on.
 
-In manual mode of external backend always require specification of cluster location
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In manual mode of external backend always require a specification of cluster location
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In previous versions, H2O client was able to discover client using the multicast search.
+In previous versions, H2O client was able to discover nodes using the multicast search.
 That is now removed and IP:Port of any node of external cluster to which we need
 to connect is required. This requirement may be removed in the future architecture of Sparkling Water.
 
