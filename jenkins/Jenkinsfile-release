@@ -103,13 +103,13 @@ String getNextVersionNoSuffix(params) {
 
 String getMajorVersion(params) {
     def v = getVersion(params)
-    def split = v.split("\\.")
+    def split = v.split("-")[0].split("\\.")
     return "${split[0]}.${split[1]}.${split[2]}".toString()
 }
 
 String getMinorVersion(params) {
     def v = getVersion(params)
-    def split = v.split("\\.")
+    def split = v.split("-")[0].split("\\.")
     return "${split[3]}".toString()
 }
 
