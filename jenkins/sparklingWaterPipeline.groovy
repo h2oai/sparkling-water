@@ -18,9 +18,10 @@ String getNightlyVersion(config) {
         def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
         def lastH2OPart = lastVersion.split("-")[0].toString()
         def lastSWPart = lastVersion.split("-")[1]
-        throw new RuntimeException(lastSWPart)
         if (lastSWPart.contains(".")) {
-            def lastSWPatch = lastSWPart.split("\\.")[1].toString()
+            def lastSWPatch = lastSWPart.split("\\.")[0].toString()
+            throw new RuntimeException("orig: ${h2oPart} - ${swPatch}, last: ${lastH2OPart} - ${lastSWPatch}")
+
             if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
                 swNightlyBuildNumber = 1
             } else {
