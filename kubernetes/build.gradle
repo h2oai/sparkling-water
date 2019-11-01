@@ -8,7 +8,7 @@ defaultTasks 'createDockerFiles'
 description = "Build docker images for Kubernetes with Sparkling Water"
 
 ext {
-    outputFilePy = file("$buildDir/Dockerfile-Python")
+    outputFilePython = file("$buildDir/Dockerfile-Python")
     outputFileR = file("$buildDir/Dockerfile-R")
     outputFileScala = file("$buildDir/Dockerfile-Scala")
 }
@@ -38,20 +38,23 @@ task buildScalaImage(type: Exec, dependsOn: createScalaDockerfile) {
     commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-scala:${version}", '-f', outputFileScala, "."])
 }
 
-task createRDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, ":sparkling-water-dist:dist"]) {
+task createRDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
     //TODO
 }
 
-task buildRImage(type: Exec) {
+task buildRImage(type: Exec, dependsOn: createRDockerfile) {
     //TODO
 }
 
-task createPyDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, ":sparkling-water-dist:dist"]) {
-    //TODO
+task createPythonDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
+    destFile = outputFilePython
+    from "spark-py:${sparkVersion}"
+    copyFile("sparkling-water/py/build/dist/h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
 }
 
-task buildPyImage(type: Exec) {
-    //TODO
+task buildPythonImage(type: Exec, dependsOn: createPythonDockerfile) {
+    workingDir buildDir
+    commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-python:${version}", '-f', outputFilePython, "."])
 }
 
-
+task buildKubernetesImages(dependsOn: [buildScalaImage, buildPythonImage, buildRImage])
