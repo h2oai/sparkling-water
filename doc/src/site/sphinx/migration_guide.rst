@@ -38,6 +38,8 @@ DRF exposed into Sparkling Water Algorithm API
 
 DRF is now exposed in the Sparkling Water. Please see our documentation to learn how to use it :ref:`drf`.
 
+Also we can run our Grid Search API on DRF.
+
 Change Default Name of Prediction Column
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,6 +55,13 @@ and in case of classification, the predicted label. If you are interested in mor
 please make sure to set ``withDetailedPredictionCol`` to ``true`` via the setters on both PySparkling and Sparkling Water.
 When enabled, additional column named ``detailed_prediction`` is created which contains additional prediction details, such as
 probabilities, contributions and so on.
+
+In manual mode of external backend always require a specification of cluster location
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In previous versions, H2O client was able to discover nodes using the multicast search.
+That is now removed and IP:Port of any node of external cluster to which we need
+to connect is required. This requirement may be removed in the future architecture of Sparkling Water.
 
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
