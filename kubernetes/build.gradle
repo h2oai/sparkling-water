@@ -30,7 +30,7 @@ task copyDist(type: Copy, dependsOn: ":sparkling-water-dist:dist") {
 task createScalaDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
     destFile = outputFileScala
     from "spark:${sparkVersion}"
-    copyFile("sparkling-water/assembly/build/libs/sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars")
+    copyFile("sparkling-water/assembly/build/libs/sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
 }
 
 task buildScalaImage(type: Exec, dependsOn: createScalaDockerfile) {
