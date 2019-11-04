@@ -10,21 +10,32 @@ def getS3Path(config) {
 
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    def version = versionLine.split("=")[1]
-    if (config.uploadNightly.toBoolean()) {
-        def buildNumber
-        try {
-            def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
-            def splits = lastVersion.split("-")
-            buildNumber = splits[1].toInteger() + 1
-        } catch (Exception ignored) {
-            buildNumber = 1
+    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
+    def versionParts = version.split("-")
+    def h2oPart = versionParts[0]
+    def swPatch = versionParts[1]
+    def swNightlyBuildNumber
+    try {
+        def lastVersion = "https://h2o-release.s3.amazonaws.com/sparkling-water/spark-${config.sparkMajorVersion}/${getS3Path(config)}latest".toURL().getText().toString()
+        def lastVersionParts = lastVersion.split("-")
+        def lastH2OPart = lastVersionParts[0]
+        def lastSWPart = lastVersionParts[1]
+        if (lastSWPart.contains(".")) {
+            def lastSWParts = lastSWPart.split("\\.")
+            def lastSWPatch = lastSWParts[0]
+            def lastSWBuild = lastSWParts[1]
+            if (lastH2OPart != h2oPart || lastSWPatch != swPatch) {
+                swNightlyBuildNumber = 1 // reset the nightly build number
+            } else {
+                swNightlyBuildNumber = lastSWBuild.toInteger() + 1
+            }
+        } else {
+            swNightlyBuildNumber = 1
         }
-        return "${version.split("-")[0]}-${buildNumber}-${sparkMajorVersion}"
-    } else {
-        return version
+    } catch (Exception ignored) {
+        swNightlyBuildNumber = 1
     }
+    return "${h2oPart}-${swPatch}.${swNightlyBuildNumber}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(config) {
