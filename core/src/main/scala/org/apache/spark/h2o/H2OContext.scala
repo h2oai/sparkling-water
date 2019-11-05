@@ -306,7 +306,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
       H2OContext.stop(this)
       stopped = true
     } else {
-      logWarning("H2OContext is already stopped, this call has no effect anymore")
+      logWarning("H2OContext is already stopped!")
     }
   }
 
@@ -411,10 +411,8 @@ object H2OContext extends Logging {
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
-    def getCloudInfo(): CloudV3 = getCloudInfo(conf)
-
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val cloudV3 = getCloudInfo()
+      val cloudV3 = getCloudInfo(conf)
       H2OClusterInfo(
         s"${getFlowIp()}:${getFlowPort()}",
         cloudV3.cloud_healthy,
@@ -425,7 +423,7 @@ object H2OContext extends Logging {
     }
 
     override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
-      val cloudV3 = getCloudInfo()
+      val cloudV3 = getCloudInfo(conf)
       val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
       SparklingWaterHeartbeatEvent(cloudV3.cloud_healthy, System.currentTimeMillis(), memoryInfo)
     }

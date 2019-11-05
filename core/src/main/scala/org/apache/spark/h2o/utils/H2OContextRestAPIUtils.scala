@@ -21,12 +21,12 @@ import java.net.URI
 
 import com.google.gson.Gson
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.CloudV3
 
 import scala.io.Source
 
-trait H2OContextRestAPIUtils extends H2OContextUtils  {
+trait H2OContextRestAPIUtils extends H2OContextUtils {
 
 
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
@@ -73,10 +73,19 @@ trait H2OContextRestAPIUtils extends H2OContextUtils  {
   }
 
   private def readURLContent(url: String): String = {
-    val html = Source.fromURL(url)
-    val content = html.mkString
-    html.close()
-    content
+    try {
+      val html = Source.fromURL(url)
+      val content = html.mkString
+      html.close()
+      content
+    } catch {
+      case cause: Exception =>
+        H2OContext.get().foreach(_.stop())
+        throw new RuntimeException(
+          """
+             External H2O cluster is not reachable, closing the context.
+             Please create new context to healthy H2O cluster using H2OContext.getOrCreate method.""", cause)
+    }
   }
 
 }
