@@ -39,11 +39,27 @@ task buildScalaImage(type: Exec, dependsOn: createScalaDockerfile) {
 }
 
 task createRDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
-    //TODO
+    destFile = outputFileR
+    from "spark-r:${sparkVersion}"
+    runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
+    runCommand """\\
+                R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
+                """
+    runCommand "R -e \"install.packages('h2o', type = 'source', repos = 'http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R')\""
+    copyFile("sparkling-water/rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
+    runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
 }
 
 task buildRImage(type: Exec, dependsOn: createRDockerfile) {
-    //TODO
+    workingDir buildDir
+    commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-r:${version}", '-f', outputFileR, "."])
 }
 
 task createPythonDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
