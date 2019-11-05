@@ -17,24 +17,21 @@
 
 package org.apache.spark.h2o.utils
 
-import com.google.gson.Gson
-import water.api.schemas3.CloudV3
 import java.net.URI
 
+import com.google.gson.Gson
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OConf
+import water.api.schemas3.CloudV3
+
+import scala.io.Source
 
 trait H2OContextRestAPIUtils extends H2OContextUtils  {
 
-  def getClusterEndpoint(hc: H2OContext): URI = {
-    val uriBuilder = new URIBuilder(s"${hc.getScheme(hc._conf)}://${hc._conf.h2oCluster.get}")
-    uriBuilder.setPath(hc._conf.contextPath.orNull)
-    uriBuilder.build()
-  }
 
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
     val endpoint = new URI(
-      getScheme(conf),
+      conf.getScheme(),
       null,
       node.hostname,
       node.port,
@@ -44,20 +41,24 @@ trait H2OContextRestAPIUtils extends H2OContextUtils  {
     getCloudInfoFromNode(endpoint)
   }
 
-  def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
-    import scala.io.Source
-    val html = Source.fromURL(s"$endpoint/3/Cloud")
-    val content = html.mkString
-    html.close()
-    new Gson().fromJson(content, classOf[CloudV3])
-  }
 
-  def getCloudInfo(hc: H2OContext): CloudV3 = {
-    val endpoint = getClusterEndpoint(hc)
+  def getCloudInfo(conf: H2OConf): CloudV3 = {
+    val endpoint = getClusterEndpoint(conf)
     getCloudInfoFromNode(endpoint)
   }
 
-  def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
+  def getNodes(conf: H2OConf): Array[NodeDesc] = {
+    val cloudV3 = getCloudInfo(conf)
+    getNodes(cloudV3)
+  }
+
+  private def getClusterEndpoint(conf: H2OConf): URI = {
+    val uriBuilder = new URIBuilder(s"${conf.getScheme()}://${conf.h2oCluster.get}")
+    uriBuilder.setPath(conf.contextPath.orNull)
+    uriBuilder.build()
+  }
+
+  private def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
     cloudV3.nodes.zipWithIndex.map { case (node, idx) =>
       val splits = node.ip_port.split(":")
       val ip = splits(0)
@@ -66,9 +67,18 @@ trait H2OContextRestAPIUtils extends H2OContextUtils  {
     }
   }
 
-  def getNodes(hc: H2OContext): Array[NodeDesc] = {
-    val cloudV3 = getCloudInfo(hc)
-    getNodes(cloudV3)
+  private def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
+    val content = readURLContent(s"$endpoint/3/Cloud")
+    new Gson().fromJson(content, classOf[CloudV3])
+  }
+
+  private def readURLContent(url: String): String = {
+    val html = Source.fromURL(url)
+    val content = html.mkString
+    html.close()
+    content
   }
 
 }
+
+object H2OContextRestAPIUtils extends H2OContextRestAPIUtils

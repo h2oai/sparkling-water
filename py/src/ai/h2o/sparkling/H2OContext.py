@@ -127,7 +127,7 @@ class H2OContext(object):
     def __default_h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
             warnings.warn("https argument is automatically set up and the specified value will be ignored.")
-        schema = h2o_context._jhc.h2oContext().getScheme(h2o_context._jhc.h2oContext()._conf())
+        schema = h2o_context._jhc.h2oContext()._conf().getScheme()
         kwargs["https"] = False
         if schema == "https":
             kwargs["https"] = True

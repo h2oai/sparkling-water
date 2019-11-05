@@ -107,6 +107,14 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
       internalConfString
     }
   }
+
+  def getScheme(): String = {
+    if (jks.isDefined && jksPass.isDefined) {
+      "https"
+    } else {
+      "http"
+    }
+  }
 }
 
 object H2OConf extends Logging {
