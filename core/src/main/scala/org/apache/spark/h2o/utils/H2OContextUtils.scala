@@ -51,14 +51,6 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  def getScheme(hc: H2OConf) = {
-    if (hc.jks.isDefined && hc.jksPass.isDefined) {
-      "https"
-    } else {
-      "http"
-    }
-  }
-
   /**
     * Return true if running inside spark/sparkling water test.
     *

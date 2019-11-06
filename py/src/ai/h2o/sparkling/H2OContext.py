@@ -102,7 +102,6 @@ def _get_first(rdd):
 
 class H2OContext(object):
 
-    is_initialized = False
     def __init__(self, spark_session):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -127,7 +126,7 @@ class H2OContext(object):
     def __default_h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
             warnings.warn("https argument is automatically set up and the specified value will be ignored.")
-        schema = h2o_context._jhc.h2oContext().getScheme(h2o_context._jhc.h2oContext()._conf())
+        schema = h2o_context._jhc.h2oContext()._conf().getScheme()
         kwargs["https"] = False
         if schema == "https":
             kwargs["https"] = True
@@ -185,11 +184,11 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
 
         # Create H2O REST API client
-        if not H2OContext.is_initialized:
+        if not h2o_context.__isClientConnected():
             if h2o_connect_hook:
                 h2o_connect_hook(h2o_context, verbose=verbose, **kwargs)
 
-        H2OContext.is_initialized = True
+        h2o_context.__setClientConnected()
 
         if verbose:
             print(h2o_context)
@@ -201,6 +200,22 @@ class H2OContext(object):
         if deploy_mode != "cluster":
             atexit.register(lambda: h2o_context.__stop())
         return h2o_context
+
+    def __isClientConnected(self):
+        hc = self._jhc.h2oContext()
+        field = self.__getClientConnectedField()
+        return field.get(hc)
+
+    def __setClientConnected(self):
+        hc = self._jhc.h2oContext()
+        field = self.__getClientConnectedField()
+        field.set(hc, True)
+
+    def __getClientConnectedField(self):
+        hc = self._jhc.h2oContext()
+        field = hc.getClass().getSuperclass().getDeclaredField("clientConnected")
+        field.setAccessible(True)
+        return field
 
     def __stop(self):
         try:
@@ -218,10 +233,11 @@ class H2OContext(object):
         return self._jhc.h2oContext().downloadH2OLogs(destination, container)
 
     def __str__(self):
-        if H2OContext.is_initialized:
+        if self.__isClientConnected():
             return self._jhc.toString()
         else:
-            return "H2OContext: not initialized, call H2OContext.getOrCreate(spark) or H2OContext.getOrCreate(spark, conf)"
+            return "H2OContext not created. Call H2OContext.getOrCreate(spark) or " \
+                   "H2OContext.getOrCreate(spark, conf) to create one."
 
     def __repr__(self):
         self.show()
