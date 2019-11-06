@@ -63,7 +63,6 @@ import scala.util.control.NoStackTrace
   */
 class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
-  val announcementService = AnnouncementServiceFactory.create(conf)
   val sparkContext = sparkSession.sparkContext
   val uiUpdateThread = new UIHeartbeatThread(sparkContext, conf)
   /** IP of H2O client */
@@ -146,8 +145,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     LogBridge.setH2OLogLevel(level) // set the level back on the level user want's to use
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
-    // Announce Flow UI location
-    announcementService.announce(FlowLocationAnnouncement(H2O.ARGS.name, "http", localClientIp, localClientPort))
     updateUIAfterStart() // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
 
@@ -299,7 +296,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     */
   def stop(stopSparkContext: Boolean = false): Unit = synchronized {
     if (!stopped) {
-      announcementService.shutdown
       uiUpdateThread.interrupt()
       backend.stop(stopSparkContext)
       H2OContext.stop(this)
