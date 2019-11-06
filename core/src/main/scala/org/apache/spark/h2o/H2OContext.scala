@@ -31,8 +31,7 @@ import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
 import water.api.schemas3.CloudV3
-import water.util.{Log, LogBridge, PrettyPrint}
-
+import water.util.{Log, PrettyPrint}
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -120,7 +119,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     Log.info("Spark version: " + sparkContext.version)
     Log.info("Integrated H2O version: " + BuildInfo.H2OVersion)
     Log.info("The following Spark configuration is used: \n    " + _conf.getAll.mkString("\n    "))
-    Log.info("")
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
@@ -153,13 +151,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     localClientPort = getFlowPort()
 
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
-
-    // Force initialization of H2O logs so flow and other dependant tools have logs available from the start
-    val level = LogBridge.getH2OLogLevel()
-    LogBridge.setH2OLogLevel(Log.TRACE) // just temporarily, set Trace Level so we can
-    // be sure the Log.trace will initialize the logging and creates the log files
-    Log.trace("H2OContext initialized") // force creation of log files
-    LogBridge.setH2OLogLevel(level) // set the level back on the level user want's to use
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
