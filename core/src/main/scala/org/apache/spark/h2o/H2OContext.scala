@@ -83,6 +83,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   /** REST port of H2O client */
   private var localClientPort: Int = _
   private var stopped = false
+  /** Here the client means Python or R H2O client */
+  private var clientConnected = false
 
   /** Used backend */
   val backend: SparklingBackend = if (conf.runsInExternalClusterMode) {
