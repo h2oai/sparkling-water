@@ -64,6 +64,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
 
   def startCleanupThread(): Unit = {
     if (!cleanerThread.isAlive) {
+      cleanerThread.setDaemon(true)
       cleanerThread.start()
     }
   }
