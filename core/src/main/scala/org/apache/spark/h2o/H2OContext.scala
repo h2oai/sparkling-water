@@ -31,7 +31,8 @@ import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
 import water.api.schemas3.CloudV3
-import water.util.{Log, PrettyPrint}
+import water.util.PrettyPrint
+
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -115,10 +116,10 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     */
   def init(): H2OContext = {
     // Use H2O's logging as H2O info log level is default
-    Log.info("Sparkling Water version: " + BuildInfo.SWVersion)
-    Log.info("Spark version: " + sparkContext.version)
-    Log.info("Integrated H2O version: " + BuildInfo.H2OVersion)
-    Log.info("The following Spark configuration is used: \n    " + _conf.getAll.mkString("\n    "))
+    logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
+    logInfo("Spark version: " + sparkContext.version)
+    logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
+    logInfo("The following Spark configuration is used: \n    " + _conf.getAll.mkString("\n    "))
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
