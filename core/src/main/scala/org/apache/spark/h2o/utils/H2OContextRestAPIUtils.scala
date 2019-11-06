@@ -84,7 +84,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
         throw new RuntimeException(
           """
              External H2O cluster is not reachable, closing the context.
-             Please create new context to healthy H2O cluster using H2OContext.getOrCreate method.""", cause)
+             Please create new context to a healthy H2O cluster using H2OContext.getOrCreate method.""", cause)
     }
   }
 

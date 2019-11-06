@@ -313,10 +313,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc._conf.isAutoClusterStartUsed) {
       H2O.orderlyShutdown(1000)
     }
-    // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-    //, so the user does not need explicitly close h2o.
-    // In driver mode the application would call exit which is handled by Spark AM as failure
-    if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+    if (hc._conf.isManualClusterStartUsed && runningFromNonJVMClient(hc)) {
+      // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
+    } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+      // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
+      //, so the user does not need explicitly close h2o.
+      // In driver mode the application would call exit which is handled by Spark AM as failure
       H2O.exit(0)
     }
   }
