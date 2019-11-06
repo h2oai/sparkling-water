@@ -86,27 +86,27 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     )
 
     if (conf.jks.isDefined) {
-      cmdToLaunch ++ Seq("-jks", conf.jks.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-jks", conf.jks.get)
     }
 
     if (conf.jksPass.isDefined) {
-      cmdToLaunch ++ Seq("-jks_pass", conf.jksPass.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-jks_pass", conf.jksPass.get)
     }
 
     if (conf.jksAlias.isDefined) {
-      cmdToLaunch ++ Seq("-jks_alias", conf.jksAlias.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-jks_alias", conf.jksAlias.get)
     }
 
-    if (conf.hashLogin) cmdToLaunch :+ "-hash_login"
-    if (conf.ldapLogin) cmdToLaunch :+ "-ldap_login"
-    if (conf.kerberosLogin) cmdToLaunch :+ "-kerberos_login"
+    if (conf.hashLogin) cmdToLaunch = cmdToLaunch :+ "-hash_login"
+    if (conf.ldapLogin) cmdToLaunch = cmdToLaunch :+ "-ldap_login"
+    if (conf.kerberosLogin) cmdToLaunch = cmdToLaunch :+ "-kerberos_login"
 
     if (conf.userName.isDefined) {
-      cmdToLaunch ++ Seq("-user_name", conf.userName.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-user_name", conf.userName.get)
     }
 
     if (conf.loginConf.isDefined) {
-      cmdToLaunch ++ Seq("-login_conf", conf.loginConf.get)
+      cmdToLaunch = cmdToLaunch ++ Seq("-login_conf", conf.loginConf.get)
     }
 
     if (conf.runAsUser.isDefined) {
