@@ -435,7 +435,7 @@ object H2OContext extends Logging {
     override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
       val cloudV3 = getCloudInfo()
       val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-      SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
+      SparklingWaterHeartbeatEvent(cloudV3.cloud_healthy, System.currentTimeMillis(), memoryInfo)
     }
 
     override def getH2ONodes(): Array[NodeDesc] = getNodes(this)
