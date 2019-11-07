@@ -24,7 +24,7 @@ import java.util.Properties
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
+import org.apache.spark.h2o.utils.{H2OClusterNodeNotReachableException, H2OContextRestAPIUtils, NodeDesc}
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import water.api.RestAPIManager
@@ -213,7 +213,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     logInfo("Connecting to external H2O cluster.")
     val clusterBuildTimeout = hc.getConf.cloudTimeout
     val nodes = if (runningFromNonJVMClient(hc)) {
-      getNodes(hc._conf)
+      try {
+        getNodes(hc.getConf)
+      } catch {
+        case _: H2OClusterNodeNotReachableException =>
+          val h2oCluster = hc.getConf.h2oCluster.get
+          throw new H2OClusterNodeNotReachableException(
+            s"""External H2O cluster $h2oCluster - ${hc.getConf.cloudName.get} is not reachable, H2OContext has not been created.
+               |Please verify that $h2oCluster is running with web enabled and retry the context creation.""".stripMargin)
+      }
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
@@ -313,10 +321,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc._conf.isAutoClusterStartUsed) {
       H2O.orderlyShutdown(1000)
     }
-    // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-    //, so the user does not need explicitly close h2o.
-    // In driver mode the application would call exit which is handled by Spark AM as failure
-    if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+    if (hc._conf.isManualClusterStartUsed && runningFromNonJVMClient(hc)) {
+      // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
+    } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
+      // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
+      //, so the user does not need explicitly close h2o.
+      // In driver mode the application would call exit which is handled by Spark AM as failure
       H2O.exit(0)
     }
   }

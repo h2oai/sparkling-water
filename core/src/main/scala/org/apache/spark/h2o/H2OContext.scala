@@ -30,7 +30,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.api.schemas3.CloudV3
 import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
@@ -306,7 +305,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
       H2OContext.stop(this)
       stopped = true
     } else {
-      logWarning("H2OContext is already stopped, this call has no effect anymore")
+      logWarning("H2OContext is already stopped!")
     }
   }
 
@@ -411,10 +410,8 @@ object H2OContext extends Logging {
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
-    def getCloudInfo(): CloudV3 = getCloudInfo(conf)
-
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val cloudV3 = getCloudInfo()
+      val cloudV3 = getCloudInfo(conf)
       H2OClusterInfo(
         s"${getFlowIp()}:${getFlowPort()}",
         cloudV3.cloud_healthy,
@@ -425,9 +422,17 @@ object H2OContext extends Logging {
     }
 
     override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
-      val cloudV3 = getCloudInfo()
-      val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-      SparklingWaterHeartbeatEvent(cloudV3.cloud_healthy, System.currentTimeMillis(), memoryInfo)
+      try {
+        val cloudV3 = getCloudInfo(conf)
+        val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
+        SparklingWaterHeartbeatEvent(cloudV3.cloud_healthy, System.currentTimeMillis(), memoryInfo)
+      } catch {
+        case e: H2OClusterNodeNotReachableException =>
+          H2OContext.get().head.stop()
+          throw new H2OClusterNodeNotReachableException(
+            s"""External H2O cluster ${conf.h2oCluster.get} - ${conf.cloudName.get} is not reachable, H2OContext has been closed.
+               |Please create a new H2OContext to a healthy and reachable (web enabled) external H2O cluster.""".stripMargin, e.getCause)
+      }
     }
 
     override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)

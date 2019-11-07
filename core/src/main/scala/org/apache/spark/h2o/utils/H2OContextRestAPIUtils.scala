@@ -26,7 +26,7 @@ import water.api.schemas3.CloudV3
 
 import scala.io.Source
 
-trait H2OContextRestAPIUtils extends H2OContextUtils  {
+trait H2OContextRestAPIUtils extends H2OContextUtils {
 
 
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
@@ -68,17 +68,27 @@ trait H2OContextRestAPIUtils extends H2OContextUtils  {
   }
 
   private def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
-    val content = readURLContent(s"$endpoint/3/Cloud")
+    val content = readURLContent(endpoint, "3/Cloud")
     new Gson().fromJson(content, classOf[CloudV3])
   }
 
-  private def readURLContent(url: String): String = {
-    val html = Source.fromURL(url)
-    val content = html.mkString
-    html.close()
-    content
+  private def readURLContent(endpoint: URI, suffix: String): String = {
+    try {
+      val html = Source.fromURL(s"$endpoint/$suffix")
+      val content = html.mkString
+      html.close()
+      content
+    } catch {
+      case cause: Exception =>
+        throw new H2OClusterNodeNotReachableException(
+          s"External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.", cause)
+    }
   }
 
+}
+
+class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+  def this(msg: String) = this(msg, null)
 }
 
 object H2OContextRestAPIUtils extends H2OContextRestAPIUtils
