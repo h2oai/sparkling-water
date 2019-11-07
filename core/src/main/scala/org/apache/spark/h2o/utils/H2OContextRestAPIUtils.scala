@@ -52,6 +52,25 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     getNodes(cloudV3)
   }
 
+  def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
+    val nodesWithoutWeb = nodes.flatMap { node =>
+      try {
+        getCloudInfoFromNode(node, conf)
+        None
+      } catch {
+        case _: H2OClusterNodeNotReachableException => Some(node)
+      }
+    }
+    if (nodesWithoutWeb.nonEmpty) {
+      throw new H2OClusterNodeNotReachableException(
+        s"""
+    The following worker nodes are not reachable, but belong to the cluster:
+    ${conf.h2oCluster.get} - ${conf.cloudName.get}:
+    ----------------------------------------------
+    ${nodesWithoutWeb.map(_.ipPort()).mkString("\n    ")}""", null)
+    }
+  }
+
   private def getClusterEndpoint(conf: H2OConf): URI = {
     val uriBuilder = new URIBuilder(s"${conf.getScheme()}://${conf.h2oCluster.get}")
     uriBuilder.setPath(conf.contextPath.orNull)
