@@ -87,6 +87,8 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
 
 }
 
-class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause)
+class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+  def this(msg: String) = this(msg, null)
+}
 
 object H2OContextRestAPIUtils extends H2OContextRestAPIUtils

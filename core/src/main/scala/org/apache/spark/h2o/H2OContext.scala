@@ -30,7 +30,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.api.schemas3.CloudV3
 import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
