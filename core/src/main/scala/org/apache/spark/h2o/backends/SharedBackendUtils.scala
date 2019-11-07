@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends
 
 import java.io.File
 
-import org.apache.spark.SparkEnv
+import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.AzureDatabricksUtils
 import org.apache.spark.internal.Logging
@@ -105,8 +105,31 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     conf
   }
 
+  def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
+    for(fileProperty <- conf.getFileProperties()) {
+      for (filePath <- conf.getOption(fileProperty._1)) {
+        sc.addFile(filePath)
+        val distributedLocalPath = SparkFiles.get(new File(filePath).getName)
+        conf.set(fileProperty._3, distributedLocalPath)
+      }
+    }
+  }
+
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
+  }
+
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add("-jks", conf.jksDistributed)
+      .add("-jks_pass", conf.jksPass)
+      .add("-jks_alias", conf.jksAlias)
+      .addIf("-hash_login", conf.hashLogin)
+      .addIf("-ldap_login", conf.ldapLogin)
+      .addIf("-kerberos_login", conf.kerberosLogin)
+      .add("-user_name", conf.userName)
+      .add("-login_conf", conf.loginConfDistributed)
+      .buildArgs()
   }
 
   /**
@@ -123,14 +146,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-internal_security_conf", conf.sslConf)
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
-      .add("-jks", conf.jks)
-      .add("-jks_pass", conf.jksPass)
-      .add("-jks_alias", conf.jksAlias)
-      .addIf("-hash_login", conf.hashLogin)
-      .addIf("-ldap_login", conf.ldapLogin)
-      .addIf("-kerberos_login", conf.kerberosLogin)
-      .add("-user_name", conf.userName)
-      .add("-login_conf", conf.loginConf)
+      .add(getH2OSecurityArgs(conf))
       .buildArgs()
   }
 

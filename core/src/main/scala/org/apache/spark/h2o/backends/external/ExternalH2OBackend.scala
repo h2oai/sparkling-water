@@ -85,30 +85,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
-    if (conf.jks.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-jks", conf.jks.get)
-    }
-
-    if (conf.jksPass.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-jks_pass", conf.jksPass.get)
-    }
-
-    if (conf.jksAlias.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-jks_alias", conf.jksAlias.get)
-    }
-
-    if (conf.hashLogin) cmdToLaunch = cmdToLaunch :+ "-hash_login"
-    if (conf.ldapLogin) cmdToLaunch = cmdToLaunch :+ "-ldap_login"
-    if (conf.kerberosLogin) cmdToLaunch = cmdToLaunch :+ "-kerberos_login"
-
-    if (conf.userName.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-user_name", conf.userName.get)
-    }
-
-    if (conf.loginConf.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-login_conf", conf.loginConf.get)
-    }
-
     if (conf.runAsUser.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-run_as_user", conf.runAsUser.get)
     }
@@ -136,12 +112,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc.getConf.nodeNetworkMask.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
     }
-/*
-    val loginArgs = getLoginArgs(conf)
-    if (loginArgs.nonEmpty) {
-      cmdToLaunch = cmdToLaunch ++ loginArgs
-    }
-*/
+
+    cmdToLaunch = cmdToLaunch ++ getH2OSecurityArgs(hc.getConf)
+
     if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-principal",
         hc.getConf.kerberosPrincipal.get, "-keytab", hc.getConf.kerberosKeytab.get)
@@ -435,6 +408,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
              no longer supported!""")
       }
     }
+    distributeFiles(conf, hc.sparkContext)
     conf
   }
 

@@ -65,6 +65,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     }
 
     InternalBackendUtils.checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
+    distributeFiles(conf, hc.sparkContext)
     conf
   }
 

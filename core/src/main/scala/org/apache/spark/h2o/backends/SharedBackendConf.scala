@@ -17,11 +17,7 @@
 
 package org.apache.spark.h2o.backends
 
-import java.io.File
-
-import org.apache.spark.SparkFiles
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.sql.SparkSession
 import collection.JavaConverters._
 
 /**
@@ -44,12 +40,14 @@ trait SharedBackendConf {
   def isSparkVersionCheckEnabled = sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1, PROP_SPARK_VERSION_CHECK_ENABLED._2)
   def isFailOnUnsupportedSparkParamEnabled = sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
   def jks = sparkConf.getOption(PROP_JKS._1)
+  private[backends] def jksDistributed = sparkConf.getOption(PROP_JKS._3)
   def jksPass = sparkConf.getOption(PROP_JKS_PASS._1)
   def jksAlias = sparkConf.getOption(PROP_JKS_ALIAS._1)
   def hashLogin = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
   def ldapLogin = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
   def kerberosLogin = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
   def loginConf = sparkConf.getOption(PROP_LOGIN_CONF._1)
+  private[backends] def loginConfDistributed = sparkConf.getOption(PROP_LOGIN_CONF._3)
   def userName = sparkConf.getOption(PROP_USER_NAME._1)
   def sslConf = sparkConf.getOption(PROP_SSL_CONF._1)
   def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
@@ -136,10 +134,7 @@ trait SharedBackendConf {
   def setKerberosLoginEnabled() = set(PROP_KERBEROS_LOGIN._1, true)
   def setKerberosLoginDisabled() = set(PROP_KERBEROS_LOGIN._1, false)
 
-  def setLoginConf(file: String) = {
-    SparkSession.builder().getOrCreate().sparkContext.addFile(file)
-    set(PROP_LOGIN_CONF._1, SparkFiles.get(new File(file).getName))
-  }
+  def setLoginConf(filePath: String) = set(PROP_LOGIN_CONF._1, filePath)
   def setUserName(username: String) = set(PROP_USER_NAME._1, username)
   def setSslConf(path: String) = set(PROP_SSL_CONF._1, path)
 
@@ -207,6 +202,9 @@ trait SharedBackendConf {
   def setClientCheckRetryTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
+
+  private[backends] def getFileProperties(): Seq[(String, _, String)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
+
 }
 
 object SharedBackendConf {
@@ -244,7 +242,7 @@ object SharedBackendConf {
   val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
 
   /** Path to Java KeyStore file. */
-  val PROP_JKS = ("spark.ext.h2o.jks", None)
+  val PROP_JKS = ("spark.ext.h2o.jks", None, "spark.ext.h2o.jks.distributed")
 
   /** Password for Java KeyStore file. */
   val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", None)
@@ -262,7 +260,7 @@ object SharedBackendConf {
   val PROP_KERBEROS_LOGIN = ("spark.ext.h2o.kerberos.login", false)
 
   /** Login configuration file. */
-  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None)
+  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None, "spark.ext.h2o.login.conf.distributed")
 
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
