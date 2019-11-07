@@ -219,9 +219,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         case _: H2OClusterNodeNotReachableException =>
           val h2oCluster = hc.getConf.h2oCluster.get
           throw new H2OClusterNodeNotReachableException(
-          s"""
-External H2O cluster $h2oCluster - ${hc.getConf.cloudName.get} is not reachable, H2OContext has not been created.
-Please verify that $h2oCluster is running with web enabled and retry the context creation.""")
+            s"""External H2O cluster $h2oCluster - ${hc.getConf.cloudName.get} is not reachable, H2OContext has not been created.
+               |Please verify that $h2oCluster is running with web enabled and retry the context creation.""".stripMargin)
       }
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
