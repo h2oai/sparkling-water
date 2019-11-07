@@ -79,7 +79,7 @@ private[spark] trait H2OContextUtils extends Logging {
     } else {
       val port = conf.clientWebPort
       if (!isTcpPortAvailable(port)) {
-        throw new RuntimeException(s"Port $port not available!")
+        throw new RuntimeException(s"Explicitly specified client web port: $port is not available!")
       } else {
         port
       }
@@ -99,8 +99,8 @@ private[spark] trait H2OContextUtils extends Logging {
 
     val cloudV3 = H2OContextRestAPIUtils.getCloudInfo(conf)
     val ipPort = cloudV3.nodes(cloudV3.leader_idx).ip_port
-    
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://${ipPort}")
+
+    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort")
     holder.setInitParameter("prefix", "/")
     context.setServletHandler(handler)
     server.setHandler(context)
