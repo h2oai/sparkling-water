@@ -442,7 +442,7 @@ object H2OContext extends Logging {
     override protected def initBackend(): Unit = backend.init()
 
     override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
-      val cloudV3 = getCloudInfo()
+      val cloudV3 = getCloudInfo(conf)
       H2OBuildInfo(
         cloudV3.version,
         cloudV3.branch_name,
