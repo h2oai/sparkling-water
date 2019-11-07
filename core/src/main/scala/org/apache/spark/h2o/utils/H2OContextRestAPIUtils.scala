@@ -21,7 +21,7 @@ import java.net.URI
 
 import com.google.gson.Gson
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.CloudV3
 
 import scala.io.Source
@@ -80,11 +80,8 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
       content
     } catch {
       case cause: Exception =>
-        H2OContext.get().foreach(_.stop())
         throw new H2OClusterNodeNotReachableException(
-          s"""
-             External H2O cluster identified by ${endpoint.getHost}:${endpoint.getPort} is not reachable, closing the context.
-             Please create new context to a healthy and reachable (web enabled) external H2O cluster.""", cause)
+          s"External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.", cause)
     }
   }
 
