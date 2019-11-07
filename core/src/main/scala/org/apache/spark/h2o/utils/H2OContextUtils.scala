@@ -105,10 +105,6 @@ private[spark] trait H2OContextUtils extends Logging {
     context.setServletHandler(handler)
     server.setHandler(context)
     server.start()
-    while (!server.isStarted) {
-      Thread.sleep(100)
-    }
-
     new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port")
   }
 
