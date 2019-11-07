@@ -17,11 +17,14 @@
 
 package org.apache.spark.h2o.utils
 
-import java.net.URI
+import java.net.{InetAddress, InetSocketAddress, ServerSocket, URI}
 
-import org.apache.spark.SparkContext
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.{BuildInfo, H2OConf}
+import org.apache.spark.{SparkContext, SparkEnv}
+import org.eclipse.jetty.proxy.ProxyServlet
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
 import water.H2O
 import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
@@ -49,6 +52,60 @@ private[spark] trait H2OContextUtils extends Logging {
         logWarning(s"Desktop support is missing! Cannot open browser for $uri")
       }
     }
+  }
+
+  private def isTcpPortAvailable(port: Int): Boolean = {
+    try {
+      val serverSocket = new ServerSocket()
+
+      serverSocket.setReuseAddress(false);
+      serverSocket.bind(new InetSocketAddress(InetAddress.getByName(SparkEnv.get.blockManager.blockManagerId.host), port), 1)
+      serverSocket.close()
+      true
+    } catch {
+      case _: Exception => false
+    } finally {
+    }
+  }
+
+  private def findNextFreeFlowPort(conf: H2OConf): Int = {
+    if (conf.clientWebPort == -1) {
+      var port = conf.clientBasePort
+      val offset = conf.internalPortOffset
+      while (!isTcpPortAvailable(port)) {
+        port = port + offset + 1
+      }
+      port
+    } else {
+      val port = conf.clientWebPort
+      if (!isTcpPortAvailable(port)) {
+        throw new RuntimeException(s"Port $port not available!")
+      } else {
+        port
+      }
+
+    }
+  }
+
+  protected def startFlowProxy(conf: H2OConf): URI = {
+    val port = findNextFreeFlowPort(conf)
+    val server = new Server(port)
+
+    val context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+    context.setContextPath("/");
+
+    val handler = new ServletHandler()
+    val holder = handler.addServletWithMapping(classOf[ProxyServlet.Transparent], "/*")
+    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://${conf.h2oCluster.get}")
+    holder.setInitParameter("prefix", "/")
+    context.setServletHandler(handler)
+    server.setHandler(context)
+    server.start()
+    while (!server.isStarted) {
+      Thread.sleep(100)
+    }
+
+    new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port")
   }
 
   /**
