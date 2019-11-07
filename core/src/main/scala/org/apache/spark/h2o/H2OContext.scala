@@ -158,16 +158,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     this
   }
 
-  protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
-    H2OBuildInfo(
-      H2O.ABV.projectVersion(),
-      H2O.ABV.branchName(),
-      H2O.ABV.lastCommitHash(),
-      H2O.ABV.describe(),
-      H2O.ABV.compiledBy(),
-      H2O.ABV.compiledOn()
-    )
-  }
+  protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo
 
   protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo
 
@@ -400,6 +391,17 @@ object H2OContext extends Logging {
     override protected def initBackend(): Unit = {
       h2oNodes = backend.init()
     }
+
+    override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
+      H2OBuildInfo(
+        H2O.ABV.projectVersion(),
+        H2O.ABV.branchName(),
+        H2O.ABV.lastCommitHash(),
+        H2O.ABV.describe(),
+        H2O.ABV.compiledBy(),
+        H2O.ABV.compiledOn()
+      )
+    }
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
@@ -438,6 +440,18 @@ object H2OContext extends Logging {
     override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)
 
     override protected def initBackend(): Unit = backend.init()
+
+    override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
+      val cloudV3 = getCloudInfo()
+      H2OBuildInfo(
+        cloudV3.version,
+        cloudV3.branch_name,
+        cloudV3.last_commit_hash,
+        cloudV3.describe,
+        cloudV3.compiled_by,
+        cloudV3.compiled_on
+      )
+    }
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
