@@ -117,7 +117,8 @@ def distTaskDependencies = [
         ":sparkling-water-ml:publish",
         ":sparkling-water-examples:publish",
         ":sparkling-water-package:publish",
-        ":sparkling-water-scoring:publish"
+        ":sparkling-water-scoring:publish",
+        ":sparkling-water-utils:publish"
 ]
 
 def copyAndSubstituteGradleProperties() {
