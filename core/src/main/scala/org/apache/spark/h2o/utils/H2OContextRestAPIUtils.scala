@@ -68,26 +68,28 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 
   private def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
-    val content = readURLContent(s"$endpoint/3/Cloud")
+    val content = readURLContent(endpoint, "3/Cloud")
     new Gson().fromJson(content, classOf[CloudV3])
   }
 
-  private def readURLContent(url: String): String = {
+  private def readURLContent(endpoint: URI, suffix: String): String = {
     try {
-      val html = Source.fromURL(url)
+      val html = Source.fromURL(s"$endpoint/$suffix")
       val content = html.mkString
       html.close()
       content
     } catch {
       case cause: Exception =>
         H2OContext.get().foreach(_.stop())
-        throw new RuntimeException(
-          """
-             External H2O cluster is not reachable, closing the context.
-             Please create new context to a healthy H2O cluster using H2OContext.getOrCreate method.""", cause)
+        throw new H2OClusterNodeNotReachableException(
+          s"""
+             External H2O cluster identified by ${endpoint.getHost}:${endpoint.getPort} is not reachable, closing the context.
+             Please create new context to a healthy and reachable (web enabled) external H2O cluster.""", cause)
     }
   }
 
 }
+
+class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause)
 
 object H2OContextRestAPIUtils extends H2OContextRestAPIUtils
