@@ -214,7 +214,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     val clusterBuildTimeout = hc.getConf.cloudTimeout
     val nodes = if (runningFromNonJVMClient(hc)) {
       try {
-        getNodes(hc.getConf)
+        val nodes = getNodes(hc.getConf)
+        verifyWebOpen(nodes, hc.getConf)
+        nodes
       } catch {
         case _: H2OClusterNodeNotReachableException =>
           val h2oCluster = hc.getConf.h2oCluster.get
@@ -401,7 +403,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
              |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
           """.stripMargin)
       }
-
     } else {
       if (conf.cloudName.isEmpty) {
         throw new IllegalArgumentException(
