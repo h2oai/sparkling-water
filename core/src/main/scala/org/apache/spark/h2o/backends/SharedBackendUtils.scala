@@ -36,7 +36,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     * @param env SparkEnv instance
     * @return hostname of the node
     */
-  def getHostname(env: SparkEnv) = env.blockManager.blockManagerId.host
+  def getHostname(env: SparkEnv): String = env.blockManager.blockManagerId.host
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
     *
@@ -126,22 +126,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .buildArgs()
   }
 
-
-  def getLoginArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
-      .addIf("-hash_login", conf.hashLogin)
-      .addIf("-ldap_login", conf.ldapLogin)
-      .addIf("-kerberos_login", conf.kerberosLogin)
-      .add("-user_name", conf.userName)
-      .add("-login_conf", conf.loginConf)
-      .buildArgs()
-  }
-
-
   def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
-      .add(getLoginArgs(conf))
       .addIf("-quiet", !conf.clientVerboseOutput)
       .add("-log_level", conf.h2oClientLogLevel)
       .add("-log_dir", conf.h2oClientLogDir)
@@ -154,6 +141,11 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-jks", conf.jks)
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
+      .addIf("-hash_login", conf.hashLogin)
+      .addIf("-ldap_login", conf.ldapLogin)
+      .addIf("-kerberos_login", conf.kerberosLogin)
+      .add("-user_name", conf.userName)
+      .add("-login_conf", conf.loginConf)
       .add("-network", conf.clientNetworkMask)
       .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
       .addAsString(conf.clientExtraProperties)
@@ -162,11 +154,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {
     val headerPattern = """^\s*([^:]+)\:\s*(.+)$""".r
-    headers.split('\n').flatMap{ header =>
-      header match {
-        case headerPattern(key, value) => Seq("-add_http_header", key, value)
-        case _ => Seq.empty
-      }
+    headers.split('\n').flatMap {
+      case headerPattern(key, value) => Seq("-add_http_header", key, value)
+      case _ => Seq.empty
     }
   }
 
