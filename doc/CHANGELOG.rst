@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+v3.26.10 (2019-11-07)
+---------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.10-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.10-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.10-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.10-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.10-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.10-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.10-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.10-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1685 <https://0xdata.atlassian.net/browse/SW-1685>`__ - Fix Propagation of Extra Properties in In Internal Backend
+   -  `SW-1688 <https://0xdata.atlassian.net/browse/SW-1688>`__ - Fix docker image generation for Scala Sparkling Water in Kuberntes Environment
+   -  `SW-1697 <https://0xdata.atlassian.net/browse/SW-1697>`__ - MOJO Cache Causes That Scoring Applications Don&#39;t Finish When Everything Is Done
+   -  `SW-1700 <https://0xdata.atlassian.net/browse/SW-1700>`__ - sparkling-water-utils is not published to maven
+   -  `SW-1701 <https://0xdata.atlassian.net/browse/SW-1701>`__ - Upgrade H2O to 3.26.0.10
+                
+                                                                                                                                                                                                            
 v3.26.9 (2019-10-31)
 --------------------
 Downloads:
