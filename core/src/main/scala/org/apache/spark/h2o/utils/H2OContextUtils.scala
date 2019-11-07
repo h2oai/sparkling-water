@@ -96,7 +96,11 @@ private[spark] trait H2OContextUtils extends Logging {
 
     val handler = new ServletHandler()
     val holder = handler.addServletWithMapping(classOf[ProxyServlet.Transparent], "/*")
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://${conf.h2oCluster.get}")
+
+    val cloudV3 = H2OContextRestAPIUtils.getCloudInfo(conf)
+    val ipPort = cloudV3.nodes(cloudV3.leader_idx).ip_port
+    
+    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://${ipPort}")
     holder.setInitParameter("prefix", "/")
     context.setServletHandler(handler)
     server.setHandler(context)

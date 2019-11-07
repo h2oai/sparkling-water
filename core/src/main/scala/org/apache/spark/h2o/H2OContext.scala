@@ -406,7 +406,6 @@ object H2OContext extends Logging {
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
-    // Once H2O exposes leader node via rest api, remove the nodes argument
     override protected def getFlowIp(): String = flowIp
 
     override protected def getFlowPort(): Int = flowPort
