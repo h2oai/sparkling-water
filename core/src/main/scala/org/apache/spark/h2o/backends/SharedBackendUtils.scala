@@ -119,16 +119,16 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
-  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
+  def getH2OSecurityArgs(conf: H2OConf, internalWorker: Boolean): Seq[String] = {
     new ArgumentBuilder()
-      .add("-jks", conf.jksDistributed)
+      .add("-jks", if (internalWorker) conf.jks.map(SparkFiles.get) else conf.jksDistributed)
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
       .addIf("-hash_login", conf.hashLogin)
       .addIf("-ldap_login", conf.ldapLogin)
       .addIf("-kerberos_login", conf.kerberosLogin)
       .add("-user_name", conf.userName)
-      .add("-login_conf", conf.loginConfDistributed)
+      .add("-login_conf", if (internalWorker) conf.loginConf.map(SparkFiles.get) else conf.loginConfDistributed)
       .buildArgs()
   }
 
@@ -146,13 +146,13 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-internal_security_conf", conf.sslConf)
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
-      .add(getH2OSecurityArgs(conf))
       .buildArgs()
   }
 
   def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
+      .add(getH2OSecurityArgs(conf, false))
       .addIf("-quiet", !conf.clientVerboseOutput)
       .add("-log_level", conf.h2oClientLogLevel)
       .add("-log_dir", conf.h2oClientLogDir)
