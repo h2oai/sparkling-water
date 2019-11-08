@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
+import org.apache.spark.h2o.utils.FlowCredentials
 import org.apache.spark.internal.Logging
 import org.apache.spark.repl.h2o.H2OInterpreter
 import org.apache.spark.sql.SparkSession
@@ -33,6 +34,8 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   H2OConf.checkDeprecatedOptions(sparkConf)
 
+  protected var nonJVMClientCreds: Option[FlowCredentials] = None
+
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
 
@@ -45,7 +48,10 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   /** Copy this object */
   override def clone: H2OConf = {
-    new H2OConf(sparkConf).setAll(getAll)
+    val conf = new H2OConf(sparkConf)
+    conf.setAll(getAll)
+    conf.nonJVMClientCreds = nonJVMClientCreds
+    conf
   }
 
   /** Set a configuration variable. */

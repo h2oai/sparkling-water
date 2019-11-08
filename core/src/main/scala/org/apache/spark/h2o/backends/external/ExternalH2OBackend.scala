@@ -219,7 +219,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           val h2oCluster = hc.getConf.h2oCluster.get + hc.getConf.contextPath.getOrElse("")
           throw new H2OClusterNodeNotReachableException(
             s"""External H2O cluster $h2oCluster - ${hc.getConf.cloudName.get} is not reachable, H2OContext has not been created.
-               |Please verify that $h2oCluster is running with web enabled and retry the context creation.""".stripMargin)
+               |Please verify that $h2oCluster is running with web enabled and retry the context creation.
+               |If your cluster is secured, also make sure you that are providing valid credentials to the client. """.stripMargin)
       }
     } else {
       val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray

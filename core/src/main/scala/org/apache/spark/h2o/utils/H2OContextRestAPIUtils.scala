@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
-import java.net.URI
+import java.net.{URI, URL}
 
 import com.google.gson.Gson
 import org.apache.http.client.utils.URIBuilder
@@ -28,7 +28,6 @@ import scala.io.Source
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
 
-
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
     val endpoint = new URI(
       conf.getScheme(),
@@ -38,13 +37,13 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
       conf.contextPath.orNull,
       null,
       null)
-    getCloudInfoFromNode(endpoint)
+    getCloudInfoFromNode(endpoint, conf)
   }
 
 
   def getCloudInfo(conf: H2OConf): CloudV3 = {
     val endpoint = getClusterEndpoint(conf)
-    getCloudInfoFromNode(endpoint)
+    getCloudInfoFromNode(endpoint, conf)
   }
 
   def getNodes(conf: H2OConf): Array[NodeDesc] = {
@@ -86,16 +85,25 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     }
   }
 
-  private def getCloudInfoFromNode(endpoint: URI): CloudV3 = {
-    val content = readURLContent(endpoint, "3/Cloud")
+  private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
+    val content = readURLContent(endpoint, "3/Cloud", conf)
     new Gson().fromJson(content, classOf[CloudV3])
   }
 
-  private def readURLContent(endpoint: URI, suffix: String): String = {
+  private def readURLContent(endpoint: URI, suffix: String, conf: H2OConf): String = {
     try {
-      val html = Source.fromURL(s"$endpoint/$suffix")
-      val content = html.mkString
-      html.close()
+      val connection = new URL(s"$endpoint/$suffix").openConnection
+      val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
+      field.setAccessible(true)
+      val creds = field.get(conf).asInstanceOf[Option[FlowCredentials]]
+      if (creds.isDefined) {
+        val userpass = creds.get.toString
+        val basicAuth = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes)
+        connection.setRequestProperty("Authorization", basicAuth)
+      }
+      val response = Source.fromInputStream(connection.getInputStream)
+      val content = response.mkString
+      response.close()
       content
     } catch {
       case cause: Exception =>
@@ -103,7 +111,6 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
           s"External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.", cause)
     }
   }
-
 }
 
 class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
