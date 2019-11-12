@@ -25,8 +25,10 @@ Generally, to enable LDAP you need to set the following environmental properties
 
  - ``spark.ext.h2o.ldap.login=true``
  - ``spark.ext.h2o.login.conf=ldap.conf``
+ - ``spark.ext.h2o.user.name=username``
 
-where ``ldap.conf`` is the configuration file for the LDAP connection.
+where ``ldap.conf`` is the configuration file for the LDAP connection and `username` is a username of your LDAP account
+that will be used for authentication to the H2O-3 cluster.
 
 Configuring LDAP in Scala
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,7 +37,10 @@ You can pass the required properties directly as Spark properties, such as:
 
 .. code:: shell
 
-    ./bin/sparkling-shell --conf spark.ext.h2o.ldap.login=true --conf spark.ext.h2o.login.conf=ldap.conf
+    ./bin/sparkling-shell \
+    --conf spark.ext.h2o.ldap.login=true \
+    --conf spark.ext.h2o.login.conf=ldap.conf \
+    --conf spark.ext.h2o.user.name=username
 
 And later, you can create ``H2OContext`` without the configuration object as:
 
@@ -44,16 +49,16 @@ And later, you can create ``H2OContext`` without the configuration object as:
     import org.apache.spark.h2o._
     val hc = H2OContext.getOrCreate(spark)
 
-
 Or, you can also use setters available on ``H2OConf`` as:
 
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setLoginConf("ldap.conf").setLdapLoginEnabled()
+    val conf = new H2OConf(spark).setLoginConf("ldap.conf").setUserName("username").setLdapLoginEnabled()
     val hc = H2OContext.getOrCreate(spark, conf)
 
-Later when accessing Flow, you will be asked for the username and password of a user available in your LDAP domain.
+Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
+property `spark.ext.h2o.user.name` or via the method `setUserName`.
 
 Configuring LDAP in Python (PySparkling)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +67,10 @@ You can pass the required properties directly as Spark properties, such as:
 
 .. code:: shell
 
-    ./bin/pysparkling --conf spark.ext.h2o.ldap.login=true --conf spark.ext.h2o.login.conf=ldap.conf
+    ./bin/pysparkling \
+    --conf spark.ext.h2o.ldap.login=true \
+    --conf spark.ext.h2o.login.conf=ldap.conf \
+    --conf spark.ext.h2o.user.name=username
 
 And later, you can create ``H2OContext`` without the configuration object as:
 
@@ -77,10 +85,10 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_login_conf("ldap.conf").set_ldap_login_enabled()
+    conf = H2OConf(spark).set_login_conf("ldap.conf").set_user_name("username").set_ldap_login_enabled()
     hc = H2OContext.getOrCreate(spark, conf, auth=("username", "password"))
 
 You can see that in the case of PySparkling, you need to also specify the username and password as part of the ``H2OContext`` call. This is required because you want to have the Python client authenticated as well.
 
-Later when accessing Flow, you will be asked for the username and password of a user available in your LDAP domain.
-
+Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
+property `spark.ext.h2o.user.name` or via the method `set_user_name`.
