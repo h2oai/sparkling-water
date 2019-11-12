@@ -33,7 +33,11 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
     require(schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
       s"Specified label column '${getLabelCol()} was not found in input dataset!")
     require(!getFeaturesCols().exists(n => n.compareToIgnoreCase(getLabelCol()) == 0),
-      s"Specified input features cannot contain the label column!")
+      "Specified input features cannot contain the label column!")
+    require(getWeightCol() == null || getWeightCol() != getFoldCol(),
+      "Specified weight column cannot be the same as the fold column!")
+    require(getOffsetCol() == null || getOffsetCol() != getFoldCol(),
+      "Specified offset column cannot be the same as the fold column!")
     schema
   }
 

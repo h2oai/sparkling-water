@@ -28,8 +28,20 @@ class H2OCommonSupervisedParams(H2OCommonParams):
         "Label column name",
         H2OTypeConverters.toString())
 
+    offsetCol = Param(
+        Params._dummy(),
+        "offsetCol",
+        "Offset column name",
+        H2OTypeConverters.toNullableString())
+
     def getLabelCol(self):
         return self.getOrDefault(self.labelCol)
 
+    def getOffsetCol(self):
+        return self.getOrDefault(self.offsetCol)
+
     def setLabelCol(self, value):
         return self._set(labelCol=value)
+
+    def setOffsetCol(self, value):
+        return self._set(offsetCol=value)

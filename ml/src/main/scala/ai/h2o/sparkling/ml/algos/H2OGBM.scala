@@ -52,6 +52,7 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] {
   private val colSampleRate = doubleParam("colSampleRate")
   private val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
   private val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
+  private val offsetColumn = stringParam("offsetColumn")
 
   //
   // Default values
@@ -61,7 +62,8 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] {
     learnRateAnnealing -> parameters._learn_rate_annealing,
     colSampleRate -> parameters._col_sample_rate,
     maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred,
-    predNoiseBandwidth -> parameters._pred_noise_bandwidth
+    predNoiseBandwidth -> parameters._pred_noise_bandwidth,
+    offsetColumn -> parameters._offset_column
   )
 
   //

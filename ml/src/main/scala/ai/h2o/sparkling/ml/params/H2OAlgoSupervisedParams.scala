@@ -28,5 +28,6 @@ trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
   override protected def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._response_column = getLabelCol()
+    parameters._offset_column = getOffsetCol()
   }
 }

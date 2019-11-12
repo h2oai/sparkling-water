@@ -24,17 +24,23 @@ import org.apache.spark.ml.param._
 trait H2OCommonSupervisedParams extends H2OCommonParams {
 
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
+  protected final val offsetCol = new Param[String](this, "offsetCol", "Offset column name")
 
   setDefault(
-    labelCol -> "label"
+    labelCol -> "label",
+    offsetCol -> null
   )
 
   def getLabelCol(): String = $(labelCol)
 
+  def getOffsetCol(): String = $(offsetCol)
+
   def setLabelCol(columnName: String): this.type = set(labelCol, columnName)
 
+  def setOffsetCol(columnName: String): this.type = set(offsetCol, columnName)
+
   override protected def getExcludedCols(): Seq[String] = {
-    Seq(getLabelCol(), getFoldCol(), getWeightCol())
+    Seq(getLabelCol(), getFoldCol(), getWeightCol(), getOffsetCol())
       .flatMap(Option(_)) // Remove nulls
   }
 }
