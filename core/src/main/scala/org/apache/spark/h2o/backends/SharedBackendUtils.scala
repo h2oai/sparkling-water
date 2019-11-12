@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends
 
 import java.io.File
 
-import org.apache.spark.SparkEnv
+import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.AzureDatabricksUtils
 import org.apache.spark.internal.Logging
@@ -36,7 +36,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     * @param env SparkEnv instance
     * @return hostname of the node
     */
-  def getHostname(env: SparkEnv) = env.blockManager.blockManagerId.host
+  def getHostname(env: SparkEnv): String = env.blockManager.blockManagerId.host
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
     *
@@ -105,8 +105,31 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     conf
   }
 
+  def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
+    for(fileProperty <- conf.getFileProperties()) {
+      for (filePath <- conf.getOption(fileProperty._1)) {
+        sc.addFile(filePath)
+        val distributedLocalPath = SparkFiles.get(new File(filePath).getName)
+        conf.set(fileProperty._3, distributedLocalPath)
+      }
+    }
+  }
+
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
+  }
+
+  def getH2OSecurityArgs(conf: H2OConf, internalWorker: Boolean): Seq[String] = {
+    new ArgumentBuilder()
+      .add("-jks", if (internalWorker) conf.jks.map(SparkFiles.get) else conf.jksDistributed)
+      .add("-jks_pass", conf.jksPass)
+      .add("-jks_alias", conf.jksAlias)
+      .addIf("-hash_login", conf.hashLogin)
+      .addIf("-ldap_login", conf.ldapLogin)
+      .addIf("-kerberos_login", conf.kerberosLogin)
+      .add("-user_name", conf.userName)
+      .add("-login_conf", if (internalWorker) conf.loginConf.map(SparkFiles.get) else conf.loginConfDistributed)
+      .buildArgs()
   }
 
   /**
@@ -126,22 +149,10 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .buildArgs()
   }
 
-
-  def getLoginArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
-      .addIf("-hash_login", conf.hashLogin)
-      .addIf("-ldap_login", conf.ldapLogin)
-      .addIf("-kerberos_login", conf.kerberosLogin)
-      .add("-user_name", conf.userName)
-      .add("-login_conf", conf.loginConf)
-      .buildArgs()
-  }
-
-
   def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
-      .add(getLoginArgs(conf))
+      .add(getH2OSecurityArgs(conf, false))
       .addIf("-quiet", !conf.clientVerboseOutput)
       .add("-log_level", conf.h2oClientLogLevel)
       .add("-log_dir", conf.h2oClientLogDir)
@@ -151,9 +162,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add(getExtraHttpHeaderArgs(conf))
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
-      .add("-jks", conf.jks)
-      .add("-jks_pass", conf.jksPass)
-      .add("-jks_alias", conf.jksAlias)
       .add("-network", conf.clientNetworkMask)
       .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
       .addAsString(conf.clientExtraProperties)
@@ -162,11 +170,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {
     val headerPattern = """^\s*([^:]+)\:\s*(.+)$""".r
-    headers.split('\n').flatMap{ header =>
-      header match {
-        case headerPattern(key, value) => Seq("-add_http_header", key, value)
-        case _ => Seq.empty
-      }
+    headers.split('\n').flatMap {
+      case headerPattern(key, value) => Seq("-add_http_header", key, value)
+      case _ => Seq.empty
     }
   }
 

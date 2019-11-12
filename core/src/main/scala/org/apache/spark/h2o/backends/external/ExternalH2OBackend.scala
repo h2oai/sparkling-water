@@ -113,10 +113,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
     }
 
-    val loginArgs = getLoginArgs(conf)
-    if (loginArgs.nonEmpty) {
-      cmdToLaunch = cmdToLaunch ++ loginArgs
-    }
+    cmdToLaunch = cmdToLaunch ++ getH2OSecurityArgs(hc.getConf, false)
 
     if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-principal",
@@ -415,6 +412,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
       }
     }
+    distributeFiles(conf, hc.sparkContext)
     conf
   }
 
