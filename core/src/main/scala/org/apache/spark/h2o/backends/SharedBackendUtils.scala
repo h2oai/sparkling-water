@@ -113,20 +113,24 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
   }
 
+  private def getDistributedFilePath(fileConf: Option[String]): Option[String] = {
+    fileConf.map(name => SparkFiles.get(new File(name).getName))
+  }
+
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
   def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-jks", conf.jks.map(SparkFiles.get))
+      .add("-jks",  getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
       .addIf("-hash_login", conf.hashLogin)
       .addIf("-ldap_login", conf.ldapLogin)
       .addIf("-kerberos_login", conf.kerberosLogin)
       .add("-user_name", conf.userName)
-      .add("-login_conf", conf.loginConf.map(SparkFiles.get))
+      .add("-login_conf", getDistributedFilePath(conf.loginConf))
       .buildArgs()
   }
 
