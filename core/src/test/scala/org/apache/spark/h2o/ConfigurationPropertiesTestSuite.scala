@@ -74,10 +74,14 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
   }
 }
 
-@RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_HttpHeaders extends ConfigurationPropertiesTestSuite {
-  test("test extra HTTP headers are propagated to FLOW UI") {
-    sc = new SparkContext("local[*]", this.getClass.getSimpleName, defaultSparkConf)
+abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends ConfigurationPropertiesTestSuite {
+
+  def testExtraHTTPHeadersArePropagated(master: String, urlProvider: H2OContext => String): Unit = {
+    System.setProperty("spark.test.home", System.getenv("SPARK_HOME"))
+    val conf = defaultSparkConf
+      .set("spark.driver.extraClassPath", sys.props("java.class.path"))
+      .set("spark.executor.extraClassPath", sys.props("java.class.path"))
+    sc = new SparkContext(master, this.getClass.getSimpleName, conf)
     val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
     val h2oConf = new H2OConf(spark)
     val extraHttpHeaders = Map(
@@ -85,10 +89,11 @@ class ConfigurationPropertiesTestSuite_HttpHeaders extends ConfigurationProperti
       "X-MyCustomHeaderB" -> "B")
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
+      .setH2ONodeWebEnabled()
       .setClusterSize(1)
     hc = H2OContext.getOrCreate(spark, h2oConf)
 
-    val url = new URL(hc.flowURL())
+    val url = new URL(urlProvider(hc))
     val connection = url.openConnection().asInstanceOf[HttpURLConnection]
     try {
       val flowHeaders = connection.getHeaderFields.asScala.filterKeys(key => extraHttpHeaders.contains(key)).toMap
@@ -97,6 +102,20 @@ class ConfigurationPropertiesTestSuite_HttpHeaders extends ConfigurationProperti
     finally {
       connection.disconnect()
     }
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
+  test("test extra HTTP headers are propagated to FLOW UI") {
+    testExtraHTTPHeadersArePropagated("local[*]", (hc: H2OContext) => hc.flowURL())
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
+  test("test extra HTTP headers are propagated to FLOW UI") {
+    testExtraHTTPHeadersArePropagated("local-cluster[1,1,2048]", (hc: H2OContext) => s"http://${hc.h2oNodes.head.ipPort}")
   }
 }
 

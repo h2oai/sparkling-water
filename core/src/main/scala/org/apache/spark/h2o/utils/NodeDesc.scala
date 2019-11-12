@@ -29,6 +29,8 @@ import water.nbhm.NonBlockingHashMap
   */
 case class NodeDesc(nodeId: String, hostname: String, port: Int) {
   override def productPrefix = ""
+
+  def ipPort: String = s"$hostname:$port"
 }
 
 object NodeDesc {
