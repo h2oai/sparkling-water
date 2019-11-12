@@ -320,7 +320,7 @@ object SharedBackendConf {
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)
 
   /** Extra http headers for Flow UI */
-  val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.client.flow.extra.http.headers", None)
+  val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.flow.extra.http.headers", None)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
