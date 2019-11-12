@@ -21,7 +21,7 @@ Generally, to enable Kerberos authentication you need to set the following envir
  - ``spark.ext.h2o.login.conf=kerberos.conf``
  - ``spark.ext.h2o.user.name=username``
 
-where ``kerberos.conf`` is the configuration file for the Kerberos connection and zusername` is a username of your Kerberos account
+where ``kerberos.conf`` is the configuration file for the Kerberos connection and `username` is a username of your Kerberos account
 that will be used for authentication to the H2O-3 cluster.
 
 Configuring Kerberos Auth in Scala
