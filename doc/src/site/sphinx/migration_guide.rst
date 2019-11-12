@@ -103,6 +103,7 @@ Sparkling Water is integrating H2O ``3.26.0.9``, it is the second release with `
 
 Renamed Property for Passing Extra HTTP Headers for Flow UI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Since Flow UI can also run on each H2O node, we decided to rename the configuration property ``spark.ext.h2o.client.flow.extra.http.headers``
-to ``spark.ext.h2o.flow.extra.http.headers``.
+The configuration property ``spark.ext.h2o.client.flow.extra.http.headers`` was renamed to
+to ``spark.ext.h2o.flow.extra.http.headers`` since Flow UI can also run on H2O nodes and the value of the property is
+also propagated to H2O nodes since the major version ``3.28.0.1-1``.
 
