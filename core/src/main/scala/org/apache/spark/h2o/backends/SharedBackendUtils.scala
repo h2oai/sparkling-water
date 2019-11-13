@@ -123,7 +123,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-jks",  getDistributedFilePath(conf.jks))
+      .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
       .addIf("-hash_login", conf.hashLogin)

@@ -240,7 +240,7 @@ object SharedBackendConf {
   val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
 
   /** Path to Java KeyStore file. */
-  val PROP_JKS = ("spark.ext.h2o.jks", None, "spark.ext.h2o.jks.distributed")
+  val PROP_JKS = ("spark.ext.h2o.jks", None)
 
   /** Password for Java KeyStore file. */
   val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", None)
@@ -258,7 +258,7 @@ object SharedBackendConf {
   val PROP_KERBEROS_LOGIN = ("spark.ext.h2o.kerberos.login", false)
 
   /** Login configuration file. */
-  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None, "spark.ext.h2o.login.conf.distributed")
+  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None)
 
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
