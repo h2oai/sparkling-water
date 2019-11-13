@@ -109,26 +109,28 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     for(fileProperty <- conf.getFileProperties()) {
       for (filePath <- conf.getOption(fileProperty._1)) {
         sc.addFile(filePath)
-        val distributedLocalPath = SparkFiles.get(new File(filePath).getName)
-        conf.set(fileProperty._3, distributedLocalPath)
       }
     }
+  }
+
+  private def getDistributedFilePath(fileConf: Option[String]): Option[String] = {
+    fileConf.map(name => SparkFiles.get(new File(name).getName))
   }
 
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
   }
 
-  def getH2OSecurityArgs(conf: H2OConf, internalWorker: Boolean): Seq[String] = {
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-jks", if (internalWorker) conf.jks.map(SparkFiles.get) else conf.jksDistributed)
+      .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
       .addIf("-hash_login", conf.hashLogin)
       .addIf("-ldap_login", conf.ldapLogin)
       .addIf("-kerberos_login", conf.kerberosLogin)
       .add("-user_name", conf.userName)
-      .add("-login_conf", if (internalWorker) conf.loginConf.map(SparkFiles.get) else conf.loginConfDistributed)
+      .add("-login_conf", getDistributedFilePath(conf.loginConf))
       .buildArgs()
   }
 
@@ -152,7 +154,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
-      .add(getH2OSecurityArgs(conf, false))
+      .add(getH2OSecurityArgs(conf))
       .addIf("-quiet", !conf.clientVerboseOutput)
       .add("-log_level", conf.h2oClientLogLevel)
       .add("-log_dir", conf.h2oClientLogDir)
