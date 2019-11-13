@@ -40,14 +40,12 @@ trait SharedBackendConf {
   def isSparkVersionCheckEnabled = sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1, PROP_SPARK_VERSION_CHECK_ENABLED._2)
   def isFailOnUnsupportedSparkParamEnabled = sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
   def jks = sparkConf.getOption(PROP_JKS._1)
-  private[backends] def jksDistributed = sparkConf.getOption(PROP_JKS._3)
   def jksPass = sparkConf.getOption(PROP_JKS_PASS._1)
   def jksAlias = sparkConf.getOption(PROP_JKS_ALIAS._1)
   def hashLogin = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
   def ldapLogin = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
   def kerberosLogin = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
   def loginConf = sparkConf.getOption(PROP_LOGIN_CONF._1)
-  private[backends] def loginConfDistributed = sparkConf.getOption(PROP_LOGIN_CONF._3)
   def userName = sparkConf.getOption(PROP_USER_NAME._1)
   def sslConf = sparkConf.getOption(PROP_SSL_CONF._1)
   def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
@@ -242,7 +240,7 @@ object SharedBackendConf {
   val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
 
   /** Path to Java KeyStore file. */
-  val PROP_JKS = ("spark.ext.h2o.jks", None, "spark.ext.h2o.jks.distributed")
+  val PROP_JKS = ("spark.ext.h2o.jks", None)
 
   /** Password for Java KeyStore file. */
   val PROP_JKS_PASS = ("spark.ext.h2o.jks.pass", None)
@@ -260,7 +258,7 @@ object SharedBackendConf {
   val PROP_KERBEROS_LOGIN = ("spark.ext.h2o.kerberos.login", false)
 
   /** Login configuration file. */
-  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None, "spark.ext.h2o.login.conf.distributed")
+  val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None)
 
   /** Override user name for cluster. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
