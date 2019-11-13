@@ -77,7 +77,7 @@ private[spark] trait H2OContextUtils extends Logging {
     } else {
       val port = conf.clientWebPort
       if (!isTcpPortAvailable(port)) {
-        throw new RuntimeException(s"Explicitly specified client web port: $port is not available!")
+        throw new RuntimeException(s"Explicitly specified client web port $port is already occupied, please specify a free port!")
       } else {
         port
       }
