@@ -201,7 +201,7 @@ trait SharedBackendConf {
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
-  private[backends] def getFileProperties(): Seq[(String, _, String)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
+  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
 
 }
 
