@@ -55,21 +55,17 @@ private[spark] trait H2OContextUtils extends Logging {
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
-    val serverSocket = new ServerSocket()
-    try {
+    scala.util.Try {
+      val serverSocket = new ServerSocket()
       serverSocket.setReuseAddress(false)
       val host = SparkEnv.get.blockManager.blockManagerId.host
       val socketAddress = new InetSocketAddress(InetAddress.getByName(host), port)
       serverSocket.bind(socketAddress, 1)
+      serverSocket.close()
       true
-    } catch {
-      case _: Exception => false
-    } finally {
-      try {
-        serverSocket.close()
-      } catch {
-        case _: Exception =>
-      }
+    }.getOrElse {
+      logDebug(s"Tried using port $port for Flow proxy, but port was already occupied!")
+      false
     }
   }
 
