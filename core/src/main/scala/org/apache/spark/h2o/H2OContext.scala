@@ -154,7 +154,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
     uiUpdateThread.start() // start periodical updates of the UI
-
     this
   }
 
@@ -405,17 +404,18 @@ object H2OContext extends Logging {
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
-    // Once H2O exposes leader node via rest api, remove the nodes argument
-    override protected def getFlowIp(): String = conf.h2oCluster.get.split(":")(0)
+    private var flowIp: String = _
+    private var flowPort: Int = _
+    override protected def getFlowIp(): String = flowIp
 
-    override protected def getFlowPort(): Int = conf.h2oCluster.get.split(":")(1).toInt
+    override protected def getFlowPort(): Int = flowPort
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
       val cloudV3 = getCloudInfo(conf)
       H2OClusterInfo(
-        s"${getFlowIp()}:${getFlowPort()}",
+        s"$flowIp:$flowPort",
         cloudV3.cloud_healthy,
         cloudV3.internal_security_enabled,
         nodes.map(_.ipPort()),
@@ -432,14 +432,20 @@ object H2OContext extends Logging {
         case e: H2OClusterNodeNotReachableException =>
           H2OContext.get().head.stop()
           throw new H2OClusterNodeNotReachableException(
-            s"""External H2O cluster ${conf.h2oCluster.get} - ${conf.cloudName.get} is not reachable, H2OContext has been closed.
+            s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
+               |H2OContext has been closed.
                |Please create a new H2OContext to a healthy and reachable (web enabled) external H2O cluster.""".stripMargin, e.getCause)
       }
     }
 
     override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)
 
-    override protected def initBackend(): Unit = backend.init()
+    override protected def initBackend(): Unit = {
+      backend.init()
+      val uri = startFlowProxy(conf)
+      flowIp = uri.getHost
+      flowPort = uri.getPort
+    }
 
     override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
       val cloudV3 = getCloudInfo(conf)
