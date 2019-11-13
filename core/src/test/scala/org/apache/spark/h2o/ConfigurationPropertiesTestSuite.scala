@@ -95,7 +95,6 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
       .setFlowExtraHttpHeaders(extraHttpHeaders)
       .setH2ONodeWebEnabled()
       .setClusterSize(1)
-      .useAutoClusterStart()
     hc = H2OContext.getOrCreate(spark, h2oConf)
 
     val url = new URL(urlProvider(hc))
