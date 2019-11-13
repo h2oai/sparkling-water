@@ -63,16 +63,14 @@ private[spark] trait H2OContextUtils extends Logging {
       serverSocket.bind(socketAddress, 1)
       serverSocket.close()
       true
-    }.getOrElse {
-      logDebug(s"Tried using port $port for Flow proxy, but port was already occupied!")
-      false
-    }
+    }.getOrElse(false)
   }
 
   private def findNextFreeFlowPort(conf: H2OConf): Int = {
     if (conf.clientWebPort == -1) {
       var port = conf.clientBasePort
       while (!isTcpPortAvailable(port)) {
+        logDebug(s"Tried using port $port for Flow proxy, but port was already occupied!")
         port = port + 1
       }
       port
