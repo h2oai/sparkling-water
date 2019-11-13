@@ -96,7 +96,7 @@ private[spark] trait H2OContextUtils extends Logging {
     val server = new Server(port)
 
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-    context.setContextPath("/");
+    context.setContextPath("/")
 
     val handler = new ServletHandler()
     val holder = handler.addServletWithMapping(classOf[ProxyServlet.Transparent], "/*")
@@ -104,12 +104,12 @@ private[spark] trait H2OContextUtils extends Logging {
     val cloudV3 = H2OContextRestAPIUtils.getCloudInfo(conf)
     val ipPort = cloudV3.nodes(cloudV3.leader_idx).ip_port
 
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort")
-    holder.setInitParameter("prefix", "/")
+    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
+    holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
     context.setServletHandler(handler)
     server.setHandler(context)
     server.start()
-    new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port")
+    new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
   }
 
   /**

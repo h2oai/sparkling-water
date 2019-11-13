@@ -432,7 +432,8 @@ object H2OContext extends Logging {
         case e: H2OClusterNodeNotReachableException =>
           H2OContext.get().head.stop()
           throw new H2OClusterNodeNotReachableException(
-            s"""External H2O cluster ${conf.h2oCluster.get} - ${conf.cloudName.get} is not reachable, H2OContext has been closed.
+            s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
+               |H2OContext has been closed.
                |Please create a new H2OContext to a healthy and reachable (web enabled) external H2O cluster.""".stripMargin, e.getCause)
       }
     }
