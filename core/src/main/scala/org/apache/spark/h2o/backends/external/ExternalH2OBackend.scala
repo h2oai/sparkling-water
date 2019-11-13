@@ -113,7 +113,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
     }
 
-    cmdToLaunch = cmdToLaunch ++ getH2OSecurityArgs(hc.getConf, false)
+    cmdToLaunch = cmdToLaunch ++ getH2OSecurityArgs(hc.getConf)
 
     if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-principal",
