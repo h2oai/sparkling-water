@@ -34,6 +34,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   H2OConf.checkDeprecatedOptions(sparkConf)
 
+  @transient
   protected var nonJVMClientCreds: Option[FlowCredentials] = None
 
   /** Support for creating H2OConf in Java environments */
