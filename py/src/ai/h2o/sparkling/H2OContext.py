@@ -166,6 +166,8 @@ class H2OContext(object):
         else:
             selected_conf = H2OConf(spark_session)
         selected_conf.set("spark.ext.h2o.running.from.non.jvm.client", True)
+        if "auth" in kwargs:
+            H2OContext.__setCreds(selected_conf, kwargs["auth"])
 
         # Call pre_create hook
         if pre_create_hook:
@@ -200,6 +202,16 @@ class H2OContext(object):
         if deploy_mode != "cluster":
             atexit.register(lambda: h2o_context.__stop())
         return h2o_context
+
+    @staticmethod
+    def __setCreds(conf, auth):
+        jconf = conf._jconf
+        field = jconf.getClass().getDeclaredField("nonJVMClientCreds")
+        field.setAccessible(True)
+        from pyspark.ml.wrapper import JavaWrapper
+        creds = JavaWrapper._new_java_obj("org.apache.spark.h2o.utils.FlowCredentials", auth[0], auth[1])
+        someCreds = JavaWrapper._new_java_obj("scala.Some", creds)
+        field.set(jconf, someCreds)
 
     def __isClientConnected(self):
         hc = self._jhc.h2oContext()
