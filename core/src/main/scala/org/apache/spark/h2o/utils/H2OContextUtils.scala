@@ -76,9 +76,8 @@ private[spark] trait H2OContextUtils extends Logging {
   private def findNextFreeFlowPort(conf: H2OConf): Int = {
     if (conf.clientWebPort == -1) {
       var port = conf.clientBasePort
-      val offset = conf.internalPortOffset
       while (!isTcpPortAvailable(port)) {
-        port = port + offset + 1
+        port = port + 1
       }
       port
     } else {
