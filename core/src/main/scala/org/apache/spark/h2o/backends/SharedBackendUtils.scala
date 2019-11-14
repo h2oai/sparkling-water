@@ -148,6 +148,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-internal_security_conf", conf.sslConf)
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
+      .add(getExtraHttpHeaderArgs(conf))
       .buildArgs()
   }
 
@@ -161,7 +162,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-baseport", conf.clientBasePort)
       .add("-context_path", conf.contextPath)
       .add("-flow_dir", conf.flowDir)
-      .add(getExtraHttpHeaderArgs(conf))
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .add("-network", conf.clientNetworkMask)

@@ -146,18 +146,18 @@ Configuration properties independent of selected backend
 |                                                    |                | corresponding parameters in Sparkling  |
 |                                                    |                | Water.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
-| **H2O client parameters**                          |                |                                        |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
-|                                                    |                | are saved.                             |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.client.flow.extra.http.headers``   | ``None``       | Extra HTTP headers that will be used   |
+| ``spark.ext.h2o.flow.extra.http.headers``          | ``None``       | Extra HTTP headers that will be used   |
 |                                                    |                | in communication between the front-end |
 |                                                    |                | and back-end part of Flow UI.          |
 |                                                    |                | The headers should be delimited by     |
 |                                                    |                | a new line. Don't forget to escape     |
 |                                                    |                | special characters when passing        |
 |                                                    |                | the parameter from a command line.     |
++----------------------------------------------------+----------------+----------------------------------------+
+| **H2O client parameters**                          |                |                                        |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
+|                                                    |                | are saved.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | IP of H2O client node.                 |
 +----------------------------------------------------+----------------+----------------------------------------+
