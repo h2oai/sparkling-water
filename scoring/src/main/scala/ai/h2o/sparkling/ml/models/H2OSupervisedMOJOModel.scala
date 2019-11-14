@@ -20,16 +20,26 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams
 import hex.ModelCategory
 import hex.genmodel.MojoModel
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct, lit}
-import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.functions.{col, lit, struct}
+import org.apache.spark.sql.types.{DoubleType, StructType}
 
 class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid) with H2OSupervisedMOJOParams {
 
   def setSpecificParams(mojoModel: MojoModel): H2OSupervisedMOJOModel = {
     set(offsetCol -> mojoModel._offsetColumn)
     this
+  }
+
+  @DeveloperApi
+  override def transformSchema(schema: StructType): StructType = {
+    val offsetColumn = getOffsetCol()
+    if(offsetColumn != null) {
+      require(schema.fieldNames.contains(offsetColumn), "Offset column must be present within the dataset!")
+    }
+    super.transformSchema(schema)
   }
 
   protected override def applyPredictionUdfToFlatDataFrame(
@@ -42,7 +52,11 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial =>
-        if (flatDataFrame.columns.contains(getOffsetCol())) {
+        val offsetColumn = getOffsetCol()
+        if (offsetColumn != null) {
+          if (flatDataFrame.columns.contains(offsetColumn)) {
+            throw new RuntimeException("Offset column must be present within the dataset!")
+          }
           flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
         } else {
           flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
