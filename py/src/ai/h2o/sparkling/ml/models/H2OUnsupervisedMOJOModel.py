@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml import H2OMOJOSettings, H2OMOJOPipelineModel, H2OMOJOModel, H2OSupervisedMOJOModel, H2OUnsupervisedMOJOModel
+from pyspark.ml.param import *
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
 
-__all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel", "H2OSupervisedMOJOModel", "H2OUnsupervisedMOJOModel"]
+
+class H2OUnsupervisedMOJOModel(H2OMOJOModel):
+    pass

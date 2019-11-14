@@ -17,13 +17,11 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.Param
-
 /**
   * Parameters available on the supervised algorithm & supervised MOJO Model
   */
 trait H2OSupervisedMOJOParams extends H2OMOJOAlgoSharedParams {
-  protected final val offsetCol = new Param[String](this, "offsetCol", "Offset column name")
+  protected final val offsetCol = new NullableStringParam(this, "offsetCol", "Offset column name")
 
   setDefault(offsetCol -> null)
 

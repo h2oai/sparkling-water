@@ -22,7 +22,7 @@ import hex.ModelCategory
 import hex.genmodel.MojoModel
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, struct}
+import org.apache.spark.sql.functions.{col, struct, lit}
 import org.apache.spark.sql.types.DoubleType
 
 class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid) with H2OSupervisedMOJOParams {
@@ -41,10 +41,11 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
     val udf = udfConstructor(relevantColumnNames)
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
-      case ModelCategory.Binomial if flatDataFrame.columns.contains(getOffsetCol()) =>
-        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
+      case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial
+        if flatDataFrame.columns.contains(getOffsetCol()) =>
+          flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
       case _ =>
-        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
     }
   }
 }

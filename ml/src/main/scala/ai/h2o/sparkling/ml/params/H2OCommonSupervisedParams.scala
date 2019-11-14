@@ -21,7 +21,7 @@ import org.apache.spark.ml.param._
 /**
   * This trait contains parameters that are shared across all supervised algorithms.
   */
-trait H2OCommonSupervisedParams extends H2OCommonParams with H2OSupervisedMOJOParams {
+trait H2OCommonSupervisedParams extends H2OSupervisedMOJOParams with H2OCommonParams {
 
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
 
