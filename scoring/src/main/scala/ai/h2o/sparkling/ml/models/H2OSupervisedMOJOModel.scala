@@ -54,7 +54,7 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial =>
         val offsetColumn = getOffsetCol()
         if (offsetColumn != null) {
-          if (flatDataFrame.columns.contains(offsetColumn)) {
+          if (!flatDataFrame.columns.contains(offsetColumn)) {
             throw new RuntimeException("Offset column must be present within the dataset!")
           }
           flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
