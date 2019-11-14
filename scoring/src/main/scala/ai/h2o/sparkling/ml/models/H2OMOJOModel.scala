@@ -28,6 +28,8 @@ import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions.UserDefinedFunction
 
 import scala.collection.JavaConverters._
 
@@ -54,6 +56,22 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
       withPredictionDf
     } else {
       withPredictionDf.drop(getDetailedPredictionCol())
+    }
+  }
+
+  protected override def applyPredictionUdfToFlatDataFrame(
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      inputs: Array[String]): DataFrame = {
+    val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
+    val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
+    val udf = udfConstructor(relevantColumnNames)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    predictWrapper.getModelCategory match {
+      case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial =>
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
+      case _ =>
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
     }
   }
 }
