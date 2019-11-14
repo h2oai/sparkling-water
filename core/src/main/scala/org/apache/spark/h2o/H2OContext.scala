@@ -128,13 +128,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
         s" a bug in Spark dependency resolution.")
     }
 
-    if (conf.isInternalSecureConnectionsEnabled) {
-      Security.enableSSL(sparkSession, conf)
-    }
-    if (conf.autoFlowSsl) {
-      Security.enableFlowSSL(sparkSession, conf)
-    }
-
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     initBackend()

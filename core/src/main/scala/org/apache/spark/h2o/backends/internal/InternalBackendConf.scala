@@ -38,9 +38,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def nodeIcedDir = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
-  def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
-                                                                PROP_INTERNAL_SECURE_CONNECTIONS._2)
-
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int) = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
   def setDrddMulFactor(factor: Int) = set(PROP_DUMMY_RDD_MUL_FACTOR._1, factor.toString)
@@ -51,10 +48,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
 
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
-
-  def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
-  def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
-
 
   def internalConfString: String =
     s"""Sparkling Water configuration:
@@ -95,7 +88,4 @@ object InternalBackendConf {
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
-
-  /** Secure internal connections by automatically generated credentials */
-  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
 }

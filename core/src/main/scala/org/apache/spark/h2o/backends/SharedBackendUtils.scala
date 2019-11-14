@@ -22,6 +22,8 @@ import java.io.File
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.AzureDatabricksUtils
 import org.apache.spark.internal.Logging
+import org.apache.spark.network.Security
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 
@@ -58,6 +60,14 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
       AzureDatabricksUtils.setClientWebPort(conf)
       AzureDatabricksUtils.setClientCheckRetryTimeout(conf)
+    }
+
+    if (conf.isInternalSecureConnectionsEnabled) {
+      Security.enableSSL(SparkSession.builder().getOrCreate(), conf)
+    }
+
+    if (conf.autoFlowSsl) {
+      Security.enableFlowSSL(SparkSession.builder().getOrCreate(), conf)
     }
 
     if (conf.backendClusterMode != "internal" && conf.backendClusterMode != "external") {
@@ -131,6 +141,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .addIf("-kerberos_login", conf.kerberosLogin)
       .add("-user_name", conf.userName)
       .add("-login_conf", getDistributedFilePath(conf.loginConf))
+      .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
       .buildArgs()
   }
 
@@ -142,11 +153,11 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
+      .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)
       .add("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0))
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
-      .add("-internal_security_conf", conf.sslConf)
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
       .add(getExtraHttpHeaderArgs(conf))
       .buildArgs()
