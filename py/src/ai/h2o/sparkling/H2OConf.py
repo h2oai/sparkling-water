@@ -226,12 +226,12 @@ class H2OConf(object):
         self._jconf.setNodeExtraProperties(extraProperties)
         return self
 
-    def set_flow_dir(self, dir):
-        self._jconf.setFlowDir(dir)
-        return self
-
     def set_flow_extra_http_headers(self, headers):
         self._jconf.setFlowExtraHttpHeaders(headers)
+        return self
+
+    def set_flow_dir(self, dir):
+        self._jconf.setFlowDir(dir)
         return self
 
     def set_client_ip(self, ip):
@@ -564,11 +564,11 @@ class H2OConf(object):
     def node_extra_properties(self):
         return self._get_option(self._jconf.nodeExtraProperties())
 
-    def flow_dir(self):
-        return self._get_option(self._jconf.flowDir())
-
     def flow_extra_http_headers(self):
         return self._get_option(self._jconf.flowExtraHttpHeaders())
+
+    def flow_dir(self):
+        return self._get_option(self._jconf.flowDir())
 
     def client_ip(self):
         return self._get_option(self._jconf.clientIp())

@@ -101,3 +101,9 @@ without the need of releasing H2O if there is only change on the Sparkling Water
 ``SWPatchVersion``. The new version therefore looks, for example, like ``3.26.0.9-2-2.4``. This version tells us this
 Sparkling Water is integrating H2O ``3.26.0.9``, it is the second release with ``3.26.0.9`` version and is for Spark ``2.4``.
 
+Renamed Property for Passing Extra HTTP Headers for Flow UI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The configuration property ``spark.ext.h2o.client.flow.extra.http.headers`` was renamed to
+to ``spark.ext.h2o.flow.extra.http.headers`` since Flow UI can also run on H2O nodes and the value of the property is
+also propagated to H2O nodes since the major version ``3.28.0.1-1``.
+

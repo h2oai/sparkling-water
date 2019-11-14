@@ -35,6 +35,15 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
 
   @transient var hc: H2OContext = _
 
+  def createSparkSession(master: String): SparkSession = {
+    System.setProperty("spark.test.home", System.getenv("SPARK_HOME"))
+    val conf = defaultSparkConf
+      .set("spark.driver.extraClassPath", sys.props("java.class.path"))
+      .set("spark.executor.extraClassPath", sys.props("java.class.path"))
+    sc = new SparkContext(master, getClass.getSimpleName, conf)
+    SparkSession.builder().sparkContext(sc).getOrCreate()
+  }
+
   override def afterEach(): Unit = {
     // The method H2O.exit calls System.exit which confuses Gradle and marks the build
     // as successful even though some tests failed.
@@ -74,21 +83,21 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
   }
 }
 
-@RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_HttpHeaders extends ConfigurationPropertiesTestSuite {
-  test("test extra HTTP headers are propagated to FLOW UI") {
-    sc = new SparkContext("local[*]", this.getClass.getSimpleName, defaultSparkConf)
-    val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
+abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends ConfigurationPropertiesTestSuite {
+
+  def testExtraHTTPHeadersArePropagated(master: String, urlProvider: H2OContext => String): Unit = {
+    val spark = createSparkSession(master)
     val h2oConf = new H2OConf(spark)
     val extraHttpHeaders = Map(
       "X-MyCustomHeaderA" -> "A",
       "X-MyCustomHeaderB" -> "B")
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
+      .setH2ONodeWebEnabled()
       .setClusterSize(1)
     hc = H2OContext.getOrCreate(spark, h2oConf)
 
-    val url = new URL(hc.flowURL())
+    val url = new URL(urlProvider(hc))
     val connection = url.openConnection().asInstanceOf[HttpURLConnection]
     try {
       val flowHeaders = connection.getHeaderFields.asScala.filterKeys(key => extraHttpHeaders.contains(key)).toMap
@@ -100,16 +109,24 @@ class ConfigurationPropertiesTestSuite_HttpHeaders extends ConfigurationProperti
   }
 }
 
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
+  test("test extra HTTP headers are propagated to FLOW UI") {
+    testExtraHTTPHeadersArePropagated("local[*]", (hc: H2OContext) => hc.flowURL())
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
+  test("test extra HTTP headers are propagated to FLOW UI") {
+    testExtraHTTPHeadersArePropagated("local-cluster[1,1,1024]", (hc: H2OContext) => s"http://${hc.h2oNodes.head.ipPort}")
+  }
+}
+
 abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends ConfigurationPropertiesTestSuite {
 
   def testNotifyLocalPropertyCreatesFile(master: String, propertySetter: (H2OConf, Path) => H2OConf): Unit = {
-    System.setProperty("spark.test.home", System.getenv("SPARK_HOME"))
-    val conf = defaultSparkConf
-      .set("spark.driver.extraClassPath", sys.props("java.class.path"))
-      .set("spark.executor.extraClassPath", sys.props("java.class.path"))
-    sc = new SparkContext(master, getClass.getSimpleName, conf)
-    val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
-
+    val spark = createSparkSession(master)
     val tmpDirPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
     val tmpDir = tmpDirPath.toFile
     tmpDir.setWritable(true, false)

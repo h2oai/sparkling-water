@@ -63,10 +63,10 @@ trait SharedBackendConf {
   def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
   def nodeExtraProperties = sparkConf.getOption(PROP_NODE_EXTRA_PROPERTIES._1)
+  def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
-  def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
   def clientIp      = sparkConf.getOption(PROP_CLIENT_IP._1)
   def clientIcedDir = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
   def h2oClientLogLevel = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
@@ -164,8 +164,6 @@ trait SharedBackendConf {
 
   def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
 
-  /** H2O Client parameters */
-  def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
     setFlowExtraHttpHeaders(headers.asScala.toMap[String, String])
   }
@@ -173,6 +171,9 @@ trait SharedBackendConf {
     val stringRepresentation =  headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
   }
+
+  /** H2O Client parameters */
+  def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setClientIp(ip: String) = set(PROP_CLIENT_IP._1, ip)
   def setClientIcedDir(icedDir: String) = set(PROP_CLIENT_ICED_DIR._1, icedDir)
   def setH2OClientLogLevel(level: String) = set(PROP_CLIENT_LOG_LEVEL._1, level)
