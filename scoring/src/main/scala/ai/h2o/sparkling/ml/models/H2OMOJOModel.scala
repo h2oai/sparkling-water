@@ -97,8 +97,11 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojoData)
-
-    val model = new H2OMOJOModel(uid)
+    val model = if(mojoModel._supervised) {
+      new H2OSupervisedMOJOModel(uid).setSpecificParams(mojoModel)
+    } else {
+      new H2OUnsupervisedMOJOModel(uid)
+    }
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)

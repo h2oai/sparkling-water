@@ -43,7 +43,7 @@ trait H2OMOJOFlattenedInput {
     }
   }
 
-  private def applyPredictionUdfToFlatDataFrame(
+  protected def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction,
       inputs: Array[String]): DataFrame = {

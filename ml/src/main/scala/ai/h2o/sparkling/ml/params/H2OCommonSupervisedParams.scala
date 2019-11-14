@@ -21,19 +21,13 @@ import org.apache.spark.ml.param._
 /**
   * This trait contains parameters that are shared across all supervised algorithms.
   */
-trait H2OCommonSupervisedParams extends H2OCommonParams {
+trait H2OCommonSupervisedParams extends H2OCommonParams with H2OSupervisedMOJOParams {
 
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  protected final val offsetCol = new Param[String](this, "offsetCol", "Offset column name")
 
-  setDefault(
-    labelCol -> "label",
-    offsetCol -> null
-  )
+  setDefault(labelCol -> "label")
 
   def getLabelCol(): String = $(labelCol)
-
-  def getOffsetCol(): String = $(offsetCol)
 
   def setLabelCol(columnName: String): this.type = set(labelCol, columnName)
 

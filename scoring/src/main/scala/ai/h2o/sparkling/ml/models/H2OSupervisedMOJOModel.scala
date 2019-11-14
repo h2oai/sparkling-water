@@ -17,6 +17,34 @@
 
 package ai.h2o.sparkling.ml.models
 
-class H2OSupervisedMOJOModel {
+import ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams
+import hex.ModelCategory
+import hex.genmodel.MojoModel
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions.{col, struct}
+import org.apache.spark.sql.types.DoubleType
 
+class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid) with H2OSupervisedMOJOParams {
+
+  def setSpecificParams(mojoModel: MojoModel): H2OSupervisedMOJOModel = {
+    set(offsetCol -> mojoModel._offsetColumn)
+    this
+  }
+
+  protected override def applyPredictionUdfToFlatDataFrame(
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      inputs: Array[String]): DataFrame = {
+    val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
+    val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
+    val udf = udfConstructor(relevantColumnNames)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    predictWrapper.getModelCategory match {
+      case ModelCategory.Binomial if flatDataFrame.columns.contains(getOffsetCol()) =>
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
+      case _ =>
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
+    }
+  }
 }

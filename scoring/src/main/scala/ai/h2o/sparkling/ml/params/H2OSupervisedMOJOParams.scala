@@ -14,20 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.models.H2OUnsupervisedMOJOModel
-import ai.h2o.sparkling.ml.params.H2OAlgoUnsupervisedParams
-import hex.Model
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
-import org.apache.spark.sql.Dataset
+package ai.h2o.sparkling.ml.params
 
-import scala.reflect.ClassTag
+import org.apache.spark.ml.param.Param
 
-abstract class H2OUnsupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends H2OAlgorithm[B, M, P] with H2OAlgoUnsupervisedParams[P] {
+/**
+  * Parameters available on the supervised algorithm & supervised MOJO Model
+  */
+trait H2OSupervisedMOJOParams extends H2OMOJOAlgoSharedParams {
+  protected final val offsetCol = new Param[String](this, "offsetCol", "Offset column name")
 
-  override def fit(dataset: Dataset[_]): H2OUnsupervisedMOJOModel = {
-    super.fit(dataset).asInstanceOf[H2OUnsupervisedMOJOModel]
-  }
+  setDefault(offsetCol -> null)
+
+  def getOffsetCol(): String = $(offsetCol)
 }

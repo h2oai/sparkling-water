@@ -14,20 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.models.H2OUnsupervisedMOJOModel
-import ai.h2o.sparkling.ml.params.H2OAlgoUnsupervisedParams
-import hex.Model
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
-import org.apache.spark.sql.Dataset
+package ai.h2o.sparkling.ml.models
 
-import scala.reflect.ClassTag
-
-abstract class H2OUnsupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends H2OAlgorithm[B, M, P] with H2OAlgoUnsupervisedParams[P] {
-
-  override def fit(dataset: Dataset[_]): H2OUnsupervisedMOJOModel = {
-    super.fit(dataset).asInstanceOf[H2OUnsupervisedMOJOModel]
-  }
-}
+class H2OUnsupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)

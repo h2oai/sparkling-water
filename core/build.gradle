@@ -30,6 +30,8 @@ dependencies {
 
     // Generic model support
     compile("ai.h2o:h2o-genmodel:${h2oVersion}")
+    // H2O security
+    compile("ai.h2o:h2o-security:${h2oVersion}")
     // H2O core
     compile("ai.h2o:h2o-core:${h2oVersion}") {
         //
