@@ -69,6 +69,10 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial =>
+        // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
+        // Propagation of offset to EasyPredictModelWrapper was introduced with H2OSupervisedMOJOModel.
+        // `lit(0.0)` represents a column with zero values (offset disabled) to ensure backward-compatibility of
+        // MOJO models.
         flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
       case _ =>
         flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))

@@ -59,6 +59,8 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
           }
           flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), col(getOffsetCol()).cast(DoubleType)))
         } else {
+          // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
+          // `lit(0.0)` represents a column with zero values (offset disabled).
           flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
         }
       case _ =>
