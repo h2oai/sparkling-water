@@ -21,8 +21,7 @@ from pyspark.ml.util import _jvm
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
-from ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel import H2OSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OUnsupervisedMOJOModel import H2OUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
 
 
 class H2OMOJOModel(H2OMOJOModelBase):
@@ -41,3 +40,11 @@ class H2OMOJOModel(H2OMOJOModelBase):
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
+
+
+class H2OSupervisedMOJOModel(H2OMOJOModel, H2OSupervisedMOJOParams):
+    pass
+
+
+class H2OUnsupervisedMOJOModel(H2OMOJOModel):
+    pass

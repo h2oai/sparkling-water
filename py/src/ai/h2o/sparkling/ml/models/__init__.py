@@ -19,6 +19,6 @@ from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderMod
 from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
-from ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel import H2OSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OUnsupervisedMOJOModel import H2OUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OSupervisedMOJOModel
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OUnsupervisedMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel import H2OMOJOPipelineModel
