@@ -87,6 +87,7 @@ object InternalBackendUtils extends InternalBackendUtils {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
+      .add("-allow_clients")
       .add("-log_level", conf.h2oNodeLogLevel)
       .add("-baseport", conf.nodeBasePort)
       .add("-log_dir", InternalBackendUtils.getH2ONodeLogDir(conf, SparkEnv.get))
