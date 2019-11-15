@@ -119,7 +119,7 @@ class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends Configuration
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
   test("test extra HTTP headers are propagated to FLOW UI") {
-    testExtraHTTPHeadersArePropagated("local-cluster[1,1,1024]", (hc: H2OContext) => s"http://${hc.h2oNodes.head.ipPort}")
+    testExtraHTTPHeadersArePropagated("local-cluster[1,1,1024]", (hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
   }
 }
 
