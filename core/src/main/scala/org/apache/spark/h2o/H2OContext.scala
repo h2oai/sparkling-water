@@ -484,6 +484,14 @@ object H2OContext extends Logging {
     val sameNodes = hc.getH2ONodes().map(_.ipPort()).sameElements(newCloudV3.nodes.map(_.ip_port))
     !sameNodes
   }
+
+  private def checkConf(conf: H2OConf): H2OConf = {
+    if (conf.runsInExternalClusterMode) {
+      ExternalH2OBackend.checkAndUpdateConf(conf)
+    } else {
+      InternalH2OBackend.checkAndUpdateConf(conf)
+    }
+  }
   /**
     * Get existing or create new H2OContext based on provided H2O configuration
     *
@@ -492,14 +500,10 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
-    val checkedConf = if (conf.runsInExternalClusterMode) {
-      ExternalH2OBackend.checkAndUpdateConf(conf)
-    } else {
-      InternalH2OBackend.checkAndUpdateConf(conf)
-    }
-    val isRestApiBasedClient = checkedConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+    val checkedConf = checkConf(conf)
+    val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
-    val isExternalBackend = checkedConf.runsInExternalClusterMode
+    val isExternalBackend = conf.runsInExternalClusterMode
     if (isExternalBackend && isRestApiBasedClient) {
       if (instantiatedContext.get() != null) {
         if (connectingToNewCluster(instantiatedContext.get(), checkedConf)) {
@@ -540,14 +544,14 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sparkSession: SparkSession): H2OContext = {
-    getOrCreate(sparkSession, new H2OConf(sparkSession))
+    getOrCreate(sparkSession, Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf(sparkSession)))
   }
 
   def getOrCreate(sc: SparkContext): H2OContext = {
     logWarning("Method H2OContext.getOrCreate with an argument of type SparkContext is deprecated and " +
       "parameter of type SparkSession is preferred.")
     val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
-    getOrCreate(spark, new H2OConf(spark))
+    getOrCreate(spark)
   }
 
   /** Global cleanup on H2OContext.stop call */
