@@ -474,7 +474,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }.doAllNodes()
   }
 
-  private def throwWrongVersionException(clientVersion: String, externalVersion: String, driverPath: Option[String] = None):Unit = {
+  private def throwWrongVersionException(clientVersion: String, externalVersion: String, driverPath: Option[String] = None): Unit = {
     val driverPathStr = if (driverPath.isDefined) s"(=$driverPath)" else ""
     if (clientVersion != externalVersion) {
       throw new RuntimeException(
