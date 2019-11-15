@@ -107,7 +107,7 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
   private def isBackendReady() = sc.schedulerBackend.isReady()
 }
 
-object RpcReferenceCache {
+object RpcReferenceCache extends SharedBackendUtils {
   private object Lock
   private val rpcServiceName = s"sparkling-water-h2o-start-${SparkEnv.get.executorId}"
   private val rpcEndpointName = "h2o"
@@ -122,7 +122,7 @@ object RpcReferenceCache {
 
   private def startEndpointOnH2OWorker(conf: SparkConf): RpcEndpointRef = {
     val securityMgr = SparkEnv.get.securityManager
-    val rpcEnv = RpcEnv.create(rpcServiceName, SharedBackendUtils.getHostname(SparkEnv.get), 0, conf, securityMgr)
+    val rpcEnv = RpcEnv.create(rpcServiceName, getHostname(SparkEnv.get), 0, conf, securityMgr)
     val endpoint = new H2ORpcEndpoint(rpcEnv)
     rpcEnv.setupEndpoint(rpcEndpointName, endpoint)
   }

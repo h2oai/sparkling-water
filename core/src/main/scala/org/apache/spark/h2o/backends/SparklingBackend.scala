@@ -22,14 +22,7 @@ import org.apache.spark.h2o.utils.NodeDesc
 
 trait SparklingBackend {
 
-  def init(): Array[NodeDesc]
-
-  /**
-    * Check Spark and H2O environment on particular backend, update it if necessary and and warn about possible problems
-    *
-    * @param conf H2O Configuration
-    */
-  def checkAndUpdateConf(conf: H2OConf): H2OConf
+  def init(conf: H2OConf): Array[NodeDesc]
 
   def stop(stopSparkContext: Boolean)
 

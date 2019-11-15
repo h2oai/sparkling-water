@@ -24,12 +24,13 @@ import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.RpcUtils
 import water.api.RestAPIManager
 import water.util.Log
 import water.{H2O, H2OStarter}
 
-class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with InternalBackendUtils with Logging {
+class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 
   override def backendUIInfo: Seq[(String, String)] = Seq()
 
@@ -44,34 +45,9 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     }
   }
 
-  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
-    super.checkAndUpdateConf(conf)
-    // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
-
-    // If 'spark.executor.instances' is specified update H2O property as well
-    conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
-
-    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !hc.sparkContext.isLocal) {
-      logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
-        "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
-      // Setup the property but at this point it does not make good sense
-      conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
-    }
-
-
-    // Setup properties for H2O configuration
-    if (conf.cloudName.isEmpty) {
-      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
-    }
-
-    InternalBackendUtils.checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
-    distributeFiles(conf, hc.sparkContext)
-    conf
-  }
-
   /** Initialize Sparkling H2O and start H2O cloud. */
-  override def init(): Array[NodeDesc] = {
-    logInfo(s"Starting H2O services: " + hc.getConf)
+  override def init(conf: H2OConf): Array[NodeDesc] = {
+    logInfo(s"Starting H2O services: " + conf)
     val nodes = InternalH2OBackend.startH2OCluster(hc)
     // Register H2O and Sparkling Water REST API for H2O client
     RestAPIManager(hc).registerAll()
@@ -82,25 +58,55 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   override def epilog = ""
 }
 
-object InternalH2OBackend extends Logging {
+object InternalH2OBackend extends InternalBackendUtils {
+
+  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
+    super.checkAndUpdateConf(conf)
+
+    // Always wait for the local node - H2O node
+    logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
+    conf.set("spark.locality.wait", "0")
+
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(getHostname(SparkEnv.get))
+    }
+
+    conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
+
+    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && SparkSession.builder().getOrCreate().sparkContext.isLocal) {
+      logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
+        "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
+      // Setup the property but at this point it does not make good sense
+      conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
+    }
+
+    if (conf.cloudName.isEmpty) {
+      conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
+    }
+
+    checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
+    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
+    conf
+  }
 
   val UNSUPPORTED_SPARK_OPTIONS: Seq[(String, String)] = Seq(
     ("spark.dynamicAllocation.enabled", "true"),
     ("spark.speculation", "true"))
 
   private def startH2OCluster(hc: H2OContext): Array[NodeDesc] = {
+    val conf = hc.getConf
     if (hc.sparkContext.isLocal) {
-      Array(startH2OWorkerAsClient(hc._conf))
+      Array(startH2OWorkerAsClient(conf))
     } else {
       val endpoints = registerEndpoints(hc)
-      val workerNodes = startH2OWorkers(endpoints, hc._conf)
-      val clientNode = startH2OClient(hc._conf, workerNodes)
-      distributeFlatFile(endpoints, hc._conf, workerNodes, clientNode)
+      val workerNodes = startH2OWorkers(endpoints, conf)
+      val clientNode = startH2OClient(conf, workerNodes)
+      distributeFlatFile(endpoints, conf, workerNodes, clientNode)
       tearDownEndpoints(endpoints)
 
       registerNewExecutorListener(hc)
 
-      H2O.waitForCloudSize(endpoints.length, hc.getConf.cloudTimeout)
+      H2O.waitForCloudSize(endpoints.length, conf.cloudTimeout)
       workerNodes
     }
   }
@@ -110,8 +116,8 @@ object InternalH2OBackend extends Logging {
     * without additional client
     */
   private def startH2OWorkerAsClient(conf: H2OConf): NodeDesc = {
-    val args = InternalBackendUtils.getH2OWorkerAsClientArgs(conf)
-    val launcherArgs = InternalBackendUtils.toH2OArgs(args)
+    val args = getH2OWorkerAsClientArgs(conf)
+    val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
@@ -119,16 +125,16 @@ object InternalH2OBackend extends Logging {
 
 
   def startH2OWorker(conf: H2OConf): NodeDesc = {
-    var args = InternalBackendUtils.getH2OWorkerArgs(conf)
-    val launcherArgs = InternalBackendUtils.toH2OArgs(args)
+    var args = getH2OWorkerArgs(conf)
+    val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
   private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
-    val args = InternalBackendUtils.getH2OClientArgs(conf)
-    val launcherArgs = InternalBackendUtils.toH2OArgs(args, nodes)
+    val args = getH2OClientArgs(conf)
+    val launcherArgs = toH2OArgs(args, nodes)
 
     H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
@@ -147,7 +153,7 @@ object InternalH2OBackend extends Logging {
   private def tearDownEndpoints(endpoints: Array[RpcEndpointRef]): Unit = endpoints.foreach(_.send(StopEndpointMsg))
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
-    val endpoints = new SpreadRDDBuilder(hc, InternalBackendUtils.guessTotalExecutorSize(hc.sparkContext)).build()
+    val endpoints = new SpreadRDDBuilder(hc, guessTotalExecutorSize(hc.sparkContext)).build()
     endpoints.map { ref =>
       SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name)
     }

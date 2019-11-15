@@ -94,7 +94,7 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTim
 }
 
 
-object ExternalWriteConverterCtx extends ExternalBackendUtils {
+object ExternalWriteConverterCtx {
 
   import scala.language.postfixOps
 

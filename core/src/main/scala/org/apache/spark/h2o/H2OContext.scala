@@ -60,7 +60,7 @@ import scala.util.control.NoStackTrace
   * @param sparkSession Spark Session
   * @param conf         H2O configuration
   */
-abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends Logging with H2OContextUtils {
+abstract class H2OContext private(val sparkSession: SparkSession, private val conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
   val sparkContext = sparkSession.sparkContext
   val uiUpdateThread = new Thread {
@@ -92,13 +92,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     new InternalH2OBackend(this)
   }
 
-
-  // Check Spark and H2O environment for general arguments independent on backend used and
-  // also with regards to used backend and store the fix the state of prepared configuration
-  // so it can't be changed anymore
-  /** H2O and Spark configuration */
-  val _conf: H2OConf = backend.checkAndUpdateConf(conf).clone()
-
   protected def getFlowIp(): String
 
   protected def getFlowPort(): Int
@@ -117,7 +110,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
-    logInfo("The following Spark configuration is used: \n    " + _conf.getAll.mkString("\n    "))
+    logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
         s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
@@ -135,8 +128,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
         s" a bug in Spark dependency resolution.")
     }
 
-    if (_conf.isInternalSecureConnectionsEnabled) {
-      Security.enableSSL(sparkSession, _conf)
+    if (conf.isInternalSecureConnectionsEnabled) {
+      Security.enableSSL(sparkSession, conf)
     }
     if (conf.autoFlowSsl) {
       Security.enableFlowSSL(sparkSession, conf)
@@ -167,7 +160,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
     val nodes = getH2ONodes()
     val h2oBuildInfo = getH2OBuildInfo(nodes)
     val h2oClusterInfo = getH2OClusterInfo(nodes)
-    val swPropertiesInfo = _conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
+    val swPropertiesInfo = conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
     // Initial update
     val swHeartBeatEvent = getSparklingWaterHeartBeatEvent()
@@ -179,7 +172,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   /**
     * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
     */
-  def getConf: H2OConf = _conf.clone()
+  def getConf: H2OConf = conf.clone()
 
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
@@ -264,7 +257,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   }
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + _conf.contextPath.getOrElse("")
+  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
   def h2oLocalClientIp = this.localClientIp
@@ -300,12 +293,12 @@ abstract class H2OContext private(val sparkSession: SparkSession, conf: H2OConf)
   }
 
   def flowURL(): String = {
-    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(_conf)) {
-      AzureDatabricksUtils.flowURL(_conf)
-    } else if (_conf.clientFlowBaseurlOverride.isDefined) {
-      _conf.clientFlowBaseurlOverride.get + _conf.contextPath.getOrElse("")
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
+      AzureDatabricksUtils.flowURL(conf)
+    } else if (conf.clientFlowBaseurlOverride.isDefined) {
+      conf.clientFlowBaseurlOverride.get + conf.contextPath.getOrElse("")
     } else {
-      s"${_conf.getScheme()}://$h2oLocalClient"
+      s"${conf.getScheme()}://$h2oLocalClient"
     }
   }
 
@@ -388,7 +381,7 @@ object H2OContext extends Logging {
     override def getH2ONodes(): Array[NodeDesc] = h2oNodes
 
     override protected def initBackend(): Unit = {
-      h2oNodes = backend.init()
+      h2oNodes = backend.init(conf)
     }
 
     override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
@@ -441,7 +434,7 @@ object H2OContext extends Logging {
     override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)
 
     override protected def initBackend(): Unit = {
-      backend.init()
+      backend.init(conf)
       val uri = startFlowProxy(conf)
       flowIp = uri.getHost
       flowPort = uri.getPort
@@ -499,22 +492,27 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
-    val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+    val checkedConf = if (conf.runsInExternalClusterMode) {
+      InternalH2OBackend.checkAndUpdateConf(conf)
+    } else {
+      ExternalH2OBackend.checkAndUpdateConf(conf)
+    }
+    val isRestApiBasedClient = checkedConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
-    val isExternalBackend = conf.runsInExternalClusterMode
+    val isExternalBackend = checkedConf.runsInExternalClusterMode
     if (isExternalBackend && isRestApiBasedClient) {
       if (instantiatedContext.get() != null) {
-        if (connectingToNewCluster(instantiatedContext.get(), conf)) {
-          instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf).init())
-          logWarning(s"Connecting to a new external H2O cluster : ${conf.h2oCluster.get}")
+        if (connectingToNewCluster(instantiatedContext.get(), checkedConf)) {
+          instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, checkedConf).init())
+          logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
       } else {
-        instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf).init())
+        instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, checkedConf).init())
       }
     } else {
       if (instantiatedContext.get() == null)
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
-          instantiatedContext.set(new H2OContextClientBased(sparkSession, conf).init())
+          instantiatedContext.set(new H2OContextClientBased(sparkSession, checkedConf).init())
         } else {
           throw new IllegalArgumentException(
             """

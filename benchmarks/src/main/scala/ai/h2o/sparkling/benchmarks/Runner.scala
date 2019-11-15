@@ -153,7 +153,7 @@ object Runner {
     }
     outputDir.mkdirs()
     val sparkMaster = spark.conf.get("spark.master")
-    val outputFile = new File(outputDir, s"${sparkMaster}_${hc._conf.backendClusterMode}_${batch.name}.txt")
+    val outputFile = new File(outputDir, s"${sparkMaster}_${hc.getConf.backendClusterMode}_${batch.name}.txt")
     val outputStream = new FileOutputStream(outputFile)
     try {
       batch.benchmarks.foreach(_.exportMeasurements(outputStream))

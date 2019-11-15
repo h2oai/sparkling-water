@@ -19,11 +19,11 @@ package org.apache.spark.h2o.backends
 
 import java.io.File
 
-import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.AzureDatabricksUtils
 import org.apache.spark.internal.Logging
 import org.apache.spark.util.Utils
+import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 
 /**
   * Shared functions which can be used by both backends
@@ -91,7 +91,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (!conf.clientWebEnabled) {
-      val f = new File(SharedBackendUtils.createTempDir(), "dummy")
+      val f = new File(createTempDir(), "dummy")
       f.createNewFile()
       f.deleteOnExit()
       conf.setHashLoginEnabled()
@@ -217,9 +217,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       ll.map(v => if (v._2 < mll.get._2) minLogLevel else logLevel).getOrElse(minLogLevel)
     }
   }
-}
-
-object SharedBackendUtils extends SharedBackendUtils {
 
   def saveFlatFileAsFile(content: String): File = {
     val tmpDir = createTempDir()
@@ -232,5 +229,4 @@ object SharedBackendUtils extends SharedBackendUtils {
     }
     flatFile
   }
-
 }

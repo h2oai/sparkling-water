@@ -19,7 +19,7 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.ExternalBackendUtils
+import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend}
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.rdd.RDD
@@ -66,7 +66,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
     if (isExternalBackend) {
       // prepare expected type selected columns in the same order as are selected columns
       val javaClasses = selectedColumnIndices.map{ idx => ReflectionUtils.supportedType(frame.vec(idx)).javaClass }
-      Option(ExternalBackendUtils.prepareExpectedTypes(javaClasses))
+      Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
     } else {
       None
     }
