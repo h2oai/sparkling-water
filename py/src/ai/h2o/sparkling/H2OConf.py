@@ -178,6 +178,14 @@ class H2OConf(object):
         self._jconf.setCloudTimeout(timeout)
         return self
 
+    def set_h2o_node_web_enabled(self):
+        self._jconf.setH2ONodeWebEnabled()
+        return self
+
+    def set_h2o_node_web_disabled(self):
+        self._jconf.setH2ONodeWebDisabled()
+        return self
+
     def set_node_network_mask(self, mask):
         self._jconf.setNodeNetworkMask(mask)
         return self
@@ -525,6 +533,9 @@ class H2OConf(object):
 
     def cloud_timeout(self):
         return self._jconf.cloudTimeout()
+
+    def h2o_node_web_enabled(self):
+        return self._jconf.h2oNodeWebEnabled()
 
     def node_network_mask(self):
         return self._get_option(self._jconf.nodeNetworkMask())
