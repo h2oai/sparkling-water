@@ -17,14 +17,17 @@
 
 package org.apache.spark.h2o.utils
 
+import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
 import java.net.{URI, URL}
+import java.text.SimpleDateFormat
+import java.util.Date
 
 import com.google.gson.Gson
+import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.CloudV3
 
-import scala.io.Source
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
 
@@ -40,6 +43,29 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     getCloudInfoFromNode(endpoint, conf)
   }
 
+  def downloadLogs(destinationDir: String, logContainer: String, conf: H2OConf): String = {
+    val endpoint = getClusterEndpoint(conf)
+    val file = new File(destinationDir, s"${logFileName()}.${logContainer.toLowerCase}")
+    logContainer match {
+      case "LOG" =>
+        val out = new java.io.FileWriter(file)
+        val content = readStringURLContent(endpoint, s"3/Logs/download/$logContainer", conf)
+        out.write(content)
+      case "ZIP" =>
+        val content = readBinaryURLContent(endpoint, s"3/Logs/download/$logContainer", conf)
+        val bos = new BufferedOutputStream(new FileOutputStream(file))
+        Stream.continually(bos.write(content))
+        bos.close()
+    }
+    file.getAbsolutePath
+  }
+
+  private def logFileName(): String = {
+    val pattern = "yyyyMMdd_hhmmss"
+    val formatter = new SimpleDateFormat(pattern)
+    val now = formatter.format(new Date)
+    s"h2ologs_$now"
+  }
 
   def getCloudInfo(conf: H2OConf): CloudV3 = {
     val endpoint = getClusterEndpoint(conf)
@@ -86,11 +112,26 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 
   private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
-    val content = readURLContent(endpoint, "3/Cloud", conf)
+    val content = readStringURLContent(endpoint, "3/Cloud", conf)
     new Gson().fromJson(content, classOf[CloudV3])
   }
 
-  private def readURLContent(endpoint: URI, suffix: String, conf: H2OConf): String = {
+  private def readStringURLContent(endpoint: URI, suffix: String, conf: H2OConf): String = {
+    val response = readURLContent(endpoint, suffix, conf)
+    val content = IOUtils.toString(response)
+    response.close()
+    content
+  }
+
+  private def readBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf): Array[Byte] = {
+    val response = readURLContent(endpoint, suffix, conf)
+    val content = IOUtils.toByteArray(response)
+    response.close()
+    content
+  }
+
+  // Method using the resulting source is responsible for closing it
+  private def readURLContent(endpoint: URI, suffix: String, conf: H2OConf): InputStream = {
     try {
       val connection = new URL(s"$endpoint/$suffix").openConnection
       val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
@@ -101,10 +142,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
         val basicAuth = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes)
         connection.setRequestProperty("Authorization", basicAuth)
       }
-      val response = Source.fromInputStream(connection.getInputStream)
-      val content = response.mkString
-      response.close()
-      content
+      connection.getInputStream
     } catch {
       case cause: Exception =>
         throw new H2OClusterNodeNotReachableException(

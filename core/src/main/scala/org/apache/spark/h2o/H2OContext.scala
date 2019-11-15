@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
@@ -30,7 +31,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.util.PrettyPrint
+import water.util.{LogArchiveContainer, PrettyPrint}
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -340,6 +341,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   }
 
   // scalastyle:on
+
+  def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String
 }
 
 object H2OContext extends Logging {
@@ -394,6 +397,12 @@ object H2OContext extends Logging {
         H2O.ABV.compiledOn()
       )
     }
+
+    override def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String = {
+      verifyLogContainer(logContainer)
+      H2O.downloadLogs(destination, logContainer).toString
+    }
+
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
@@ -450,6 +459,11 @@ object H2OContext extends Logging {
         cloudV3.compiled_by,
         cloudV3.compiled_on
       )
+    }
+
+    override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
+      verifyLogContainer(logContainer)
+      H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
     }
   }
 

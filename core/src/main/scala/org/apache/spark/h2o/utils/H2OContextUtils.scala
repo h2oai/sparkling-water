@@ -137,23 +137,10 @@ private[spark] trait H2OContextUtils extends Logging {
     }
   }
 
-  /**
-    * @param destination directory where the logs will be downloaded
-    */
-  def downloadH2OLogs(destination: URI, logContainer: LogArchiveContainer): URI = {
-    H2O.downloadLogs(destination, logContainer)
-  }
-
-  def downloadH2OLogs(destination: URI, logContainer: String): URI = {
-    H2O.downloadLogs(destination, logContainer)
-  }
-
-  def downloadH2OLogs(destination: String, logContainer: LogArchiveContainer): String = {
-    H2O.downloadLogs(destination, logContainer).toString
-  }
-
-  def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String = {
-    H2O.downloadLogs(destination, logContainer).toString
+  protected def verifyLogContainer(logContainer: String): Unit = {
+    if (!Seq("ZIP", "LOG").contains(logContainer)) {
+      throw new IllegalArgumentException(s"Supported LOG container is either LOG or ZIP, specified was: $logContainer")
+    }
   }
 
   def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,
