@@ -44,9 +44,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var cloudHealthCheckKillThread: Option[Thread] = None
   private var cloudHealthCheckThread: Option[Thread] = None
 
-  private def runningFromNonJVMClient(hc: H2OContext): Boolean = {
-    hc._conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
-      SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)
+  private def isRestApiBasedClient(hc: H2OContext): Boolean = {
+    hc._conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
   }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
@@ -106,7 +106,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
     }
 
-    if (hc.getConf.h2oNodeWebEnabled || runningFromNonJVMClient(hc)) {
+    if (hc.getConf.h2oNodeWebEnabled || isRestApiBasedClient(hc)) {
       if (hc.getConf.contextPath.isDefined) {
         cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
       }
@@ -222,7 +222,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
 
     logInfo("Connecting to external H2O cluster.")
     val clusterBuildTimeout = hc.getConf.cloudTimeout
-    val nodes = if (runningFromNonJVMClient(hc)) {
+    val nodes = if (isRestApiBasedClient(hc)) {
       try {
         val nodes = getNodes(hc.getConf)
         verifyWebOpen(nodes, hc.getConf)
@@ -337,7 +337,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     if (hc._conf.isAutoClusterStartUsed) {
       H2O.orderlyShutdown(1000)
     }
-    if (hc._conf.isManualClusterStartUsed && runningFromNonJVMClient(hc)) {
+    if (hc._conf.isManualClusterStartUsed && isRestApiBasedClient(hc)) {
       // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
     } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
       // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
@@ -359,8 +359,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       """)
     }
 
-    if (conf.clusterSize.isEmpty && !conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
-      SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)) {
+    if (conf.clusterSize.isEmpty && !conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
       throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
     }
 

@@ -366,7 +366,7 @@ object SharedBackendConf {
   /** Timeout in milliseconds specifying how often we check whether the client is still connected */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
 
-  val PROP_RUNNING_FROM_NON_JVM_CLIENT = ("spark.ext.h2o.running.from.non.jvm.client", false)
+  val PROP_REST_API_BASED_CLIENT = ("spark.ext.h2o.rest.api.based.client", false)
 
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)

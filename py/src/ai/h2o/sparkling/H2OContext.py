@@ -165,7 +165,6 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf(spark_session)
-        selected_conf.set("spark.ext.h2o.running.from.non.jvm.client", True)
         if "auth" in kwargs:
             H2OContext.__setCreds(selected_conf, kwargs["auth"])
 

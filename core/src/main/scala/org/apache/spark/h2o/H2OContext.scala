@@ -499,10 +499,10 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
-    val isNonJVMClient = conf.getBoolean(SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._1,
-      SharedBackendConf.PROP_RUNNING_FROM_NON_JVM_CLIENT._2)
+    val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
     val isExternalBackend = conf.runsInExternalClusterMode
-    if (isExternalBackend && isNonJVMClient) {
+    if (isExternalBackend && isRestApiBasedClient) {
       if (instantiatedContext.get() != null) {
         if (connectingToNewCluster(instantiatedContext.get(), conf)) {
           instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, conf).init())
