@@ -21,7 +21,6 @@ from pyspark.ml.util import _jvm
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
-from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
 
 
 class H2OMOJOModel(H2OMOJOModelBase):
@@ -31,9 +30,10 @@ class H2OMOJOModel(H2OMOJOModelBase):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
         javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
-        if javaModel.__class__.__name__ == "H2OSupervisedMOJOModel":
+        className = javaModel.getClass().getSimpleName()
+        if className == "H2OSupervisedMOJOModel":
             return H2OSupervisedMOJOModel(javaModel)
-        elif javaModel.__class__.__name__ == "H2OUnsupervisedMOJOModel":
+        elif className == "H2OUnsupervisedMOJOModel":
             return H2OUnsupervisedMOJOModel(javaModel)
         else:
             return H2OMOJOModel(javaModel)
@@ -42,8 +42,10 @@ class H2OMOJOModel(H2OMOJOModelBase):
         return self._java_obj.getModelDetails()
 
 
-class H2OSupervisedMOJOModel(H2OMOJOModel, H2OSupervisedMOJOParams):
-    pass
+class H2OSupervisedMOJOModel(H2OMOJOModel):
+
+    def getOffsetCol(self):
+        return self._java_obj.getOffsetCol()
 
 
 class H2OUnsupervisedMOJOModel(H2OMOJOModel):
