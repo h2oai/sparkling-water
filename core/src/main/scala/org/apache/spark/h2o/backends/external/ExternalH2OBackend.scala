@@ -23,11 +23,11 @@ import java.util.Properties
 import java.util.jar.JarFile
 
 import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend.H2O_JOB_NAME
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.{H2OClusterNodeNotReachableException, H2OContextRestAPIUtils, NodeDesc}
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
+import org.apache.spark.sql.SparkSession
 import water.api.RestAPIManager
 import water.init.{AbstractBuildVersion, NetworkUtils}
 import water.util.Log
@@ -37,7 +37,7 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ExternalBackendUtils with Logging with H2OContextRestAPIUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with H2OContextRestAPIUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
@@ -45,12 +45,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private var cloudHealthCheckThread: Option[Thread] = None
 
   private def isRestApiBasedClient(hc: H2OContext): Boolean = {
-    hc._conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+    hc.getConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
   }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
-    import ExternalH2OBackend._
 
     var cmdToLaunch = Seq[String]("hadoop", "jar", conf.h2oDriverPath.get)
 
@@ -64,7 +63,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       case _ =>
     }
     // Application tags shown in Yarn Resource Manager UI
-    val yarnAppTags = s"${TAG_EXTERNAL_H2O},${TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
+    val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
 
     if (conf.YARNQueue.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-Dmapreduce.job.queuename=" + conf.YARNQueue.get)
@@ -122,7 +121,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
     }
 
-    cmdToLaunch = cmdToLaunch ++ getH2OSecurityArgs(hc.getConf)
+    cmdToLaunch = cmdToLaunch ++ ExternalH2OBackend.getH2OSecurityArgs(hc.getConf)
 
     if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-principal",
@@ -147,7 +146,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       cmdToLaunch = cmdToLaunch :+ conf.nodeExtraProperties.get
     }
 
-    cmdToLaunch = cmdToLaunch ++ getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg))
+    cmdToLaunch = cmdToLaunch ++ ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg))
 
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
@@ -197,58 +196,58 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     ipPort
   }
 
-  override def init(): Array[NodeDesc] = {
-    if (hc.getConf.isAutoClusterStartUsed) {
+  override def init(conf: H2OConf): Array[NodeDesc] = {
+    if (conf.isAutoClusterStartUsed) {
       // For automatic mode we can check the driver version early
-      verifyVersionFromDriverJAR(hc.getConf.h2oDriverPath.get)
+      verifyVersionFromDriverJAR(conf.h2oDriverPath.get)
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
-      val ipPort = launchH2OOnYarn(hc.getConf)
-      hc._conf.setH2OCluster(ipPort)
+      val ipPort = launchH2OOnYarn(conf)
+      conf.setH2OCluster(ipPort)
       val clientIp = NetworkUtils.indentifyClientIp(ipPort.split(":")(0))
-      if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
-        hc._conf.setClientIp(clientIp.get)
+      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+        conf.setClientIp(clientIp.get)
       }
     } else {
-        val clientIp = NetworkUtils.indentifyClientIp(hc._conf.h2oClusterHost.get)
-        if (clientIp.isDefined && hc._conf.clientIp.isEmpty && hc._conf.clientNetworkMask.isEmpty) {
-          hc._conf.setClientIp(clientIp.get)
+        val clientIp = NetworkUtils.indentifyClientIp(conf.h2oClusterHost.get)
+        if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+          conf.setClientIp(clientIp.get)
         }
     }
 
-    if (hc._conf.clientIp.isEmpty) {
-      hc._conf.setClientIp(getHostname(SparkEnv.get))
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
     }
 
     logInfo("Connecting to external H2O cluster.")
-    val clusterBuildTimeout = hc.getConf.cloudTimeout
+    val clusterBuildTimeout = conf.cloudTimeout
     val nodes = if (isRestApiBasedClient(hc)) {
       try {
-        val nodes = getNodes(hc.getConf)
-        verifyWebOpen(nodes, hc.getConf)
+        val nodes = getNodes(conf)
+        verifyWebOpen(nodes, conf)
         verifyVersionFromRestCall(nodes)
         nodes
       } catch {
         case _: H2OClusterNodeNotReachableException =>
-          val h2oCluster = hc.getConf.h2oCluster.get + hc.getConf.contextPath.getOrElse("")
+          val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
           throw new H2OClusterNodeNotReachableException(
-            s"""External H2O cluster $h2oCluster - ${hc.getConf.cloudName.get} is not reachable, H2OContext has not been created.
+            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable, H2OContext has not been created.
                |Please verify that $h2oCluster is running with web enabled and retry the context creation.
                |If your cluster is secured, also make sure you that are providing valid credentials to the client. """.stripMargin)
       }
     } else {
-      val h2oClientArgs = getH2OClientArgs(hc.getConf).toArray
+      val h2oClientArgs = ExternalH2OBackend.getH2OClientArgs(conf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
     H2OStarter.start(h2oClientArgs, false)
 
-    val expectedSize = hc.getConf.clusterSize.get.toInt
-    val discoveredSize = waitForCloudSize(expectedSize, clusterBuildTimeout)
-      if (hc._conf.isManualClusterStartUsed) {
+    val expectedSize = conf.clusterSize.get.toInt
+    val discoveredSize = ExternalH2OBackend.waitForCloudSize(expectedSize, clusterBuildTimeout)
+      if (conf.isManualClusterStartUsed) {
         verifyVersionFromRuntime()
       }
     if (discoveredSize < expectedSize) {
-      if (hc.getConf.isAutoClusterStartUsed) {
+      if (conf.isAutoClusterStartUsed) {
         Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
         H2O.shutdown(-1)
       }
@@ -260,13 +259,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
       H2O.startServingRestApi()
       val cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
       if (cloudMembers.length == 0) {
-        if (hc.getConf.isManualClusterStartUsed) {
+        if (conf.isManualClusterStartUsed) {
           throw new H2OClusterNotRunning(
             s"""
                |External H2O cluster is not running or could not be connected to. Provided configuration:
-               |  cluster name            : ${hc.getConf.cloudName.get}
-               |  cluster representative  : ${hc.getConf.h2oCluster.getOrElse("Using multi-cast discovery!")}
-               |  cluster start timeout   : ${hc.getConf.clusterStartTimeout} sec
+               |  cluster name            : ${conf.cloudName.get}
+               |  cluster representative  : ${conf.h2oCluster.getOrElse("Using multi-cast discovery!")}
+               |  cluster start timeout   : ${conf.clusterStartTimeout} sec
                |
                |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
                |because multi-cast communication is limited in your network. In that case, please consider starting the
@@ -334,10 +333,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
 
     // In Manual mode of external backend, we want the H2O cluster to be managed by the user, not by Sparkling Water
-    if (hc._conf.isAutoClusterStartUsed) {
+    if (hc.getConf.isAutoClusterStartUsed) {
       H2O.orderlyShutdown(1000)
     }
-    if (hc._conf.isManualClusterStartUsed && isRestApiBasedClient(hc)) {
+    if (hc.getConf.isManualClusterStartUsed && isRestApiBasedClient(hc)) {
       // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
     } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
       // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
@@ -347,94 +346,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
     }
   }
 
-  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
-    super.checkAndUpdateConf(conf)
-
-    if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
-      conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
-
-      throw new IllegalArgumentException(
-        s"""'${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_START_MODE._1}' property is set to ${conf.clusterStartMode}.
-          Valid options are "${ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE}" or "${ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE}".
-      """)
-    }
-
-    if (conf.clusterSize.isEmpty && !conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
-      throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
-    }
-
-    if (conf.isAutoClusterStartUsed) {
-      lazy val driverPath = sys.env.get(ExternalH2OBackend.ENV_H2O_EXTENDED_JAR)
-      if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
-        throw new IllegalArgumentException(
-          s"""Path to the H2O extended driver has to be specified when using automatic cluster start.
-             |It can be specified either via method available on the configuration object or
-             |using the '${ExternalH2OBackend.ENV_H2O_EXTENDED_JAR}' environmental property.
-          """.stripMargin)
-      }
-      if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
-        log.info(
-          s"""Obtaining path to the extended H2O driver from the environment variable.
-             |Specified path is: ${driverPath.get}""".stripMargin)
-        conf.setH2ODriverPath(driverPath.get)
-      }
-
-      if (conf.cloudName.isEmpty) {
-        conf.setCloudName(H2O_JOB_NAME.format(hc.sparkContext.applicationId))
-      }
-
-      if (conf.clusterInfoFile.isEmpty) {
-        conf.setClusterConfigFile("notify_" + conf.cloudName.get)
-      }
-
-      if (hc.sparkContext.conf.getOption("spark.yarn.principal").isDefined &&
-        conf.kerberosPrincipal.isEmpty) {
-        Log.info(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
-          s" not set. Passing the configuration to H2O.")
-        conf.setKerberosPrincipal(hc.sparkContext.conf.get("spark.yarn.principal"))
-      }
-
-      if (hc.sparkContext.conf.getOption("spark.yarn.keytab").isDefined &&
-        conf.kerberosKeytab.isEmpty) {
-        Log.info(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
-          s" not set. Passing the configuration to H2O.")
-        conf.setKerberosKeytab(hc.sparkContext.conf.get("spark.yarn.keytab"))
-      }
-
-      if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
-        throw new IllegalArgumentException(
-          s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
-          """.stripMargin)
-      } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
-        throw new IllegalArgumentException(
-          s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
-          """.stripMargin)
-      }
-    } else {
-      if (conf.cloudName.isEmpty) {
-        throw new IllegalArgumentException(
-          s"""Cluster name has to be specified when using the external H2O cluster mode in the manual start mode.
-             |It can be set either on the configuration object or via '${SharedBackendConf.PROP_CLOUD_NAME._1}'
-             |spark configuration property""".stripMargin)
-      }
-
-      if (conf.h2oCluster.isEmpty) {
-        throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
-      }
-    }
-    distributeFiles(conf, hc.sparkContext)
-    conf
-  }
-
   override def epilog =
-    if (hc._conf.isAutoClusterStartUsed) {
+    if (hc.getConf.isAutoClusterStartUsed) {
       s"""
          | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
     """.stripMargin
@@ -445,7 +358,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   private def verifyVersionFromRestCall(nodes: Array[NodeDesc]) = {
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
-      val externalVersion = getCloudInfoFromNode(node, hc._conf).version
+      val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
       if (referencedVersion != externalVersion) {
         throw new RuntimeException(
           s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
@@ -485,7 +398,104 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
   }
 }
 
-object ExternalH2OBackend {
+object ExternalH2OBackend extends ExternalBackendUtils {
+
+  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
+    super.checkAndUpdateConf(conf)
+
+    // Increase locality timeout since h2o-specific tasks can be long computing
+    if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
+      logWarning(s"Increasing 'spark.locality.wait' to value 30000")
+      conf.set("spark.locality.wait", "30000")
+    }
+
+    // to mimic the previous behaviour, set the client ip like this only in manual cluster mode when using multi-cast
+    if (conf.clientIp.isEmpty && conf.isManualClusterStartUsed && conf.h2oCluster.isEmpty) {
+      conf.setClientIp(getHostname(SparkEnv.get))
+    }
+
+    if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
+      conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
+
+      throw new IllegalArgumentException(
+        s"""'${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_START_MODE._1}' property is set to ${conf.clusterStartMode}.
+          Valid options are "${ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE}" or "${ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE}".
+      """)
+    }
+
+    if (conf.clusterSize.isEmpty && !conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
+      throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
+    }
+
+    if (conf.isAutoClusterStartUsed) {
+      lazy val driverPath = sys.env.get(ExternalH2OBackend.ENV_H2O_EXTENDED_JAR)
+      if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""Path to the H2O extended driver has to be specified when using automatic cluster start.
+             |It can be specified either via method available on the configuration object or
+             |using the '${ENV_H2O_EXTENDED_JAR}' environmental property.
+          """.stripMargin)
+      }
+      if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
+        log.info(
+          s"""Obtaining path to the extended H2O driver from the environment variable.
+             |Specified path is: ${driverPath.get}""".stripMargin)
+        conf.setH2ODriverPath(driverPath.get)
+      }
+
+      if (conf.cloudName.isEmpty) {
+        conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
+      }
+
+      if (conf.clusterInfoFile.isEmpty) {
+        conf.setClusterConfigFile("notify_" + conf.cloudName.get)
+      }
+
+      if (conf.getOption("spark.yarn.principal").isDefined &&
+        conf.kerberosPrincipal.isEmpty) {
+        Log.info(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
+      }
+
+      if (conf.getOption("spark.yarn.keytab").isDefined &&
+        conf.kerberosKeytab.isEmpty) {
+        Log.info(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
+      }
+
+      if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
+          """.stripMargin)
+      } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
+          """.stripMargin)
+      }
+    } else {
+      if (conf.cloudName.isEmpty) {
+        throw new IllegalArgumentException(
+          s"""Cluster name has to be specified when using the external H2O cluster mode in the manual start mode.
+             |It can be set either on the configuration object or via '${SharedBackendConf.PROP_CLOUD_NAME._1}'
+             |spark configuration property""".stripMargin)
+      }
+
+      if (conf.h2oCluster.isEmpty) {
+        throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+      }
+    }
+    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
+    conf
+  }
 
   // This string tags instances of H2O launched from Sparkling Water
   val TAG_EXTERNAL_H2O = "H2O/Sparkling-Water"

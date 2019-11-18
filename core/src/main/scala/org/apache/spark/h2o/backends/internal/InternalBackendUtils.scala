@@ -23,39 +23,7 @@ import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{SparkContext, SparkEnv}
 
-/**
-  * Various helper methods used in the internal backend
-  */
-private[internal] trait InternalBackendUtils extends SharedBackendUtils {
-
-
-  /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
-    *
-    * This method checks the environments for generic configuration which does not depend on particular backend used
-    * In order to check the configuration for specific backend, method checkAndUpdateConf on particular backend has to be
-    * called.
-    *
-    * This method has to be called at the start of each method which override this one
-    *
-    * @param conf H2O Configuration to check
-    * @return checked and updated configuration
-    **/
-  override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
-    super.checkAndUpdateConf(conf)
-
-    // Always wait for the local node - H2O node
-    logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
-    conf.set("spark.locality.wait", "0")
-    
-    if (conf.clientIp.isEmpty) {
-      conf.setClientIp(getHostname(SparkEnv.get))
-    }
-    conf
-  }
-
-}
-
-object InternalBackendUtils extends InternalBackendUtils {
+private[backends] trait InternalBackendUtils extends SharedBackendUtils {
 
   def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit = {
     unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == "" || conf.get(opt._1) == opt._2)) {
@@ -80,8 +48,8 @@ object InternalBackendUtils extends InternalBackendUtils {
     */
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
     val ip = {
-      val hostname = SharedBackendUtils.getHostname(SparkEnv.get)
-      InternalBackendUtils.translateHostnameToIp(hostname)
+      val hostname = getHostname(SparkEnv.get)
+      translateHostnameToIp(hostname)
     }
 
     new ArgumentBuilder()
@@ -89,7 +57,7 @@ object InternalBackendUtils extends InternalBackendUtils {
       .add(getH2OSecurityArgs(conf))
       .add("-log_level", conf.h2oNodeLogLevel)
       .add("-baseport", conf.nodeBasePort)
-      .add("-log_dir", InternalBackendUtils.getH2ONodeLogDir(conf, SparkEnv.get))
+      .add("-log_dir", getH2ONodeLogDir(conf, SparkEnv.get))
       .addIf("-network", conf.nodeNetworkMask, conf.nodeNetworkMask.isDefined)
       .addIf("-ip", ip, conf.nodeNetworkMask.isEmpty)
       .addAsString(conf.nodeExtraProperties)
@@ -98,7 +66,7 @@ object InternalBackendUtils extends InternalBackendUtils {
 
   def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
     val flatFileString = toFlatFileString(executors)
-    val flatFile = SharedBackendUtils.saveFlatFileAsFile(flatFileString)
+    val flatFile = saveFlatFileAsFile(flatFileString)
     h2oArgs.toArray ++ Array("-flatfile", flatFile.getAbsolutePath)
   }
 
@@ -106,7 +74,7 @@ object InternalBackendUtils extends InternalBackendUtils {
     Option(System.getProperty("spark.yarn.app.container.log.dir"))
       .map(_ + java.io.File.separator)
       .orElse(conf.h2oNodeLogDir)
-      .getOrElse(SharedBackendUtils.defaultLogDir(sparkEnv.conf.getAppId))
+      .getOrElse(defaultLogDir(sparkEnv.conf.getAppId))
   }
 
   private def translateHostnameToIp(hostname: String): String = {

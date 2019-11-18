@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends
 
 import org.scalatest.{FunSuite, Matchers}
 
-class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
+class SharedBackendUtilsTestSuite extends FunSuite with Matchers with SharedBackendUtils {
 
   private val expectedHttpHeaderArgs = Seq(
     "-add_http_header", "X-Request-ID", "f058ebd6-02f7-4d3f-942e-904344e8cde5",
@@ -35,7 +35,7 @@ class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
         |Content-Security-Policy-Report-Only: default-src 'none'; style-src cdn.example.com:8080; report-uri /_/csp-reports
       """.stripMargin
 
-    val result = SharedBackendUtils.parseStringToHttpHeaderArgs(input)
+    val result = parseStringToHttpHeaderArgs(input)
 
     result shouldEqual expectedHttpHeaderArgs
   }
@@ -48,7 +48,7 @@ class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
         |Content-Security-Policy-Report-Only:default-src 'none'; style-src cdn.example.com:8080; report-uri /_/csp-reports
       """.stripMargin
 
-    val result = SharedBackendUtils.parseStringToHttpHeaderArgs(input)
+    val result = parseStringToHttpHeaderArgs(input)
 
     result shouldEqual expectedHttpHeaderArgs
   }
@@ -69,7 +69,7 @@ class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
         |
       """.stripMargin
 
-    val result = SharedBackendUtils.parseStringToHttpHeaderArgs(input)
+    val result = parseStringToHttpHeaderArgs(input)
 
     result shouldEqual expectedHttpHeaderArgs
   }
@@ -82,7 +82,7 @@ class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
         |
       """.stripMargin
 
-    val result = SharedBackendUtils.parseStringToHttpHeaderArgs(input)
+    val result = parseStringToHttpHeaderArgs(input)
 
     result shouldEqual Seq.empty[String]
   }
@@ -90,7 +90,7 @@ class SharedBackendUtilsTestSuite extends FunSuite with Matchers {
   test("parseStringToHttpArgs parses empty string") {
     val input = ""
 
-    val result = SharedBackendUtils.parseStringToHttpHeaderArgs(input)
+    val result = parseStringToHttpHeaderArgs(input)
 
     result shouldEqual Seq.empty[String]
   }

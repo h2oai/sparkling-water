@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalWriteConverterCtx}
+import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
@@ -74,7 +74,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       val internalJavaClasses = flatDataFrame.schema.map { f =>
         ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
       }.toArray
-      ExternalBackendUtils.prepareExpectedTypes(internalJavaClasses)
+      ExternalH2OBackend.prepareExpectedTypes(internalJavaClasses)
     }
 
     val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
