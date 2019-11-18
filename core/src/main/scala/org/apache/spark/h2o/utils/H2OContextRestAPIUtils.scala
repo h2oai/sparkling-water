@@ -52,10 +52,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
         val content = readStringURLContent(endpoint, s"3/Logs/download/$logContainer", conf)
         out.write(content)
       case "ZIP" =>
-        val content = readBinaryURLContent(endpoint, s"3/Logs/download/$logContainer", conf)
-        val bos = new BufferedOutputStream(new FileOutputStream(file))
-        Stream.continually(bos.write(content))
-        bos.close()
+        downloadBinaryURLContent(endpoint, s"3/Logs/download/$logContainer", conf, file)
     }
     file.getAbsolutePath
   }
@@ -123,11 +120,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     content
   }
 
-  private def readBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf): Array[Byte] = {
+  private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
     val response = readURLContent(endpoint, suffix, conf)
-    val content = IOUtils.toByteArray(response)
-    response.close()
-    content
+    val output = new BufferedOutputStream(new FileOutputStream(file))
+    IOUtils.copy(response, output)
+    output.close()
   }
 
   // Method using the resulting source is responsible for closing it
