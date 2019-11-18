@@ -17,7 +17,6 @@
 
 package org.apache.spark.h2o
 
-import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
@@ -31,7 +30,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.util.{LogArchiveContainer, PrettyPrint}
+import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
