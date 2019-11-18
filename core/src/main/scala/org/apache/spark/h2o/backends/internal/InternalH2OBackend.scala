@@ -73,7 +73,7 @@ object InternalH2OBackend extends InternalBackendUtils {
 
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
 
-    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && SparkSession.builder().getOrCreate().sparkContext.isLocal) {
+    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !SparkSession.builder().getOrCreate().sparkContext.isLocal) {
       logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
         "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
       // Setup the property but at this point it does not make good sense

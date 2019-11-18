@@ -485,7 +485,7 @@ object H2OContext extends Logging {
     !sameNodes
   }
 
-  private def checkConf(conf: H2OConf): H2OConf = {
+  private def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     if (conf.runsInExternalClusterMode) {
       ExternalH2OBackend.checkAndUpdateConf(conf)
     } else {
@@ -500,7 +500,7 @@ object H2OContext extends Logging {
     * @return H2O Context
     */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
-    val checkedConf = checkConf(conf)
+    val checkedConf = checkAndUpdateConf(conf)
     val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
     val isExternalBackend = conf.runsInExternalClusterMode
