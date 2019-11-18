@@ -342,7 +342,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
   // scalastyle:on
 
-  def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String
+  def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String
 }
 
 object H2OContext extends Logging {
@@ -398,9 +398,9 @@ object H2OContext extends Logging {
       )
     }
 
-    override def downloadH2OLogs(destination: String, logContainer: String = "ZIP"): String = {
+    override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
       verifyLogContainer(logContainer)
-      H2O.downloadLogs(destination, logContainer).toString
+      H2O.downloadLogs(destinationDir, logContainer).toString
     }
 
   }
