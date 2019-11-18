@@ -46,13 +46,12 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   def downloadLogs(destinationDir: String, logContainer: String, conf: H2OConf): String = {
     val endpoint = getClusterEndpoint(conf)
     val file = new File(destinationDir, s"${logFileName()}.${logContainer.toLowerCase}")
+    val logEndpoint = s"3/Logs/download/$logContainer"
     logContainer match {
       case "LOG" =>
-        val out = new java.io.FileWriter(file)
-        val content = readStringURLContent(endpoint, s"3/Logs/download/$logContainer", conf)
-        out.write(content)
+        downloadStringURLContent(endpoint, logEndpoint, conf, file)
       case "ZIP" =>
-        downloadBinaryURLContent(endpoint, s"3/Logs/download/$logContainer", conf, file)
+        downloadBinaryURLContent(endpoint, logEndpoint, conf, file)
     }
     file.getAbsolutePath
   }
@@ -123,6 +122,13 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
     val response = readURLContent(endpoint, suffix, conf)
     val output = new BufferedOutputStream(new FileOutputStream(file))
+    IOUtils.copy(response, output)
+    output.close()
+  }
+
+  private def downloadStringURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
+    val response = readURLContent(endpoint, suffix, conf)
+    val output = new java.io.FileWriter(file)
     IOUtils.copy(response, output)
     output.close()
   }
