@@ -133,7 +133,6 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     output.close()
   }
 
-  // Method using the resulting source is responsible for closing it
   private def readURLContent(endpoint: URI, suffix: String, conf: H2OConf): InputStream = {
     try {
       val connection = new URL(s"$endpoint/$suffix").openConnection
