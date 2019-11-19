@@ -121,6 +121,7 @@ class H2OContext(object):
         self._jsql_context = self._spark_session._jwrapped
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
+        self.__isStopped = None
 
 
     def __default_h2o_connect(h2o_context, **kwargs):
@@ -200,6 +201,7 @@ class H2OContext(object):
         deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
         if deploy_mode != "cluster":
             atexit.register(lambda: h2o_context.__stop())
+        h2o_context.__isStopped = False
         return h2o_context
 
     @staticmethod
@@ -237,18 +239,21 @@ class H2OContext(object):
 
     def stop(self):
         self.__stop()
-        sys.exit()
+        self.__isStopped = True
+        # do this ugly stop only in case of non-rest api client
+        if self._conf.get("spark.ext.h2o.rest.api.based.client") == "false":
+            sys.exit()
 
     def download_h2o_logs(self, destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
         return self._jhc.h2oContext().downloadH2OLogs(destination, container)
 
     def __str__(self):
-        if self.__isClientConnected():
+        if self.__isClientConnected() and self.__isStopped != True:
             return self._jhc.toString()
         else:
-            return "H2OContext not created. Call H2OContext.getOrCreate(spark) or " \
-                   "H2OContext.getOrCreate(spark, conf) to create one."
+            return "H2OContext has been stopped or hasn't been created. Call H2OContext.getOrCreate(spark) or " \
+                   "H2OContext.getOrCreate(spark, conf) to create a new one."
 
     def __repr__(self):
         self.show()
