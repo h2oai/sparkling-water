@@ -1,10 +1,8 @@
 apply plugin: 'base'
 apply plugin: 'com.bmuschko.docker-remote-api'
-apply from: "$rootDir/gradle/utils.gradle"
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 
-defaultTasks 'createDockerFiles'
 description = "Build docker images for Kubernetes with Sparkling Water"
 
 ext {
@@ -13,32 +11,13 @@ ext {
     outputFileScala = file("$buildDir/Dockerfile-Scala")
 }
 
-task buildSparkImages(dependsOn: checkSparkVersionTask) {
-    doLast {
-        exec {
-            workingDir sparkHome
-            commandLine getOsSpecificCommandLine(['./bin/docker-image-tool.sh', '-t', "$sparkVersion", "build"])
-        }
-    }
-}
-
-task copyDist(type: Copy, dependsOn: ":sparkling-water-dist:dist") {
-    from "$rootDir/dist/build/zip/sparkling-water-${version}"
-    into "$buildDir/sparkling-water"
-}
-
-task createScalaDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
+task createScalaDockerfile(type: Dockerfile) {
     destFile = outputFileScala
     from "spark:${sparkVersion}"
-    copyFile("sparkling-water/assembly/build/libs/sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
+    copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
 }
 
-task buildScalaImage(type: Exec, dependsOn: createScalaDockerfile) {
-    workingDir buildDir
-    commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-scala:${version}", '-f', outputFileScala, "."])
-}
-
-task createRDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
+task createRDockerfile(type: Dockerfile) {
     destFile = outputFileR
     from "spark-r:${sparkVersion}"
     runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
@@ -57,20 +36,10 @@ task createRDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]
     runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
 }
 
-task buildRImage(type: Exec, dependsOn: createRDockerfile) {
-    workingDir buildDir
-    commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-r:${version}", '-f', outputFileR, "."])
-}
-
-task createPythonDockerfile(type: Dockerfile, dependsOn: [buildSparkImages, copyDist]) {
+task createPythonDockerfile(type: Dockerfile) {
     destFile = outputFilePython
     from "spark-py:${sparkVersion}"
-    copyFile("sparkling-water/py/build/dist/h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
+    copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
 }
 
-task buildPythonImage(type: Exec, dependsOn: createPythonDockerfile) {
-    workingDir buildDir
-    commandLine getOsSpecificCommandLine(['docker', 'build', '-t', "sparkling-water-python:${version}", '-f', outputFilePython, "."])
-}
-
-task buildKubernetesImages(dependsOn: [buildScalaImage, buildPythonImage, buildRImage])
+task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])

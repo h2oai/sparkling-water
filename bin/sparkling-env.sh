@@ -140,7 +140,7 @@ VERSION=$(grep version "$PROP_FILE" | grep -v '#' | sed -e "s/.*=//" )
 H2O_VERSION=$(grep h2oMajorVersion "$PROP_FILE" | sed -e "s/.*=//")
 H2O_BUILD=$(grep h2oBuild "$PROP_FILE" | sed -e "s/.*=//")
 H2O_NAME=$(grep h2oMajorName "$PROP_FILE" | sed -e "s/.*=//")
-SPARK_VERSION=$(grep sparkVersion "$PROP_FILE" | sed -e "s/.*=//")
+export SPARK_VERSION=$(grep sparkVersion "$PROP_FILE" | sed -e "s/.*=//")
 SCALA_VERSION=$(grep scalaBaseVersion "$PROP_FILE" | sed -e "s/.*=//" | cut -d . -f 1,2)
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar"
