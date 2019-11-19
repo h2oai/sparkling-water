@@ -86,7 +86,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     )
 
     // We don't use client in the REST API approach so the following options does not need to be passed
-    if(!isRestApiBasedClient(hc)) {
+    if (!isRestApiBasedClient(hc)) {
       cmdToLaunch = cmdToLaunch ++ Seq[String](
         "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
         "-J", "-watchdog_stop_without_client",
