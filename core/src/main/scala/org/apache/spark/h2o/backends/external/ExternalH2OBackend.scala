@@ -82,12 +82,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       "-port_offset", conf.internalPortOffset.toString,
       "-baseport", conf.nodeBasePort.toString,
       "-timeout", conf.clusterStartTimeout.toString,
-      "-disown",
-      "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
-      "-J", "-watchdog_stop_without_client",
-      "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
-      "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
+      "-disown"
     )
+
+    // We don't use client in the REST API approach so the following options does not need to be passed
+    if (!isRestApiBasedClient(hc)) {
+      cmdToLaunch = cmdToLaunch ++ Seq[String](
+        "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
+        "-J", "-watchdog_stop_without_client",
+        "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
+        "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
+      )
+    }
 
     if (conf.runAsUser.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-run_as_user", conf.runAsUser.get)
