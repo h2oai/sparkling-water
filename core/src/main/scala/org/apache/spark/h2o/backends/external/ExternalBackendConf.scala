@@ -158,7 +158,8 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE = ("spark.ext.h2o.cloud.representative", None)
 
   /** Number of nodes to wait for when connecting to external H2O cluster in manual mode. In auto mode, number
-    * of nodes to be started. */
+    * of nodes to be started. This option does not have any effect in manual cluster start in case
+    * spark.ext.h2o.rest.api.based.client is set to true */
   val PROP_EXTERNAL_CLUSTER_SIZE = ("spark.ext.h2o.external.cluster.size", None)
 
   /** Timeout in milliseconds for watchdog client connection. If client is not connected
