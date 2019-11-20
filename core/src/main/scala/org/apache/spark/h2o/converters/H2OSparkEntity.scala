@@ -18,16 +18,16 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.Partition
+import org.apache.spark.h2o.utils.NodeDesc
+import water.api.schemas3.FrameV3
 import water.fvec.{Frame, FrameUtils}
 
 import scala.annotation.meta.{field, getter}
 
 /**
- * Contains functions that are shared between all H2ORDD types (i.e., Scala, Java)
- */
-private[converters] trait H2ORDDLike[T <: Frame] {
-  /** Underlying DataFrame */
-  @(transient @field @getter) val frame: T
+  * Contains functions that are shared between all H2O DataFrames and RDDs.
+  */
+private[converters] trait H2OSparkEntity {
 
   /** Is the external backend in use */
   val isExternalBackend: Boolean
@@ -36,13 +36,13 @@ private[converters] trait H2ORDDLike[T <: Frame] {
   val driverTimeStamp: Short
 
   /** Cache frame key to get H2OFrame from the K/V store */
-  val frameKeyName: String = frame._key.toString
+  def frameKeyName: String
 
   /** Number of chunks per a vector */
-  val numChunks: Int = frame.anyVec().nChunks()
+  def numChunks: Int
 
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  val chksLocation = if (isExternalBackend) Some(FrameUtils.getChunksLocations(frame)) else None
+  def chksLocation : Option[Array[NodeDesc]]
 
   /** Selected column indices */
   val selectedColumnIndices: Array[Int]
@@ -77,5 +77,40 @@ private[converters] trait H2ORDDLike[T <: Frame] {
 
     override def hasNext: Boolean = converterCtx.hasNext
   }
-
 }
+
+/**
+  * Contains functions that are shared between all client-based H2O DataFrames and RDDs.
+  */
+private[converters] trait H2OClientBasedSparkEntity[T <: Frame] extends H2OSparkEntity {
+  /** Underlying DataFrame */
+  @(transient @field @getter) val frame: T
+
+  /** Cache frame key to get H2OFrame from the K/V store */
+  override val frameKeyName: String = frame._key.toString
+
+  /** Number of chunks per a vector */
+  override val numChunks: Int = frame.anyVec().nChunks()
+
+  /** Chunk locations helps us to determine the node which really has the data we needs. */
+  override val chksLocation = if (isExternalBackend) Some(FrameUtils.getChunksLocations(frame)) else None
+}
+
+/**
+  * Contains functions that are shared between all REST-based H2ORDD types (i.e., Scala, Java)
+  */
+private[converters] trait H2ORESTBasedSparkEntity extends H2OSparkEntity {
+  /** Underlying H2O Frame */
+  @(transient @field @getter) val frame: FrameV3
+
+  /** Cache frame key to get H2OFrame from the K/V store */
+  val frameKeyName: String = frame.frame_id.name
+
+  /** Number of chunks per a vector */
+  val numChunks: Int = frame.chunk_summary.rowcount
+
+  /** Chunk locations helps us to determine the node which really has the data we needs. */
+  val chksLocation: Option[Array[NodeDesc]] = ??? // TODO: Propagate chunk locations
+}
+
+

@@ -26,7 +26,7 @@ import com.google.gson.Gson
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
-import water.api.schemas3.CloudV3
+import water.api.schemas3.{CloudV3, FrameV3, FramesV3}
 
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
@@ -73,6 +73,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     getNodes(cloudV3)
   }
 
+  def getFrame(conf: H2OConf, frameId: String): FrameV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    getFrameFromNode(endpoint, conf, frameId)
+  }
+
   def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
     val nodesWithoutWeb = nodes.flatMap { node =>
       try {
@@ -110,6 +115,12 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
     val content = readStringURLContent(endpoint, "3/Cloud", conf)
     new Gson().fromJson(content, classOf[CloudV3])
+  }
+
+  private def getFrameFromNode(endpoint: URI, conf: H2OConf, frameId: String): FrameV3 = {
+    val content = readStringURLContent(endpoint, "3/Frames/$frameId", conf)
+    val result = new Gson().fromJson(content, classOf[FramesV3]) // TODO: Handle cases when frame doesn't exist
+    result.frames(0)
   }
 
   private def readStringURLContent(endpoint: URI, suffix: String, conf: H2OConf): String = {

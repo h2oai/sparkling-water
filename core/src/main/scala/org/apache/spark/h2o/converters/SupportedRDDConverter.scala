@@ -20,6 +20,7 @@ package org.apache.spark.h2o.converters
 import org.apache.spark._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.regression.LabeledPoint
+import water.api.schemas3.FrameV3
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
@@ -36,6 +37,9 @@ object SupportedRDDConverter {
 
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = new H2ORDD[A, T](fr)(hc)
+
+  /** Transform H2OFrame to RDD */
+  def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: FrameV3): H2ORESTRDD[A] = new H2ORESTRDD[A](fr)(hc)
 }
 
 /**

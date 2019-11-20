@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
+import org.apache.spark.h2o.H2OContext.H2OContextRestAPIBased
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
@@ -30,6 +31,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
+import water.api.schemas3.FrameV3
 import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
@@ -464,6 +466,17 @@ object H2OContext extends Logging {
       verifyLogContainer(logContainer)
       H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
     }
+
+    def asDataFrame(fr: FrameV3, copyMetadata: Boolean = true): DataFrame = {
+      SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+    }
+
+    override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
+      val frame = getFrame(conf, frameId)
+      SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
+    }
+
+    def asRDD[A <: Product : TypeTag : ClassTag](fr: FrameV3): org.apache.spark.rdd.RDD[A] = SupportedRDDConverter.toRDD[A](this, fr)
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {

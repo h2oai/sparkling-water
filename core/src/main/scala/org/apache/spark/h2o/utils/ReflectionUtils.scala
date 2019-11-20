@@ -154,6 +154,8 @@ object ReflectionUtils {
     */
   def dataTypeFor(v: Vec): DataType = supportedType(v).sparkType
 
+  def dataTypeFor(columnType: String): DataType = supportedType(columnType).sparkType
+
   def memberTypes(p: Product) = p.productIterator map supportedTypeOf toArray
 
   def supportedType(v: Vec): SupportedType = {
@@ -166,6 +168,14 @@ object ReflectionUtils {
       case Vec.T_TIME => Timestamp
       case typ => throw new IllegalArgumentException("Unknown vector type " + typ)
     }
+  }
+
+  def supportedType(columnType: String): SupportedType = {
+    case "enum" | "string" | "uuid" => String
+    case "int" => Long
+    case "real" => Double
+    case "time" => Timestamp
+    case unknown => throw new IllegalArgumentException(s"Unknown type $unknown")
   }
 
   private def detectSupportedNumericType(v: Vec): SupportedType = {
