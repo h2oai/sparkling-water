@@ -13,7 +13,7 @@ Prerequisites:
 
 To start Sparkling Water on Kubernetes, the steps are:
 
-0. Please make yourself familiar in how to run Spark on Kubernetes at
+0. Please make yourself familiar with how to run Spark on Kubernetes at
    `Spark Kubernetes documentation <https://spark.apache.org/docs/SUBST_SPARK_VERSION/running-on-kubernetes.html>`__.
 
 1. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution.
