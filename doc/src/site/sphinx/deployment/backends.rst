@@ -212,7 +212,7 @@ Start H2O cluster on Hadoop:
 
 .. code:: bash
 
-    hadoop -jar $H2O_EXTENDED -jobname test -nodes 3 -mapperXmx 6g
+    hadoop -jar $H2O_EXTENDED -jobname test -sw_ext_backend -nodes 3 -mapperXmx 6g
 
 After this step, we should have an H2O cluster with 3 nodes running on Hadoop.
 
@@ -275,7 +275,7 @@ To start an H2O cluster with 3 nodes using multicast discovery, run the followin
 
 .. code:: bash
 
-    java -jar $H2O_EXTENDED_JAR -name test
+    java -jar $H2O_EXTENDED_JAR -allow_clients -name test
 
 To connect to this external cluster, run the following commands:
 
@@ -313,7 +313,7 @@ To start an external H2O cluster where the nodes are discovered using the flatfi
 
 .. code:: bash
 
-    java -jar $H2O_EXTENDED_JAR -name test -flatfile path_to_flatfile
+    java -jar $H2O_EXTENDED_JAR -allow_clients -name test -flatfile path_to_flatfile
 
 where the flatfile content are lines in the format of ip:port of the nodes where H2O is supposed to run. To
 read more about flatfile and its format, please
