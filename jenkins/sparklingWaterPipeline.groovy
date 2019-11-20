@@ -248,7 +248,7 @@ def prepareSparklingWaterEnvironment() {
                     fi
                 else if [ ${config.backendMode} = external ]; then
                         cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                        cp `${config.gradleCmd} -PdoExtend -x check -PdownloadH2O=hdp2.2 getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
+                        cp `${config.gradleCmd} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
     
