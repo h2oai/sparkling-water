@@ -134,7 +134,7 @@ class H2ORESTDataFrame(@transient val frame: FrameV3, val requiredColumns: Array
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-  override val driverTimeStamp = ??? // TODO: Set correct timestamp
+  override val driverTimeStamp = -1 // Setting timestamp to -1 since there is no H2O client running
 
   private val colNames = frame.columns.map(_.label)
 

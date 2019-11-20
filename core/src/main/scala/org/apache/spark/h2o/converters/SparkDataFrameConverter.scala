@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend, ExternalWriteConverterCtx}
+import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
