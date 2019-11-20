@@ -145,6 +145,11 @@ task cleanExtendedH2OJars(type: Delete) {
     delete(file("private/extended"))
 }
 
+task getDownlodedJarPath(){
+    doLast {
+        println(getOrDownloadOriginalJar())
+    }
+}
 /**
  * Method determining whether the h2o or h2o driver jar is available.
  * Location to the jar is returned if it's available, otherwise null is returned
