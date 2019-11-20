@@ -19,7 +19,7 @@ package org.apache.spark.h2o.converters
 
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend}
+import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.rdd.RDD
@@ -156,7 +156,7 @@ class H2ORESTDataFrame(@transient val frame: FrameV3, val requiredColumns: Array
         val columnType = frame.columns(idx).`type`
         ReflectionUtils.supportedType(columnType).javaClass
       }
-      Option(ExternalBackendUtils.prepareExpectedTypes(javaClasses))
+      Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
     } else {
       None
     }

@@ -104,13 +104,13 @@ private[converters] trait H2ORESTBasedSparkEntity extends H2OSparkEntity {
   @(transient @field @getter) val frame: FrameV3
 
   /** Cache frame key to get H2OFrame from the K/V store */
-  val frameKeyName: String = frame.frame_id.name
+  override val frameKeyName: String = frame.frame_id.name
 
   /** Number of chunks per a vector */
-  val numChunks: Int = frame.chunk_summary.rowcount
+  override val numChunks: Int = frame.chunk_summary.rowcount
 
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  val chksLocation: Option[Array[NodeDesc]] = ??? // TODO: Propagate chunk locations
+  override val chksLocation: Option[Array[NodeDesc]] = ??? // TODO: Propagate chunk locations
 }
 
 

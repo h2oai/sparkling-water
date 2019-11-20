@@ -118,7 +118,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 
   private def getFrameFromNode(endpoint: URI, conf: H2OConf, frameId: String): FrameV3 = {
-    val content = readStringURLContent(endpoint, "3/Frames/$frameId", conf)
+    val content = readStringURLContent(endpoint, s"3/Frames/$frameId/summary", conf)
     val result = new Gson().fromJson(content, classOf[FramesV3]) // TODO: Handle cases when frame doesn't exist
     result.frames(0)
   }
