@@ -435,17 +435,23 @@ object ExternalH2OBackend extends ExternalBackendUtils {
     }
 
     if (conf.isAutoClusterStartUsed) {
-      lazy val driverPath = sys.env.get(ExternalH2OBackend.ENV_H2O_EXTENDED_JAR)
+      lazy val envDriverJar = if (conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+        SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
+        ExternalH2OBackend.ENV_H2O_DRIVER_JAR
+      } else {
+        ExternalH2OBackend.ENV_H2O_EXTENDED_JAR
+      }
+      lazy val driverPath = sys.env.get(envDriverJar)
       if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
         throw new IllegalArgumentException(
-          s"""Path to the H2O extended driver has to be specified when using automatic cluster start.
+          s"""Path to the H2O driver has to be specified when using automatic cluster start.
              |It can be specified either via method available on the configuration object or
-             |using the '${ENV_H2O_EXTENDED_JAR}' environmental property.
+             |by using the '$envDriverJar' environmental property.
           """.stripMargin)
       }
       if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
         log.info(
-          s"""Obtaining path to the extended H2O driver from the environment variable.
+          s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
              |Specified path is: ${driverPath.get}""".stripMargin)
         conf.setH2ODriverPath(driverPath.get)
       }
@@ -512,8 +518,11 @@ object ExternalH2OBackend extends ExternalBackendUtils {
   // Job name for H2O Yarn job
   val H2O_JOB_NAME = "H2O_via_SparklingWater_%s"
 
-  // Name of the environmental property, which may contain path to the external H2O driver
+  // Name of the environmental property, which may contain path to the extended H2O driver
   val ENV_H2O_EXTENDED_JAR = "H2O_EXTENDED_JAR"
+
+  // Name of the environmental property, which may contain path to the external H2O driver
+  val ENV_H2O_DRIVER_JAR = "H2O_DRIVER_JAR"
 }
 
 class H2OClusterNotRunning(msg: String) extends Exception(msg) with NoStackTrace
