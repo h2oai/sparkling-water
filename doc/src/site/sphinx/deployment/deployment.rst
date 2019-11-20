@@ -18,6 +18,13 @@ Deployment
    aws_emr_edge_node
    terraform_emr
 
+**Kubernetes**
+
+.. toctree::
+   :maxdepth: 2
+
+   kubernetes
+
 **Databricks**
 
 .. toctree::
