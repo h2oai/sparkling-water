@@ -40,7 +40,7 @@ To start Sparkling Water on Kubernetes, the steps are:
             --master k8s://IP:PORT \
             --deploy-mode cluster \
             --name CustomApplication \
-            --class water.SparklingWaterDriver \
+            --class custom.app.class \
             --conf spark.kubernetes.container.image=sparkling-water-scala:${SUBST_SW_VERSION} \
             --conf spark.executor.instances=3 \
             local:///opt/app.jar
@@ -55,7 +55,6 @@ To start Sparkling Water on Kubernetes, the steps are:
             --master k8s://IP:PORT \
             --deploy-mode cluster \
             --name CustomApplication \
-            --class water.SparklingWaterDriver \
             --conf spark.kubernetes.container.image=sparkling-water-scala:${SUBST_SW_VERSION} \
             --conf spark.executor.instances=3 \
             local:///opt/app.py
