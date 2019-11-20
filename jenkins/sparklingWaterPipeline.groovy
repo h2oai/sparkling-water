@@ -95,6 +95,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "MASTER=yarn-client",
                         "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
+                        "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
                         // Properties used in case we are building against specific H2O version
                         "BUILD_HADOOP=true",
                         "H2O_TARGET=${config.driverHadoopVersion}",
@@ -142,6 +143,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                 "MASTER=yarn-client",
                                 "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
+                                "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
                         withEnv(customEnvNew) {
@@ -241,9 +243,12 @@ def prepareSparklingWaterEnvironment() {
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
                         ${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
+                        # Copy also original driver JAR to desired location so rest API based client can use it
+                        cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
                     fi
                 else if [ ${config.backendMode} = external ]; then
                         cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                        cp `${config.gradleCmd} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
     
