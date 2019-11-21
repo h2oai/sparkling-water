@@ -204,8 +204,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
-      // For automatic mode we can check the driver version early
-      verifyVersionFromDriverJAR(conf.h2oDriverPath.get)
+      if (!isRestApiBasedClient(hc)) {
+        // For automatic mode we can check the driver version early
+        verifyVersionFromDriverJAR(conf.h2oDriverPath.get)
+      }
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(conf)
