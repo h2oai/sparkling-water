@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.converters
 
+import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
@@ -27,7 +28,6 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.H2O
-import water.api.schemas3.FrameV3
 import water.support.H2OFrameSupport
 
 import scala.language.postfixOps
@@ -126,19 +126,19 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   * @param hc an instance of H2O Context
   */
 private[spark]
-class H2ORESTDataFrame(@transient val frame: FrameV3, val requiredColumns: Array[String])
+class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Array[String])
                       (@transient val hc: H2OContext)
   extends H2ODataFrameBase(hc.sparkContext) with H2ORESTBasedSparkEntity {
 
-  def this(@transient frame: FrameV3)
+  def this(@transient frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = -1 // Setting timestamp to -1 since there is no H2O client running
 
-  private val colNames = frame.columns.map(_.label)
+  private val colNames = frame.columns.map(_.name)
 
-  protected override val types: Array[DataType] = frame.columns.map(c => ReflectionUtils.dataTypeFor(c.`type`))
+  protected override val types: Array[DataType] = frame.columns.map(c => ReflectionUtils.dataTypeFor(c.dataType))
 
   override val selectedColumnIndices: Array[Int] = {
     val indices = if (requiredColumns == null) {
@@ -153,7 +153,7 @@ class H2ORESTDataFrame(@transient val frame: FrameV3, val requiredColumns: Array
     if (isExternalBackend) {
       // prepare expected type selected columns in the same order as are selected columns
       val javaClasses = selectedColumnIndices.map { idx =>
-        val columnType = frame.columns(idx).`type`
+        val columnType = frame.columns(idx).dataType
         ReflectionUtils.supportedType(columnType).javaClass
       }
       Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))

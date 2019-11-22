@@ -17,18 +17,18 @@
 
 package org.apache.spark.sql
 
+import ai.h2o.sparkling.frame.{H2OColumn, H2OFrame}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.H2ORESTDataFrame
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
-import org.apache.spark.sql.types.{MetadataBuilder, StructField, StructType}
-import water.api.schemas3.FrameV3
+import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField, StructType}
 
 /** REST-based H2O relation implementing column filter operation.
   */
-case class H2ORESTFrameRelation(@transient h2oFrame: FrameV3, @transient copyMetadata: Boolean)
-                                       (@transient val sqlContext: SQLContext)
+case class H2ORESTFrameRelation(@transient frame: H2OFrame, @transient copyMetadata: Boolean)
+                               (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */ {
 
   lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to do " +
@@ -39,51 +39,46 @@ case class H2ORESTFrameRelation(@transient h2oFrame: FrameV3, @transient copyMet
 
   override val needConversion = false
 
-  override val schema: StructType = createSchema(h2oFrame, copyMetadata)
+  override val schema: StructType = createSchema(frame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
-    new H2ORESTDataFrame(h2oFrame)(h2oContext).asInstanceOf[RDD[Row]]
+    new H2ORESTDataFrame(frame)(h2oContext).asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] =
-    new H2ORESTDataFrame(h2oFrame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
+    new H2ORESTDataFrame(frame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
 
-  private def createSchema(f: FrameV3, copyMetadata: Boolean): StructType = {
+
+  private def extractMetadata(column: H2OColumn, numberOfRows: Long): Metadata = {
+    val builder = new MetadataBuilder()
+      .putLong("count", numberOfRows)
+      .putLong("naCnt", column.numberOfMissingElements)
+
+    if (column.dataType == "enum") {
+      builder
+        .putStringArray("vals", column.domain)
+        .putLong("cardinality", column.domainCardinality)
+    } else if (Seq("int", "real").contains(column.dataType)) {
+      builder
+        .putDouble("min", column.min)
+        .putDouble("mean", column.mean)
+        .putDoubleArray("percentiles", column.percentiles)
+        .putDouble("max", column.max)
+        .putDouble("std", column.sigma)
+        .putDouble("sparsity", column.numberOfZeros / numberOfRows.toDouble)
+    }
+    builder.build()
+  }
+
+  private def createSchema(f: H2OFrame, copyMetadata: Boolean): StructType = {
     import ReflectionUtils._
 
-    val types = new Array[StructField](f.column_count)
-    val columns = f.columns
-    val names = f.columns.map(_.label)
-    for (i <- 0 until f.column_count) {
-      val column = columns(i)
-      types(i) = if (copyMetadata) {
-        val metadata = new MetadataBuilder()
-          .putLong("count", f.rows)
-          .putLong("naCnt", column.missing_count)
-
-        if (column.`type` == "enum") {
-          metadata
-            .putStringArray("vals", column.domain)
-            .putLong("cardinality", column.domain_cardinality)
-        } else if (Seq("int", "real").contains(column.`type`)) {
-          metadata
-            .putDouble("min", column.mins(0))
-            .putDouble("mean", column.mean)
-            .putDoubleArray("percentiles", column.percentiles)
-            .putDouble("max", column.maxs(0))
-            .putDouble("std", column.sigma)
-            .putDouble("sparsity", column.zero_count / f.rows.toDouble)
-        }
-        StructField(
-          names(i), // Name of column
-          dataTypeFor(column.`type`), // Catalyst type of column
-          column.missing_count > 0,
-          metadata.build())
-      } else {
-        StructField(
-          names(i), // Name of column
-          dataTypeFor(column.`type`), // Catalyst type of column
-          column.missing_count > 0)
-      }
+    val types = f.columns.map { column =>
+      val metadata = if (copyMetadata) extractMetadata(column, f.numberOfRows) else Metadata.empty
+      StructField(
+        column.name,
+        dataTypeFor(column.dataType),
+        column.nullable,
+        metadata)
     }
     StructType(types)
   }

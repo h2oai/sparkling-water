@@ -466,7 +466,7 @@ object H2OContext extends Logging {
       H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
     }
 
-    def asDataFrame(fr: FrameV3, copyMetadata: Boolean = true): DataFrame = {
+    def asDataFrame(fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean = true): DataFrame = {
       SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
     }
 

@@ -20,12 +20,12 @@ package org.apache.spark.h2o.converters
 
 import java.lang.reflect.Constructor
 
+import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import water.api.schemas3.FrameV3
 import water.H2O
 import water.fvec.Frame
 import water.support.H2OFrameSupport
@@ -246,7 +246,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   * @tparam A  type for resulting RDD
   */
 private[spark]
-class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @field) val frame: FrameV3,
+class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @field) val frame: H2OFrame,
                                                           val productType: ProductType,
                                                           override val driverTimeStamp: Short)
                                                          (@(transient @param @field) hc: H2OContext)
@@ -255,10 +255,10 @@ class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @fi
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
 
   // Get product type before building an RDD
-  def this(@transient fr: FrameV3)
-          (@transient hc: H2OContext) = this(fr, ProductType.create[A], driverTimeStamp)(hc)
+  def this(@transient frame: H2OFrame)
+          (@transient hc: H2OContext) = this(frame, ProductType.create[A], driverTimeStamp)(hc)
 
-  protected override val colNames = frame.columns.map(_.label)
+  protected override val colNames = frame.columns.map(_.name)
 
   // Check that H2OFrame & given Scala type are compatible
   if (!productType.isSingleton) {

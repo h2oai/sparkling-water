@@ -58,7 +58,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     * @return a new DataFrame definition using given H2OFrame as data source
     */
 
-  def toDataFrame(hc: H2OContext, fr: FrameV3, copyMetadata: Boolean): DataFrame = {
+  def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
     val relation = H2ORESTFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
     hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)

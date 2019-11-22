@@ -17,9 +17,9 @@
 
 package org.apache.spark.h2o.converters
 
+import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.Partition
 import org.apache.spark.h2o.utils.NodeDesc
-import water.api.schemas3.FrameV3
 import water.fvec.{Frame, FrameUtils}
 
 import scala.annotation.meta.{field, getter}
@@ -101,16 +101,16 @@ private[converters] trait H2OClientBasedSparkEntity[T <: Frame] extends H2OSpark
   */
 private[converters] trait H2ORESTBasedSparkEntity extends H2OSparkEntity {
   /** Underlying H2O Frame */
-  @(transient @field @getter) val frame: FrameV3
+  @(transient @field @getter) val frame: H2OFrame
 
   /** Cache frame key to get H2OFrame from the K/V store */
-  override val frameKeyName: String = frame.frame_id.name
+  override val frameKeyName: String = frame.frameId
 
   /** Number of chunks per a vector */
-  override val numChunks: Int = frame.chunk_summary.rowcount
+  override val numChunks: Int = frame.chunks.length
 
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  override val chksLocation: Option[Array[NodeDesc]] = ??? // TODO: Propagate chunk locations
+  override val chksLocation: Option[Array[NodeDesc]] = Some(frame.chunks.map(_.location))
 }
 
 
