@@ -134,14 +134,13 @@ class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Arra
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-  override val driverTimeStamp = -1 // Setting timestamp to -1 since there is no H2O client running
 
   private val colNames = frame.columns.map(_.name)
 
   protected override val types: Array[DataType] = frame.columns.map(c => ReflectionUtils.dataTypeFor(c.dataType))
 
   override val selectedColumnIndices: Array[Int] = {
-    val indices = if (requiredColumns == null) {
+    if (requiredColumns == null) {
       colNames.indices.toArray
     } else {
       requiredColumns.map(colNames.indexOf)

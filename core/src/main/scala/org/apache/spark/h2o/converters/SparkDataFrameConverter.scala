@@ -26,7 +26,6 @@ import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, 
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, H2ORESTFrameRelation, Row}
 import org.apache.spark.{mllib, _}
 import water.Key
-import water.api.schemas3.FrameV3
 import water.fvec.{Frame, H2OFrame}
 
 

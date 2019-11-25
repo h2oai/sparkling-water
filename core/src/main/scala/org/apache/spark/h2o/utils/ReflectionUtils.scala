@@ -170,7 +170,7 @@ object ReflectionUtils {
     }
   }
 
-  def supportedType(columnType: String): SupportedType = {
+  def supportedType(columnType: String): SupportedType = columnType match {
     case "enum" | "string" | "uuid" => String
     case "int" => Long
     case "real" => Double

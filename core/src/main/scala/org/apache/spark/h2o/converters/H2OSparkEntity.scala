@@ -103,6 +103,9 @@ private[converters] trait H2ORESTBasedSparkEntity extends H2OSparkEntity {
   /** Underlying H2O Frame */
   @(transient @field @getter) val frame: H2OFrame
 
+  /** Timestamp of the H2O Driver node */
+  override val driverTimeStamp: Short = -1 // Setting timestamp to -1 since there is no H2O client running
+
   /** Cache frame key to get H2OFrame from the K/V store */
   override val frameKeyName: String = frame.frameId
 

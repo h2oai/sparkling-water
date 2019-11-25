@@ -29,7 +29,10 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.{CloudV3, FramesV3, FrameChunksV3}
+import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3}
+
+import scala.reflect.ClassTag
+import scala.reflect._
 
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
@@ -149,11 +152,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     query[CloudV3](endpoint, "3/Cloud", conf)
   }
 
-  private def query[ResultType](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
+  private def query[ResultType : ClassTag](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
     val response = readURLContent(endpoint, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
-    new Gson().fromJson(content, classOf[ResultType])
+    new Gson().fromJson(content, classTag[ResultType].runtimeClass)
   }
 
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {

@@ -30,7 +30,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
-import water.api.schemas3.FrameV3
 import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
@@ -257,6 +256,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
   }
 
+  def asDataFrame(s: String): DataFrame = asDataFrame(s, true)
+
   /** Returns location of REST API of H2O client */
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
 
@@ -466,16 +467,14 @@ object H2OContext extends Logging {
       H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
     }
 
-    def asDataFrame(fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean = true): DataFrame = {
-      SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
-    }
-
     override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
       val frame = getFrame(conf, frameId)
       SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
     }
 
-    def asRDD[A <: Product : TypeTag : ClassTag](fr: FrameV3): org.apache.spark.rdd.RDD[A] = SupportedRDDConverter.toRDD[A](this, fr)
+    def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.frame.H2OFrame): org.apache.spark.rdd.RDD[A] = {
+      SupportedRDDConverter.toRDD[A](this, fr)
+    }
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {

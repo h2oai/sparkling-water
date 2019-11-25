@@ -247,8 +247,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   */
 private[spark]
 class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @field) val frame: H2OFrame,
-                                                          val productType: ProductType,
-                                                          override val driverTimeStamp: Short)
+                                                          val productType: ProductType)
                                                          (@(transient @param @field) hc: H2OContext)
   extends H2ORDDBase[A](hc.sparkContext) with H2ORESTBasedSparkEntity {
 
@@ -256,7 +255,7 @@ class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @fi
 
   // Get product type before building an RDD
   def this(@transient frame: H2OFrame)
-          (@transient hc: H2OContext) = this(frame, ProductType.create[A], driverTimeStamp)(hc)
+          (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
   protected override val colNames = frame.columns.map(_.name)
 
