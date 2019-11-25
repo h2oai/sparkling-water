@@ -34,6 +34,7 @@ trait InternalBackendConf extends SharedBackendConf {
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
   def defaultCloudSize = sparkConf.getInt(PROP_DEFAULT_CLUSTER_SIZE._1, PROP_DEFAULT_CLUSTER_SIZE._2)
   def subseqTries = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
+  def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
 
   def nodeIcedDir = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
@@ -46,6 +47,8 @@ trait InternalBackendConf extends SharedBackendConf {
   def setNumRddRetries(retries: Int) = set(PROP_SPREADRDD_RETRIES._1, retries.toString)
   def setDefaultCloudSize(defaultClusterSize: Int) = set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
   def setSubseqTries(subseqTriesNum: Int) = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
+  def setH2ONodeWebEnabled() = set(PROP_NODE_ENABLE_WEB._1, true)
+  def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
 
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
 
@@ -86,6 +89,9 @@ object InternalBackendConf {
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES = ("spark.ext.h2o.subseq.tries", 5)
+
+  /** Enable or disable web on H2O worker nodes in internal backend mode. It is disabled by default for security reasons */
+  val PROP_NODE_ENABLE_WEB = ("spark.ext.h2o.node.enable.web", false)
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
