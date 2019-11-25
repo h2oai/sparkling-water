@@ -53,7 +53,10 @@ trait SharedBackendConf {
   def h2oNodeLogDir  = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
   def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
-  def h2oNodeWebEnabled = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
+  def h2oNodeWebEnabled = {
+    logWarningH2ONodeWebEnabledDeprecated()
+    sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
+  }
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
   def contextPath = sparkConf.getOption(PROP_CONTEXT_PATH._1)
@@ -144,8 +147,14 @@ trait SharedBackendConf {
   def setUiUpdateInterval(interval: Int) = set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
   def setCloudTimeout(timeout: Int) = set(PROP_CLOUD_TIMEOUT._1, timeout.toString)
 
-  def setH2ONodeWebEnabled() = set(PROP_NODE_ENABLE_WEB._1, true)
-  def setH2ONodeWebDisabled() = set(PROP_NODE_ENABLE_WEB._1, false)
+  def setH2ONodeWebEnabled() = {
+    logWarningH2ONodeWebEnabledDeprecated()
+    set(PROP_NODE_ENABLE_WEB._1, true)
+  }
+  def setH2ONodeWebDisabled() = {
+    logWarningH2ONodeWebEnabledDeprecated()
+    set(PROP_NODE_ENABLE_WEB._1, false)
+  }
 
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
 
@@ -204,6 +213,12 @@ trait SharedBackendConf {
 
   private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
 
+  private def logWarningH2ONodeWebEnabledDeprecated(): Unit = {
+    if (runsInExternalClusterMode) {
+      logWarning(s"Starting from release 3.28, the configuration option '${PROP_NODE_ENABLE_WEB._1}' will no longer" +
+        s" have any effect in external backend. The H2O nodes in the external backend will always start Rest API.")
+    }
+  }
 }
 
 object SharedBackendConf {
