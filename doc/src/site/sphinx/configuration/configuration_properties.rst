@@ -96,10 +96,6 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | Timeout (in msec) for cluster          |
 |                                                    |                | formation.                             |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.node.enable.web``                  | ``false``      | Enable or disable web on H2O worker    |
-|                                                    |                | nodes. It is disabled by default for   |
-|                                                    |                | security reasons.                      |
-+----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.node.network.mask``                | ``None``       | Subnet selector for H2O running inside |
 |                                                    |                | Spark executors. This disables using   |
 |                                                    |                | IP reported by Spark but tries to find |
@@ -246,6 +242,10 @@ Internal backend configuration properties
 | ``spark.ext.h2o.subseq.tries``                     | ``5``          | Subsequent successful tries to figure  |
 |                                                    |                | out size of Spark cluster, which are   |
 |                                                    |                | producing the same number of nodes.    |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.node.enable.web``                  | ``false``      | Enable or disable web on H2O worker    |
+|                                                    |                | nodes. It is disabled by default for   |
+|                                                    |                | security reasons.                      |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.internal_secure_connections``      | ``false``      | Enables secure communications among    |
 |                                                    |                | H2O nodes. The security is based on    |
