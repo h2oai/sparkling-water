@@ -17,7 +17,6 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 
@@ -30,9 +29,6 @@ trait InternalBackendConf extends SharedBackendConf {
   import InternalBackendConf._
 
   /** Getters */
-
-  @DeprecatedMethod
-  def ipBasedFlatfile = true
   def numH2OWorkers = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
   def drddMulFactor = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
   def numRddRetries = sparkConf.getInt(PROP_SPREADRDD_RETRIES._1, PROP_SPREADRDD_RETRIES._2)
@@ -45,11 +41,6 @@ trait InternalBackendConf extends SharedBackendConf {
                                                                 PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** Setters */
-  @DeprecatedMethod
-  def setIpBasedFlatFileEnabled() = this
-  @DeprecatedMethod
-  def setIpBasedFlatFileDisabled() = this
-
   def setNumH2OWorkers(numWorkers: Int) = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
   def setDrddMulFactor(factor: Int) = set(PROP_DUMMY_RDD_MUL_FACTOR._1, factor.toString)
   def setNumRddRetries(retries: Int) = set(PROP_SPREADRDD_RETRIES._1, retries.toString)
@@ -101,5 +92,4 @@ object InternalBackendConf {
 
   /** Secure internal connections by automatically generated credentials */
   val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
-
 }
