@@ -267,7 +267,7 @@ class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, v
           (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
   protected override val colNames = {
-    val names =frame.columns.map(_.name)
+    val names = frame.columns.map(_.name)
     checkColumnNames(names)
     names
   }
