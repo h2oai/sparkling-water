@@ -55,3 +55,6 @@ The new approach is the base for supporting dynamic allocation, but already has 
     H2OContext.getOrCreate(spark, H2OConf(spark).set_h2o_cluster(new_ip, new_port))
 
 - H2O clusters can now be safely stopped without affecting the Spark driver
+
+Note: the data itself are still transferred via internal protocol. This is aimed to be moved to rest api in the next
+iteration.
