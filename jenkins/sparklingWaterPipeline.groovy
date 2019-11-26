@@ -132,7 +132,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     localPyIntegTest()(config)
                     scriptsTest()(config)
                     pysparklingIntegTest()(config)
-                    pyUnitTests(true)(config)
                 }
                 // Run Integration on real Hadoop Cluster
                 node("dX-hadoop") {
