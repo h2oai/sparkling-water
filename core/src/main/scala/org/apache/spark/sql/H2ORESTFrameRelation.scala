@@ -76,7 +76,7 @@ case class H2ORESTFrameRelation(@transient frame: H2OFrame, @transient copyMetad
       val metadata = if (copyMetadata) extractMetadata(column, f.numberOfRows) else Metadata.empty
       StructField(
         column.name,
-        dataTypeFor(column.dataType),
+        dataTypeFor(column),
         column.nullable,
         metadata)
     }

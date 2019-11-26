@@ -137,7 +137,7 @@ class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Arra
 
   private val colNames = frame.columns.map(_.name)
 
-  protected override val types: Array[DataType] = frame.columns.map(c => ReflectionUtils.dataTypeFor(c.dataType))
+  protected override val types: Array[DataType] = frame.columns.map(ReflectionUtils.dataTypeFor)
 
   override val selectedColumnIndices: Array[Int] = {
     if (requiredColumns == null) {
@@ -152,8 +152,8 @@ class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Arra
     if (isExternalBackend) {
       // prepare expected type selected columns in the same order as are selected columns
       val javaClasses = selectedColumnIndices.map { idx =>
-        val columnType = frame.columns(idx).dataType
-        ReflectionUtils.supportedType(columnType).javaClass
+        val column= frame.columns(idx)
+        ReflectionUtils.supportedType(column).javaClass
       }
       Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
     } else {

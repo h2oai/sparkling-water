@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
+import ai.h2o.sparkling.frame.H2OColumn
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.sql.types._
 import water.api.API
@@ -154,7 +155,7 @@ object ReflectionUtils {
     */
   def dataTypeFor(v: Vec): DataType = supportedType(v).sparkType
 
-  def dataTypeFor(columnType: String): DataType = supportedType(columnType).sparkType
+  def dataTypeFor(columnType: H2OColumn): DataType = supportedType(columnType).sparkType
 
   def memberTypes(p: Product) = p.productIterator map supportedTypeOf toArray
 
@@ -170,9 +171,20 @@ object ReflectionUtils {
     }
   }
 
-  def supportedType(columnType: String): SupportedType = columnType match {
+  def supportedType(column: H2OColumn): SupportedType = column.dataType match {
     case "enum" | "string" | "uuid" => String
-    case "int" => Long
+    case "int" =>
+      val min = column.min
+      val max = column.max
+      if (min > scala.Byte.MinValue && max < scala.Byte.MaxValue) {
+        Byte
+      } else if (min > scala.Short.MinValue && max < scala.Short.MaxValue) {
+        Short
+      } else if (min > scala.Int.MinValue && max < scala.Int.MaxValue) {
+        Integer
+      } else {
+        Long
+      }
     case "real" => Double
     case "time" => Timestamp
     case unknown => throw new IllegalArgumentException(s"Unknown type $unknown")
