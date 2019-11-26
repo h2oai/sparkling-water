@@ -171,6 +171,11 @@ object ReflectionUtils {
     }
   }
 
+  /**
+    * This method converts a REST column entity to a data type supported by Spark.
+    * @param column A column entity obtained via H2O REST API
+    * @return A data type supported by Spark
+    */
   def supportedType(column: H2OColumn): SupportedType = column.dataType match {
     case "enum" | "string" | "uuid" => String
     case "int" =>

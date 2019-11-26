@@ -24,7 +24,7 @@ case class H2OFrame(
     frameId: String,
     columns: Array[H2OColumn],
     chunks: Array[H2OChunk]) {
-  @transient lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
+  lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
   def numberOfColumns: Int = columns.length
 }

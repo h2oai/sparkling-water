@@ -27,7 +27,7 @@ import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField, Struc
 
 /** REST-based H2O relation implementing column filter operation.
   */
-case class H2ORESTFrameRelation(@transient frame: H2OFrame, @transient copyMetadata: Boolean)
+case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
                                (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */ {
 

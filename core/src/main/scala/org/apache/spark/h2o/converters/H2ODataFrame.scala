@@ -40,6 +40,19 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
 
   protected def types: Array[DataType]
 
+  protected def indexToSupportedType(index: Int): SupportedType
+
+  override lazy val expectedTypes: Option[Array[Byte]] = {
+    // there is no need to prepare expected types in internal backend
+    if (isExternalBackend) {
+      // prepare expected type selected columns in the same order as are selected columns
+      val javaClasses = selectedColumnIndices.map(indexToSupportedType(_).javaClass)
+      Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
+    } else {
+      None
+    }
+  }
+
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
 
@@ -106,15 +119,8 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
     requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
   }) toArray
 
-  override val expectedTypes: Option[Array[Byte]] = {
-    // there is no need to prepare expected types in internal backend
-    if (isExternalBackend) {
-      // prepare expected type selected columns in the same order as are selected columns
-      val javaClasses = selectedColumnIndices.map{ idx => ReflectionUtils.supportedType(frame.vec(idx)).javaClass }
-      Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
-    } else {
-      None
-    }
+  protected override def indexToSupportedType(index: Int): SupportedType = {
+    ReflectionUtils.supportedType(frame.vec(index))
   }
 }
 
@@ -126,11 +132,11 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   * @param hc an instance of H2O Context
   */
 private[spark]
-class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Array[String])
+class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
                       (@transient val hc: H2OContext)
   extends H2ODataFrameBase(hc.sparkContext) with H2ORESTBasedSparkEntity {
 
-  def this(@transient frame: H2OFrame)
+  def this(frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
@@ -147,17 +153,8 @@ class H2ORESTDataFrame(@transient val frame: H2OFrame, val requiredColumns: Arra
     }
   }
 
-  override lazy val expectedTypes: Option[Array[Byte]] = {
-    // there is no need to prepare expected types in internal backend
-    if (isExternalBackend) {
-      // prepare expected type selected columns in the same order as are selected columns
-      val javaClasses = selectedColumnIndices.map { idx =>
-        val column= frame.columns(idx)
-        ReflectionUtils.supportedType(column).javaClass
-      }
-      Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
-    } else {
-      None
-    }
+  protected override def indexToSupportedType(index: Int): SupportedType = {
+    val column = frame.columns(index)
+    ReflectionUtils.supportedType(column)
   }
 }

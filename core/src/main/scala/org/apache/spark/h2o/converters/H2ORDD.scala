@@ -47,6 +47,22 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
   protected def colNames: Array[String]
 
   /**
+    * The method checks that H2OFrame & given Scala type are compatible
+    */
+  protected def checkColumnNames(columnNames: Array[String]): Unit = {
+
+    if (!productType.isSingleton) {
+      val productFields = productType.members.map(_.name)
+      val problems = productFields.diff(columnNames).mkString(", ")
+
+      if (problems.nonEmpty) {
+        throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
+          "we have " + columnNames.mkString(","))
+      }
+    }
+  }
+
+  /**
     * :: DeveloperApi ::
     * Implemented by subclasses to compute a given partition.
     */
@@ -67,7 +83,7 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
   }
 
   // maps data columns to product components
-  val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
+  lazy val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
 
   def multicolumnMapping: Array[Int] = {
     val mappings: Array[Int] = productType.members map (colNames indexOf _.name)
@@ -84,7 +100,7 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
     mappings
   }
 
-  override val selectedColumnIndices: Array[Int] = columnMapping
+  override lazy val selectedColumnIndices: Array[Int] = columnMapping
 
   override val expectedTypes: Option[Array[Byte]] = {
     // there is no need to prepare expected types in internal backend
@@ -224,16 +240,10 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
           (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
   H2OFrameSupport.lockAndUpdate(frame)
-  protected override val colNames = frame.names()
-
-  // Check that H2OFrame & given Scala type are compatible
-  if (!productType.isSingleton) {
-    val problems = productType.members.filter { m => frame.find(m.name) == -1 } mkString ", "
-
-    if (problems.nonEmpty) {
-      throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
-        "we have " + colNames.mkString(","))
-    }
+  protected override val colNames = {
+    val names = frame.names()
+    checkColumnNames(names)
+    names
   }
 }
 
@@ -246,8 +256,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   * @tparam A  type for resulting RDD
   */
 private[spark]
-class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @field) val frame: H2OFrame,
-                                                          val productType: ProductType)
+class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, val productType: ProductType)
                                                          (@(transient @param @field) hc: H2OContext)
   extends H2ORDDBase[A](hc.sparkContext) with H2ORESTBasedSparkEntity {
 
@@ -257,16 +266,9 @@ class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(@(transient @param @fi
   def this(@transient frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
-  protected override val colNames = frame.columns.map(_.name)
-
-  // Check that H2OFrame & given Scala type are compatible
-  if (!productType.isSingleton) {
-    val productFields = productType.members.map(_.name)
-    val problems = productFields.diff(colNames).mkString(", ")
-
-    if (problems.nonEmpty) {
-      throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
-        "we have " + colNames.mkString(","))
-    }
+  protected override val colNames = {
+    val names =frame.columns.map(_.name)
+    checkColumnNames(names)
+    names
   }
 }
