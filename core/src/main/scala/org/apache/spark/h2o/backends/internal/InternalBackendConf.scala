@@ -41,9 +41,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def nodeIcedDir = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
-  def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
-                                                                PROP_INTERNAL_SECURE_CONNECTIONS._2)
-
   /** Setters */
   @DeprecatedMethod
   def setIpBasedFlatFileEnabled() = this
@@ -57,10 +54,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def setSubseqTries(subseqTriesNum: Int) = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
 
   def setNodeIcedDir(dir: String) = set(PROP_NODE_ICED_DIR._1, dir)
-
-  def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
-  def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
-
 
   def internalConfString: String =
     s"""Sparkling Water configuration:
@@ -98,8 +91,4 @@ object InternalBackendConf {
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR = ("spark.ext.h2o.node.iced.dir", None)
-
-  /** Secure internal connections by automatically generated credentials */
-  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
-
 }

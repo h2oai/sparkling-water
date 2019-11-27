@@ -27,7 +27,6 @@ import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils.{AzureDatabricksUtils, H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
-import org.apache.spark.network.Security
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
 import water.util.{Log, LogBridge, PrettyPrint}
@@ -114,13 +113,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       case _: ClassNotFoundException => throw new RuntimeException(s"When using the Sparkling Water as Spark package " +
         s"via --packages option, the 'no.priv.garshol.duke:duke:1.2' dependency has to be specified explicitly due to" +
         s" a bug in Spark dependency resolution.")
-    }
-
-    if (_conf.isInternalSecureConnectionsEnabled) {
-      Security.enableSSL(sparkSession, _conf)
-    }
-    if (conf.autoFlowSsl) {
-      Security.enableFlowSSL(sparkSession, conf)
     }
 
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external

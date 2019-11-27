@@ -66,6 +66,8 @@ trait SharedBackendConf {
   def nodeBasePort = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
   def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
   def nodeExtraProperties = sparkConf.getOption(PROP_NODE_EXTRA_PROPERTIES._1)
+  def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
+    PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -87,7 +89,7 @@ trait SharedBackendConf {
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
-
+  
   /** Setters */
 
   /** Generic parameters */
@@ -173,6 +175,9 @@ trait SharedBackendConf {
 
   def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
 
+  def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
+  def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
+
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
@@ -182,6 +187,7 @@ trait SharedBackendConf {
     val stringRepresentation =  headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
   }
+
   def setClientIp(ip: String) = set(PROP_CLIENT_IP._1, ip)
   def setClientIcedDir(icedDir: String) = set(PROP_CLIENT_ICED_DIR._1, icedDir)
   def setH2OClientLogLevel(level: String) = set(PROP_CLIENT_LOG_LEVEL._1, level)
@@ -210,7 +216,7 @@ trait SharedBackendConf {
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
-  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
+  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 
   private def logWarningH2ONodeWebEnabledDeprecated(): Unit = {
     if (runsInExternalClusterMode) {
@@ -328,6 +334,9 @@ object SharedBackendConf {
 
   /** Extra properties passed to H2O nodes during startup. */
   val PROP_NODE_EXTRA_PROPERTIES = ("spark.ext.h2o.node.extra", None)
+
+  /** Secure internal connections by automatically generated credentials */
+  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR = ("spark.ext.h2o.client.flow.dir", None)

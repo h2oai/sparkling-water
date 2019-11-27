@@ -25,26 +25,35 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import water.network.SecurityUtils
 
+import scala.util.Try
+
 object Security extends Logging {
 
   def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
     val sslPair = SecurityUtils.generateSSLPair()
     val config = SecurityUtils.generateSSLConfig(sslPair)
-    spark.sparkContext.addFile(if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
-    spark.sparkContext.addFile(config)
-    conf.set("spark.ext.h2o.internal_security_conf", config)
-    logInfo(s"Added spark.ext.h2o.internal_security_conf configuration set to $config")
+    conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
+    val files = Seq(sslPair.jks.getLocation, sslPair.jts.getLocation)
+    files.foreach(SparkSession.builder().getOrCreate().sparkContext.addFile(_))
   }
 
   def enableSSL(spark: SparkSession, conf: H2OConf): Unit = enableSSL(spark, conf.sparkConf)
 
   def enableSSL(spark: SparkSession): Unit = enableSSL(spark, spark.sparkContext.conf)
 
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf) = {
+  private def rename(origin: File, target: File): Boolean =
+    Try(origin.renameTo(target)).getOrElse(false)
+
+  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
     val sslPair = SecurityUtils.generateSSLPair()
-    conf.set(SharedBackendConf.PROP_JKS._1, if (sslPair.jks.path.isEmpty) sslPair.jks.name else sslPair.jks.path + File.separator + sslPair.jks.name)
-    conf.set(SharedBackendConf.PROP_JKS_PASS._1, sslPair.jks.pass)
+    val origin = new File(sslPair.jks.getLocation)
+    // Change the file name to avoid collision with h2o-internal.jks in case internal security is enabled
+    val target = new File(origin.getParentFile, s"h2o-internal-auto-flow-ssl-${System.nanoTime()}.jks")
+    rename(origin, target)
+    conf.setJks(target.getAbsolutePath)
+    conf.setJksPass(sslPair.jks.pass)
   }
+
   def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
     logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
       "parameter of type SparkSession is preferred.")
