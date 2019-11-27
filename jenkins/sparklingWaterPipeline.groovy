@@ -37,11 +37,6 @@ def getGradleCommand(config) {
     def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
         return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} --include-build ${env.WORKSPACE}/h2o-3"
-    } else if(config.buildAgainstNightlyH2O.toBoolean()) {
-        def h2oNightlyBuildVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/latest").getText().trim()
-        def h2oNightlyMajorVersion = new URL("http://h2o-release.s3.amazonaws.com/h2o/master/${h2oNightlyBuildVersion}/project_version").getText().trim()
-        h2oNightlyMajorVersion = h2oNightlyMajorVersion.substring(0, h2oNightlyMajorVersion.lastIndexOf('.'))
-        return "${cmd} -Ph2oMajorName=master -Ph2oMajorVersion=${h2oNightlyMajorVersion} -Ph2oBuild=${h2oNightlyBuildVersion}"
     } else {
         return cmd
     }
