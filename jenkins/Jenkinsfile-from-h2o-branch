@@ -59,7 +59,6 @@ pipeline(params) { p ->
     hadoopVersion = "2.7"
     hdpVersion = "${p.hdpVersion}"
     driverHadoopVersion = "${p.driverHadoopVersion}"
-    buildAgainstNightlyH2O = "false"
     uploadNightly = "false"
     backendMode = "${p.backendMode}"
 }
