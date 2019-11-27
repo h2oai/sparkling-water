@@ -314,9 +314,14 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
 }
 
+task testPythonREST(type: PythonTask, dependsOn: distPython) {
+    extraArgs(*createUnitTestArgs())
+    command = "tests/test_runner.py 'tests/unit/with_runtime_clientless_sparkling'"
+}
+
 task testPython(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
+    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py --ignore=tests/unit/with_runtime_clientless_sparkling'"
 }
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
@@ -365,4 +370,5 @@ distPython.dependsOn createVersionFile
 
 build.dependsOn distPython
 test.dependsOn testPython
+test.dependsOn testPythonREST
 integTest.dependsOn integTestPython
