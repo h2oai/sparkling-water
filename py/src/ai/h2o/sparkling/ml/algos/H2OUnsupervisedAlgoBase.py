@@ -15,6 +15,13 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning, H2ODRF
-from ai.h2o.sparkling.ml.features import H2OTargetEncoder
-from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OUnsupervisedMOJOModel, H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from pyspark.ml.wrapper import JavaEstimator
+
+from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
+from ai.h2o.sparkling.ml.models import H2OUnsupervisedMOJOModel
+
+
+class H2OUnsupervisedAlgoBase(H2OStageBase, JavaEstimator):
+
+    def _create_model(self, java_model):
+        return H2OUnsupervisedMOJOModel(java_model)

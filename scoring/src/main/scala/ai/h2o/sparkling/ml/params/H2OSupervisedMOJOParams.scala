@@ -14,20 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package ai.h2o.sparkling.ml.params
 
-import hex.Model.Parameters
-
 /**
-  * A trait extracting a shared parameters among all supervised simple algorithms (all except Grid & AutoML).
+  * Parameters available on the supervised algorithm & supervised MOJO Model
   */
-trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
-  with H2OCommonSupervisedParams with H2OAlgoCommonParams[P] {
+trait H2OSupervisedMOJOParams extends H2OMOJOAlgoSharedParams {
+  protected final val offsetCol = new NullableStringParam(this, "offsetCol", "Offset column name")
 
-  /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
-  override protected def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._response_column = getLabelCol()
-    parameters._offset_column = getOffsetCol()
-  }
+  setDefault(offsetCol -> null)
+
+  def getOffsetCol(): String = $(offsetCol)
 }

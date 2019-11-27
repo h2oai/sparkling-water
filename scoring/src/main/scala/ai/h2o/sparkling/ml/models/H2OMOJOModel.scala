@@ -28,6 +28,8 @@ import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions.UserDefinedFunction
 
 import scala.collection.JavaConverters._
 
@@ -54,6 +56,26 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
       withPredictionDf
     } else {
       withPredictionDf.drop(getDetailedPredictionCol())
+    }
+  }
+
+  protected override def applyPredictionUdfToFlatDataFrame(
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      inputs: Array[String]): DataFrame = {
+    val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
+    val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
+    val udf = udfConstructor(relevantColumnNames)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    predictWrapper.getModelCategory match {
+      case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial =>
+        // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
+        // Propagation of offset to EasyPredictModelWrapper was introduced with H2OSupervisedMOJOModel.
+        // `lit(0.0)` represents a column with zero values (offset disabled) to ensure backward-compatibility of
+        // MOJO models.
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*), lit(0.0)))
+      case _ =>
+        flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
     }
   }
 }
@@ -97,8 +119,11 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojoData)
-
-    val model = new H2OMOJOModel(uid)
+    val model = if(mojoModel._supervised) {
+      new H2OSupervisedMOJOModel(uid).setSpecificParams(mojoModel)
+    } else {
+      new H2OUnsupervisedMOJOModel(uid)
+    }
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)

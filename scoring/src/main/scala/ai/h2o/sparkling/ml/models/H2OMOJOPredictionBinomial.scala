@@ -36,8 +36,9 @@ trait H2OMOJOPredictionBinomial {
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
-        udf[DetailedWithCalibration, Row] { r: Row =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
+        udf[DetailedWithCalibration, Row, Double] { (r: Row, offset: Double) =>
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+            .predictBinomial(RowConverter.toH2ORowData(r), offset)
           DetailedWithCalibration(
             pred.label,
             pred.classProbabilities(0),
@@ -48,8 +49,9 @@ trait H2OMOJOPredictionBinomial {
           )
         }
       } else {
-        udf[Detailed, Row] { r: Row =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
+        udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
+          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+            .predictBinomial(RowConverter.toH2ORowData(r), offset)
           Detailed(
             pred.label,
             pred.classProbabilities(0),
@@ -59,8 +61,9 @@ trait H2OMOJOPredictionBinomial {
         }
       }
     } else {
-      udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictBinomial(RowConverter.toH2ORowData(r))
+      udf[Base, Row, Double] { (r: Row, offset: Double) =>
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          .predictBinomial(RowConverter.toH2ORowData(r), offset)
         Base(pred.label)
       }
     }

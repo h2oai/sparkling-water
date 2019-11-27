@@ -15,6 +15,19 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning, H2ODRF
-from ai.h2o.sparkling.ml.features import H2OTargetEncoder
-from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OUnsupervisedMOJOModel, H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from pyspark.ml.param import *
+
+from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
+class H2OSupervisedMOJOParams(H2OMOJOAlgoSharedParams):
+
+    offsetCol = Param(
+        Params._dummy(),
+        "offsetCol",
+        "Offset column name",
+        H2OTypeConverters.toNullableString())
+
+    def getOffsetCol(self):
+        return self.getOrDefault(self.offsetCol)

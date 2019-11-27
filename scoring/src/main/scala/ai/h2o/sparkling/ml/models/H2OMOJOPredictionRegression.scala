@@ -27,13 +27,15 @@ trait H2OMOJOPredictionRegression {
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      udf[WithContributions, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
+      udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          .predictRegression(RowConverter.toH2ORowData(r), offset)
         WithContributions(pred.value, pred.contributions)
       }
     } else {
-      udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
+      udf[Base, Row, Double] { (r: Row, offset: Double) =>
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          .predictRegression(RowConverter.toH2ORowData(r), offset)
         Base(pred.value)
       }
     }

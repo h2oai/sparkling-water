@@ -19,10 +19,10 @@ from pyspark import keyword_only
 
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
-from ai.h2o.sparkling.ml.algos.H2OAlgoBase import H2OAlgoBase
+from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgoBase import H2OSupervisedAlgoBase
 from ai.h2o.sparkling.ml.params import H2OGBMParams
 
-class H2OGBM(H2OGBMParams, H2OAlgoBase):
+class H2OGBM(H2OGBMParams, H2OSupervisedAlgoBase):
 
     @keyword_only
     def __init__(self,
@@ -54,6 +54,7 @@ class H2OGBM(H2OGBMParams, H2OAlgoBase):
                  labelCol="label",
                  foldCol=None,
                  weightCol=None,
+                 offsetCol=None,
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
