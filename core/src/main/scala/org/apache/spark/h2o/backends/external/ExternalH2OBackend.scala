@@ -337,7 +337,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     if (hc.getConf.isAutoClusterStartUsed) {
       H2O.orderlyShutdown(1000)
     }
-    if (hc.getConf.isManualClusterStartUsed && isRestApiBasedClient(hc)) {
+    if (hc.getConf.isManualClusterStartUsed || isRestApiBasedClient(hc)) {
       // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
     } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
       // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
