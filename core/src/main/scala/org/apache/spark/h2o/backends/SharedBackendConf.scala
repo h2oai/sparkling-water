@@ -63,6 +63,8 @@ trait SharedBackendConf {
   def mojoDestroyTimeout = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
   def nodeExtraProperties = sparkConf.getOption(PROP_NODE_EXTRA_PROPERTIES._1)
   def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
+  def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
+    PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -83,7 +85,7 @@ trait SharedBackendConf {
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
-
+  
   /** Setters */
 
   /** Generic parameters */
@@ -168,6 +170,9 @@ trait SharedBackendConf {
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
   }
 
+  def setInternalSecureConnectionsEnabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, true)
+  def setInternalSecureConnectionsDisabled() = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, false)
+
   /** H2O Client parameters */
   def setFlowDir(dir: String) = set(PROP_FLOW_DIR._1, dir)
   def setClientIp(ip: String) = set(PROP_CLIENT_IP._1, ip)
@@ -198,7 +203,8 @@ trait SharedBackendConf {
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
-  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF)
+
+  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
 
 object SharedBackendConf {
@@ -312,6 +318,9 @@ object SharedBackendConf {
 
   /** Extra http headers for Flow UI */
   val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.flow.extra.http.headers", None)
+
+  /** Secure internal connections by automatically generated credentials */
+  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)

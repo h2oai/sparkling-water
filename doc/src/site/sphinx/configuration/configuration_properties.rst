@@ -150,6 +150,16 @@ Configuration properties independent of selected backend
 |                                                    |                | special characters when passing        |
 |                                                    |                | the parameter from a command line.     |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.internal_secure_connections``      | ``false``      | Enables secure communications among    |
+|                                                    |                | H2O nodes. The security is based on    |
+|                                                    |                | automatically generated keystore       |
+|                                                    |                | and truststore. This is equivalent for |
+|                                                    |                | ``-internal_secure_conections`` option |
+|                                                    |                | in `H2O Hadoop deployments             |
+|                                                    |                | <https://github.com/h2oai/h2o-3/blob/  |
+|                                                    |                | master/h2o-docs/src/product/           |
+|                                                    |                | security.rst#hadoop>`_.                |
++----------------------------------------------------+----------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | Directory where flows from H2O Flow    |
@@ -246,16 +256,6 @@ Internal backend configuration properties
 | ``spark.ext.h2o.node.enable.web``                  | ``false``      | Enable or disable web on H2O worker    |
 |                                                    |                | nodes. It is disabled by default for   |
 |                                                    |                | security reasons.                      |
-+----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.internal_secure_connections``      | ``false``      | Enables secure communications among    |
-|                                                    |                | H2O nodes. The security is based on    |
-|                                                    |                | automatically generated keystore       |
-|                                                    |                | and truststore. This is equivalent for |
-|                                                    |                | ``-internal_secure_conections`` option |
-|                                                    |                | in `H2O Hadoop deployments             |
-|                                                    |                | <https://github.com/h2oai/h2o-3/blob/  |
-|                                                    |                | master/h2o-docs/src/product/           |
-|                                                    |                | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+

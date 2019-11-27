@@ -22,12 +22,12 @@ import java.io.{File, FileInputStream}
 import java.util.Properties
 import java.util.jar.JarFile
 
-import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.{H2OClusterNodeNotReachableException, H2OContextRestAPIUtils, NodeDesc}
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.RestAPIManager
 import water.init.{AbstractBuildVersion, NetworkUtils}
 import water.util.Log
@@ -54,14 +54,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     var cmdToLaunch = Seq[String]("hadoop", "jar", conf.h2oDriverPath.get)
 
     conf.sslConf match {
-      case Some(ssl) =>
-        val sslConfig = new Properties()
-        sslConfig.load(new FileInputStream(ssl))
-        cmdToLaunch = cmdToLaunch ++ Array("-files", sslConfig.get("h2o_ssl_jks_internal") + "," + sslConfig.get("h2o_ssl_jts"))
-        cmdToLaunch = cmdToLaunch ++ Array("-internal_security", ssl)
-        logInfo(s"Running external H2O cluster in encrypted mode with config: $ssl")
+      case Some(internalSecurityConf) =>
+        // In External Backend, auto mode we need distribute the keystore files to the H2O cluster
+        val props = new Properties()
+        props.load(new FileInputStream(internalSecurityConf))
+        val keyStoreFiles = Array(props.get("h2o_ssl_jks_internal"), props.get("h2o_ssl_jts")).map(f => SparkFiles.get(f.asInstanceOf[String]))
+        cmdToLaunch = cmdToLaunch ++ Array("-files", keyStoreFiles.mkString(","))
+        logInfo(s"Running external H2O cluster in encrypted mode with config: $internalSecurityConf")
       case _ =>
     }
+
     // Application tags shown in Yarn Resource Manager UI
     val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
 
