@@ -3,13 +3,6 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
-From any previous version to 3.26.11
-------------------------------------
-
-- Users of Sparkling Water external cluster in manual mode on Hadoop need to update the command the external cluster is launched with.
-  A new parameter ``-sw_ext_backend`` needs to be added to the h2odriver invocation.
-
-
 From 3.26 To 3.28
 -----------------
 
@@ -120,3 +113,10 @@ Automatic mode of External Backend now keeps H2O Flow accessible on worker nodes
 The option ``spark.ext.h2o.node.enable.web`` does not have any effect anymore for automatic mode of external
 backend as we required H2O Flow to be accessible on the worker nodes. The associated getters and setters do also
 not have any effect in this case.
+
+From any previous version to 3.26.11
+------------------------------------
+
+- Users of Sparkling Water external cluster in manual mode on Hadoop need to update the command the external cluster is launched with.
+  A new parameter ``-sw_ext_backend`` needs to be added to the h2odriver invocation.
+
