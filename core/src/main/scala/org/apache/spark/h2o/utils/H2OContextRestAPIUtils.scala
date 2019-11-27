@@ -22,11 +22,17 @@ import java.net.{URI, URL}
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import com.google.gson.Gson
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
-import water.api.schemas3.CloudV3
+import water.api.schemas3.FrameV3.ColV3
+import water.api.schemas3.FrameChunksV3.FrameChunkV3
+import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3}
+
+import scala.reflect.ClassTag
+import scala.reflect._
 
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
@@ -73,6 +79,41 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     getNodes(cloudV3)
   }
 
+  def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesV3](endpoint, s"3/Frames/$frameId/light", conf)
+    val frame = frames.frames(0)
+    val frameChunks = query[FrameChunksV3](endpoint, s"3/FrameChunks/$frameId", conf)
+    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
+
+    H2OFrame(
+      frameId = frame.frame_id.name,
+      columns = frame.columns.map(convertColumn),
+      chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+  }
+
+  private def convertColumn(sourceColumn: ColV3): H2OColumn = {
+    H2OColumn(
+      name = sourceColumn.label,
+      dataType = sourceColumn.`type`,
+      min = sourceColumn.mins(0),
+      max = sourceColumn.maxs(0),
+      mean = sourceColumn.mean,
+      sigma = sourceColumn.sigma,
+      numberOfZeros = sourceColumn.zero_count,
+      numberOfMissingElements = sourceColumn.missing_count,
+      percentiles = sourceColumn.percentiles,
+      domain = sourceColumn.domain,
+      domainCardinality = sourceColumn.domain_cardinality)
+  }
+
+  private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
+    H2OChunk(
+      index = sourceChunk.chunk_id,
+      numberOfRows = sourceChunk.row_count,
+      location = clusterNodes(sourceChunk.node_idx))
+  }
+
   def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
     val nodesWithoutWeb = nodes.flatMap { node =>
       try {
@@ -108,15 +149,14 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 
   private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
-    val content = readStringURLContent(endpoint, "3/Cloud", conf)
-    new Gson().fromJson(content, classOf[CloudV3])
+    query[CloudV3](endpoint, "3/Cloud", conf)
   }
 
-  private def readStringURLContent(endpoint: URI, suffix: String, conf: H2OConf): String = {
+  private def query[ResultType : ClassTag](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
     val response = readURLContent(endpoint, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
-    content
+    new Gson().fromJson(content, classTag[ResultType].runtimeClass)
   }
 
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {

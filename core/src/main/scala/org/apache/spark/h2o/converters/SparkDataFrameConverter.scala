@@ -18,12 +18,12 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend, ExternalWriteConverterCtx}
+import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, Row}
+import org.apache.spark.sql.{DataFrame, H2OFrameRelation, H2ORESTFrameRelation, Row}
 import org.apache.spark.{mllib, _}
 import water.Key
 import water.fvec.{Frame, H2OFrame}
@@ -47,6 +47,21 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
   }
 
+  /**
+    * Create a Spark DataFrame from a given REST-based H2O frame.
+    *
+    * @param hc           an instance of H2O context
+    * @param fr           an instance of H2O frame
+    * @param copyMetadata copy H2O metadata into Spark DataFrame
+
+    * @return a new DataFrame definition using given H2OFrame as data source
+    */
+
+  def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
+    // Relation referencing H2OFrame
+    val relation = H2ORESTFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
+    hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+  }
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {

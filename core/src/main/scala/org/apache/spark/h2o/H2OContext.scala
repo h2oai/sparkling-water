@@ -256,6 +256,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
   }
 
+  def asDataFrame(s: String): DataFrame = asDataFrame(s, true)
+
   /** Returns location of REST API of H2O client */
   def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
 
@@ -463,6 +465,15 @@ object H2OContext extends Logging {
     override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
       verifyLogContainer(logContainer)
       H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
+    }
+
+    override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
+      val frame = getFrame(conf, frameId)
+      SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
+    }
+
+    def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.frame.H2OFrame): org.apache.spark.rdd.RDD[A] = {
+      SupportedRDDConverter.toRDD[A](this, fr)
     }
   }
 

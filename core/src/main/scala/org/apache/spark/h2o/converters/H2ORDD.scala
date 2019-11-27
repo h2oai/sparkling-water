@@ -20,11 +20,12 @@ package org.apache.spark.h2o.converters
 
 import java.lang.reflect.Constructor
 
+import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.H2O
 import water.fvec.Frame
 import water.support.H2OFrameSupport
@@ -35,37 +36,29 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
-  * Convert H2OFrame into an RDD (lazily).
-  *
-  * @param frame  an instance of H2O frame
-  * @param productType pre-calculated deconstructed type of result
-  * @param hc  an instance of H2O context
-  * @tparam A  type for resulting RDD
-  * @tparam T  specific type of H2O frame
+  * The abstract class contains common methods for client-based and REST-based RDDs.
   */
 private[spark]
-class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
-                                                                  val productType: ProductType)
-                                                                 (@(transient @param @field) hc: H2OContext)
-  extends {
-    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-    override val driverTimeStamp = H2O.SELF.getTimestamp()
-  } with RDD[A](hc.sparkContext, Nil) with H2ORDDLike[T] {
+abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
+  extends RDD[A](sc, Nil) with H2OSparkEntity {
 
-  // Get product type before building an RDD
-  def this(@transient fr: T)
-          (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
+  def productType: ProductType
 
-  H2OFrameSupport.lockAndUpdate(frame)
-  private val colNames = frame.names()
+  protected def colNames: Array[String]
 
-  // Check that H2OFrame & given Scala type are compatible
-  if (!productType.isSingleton) {
-    val problems = productType.members.filter { m => frame.find(m.name) == -1 } mkString ", "
+  /**
+    * The method checks that H2OFrame & given Scala type are compatible
+    */
+  protected def checkColumnNames(columnNames: Array[String]): Unit = {
 
-    if (problems.nonEmpty) {
-      throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
-        "we have " + colNames.mkString(","))
+    if (!productType.isSingleton) {
+      val productFields = productType.members.map(_.name)
+      val problems = productFields.diff(columnNames).mkString(", ")
+
+      if (problems.nonEmpty) {
+        throw new IllegalArgumentException(s"The following fields are missing in frame: $problems; " +
+          "we have " + columnNames.mkString(","))
+      }
     }
   }
 
@@ -90,7 +83,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   }
 
   // maps data columns to product components
-  val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
+  lazy val columnMapping: Array[Int] = if (productType.isSingleton) Array(0) else multicolumnMapping
 
   def multicolumnMapping: Array[Int] = {
     val mappings: Array[Int] = productType.members map (colNames indexOf _.name)
@@ -107,7 +100,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
     mappings
   }
 
-  override val selectedColumnIndices: Array[Int] = columnMapping
+  override lazy val selectedColumnIndices: Array[Int] = columnMapping
 
   override val expectedTypes: Option[Array[Byte]] = {
     // there is no need to prepare expected types in internal backend
@@ -219,7 +212,63 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
   @transient private case class InstanceBuilder(c: Constructor[_]) {
     def apply(data: Array[AnyRef]): Option[A] = opt(c.newInstance(data: _*).asInstanceOf[A])
   }
-  
+
   @(transient @field @getter) private lazy val instanceBuilders = constructors map InstanceBuilder
 
+}
+
+/**
+  * Convert H2OFrame into an RDD (lazily).
+  *
+  * @param frame  an instance of H2O frame
+  * @param productType pre-calculated deconstructed type of result
+  * @param hc  an instance of H2O context
+  * @tparam A  type for resulting RDD
+  * @tparam T  specific type of H2O frame
+  */
+private[spark]
+class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
+                                                                  val productType: ProductType)
+                                                                 (@(transient @param @field) hc: H2OContext)
+  extends H2ORDDBase[A](hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+
+  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  override val driverTimeStamp = H2O.SELF.getTimestamp()
+
+  // Get product type before building an RDD
+  def this(@transient fr: T)
+          (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
+
+  H2OFrameSupport.lockAndUpdate(frame)
+  protected override val colNames = {
+    val names = frame.names()
+    checkColumnNames(names)
+    names
+  }
+}
+
+/**
+  * Convert H2OFrame into an RDD (lazily).
+  *
+  * @param frame  an instance of H2O frame
+  * @param productType pre-calculated deconstructed type of result
+  * @param hc  an instance of H2O context
+  * @tparam A  type for resulting RDD
+  */
+private[spark]
+class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, val productType: ProductType)
+                                                         (@(transient @param @field) hc: H2OContext)
+  extends H2ORDDBase[A](hc.sparkContext) with H2ORESTBasedSparkEntity {
+
+  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+
+  // Get product type before building an RDD
+  def this(@transient frame: H2OFrame)
+          (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
+
+  protected override val colNames = {
+    val names = frame.columns.map(_.name)
+    checkColumnNames(names)
+    names
+  }
 }

@@ -17,55 +17,36 @@
 
 package org.apache.spark.h2o.converters
 
+import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.{ExternalBackendUtils, ExternalH2OBackend}
+import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.H2O
 import water.support.H2OFrameSupport
 
 import scala.language.postfixOps
 
 /**
- * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
- *
- * @param frame frame which will be wrapped as DataFrame
- * @param requiredColumns  list of the columns which should be provided by iterator, null means all
- * @param hc an instance of H2O Context
- */
+  * The abstract class contains common methods for client-based and REST-based DataFrames
+  */
 private[spark]
-class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
-                                          val requiredColumns: Array[String])
-                                         (@transient val hc: H2OContext)
-  extends {
-    override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-    override val driverTimeStamp = H2O.SELF.getTimestamp()
-  } with RDD[InternalRow](hc.sparkContext, Nil) with H2ORDDLike[T] {
+abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, Nil) with H2OSparkEntity {
 
-  def this(@transient frame: T)
-          (@transient hc: H2OContext) = this(frame, null)(hc)
+  protected def types: Array[DataType]
 
-  H2OFrameSupport.lockAndUpdate(frame)
-  private val colNames = frame.names()
-  private val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
+  protected def indexToSupportedType(index: Int): SupportedType
 
-  // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
-  override val selectedColumnIndices = (if (requiredColumns == null) {
-    colNames.indices
-  } else {
-    requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
-  }) toArray
-
-  override val expectedTypes: Option[Array[Byte]] = {
+  override lazy val expectedTypes: Option[Array[Byte]] = {
     // there is no need to prepare expected types in internal backend
     if (isExternalBackend) {
       // prepare expected type selected columns in the same order as are selected columns
-      val javaClasses = selectedColumnIndices.map{ idx => ReflectionUtils.supportedType(frame.vec(idx)).javaClass }
+      val javaClasses = selectedColumnIndices.map(indexToSupportedType(_).javaClass)
       Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
     } else {
       None
@@ -91,9 +72,9 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
       def readOptionalData: Seq[Option[Any]] = columnValueProviders map (_())
 
       private def readRow: InternalRow = {
-          val optionalData: Seq[Option[Any]] = readOptionalData
-          val nullableData: Seq[Any] = optionalData map (_ orNull)
-          InternalRow.fromSeq(nullableData)
+        val optionalData: Seq[Option[Any]] = readOptionalData
+        val nullableData: Seq[Any] = optionalData map (_ orNull)
+        InternalRow.fromSeq(nullableData)
       }
 
       override def next(): InternalRow = {
@@ -105,5 +86,75 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
     // Wrap the iterator as a backend specific wrapper
     ReadConverterCtxUtils.backendSpecificIterator[InternalRow](isExternalBackend, iterator)
+  }
+}
+
+/**
+ * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
+ *
+ * @param frame frame which will be wrapped as DataFrame
+ * @param requiredColumns  list of the columns which should be provided by iterator, null means all
+ * @param hc an instance of H2O Context
+ */
+private[spark]
+class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
+                                          val requiredColumns: Array[String])
+                                         (@transient val hc: H2OContext)
+  extends H2ODataFrameBase(hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+
+  def this(@transient frame: T)
+          (@transient hc: H2OContext) = this(frame, null)(hc)
+
+  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  override val driverTimeStamp = H2O.SELF.getTimestamp()
+
+  H2OFrameSupport.lockAndUpdate(frame)
+  private val colNames = frame.names()
+  protected override val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
+
+  // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
+  override val selectedColumnIndices = (if (requiredColumns == null) {
+    colNames.indices
+  } else {
+    requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
+  }) toArray
+
+  protected override def indexToSupportedType(index: Int): SupportedType = {
+    ReflectionUtils.supportedType(frame.vec(index))
+  }
+}
+
+/**
+  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
+  *
+  * @param frame frame which will be wrapped as DataFrame
+  * @param requiredColumns  list of the columns which should be provided by iterator, null means all
+  * @param hc an instance of H2O Context
+  */
+private[spark]
+class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
+                      (@transient val hc: H2OContext)
+  extends H2ODataFrameBase(hc.sparkContext) with H2ORESTBasedSparkEntity {
+
+  def this(frame: H2OFrame)
+          (@transient hc: H2OContext) = this(frame, null)(hc)
+
+  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+
+  private val colNames = frame.columns.map(_.name)
+
+  protected override val types: Array[DataType] = frame.columns.map(ReflectionUtils.dataTypeFor)
+
+  override val selectedColumnIndices: Array[Int] = {
+    if (requiredColumns == null) {
+      colNames.indices.toArray
+    } else {
+      requiredColumns.map(colNames.indexOf)
+    }
+  }
+
+  protected override def indexToSupportedType(index: Int): SupportedType = {
+    val column = frame.columns(index)
+    ReflectionUtils.supportedType(column)
   }
 }

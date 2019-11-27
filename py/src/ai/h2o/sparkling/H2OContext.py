@@ -279,8 +279,8 @@ class H2OContext(object):
           Spark DataFrame
         """
         if isinstance(h2o_frame, H2OFrame):
-            j_h2o_frame = h2o_frame.get_java_h2o_frame()
-            jdf = self._jhc.asDataFrame(j_h2o_frame, copy_metadata)
+            frame_id = h2o_frame.frame_id
+            jdf = self._jhc.asDataFrame(frame_id, copy_metadata)
             df = DataFrame(jdf, self._sql_context)
             # Attach h2o_frame to dataframe which forces python not to delete the frame when we leave the scope of this
             # method.
