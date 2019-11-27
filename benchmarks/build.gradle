@@ -107,7 +107,7 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks(dependsOn: [build, cleanOutput]) {
+task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -122,6 +122,3 @@ task runBenchmarks(dependsOn: [build, cleanOutput]) {
         }
     }
 }
-
-build.dependsOn shadowJar
-build.finalizedBy substituteTerraform
