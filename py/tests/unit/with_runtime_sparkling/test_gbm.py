@@ -15,10 +15,16 @@
 #
 
 import os
+import pytest
+import json
+
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OMOJOModel, H2OGBM
+from pysparkling.ml import H2OGBM, H2OMOJOModel
+from pyspark.sql.functions import log, col, min, max, mean, lit
+from h2o.estimators.gbm import H2OGradientBoostingEstimator
 
+from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
@@ -44,3 +50,81 @@ def testLoadAndTrainMojo(prostateDataset):
     assert len(predMojo) == len(predModel)
     for i in range(0, len(predMojo)):
         assert predMojo[i] == predModel[i]
+
+
+@pytest.fixture(scope="module")
+def dataset(spark):
+    return spark \
+        .read.csv("file://" + unit_test_utils.locate("smalldata/insurance.csv"), header=True, inferSchema=True) \
+        .withColumn("Offset", log(col("Holders")))
+
+
+@pytest.fixture(scope="module")
+def gbmModelWithOffset(dataset):
+    gbm=H2OGBM(distribution="tweedie",
+               ntrees=600,
+               maxDepth=1,
+               minRows=1,
+               learnRate=0.1,
+               minSplitImprovement=0,
+               featuresCols=["District","Group","Age"],
+               labelCol="Claims",
+               offsetCol="Offset")
+    return gbm.fit(dataset)
+
+
+def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
+    predictionCol = col("prediction")
+    predictionsDF = gbmModelWithOffset.transform(dataset)
+    detailsDF = predictionsDF.select(min(predictionCol).alias("min"),
+                                     max(predictionCol).alias("max"),
+                                     mean(predictionCol).alias("mean"))
+    result = detailsDF.first()
+    modelDetials = json.loads(gbmModelWithOffset.getModelDetails())
+
+    assert abs(-1.869702 - modelDetials['init_f']) < 1e-5, "Expected init_f to be {0}, but got {1}". \
+        format(-1.869702, modelDetials['init_f'])
+    assert abs(49.21591 - result["mean"]) < 1e-3, "Expected prediction mean to be {0}, but got {1}". \
+        format(49.21591, result["mean"])
+    assert abs(1.0255 - result["min"]) < 1e-4, "Expected prediction min to be {0}, but got {1}". \
+        format(1.0255, result["min"])
+    assert abs(392.4945 - result["max"]) < 1e-2, "Expected prediction max to be {0}, but got {1}". \
+        format(392.4945, result["max"])
+    assert gbmModelWithOffset.getOffsetCol() == "Offset", "Offset column must be propagated to the MOJO model."
+
+
+def testMOJOModelReturnsDifferentResultWithZeroOffset(gbmModelWithOffset, dataset):
+    predictionCol = col("prediction")
+    predictionsDF = gbmModelWithOffset.transform(dataset.withColumn("Offset",lit(0.0)))
+    detailsDF = predictionsDF.select(min(predictionCol).alias("min"),
+                                     max(predictionCol).alias("max"),
+                                     mean(predictionCol).alias("mean"))
+    result = detailsDF.first()
+
+    assert abs(49.21591 - result["mean"]) > 1e-3, "Mean with zero offset must be different from 49.21591."
+    assert abs(1.0255 - result["min"]) > 1e-4, "Minimum with zero offset must be different from 1.0255."
+    assert abs(392.4945 - result["max"]) > 1e-2, "Maximum with zero offset must be different from 392.4945."
+    assert gbmModelWithOffset.getOffsetCol() == "Offset", "Offset column must be propagated to the MOJO model."
+
+
+def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, dataset):
+    [trainingDataset, testingDataset] =  dataset.randomSplit([0.8, 0.2], 1)
+    trainingFrame = hc.as_h2o_frame(trainingDataset)
+    testingFrame = hc.as_h2o_frame(testingDataset)
+    gbm = H2OGradientBoostingEstimator(distribution="tweedie",
+                                       ntrees=600,
+                                       max_depth=1,
+                                       min_rows=1,
+                                       learn_rate=0.1,
+                                       min_split_improvement=0)
+    gbm.train(x=["District","Group","Age"], y="Claims", training_frame=trainingFrame, offset_column="Offset")
+
+    mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
+    print(mojoFile)
+    mojoModel = H2OMOJOModel.createFromMojo("file://" + mojoFile)
+
+    binaryModelResult = hc.as_spark_frame(gbm.predict(testingFrame))
+    mojoResult = mojoModel.transform(testingDataset).select("prediction")
+
+    unit_test_utils.assert_data_frames_are_identical(binaryModelResult, mojoResult)
+    assert mojoModel.getOffsetCol() == "Offset", "Offset column must be propagated to the MOJO model."
