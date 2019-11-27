@@ -195,12 +195,6 @@ class H2OContext(object):
         if verbose:
             print(h2o_context)
 
-        # Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-        #, so the user does not need explicitly close h2o.
-        # In driver mode the application would call exit which is handled by Spark AM as failure
-        deploy_mode = spark_session.sparkContext._conf.get("spark.submit.deployMode")
-        if deploy_mode != "cluster":
-            atexit.register(lambda: h2o_context.__stop())
         h2o_context.__isStopped = False
         return h2o_context
 
@@ -230,17 +224,12 @@ class H2OContext(object):
         field.setAccessible(True)
         return field
 
-    def __stop(self):
+    def stop(self):
         try:
             if not (self._conf.is_manual_cluster_start_used() and self._conf.runs_in_external_cluster_mode()):
                 h2o.cluster().shutdown()
         except:
             pass
-
-    def stop(self):
-        self.__stop()
-        self.__isStopped = True
-        # do this ugly stop only in case of non-rest api client
         if self._conf.get("spark.ext.h2o.rest.api.based.client") == "false":
             sys.exit()
 

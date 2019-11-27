@@ -24,8 +24,6 @@ trait SparklingBackend {
 
   def init(conf: H2OConf): Array[NodeDesc]
 
-  def stop(stopSparkContext: Boolean)
-
   def backendUIInfo: Seq[(String, String)]
 
   def epilog: String

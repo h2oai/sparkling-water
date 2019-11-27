@@ -307,7 +307,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
           }
         }
       })
-
+      cloudHealthCheckKillThread.get.setDaemon(true)
       cloudHealthCheckKillThread.get.start()
     }
   }
@@ -323,6 +323,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         }
       }
     })
+    cloudHealthCheckThread.get.setDaemon(true)
     cloudHealthCheckThread.get.start()
   }
 
@@ -331,25 +332,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       ("External backend YARN AppID", yarnAppId),
       ("External IP", externalIP)
     ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
-  }
-
-  override def stop(stopSparkContext: Boolean): Unit = {
-    if (stopSparkContext) {
-      hc.sparkContext.stop()
-    }
-
-    // In Manual mode of external backend, we want the H2O cluster to be managed by the user, not by Sparkling Water
-    if (hc.getConf.isAutoClusterStartUsed) {
-      H2O.orderlyShutdown(1000)
-    }
-    if (hc.getConf.isManualClusterStartUsed || isRestApiBasedClient(hc)) {
-      // Do nothing, we don't have H2O client running, we do not have nothing to stop (and H2O.exit just kills the process)
-    } else if (hc.sparkContext.conf.get("spark.submit.deployMode", "client") != "cluster") {
-      // Stop h2o when running standalone pysparkling scripts, only in client deploy mode
-      //, so the user does not need explicitly close h2o.
-      // In driver mode the application would call exit which is handled by Spark AM as failure
-      H2O.exit(0)
-    }
   }
 
   override def epilog =

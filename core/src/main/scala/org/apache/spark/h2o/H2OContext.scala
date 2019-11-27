@@ -30,6 +30,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import water._
 import water.util.PrettyPrint
+import org.apache.spark.util.ShutdownHookManager
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -62,7 +63,7 @@ import scala.util.control.NoStackTrace
 abstract class H2OContext private(val sparkSession: SparkSession, private val conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
   val sparkContext = sparkSession.sparkContext
-  val uiUpdateThread = new Thread {
+  private val uiUpdateThread = new Thread {
     override def run(): Unit = {
       while (!Thread.interrupted()) {
         val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
@@ -75,6 +76,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       }
     }
   }
+  uiUpdateThread.setDaemon(true)
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -106,6 +108,10 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
+    ShutdownHookManager.addShutdownHook(10) { () =>
+      logWarning("Spark shutdown hook called, stopping H2OContext!")
+      stop(stopSparkContext = false, stopJvm = false)
+    }
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
@@ -271,19 +277,30 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     LogUtil.setH2ONodeLogLevel(level)
   }
 
+  private def stop(stopSparkContext: Boolean, stopJvm: Boolean): Unit = synchronized {
+    if (!stopped) {
+      uiUpdateThread.interrupt()
+      if (stopSparkContext) {
+        sparkContext.stop()
+      }
+      // H2O cluster is managed by the user in case of manual start of external backend.
+      if (!(conf.isManualClusterStartUsed && conf.runsInExternalClusterMode)) {
+        H2O.orderlyShutdown()
+      }
+      if (stopJvm && conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false") {
+        H2O.exit(0)
+      }
+    } else {
+      logWarning("H2OContext is already stopped!")
+    }
+  }
+
   /** Stops H2O context.
     *
     * @param stopSparkContext stop also spark context
     */
-  def stop(stopSparkContext: Boolean = false): Unit = synchronized {
-    if (!stopped) {
-      uiUpdateThread.interrupt()
-      backend.stop(stopSparkContext)
-      H2OContext.stop(this)
-      stopped = true
-    } else {
-      logWarning("H2OContext is already stopped!")
-    }
+  def stop(stopSparkContext: Boolean = false): Unit = {
+    stop(stopSparkContext, stopJvm = true)
   }
 
   def flowURL(): String = {
