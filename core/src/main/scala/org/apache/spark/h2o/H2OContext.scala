@@ -108,6 +108,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
+    // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
+    // resources before Spark does as we run as embedded application inside the Spark
     ShutdownHookManager.addShutdownHook(10) { () =>
       logWarning("Spark shutdown hook called, stopping H2OContext!")
       stop(stopSparkContext = false, stopJvm = false)
