@@ -29,13 +29,15 @@ trait H2OMOJOPredictionRegression {
     logWarning("Starting from the next major release, the content of 'prediction' column will be generated to " +
       " 'detailed_prediction' instead. The 'prediction' column will contain directly the predicted value.")
     if (getWithDetailedPredictionCol()) {
-      udf[WithContributions, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
+      udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          .predictRegression(RowConverter.toH2ORowData(r), offset)
         WithContributions(pred.value, pred.contributions)
       }
     } else {
-      udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictRegression(RowConverter.toH2ORowData(r))
+      udf[Base, Row, Double] { (r: Row, offset: Double) =>
+        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          .predictRegression(RowConverter.toH2ORowData(r), offset)
         Base(pred.value)
       }
     }

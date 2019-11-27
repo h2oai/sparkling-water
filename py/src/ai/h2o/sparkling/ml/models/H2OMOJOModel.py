@@ -29,9 +29,24 @@ class H2OMOJOModel(H2OMOJOModelBase):
     def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
         # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
         Initializer.load_sparkling_jar()
-        javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo,
-                                                                                          settings.toJavaObject())
-        return H2OMOJOModel(javaModel)
+        javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
+        className = javaModel.getClass().getSimpleName()
+        if className == "H2OSupervisedMOJOModel":
+            return H2OSupervisedMOJOModel(javaModel)
+        elif className == "H2OUnsupervisedMOJOModel":
+            return H2OUnsupervisedMOJOModel(javaModel)
+        else:
+            return H2OMOJOModel(javaModel)
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
+
+
+class H2OSupervisedMOJOModel(H2OMOJOModel):
+
+    def getOffsetCol(self):
+        return self._java_obj.getOffsetCol()
+
+
+class H2OUnsupervisedMOJOModel(H2OMOJOModel):
+    pass

@@ -18,10 +18,11 @@
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
+from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
-class H2OCommonSupervisedParams(H2OCommonParams):
+class H2OCommonSupervisedParams(H2OCommonParams, H2OSupervisedMOJOParams):
     labelCol = Param(
         Params._dummy(),
         "labelCol",
@@ -33,3 +34,6 @@ class H2OCommonSupervisedParams(H2OCommonParams):
 
     def setLabelCol(self, value):
         return self._set(labelCol=value)
+
+    def setOffsetCol(self, value):
+        return self._set(offsetCol=value)

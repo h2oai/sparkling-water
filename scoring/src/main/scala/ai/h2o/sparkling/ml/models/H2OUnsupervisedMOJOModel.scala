@@ -14,20 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.params
 
-import hex.Model.Parameters
+package ai.h2o.sparkling.ml.models
 
-/**
-  * A trait extracting a shared parameters among all supervised simple algorithms (all except Grid & AutoML).
-  */
-trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
-  with H2OCommonSupervisedParams with H2OAlgoCommonParams[P] {
-
-  /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
-  override protected def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._response_column = getLabelCol()
-    parameters._offset_column = getOffsetCol()
-  }
-}
+class H2OUnsupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
