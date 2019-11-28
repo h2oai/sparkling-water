@@ -42,7 +42,7 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
 
   protected def indexToSupportedType(index: Int): SupportedType
 
-  override lazy val expectedTypes: Option[Array[Byte]] = {
+  protected def resolveExpectedTypes(): Option[Array[Byte]] = {
     // there is no need to prepare expected types in internal backend
     if (isExternalBackend) {
       // prepare expected type selected columns in the same order as are selected columns
@@ -52,6 +52,8 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
       None
     }
   }
+
+  override lazy val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
@@ -107,6 +109,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
+  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
