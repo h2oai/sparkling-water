@@ -53,8 +53,6 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
     }
   }
 
-  override lazy val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
-
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
 
@@ -143,6 +141,7 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   private val colNames = frame.columns.map(_.name)
 
