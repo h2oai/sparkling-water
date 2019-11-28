@@ -15,9 +15,8 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
-
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from pyspark.ml.param import *
 
 
 class H2OTargetEncoderParams(Params):
@@ -52,33 +51,33 @@ class H2OTargetEncoderParams(Params):
         Params._dummy(),
         "holdoutStrategy",
         """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
-           Options:
-            None        - All rows are considered for the calculation
-            LeaveOneOut - All rows except the row the calculation is made for
-            KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.""",
+Options:
+ None        - All rows are considered for the calculation
+ LeaveOneOut - All rows except the row the calculation is made for
+ KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.""",
         H2OTypeConverters.toEnumString("ai.h2o.targetencoding.TargetEncoder$DataLeakageHandlingStrategy"))
 
     blendedAvgEnabled = Param(
         Params._dummy(),
         "blendedAvgEnabled",
-        "If set, the target average becomes a weighted average of the posterior average for a given "
-        "categorical level and the prior average of the target. The weight is determined by the size "
-        "of the given group that the row belongs to. By default, the blended average is disabled.",
+        """If set, the target average becomes a weighted average of the posterior average for a given
+categorical level and the prior average of the target. The weight is determined by the size
+of the given group that the row belongs to. By default, the blended average is disabled.""",
         H2OTypeConverters.toBoolean())
 
     blendedAvgInflectionPoint = Param(
         Params._dummy(),
         "blendedAvgInflectionPoint",
-        "A parameter of the blended average. The bigger number is set, the groups relatively bigger to the "
-        "overall data set size will consider the global target value as a component in the weighted average. "
-        "The default value is 10.""",
+        """A parameter of the blended average. The bigger number is set, the groups relatively bigger to the
+overall data set size will consider the global target value as a component in the weighted average.
+The default value is 10.""",
         H2OTypeConverters.toFloat())
 
     blendedAvgSmoothing = Param(
         Params._dummy(),
         "blendedAvgSmoothing",
-        "A parameter of blended average. Controls the rate of transition between a group target value "
-        "and a global target value. The default value is 20.",
+        """A parameter of blended average. Controls the rate of transition between a group target value
+and a global target value. The default value is 20.""",
         H2OTypeConverters.toFloat())
 
     noise = Param(
