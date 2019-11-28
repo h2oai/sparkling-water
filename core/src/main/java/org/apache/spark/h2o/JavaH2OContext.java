@@ -209,6 +209,38 @@ public class JavaH2OContext {
     }
 
     /**
+     * Pass-through to H2OContext.toH2OFrameKey.  For API support only
+     *
+     * @param df dataset to convert
+     * @return String representation of H2OFrame key
+     */
+    public String asH2OFrameKeyString(Dataset<Row> df) {
+        return hc.asH2OFrameKeyString(df);
+    }
+
+    /**
+     * Pass-through to H2OContext.toH2OFrameKey.  For API support only
+     *
+     * @param df        dataset to convert
+     * @param frameName option containing name of the frame
+     * @return String representation of H2OFrame key
+     */
+    public String asH2OFrameKeyString(Dataset<Row> df, Option<String> frameName) {
+        return hc.asH2OFrameKeyString(df, frameName);
+    }
+
+    /**
+     * Pass-through to H2OContext.toH2OFrameKey.  For API support only
+     *
+     * @param df        dataset to convert
+     * @param frameName name of the frame
+     * @return String representation of H2OFrame key
+     */
+    public String asH2OFrameKeyString(Dataset<Row> df, String frameName) {
+        return hc.asH2OFrameKeyString(df, frameName);
+    }
+
+    /**
      * Get existing or create new JavaH2OContext based on provided H2O configuration. It searches the configuration
      * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
      * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
@@ -553,5 +585,125 @@ public class JavaH2OContext {
     @SuppressWarnings("unchecked")
     public Key<Frame> asH2OFrameFromRDDTimeStampKey(JavaRDD<java.sql.Timestamp> rdd, String frameName) {
         return (Key<Frame>) hc.toH2OFrameKey(SupportedRDD$.MODULE$.toH2OFrameFromRDDTimeStamp(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[String]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDStringKeyString(JavaRDD<String> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDString(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Boolean]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDBoolKeyString(JavaRDD<Boolean> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaBool(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Integer]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDIntKeyString(JavaRDD<Integer> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaInt(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Byte]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDByteKeyString(JavaRDD<Byte> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaByte(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Short]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDShortKeyString(JavaRDD<Short> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaShort(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Float]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDFloatKeyString(JavaRDD<Float> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaFloat(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Double]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDDoubleKeyString(JavaRDD<Double> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaDouble(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[Long]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDLongKeyString(JavaRDD<Long> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaLong(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[LabeledPoint]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDLabeledPointKeyString(JavaRDD<LabeledPoint> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDLabeledPoint(rdd.rdd()), Option.apply(frameName));
+    }
+
+    /**
+     * Returns key string of the H2O's DataFrame conversed from RDD[java.sql.TimeStamp]
+     *
+     * @param rdd       rdd to convert
+     * @param frameName frame name
+     * @return Key string of the created H2O Frame
+     */
+    @SuppressWarnings("unchecked")
+    public String asH2OFrameFromRDDTimeStampKeyString(JavaRDD<java.sql.Timestamp> rdd, String frameName) {
+        return hc.asH2OFrameKeyString(SupportedRDD$.MODULE$.toH2OFrameFromRDDTimeStamp(rdd.rdd()), Option.apply(frameName));
     }
 }

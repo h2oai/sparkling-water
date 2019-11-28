@@ -166,11 +166,25 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     */
   def getConf: H2OConf = conf.clone()
 
+  /**
+    * The method transforms RDD to H2OFrame and returns String representation of its key.
+    * @param rdd Input RDD
+    * @return String representation of H2O Frame Key
+    */
+  def asH2OFrameKeyString(rdd: SupportedRDD): String = asH2OFrameKeyString(rdd, None)
+
+  def asH2OFrameKeyString(rdd: SupportedRDD, frameName: String): String = asH2OFrameKeyString(rdd, Some(frameName))
+
+  def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = toH2OFrameKey(rdd, frameName).toString
+
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
-    withConversionDebugPrints(sparkContext, "SupportedRDD", SupportedRDDConverter.toH2OFrame(this, rdd, frameName))
+    withConversionDebugPrints(sparkContext, "SupportedRDD", {
+      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.ClientBasedConverter)
+      new H2OFrame(DKV.getGet[Frame](key))
+    })
 
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
 
@@ -189,6 +203,17 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     withConversionDebugPrints(sparkContext, "DataFrame", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
 
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
+
+  /**
+    * The method transforms RDD to H2OFrame and returns String representation of its key.
+    * @param df Input data frame
+    * @return String representation of H2O Frame Key
+    */
+  def asH2OFrameKeyString(df: DataFrame): String = asH2OFrameKeyString(df, None)
+
+  def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
+
+  def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = toH2OFrameKey(df, frameName).toString
 
   /** Transform DataFrame to H2OFrame key */
   def toH2OFrameKey(df: DataFrame): Key[Frame] = toH2OFrameKey(df, None)
@@ -467,6 +492,12 @@ object H2OContext extends Logging {
     def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.frame.H2OFrame): org.apache.spark.rdd.RDD[A] = {
       SupportedRDDConverter.toRDD[A](this, fr)
     }
+
+    override def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
+      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, WriteConverterCtxUtils.RESTBasedConverter)
+    }
+
+    override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = toH2OFrameKey(rdd, frameName).toString
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {

@@ -20,7 +20,7 @@ package org.apache.spark.h2o.converters
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
-import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.h2o.utils.{H2OContextRestAPIUtils, NodeDesc}
 import org.apache.spark.h2o.{H2OContext, _}
 import org.apache.spark.rdd.h2o.H2OAwareRDD
 import water.{ExternalFrameUtils, _}
@@ -56,69 +56,139 @@ object WriteConverterCtxUtils {
     }.getOrElse(original, None)
   }
 
-  /**
-    * Converts the RDD to H2O Frame using specified conversion function
-    *
-    * @param hc            H2O context
-    * @param rddInput      rdd to convert
-    * @param keyName       key of the resulting frame
-    * @param colNames      names of the columns in the H2O Frame
-    * @param expectedTypes expected types of the vectors in the H2O Frame
-    * @param sparse        if at least one column in the dataset is sparse
-    * @param func          conversion function - the function takes parameters needed extra by specific transformations
-    *                      and returns function which does the general transformation
-    * @tparam T type of RDD to convert
-    * @return H2O Frame
-    */
-  def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
-                 maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]) = {
-    val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
-
-    val writerClient = if (hc.getConf.runsInInternalClusterMode) {
-      new InternalWriteConverterCtx()
-    } else {
-      val leader = H2O.CLOUD.leader()
-      val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
-      new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp, blockSize)
+  trait Converter {
+    protected def getNonEmptyPartitions[T](rdd: RDD[T]): Seq[Int] = {
+      rdd.mapPartitionsWithIndex {
+        case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
+      }.collect().toSeq.sorted
     }
 
-    writerClient.initFrame(keyName, colNames)
-
-
-    val rdd = if (hc.getConf.runsInInternalClusterMode) {
-      // this is only required in internal cluster mode
-      val prefs = hc.getH2ONodes().map { nodeDesc =>
-        s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
-      }
-      new H2OAwareRDD(prefs, rddInput)
-    } else {
-      rddInput
-    }
-
-    val nonEmptyPartitions = rdd.mapPartitionsWithIndex {
-      case (idx, it) => if (it.nonEmpty) Iterator.single(idx) else Iterator.empty
-    }.collect().toSeq.sorted
-
-    // prepare required metadata based on the used backend
-    val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
-      Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
-    } else {
-      None
-    }
-    val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
-    val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
-    val res = new Array[Long](nonEmptyPartitions.size)
-    rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
-    // Add Vec headers per-Chunk, and finalize the H2O Frame
-
-    // get the vector types from expected types in case of external h2o cluster
-    val types = if (hc.getConf.runsInExternalClusterMode) {
-      ExternalFrameUtils.vecTypesFromExpectedTypes(expectedTypes, maxVecSizes)
-    } else {
-      expectedTypes
-    }
-
-   writerClient.finalizeFrame(keyName, res, types)
+    /**
+      * Converts the RDD to H2O Frame using specified conversion function
+      *
+      * @param hc            H2O context
+      * @param rddInput      rdd to convert
+      * @param keyName       key of the resulting frame
+      * @param colNames      names of the columns in the H2O Frame
+      * @param expectedTypes expected types of the vectors in the H2O Frame
+      * @param sparse        if at least one column in the dataset is sparse
+      * @param func          conversion function - the function takes parameters needed extra by specific transformations
+      *                      and returns function which does the general transformation
+      * @tparam T type of RDD to convert
+      * @return H2O Frame
+      */
+    def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
+                                      maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String
   }
 
+  object ClientBasedConverter extends Converter {
+
+    /**
+      * Converts the RDD to H2O Frame using specified conversion function
+      *
+      * @param hc            H2O context
+      * @param rddInput      rdd to convert
+      * @param keyName       key of the resulting frame
+      * @param colNames      names of the columns in the H2O Frame
+      * @param expectedTypes expected types of the vectors in the H2O Frame
+      * @param sparse        if at least one column in the dataset is sparse
+      * @param func          conversion function - the function takes parameters needed extra by specific transformations
+      *                      and returns function which does the general transformation
+      * @tparam T type of RDD to convert
+      * @return H2O Frame
+      */
+    def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
+                                       maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
+      val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
+
+      val writerClient = if (hc.getConf.runsInInternalClusterMode) {
+        new InternalWriteConverterCtx()
+      } else {
+        val leader = H2O.CLOUD.leader()
+        val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
+        new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp, blockSize)
+      }
+
+      writerClient.initFrame(keyName, colNames)
+
+
+      val rdd = if (hc.getConf.runsInInternalClusterMode) {
+        // this is only required in internal cluster mode
+        val prefs = hc.getH2ONodes().map { nodeDesc =>
+          s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
+        }
+        new H2OAwareRDD(prefs, rddInput)
+      } else {
+        rddInput
+      }
+
+      val nonEmptyPartitions = getNonEmptyPartitions(rdd)
+
+      // prepare required metadata based on the used backend
+      val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
+        Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
+      } else {
+        None
+      }
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
+      val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
+      val res = new Array[Long](nonEmptyPartitions.size)
+      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
+      // Add Vec headers per-Chunk, and finalize the H2O Frame
+
+      // get the vector types from expected types in case of external h2o cluster
+      val types = if (hc.getConf.runsInExternalClusterMode) {
+        ExternalFrameUtils.vecTypesFromExpectedTypes(expectedTypes, maxVecSizes)
+      } else {
+        expectedTypes
+      }
+
+      writerClient.finalizeFrame(keyName, res, types)
+      keyName
+    }
+
+  }
+
+  object RESTBasedConverter extends Converter {
+
+    /**
+      * Converts the RDD to H2O Frame using specified conversion function
+      *
+      * @param hc            H2O context
+      * @param rdd           rdd to convert
+      * @param keyName       key of the resulting frame
+      * @param colNames      names of the columns in the H2O Frame
+      * @param expectedTypes expected types of the vectors in the H2O Frame
+      * @param sparse        if at least one column in the dataset is sparse
+      * @param func          conversion function - the function takes parameters needed extra by specific transformations
+      *                      and returns function which does the general transformation
+      * @tparam T type of RDD to convert
+      * @return H2OFrame Key
+      */
+    def convert[T: ClassTag : TypeTag](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
+                                       maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
+      val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
+      val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
+      val leaderNode = H2OContextRestAPIUtils.getLeaderNode(hc.getConf)
+      val writerClient = new ExternalWriteConverterCtx(leaderNode, writeTimeout, -1, blockSize)
+
+      writerClient.initFrame(keyName, colNames)
+
+      val nonEmptyPartitions = getNonEmptyPartitions(rdd)
+
+      // prepare required metadata
+      val uploadPlan = Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
+
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, -1, sparse, nonEmptyPartitions)
+      val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
+      val res = new Array[Long](nonEmptyPartitions.size)
+      rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
+      // Add Vec headers per-Chunk, and finalize the H2O Frame
+
+      // get the vector types from expected types
+      val types = ExternalFrameUtils.vecTypesFromExpectedTypes(expectedTypes, maxVecSizes)
+      writerClient.finalizeFrame(keyName, res, types)
+      keyName
+    }
+  }
 }

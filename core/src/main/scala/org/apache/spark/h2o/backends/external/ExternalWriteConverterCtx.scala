@@ -39,9 +39,8 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTim
     externalFrameWriter.initFrame(key, columns)
   }
 
-  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): H2OFrame = {
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): Unit = {
     externalFrameWriter.finalizeFrame(key, rowsPerChunk, colTypes, domains)
-    new H2OFrame(DKV.getGet[Frame](key))
   }
 
   /**
