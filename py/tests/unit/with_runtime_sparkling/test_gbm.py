@@ -21,7 +21,7 @@ import json
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGBM, H2OMOJOModel
-from pyspark.sql.functions import log, col, min, max, mean, lit, alias
+from pyspark.sql.functions import log, col, min, max, mean, lit
 from h2o.estimators.gbm import H2OGradientBoostingEstimator
 
 from tests import unit_test_utils
