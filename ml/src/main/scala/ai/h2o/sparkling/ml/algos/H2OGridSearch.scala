@@ -396,7 +396,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     """Level of model-building parallelism, the possible values are:
       | 0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
       | 1 -> Sequential model building, no parallelism
-      | n>1 -> n models will be build in parallel if possible""".stripMargin)
+      | n>1 -> n models will be built in parallel if possible""".stripMargin)
   //
   // Default values
   //
