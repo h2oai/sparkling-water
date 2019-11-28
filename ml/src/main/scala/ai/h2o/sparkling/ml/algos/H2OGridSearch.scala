@@ -110,7 +110,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
-      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria)
+      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, getParallelism())
     // Block until GridSearch finishes
     grid = job.get()
     gridModels = sortGrid(grid)
@@ -391,7 +391,12 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
   private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
     "If this value is not specified that the first model os taken.")
-
+  private val parallelism = new IntParam(this,
+    "parallelism",
+    """Level of model-building parallelism, the possible values are:
+      | 0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
+      | 1 -> Sequential model building, no parallelism
+      | n>1 -> n models will be build in parallel if possible""".stripMargin)
   //
   // Default values
   //
@@ -404,7 +409,8 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingRounds -> 0,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
-    selectBestModelBy -> H2OGridSearchMetric.AUTO.name()
+    selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
+    parallelism -> 0
   )
 
   //
@@ -427,6 +433,8 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   def getStoppingMetric(): String = $(stoppingMetric)
 
   def getSelectBestModelBy(): String = $(selectBestModelBy)
+
+  def getParallelism(): Int = $(parallelism)
 
   //
   // Setters
@@ -464,4 +472,6 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OGridSearchMetric](value)
     set(selectBestModelBy, validated)
   }
+
+  def setParallelism(value: Int): this.type = set(parallelism, value)
 }
