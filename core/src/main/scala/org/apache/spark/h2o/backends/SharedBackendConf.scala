@@ -363,7 +363,8 @@ object SharedBackendConf {
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE = ("spark.ext.h2o.client.flow.baseurl.override", None)
 
   /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-    * client (either H2O client or REST) is connected */
+    * client (either H2O client or REST) is connected
+    */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", 60000)
 
   val PROP_REST_API_BASED_CLIENT = ("spark.ext.h2o.rest.api.based.client", false)
