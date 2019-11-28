@@ -77,7 +77,7 @@ The default value is 10.""",
         Params._dummy(),
         "blendedAvgSmoothing",
         """A parameter of blended average. Controls the rate of transition between a group target value
-           and a global target value. The default value is 20.""",
+and a global target value. The default value is 20.""",
         H2OTypeConverters.toFloat())
 
     noise = Param(
