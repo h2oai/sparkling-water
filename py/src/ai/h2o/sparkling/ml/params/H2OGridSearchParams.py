@@ -175,4 +175,3 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     def setParallelism(self, value):
         return self._set(parallelism=value)
-   
