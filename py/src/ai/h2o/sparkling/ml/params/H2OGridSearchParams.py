@@ -78,6 +78,15 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
         H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OGridSearchMetric"))
 
+    parallelism = Param(
+        Params._dummy(),
+        "parallelism",
+        """Level of model-building parallelism, the possible values are:
+           0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
+           1 -> Sequential model building, no parallelism
+           n>1 -> n models will be built in parallel if possible""",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -131,6 +140,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     def getSelectBestModelBy(self):
         return self.getOrDefault(self.selectBestModelBy)
 
+    def getParallelism(self):
+        return self.getOrDefault(self.parallelism)
+
     ##
     # Setters
     ##
@@ -160,3 +172,6 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
 
     def setSelectBestModelBy(self, value):
         return self._set(selectBestModelBy=value)
+
+    def setParallelism(self, value):
+        return self._set(parallelism=value)
