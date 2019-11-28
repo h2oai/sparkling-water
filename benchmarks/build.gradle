@@ -122,3 +122,5 @@ task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
         }
     }
 }
+
+substituteTerraform.dependsOn build
