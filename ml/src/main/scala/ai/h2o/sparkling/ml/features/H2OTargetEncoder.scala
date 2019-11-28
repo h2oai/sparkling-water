@@ -48,7 +48,8 @@ class H2OTargetEncoder(override val uid: String)
   private def trainTargetEncodingModel(trainingFrame: Frame, ignoredColumns: Array[String]) = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
     targetEncoderParameters._blending = getBlendedAvgEnabled()
-    targetEncoderParameters._blending_parameters = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
+    targetEncoderParameters._k = getBlendedAvgInflectionPoint()
+    targetEncoderParameters._f = getBlendedAvgSmoothing()
     targetEncoderParameters._response_column = getLabelCol()
     targetEncoderParameters._fold_column = getFoldCol()
     targetEncoderParameters._ignored_columns = ignoredColumns
