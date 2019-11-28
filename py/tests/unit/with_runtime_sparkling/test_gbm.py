@@ -21,7 +21,7 @@ import json
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGBM, H2OMOJOModel
-from pyspark.sql.functions import log, col, min, max, mean, lit
+from pyspark.sql.functions import log, col, min, max, mean, lit, alias
 from h2o.estimators.gbm import H2OGradientBoostingEstimator
 
 from tests import unit_test_utils
@@ -74,7 +74,7 @@ def gbmModelWithOffset(dataset):
 
 
 def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
-    predictionCol = col("prediction")
+    predictionCol = col("prediction.value").alias("prediction")
     predictionsDF = gbmModelWithOffset.transform(dataset)
     detailsDF = predictionsDF.select(min(predictionCol).alias("min"),
                                      max(predictionCol).alias("max"),
@@ -94,7 +94,7 @@ def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset,
 
 
 def testMOJOModelReturnsDifferentResultWithZeroOffset(gbmModelWithOffset, dataset):
-    predictionCol = col("prediction")
+    predictionCol = col("prediction.value").alias("prediction")
     predictionsDF = gbmModelWithOffset.transform(dataset.withColumn("Offset",lit(0.0)))
     detailsDF = predictionsDF.select(min(predictionCol).alias("min"),
                                      max(predictionCol).alias("max"),
@@ -124,7 +124,7 @@ def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, datase
     mojoModel = H2OMOJOModel.createFromMojo("file://" + mojoFile)
 
     binaryModelResult = hc.as_spark_frame(gbm.predict(testingFrame))
-    mojoResult = mojoModel.transform(testingDataset).select("prediction")
+    mojoResult = mojoModel.transform(testingDataset).select(col("prediction.value").alias("prediction"))
 
     unit_test_utils.assert_data_frames_are_identical(binaryModelResult, mojoResult)
     assert mojoModel.getOffsetCol() == "Offset", "Offset column must be propagated to the MOJO model."
