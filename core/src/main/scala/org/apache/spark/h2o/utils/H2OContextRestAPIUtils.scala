@@ -29,7 +29,7 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3}
+import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3, PingV3}
 
 import scala.reflect.ClassTag
 import scala.reflect._
@@ -67,6 +67,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     val formatter = new SimpleDateFormat(pattern)
     val now = formatter.format(new Date)
     s"h2ologs_$now"
+  }
+
+  def getPingInfo(conf: H2OConf): PingV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    query[PingV3](endpoint, "3/Ping", conf)
   }
 
   def getCloudInfo(conf: H2OConf): CloudV3 = {

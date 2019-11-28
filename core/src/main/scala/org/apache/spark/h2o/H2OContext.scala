@@ -420,9 +420,9 @@ object H2OContext extends Logging {
 
     override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
       try {
-        val cloudV3 = getCloudInfo(conf)
-        val memoryInfo = cloudV3.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-        SparklingWaterHeartbeatEvent(cloudV3.cloud_healthy, System.currentTimeMillis(), memoryInfo)
+        val ping = getPingInfo(conf)
+        val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
+        SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
       } catch {
         case e: H2OClusterNodeNotReachableException =>
           H2OContext.get().head.stop()
