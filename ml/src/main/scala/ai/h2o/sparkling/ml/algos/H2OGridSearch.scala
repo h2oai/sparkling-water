@@ -110,7 +110,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
     }
     val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
-      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, getParallelism())
+      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, GridSearch.getParallelismLevel(getParallelism()))
     // Block until GridSearch finishes
     grid = job.get()
     gridModels = sortGrid(grid)
@@ -410,7 +410,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
     selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
-    parallelism -> GridSearch.getParallelismLevel(0)
+    parallelism -> 0
   )
 
   //
