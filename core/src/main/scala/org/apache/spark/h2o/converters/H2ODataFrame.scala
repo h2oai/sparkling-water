@@ -107,7 +107,6 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
-  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
@@ -119,6 +118,8 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   } else {
     requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
   }) toArray
+
+  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
     ReflectionUtils.supportedType(frame.vec(index))
@@ -141,7 +142,6 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   private val colNames = frame.columns.map(_.name)
 
@@ -154,6 +154,8 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
       requiredColumns.map(colNames.indexOf)
     }
   }
+
+  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
     val column = frame.columns(index)
