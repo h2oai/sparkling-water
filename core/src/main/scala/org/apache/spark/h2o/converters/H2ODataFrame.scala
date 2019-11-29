@@ -142,7 +142,6 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
-  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   private val colNames = frame.columns.map(_.name)
 
@@ -155,6 +154,8 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
       requiredColumns.map(colNames.indexOf)
     }
   }
+
+  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
     val column = frame.columns(index)
