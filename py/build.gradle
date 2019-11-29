@@ -370,5 +370,8 @@ distPython.dependsOn createVersionFile
 
 build.dependsOn distPython
 test.dependsOn testPython
-test.dependsOn testPythonREST
+
+if (detectBackendClusterMode() == "external") {
+    test.dependsOn testPythonREST
+}
 integTest.dependsOn integTestPython
