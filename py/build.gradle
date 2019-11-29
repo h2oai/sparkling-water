@@ -284,10 +284,6 @@ def createUnitTestArgs() {
             "spark.ext.h2o.external.disable.version.check=true"
     ]
 
-    if (project.hasProperty("restApiBasedClient") && project.restApiBasedClient == "true") {
-        args.add("spark.ext.h2o.rest.api.based.client=true")
-    }
-
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
             args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")

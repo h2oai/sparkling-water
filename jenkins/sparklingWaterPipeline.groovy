@@ -121,7 +121,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
-                    pyUnitTests(false)(config)
+                    pyUnitTests()(config)
                     rUnitTests()(config)
                     localIntegTest()(config)
                     localPyIntegTest()(config)
@@ -288,14 +288,14 @@ def unitTests() {
     }
 }
 
-def pyUnitTests(boolean restApiBasedClient) {
+def pyUnitTests() {
     return { config ->
         stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
             if (config.runPyUnitTests.toBoolean()) {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                         sh """
-                        ${config.gradleCmd} :sparkling-water-py:test -PrestApiBasedClient=${restApiBasedClient} -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                        ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                         """
                     }
                 } finally {
@@ -309,7 +309,7 @@ def pyUnitTests(boolean restApiBasedClient) {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                         sh """
-                        ${config.gradleCmd} :sparkling-water-py:test -PrestApiBasedClient=${restApiBasedClient} -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                        ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                         """
                     }
                 } finally {
