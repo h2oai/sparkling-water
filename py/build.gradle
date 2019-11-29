@@ -280,7 +280,8 @@ artifacts {
 def createUnitTestArgs() {
     def args = [
             "${distPython.archiveFile.get()}",
-            "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
+            "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
+            "spark.ext.h2o.external.disable.version.check=true"
     ]
 
     if (project.hasProperty("restApiBasedClient") && project.restApiBasedClient == "true") {
@@ -305,7 +306,8 @@ def createIntegTestArgs(String integTestKind) {
             "spark.ext.h2o.client.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/client",
             "spark.driver.extraJavaOptions=-Dhdp.version=${hdpVersion}",
             "spark.executor.extraJavaOptions=-Dhdp.version=${hdpVersion}",
-            "spark.yarn.am.extraJavaOptions=-Dhdp.version=${hdpVersion}"
+            "spark.yarn.am.extraJavaOptions=-Dhdp.version=${hdpVersion}",
+            "spark.ext.h2o.external.disable.version.check=true"
     ]
 }
 

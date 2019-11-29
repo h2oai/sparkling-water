@@ -14,8 +14,8 @@ config=c(config, list(
                 "spark.ext.h2o.external.start.mode"="auto",
                 "sparklyr.log.console"="true",
                 "sparklyr.log.invoke"="true",
-                "sparklyr.verbose"="true"
-
+                "sparklyr.verbose"="true",
+                "spark.ext.h2o.external.disable.version.check"="true"
 ))
 
 test_that("Test transformation from h2o frame to data frame", {

@@ -25,6 +25,8 @@ task scriptsTest(type: Test) {
     testClassesDirs = sourceSets.scriptsTest.output.classesDirs
     classpath = sourceSets.scriptsTest.runtimeClasspath
 
+    systemProperty "spark.ext.h2o.external.disable.version.check", "true"
+
     // Also setup expected Scala version for Spark launcher
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
