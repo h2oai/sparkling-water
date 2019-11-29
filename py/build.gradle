@@ -283,15 +283,17 @@ def createUnitTestArgs() {
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}"
     ]
 
-    if (project.hasProperty("restApiBasedClient") && project.restApiBasedClient == "true") {
-        args.add("spark.ext.h2o.rest.api.based.client=true")
-    }
-
     gradle.taskGraph.whenReady {
         if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
             args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
         }
     }
+    return args
+}
+
+def createUnitTestRESTApiArgs() {
+    def args = createUnitTestArgs()
+    args.add("spark.ext.h2o.rest.api.based.client=true")
     return args
 }
 
@@ -315,7 +317,7 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
 }
 
 task testPythonREST(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
+    extraArgs(*createUnitTestRESTApiArgs())
     command = "tests/test_runner.py 'tests/unit/with_runtime_clientless_sparkling'"
 }
 
