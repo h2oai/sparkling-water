@@ -291,12 +291,6 @@ def createUnitTestArgs() {
     return args
 }
 
-def createUnitTestRESTApiArgs() {
-    def args = createUnitTestArgs()
-    args.add("spark.ext.h2o.rest.api.based.client=true")
-    return args
-}
-
 def createIntegTestArgs(String integTestKind) {
     return [
             "${distPython.archiveFile.get()}",
@@ -317,7 +311,7 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
 }
 
 task testPythonREST(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestRESTApiArgs())
+    extraArgs(*createUnitTestArgs())
     command = "tests/test_runner.py 'tests/unit/with_runtime_clientless_sparkling'"
 }
 
