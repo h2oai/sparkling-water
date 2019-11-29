@@ -64,6 +64,7 @@ trait ExternalBackendConf extends SharedBackendConf {
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1,
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
+  private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
   /** Setters */
 
@@ -230,4 +231,6 @@ object ExternalBackendConf {
     */
   val PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE = ("spark.ext.h2o.external.communication.blockSize", "1m")
 
+  /** Disable version check of external H2O backend */
+  val PROP_EXTERNAL_DISABLE_VERSION_CHECK = ("spark.ext.h2o.external.disable.version.check", false)
 }

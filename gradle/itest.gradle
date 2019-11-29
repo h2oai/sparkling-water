@@ -49,6 +49,7 @@ task integTest(type: Test) {
             systemProperty "sparkling.test.environment", "${testEnv}"
             systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
             systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
+            systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
             include "water/sparkling/itest/yarn/**"
             break
@@ -57,6 +58,7 @@ task integTest(type: Test) {
             systemProperty "sparkling.test.environment", "${testEnv}"
             systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
             systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
+            systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
             include "water/sparkling/itest/standalone/**"
             break
@@ -65,6 +67,7 @@ task integTest(type: Test) {
             systemProperty "sparkling.test.environment", "${testEnv}"
             systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes")
             systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
+            systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
             include "water/sparkling/itest/local/**"
             break

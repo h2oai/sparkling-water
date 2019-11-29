@@ -6,7 +6,7 @@ test {
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
     systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-test/nodes")
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-test/client")
-
+    systemProperty "spark.ext.h2o.external.disable.version.check", "true"
     // Run with assertions ON
     enableAssertions = true
 

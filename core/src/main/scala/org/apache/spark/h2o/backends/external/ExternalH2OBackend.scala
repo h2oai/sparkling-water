@@ -200,7 +200,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
-      if (!isRestApiBasedClient(hc)) {
+      if (!isRestApiBasedClient(hc) && !conf.isBackendVersionCheckDisabled()) {
         // For automatic mode we can check the driver version early
         verifyVersionFromDriverJAR(conf.h2oDriverPath.get)
       }
@@ -229,7 +229,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       try {
         val nodes = getNodes(conf)
         verifyWebOpen(nodes, conf)
-        verifyVersionFromRestCall(nodes)
+        if (!conf.isBackendVersionCheckDisabled()) {
+          verifyVersionFromRestCall(nodes)
+        }
         nodes
       } catch {
         case _: H2OClusterNodeNotReachableException =>
@@ -247,7 +249,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
     val expectedSize = conf.clusterSize.get.toInt
     val discoveredSize = ExternalH2OBackend.waitForCloudSize(expectedSize, clusterBuildTimeout)
-      if (conf.isManualClusterStartUsed) {
+      if (conf.isManualClusterStartUsed && !conf.isBackendVersionCheckDisabled()) {
         verifyVersionFromRuntime()
       }
     if (discoveredSize < expectedSize) {
