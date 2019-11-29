@@ -55,16 +55,20 @@ case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
 
     if (column.dataType == "enum") {
       builder
-        .putStringArray("vals", column.domain)
         .putLong("cardinality", column.domainCardinality)
+      if (column.domain != null) {
+        builder.putStringArray("vals", column.domain)
+      }
     } else if (Seq("int", "real").contains(column.dataType)) {
       builder
         .putDouble("min", column.min)
         .putDouble("mean", column.mean)
-        .putDoubleArray("percentiles", column.percentiles)
         .putDouble("max", column.max)
         .putDouble("std", column.sigma)
         .putDouble("sparsity", column.numberOfZeros / numberOfRows.toDouble)
+      if (column.percentiles != null) {
+        builder.putDoubleArray("percentiles", column.percentiles)
+      }
     }
     builder.build()
   }
