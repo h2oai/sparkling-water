@@ -52,9 +52,7 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
       None
     }
   }
-
-  override lazy val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
-
+  
   @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
 
