@@ -86,7 +86,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
 
   def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
-    val frames = query[FramesV3](endpoint, s"3/Frames/$frameId/light", conf)
+    val frames = query[FramesV3](endpoint, s"3/Frames/$frameId/summary?row_count=0", conf)
     val frame = frames.frames(0)
     val frameChunks = query[FrameChunksV3](endpoint, s"3/FrameChunks/$frameId", conf)
     val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
