@@ -81,3 +81,8 @@ def assert_data_frames_are_identical(expected, produced):
         """The expected data frame contains %s distinct rows that are not in the produced data frame.
         The produced data frame contains %s distinct rows that are not in the expected data frame."""\
         % (numberOfExtraRowsInExpected, numberOfExtraRowsInProduced)
+
+
+def assert_h2o_frames_are_identical(expected, produced):
+    assert expected.get_frame_data() == produced.get_frame_data()
+    assert len(expected.types.items()) == len(expected.types.items() & produced.types.items())

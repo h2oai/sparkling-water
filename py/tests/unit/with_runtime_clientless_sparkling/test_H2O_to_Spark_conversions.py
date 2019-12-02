@@ -97,3 +97,17 @@ def testInnerCbindTransform(hc):
     df = hc.as_spark_frame(frame1.cbind(frame2))
     count = df.count()
     assert count == 3, "Number of rows is 3"
+
+# test for SW-430
+def testLazyFrames(spark, hc):
+    from pyspark.sql import Row
+    data = [Row(c1=1, c2="first"), Row(c1=2, c2="second")]
+    df = spark.createDataFrame(data)
+    hf = hc.as_h2o_frame(df)
+    # Modify H2O frame - this should invalidate internal cache
+    hf['c3'] = 3
+    # Now try to convert modified H2O frame back to Spark data frame
+    dfe = hc.as_spark_frame(hf)
+    assert dfe.count() == len(data), "Number of rows should match"
+    assert len(dfe.columns) == 3, "Number of columns should match"
+    assert dfe.collect() == [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)]
