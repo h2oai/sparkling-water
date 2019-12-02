@@ -24,7 +24,6 @@ import org.apache.spark.h2o.converters.SupportedRDD$;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import scala.Option;
 import water.Key;
@@ -222,24 +221,12 @@ public class JavaH2OContext {
      * Pass-through to H2OContext.toH2OFrameKey.  For API support only
      *
      * @param df        dataset to convert
-     * @param frameName option containing name of the frame
-     * @return String representation of H2OFrame key
-     */
-    public String asH2OFrameKeyString(Dataset<Row> df, Option<String> frameName) {
-        System.out.println(frameName);
-        return hc.asH2OFrameKeyString(df, frameName);
-    }
-
-    /**
-     * Pass-through to H2OContext.toH2OFrameKey.  For API support only
-     *
-     * @param df        dataset to convert
      * @param frameName name of the frame
      * @return String representation of H2OFrame key
      */
     public String asH2OFrameKeyString(Dataset<Row> df, String frameName) {
         System.out.println(frameName);
-        return hc.asH2OFrameKeyString(df, frameName);
+        return hc.asH2OFrameKeyString(df, Option.apply(frameName));
     }
 
     /**
