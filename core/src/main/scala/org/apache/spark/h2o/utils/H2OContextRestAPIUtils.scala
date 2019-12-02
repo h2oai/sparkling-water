@@ -23,13 +23,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
-import com.google.gson.Gson
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3, PingV3}
+
+import org.json4s.jackson.Serialization.read
+import org.json4s.DefaultFormats
 
 import scala.reflect.ClassTag
 import scala.reflect._
@@ -161,7 +163,8 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     val response = readURLContent(endpoint, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
-    new Gson().fromJson(content, classTag[ResultType].runtimeClass)
+    implicit val formats = DefaultFormats
+    read[ResultType](content)
   }
 
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
