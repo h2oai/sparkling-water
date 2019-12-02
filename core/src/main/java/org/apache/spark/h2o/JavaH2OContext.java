@@ -226,6 +226,7 @@ public class JavaH2OContext {
      * @return String representation of H2OFrame key
      */
     public String asH2OFrameKeyString(Dataset<Row> df, Option<String> frameName) {
+        System.out.println(frameName);
         return hc.asH2OFrameKeyString(df, frameName);
     }
 
