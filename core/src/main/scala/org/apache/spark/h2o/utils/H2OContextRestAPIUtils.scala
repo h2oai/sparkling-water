@@ -159,7 +159,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     query[CloudV3](endpoint, "3/Cloud", conf)
   }
 
-  private def query[ResultType : ClassTag](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
+  private def query[ResultType : Manifest](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
     val response = readURLContent(endpoint, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
