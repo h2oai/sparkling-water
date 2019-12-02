@@ -411,11 +411,11 @@ public class JavaH2OContext {
      *
      * @param rdd       rdd to convert
      * @param frameName frame name
-     * @return new H2O Frame
+     * @return A key sting of new H2O Frame
      */
-    public H2OFrame asH2OFrameFromPythonRDDDouble(JavaRDD<Number> rdd, String frameName) {
+    public String asH2OFrameFromPythonRDDDoubleKeyString(JavaRDD<Number> rdd, String frameName) {
         JavaRDD<Double> casted = rdd.map(new RDDDoubleConversionFunc());
-        return asH2OFrameFromRDDDouble(casted, frameName);
+        return asH2OFrameFromRDDDoubleKeyString(casted, frameName);
     }
 
 
@@ -438,11 +438,11 @@ public class JavaH2OContext {
      *
      * @param rdd       rdd to convert
      * @param frameName frame name
-     * @return new H2O Frame
+     * @return A key string of new H2O Frame
      */
-    public H2OFrame asH2OFrameFromPythonRDDLong(JavaRDD<Number> rdd, String frameName) {
+    public String asH2OFrameFromPythonRDDLongKeyString(JavaRDD<Number> rdd, String frameName) {
         JavaRDD<Long> casted = rdd.map(new RDDLongConversionFunc());
-        return asH2OFrameFromRDDLong(casted, frameName);
+        return asH2OFrameFromRDDLongKeyString(casted, frameName);
     }
 
     /**
