@@ -23,13 +23,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
-import com.google.gson.Gson
+import com.google.gson.{ExclusionStrategy, FieldAttributes, Gson, GsonBuilder}
 import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.{CloudV3, FrameChunksV3, FramesV3, PingV3}
+import water.api.schemas3.{CloudV3, FrameChunksV3, FrameV3, FramesV3, PingV3}
 
 import scala.reflect.ClassTag
 import scala.reflect._
@@ -96,7 +96,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
 
   def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
-    val frames = query[FramesV3](endpoint, s"3/Frames/$frameId/light", conf)
+    val frames = query[FramesV3](
+      endpoint,
+      s"3/Frames/$frameId/summary?row_count=0",
+      conf,
+      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val frameChunks = query[FrameChunksV3](endpoint, s"3/FrameChunks/$frameId", conf)
     val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
@@ -167,11 +171,41 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     query[CloudV3](endpoint, "3/Cloud", conf)
   }
 
-  private def query[ResultType : ClassTag](endpoint: URI, suffix: String, conf: H2OConf): ResultType = {
+  /**
+    *
+    * @param endpoint An address of H2O node with exposed REST endpoint
+    * @param suffix REST relative path representing a specific call
+    * @param conf H2O conf object
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
+  private def query[ResultType : ClassTag](
+       endpoint: URI,
+       suffix: String,
+       conf: H2OConf,
+       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     val response = readURLContent(endpoint, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
-    new Gson().fromJson(content, classTag[ResultType].runtimeClass)
+
+    deserialize[ResultType](content, skippedFields)
+  }
+
+  private def deserialize[ResultType : ClassTag](content: String, skippedFields: Seq[(Class[_], String)]): ResultType = {
+    val builder = new GsonBuilder()
+    val exclusionStrategy = new ExclusionStrategy() {
+      override def shouldSkipField(f: FieldAttributes): Boolean = {
+        skippedFields.exists {
+          case (clazz: Class[_], fieldName: String) => clazz == f.getDeclaringClass && fieldName == f.getName
+        }
+      }
+
+      override def shouldSkipClass(incomingClass: Class[_]): Boolean = false
+    }
+    builder.addDeserializationExclusionStrategy(exclusionStrategy)
+    builder.create().fromJson(content, classTag[ResultType].runtimeClass)
   }
 
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
