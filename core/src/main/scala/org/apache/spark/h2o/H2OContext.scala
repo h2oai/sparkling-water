@@ -309,7 +309,6 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       if (stopJvm) {
         H2O.exit(0)
       }
-
     } else {
       logWarning("H2OContext is already stopped, this call has no effect anymore")
     }
