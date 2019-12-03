@@ -31,51 +31,6 @@ from ai.h2o.sparkling.FrameConversions import FrameConversions as fc
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.H2OConf import H2OConf
 
-
-def _monkey_patch_H2OFrame(hc):
-    @staticmethod
-    def determine_java_vec_type(vec):
-        if vec.isCategorical():
-            return "enum"
-        elif vec.isUUID():
-            return "uuid"
-        elif vec.isString():
-            return "string"
-        elif vec.isInt():
-            if vec.isTime():
-                return "time"
-            else:
-                return "int"
-        else:
-            return "real"
-
-    def get_java_h2o_frame(self):
-        # Can we use cached H2O frame?
-        # Only if we cached it before and cache was not invalidated by rapids expression
-        if not hasattr(self, '_java_frame') or self._java_frame is None \
-                or self._ex._cache._id is None or self._ex._cache.is_empty() \
-                or not self._ex._cache._id == self._java_frame_sid:
-            # Note: self.frame_id will trigger frame evaluation
-            self._java_frame = hc._jhc.asH2OFrame(self.frame_id)
-            self._java_frame_sid = self._java_frame.key().toString()
-            self._backed_by_java_obj = True
-        return self._java_frame
-
-    @staticmethod
-    def from_java_h2o_frame(h2o_frame, h2o_frame_id, full_cols=100):
-        # Cache Java reference to the backend frame
-        sid = h2o_frame_id.toString()
-        cols = full_cols if h2o_frame.numCols() > full_cols else -1
-        fr = H2OFrame.get_frame(sid, full_cols=cols, light=True)
-        fr._java_frame = h2o_frame
-        fr._java_frame_sid = sid
-        fr._backed_by_java_obj = True
-        return fr
-    H2OFrame.determine_java_vec_type = determine_java_vec_type
-    H2OFrame.from_java_h2o_frame = from_java_h2o_frame
-    H2OFrame.get_java_h2o_frame = get_java_h2o_frame
-
-
 def _is_of_simple_type(rdd):
     if not isinstance(rdd, RDD):
         raise ValueError('rdd is not of type pyspark.rdd.RDD')
@@ -109,7 +64,6 @@ class H2OContext(object):
         """
         try:
             self.__do_init(spark_session)
-            _monkey_patch_H2OFrame(self)
             Initializer.load_sparkling_jar()
         except:
             raise
@@ -280,7 +234,7 @@ class H2OContext(object):
             df._h2o_frame = h2o_frame
             return df
 
-    def as_h2o_frame(self, dataframe, framename=None, full_cols=100):
+    def as_h2o_frame(self, dataframe, framename=None, full_cols=-1):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
 
