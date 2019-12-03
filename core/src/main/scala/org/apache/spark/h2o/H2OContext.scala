@@ -106,6 +106,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * otherwise it creates new H2O cluster living in Spark
     */
   def init(): H2OContext = {
+    if (sparkContext.version.startsWith("2.1")){
+      logWarning("Spark 2.1 is deprecated and its support will be removed in the next major release!")
+    }
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
