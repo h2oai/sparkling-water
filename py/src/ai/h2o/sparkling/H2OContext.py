@@ -230,6 +230,7 @@ class H2OContext(object):
                 h2o.cluster().shutdown()
         except:
             pass
+        self.__isStopped = True
         if self._conf.get("spark.ext.h2o.rest.api.based.client") == "false":
             sys.exit()
 
