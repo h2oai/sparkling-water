@@ -281,7 +281,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
           }
         }
       })
-
+      cloudHealthCheckKillThread.get.setDaemon(true)
       cloudHealthCheckKillThread.get.start()
     }
   }
@@ -297,6 +297,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Exter
         }
       }
     })
+    cloudHealthCheckThread.get.setDaemon(true)
     cloudHealthCheckThread.get.start()
   }
 
