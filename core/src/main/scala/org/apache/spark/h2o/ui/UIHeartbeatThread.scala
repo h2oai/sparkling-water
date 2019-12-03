@@ -26,6 +26,7 @@ import water.util.PrettyPrint
   * Periodically publish information to Spark UI
   */
 class UIHeartbeatThread(sc: SparkContext, conf: H2OConf) extends Thread {
+  setDaemon(true)
   override def run(): Unit = {
     while (!Thread.interrupted()) {
       val nodes = H2O.CLOUD.members() ++ Array(H2O.SELF)

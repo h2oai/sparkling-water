@@ -31,8 +31,6 @@ trait SparklingBackend {
     */
   def checkAndUpdateConf(conf: H2OConf): H2OConf
 
-  def stop(stopSparkContext: Boolean)
-
   def backendUIInfo: Seq[(String, String)]
 
   def epilog: String
