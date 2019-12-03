@@ -87,7 +87,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   def getLeaderNode(conf: H2OConf): NodeDesc = {
     val cloudV3 = getCloudInfo(conf)
     val nodes = getNodes(cloudV3)
-    if(cloudV3.leader_idx < 0 || cloudV3.leader_idx >= nodes.length) {
+    if (cloudV3.leader_idx < 0 || cloudV3.leader_idx >= nodes.length) {
       throw new RuntimeException(
         s"The leader index '${cloudV3.leader_idx}' doesn't correspond to the size of the H2O cluster ${nodes.length}.")
     }

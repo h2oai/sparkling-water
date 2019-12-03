@@ -149,7 +149,7 @@ object WriteConverterCtxUtils {
 
   }
 
-  object RESTBasedConverter extends Converter {
+  object RESTBasedExternalConverter extends Converter {
 
     /**
       * Converts the RDD to H2O Frame using specified conversion function
