@@ -160,6 +160,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
       .add(getExtraHttpHeaderArgs(conf))
+      .add("-embedded")
       .buildArgs()
   }
 
