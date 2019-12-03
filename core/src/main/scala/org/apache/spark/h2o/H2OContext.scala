@@ -294,7 +294,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       if (stopJvm && conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false") {
         H2O.exit(0)
       }
-
     } else {
       logWarning("H2OContext is already stopped!")
     }
