@@ -304,7 +304,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       if (!(conf.isManualClusterStartUsed && conf.runsInExternalClusterMode)) {
         H2O.orderlyShutdown()
       }
-      if (stopJvm && conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false") {
+      if (stopJvm) {
         H2O.exit(0)
       }
     } else {
