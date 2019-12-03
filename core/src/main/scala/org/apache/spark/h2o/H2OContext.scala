@@ -289,9 +289,12 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       if (!(conf.isManualClusterStartUsed && conf.runsInExternalClusterMode)) {
         H2O.orderlyShutdown()
       }
+      H2OContext.instantiatedContext.set(null)
+      stopped = true
       if (stopJvm && conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false") {
         H2O.exit(0)
       }
+
     } else {
       logWarning("H2OContext is already stopped!")
     }
@@ -587,11 +590,6 @@ object H2OContext extends Logging {
       "parameter of type SparkSession is preferred.")
     val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
     getOrCreate(spark)
-  }
-
-  /** Global cleanup on H2OContext.stop call */
-  private def stop(context: H2OContext): Unit = {
-    instantiatedContext.set(null)
   }
 
 }
