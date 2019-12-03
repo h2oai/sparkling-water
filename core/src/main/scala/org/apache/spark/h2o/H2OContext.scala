@@ -497,7 +497,9 @@ object H2OContext extends Logging {
       SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, WriteConverterCtxUtils.RESTBasedConverter)
     }
 
-    override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = toH2OFrameKey(rdd, frameName).toString
+    override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
+      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.RESTBasedConverter)
+    }
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
