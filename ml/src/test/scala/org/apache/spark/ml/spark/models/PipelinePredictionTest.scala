@@ -21,7 +21,7 @@ import java.io.{File, PrintWriter}
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -137,7 +137,7 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
 
-    TestUtils.assertEqual(predictions1, predictions2)
+    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 }
 
@@ -173,7 +173,8 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     outputDataStream.writeStream.format("memory").queryName("predictions").start()
 
     //
-    // Run predictions on the loaded model which was trained in PySparkling pipeline
+    // Run predictions on the loaded model which was trained in PySparkling pipeline defined
+    // py/examples/pipelines/ham_or_spam_multi_algo.py
     //
     var predictions1 = spark.sql("select * from predictions")
 
@@ -186,9 +187,9 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
-    val predictions2 = trainedPipelineModel(spark).transform(data)
+    val predictions2 = trainedPipelineModel(spark).transform(data).drop("label")
 
-    TestUtils.assertEqual(predictions1, predictions2)
+    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 
 }
