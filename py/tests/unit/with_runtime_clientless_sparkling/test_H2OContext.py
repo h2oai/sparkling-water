@@ -15,27 +15,19 @@
 # limitations under the License.
 #
 
-import pytest
-from pyspark.sql import SparkSession
 from pysparkling.context import H2OContext
-
-from tests import unit_test_utils
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
-@pytest.fixture(scope="session")
-def spark(spark_conf):
-    conf = unit_test_utils.get_default_spark_conf(spark_conf)
-    return SparkSession.builder.config(conf=conf).getOrCreate()
+def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatically(spark):
+    context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
 
+    getNodes = lambda context: context._jhc.h2oContext().getH2ONodes()
+    toIpPort = lambda node: node.ipPort()
+    nodesToString = lambda nodes: ', '.join(nodes)
 
-@pytest.fixture(scope="session")
-def hc(spark):
-    conf = createH2OConf(spark)
-    return H2OContext.getOrCreate(spark, conf)
+    nodes1 = map(toIpPort, getNodes(context1))
+    nodes2 = map(toIpPort, getNodes(context2))
 
-
-@pytest.fixture(scope="session")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
+    assert nodesToString(nodes1) == nodesToString(nodes2)
