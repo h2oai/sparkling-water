@@ -470,6 +470,10 @@ class H2OConf(object):
         self._jconf.setExternalExtraMemoryPercent(memoryPercent)
         return self
 
+    def setExternalCommunicationBlockSize(self, blockSize):
+        self._jconf.setExternalCommunicationBlockSize(blockSize)
+        return self
+
     # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -734,6 +738,9 @@ class H2OConf(object):
     def externalExtraMemoryPercent(self):
         return self._jconf.externalExtraMemoryPercent()
 
+    def externalCommunicationBlockSizeAsBytes(self):
+        return self._jconf.externalCommunicationBlockSizeAsBytes()
+    
     def set(self, key, value):
         self._jconf.set(key, value)
         return self
