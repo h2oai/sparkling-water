@@ -302,9 +302,11 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
       if (stopSparkContext) {
         sparkContext.stop()
       }
-      // H2O cluster is managed by the user in case of manual start of external backend.
-      if (!(conf.isManualClusterStartUsed && conf.runsInExternalClusterMode)) {
-        H2O.orderlyShutdown()
+      // Run orderly shutdown only in case of automatic mode of external backend, because:
+      // In internal backend, Spark takes care of stopping executors automatically
+      // In manual mode of external backend, the H2O cluster is managed by the user
+      if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
+        H2O.orderlyShutdown(conf.externalBackendStopTimeout)
       }
       H2OContext.instantiatedContext.set(null)
       stopped = true

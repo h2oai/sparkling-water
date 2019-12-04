@@ -196,7 +196,7 @@ class H2OContext(object):
 
     def stop(self):
         try:
-            if not (self._conf.is_manual_cluster_start_used() and self._conf.runs_in_external_cluster_mode()):
+            if self._conf.runs_in_external_cluster_mode() and self._conf.is_auto_cluster_start_used():
                 h2o.cluster().shutdown()
         except:
             pass
