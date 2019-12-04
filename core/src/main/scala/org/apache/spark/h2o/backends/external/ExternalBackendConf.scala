@@ -132,7 +132,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
   def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
-  private[backends] def setExternalBackendFlatfileName(name: String): H2OConf = set(PROP_EXTERNAL_FLATFILE_NAME._1, name)
+  private[backends] def setExternalBackendFlatFileName(name: String): H2OConf = set(PROP_EXTERNAL_FLATFILE_NAME._1, name)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:

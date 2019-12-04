@@ -443,7 +443,7 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
       }
 
-      conf.setExternalBackendFlatfileName("flatfile_" + conf.cloudName.get)
+      conf.setExternalBackendFlatFileName("flatfile_" + conf.cloudName.get)
 
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
