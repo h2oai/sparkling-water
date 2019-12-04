@@ -95,7 +95,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
         "-J", "-watchdog_stop_without_client",
         "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
-        "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString
+        "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString,
+        "-flatfile", conf.externalBackendFlatfileName().get
       )
     }
 
@@ -441,6 +442,8 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       if (conf.cloudName.isEmpty) {
         conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
       }
+
+      conf.setExternalBackendFlatfileName("flatfile_" + conf.cloudName.get)
 
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)
