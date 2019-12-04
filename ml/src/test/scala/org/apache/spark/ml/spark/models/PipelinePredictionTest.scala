@@ -18,11 +18,10 @@
 package org.apache.spark.ml.spark.models
 
 import java.io.{File, PrintWriter}
-import java.util.Locale
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -36,21 +35,9 @@ import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 import water.support.SparkContextSupport
 
-abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext {
+abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    sc.setLogLevel("WARN")
-
-    // Remove country specification from the default locale settings, if the language is not native for the country.
-    val currentLocale = Locale.getDefault
-    if (!Locale.getAvailableLocales.contains(currentLocale)) {
-      val newLocale = new Locale(currentLocale.getLanguage)
-      Locale.setDefault(newLocale)
-    }
-
-    super.beforeAll()
-  }
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getSimpleName, defaultSparkConf)
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
   def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
@@ -62,9 +49,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
   }
 
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {
-    implicit val hc: H2OContext = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
 
-    implicit val sqlContext: SQLContext = spark.sqlContext
     /**
       * Define the pipeline stages
       */
@@ -113,9 +98,6 @@ abstract class PipelinePredictionTestBase extends FunSuite with SparkTestContext
     // Train the pipeline model
     val data = load(spark.sparkContext, "smsData.txt")
     val model = pipeline.fit(data)
-
-    hc.stop()
-    // return the trained model
     model
   }
 }
@@ -144,7 +126,8 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     val inputDataStream = load(sc, "smsData.txt")
 
     //
-    // Run predictions on the loaded model which was trained in PySparkling pipeline
+    // Run predictions on the loaded model which was trained in PySparkling pipeline defined
+    // py/examples/pipelines/ham_or_spam_multi_algo.py
     //
     val predictions1 = pipelineModel.transform(inputDataStream)
 
@@ -154,7 +137,7 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
 
-    TestUtils.assertEqual(predictions1, predictions2)
+    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 }
 
@@ -190,7 +173,8 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     outputDataStream.writeStream.format("memory").queryName("predictions").start()
 
     //
-    // Run predictions on the loaded model which was trained in PySparkling pipeline
+    // Run predictions on the loaded model which was trained in PySparkling pipeline defined
+    // py/examples/pipelines/ham_or_spam_multi_algo.py
     //
     var predictions1 = spark.sql("select * from predictions")
 
@@ -203,9 +187,9 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
-    val predictions2 = trainedPipelineModel(spark).transform(data)
+    val predictions2 = trainedPipelineModel(spark).transform(data).drop("label")
 
-    TestUtils.assertEqual(predictions1, predictions2)
+    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 
 }
