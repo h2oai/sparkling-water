@@ -48,7 +48,7 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
     */
   override def getH2OClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-flatfile", new File(conf.externalBackendFlatfileName().get).getAbsolutePath)
+      .add("-flatfile", new File(conf.externalBackendFlatFileName().get).getAbsolutePath)
       .add(super.getH2OClientArgs(conf))
       .addIf("-watchdog_client", conf.isAutoClusterStartUsed)
       .buildArgs()

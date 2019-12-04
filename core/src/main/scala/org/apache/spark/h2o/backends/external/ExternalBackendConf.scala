@@ -66,7 +66,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
   private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
-  private[backends] def externalBackendFlatfileName() = sparkConf.getOption(PROP_EXTERNAL_FLATFILE_NAME._1)
+  private[backends] def externalBackendFlatFileName() = sparkConf.getOption(PROP_EXTERNAL_FLATFILE_NAME._1)
   /** Setters */
 
   /**
