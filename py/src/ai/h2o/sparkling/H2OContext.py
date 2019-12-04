@@ -75,8 +75,6 @@ class H2OContext(object):
         self._jsql_context = self._spark_session._jwrapped
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
-        self.__isStopped = None
-
 
     def __default_h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
@@ -149,7 +147,6 @@ class H2OContext(object):
         if verbose:
             print(h2o_context)
 
-        h2o_context.__isStopped = False
         return h2o_context
 
     @staticmethod
@@ -161,6 +158,22 @@ class H2OContext(object):
         creds = JavaWrapper._new_java_obj("org.apache.spark.h2o.utils.FlowCredentials", auth[0], auth[1])
         someCreds = JavaWrapper._new_java_obj("scala.Some", creds)
         field.set(jconf, someCreds)
+
+    def __isStopped(self):
+        hc = self._jhc.h2oContext()
+        field = self.__getStoppedField()
+        return field.get(hc)
+
+    def __setStopped(self):
+        hc = self._jhc.h2oContext()
+        field = self.__getStoppedField()
+        field.set(hc, True)
+
+    def __getStoppedField(self):
+        hc = self._jhc.h2oContext()
+        field = hc.getClass().getSuperclass().getDeclaredField("stopped")
+        field.setAccessible(True)
+        return field
 
     def __isClientConnected(self):
         hc = self._jhc.h2oContext()
@@ -184,8 +197,8 @@ class H2OContext(object):
                 h2o.cluster().shutdown()
         except:
             pass
-        self.__isStopped = True
-        if self._conf.get("spark.ext.h2o.rest.api.based.client") == "false":
+        self.__setStopped()
+        if self._conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false":
             sys.exit()
 
     def download_h2o_logs(self, destination, container = "ZIP"):
@@ -193,7 +206,7 @@ class H2OContext(object):
         return self._jhc.h2oContext().downloadH2OLogs(destination, container)
 
     def __str__(self):
-        if self.__isClientConnected() and self.__isStopped != True:
+        if self.__isClientConnected() and not self.__isStopped():
             return self._jhc.toString()
         else:
             return "H2OContext has been stopped or hasn't been created. Call H2OContext.getOrCreate(spark) or " \
