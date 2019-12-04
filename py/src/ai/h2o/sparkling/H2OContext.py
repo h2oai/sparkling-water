@@ -193,6 +193,7 @@ class H2OContext(object):
         if verbose:
             print(h2o_context)
 
+        return h2o_context
 
     def stop(self):
         try:
