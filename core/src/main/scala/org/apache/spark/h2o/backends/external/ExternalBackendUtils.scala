@@ -18,6 +18,8 @@
 package org.apache.spark.h2o.backends.external
 
 import org.apache.spark.SparkEnv
+import java.io.File
+
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendUtils}
 import org.apache.spark.h2o.utils.NodeDesc
@@ -42,6 +44,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
     }
     H2O.CLOUD.size()
   }
+
   /**
     * Get arguments for H2O client
     *
@@ -49,7 +52,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
     */
   override def getH2OClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-flatfile", conf.h2oCluster.map(clusterStr => SharedBackendUtils.saveFlatFileAsFile(clusterStr).getAbsolutePath))
+      .add("-flatfile", new File(conf.externalBackendFlatFileName().get).getAbsolutePath)
       .add(super.getH2OClientArgs(conf))
       .addIf("-watchdog_client", conf.isAutoClusterStartUsed)
       .buildArgs()

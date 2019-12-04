@@ -71,6 +71,7 @@ trait ExternalBackendConf extends SharedBackendConf {
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
+  private[backends] def externalBackendFlatFileName() = sparkConf.getOption(PROP_EXTERNAL_FLATFILE_NAME._1)
 
   /** Setters */
 
@@ -142,6 +143,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
   def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
+  private[backends] def setExternalBackendFlatFileName(name: String): H2OConf = set(PROP_EXTERNAL_FLATFILE_NAME._1, name)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -250,4 +252,7 @@ object ExternalBackendConf {
     * possible to pass -1 to ensure the indefinite timeout. The unit is milliseconds.
     */
   val PROP_EXTERNAL_BACKEND_STOP_TIMEOUT = ("spark.ext.h2o.external.backend.stop.timeout", 10000)
+
+  /** Name of file where flatfile is stored in case of automatic mode of external backend */
+  val PROP_EXTERNAL_FLATFILE_NAME = ("spark.ext.h2o.external.flatfile.name", None)
 }
