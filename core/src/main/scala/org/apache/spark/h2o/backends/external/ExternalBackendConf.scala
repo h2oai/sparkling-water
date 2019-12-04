@@ -64,6 +64,7 @@ trait ExternalBackendConf extends SharedBackendConf {
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1,
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
+  def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
   private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
   /** Setters */
@@ -130,6 +131,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalH2ODriverPortRange(portRange: String): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT_RANGE._1, portRange)
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
   def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
+  def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -230,6 +232,12 @@ object ExternalBackendConf {
     * The size of blocks representing data traffic from Spark nodes to H2O-3 nodes.
     */
   val PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE = ("spark.ext.h2o.external.communication.blockSize", "1m")
+
+  /**
+    * Timeout for confirmation from worker nodes when stopping the external backend. It is also
+    * possible to pass -1 to ensure the indefinite timeout. The unit is milliseconds.
+    */
+  val PROP_EXTERNAL_BACKEND_STOP_TIMEOUT = ("spark.ext.h2o.external.backend.stop.timeout", 10000)
 
   /** Disable version check of external H2O backend */
   val PROP_EXTERNAL_DISABLE_VERSION_CHECK = ("spark.ext.h2o.external.disable.version.check", false)
