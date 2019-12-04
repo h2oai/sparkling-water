@@ -364,12 +364,11 @@ External backend configuration properties
 |                                                       |                | suffix "k", "m" or "g" (e.g.        |
 |                                                       |                | ``450k``, ``3m``)                   |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``sspark.ext.h2o.external.backend.stop.timeout``      | ``10000ms``    | How long we wait before for proper  |
-|                                                       |                | external backend before we give     |
-|                                                       |                | up on confirmation from worker      |
-|                                                       |                | nodes. It is also possible to       |
-|                                                       |                | pass ``-1`` to ensure we wait       |
-|                                                       |                | indefinitely. The unit is           |
+| ``spark.ext.h2o.external.backend.stop.timeout``       | ``10000ms``    | Timeout for confirmation from       |
+|                                                       |                | worker nodes when stopping the      |
+|                                                       |                | external backend. It is also        |
+|                                                       |                | possible to pass ``-1`` to ensure   |
+|                                                       |                | the indefinite timeout. The unit is |
 |                                                       |                | milliseconds.                       |
 +-------------------------------------------------------+----------------+-------------------------------------+
 

@@ -234,9 +234,8 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE = ("spark.ext.h2o.external.communication.blockSize", "1m")
 
   /**
-    * How long we wait before for proper stopping of automatic mode of external backend before we give
-    * up on confirmation from worker nodes. It is also possible to pass -1 to ensure we wait indefinitely.
-    * The unit is milliseconds.
+    * Timeout for confirmation from worker nodes when stopping the external backend. It is also
+    * possible to pass -1 to ensure the indefinite timeout. The unit is milliseconds.
     */
   val PROP_EXTERNAL_BACKEND_STOP_TIMEOUT = ("spark.ext.h2o.external.backend.stop.timeout", 10000)
 
