@@ -49,9 +49,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
   }
 
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {
-    implicit val hc: H2OContext = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
 
-    //implicit val sqlContext: SQLContext = spark.sqlContext
     /**
       * Define the pipeline stages
       */
