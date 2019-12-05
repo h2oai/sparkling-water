@@ -28,10 +28,9 @@ import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils.{AzureDatabricksUtils, H2OContextUtils, LogUtil, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.util.ShutdownHookManager
 import water._
 import water.util.{Log, LogBridge, PrettyPrint}
-import water.util.PrettyPrint
-import org.apache.spark.util.ShutdownHookManager
 
 import scala.collection.mutable
 import scala.language.{implicitConversions, postfixOps}
@@ -89,10 +88,8 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
   /** H2O and Spark configuration */
   val _conf: H2OConf = backend.checkAndUpdateConf(conf).clone()
 
-  protected val shutdownHook = { () =>
-    logWarning("Spark shutdown hook called, stopping H2OContext!")
-    stop(stopSparkContext = false, stopJvm = false)
-  }
+  private var shutdownHookRef: AnyRef = _
+
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
     * otherwise it creates new H2O cluster living in Spark
@@ -106,7 +103,10 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     Log.info("")
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
-    ShutdownHookManager.addShutdownHook(10)(shutdownHook)
+    shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
+      logWarning("Spark shutdown hook called, stopping H2OContext!")
+      stop(stopSparkContext = false, stopJvm = false)
+    }
 
     if (!isRunningOnCorrectSpark(sparkContext)) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
@@ -323,7 +323,7 @@ class H2OContext private(val sparkSession: SparkSession, conf: H2OConf) extends 
     * @param stopSparkContext stop also spark context
     */
   def stop(stopSparkContext: Boolean = false): Unit = {
-    ShutdownHookManager.removeShutdownHook(shutdownHook)
+    ShutdownHookManager.removeShutdownHook(shutdownHookRef)
     stop(stopSparkContext, stopJvm = true)
   }
 
