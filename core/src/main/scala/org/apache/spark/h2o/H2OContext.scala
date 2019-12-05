@@ -308,7 +308,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean): Unit = synchronized {
     if (!stopped) {
       uiUpdateThread.interrupt()
-      if (stopSparkContext) {
+      if (stopSparkContext && !stopJvm) {
         sparkContext.stop()
       }
       // Run orderly shutdown only in case of automatic mode of external backend, because:
