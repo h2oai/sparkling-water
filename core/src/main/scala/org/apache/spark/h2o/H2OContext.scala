@@ -103,10 +103,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
   protected def initBackend(): Unit
 
-  protected val shutdownHook = { () =>
-    logWarning("Spark shutdown hook called, stopping H2OContext!")
-    stop(stopSparkContext = false, stopJvm = false)
-  }
+  private var shutdownHookRef: AnyRef = _
+
   /**
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
     * otherwise it creates new H2O cluster living in Spark
@@ -114,7 +112,10 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   def init(): H2OContext = {
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
-    ShutdownHookManager.addShutdownHook(10)(shutdownHook)
+    shutdownHookRef = ShutdownHookManager.addShutdownHook(10){ () =>
+      logWarning("Spark shutdown hook called, stopping H2OContext!")
+      stop(stopSparkContext = false, stopJvm = false)
+    }
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
@@ -332,7 +333,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * @param stopSparkContext stop also spark context
     */
   def stop(stopSparkContext: Boolean = false): Unit = {
-    ShutdownHookManager.removeShutdownHook(shutdownHook)
+    ShutdownHookManager.removeShutdownHook(shutdownHookRef)
     stop(stopSparkContext, stopJvm = true)
   }
 
