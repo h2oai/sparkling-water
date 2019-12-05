@@ -85,4 +85,6 @@ def assert_data_frames_are_identical(expected, produced):
 
 def assert_h2o_frames_are_identical(expected, produced):
     assert expected.get_frame_data() == produced.get_frame_data()
-    assert len(expected.types.items()) == len(expected.types.items().intersection(produced.types.items()))
+    expectedTypeSet = set(expected.types.items())
+    producedTypeSet = set(produced.types.items())
+    assert len(expectedTypeSet) == len(expectedTypeSet.intersection(producedTypeSet))
