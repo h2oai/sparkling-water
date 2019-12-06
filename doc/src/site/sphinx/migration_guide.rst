@@ -119,15 +119,15 @@ Default Values of Some AutoML Parameters Have Changed
 
 The default values of the following AutoML parameters have changed across all APIs.
 
-+------------------------------------+------------+-----------+
-| Parameter Name                     | Old Value  | New Value |
-+====================================+============+===========+
-| ``maxRuntimeSecs``                 | ``3600.0`` | ``0.0``   |
-+------------------------------------+------------+-----------+
-| ``keepCrossValidationPredictions`` | ``true``   | ``false`` |
-+------------------------------------+------------+-----------+
-| ``keepCrossValidationModels``      | ``true``   | ``false`` |
-+------------------------------------+------------+-----------+
++------------------------------------+------------+---------------------+
+| Parameter Name                     | Old Value  | New Value           |
++====================================+============+=====================+
+| ``maxRuntimeSecs``                 | ``3600.0`` | ``0.0`` (unlimited) |
++------------------------------------+------------+---------------------+
+| ``keepCrossValidationPredictions`` | ``true``   | ``false``           |
++------------------------------------+------------+---------------------+
+| ``keepCrossValidationModels``      | ``true``   | ``false``           |
++------------------------------------+------------+---------------------+
 
 From any previous version to 3.26.11
 ------------------------------------
