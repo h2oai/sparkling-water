@@ -16,8 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import java.util.Date
-
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
@@ -29,10 +27,8 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
-import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
-import scala.util.Random
 import scala.util.control.NoStackTrace
 
 /**
