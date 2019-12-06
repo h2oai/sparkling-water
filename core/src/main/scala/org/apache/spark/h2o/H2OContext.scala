@@ -580,8 +580,10 @@ object H2OContext extends Logging {
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
     val isExternalBackend = conf.runsInExternalClusterMode
     if (isExternalBackend && isRestApiBasedClient) {
-      if (instantiatedContext.get() != null) {
-        if (connectingToNewCluster(instantiatedContext.get(), checkedConf)) {
+      val existingContext = instantiatedContext.get()
+      if (existingContext != null) {
+        val startedManually = existingContext.conf.isManualClusterStartUsed
+        if (startedManually && connectingToNewCluster(existingContext, checkedConf)) {
           instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, checkedConf).init())
           logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }

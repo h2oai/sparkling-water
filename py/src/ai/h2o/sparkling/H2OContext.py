@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import atexit
 import h2o
 import sys
 import warnings
