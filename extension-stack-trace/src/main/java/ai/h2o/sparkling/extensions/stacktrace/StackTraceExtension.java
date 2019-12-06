@@ -1,4 +1,4 @@
-package ai.h2o.extensions.stacktrace;
+package ai.h2o.sparkling.extensions.stacktrace;
 
 import water.AbstractH2OExtension;
 import water.H2O;
