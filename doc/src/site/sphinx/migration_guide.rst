@@ -114,6 +114,21 @@ The option ``spark.ext.h2o.node.enable.web`` does not have any effect anymore fo
 backend as we required H2O Flow to be accessible on the worker nodes. The associated getters and setters do also
 not have any effect in this case.
 
+Default Values of Some AutoML Parameters Have Changed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default values of the following AutoML parameters have changed across all APIs.
+
++------------------------------------+------------+-----------+
+| Parameter Name                     | Old Value  | New Value |
++====================================+============+===========+
+| ``maxRuntimeSecs``                 | ``3600.0`` | ``0.0``   |
++------------------------------------+------------+-----------+
+| ``keepCrossValidationPredictions`` | ``true``   | ``false`` |
++------------------------------------+------------+-----------+
+| ``keepCrossValidationModels``      | ``true``   | ``false`` |
++------------------------------------+------------+-----------+
+
 From any previous version to 3.26.11
 ------------------------------------
 
