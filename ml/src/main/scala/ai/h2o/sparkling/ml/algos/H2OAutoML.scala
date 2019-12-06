@@ -169,7 +169,7 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
     includeAlgos -> Algo.values().map(_.name()),
     excludeAlgos -> Array.empty[String],
     projectName -> null, // will be automatically generated
-    maxRuntimeSecs -> 3600,
+    maxRuntimeSecs -> 0.0,
     stoppingRounds -> 3,
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
@@ -177,8 +177,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams {
     balanceClasses -> false,
     classSamplingFactors -> null,
     maxAfterBalanceSize -> 5.0f,
-    keepCrossValidationPredictions -> true,
-    keepCrossValidationModels -> true,
+    keepCrossValidationPredictions -> false,
+    keepCrossValidationModels -> false,
     maxModels -> 0
   )
 
