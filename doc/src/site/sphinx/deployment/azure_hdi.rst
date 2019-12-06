@@ -27,6 +27,7 @@ Follow the steps below to create a new H2O Artificial Intelligence for Azure HDI
       :alt: Select H2O Artificial Intelligence for HDInsight
 
 3. In the next screen, under **Basics**:
+
   - Change Cluster Type to Spark SUBST_SPARK_VERSION. (Note that Sparkling Water is currently configured to work only on Spark SUBST_SPARK_MAJOR_VERSION and above.)
   - Change Cluster Login username and password. These are used to connect to your cluster.
   - Change SSH Username and password. These are used to connect directly to the VM present in the cluster.

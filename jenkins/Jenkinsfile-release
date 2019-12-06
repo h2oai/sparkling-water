@@ -135,6 +135,7 @@ def prepareReleaseNotes(sparkMajorVersions) {
             """
         dir("doc/") {
             writeFile file: "release_notes", text: links.join("\n")
+            sh "echo >> release_notes"
             sh """
             # Get ID of this release
             jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${
