@@ -8,6 +8,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.11-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.11-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.11-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.11-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.11-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.11-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1711 <https://0xdata.atlassian.net/browse/SW-1711>`__ - Fix propagation of internal security conf in Sparkling Water
@@ -49,6 +50,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.10-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.10-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.10-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.10-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.10-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.10-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1685 <https://0xdata.atlassian.net/browse/SW-1685>`__ - Fix Propagation of Extra Properties in In Internal Backend
@@ -65,6 +67,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.9-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.9-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.9-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.9-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.9-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.9-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1676 <https://0xdata.atlassian.net/browse/SW-1676>`__ - The getGridModelsParams() Method of H2OGridSearch Returns Incorrect Values for Nested Hyper-Paremeter Types 
@@ -86,6 +89,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.8-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.8-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.8-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.8-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.8-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.8-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1670 <https://0xdata.atlassian.net/browse/SW-1670>`__ - Improve Synchronization in H2OMOJOBaseCache
@@ -110,6 +114,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.7-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.7-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.7-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.7-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.7-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.7-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1635 <https://0xdata.atlassian.net/browse/SW-1635>`__ - Update Documentation of Deploying SW to Azure HDI
@@ -128,6 +133,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.6-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.6-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.6-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.6-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.6-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.6-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1618 <https://0xdata.atlassian.net/browse/SW-1618>`__ - HamOrSparm tests return false for both predictions in scripts tests
@@ -162,6 +168,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.5-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.5-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.5-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.5-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.5-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.5-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1570 <https://0xdata.atlassian.net/browse/SW-1570>`__ - Fix typo contribution -&gt; contributions on SHAPLY documentation page
@@ -200,7 +207,7 @@ Downloads:
         
    -  `SW-1564 <https://0xdata.atlassian.net/browse/SW-1564>`__ - Create  gradle task to build scala image for kubernetes
    -  `SW-1573 <https://0xdata.atlassian.net/browse/SW-1573>`__ - Remove use of deprecated option spark.ext.h2o.external.cluster.num.h2o.nodes
-   -  `SW-1582 <https://0xdata.atlassian.net/browse/SW-1582>`__ - Make sure H2OGLM API is consistent with others and does not use the labmda_ hack
+   -  `SW-1582 <https://0xdata.atlassian.net/browse/SW-1582>`__ - Make sure H2OGLM API is consistent with others and does not use the ``labmda_`` hack
    -  `SW-1591 <https://0xdata.atlassian.net/browse/SW-1591>`__ - Don&#39;t use strings to define algo name
    -  `SW-1597 <https://0xdata.atlassian.net/browse/SW-1597>`__ - Add a note to documentation informing that terraform template is available only for Spark 2.4
    -  `SW-1613 <https://0xdata.atlassian.net/browse/SW-1613>`__ - Upgrade H2O to 3.26.0.4
@@ -229,6 +236,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.3-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.3-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.3-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.3-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.3-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.3-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1477 <https://0xdata.atlassian.net/browse/SW-1477>`__ - Fix bug with setting init on KMeans
@@ -308,6 +316,7 @@ Downloads:
    - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.2-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.2-2.2/index.html>`__
    - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.2-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.2-2.3/index.html>`__
    - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.2-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.2-2.4/index.html>`__
+
 -  Bug
         
    -  `SW-1337 <https://0xdata.atlassian.net/browse/SW-1337>`__ - Restarting h2o cluster makes all Spark Sessions connected to it unusable
