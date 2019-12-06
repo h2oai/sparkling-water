@@ -92,26 +92,6 @@ test {
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
-// Add additional source sets for Java
-sourceSets {
-    main {
-        scala {
-            srcDirs += ["src/main/java"]
-        }
-        java {
-            srcDirs = []
-        }
-    }
-    test {
-        scala {
-            srcDirs += ["src/test/java"]
-        }
-        java {
-            srcDirs = []
-        }
-    }
-}
-
 task resolveTestRuntimeDependencies {
     doLast {
         project.configurations.testRuntime.resolve()
@@ -132,7 +112,7 @@ task checkScalaTestEnv {
             throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_EXTENDED_JAR property is required.
 
 Please set it, for example as:
-export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
+export H2O_EXTENDED_JAR=`./gradlew -PdoExtend -q extendJar -PdownloadH2O`
                                   """)
         }
     }
@@ -148,4 +128,3 @@ check.dependsOn(checkScalaTestEnv)
 
 // Enable scalastyle
 apply from: "$rootDir/gradle/scalastyle.gradle"
-
