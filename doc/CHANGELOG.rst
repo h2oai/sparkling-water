@@ -1,6 +1,47 @@
 Change Log
 ==========
 
+v3.26.11 (2019-12-06)
+---------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.11-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.26.11-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.11-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.26.11-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.11-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.26.11-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.11-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.26.11-2.4/index.html>`__
+-  Bug
+        
+   -  `SW-1711 <https://0xdata.atlassian.net/browse/SW-1711>`__ - Fix propagation of internal security conf in Sparkling Water
+   -  `SW-1732 <https://0xdata.atlassian.net/browse/SW-1732>`__ - Iimplement shutdown hook to ensure H2O will go down on normal stop of Spark
+   -  `SW-1739 <https://0xdata.atlassian.net/browse/SW-1739>`__ - Fix target encoder multiline doc descriptions
+   -  `SW-1755 <https://0xdata.atlassian.net/browse/SW-1755>`__ - Don&#39;t need to stop worker nodes in internal backend, spark takes care of it as it shutdowns the executors
+   -  `SW-1756 <https://0xdata.atlassian.net/browse/SW-1756>`__ - externalCommunicationBlockSizeAsBytes is missing on H2OConf in python
+   -  `SW-1757 <https://0xdata.atlassian.net/browse/SW-1757>`__ - Fix PipelinePredictionTest and Regenerate Reference Results
+   -  `SW-1761 <https://0xdata.atlassian.net/browse/SW-1761>`__ - Fix deadlock when user explicitly calls hc.stop()
+                
+-  New Feature
+        
+   -  `SW-1764 <https://0xdata.atlassian.net/browse/SW-1764>`__ - Upgrade H2O to 3.26.0.11
+                
+-  Improvement
+        
+   -  `SW-1646 <https://0xdata.atlassian.net/browse/SW-1646>`__ - Run H2O Nodes With Security Parameters
+   -  `SW-1687 <https://0xdata.atlassian.net/browse/SW-1687>`__ - Expose Offset Column in Supervised Algorithms
+   -  `SW-1705 <https://0xdata.atlassian.net/browse/SW-1705>`__ - Deprecate `spark.ext.h2o.client.flow.extra.http.headers`
+   -  `SW-1717 <https://0xdata.atlassian.net/browse/SW-1717>`__ - Correctness Tests for Usage of &#39;offsetCol&#39; with H2OGBM
+   -  `SW-1737 <https://0xdata.atlassian.net/browse/SW-1737>`__ - Ensure the client has full flatfile in external backend
+                
+-  Engineering Story
+        
+   -  `SW-1702 <https://0xdata.atlassian.net/browse/SW-1702>`__ - Upgrade to Gradle 5.6.4
+   -  `SW-1706 <https://0xdata.atlassian.net/browse/SW-1706>`__ - Put h2o-security package into sparkling water assembly
+   -  `SW-1708 <https://0xdata.atlassian.net/browse/SW-1708>`__ - Simplify distribution of security files
+   -  `SW-1710 <https://0xdata.atlassian.net/browse/SW-1710>`__ - Enable client mode in Sparkling Water (needs to be done explictly)
+   -  `SW-1731 <https://0xdata.atlassian.net/browse/SW-1731>`__ - Deprecate h2oNodeWebEnabled for external backend
+   -  `SW-1735 <https://0xdata.atlassian.net/browse/SW-1735>`__ - Add job to test against rel and master branch of H2O
+   -  `SW-1736 <https://0xdata.atlassian.net/browse/SW-1736>`__ - Create nightly job where we build sparkling water against h2o branches
+   -  `SW-1738 <https://0xdata.atlassian.net/browse/SW-1738>`__ - Ensure benchmarks are not run as part of regular build
+                
+                            
 v3.26.10 (2019-11-07)
 ---------------------
 Downloads:
