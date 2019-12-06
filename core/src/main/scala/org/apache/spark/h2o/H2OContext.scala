@@ -87,7 +87,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   private var clientConnected = false
 
   /** Used backend */
-  val backend: SparklingBackend = if (conf.runsInExternalClusterMode) {
+  protected val backend: SparklingBackend = if (conf.runsInExternalClusterMode) {
     new ExternalH2OBackend(this)
   } else {
     new InternalH2OBackend(this)
@@ -109,7 +109,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
     * otherwise it creates new H2O cluster living in Spark
     */
-  def init(): H2OContext = {
+  protected def init(): H2OContext = {
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
     shutdownHookRef = ShutdownHookManager.addShutdownHook(10){ () =>
