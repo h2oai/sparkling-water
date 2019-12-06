@@ -268,3 +268,25 @@ class H2OTypeConverters(object):
                 raise TypeError("Invalid type.")
 
         return convert
+
+    @staticmethod
+    def toDictionaryWithFloatElements():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            elif isinstance(value, JavaObject):
+                keys = [k for k in value.keySet().toArray()]
+                map = {}
+                for k in keys:
+                    map[k] = [TypeConverters.toFloat(v) for v in value.get(k)]
+                return map
+            elif isinstance(value, dict):
+                keys = value.keys()
+                map = {}
+                for k in keys:
+                    map[k] = TypeConverters.toFloat(value[k])
+                return map
+            else:
+                raise TypeError("Invalid type.")
+
+        return convert

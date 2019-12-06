@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
@@ -79,6 +80,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.build_control.max_after_balance_size = getMaxAfterBalanceSize()
     spec.build_control.keep_cross_validation_predictions = getKeepCrossValidationPredictions()
     spec.build_control.keep_cross_validation_models = getKeepCrossValidationModels()
+    addMonotoneConstraints(spec)
 
     val aml = AutoML.startAutoML(spec)
 
@@ -99,6 +101,15 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       Identifiable.randomUID(aml.leader()._parms.algoName()),
       modelSettings,
       internalFeatureCols)
+  }
+
+  private def addMonotoneConstraints(spec: AutoMLBuildSpec) = {
+    val monotoneConstraints = getMonotoneConstraintsAsKeyValuePairs()
+    if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
+      val builder = AutoMLCustomParameters.create()
+      builder.add("monotone_constraints", monotoneConstraints)
+      spec.build_models.algo_parameters = builder.build()
+    }
   }
 
   private def determineIncludedAlgos(): Array[Algo] = {
@@ -133,7 +144,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
 object H2OAutoML extends H2OParamsReadable[H2OAutoML]
 
-trait H2OAutoMLParams extends H2OCommonSupervisedParams {
+trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstraints {
 
   //
   // Param definitions
