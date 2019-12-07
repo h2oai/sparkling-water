@@ -9,4 +9,5 @@ dependencies {
         exclude(group: "net.java.dev.jets3t", module: "jets3t")
         exclude(group: "commons-collections", module: "commons-collections")
     }
+    compile "org.scala-lang:scala-library:${scalaVersion}"
 }
