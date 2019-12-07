@@ -69,10 +69,9 @@ ext {
             project(':sparkling-water-benchmarks'),
             project(':sparkling-water-macros'),
             project(':sparkling-water-utils'),
-            project(':sparkling-water-scoring')
-    ]
-    javaProjects = [
+            project(':sparkling-water-scoring'),
             project(':sparkling-water-extension-stack-trace')
+
     ]
     pythonProjects = [
             project(':sparkling-water-py')
@@ -197,12 +196,6 @@ configure(subprojects) { project ->
         apply from: "$rootDir/gradle/r.gradle"
     }
 
-    if (project in javaProjects) {
-        apply plugin: 'java'
-
-        sourceCompatibility = minSupportedJavaVersion
-        targetCompatibility = minSupportedJavaVersion
-    }
     // All subprojects needs Spark support
     apply from: "$rootDir/gradle/spark.gradle"
 
