@@ -16,8 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import java.util.Date
-
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
@@ -29,10 +27,8 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
-import water.Key
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
-import scala.util.Random
 import scala.util.control.NoStackTrace
 
 /**
@@ -67,12 +63,10 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredCols()
-    val sortMetric = getSortMetric()
-    spec.input_spec.sort_metric = if (sortMetric == "AUTO") null else sortMetric
+    spec.input_spec.sort_metric = getSortMetric()
     spec.build_models.include_algos = determineIncludedAlgos()
     spec.build_models.exclude_algos = null
-    val projectName = getProjectName()
-    spec.build_control.project_name = if (projectName == null) Random.alphanumeric.take(30).mkString else projectName
+    spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
     spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
     spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
@@ -85,9 +79,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.build_control.max_after_balance_size = getMaxAfterBalanceSize()
     spec.build_control.keep_cross_validation_predictions = getKeepCrossValidationPredictions()
     spec.build_control.keep_cross_validation_models = getKeepCrossValidationModels()
-    water.DKV.put(trainFrame)
-    val aml = new AutoML(Key.make(uid), new Date(), spec)
-    AutoML.startAutoML(aml)
+
+    val aml = AutoML.startAutoML(spec)
+
     // Block until AutoML finishes
     aml.get()
 
