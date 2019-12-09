@@ -16,6 +16,7 @@
 #
 
 from pysparkling.context import H2OContext
+
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
@@ -32,6 +33,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
     assert nodesToString(nodes1) == nodesToString(nodes2)
 
+
 def testDownloadLogsAsLOG(hc):
     path = hc.download_h2o_logs(".", "LOG")
     clusterName = hc._conf.cloud_name()
@@ -40,6 +42,7 @@ def testDownloadLogsAsLOG(hc):
         lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
         assert len(lines) >= 1
 
+
 def testDownloadLogsAsZIP(hc):
     path = hc.download_h2o_logs(".", "ZIP")
     import zipfile
@@ -47,3 +50,18 @@ def testDownloadLogsAsZIP(hc):
     # The zip should have nested zip files for each node in the cluster + 1 for the parent directory
     assert len(archive.namelist()) == 2
 
+
+def stopAndStartAgain(spark):
+    import subprocess
+    def listYarnApps():
+        return subprocess.check_output("yarn application -list", shell=True)
+
+    context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    yarnAppId1 = context1._jhc.h2oContext().backend().yarnAppId().get()
+    assert yarnAppId1 in listYarnApps()
+    context1.stop()
+    assert yarnAppId1 not in listYarnApps()
+    assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
+    context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    yarnAppId2 = context2._jhc.h2oContext().backend().yarnAppId().get()
+    assert yarnAppId2 in listYarnApps()

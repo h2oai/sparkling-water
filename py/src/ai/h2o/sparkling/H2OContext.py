@@ -160,19 +160,9 @@ class H2OContext(object):
 
     def __isStopped(self):
         hc = self._jhc.h2oContext()
-        field = self.__getStoppedField()
-        return field.get(hc)
-
-    def __setStopped(self):
-        hc = self._jhc.h2oContext()
-        field = self.__getStoppedField()
-        field.set(hc, True)
-
-    def __getStoppedField(self):
-        hc = self._jhc.h2oContext()
         field = hc.getClass().getSuperclass().getDeclaredField("stopped")
         field.setAccessible(True)
-        return field
+        return field.get(hc)
 
     def __isClientConnected(self):
         hc = self._jhc.h2oContext()
@@ -191,12 +181,11 @@ class H2OContext(object):
         return field
 
     def stop(self):
-        try:
-            if self._conf.runs_in_external_cluster_mode() and self._conf.is_auto_cluster_start_used():
-                h2o.cluster().shutdown()
-        except:
-            pass
-        self.__setStopped()
+        h2o.connection().close()
+        hc = self._jhc.h2oContext()
+        scalaStopMethod = getattr(hc, "org$apache$spark$h2o$H2OContext$$stop")
+        scalaStopMethod(False, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
+
         if self._conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false":
             sys.exit()
 
