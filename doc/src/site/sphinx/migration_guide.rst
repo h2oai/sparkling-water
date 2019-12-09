@@ -107,12 +107,15 @@ The configuration property ``spark.ext.h2o.client.flow.extra.http.headers`` was 
 to ``spark.ext.h2o.flow.extra.http.headers`` since Flow UI can also run on H2O nodes and the value of the property is
 also propagated to H2O nodes since the major version ``3.28.0.1-1``.
 
-Automatic mode of External Backend now keeps H2O Flow accessible on worker nodes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+External Backend now keeps H2O Flow accessible on worker nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The option ``spark.ext.h2o.node.enable.web`` does not have any effect anymore for automatic mode of external
 backend as we required H2O Flow to be accessible on the worker nodes. The associated getters and setters do also
 not have any effect in this case.
+
+It is also required that the users of manual mode of external backend
+keep REST api available on all worker nodes. In particular, the H2O option ``-disable_web`` can't be specified
+when starting H2O.
 
 Default Values of Some AutoML Parameters Have Changed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
