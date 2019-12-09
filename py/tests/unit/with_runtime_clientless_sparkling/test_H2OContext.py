@@ -52,7 +52,7 @@ def testDownloadLogsAsZIP(hc):
     assert len(archive.namelist()) == 2
 
 
-def stopAndStartAgain(spark):
+def testStopAndStartAgain(spark):
     import subprocess
     def listYarnApps():
         return subprocess.check_output("yarn application -list", shell=True)
@@ -68,7 +68,7 @@ def stopAndStartAgain(spark):
     assert yarnAppId2 in listYarnApps()
 
 
-def worksConversionAfterNewlyStartedContext(spark):
+def testConversionWorksAfterNewlyStartedContext(spark):
     context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     context1.stop()
 
