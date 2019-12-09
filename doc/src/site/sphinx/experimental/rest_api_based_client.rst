@@ -29,9 +29,9 @@ anymore for the users.
 The rest of the API also remains unaffected, except that the PySparkling Algo API is not currently supported in the
 first roll-out, but will follow up as soon as possible.
 
-For this approach to work, all nodes in the external H2O cluster has to have Rest API enabled (enabled web interface). This
-is done automatically for the users of automatic backend. The users of manual backend must make sure that they
-don't the following option to the starting command ``-disable_web``.
+For this approach to work, all nodes in the external H2O cluster have to have Rest API enabled (enabled web interface). This
+is done automatically in case of the automatic backend. In case of the manual backend, the users must make sure that they
+don't pass the following option to the starting command ``-disable_web``.
 Extended H2O Jars
 ~~~~~~~~~~~~~~~~~
 We removed the requirement of using extended H2O jars. So in both manual and automatic mode of the external backend you can
