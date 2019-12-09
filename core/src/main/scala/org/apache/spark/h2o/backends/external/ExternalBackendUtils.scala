@@ -47,11 +47,17 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
     * @return array of H2O client arguments.
     */
   override def getH2OClientArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
-      .add("-flatfile", new File(conf.externalBackendFlatFileName().get).getAbsolutePath)
+    val builder = new ArgumentBuilder()
       .add(super.getH2OClientArgs(conf))
       .addIf("-watchdog_client", conf.isAutoClusterStartUsed)
-      .buildArgs()
+
+    if (conf.isAutoClusterStartUsed) {
+      builder.add("-flatfile", new File(conf.externalBackendFlatFileName().get).getAbsolutePath)
+    } else {
+      builder.add("-flatfile", conf.h2oCluster.map(clusterStr => saveFlatFileAsFile(clusterStr).getAbsolutePath))
+    }
+    builder.buildArgs()
+
   }
 
   def prepareExpectedTypes(classes: Array[Class[_]]): Array[Byte] = {
