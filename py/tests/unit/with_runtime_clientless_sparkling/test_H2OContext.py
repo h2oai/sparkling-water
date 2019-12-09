@@ -17,6 +17,7 @@
 
 from pysparkling.context import H2OContext
 
+from tests import unit_test_utils
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
@@ -65,3 +66,15 @@ def stopAndStartAgain(spark):
     context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     yarnAppId2 = context2._jhc.h2oContext().backend().yarnAppId().get()
     assert yarnAppId2 in listYarnApps()
+
+
+def worksConversionAfterNewlyStartedContext(spark):
+    context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    context1.stop()
+
+    context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
+    h2o_frame = context2.as_h2o_frame(rdd)
+    assert h2o_frame[0, 0] == 0.5
+    assert h2o_frame[1, 0] == 1.3333333333
+    unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
