@@ -275,17 +275,9 @@ class H2OTypeConverters(object):
             if value is None:
                 raise TypeError("None is not allowed.")
             elif isinstance(value, JavaObject):
-                keys = [k for k in value.keySet().toArray()]
-                map = {}
-                for k in keys:
-                    map[k] = TypeConverters.toFloat(value[k])
-                return map
+                return {k: TypeConverters.toFloat(value[k]) for k in value.keySet().toArray()}
             elif isinstance(value, dict):
-                keys = value.keys()
-                map = {}
-                for k in keys:
-                    map[k] = TypeConverters.toFloat(value[k])
-                return map
+                return {k: TypeConverters.toFloat(value[k]) for k in value.keys()}
             else:
                 raise TypeError("Invalid type.")
 
