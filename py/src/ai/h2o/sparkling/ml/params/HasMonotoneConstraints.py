@@ -26,3 +26,9 @@ class HasMonotoneConstraints(Params):
         "monotoneConstraints",
         "Monotone Constraints - A key must correspond to a feature name and value could be 1 or -1",
         H2OTypeConverters.toDictionaryWithFloatElements())
+
+    def getMonotoneConstraints(self):
+        return self.getOrDefault(self.monotoneConstraints)
+
+    def setMonotoneConstraints(self, value):
+        return self._set(monotoneConstraints=value)
