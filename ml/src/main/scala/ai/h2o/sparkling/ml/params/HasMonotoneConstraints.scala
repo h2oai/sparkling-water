@@ -17,8 +17,12 @@
 
 package ai.h2o.sparkling.ml.params
 
+import java.util
+
 import hex.KeyValue
 import org.apache.spark.ml.param.Params
+
+import collection.JavaConverters._
 
 trait HasMonotoneConstraints extends Params {
   private val monotoneConstraints = new DictionaryParam(
@@ -26,11 +30,11 @@ trait HasMonotoneConstraints extends Params {
     "monotoneConstraints",
     "A key must correspond to a feature name and value could be 1 or -1")
 
-  setDefault(monotoneConstraints -> Map.empty)
+  setDefault(monotoneConstraints -> new util.HashMap[String, Double]())
 
-  def getMonotoneConstraints(): Map[String, Double] = $(monotoneConstraints)
+  def getMonotoneConstraints(): Map[String, Double] = $(monotoneConstraints).asScala.toMap
 
-  def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value)
+  def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value.asJava)
 
   protected def getMonotoneConstraintsAsKeyValuePairs(): Array[KeyValue] = {
     val constraints = getMonotoneConstraints()
