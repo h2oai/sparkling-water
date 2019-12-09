@@ -34,7 +34,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
 def testDownloadLogsAsLOG(hc):
     path = hc.download_h2o_logs(".", "LOG")
-    clusterName = hc.conf.cloud_name()
+    clusterName = hc._conf.cloud_name()
 
     with open(path, 'r') as f:
         lines = filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines())
@@ -45,5 +45,5 @@ def testDownloadLogsAsZIP(hc):
     import zipfile
     archive = zipfile.ZipFile(path, 'r')
     # The zip should have nested zip files for each node in the cluster + 1 for the parent directory
-    assert len(archive.namelist()) == conf.cluster_size() + 1
+    assert len(archive.namelist()) == 2
 
