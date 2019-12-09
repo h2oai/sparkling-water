@@ -134,7 +134,7 @@ def testMonotoneConstraintsGetProperlyPropagatedToJavaBackend():
     gbm = H2OGBM(monotoneConstraints={"District": -1, "Group": 1})
 
     gbm._transfer_params_to_java()
-    constraints = gbm._java_obj.getMonotoneContraints()
+    constraints = gbm._java_obj.getMonotoneConstraints()
 
     assert constraints.getOrElse("District", 0.0) == -1.0
     assert constraints.getOrElse("Group", 0.0) == 1.0
