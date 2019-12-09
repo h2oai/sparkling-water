@@ -38,7 +38,7 @@ trait HasMonotoneConstraints extends Params {
       null
     } else {
       getMonotoneConstraints().map {
-        case key -> value => new KeyValue(key, value)
+        case (key, value) => new KeyValue(key, value)
       }.toArray
     }
   }
