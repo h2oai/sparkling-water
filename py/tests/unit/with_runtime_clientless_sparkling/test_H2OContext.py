@@ -37,7 +37,7 @@ def testDownloadLogsAsLOG(hc):
     clusterName = hc._conf.cloud_name()
 
     with open(path, 'r') as f:
-        lines = filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines())
+        lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
         assert len(lines) >= 1
 
 def testDownloadLogsAsZIP(hc):
