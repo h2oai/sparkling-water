@@ -19,9 +19,10 @@ from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OCommonSupervisedParams import H2OCommonSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 
 
-class H2OAutoMLParams(H2OCommonSupervisedParams):
+class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
     ##
     # Param definitions
     ##
