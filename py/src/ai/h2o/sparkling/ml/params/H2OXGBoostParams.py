@@ -20,9 +20,10 @@ from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 
 
-class H2OXGBoostParams(H2OAlgoSupervisedParams):
+class H2OXGBoostParams(H2OAlgoSupervisedParams, HasMonotoneConstraints):
     ##
     # Param definitions
     ##

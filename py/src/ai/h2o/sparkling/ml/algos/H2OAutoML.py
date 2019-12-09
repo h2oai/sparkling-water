@@ -58,7 +58,8 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True):
+                 namedMojoOutputColumns=True,
+                 monotoneConstraints={}):
         Initializer.load_sparkling_jar()
         super(H2OAutoML, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OAutoML", self.uid)

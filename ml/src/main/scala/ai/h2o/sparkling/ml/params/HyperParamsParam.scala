@@ -33,7 +33,6 @@ class HyperParamsParam(parent: Params, name: String, doc: String, isValid: java.
     this(parent, name, doc, _ => true)
 
   override def jsonEncode(value: java.util.Map[String, Array[AnyRef]]): String = {
-
     val encoded: JValue = if (value == null) {
       JNull
     } else {

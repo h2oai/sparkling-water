@@ -17,7 +17,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
+import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, HasMonotoneConstraints}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -39,7 +39,7 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with DeprecatableParams {
+trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with HasMonotoneConstraints with DeprecatableParams {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -366,6 +366,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with D
     parameters._skip_drop = $(skipDrop)
     parameters._gpu_id = $(gpuId)
     parameters._backend = Backend.valueOf($(backend))
+    parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
   }
 
   /**
