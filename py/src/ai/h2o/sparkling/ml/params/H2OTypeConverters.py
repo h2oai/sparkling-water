@@ -277,7 +277,7 @@ class H2OTypeConverters(object):
             elif isinstance(value, JavaObject):
                 return {k: TypeConverters.toFloat(value[k]) for k in value.keySet().toArray()}
             elif isinstance(value, dict):
-                return {k: TypeConverters.toFloat(value[k]) for k in value.keys()}
+                return {k: TypeConverters.toFloat(v) for k, v in value.items()}
             else:
                 raise TypeError("Invalid type.")
 
