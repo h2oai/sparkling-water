@@ -61,14 +61,18 @@ def withDocker(config, code) {
     }
 }
 
-def withSharedSetup(sparkMajorVersion, config, code) {
+def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
     node('docker && micro') {
         docker.withRegistry("http://harbor.h2o.ai") {
             ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
                 config.put("sparkMajorVersion", sparkMajorVersion)
 
                 cleanWs()
-                checkout scm
+                if (shouldCheckout) {
+                    checkout scm
+                } else {
+                    unstash "sw-build-${config.sparkMajorVersion}"
+                }
 
                 config.put("gradleCmd", getGradleCommand(config))
                 config.put("sparkVersion", getSparkVersion(config))
@@ -102,7 +106,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
 def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
-            withSharedSetup(sparkMajorVersion, config) {
+            withSharedSetup(sparkMajorVersion, config, true) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
@@ -140,7 +144,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
 def getNightlyStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
-            withSharedSetup(sparkMajorVersion, config) {
+            withSharedSetup(sparkMajorVersion, config, false) {
                 withDocker(config) {
                     publishNightly()(config)
                 }
@@ -240,7 +244,7 @@ def buildAndLint() {
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
                 sh "${config.gradleCmd} clean build -x check scalaStyle"
-                if (config.runIntegTests.toBoolean()) {
+                if (config.runIntegTests.toBoolean() || config.uploadNightly.toBoolean()) {
                     stash "sw-build-${config.sparkMajorVersion}"
                 }
             } finally {
@@ -422,20 +426,22 @@ def publishNightly() {
                     def version = getNightlyVersion(config)
                     def path = getS3Path(config)
                     sh  """
-                        ${config.gradleCmd} -Pversion=${version} dist -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                        echo "doRelease=true" >> gradle.properties
+                        ${config.gradleCmd} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                                             
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}/ --acl public-read
+                        ~/.local/bin/aws s3 sync dist/build/dist "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}" --acl public-read                        
                         
                         echo UPDATE LATEST POINTER
                         echo ${version} > latest
                         echo "<head>" > latest.html
                         echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
                         echo "</head>" >> latest.html
-                        ~/.local/bin/aws s3 cp latest s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html --acl public-read                   
+                        ~/.local/bin/aws s3 cp latest "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest" --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read                   
                         """
                 }
             }
