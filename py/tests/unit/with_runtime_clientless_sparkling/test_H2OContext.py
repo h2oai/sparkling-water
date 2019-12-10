@@ -55,16 +55,16 @@ def testDownloadLogsAsZIP(hc):
 def testStopAndStartAgain(spark):
     import subprocess
     def listYarnApps():
-        return subprocess.check_output("yarn application -list", shell=True)
+        return str(subprocess.check_output("yarn application -list", shell=True))
 
     context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
-    yarnAppId1 = context1._jhc.h2oContext().backend().yarnAppId().get()
+    yarnAppId1 = str(context1._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 in listYarnApps()
     context1.stop()
-    assert yarnAppId1 not in listYarnApps()
     assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
     context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
-    yarnAppId2 = context2._jhc.h2oContext().backend().yarnAppId().get()
+    yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
+    assert yarnAppId1 not in listYarnApps()
     assert yarnAppId2 in listYarnApps()
 
 
