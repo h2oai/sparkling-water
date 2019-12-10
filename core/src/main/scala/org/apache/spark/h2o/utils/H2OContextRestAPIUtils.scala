@@ -279,7 +279,12 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
         case unknown => throw new IllegalArgumentException(s"Unsupported HTTP request type $unknown")
       }
       getCredentials(conf).foreach(creds => request.setHeader(HttpHeaders.AUTHORIZATION, creds))
-      httpClient.execute(request).getEntity.getContent
+      val result = httpClient.execute(request)
+      val statusCode = result.getStatusLine.getStatusCode
+      statusCode match {
+        case 401 => throw new Exception("Unauthorized")
+      }
+      result.getEntity.getContent
     } catch {
       case cause: Exception =>
         throw new H2OClusterNodeNotReachableException(
