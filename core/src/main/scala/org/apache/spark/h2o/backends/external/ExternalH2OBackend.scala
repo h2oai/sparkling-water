@@ -112,10 +112,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       cmdToLaunch = cmdToLaunch ++ Seq[String]("-output", conf.HDFSOutputDir.get)
     }
 
-    if (conf.h2oDriverIf.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-driverif", conf.h2oDriverIf.get)
-    }
-    
     if (hc.getConf.contextPath.isDefined) {
       cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
     }
