@@ -282,10 +282,13 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
       val result = httpClient.execute(request)
       val statusCode = result.getStatusLine.getStatusCode
       statusCode match {
-        case 401 => throw new Exception("Unauthorized")
+        case 401 => throw new RestApiException("Unauthorized")
+        case _ =>
       }
       result.getEntity.getContent
     } catch {
+      case _: RestApiException => throw new H2OClusterNodeNotReachableException(
+        s"The Rest API client is not authorised to reach external H2O node ${endpoint.getHost}:${endpoint.getPort}.")
       case cause: Exception =>
         throw new H2OClusterNodeNotReachableException(
           s"External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.", cause)
@@ -293,7 +296,11 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 }
 
-class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+class RestApiException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+  def this(msg: String) = this(msg, null)
+}
+
+class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
   def this(msg: String) = this(msg, null)
 }
 
