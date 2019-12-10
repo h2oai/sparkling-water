@@ -20,7 +20,7 @@ from pyspark.context import SparkContext
 from pyspark.sql import SparkSession
 
 from ai.h2o.sparkling.Initializer import Initializer
-
+from ai.h2o.sparkling.ml.Utils import Utils
 
 class H2OConf(object):
     def __init__(self, spark):
@@ -413,8 +413,8 @@ class H2OConf(object):
         return self
 
     def set_h2o_driver_if(self, ip):
-        self._jconf.setH2ODriverIf(ip)
-        return self
+        Utils.methodDeprecationWarning("set_h2o_driver_if", "setExternalH2ODriverIf")
+        return self.setExternalH2ODriverIf(ip)
 
     def set_health_check_interval(self, interval):
         self._jconf.setHealthCheckInterval(interval)
@@ -692,7 +692,8 @@ class H2OConf(object):
         return self._get_option(self._jconf.YARNQueue())
 
     def h2o_driver_if(self):
-        return self._get_option(self._jconf.h2oDriverIf())
+        Utils.methodDeprecationWarning("h2o_driver_if", "externalH2ODriverIf")
+        return self.externalH2ODriverIf()
 
     def get_health_check_interval(self):
         return self._jconf.healthCheckInterval()

@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 import water.HeartBeatThread
@@ -49,7 +50,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
   def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
   def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
-  def h2oDriverIf = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1)
+  @DeprecatedMethod("externalH2ODriverIf")
+  def h2oDriverIf = externalH2ODriverIf
   def healthCheckInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def isKillOnUnhealthyClusterEnabled = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
   def killOnUnhealthyClusterInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
@@ -113,7 +115,8 @@ trait ExternalBackendConf extends SharedBackendConf {
 
   def setYARNQueue(queueName: String) = set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
 
-  def setH2ODriverIf(ip: String) = set(PROP_EXTERNAL_CLUSTER_DRIVER_IF._1, ip)
+  @DeprecatedMethod("setExternalH2ODriverIf")
+  def setH2ODriverIf(ip: String) = setExternalH2ODriverIf(ip)
 
   def setHealthCheckInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
 
@@ -196,9 +199,6 @@ object ExternalBackendConf {
 
   /** Yarn queue on which external cluster should be started */
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
-
-  /** Driver IP address in case of auto mode in external cluster backend */
-  val PROP_EXTERNAL_CLUSTER_DRIVER_IF = ("spark.ext.h2o.external.driver.if", None)
 
   /** Health check interval for external H2O nodes
     */
