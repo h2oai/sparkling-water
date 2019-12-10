@@ -11,7 +11,7 @@ Removal of Deprecated Methods and Classes
 
 - In Sparkling Water ``H2OConf`` API, we removed method ``h2oDriverIf`` in favor of
   ``externalH2ODriverIf`` and  ``setH2ODriverIf`` in favor of ``setExternalH2ODriverIf``. In
-  PySparkling ``H2OCOnf`` API, we removed method ``h2o_driver_if`` in favor of
+  PySparkling ``H2OConf`` API, we removed method ``h2o_driver_if`` in favor of
   ``externalH2ODriverIf`` and  ``set_h2o_driver_if`` in favor of ``setExternalH2ODriverIf``.
 
 
