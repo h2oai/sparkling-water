@@ -113,8 +113,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
     shutdownHookRef = ShutdownHookManager.addShutdownHook(10){ () =>
-      logWarning("Spark shutdown hook called, stopping H2OContext!")
-      stop(stopSparkContext = false, stopJvm = false)
+        logWarning("Spark shutdown hook called, stopping H2OContext!")
+        stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
     }
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
@@ -306,7 +306,12 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     LogUtil.setH2ONodeLogLevel(level)
   }
 
-  private def stop(stopSparkContext: Boolean, stopJvm: Boolean): Unit = synchronized {
+  private def isRestAPIBased: Boolean = conf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
+
+  private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
+    if (!inShutdownHook) {
+      ShutdownHookManager.removeShutdownHook(shutdownHookRef)
+    }
     if (!stopped) {
       uiUpdateThread.interrupt()
       if (stopSparkContext) {
@@ -316,11 +321,15 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       // In internal backend, Spark takes care of stopping executors automatically
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
-        H2O.orderlyShutdown(conf.externalBackendStopTimeout)
+        if (isRestAPIBased) {
+          H2OContextRestAPIUtils.shutdownCluster(conf)
+        } else {
+          H2O.orderlyShutdown(conf.externalBackendStopTimeout)
+        }
       }
       H2OContext.instantiatedContext.set(null)
       stopped = true
-      if (stopJvm && conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false") {
+      if (stopJvm && !isRestAPIBased) {
         H2O.exit(0)
       }
     } else {
@@ -333,8 +342,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     * @param stopSparkContext stop also spark context
     */
   def stop(stopSparkContext: Boolean = false): Unit = {
-    ShutdownHookManager.removeShutdownHook(shutdownHookRef)
-    stop(stopSparkContext, stopJvm = true)
+    stop(stopSparkContext, stopJvm = true, inShutdownHook = false)
   }
 
   def flowURL(): String = {

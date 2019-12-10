@@ -16,6 +16,8 @@
 #
 
 from pysparkling.context import H2OContext
+
+from tests import unit_test_utils
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
@@ -32,6 +34,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
     assert nodesToString(nodes1) == nodesToString(nodes2)
 
+
 def testDownloadLogsAsLOG(hc):
     path = hc.download_h2o_logs(".", "LOG")
     clusterName = hc._conf.cloud_name()
@@ -40,6 +43,7 @@ def testDownloadLogsAsLOG(hc):
         lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
         assert len(lines) >= 1
 
+
 def testDownloadLogsAsZIP(hc):
     path = hc.download_h2o_logs(".", "ZIP")
     import zipfile
@@ -47,3 +51,30 @@ def testDownloadLogsAsZIP(hc):
     # The zip should have nested zip files for each node in the cluster + 1 for the parent directory
     assert len(archive.namelist()) == 2
 
+
+def testStopAndStartAgain(spark):
+    import subprocess
+    def listYarnApps():
+        return str(subprocess.check_output("yarn application -list", shell=True))
+
+    context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    yarnAppId1 = str(context1._jhc.h2oContext().backend().yarnAppId().get())
+    assert yarnAppId1 in listYarnApps()
+    context1.stop()
+    assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
+    context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
+    assert yarnAppId1 not in listYarnApps()
+    assert yarnAppId2 in listYarnApps()
+
+
+def testConversionWorksAfterNewlyStartedContext(spark):
+    context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    context1.stop()
+
+    context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
+    rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
+    h2o_frame = context2.as_h2o_frame(rdd)
+    assert h2o_frame[0, 0] == 0.5
+    assert h2o_frame[1, 0] == 1.3333333333
+    unit_test_utils.asert_h2o_frame(h2o_frame, rdd)

@@ -18,24 +18,31 @@
 package org.apache.spark.h2o.utils
 
 import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
-import java.net.{URI, URL}
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
-import com.google.gson.{ExclusionStrategy, FieldAttributes, Gson, GsonBuilder}
+import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
+import org.apache.http.HttpHeaders
+import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
+import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.spark.h2o.H2OConf
-import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.{CloudV3, FrameChunksV3, FrameV3, FramesV3, PingV3}
+import water.api.schemas3.FrameV3.ColV3
+import water.api.schemas3._
 
-import scala.reflect.ClassTag
-import scala.reflect._
+import scala.reflect.{ClassTag, _}
 
 
 trait H2OContextRestAPIUtils extends H2OContextUtils {
+
+  def shutdownCluster(conf: H2OConf): Unit = {
+    val endpoint = getClusterEndpoint(conf)
+    update[ShutdownV3](endpoint, "3/Shutdown", conf)
+  }
 
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
     val endpoint = new URI(
@@ -186,7 +193,35 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
        suffix: String,
        conf: H2OConf,
        skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    val response = readURLContent(endpoint, suffix, conf)
+    request(endpoint, HttpGet.METHOD_NAME, suffix, conf, skippedFields)
+  }
+
+
+  /**
+    *
+    * @param endpoint An address of H2O node with exposed REST endpoint
+    * @param suffix REST relative path representing a specific call
+    * @param conf H2O conf object
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
+  private def update[ResultType : ClassTag](
+                                            endpoint: URI,
+                                            suffix: String,
+                                            conf: H2OConf,
+                                            skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+    request(endpoint, HttpPost.METHOD_NAME, suffix, conf, skippedFields)
+  }
+
+  private def request[ResultType : ClassTag](
+    endpoint: URI,
+    requestType: String,
+    suffix: String,
+    conf: H2OConf,
+    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+    val response = readURLContent(endpoint, requestType, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
 
@@ -209,31 +244,42 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
   }
 
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    val response = readURLContent(endpoint, suffix, conf)
+    val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
     val output = new BufferedOutputStream(new FileOutputStream(file))
     IOUtils.copy(response, output)
     output.close()
   }
 
   private def downloadStringURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    val response = readURLContent(endpoint, suffix, conf)
+    val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
     val output = new java.io.FileWriter(file)
     IOUtils.copy(response, output)
     output.close()
   }
 
-  private def readURLContent(endpoint: URI, suffix: String, conf: H2OConf): InputStream = {
+  private def getCredentials(conf: H2OConf): Option[String] = {
+    val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
+    field.setAccessible(true)
+    val creds = field.get(conf).asInstanceOf[Option[FlowCredentials]]
+    if (creds.isDefined) {
+      val userpass = creds.get.toString
+      Some("Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes))
+    } else {
+      None
+    }
+  }
+
+  private lazy val httpClient = new DefaultHttpClient
+
+  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
     try {
-      val connection = new URL(s"$endpoint/$suffix").openConnection
-      val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
-      field.setAccessible(true)
-      val creds = field.get(conf).asInstanceOf[Option[FlowCredentials]]
-      if (creds.isDefined) {
-        val userpass = creds.get.toString
-        val basicAuth = "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes)
-        connection.setRequestProperty("Authorization", basicAuth)
+      val request = requestType match {
+        case HttpGet.METHOD_NAME => new HttpGet(s"$endpoint/$suffix")
+        case HttpPost.METHOD_NAME => new HttpPost(s"$endpoint/$suffix")
+        case unknown => throw new IllegalArgumentException(s"Unsupported HTTP request type $unknown")
       }
-      connection.getInputStream
+      getCredentials(conf).foreach(creds => request.setHeader(HttpHeaders.AUTHORIZATION, creds))
+      httpClient.execute(request).getEntity.getContent
     } catch {
       case cause: Exception =>
         throw new H2OClusterNodeNotReachableException(
