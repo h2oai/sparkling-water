@@ -120,7 +120,6 @@ def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, datase
     gbm.train(x=["District","Group","Age"], y="Claims", training_frame=trainingFrame, offset_column="Offset")
 
     mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
-    print(mojoFile)
     mojoModel = H2OMOJOModel.createFromMojo("file://" + mojoFile)
 
     binaryModelResult = hc.as_spark_frame(gbm.predict(testingFrame))
