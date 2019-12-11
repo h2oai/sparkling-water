@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package org.apache.spark.h2o.backends.external
 
 import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
 import java.net.URI
@@ -30,6 +30,7 @@ import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.utils.{FlowCredentials, NodeDesc}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
@@ -37,7 +38,7 @@ import water.api.schemas3._
 import scala.reflect.{ClassTag, _}
 
 
-trait H2OContextRestAPIUtils extends H2OContextUtils {
+trait RestApiUtils {
 
   def shutdownCluster(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
@@ -146,16 +147,16 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
         getCloudInfoFromNode(node, conf)
         None
       } catch {
-        case _: H2OClusterNodeNotReachableException => Some(node)
+        case cause: RestApiException => Some((node, cause))
       }
     }
     if (nodesWithoutWeb.nonEmpty) {
-      throw new H2OClusterNodeNotReachableException(
+      throw new H2OClusterNotReachableException(
         s"""
     The following worker nodes are not reachable, but belong to the cluster:
     ${conf.h2oCluster.get} - ${conf.cloudName.get}:
     ----------------------------------------------
-    ${nodesWithoutWeb.map(_.ipPort()).mkString("\n    ")}""", null)
+    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""", nodesWithoutWeb.head._2)
     }
   }
 
@@ -180,34 +181,34 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
 
   /**
     *
-    * @param endpoint An address of H2O node with exposed REST endpoint
-    * @param suffix REST relative path representing a specific call
-    * @param conf H2O conf object
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
     * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
     *                      consists of the class containing the field and the field name.
     * @tparam ResultType A type that the result will be deserialized to
     * @return A deserialized object
     */
-  private def query[ResultType : ClassTag](
-       endpoint: URI,
-       suffix: String,
-       conf: H2OConf,
-       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+  private def query[ResultType: ClassTag](
+                                           endpoint: URI,
+                                           suffix: String,
+                                           conf: H2OConf,
+                                           skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, HttpGet.METHOD_NAME, suffix, conf, skippedFields)
   }
 
 
   /**
     *
-    * @param endpoint An address of H2O node with exposed REST endpoint
-    * @param suffix REST relative path representing a specific call
-    * @param conf H2O conf object
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
     * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
     *                      consists of the class containing the field and the field name.
     * @tparam ResultType A type that the result will be deserialized to
     * @return A deserialized object
     */
-  private def update[ResultType : ClassTag](
+  private def update[ResultType: ClassTag](
                                             endpoint: URI,
                                             suffix: String,
                                             conf: H2OConf,
@@ -215,12 +216,12 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     request(endpoint, HttpPost.METHOD_NAME, suffix, conf, skippedFields)
   }
 
-  private def request[ResultType : ClassTag](
-    endpoint: URI,
-    requestType: String,
-    suffix: String,
-    conf: H2OConf,
-    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+  private def request[ResultType: ClassTag](
+                                             endpoint: URI,
+                                             requestType: String,
+                                             suffix: String,
+                                             conf: H2OConf,
+                                             skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     val response = readURLContent(endpoint, requestType, suffix, conf)
     val content = IOUtils.toString(response)
     response.close()
@@ -228,7 +229,7 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
     deserialize[ResultType](content, skippedFields)
   }
 
-  private def deserialize[ResultType : ClassTag](content: String, skippedFields: Seq[(Class[_], String)]): ResultType = {
+  private def deserialize[ResultType: ClassTag](content: String, skippedFields: Seq[(Class[_], String)]): ResultType = {
     val builder = new GsonBuilder()
     val exclusionStrategy = new ExclusionStrategy() {
       override def shouldSkipField(f: FieldAttributes): Boolean = {
@@ -282,26 +283,32 @@ trait H2OContextRestAPIUtils extends H2OContextUtils {
       val result = httpClient.execute(request)
       val statusCode = result.getStatusLine.getStatusCode
       statusCode match {
-        case 401 => throw new RestApiException("Unauthorized")
+        case 401 => throw new UnauthorisedRestApiException(
+          s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} could not be reached because the client is not authorized.
+             |Please make sure you have passed valid credentials to the client.
+             |Status code $statusCode : ${result.getStatusLine.getReasonPhrase}.""".stripMargin)
         case _ =>
       }
       result.getEntity.getContent
     } catch {
-      case _: RestApiException => throw new H2OClusterNodeNotReachableException(
-        s"The Rest API client is not authorised to reach external H2O node ${endpoint.getHost}:${endpoint.getPort}.")
+      case e: RestApiException => throw e
       case cause: Exception =>
-        throw new H2OClusterNodeNotReachableException(
-          s"External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.", cause)
+        throw new RestApiNotReachableException(
+          s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.
+             |Please verify that you are passing ip and port of existing cluster node and the cluster
+             |is running with web enabled.""".stripMargin, cause)
     }
   }
 }
 
-class RestApiException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+abstract class RestApiException(msg: String, cause: Throwable) extends Exception(msg, cause) {
   def this(msg: String) = this(msg, null)
 }
 
-class H2OClusterNodeNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
+final class RestApiNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
   def this(msg: String) = this(msg, null)
 }
 
-object H2OContextRestAPIUtils extends H2OContextRestAPIUtils
+final class UnauthorisedRestApiException(msg: String) extends Exception(msg)
+
+object RestApiUtils extends RestApiUtils

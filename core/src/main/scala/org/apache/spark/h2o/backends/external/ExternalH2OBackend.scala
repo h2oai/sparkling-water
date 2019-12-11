@@ -23,7 +23,7 @@ import java.util.Properties
 import java.util.jar.JarFile
 
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-import org.apache.spark.h2o.utils.{H2OClusterNodeNotReachableException, H2OContextRestAPIUtils, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
@@ -37,7 +37,7 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with H2OContextRestAPIUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
@@ -231,12 +231,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         }
         nodes
       } catch {
-        case _: H2OClusterNodeNotReachableException =>
+        case cause : RestApiException =>
           val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-          throw new H2OClusterNodeNotReachableException(
-            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable, H2OContext has not been created.
-               |Please verify that $h2oCluster is running with web enabled and retry the context creation.
-               |If your cluster is secured, also make sure you that are providing valid credentials to the client. """.stripMargin)
+          throw new H2OClusterNotReachableException(s"External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable, H2OContext has not been created.", cause)
       }
     } else {
       val h2oClientArgs = ExternalH2OBackend.getH2OClientArgs(conf).toArray

@@ -20,7 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend
+import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiUtils}
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.converters._
@@ -322,7 +322,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
         if (isRestAPIBased) {
-          H2OContextRestAPIUtils.shutdownCluster(conf)
+          RestApiUtils.shutdownCluster(conf)
         } else {
           H2O.orderlyShutdown(conf.externalBackendStopTimeout)
         }
@@ -457,7 +457,7 @@ object H2OContext extends Logging {
 
   }
 
-  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with H2OContextRestAPIUtils {
+  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with RestApiUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
     override protected def getFlowIp(): String = flowIp
@@ -483,12 +483,12 @@ object H2OContext extends Logging {
         val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
         SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
       } catch {
-        case e: H2OClusterNodeNotReachableException =>
+        case e: H2OClusterNotReachableException =>
           H2OContext.get().head.stop()
-          throw new H2OClusterNodeNotReachableException(
+          throw new H2OClusterNotReachableException(
             s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
-               |H2OContext has been closed.
-               |Please create a new H2OContext to a healthy and reachable (web enabled) external H2O cluster.""".stripMargin, e.getCause)
+               |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
+               |external H2O cluster.""".stripMargin, e.getCause)
       }
     }
 
@@ -496,7 +496,7 @@ object H2OContext extends Logging {
 
     override protected def initBackend(): Unit = {
       backend.init(conf)
-      val uri = startFlowProxy(conf)
+      val uri = ProxyStarter.startFlowProxy(conf)
       flowIp = uri.getHost
       flowPort = uri.getPort
     }
@@ -515,7 +515,7 @@ object H2OContext extends Logging {
 
     override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
       verifyLogContainer(logContainer)
-      H2OContextRestAPIUtils.downloadLogs(destinationDir, logContainer, conf)
+      RestApiUtils.downloadLogs(destinationDir, logContainer, conf)
     }
 
     override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
@@ -563,7 +563,7 @@ object H2OContext extends Logging {
     }
 
   private def connectingToNewCluster(hc: H2OContext, newConf: H2OConf): Boolean = {
-    val newCloudV3 = H2OContextRestAPIUtils.getCloudInfo(newConf)
+    val newCloudV3 = RestApiUtils.getCloudInfo(newConf)
     val sameNodes = hc.getH2ONodes().map(_.ipPort()).sameElements(newCloudV3.nodes.map(_.ip_port))
     !sameNodes
   }
