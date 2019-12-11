@@ -14,9 +14,22 @@ Removal of Deprecated Methods and Classes
   PySparkling ``H2OConf`` API, we removed method ``h2o_driver_if`` in favor of
   ``externalH2ODriverIf`` and  ``set_h2o_driver_if`` in favor of ``setExternalH2ODriverIf``.
 
+- On PySparkling, passing authentication on ``H2OContext`` via ``auth`` param is removed in favor of methods
+  ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
+  the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
+
+- On PySparkling ``H2OConf`` API, the method ``user_name`` has been removed in favor of the ``userName`` method
+  and method ``set_user_name`` had been removed in favor of the ``setUserName`` method.
 
 From 3.26 To 3.28
 -----------------
+
+Passing Authentication in Scala
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The users of Scala who set up any form of authentication on the backend side are now required to specify credentials on the
+``H2OConf`` object via ``setUserName`` and ``setPassword``. It is also possible to specify these directly
+as Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password``.
 
 String instead of enums in Sparkling Water Algo API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

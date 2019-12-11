@@ -71,7 +71,12 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.login.conf``                       | ``None``       | Login configuration file.              |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.user.name``                        | ``None``       | Override user name for cluster.        |
+| ``spark.ext.h2o.user.name``                        | ``None``       | Username used for the backend H2O      |
+|                                                    |                | cluster and to authenticate the        |
+|                                                    |                | client against the backend.            |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.password``                         | ``None``       | Password used to authenticate the      |
+|                                                    |                | client against the backend.            |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.internal_security_conf``           | ``None``       | Path to a file containing H2O or       |
 |                                                    |                | Sparkling Water internal security      |

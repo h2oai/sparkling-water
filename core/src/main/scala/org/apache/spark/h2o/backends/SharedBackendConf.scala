@@ -46,7 +46,8 @@ trait SharedBackendConf {
   def ldapLogin = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
   def kerberosLogin = sparkConf.getBoolean(PROP_KERBEROS_LOGIN._1, PROP_KERBEROS_LOGIN._2)
   def loginConf = sparkConf.getOption(PROP_LOGIN_CONF._1)
-  def userName = sparkConf.getOption(PROP_USER_NAME._1)
+  def userName: Option[String] = sparkConf.getOption(PROP_USER_NAME._1)
+  def password: Option[String] = sparkConf.getOption(PROP_PASSWORD._1)
   def sslConf = sparkConf.getOption(PROP_SSL_CONF._1)
   def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
   def h2oNodeLogLevel = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
@@ -85,7 +86,7 @@ trait SharedBackendConf {
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
-  
+
   /** Setters */
 
   /** Generic parameters */
@@ -134,7 +135,8 @@ trait SharedBackendConf {
   def setKerberosLoginDisabled() = set(PROP_KERBEROS_LOGIN._1, false)
 
   def setLoginConf(filePath: String) = set(PROP_LOGIN_CONF._1, filePath)
-  def setUserName(username: String) = set(PROP_USER_NAME._1, username)
+  def setUserName(username: String): H2OConf = set(PROP_USER_NAME._1, username)
+  def setPassword(password: String): H2OConf = set(PROP_PASSWORD._1, password)
   def setSslConf(path: String) = set(PROP_SSL_CONF._1, path)
 
   def setAutoFlowSslEnabled() = set(PROP_AUTO_SSL_FLOW._1, true)
@@ -262,8 +264,11 @@ object SharedBackendConf {
   /** Login configuration file. */
   val PROP_LOGIN_CONF = ("spark.ext.h2o.login.conf", None)
 
-  /** Override user name for cluster. */
+  /** User name for cluster and the client authentication. */
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
+
+  /** Password for the client authentication. */
+  val PROP_PASSWORD = ("spark.ext.h2o.user.name", None)
 
   /** Path to Java KeyStore file used for the internal SSL communication. */
   val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)

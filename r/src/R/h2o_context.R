@@ -29,7 +29,14 @@ setClientConnected <- function(hc) {
 
 #' @export
 h2o_context.spark_connection <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
-  hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x))
+  inputConf <- invoke_new(x, "org.apache.spark.h2o.H2OConf", spark_context(x))
+  if (username != NA_character_) {
+    invoke(inputConf, "setUserName", username)
+  }
+  if (password != NA_character_) {
+    invoke(inputConf, "setPassword", password)
+  }
+  hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x), inputConf)
   conf = invoke(hc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
   context_path_with_slash <- invoke(conf, "get", "spark.ext.h2o.context.path",  "")

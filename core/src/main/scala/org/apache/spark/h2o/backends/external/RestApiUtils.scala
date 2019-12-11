@@ -264,11 +264,10 @@ trait RestApiUtils {
   }
 
   private def getCredentials(conf: H2OConf): Option[String] = {
-    val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
-    field.setAccessible(true)
-    val creds = field.get(conf).asInstanceOf[Option[FlowCredentials]]
-    if (creds.isDefined) {
-      val userpass = creds.get.toString
+    val username = conf.userName
+    val password = conf.password
+    if (username.isDefined && password.isDefined) {
+      val userpass = s"${username.get}:${password.get}"
       Some("Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes))
     } else {
       None

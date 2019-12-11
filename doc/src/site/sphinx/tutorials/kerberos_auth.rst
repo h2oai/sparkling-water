@@ -41,6 +41,7 @@ And later, you can create ``H2OContext`` without the configuration object as:
 .. code:: scala
 
     import org.apache.spark.h2o._
+    val conf = new H2OConf(spark).setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(spark)
 
 
@@ -49,7 +50,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setLoginConf("kerberos.conf").setUserName("username").setKerberosLoginEnabled()
+    val conf = new H2OConf(spark).setLoginConf("kerberos.conf").setKerberosLoginEnabled().setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(spark, conf)
 
 Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
@@ -72,7 +73,8 @@ And later, you can create ``H2OContext`` without the configuration object as:
 .. code:: python
 
     from pysparkling import *
-    hc = H2OContext.getOrCreate(spark, auth=("username", "password"))
+    conf = H2OConf(spark).setUserName("username").setPassword("password")
+    hc = H2OContext.getOrCreate(spark)
 
 
 Or, you can also use setters available on ``H2OConf`` as:
@@ -80,11 +82,11 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_login_conf("kerberos.conf").set_user_name("username").set_kerberos_login_enabled()
-    hc = H2OContext.getOrCreate(spark, conf, auth=("username", "password"))
+    conf = H2OConf(spark).set_login_conf("kerberos.conf").set_user_name("username").set_kerberos_login_enabled().setUserName("username").setPassword("password")
+    hc = H2OContext.getOrCreate(spark, conf)
 
 You can see that in the case of PySparkling, you need to also specify the username and password as part of the ``H2OContext`` call.
 This is required because you want to have the Python client authenticated as well.
 
 Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
-property `spark.ext.h2o.user.name` or via the method `set_user_name`.
+property `spark.ext.h2o.user.name` or via the method `setUserName`.
