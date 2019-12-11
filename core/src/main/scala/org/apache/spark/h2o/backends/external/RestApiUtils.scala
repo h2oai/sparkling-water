@@ -305,9 +305,7 @@ abstract class RestApiException(msg: String, cause: Throwable) extends Exception
   def this(msg: String) = this(msg, null)
 }
 
-final class RestApiNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
-  def this(msg: String) = this(msg, null)
-}
+final class RestApiNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause)
 
 final class RestApiUnauthorisedException(msg: String) extends RestApiException(msg)
 
