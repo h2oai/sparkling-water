@@ -283,7 +283,7 @@ trait RestApiUtils {
       val result = httpClient.execute(request)
       val statusCode = result.getStatusLine.getStatusCode
       statusCode match {
-        case 401 => throw new UnauthorisedRestApiException(
+        case 401 => throw new RestApiUnauthorisedException(
           s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} could not be reached because the client is not authorized.
              |Please make sure you have passed valid credentials to the client.
              |Status code $statusCode : ${result.getStatusLine.getReasonPhrase}.""".stripMargin)
@@ -305,10 +305,10 @@ abstract class RestApiException(msg: String, cause: Throwable) extends Exception
   def this(msg: String) = this(msg, null)
 }
 
-final class RestApiNotReachableException(msg: String, cause: Throwable) extends Exception(msg, cause) {
+final class RestApiNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
   def this(msg: String) = this(msg, null)
 }
 
-final class UnauthorisedRestApiException(msg: String) extends Exception(msg)
+final class RestApiUnauthorisedException(msg: String) extends RestApiException(msg)
 
 object RestApiUtils extends RestApiUtils
