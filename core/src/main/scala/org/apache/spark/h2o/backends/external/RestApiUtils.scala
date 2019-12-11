@@ -30,7 +30,7 @@ import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.{FlowCredentials, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
