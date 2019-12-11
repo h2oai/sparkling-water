@@ -82,7 +82,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_login_conf("kerberos.conf").set_user_name("username").set_kerberos_login_enabled().setUserName("username").setPassword("password")
+    conf = H2OConf(spark).set_login_conf("kerberos.conf").set_kerberos_login_enabled().setUserName("username").setPassword("password")
     hc = H2OContext.getOrCreate(spark, conf)
 
 You can see that in the case of PySparkling, you need to also specify the username and password as part of the ``H2OContext`` call.
