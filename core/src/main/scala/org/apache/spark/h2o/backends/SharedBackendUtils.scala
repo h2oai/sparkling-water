@@ -20,7 +20,7 @@ package org.apache.spark.h2o.backends
 import java.io.File
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.AzureDatabricksUtils
+import org.apache.spark.h2o.utils.{AzureDatabricksUtils, NodeDesc}
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.SparkSession
@@ -162,6 +162,23 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add(getExtraHttpHeaderArgs(conf))
       .add("-embedded")
       .buildArgs()
+  }
+
+  def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
+    val flatFileString = toFlatFileString(executors)
+    val flatFile = saveFlatFileAsFile(flatFileString)
+    h2oArgs.toArray ++ Array("-flatfile", flatFile.getAbsolutePath)
+  }
+
+  private def toFlatFileString(executors: Array[NodeDesc]): String = {
+    executors.map {
+      en => s"${translateHostnameToIp(en.hostname)}:${en.port}"
+    }.mkString("\n")
+  }
+
+  private def translateHostnameToIp(hostname: String): String = {
+    import java.net.InetAddress
+    InetAddress.getByName(hostname).getHostAddress
   }
 
   def getH2OWorkerAsClientArgs(conf: H2OConf): Seq[String] = {

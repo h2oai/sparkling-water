@@ -37,6 +37,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oClusterPort = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
 
   def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
+  @DeprecatedMethod
   def clientConnectionTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._2)
   def externalWriteConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_WRITE_TIMEOUT._1, PROP_EXTERNAL_WRITE_TIMEOUT._2)
   def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
@@ -68,7 +69,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
   private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
-  private[backends] def externalBackendFlatFileName() = sparkConf.getOption(PROP_EXTERNAL_FLATFILE_NAME._1)
   /** Setters */
 
   /**
@@ -90,8 +90,12 @@ trait ExternalBackendConf extends SharedBackendConf {
   }
 
   def setClusterSize(clusterSize: Int) = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
-
-  def setClientConnectionTimeout(timeout: Int) = set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
+  @DeprecatedMethod
+  def setClientConnectionTimeout(timeout: Int) = {
+    logWarning(s"Setting the ${PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1} in setClientConnectionTimeout method has not effect and is not required" +
+      s"anymore!")
+    set(PROP_EXTERNAL_CLIENT_CONNECTION_TIMEOUT._1, timeout.toString)
+  }
   def setExternalWriteConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_WRITE_TIMEOUT._1, timeout.toString)
   def setClusterStartTimeout(clusterStartTimeout: Int) = set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
   def setClusterConfigFile(path: String) = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
@@ -135,7 +139,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
   def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
-  private[backends] def setExternalBackendFlatFileName(name: String): H2OConf = set(PROP_EXTERNAL_FLATFILE_NAME._1, name)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -242,7 +245,4 @@ object ExternalBackendConf {
 
   /** Disable version check of external H2O backend */
   val PROP_EXTERNAL_DISABLE_VERSION_CHECK = ("spark.ext.h2o.external.disable.version.check", false)
-
-  /** Name of file where flatfile is stored in case of automatic mode of external backend */
-  val PROP_EXTERNAL_FLATFILE_NAME = ("spark.ext.h2o.external.flatfile.name", None)
 }
