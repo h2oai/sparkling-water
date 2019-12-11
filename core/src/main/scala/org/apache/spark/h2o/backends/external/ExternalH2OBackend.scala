@@ -223,6 +223,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     logInfo("Connecting to external H2O cluster.")
     val clusterBuildTimeout = conf.cloudTimeout
     val nodes = if (isRestApiBasedClient(hc)) {
+      lockCloud(conf)
       try {
         val nodes = getNodes(conf)
         verifyWebOpen(nodes, conf)

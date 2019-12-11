@@ -40,6 +40,11 @@ import scala.reflect.{ClassTag, _}
 
 trait RestApiUtils {
 
+  def lockCloud(conf: H2OConf): Unit = {
+    val endpoint = getClusterEndpoint(conf)
+    update[CloudLockV3](endpoint, "3/CloudLock", conf)
+  }
+
   def shutdownCluster(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
     update[ShutdownV3](endpoint, "3/Shutdown", conf)
