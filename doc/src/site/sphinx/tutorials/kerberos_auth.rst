@@ -36,7 +36,7 @@ You can pass the required properties directly as Spark properties, such as:
     --conf spark.ext.h2o.login.conf=kerberos.conf \
     --conf spark.ext.h2o.user.name=username
 
-And later, you can create ``H2OContext`` without the configuration object as:
+And later, you can create ``H2OContext`` as:
 
 .. code:: scala
 
@@ -68,7 +68,7 @@ You can pass the required properties directly as Spark properties, such as:
     --conf spark.ext.h2o.login.conf=kerberos.conf \
     --conf spark.ext.h2o.user.name=username
 
-And later, you can create ``H2OContext`` without the configuration object as:
+And later, you can create ``H2OContext`` as:
 
 .. code:: python
 
