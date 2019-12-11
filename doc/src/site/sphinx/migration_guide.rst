@@ -29,7 +29,10 @@ Passing Authentication in Scala
 
 The users of Scala who set up any form of authentication on the backend side are now required to specify credentials on the
 ``H2OConf`` object via ``setUserName`` and ``setPassword``. It is also possible to specify these directly
-as Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password``.
+as Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password``. Note: Actually only users of external
+backend need to specify these options at this moment as the external backend is using communication via REST api
+but all our documentation is using these options already as the internal backend will start using the REST api
+soon as well.
 
 String instead of enums in Sparkling Water Algo API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
