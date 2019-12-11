@@ -55,4 +55,4 @@ class Utils(object):
         if new is None:
             warnings.warn("The {} '{}' is deprecated without replacement!".format(type, old, new))
         else:
-            warnings.warn("The {}} '{}' is deprecated. Use '{}' instead!".format(type, old, new))
+            warnings.warn("The {} '{}' is deprecated. Use '{}' instead!".format(type, old, new))
