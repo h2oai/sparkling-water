@@ -30,7 +30,8 @@ trait H2OMOJOPrediction
     with H2OMOJOPredictionMultinomial
     with H2OMOJOPredictionDimReduction
     with H2OMOJOPredictionClustering
-    with H2OMOJOPredictionBinomial {
+    with H2OMOJOPredictionBinomial
+    with H2OMOJOPredictionOrdinal {
   self: H2OMOJOModel =>
 
   def extractPredictionColContent(): Column = {
@@ -44,6 +45,7 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => extractDimReductionSimplePredictionColContent()
       case ModelCategory.WordEmbedding => extractWordEmbeddingPredictionColContent()
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
+      case ModelCategory.Ordinal => extractOrdinalPredictionColContent()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -59,6 +61,7 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionPredictionUDF()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionUDF()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF()
+      case ModelCategory.Ordinal => getOrdinalPredictionUDF()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -74,6 +77,7 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionPredictionColSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
+      case ModelCategory.Ordinal => getOrdinalPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -89,6 +93,7 @@ trait H2OMOJOPrediction
       case ModelCategory.DimReduction => getDimReductionDetailedPredictionColSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingDetailedPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyDetailedPredictionColSchema()
+      case ModelCategory.Ordinal => getOrdinalDetailedPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
