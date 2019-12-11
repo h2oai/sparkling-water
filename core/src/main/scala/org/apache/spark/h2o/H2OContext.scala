@@ -20,7 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiUtils}
+import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.converters._
@@ -483,12 +483,12 @@ object H2OContext extends Logging {
         val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
         SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
       } catch {
-        case e: H2OClusterNotReachableException =>
+        case cause: RestApiException =>
           H2OContext.get().head.stop()
           throw new H2OClusterNotReachableException(
             s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
                |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
-               |external H2O cluster.""".stripMargin, e.getCause)
+               |external H2O cluster.""".stripMargin, cause)
       }
     }
 
