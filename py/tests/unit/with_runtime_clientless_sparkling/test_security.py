@@ -25,8 +25,11 @@ def testStartWithSSLAndAuthorization(spark):
     path = context.download_h2o_logs("build", "LOG")
 
     with open(path, 'r') as f:
-        lines = list(filter(lambda line: "H2O node running in encrypted mode using" in line, f.readlines()))
+        originalLines = f.readlines()
+        for line in originalLines:
+            print(line)
+        lines = list(filter(lambda line: "H2O node running in encrypted mode using" in line, originalLines))
         assert len(lines) >= 1
-        lines = list(filter(lambda line: "-hash_login" in line, f.readlines()))
+        lines = list(filter(lambda line: "-hash_login" in line, originalLines))
         assert len(lines) >= 1
     context.stop()
