@@ -17,19 +17,13 @@
 
 package org.apache.spark.h2o.utils
 
-import java.net.{InetAddress, InetSocketAddress, ServerSocket, URI}
-
+import org.apache.spark.SparkContext
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.{BuildInfo, H2OConf}
-import org.apache.spark.{SparkContext, SparkEnv}
-import org.eclipse.jetty.proxy.ProxyServlet
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
-import water.H2O
+import org.apache.spark.h2o.BuildInfo
 import water.api.ImportHiveTableHandler
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.fvec.Frame
-import water.util.{Log, LogArchiveContainer}
+import water.util.Log
 
 import scala.language.postfixOps
 
@@ -52,58 +46,6 @@ private[spark] trait H2OContextUtils extends Logging {
         logWarning(s"Desktop support is missing! Cannot open browser for $uri")
       }
     }
-  }
-
-  private def isTcpPortAvailable(port: Int): Boolean = {
-    scala.util.Try {
-      val serverSocket = new ServerSocket()
-      serverSocket.setReuseAddress(false)
-      val host = SparkEnv.get.blockManager.blockManagerId.host
-      val socketAddress = new InetSocketAddress(InetAddress.getByName(host), port)
-      serverSocket.bind(socketAddress, 1)
-      serverSocket.close()
-      true
-    }.getOrElse(false)
-  }
-
-  private def findNextFreeFlowPort(conf: H2OConf): Int = {
-    if (conf.clientWebPort == -1) {
-      var port = conf.clientBasePort
-      while (!isTcpPortAvailable(port)) {
-        logDebug(s"Tried using port $port for Flow proxy, but port was already occupied!")
-        port = port + 1
-      }
-      port
-    } else {
-      val port = conf.clientWebPort
-      if (!isTcpPortAvailable(port)) {
-        throw new RuntimeException(s"Explicitly specified client web port $port is already occupied, please specify a free port!")
-      } else {
-        port
-      }
-
-    }
-  }
-
-  protected def startFlowProxy(conf: H2OConf): URI = {
-    val port = findNextFreeFlowPort(conf)
-    val server = new Server(port)
-
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-    context.setContextPath("/")
-
-    val handler = new ServletHandler()
-    val holder = handler.addServletWithMapping(classOf[ProxyServlet.Transparent], "/*")
-
-    val cloudV3 = H2OContextRestAPIUtils.getCloudInfo(conf)
-    val ipPort = cloudV3.nodes(cloudV3.leader_idx).ip_port
-
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
-    holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
-    context.setServletHandler(handler)
-    server.setHandler(context)
-    server.start()
-    new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
   }
 
   /**

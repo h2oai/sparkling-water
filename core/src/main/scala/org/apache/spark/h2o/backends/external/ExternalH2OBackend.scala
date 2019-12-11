@@ -23,7 +23,7 @@ import java.util.Properties
 import java.util.jar.JarFile
 
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-import org.apache.spark.h2o.utils.{H2OClusterNodeNotReachableException, H2OContextRestAPIUtils, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
@@ -37,7 +37,7 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with H2OContextRestAPIUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
@@ -210,10 +210,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         conf.setClientIp(clientIp.get)
       }
     } else {
-        val clientIp = NetworkUtils.indentifyClientIp(conf.h2oClusterHost.get)
-        if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
-          conf.setClientIp(clientIp.get)
-        }
+      val clientIp = NetworkUtils.indentifyClientIp(conf.h2oClusterHost.get)
+      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+        conf.setClientIp(clientIp.get)
+      }
     }
 
     if (conf.clientIp.isEmpty) {
@@ -231,31 +231,30 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         }
         nodes
       } catch {
-        case _: H2OClusterNodeNotReachableException =>
+        case cause: RestApiException =>
           val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-          throw new H2OClusterNodeNotReachableException(
-            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable, H2OContext has not been created.
-               |Please verify that $h2oCluster is running with web enabled and retry the context creation.
-               |If your cluster is secured, also make sure you that are providing valid credentials to the client. """.stripMargin)
+          throw new H2OClusterNotReachableException(
+            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+               |H2OContext has not been created.""".stripMargin, cause)
       }
     } else {
       val h2oClientArgs = ExternalH2OBackend.getH2OClientArgs(conf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
 
-    H2OStarter.start(h2oClientArgs, false)
+      H2OStarter.start(h2oClientArgs, false)
 
-    val expectedSize = conf.clusterSize.get.toInt
-    val discoveredSize = ExternalH2OBackend.waitForCloudSize(expectedSize, clusterBuildTimeout)
+      val expectedSize = conf.clusterSize.get.toInt
+      val discoveredSize = ExternalH2OBackend.waitForCloudSize(expectedSize, clusterBuildTimeout)
       if (conf.isManualClusterStartUsed && !conf.isBackendVersionCheckDisabled()) {
         verifyVersionFromRuntime()
       }
-    if (discoveredSize < expectedSize) {
-      if (conf.isAutoClusterStartUsed) {
-        Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
-        H2O.shutdown(-1)
+      if (discoveredSize < expectedSize) {
+        if (conf.isAutoClusterStartUsed) {
+          Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+          H2O.shutdown(-1)
+        }
+        throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
       }
-      throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
-    }
 
       // Register web API for client
       RestAPIManager(hc).registerAll()
@@ -353,14 +352,14 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   }
 
   private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
-      val clientVersion = BuildInfo.H2OVersion
-      val jarFile = new JarFile(driverPath)
-      val entry = jarFile.getJarEntry("h2o.version")
-      val is = jarFile.getInputStream(entry)
-      val externalVersion = scala.io.Source.fromInputStream(is).mkString
-      jarFile.close()
-      throwWrongVersionException(clientVersion, externalVersion, Some(driverPath))
-    }
+    val clientVersion = BuildInfo.H2OVersion
+    val jarFile = new JarFile(driverPath)
+    val entry = jarFile.getJarEntry("h2o.version")
+    val is = jarFile.getInputStream(entry)
+    val externalVersion = scala.io.Source.fromInputStream(is).mkString
+    jarFile.close()
+    throwWrongVersionException(clientVersion, externalVersion, Some(driverPath))
+  }
 
   private def verifyVersionFromRuntime(): Unit = {
     val clientVersion = BuildInfo.H2OVersion
@@ -377,8 +376,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     if (clientVersion != externalVersion) {
       throw new RuntimeException(
         s"""
-        |The external H2O cluster$driverPathStr is of version $externalVersion but Sparkling Water
-        |is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR.""".stripMargin)
+           |The external H2O cluster$driverPathStr is of version $externalVersion but Sparkling Water
+           |is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR.""".stripMargin)
     }
   }
 }
