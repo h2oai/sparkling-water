@@ -5,7 +5,6 @@
 # limitations under the License.
 #
 
-import subprocess
 from pysparkling.context import H2OContext
 
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
@@ -23,8 +22,11 @@ def testStartWithSSLAndAuthorization(spark):
     conf.set_internal_secure_connections_enabled()
 
     context = H2OContext.getOrCreate(spark, conf, auth=("user", "pass"))
-    yarnAppId = str(context._jhc.h2oContext().backend().yarnAppId().get())
+    path = context.download_h2o_logs("build", "LOG")
+
+    with open(path, 'r') as f:
+        lines = list(filter(lambda line: "H2O node running in encrypted mode using" in line, f.readlines()))
+        assert len(lines) >= 1
+        lines = list(filter(lambda line: "-hash_login" in line, f.readlines()))
+        assert len(lines) >= 1
     context.stop()
-    output = str(subprocess.check_output("yarn logs -applicationId " + yarnAppId, shell=True))
-    assert "H2O node running in encrypted mode using" in output
-    assert "-hash_login" in output
