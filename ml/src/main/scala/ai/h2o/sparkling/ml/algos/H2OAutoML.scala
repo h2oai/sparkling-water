@@ -123,9 +123,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
     // Get LeaderBoard
-    val twoDimtable = aml.leaderboard().toTwoDimTable
+    val twoDimtable = aml.leaderboard().toTwoDimTable()
     val colNames = twoDimtable.getColHeaders
-    val data = aml.leaderboard().toTwoDimTable.getCellValues.map(_.map(_.toString))
+    val data = aml.leaderboard().toTwoDimTable().getCellValues.map(_.map(_.toString))
     val rows = data.map {
       Row.fromSeq(_)
     }
