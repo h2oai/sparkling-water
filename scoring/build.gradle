@@ -10,6 +10,7 @@ dependencies {
     compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
     compile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
     compile "ai.h2o:h2o-genmodel:${h2oVersion}"
+    compile "ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}"
     compile project(":sparkling-water-utils")
 }
 

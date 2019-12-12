@@ -28,7 +28,8 @@ import org.apache.spark.sql.types.{DoubleType, StructType}
 
 class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid) with H2OSupervisedMOJOParams {
 
-  def setSpecificParams(mojoModel: MojoModel): H2OSupervisedMOJOModel = {
+  override def setSpecificParams(mojoModel: MojoModel): H2OSupervisedMOJOModel = {
+    super.setSpecificParams(mojoModel)
     set(offsetCol -> mojoModel._offsetColumn)
     this
   }
@@ -68,3 +69,5 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
     }
   }
 }
+
+object H2OSupervisedMOJOModel extends H2OSpecificMOJOLoader[H2OSupervisedMOJOModel]

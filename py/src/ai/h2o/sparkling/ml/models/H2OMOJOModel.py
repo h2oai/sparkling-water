@@ -48,5 +48,11 @@ class H2OSupervisedMOJOModel(H2OMOJOModel):
         return self._java_obj.getOffsetCol()
 
 
+class H2OTreeBasedSupervisedMOJOModel(H2OSupervisedMOJOModel):
+
+    def getNumberOfTrees(self):
+        return self._java_obj.getNumberOfTrees()
+
+
 class H2OUnsupervisedMOJOModel(H2OMOJOModel):
     pass

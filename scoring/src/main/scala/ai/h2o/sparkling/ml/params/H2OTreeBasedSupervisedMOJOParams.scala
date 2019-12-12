@@ -14,21 +14,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2ODRFParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.tree.drf.DRFModel.DRFParameters
-import hex.tree.drf.{DRF, DRFModel}
-import org.apache.spark.ml.util.Identifiable
+package ai.h2o.sparkling.ml.params
+
+import org.apache.spark.ml.param.Param
 
 /**
-  * H2O DRF algorithm exposed via Spark ML pipelines.
+  * Parameters available on the tree-based supervised MOJO Model
   */
-class H2ODRF(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[DRF, DRFModel, DRFParameters] with H2ODRFParams {
+trait H2OTreeBasedSupervisedMOJOParams extends H2OMOJOAlgoSharedParams {
+  protected final val numberOfTrees = new Param[Int](this, "numberOfTrees", "Number of trees representing the model")
 
-  def this() = this(Identifiable.randomUID(classOf[H2ODRF].getSimpleName))
+  setDefault(numberOfTrees -> -1)
+
+  def getNumberOfTrees(): Int = $(numberOfTrees)
 }
-
-object H2ODRF extends H2OParamsReadable[H2ODRF]

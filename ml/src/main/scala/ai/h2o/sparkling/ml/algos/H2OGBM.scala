@@ -26,7 +26,8 @@ import org.apache.spark.ml.util.Identifiable
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
-class H2OGBM(override val uid: String) extends H2OSupervisedAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
+class H2OGBM(override val uid: String)
+  extends H2OTreeBasedSupervisedAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGBM].getSimpleName))
 }

@@ -14,21 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2ODRFParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.tree.drf.DRFModel.DRFParameters
-import hex.tree.drf.{DRF, DRFModel}
-import org.apache.spark.ml.util.Identifiable
+import ai.h2o.sparkling.ml.models.H2OTreeBasedSupervisedMOJOModel
+import hex.Model
+import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
+import org.apache.spark.sql.Dataset
 
-/**
-  * H2O DRF algorithm exposed via Spark ML pipelines.
-  */
-class H2ODRF(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[DRF, DRFModel, DRFParameters] with H2ODRFParams {
+import scala.reflect.ClassTag
 
-  def this() = this(Identifiable.randomUID(classOf[H2ODRF].getSimpleName))
+abstract class H2OTreeBasedSupervisedAlgorithm[
+  B <: H2OBaseModelBuilder : ClassTag,
+  M <: H2OBaseModel,
+  P <: Model.Parameters : ClassTag] extends H2OSupervisedAlgorithm[B, M, P] {
+
+  override def fit(dataset: Dataset[_]): H2OTreeBasedSupervisedMOJOModel = {
+    super.fit(dataset).asInstanceOf[H2OTreeBasedSupervisedMOJOModel]
+  }
 }
-
-object H2ODRF extends H2OParamsReadable[H2ODRF]

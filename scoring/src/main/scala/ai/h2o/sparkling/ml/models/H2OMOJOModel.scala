@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream
 
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
+import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.params.NullableStringParam
 import ai.h2o.sparkling.ml.utils.Utils
 import com.google.gson.{GsonBuilder, JsonElement}
@@ -29,6 +29,8 @@ import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
+import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
 import scala.collection.JavaConverters._
@@ -42,6 +44,8 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   )
 
   def getModelDetails(): String = $(modelDetails)
+
+  def setSpecificParams(mojoModel: MojoModel): H2OMOJOModel = this
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
@@ -119,11 +123,14 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojoData)
-    val model = if (mojoModel._supervised) {
-      new H2OSupervisedMOJOModel(uid).setSpecificParams(mojoModel)
-    } else {
-      new H2OUnsupervisedMOJOModel(uid)
+    val model = mojoModel match {
+      case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
+      case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
+      case _ => new H2OUnsupervisedMOJOModel(uid)
     }
+
+    model.setSpecificParams(mojoModel)
+
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
@@ -146,6 +153,17 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     // Override the feature cols with the original features as Spark sees them.
     // Internally, we expand the arrays and vectors
     model.set(model.featuresCols -> originalFeatures)
+  }
+}
+
+trait H2OSpecificMOJOLoader[T] extends H2OMOJOReadable[T] with H2OMOJOLoader[T] {
+  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T = {
+    val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)
+    mojoModel match {
+      case specificModel: T => specificModel
+      case unexpectedModel => throw new RuntimeException(s"The MOJO model can't be loaded " +
+        s"as ${this.getClass.getSimpleName}. Use ${unexpectedModel.getClass.getSimpleName} instead!")
+    }
   }
 }
 
