@@ -17,25 +17,11 @@
 
 import pytest
 from pyspark.sql import SparkSession
-from pysparkling.context import H2OContext
 
 from tests import unit_test_utils
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
 @pytest.fixture(scope="session")
 def spark(spark_conf):
     conf = unit_test_utils.get_default_spark_conf(spark_conf)
     return SparkSession.builder.config(conf=conf).getOrCreate()
-
-
-@pytest.fixture(scope="session")
-def hc(spark):
-    conf = createH2OConf(spark)
-    return H2OContext.getOrCreate(spark, conf)
-
-
-@pytest.fixture(scope="session")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
