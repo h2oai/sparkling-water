@@ -150,22 +150,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     // start external H2O cluster and log the output
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
-    import scala.sys.process._
-    val processOut = new StringBuffer()
-    val processErr = new StringBuffer()
-
-    val proc = cmdToLaunch.mkString(" ").!(ProcessLogger(
-      { msg =>
-        processOut.append(msg + "\n")
-        println(msg)
-      }, {
-        errMsg =>
-          processErr.append(errMsg + "\n")
-          println(errMsg)
-      }))
-
-    logInfo(processOut.toString)
-    logError(processErr.toString)
+    val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
 
     val notifFile = new File(hc.getConf.clusterInfoFile.get)
     if (!notifFile.exists()) {
@@ -234,6 +219,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       } catch {
         case cause: RestApiException =>
           val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+          if (conf.isAutoClusterStartUsed) {
+            stopExternalH2OCluster()
+          }
           throw new H2OClusterNotReachableException(
             s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
                |H2OContext has not been created.""".stripMargin, cause)
@@ -289,6 +277,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       cloudMembers
     }
     nodes
+  }
+
+  private def stopExternalH2OCluster(): Int = {
+    ExternalH2OBackend.launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
   }
 
   def startUnhealthyStateKillThread(): Unit = {

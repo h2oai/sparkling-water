@@ -89,4 +89,24 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
       }
     }
   }
+
+  protected[backends] def launchShellCommand(cmdToLaunch: Seq[String]): Int = {
+    import scala.sys.process._
+    val processOut = new StringBuffer()
+    val processErr = new StringBuffer()
+
+    val proc = cmdToLaunch.mkString(" ").!(ProcessLogger(
+      { msg =>
+        processOut.append(msg + "\n")
+        println(msg)
+      }, {
+        errMsg =>
+          processErr.append(errMsg + "\n")
+          println(errMsg)
+      }))
+
+    logInfo(processOut.toString)
+    logError(processErr.toString)
+    proc
+  }
 }
