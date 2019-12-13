@@ -20,6 +20,7 @@ package org.apache.spark.h2o.backends.external
 
 import java.io.{File, FileInputStream}
 import java.util.Properties
+import java.util.jar.JarFile
 
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
@@ -27,8 +28,10 @@ import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
-import water.init.NetworkUtils
+import water.api.RestAPIManager
+import water.init.{AbstractBuildVersion, NetworkUtils}
 import water.util.Log
+import water.{H2O, H2OStarter, MRTask}
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
@@ -82,13 +85,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       "-baseport", conf.nodeBasePort.toString,
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
-      "-sw_ext_backend",
-      "-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString
+      "-sw_ext_backend"
     )
 
-    if (!isRestApiBasedClient(hc)) {
+    if (isRestApiBasedClient(hc)) {
+      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString)
+    } else {
       cmdToLaunch = cmdToLaunch ++ Seq[String](
-        "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString
+        "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
+        "-J", "-watchdog_stop_without_client",
+        "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
+        "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString,
+        "-flatfile", conf.externalBackendFlatFileName().get
       )
     }
 
@@ -187,8 +195,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     ipPort
   }
 
-  private def prepareExternalBackend(conf: H2OConf): Unit = {
+  override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
+      if (!isRestApiBasedClient(hc) && !conf.isBackendVersionCheckDisabled()) {
+        // For automatic mode we can check the driver version early
+        verifyVersionFromDriverJAR(conf.h2oDriverPath.get)
+      }
       // start h2o instances on yarn
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchH2OOnYarn(conf)
@@ -207,39 +219,110 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     if (conf.clientIp.isEmpty) {
       conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
     }
-  }
 
-  private def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
-    try {
-      lockCloud(conf)
-      val nodes = getNodes(conf)
-      verifyWebOpen(nodes, conf)
-      if (!conf.isBackendVersionCheckDisabled()) {
-        verifyVersionFromRestCall(nodes)
-      }
-      nodes
-    } catch {
-      case cause: RestApiException =>
-        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-        throw new H2OClusterNotReachableException(
-          s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
-             |H2OContext has not been created.""".stripMargin, cause)
-    }
-  }
-
-  override def init(conf: H2OConf): Array[NodeDesc] = {
-    prepareExternalBackend(conf)
     logInfo("Connecting to external H2O cluster.")
-    val nodes = getAndVerifyWorkerNodes(conf)
-    if (!isRestApiBasedClient(hc)) {
-      ExternalH2OBackend.startH2OClient(hc, nodes)
-      cloudHealthCheckThread = ExternalH2OBackend.startUnhealthyStateCheckThread(conf)
-      cloudHealthCheckKillThread = ExternalH2OBackend.startUnhealthyStateKillThread(conf)
-      ExternalH2OBackend.verifyH2OClientCloudUp(conf)
+    val clusterBuildTimeout = conf.cloudTimeout
+    val nodes = if (isRestApiBasedClient(hc)) {
+      try {
+        lockCloud(conf)
+        val nodes = getNodes(conf)
+        verifyWebOpen(nodes, conf)
+        if (!conf.isBackendVersionCheckDisabled()) {
+          verifyVersionFromRestCall(nodes)
+        }
+        nodes
+      } catch {
+        case cause: RestApiException =>
+          val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+          throw new H2OClusterNotReachableException(
+            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+               |H2OContext has not been created.""".stripMargin, cause)
+      }
+    } else {
+      val h2oClientArgs = ExternalH2OBackend.getH2OClientArgs(conf).toArray
+      logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
+
+      H2OStarter.start(h2oClientArgs, false)
+
+      val expectedSize = conf.clusterSize.get.toInt
+      val discoveredSize = ExternalH2OBackend.waitForCloudSize(expectedSize, clusterBuildTimeout)
+      if (conf.isManualClusterStartUsed && !conf.isBackendVersionCheckDisabled()) {
+        verifyVersionFromRuntime()
+      }
+      if (discoveredSize < expectedSize) {
+        if (conf.isAutoClusterStartUsed) {
+          Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+          H2O.shutdown(-1)
+        }
+        throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
+      }
+
+      // Register web API for client
+      RestAPIManager(hc).registerAll()
+      H2O.startServingRestApi()
+      val cloudMembers = H2O.CLOUD.members().map(NodeDesc(_))
+      if (cloudMembers.length == 0) {
+        if (conf.isManualClusterStartUsed) {
+          throw new H2OClusterNotRunning(
+            s"""
+               |External H2O cluster is not running or could not be connected to. Provided configuration:
+               |  cluster name            : ${conf.cloudName.get}
+               |  cluster representative  : ${conf.h2oCluster.getOrElse("Using multi-cast discovery!")}
+               |  cluster start timeout   : ${conf.clusterStartTimeout} sec
+               |
+               |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
+               |because multi-cast communication is limited in your network. In that case, please consider starting the
+               |external H2O cluster with flatfile and set the following configuration '${
+              ExternalBackendConf.
+                PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1
+            }'
+        """.stripMargin)
+        } else {
+          throw new H2OClusterNotRunning("Problem with connecting to external H2O cluster started on yarn." +
+            "Please check the YARN logs.")
+        }
+      }
+
+      startUnhealthyStateKillThread()
+      startUnhealthyStateCheckThread()
+
+      cloudMembers
     }
     nodes
   }
 
+  def startUnhealthyStateKillThread(): Unit = {
+    if (hc.getConf.isKillOnUnhealthyClusterEnabled) {
+      cloudHealthCheckKillThread = Some(new Thread {
+        override def run(): Unit = {
+          while (true) {
+            Thread.sleep(hc.getConf.killOnUnhealthyClusterInterval)
+            if (!H2O.CLOUD.healthy() && hc.getConf.isKillOnUnhealthyClusterEnabled) {
+              Log.err("Exiting! External H2O cluster not healthy!!")
+              H2O.shutdown(-1)
+            }
+          }
+        }
+      })
+      cloudHealthCheckKillThread.get.setDaemon(true)
+      cloudHealthCheckKillThread.get.start()
+    }
+  }
+
+  def startUnhealthyStateCheckThread(): Unit = {
+    cloudHealthCheckThread = Some(new Thread {
+      override def run(): Unit = {
+        while (true) {
+          Thread.sleep(hc.getConf.healthCheckInterval)
+          if (!H2O.CLOUD.healthy()) {
+            Log.err("External H2O cluster not healthy!!")
+          }
+        }
+      }
+    })
+    cloudHealthCheckThread.get.setDaemon(true)
+    cloudHealthCheckThread.get.start()
+  }
 
   override def backendUIInfo: Seq[(String, String)] = {
     Seq(
@@ -257,7 +340,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       ""
     }
 
-  private def verifyVersionFromRestCall(nodes: Array[NodeDesc]): Unit = {
+  private def verifyVersionFromRestCall(nodes: Array[NodeDesc]) = {
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
       val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
@@ -266,6 +349,36 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
           s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
              |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
       }
+    }
+  }
+
+  private def verifyVersionFromDriverJAR(driverPath: String): Unit = {
+    val clientVersion = BuildInfo.H2OVersion
+    val jarFile = new JarFile(driverPath)
+    val entry = jarFile.getJarEntry("h2o.version")
+    val is = jarFile.getInputStream(entry)
+    val externalVersion = scala.io.Source.fromInputStream(is).mkString
+    jarFile.close()
+    throwWrongVersionException(clientVersion, externalVersion, Some(driverPath))
+  }
+
+  private def verifyVersionFromRuntime(): Unit = {
+    val clientVersion = BuildInfo.H2OVersion
+    new MRTask() {
+      override def setupLocal(): Unit = {
+        val externalVersion = AbstractBuildVersion.getBuildVersion.projectVersion()
+        throwWrongVersionException(clientVersion, externalVersion)
+      }
+    }.doAllNodes()
+  }
+
+  private def throwWrongVersionException(clientVersion: String, externalVersion: String, driverPath: Option[String] = None): Unit = {
+    val driverPathStr = if (driverPath.isDefined) s"(=$driverPath)" else ""
+    if (clientVersion != externalVersion) {
+      throw new RuntimeException(
+        s"""
+           |The external H2O cluster$driverPathStr is of version $externalVersion but Sparkling Water
+           |is using version of H2O $clientVersion. Please make sure to use the corresponding extended H2O JAR.""".stripMargin)
     }
   }
 }
@@ -325,6 +438,8 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       if (conf.cloudName.isEmpty) {
         conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
       }
+
+      conf.setExternalBackendFlatFileName("flatfile_" + conf.cloudName.get)
 
       if (conf.clusterInfoFile.isEmpty) {
         conf.setClusterConfigFile("notify_" + conf.cloudName.get)

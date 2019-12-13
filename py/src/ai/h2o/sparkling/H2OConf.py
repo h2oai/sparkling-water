@@ -357,8 +357,6 @@ class H2OConf(object):
         return self
 
     def set_client_connection_timeout(self, timeout):
-        warnings.warn("The method 'set_client_connection_timeout' is deprecated without replacement!")
-
         """Set timeout for watchdog client connection in external cluster mode. If the client is not connected to the
          cluster within the specified time, the cluster kill itself.
 
@@ -663,7 +661,6 @@ class H2OConf(object):
         return self._jconf.clientCheckRetryTimeout()
 
     def client_connection_timeout(self):
-        warnings.warn("The method 'client_connection_timeout' is deprecated without replacement!")
         return self._jconf.clientConnectionTimeout()
 
     def external_write_confirmation_timeout(self):
