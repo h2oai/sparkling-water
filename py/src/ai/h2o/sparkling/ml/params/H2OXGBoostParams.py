@@ -19,11 +19,12 @@ import warnings
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
+from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 
 
-class H2OXGBoostParams(H2OAlgoSupervisedParams, HasMonotoneConstraints):
+class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints):
     ##
     # Param definitions
     ##
@@ -32,13 +33,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, HasMonotoneConstraints):
         "quietMode",
         "Quiet mode",
         H2OTypeConverters.toBoolean())
-
-    ntrees = Param(
-
-        Params._dummy(),
-        "ntrees",
-        "Number of trees",
-        H2OTypeConverters.toInt())
 
     nEstimators = Param(
         Params._dummy(),
@@ -273,9 +267,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, HasMonotoneConstraints):
     ##
     def getQuietMode(self):
         return self.getOrDefault(self.quietMode)
-
-    def getNtrees(self):
-        return self.getOrDefault(self.ntrees)
 
     def getNEstimators(self):
         return self.getOrDefault(self.nEstimators)

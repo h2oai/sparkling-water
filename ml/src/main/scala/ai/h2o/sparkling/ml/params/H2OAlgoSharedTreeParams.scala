@@ -20,12 +20,12 @@ import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
 
-trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervisedParams[P] {
+trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervisedParams[P]
+  with H2OTreeBasedSupervisedMOJOParams {
 
   //
   // Param definitions
   //
-  final val ntrees = intParam("ntrees")
   final val maxDepth = intParam("maxDepth")
   final val minRows = doubleParam("minRows")
   final val nbins = intParam("nbins")
@@ -65,8 +65,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
   //
   // Getters
   //
-  def getNtrees() = $(ntrees)
-
   def getMaxDepth() = $(maxDepth)
 
   def getMinRows() = $(minRows)

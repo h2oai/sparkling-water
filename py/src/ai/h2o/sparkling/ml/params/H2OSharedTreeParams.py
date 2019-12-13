@@ -18,19 +18,14 @@
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
+from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
-class H2OSharedTreeParams(H2OAlgoSupervisedParams):
+class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams):
     ##
     # Param definitions
     ##
-    ntrees = Param(
-        Params._dummy(),
-        "ntrees",
-        "Number of trees",
-        H2OTypeConverters.toInt())
-
     maxDepth = Param(
         Params._dummy(),
         "maxDepth",
@@ -122,9 +117,6 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams):
     ##
     # Getters
     ##
-    def getNtrees(self):
-        return self.getOrDefault(self.ntrees)
-
     def getMaxDepth(self):
         return self.getOrDefault(self.maxDepth)
 

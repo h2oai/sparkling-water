@@ -23,9 +23,9 @@ import org.apache.spark.ml.param.IntParam
   * Parameters available on the tree-based supervised MOJO Model
   */
 trait H2OTreeBasedSupervisedMOJOParams extends H2OSupervisedMOJOParams {
-  protected final val numberOfTrees = new IntParam(this, "numberOfTrees", "Number of trees representing the model")
+  protected final val ntrees = new IntParam(this, "ntrees", "Number of trees representing the model")
 
-  setDefault(numberOfTrees -> -1)
+  setDefault(ntrees -> -1)
 
-  def getNumberOfTrees(): Int = $(numberOfTrees)
+  def getNtrees(): Int = $(ntrees)
 }

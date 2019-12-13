@@ -29,9 +29,9 @@ class H2OTreeBasedSupervisedMOJOModel(override val uid: String)
     super.setSpecificParams(mojoModel)
     mojoModel match {
       case treeModel: SharedTreeMojoModel =>
-        set(numberOfTrees -> treeModel.getNTreeGroups() * treeModel.getNTreesPerGroup())
+        set(ntrees -> treeModel.getNTreeGroups() * treeModel.getNTreesPerGroup())
       case xgBoostModel: XGBoostMojoModel =>
-        set(numberOfTrees -> xgBoostModel._ntrees)
+        set(ntrees -> xgBoostModel._ntrees)
       case unexpectedModel =>
         val algorithmName = unexpectedModel._modelDescriptor.algoFullName()
         logError(s"Tried to read tree-based properties from MOJO model of $algorithmName.")

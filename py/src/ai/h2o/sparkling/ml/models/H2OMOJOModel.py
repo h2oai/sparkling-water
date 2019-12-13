@@ -50,8 +50,8 @@ class H2OSupervisedMOJOModel(H2OMOJOModel):
 
 class H2OTreeBasedSupervisedMOJOModel(H2OSupervisedMOJOModel):
 
-    def getNumberOfTrees(self):
-        return self._java_obj.getNumberOfTrees()
+    def getNtrees(self):
+        return self._java_obj.getNtrees()
 
 
 class H2OUnsupervisedMOJOModel(H2OMOJOModel):
