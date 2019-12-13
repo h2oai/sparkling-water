@@ -75,7 +75,7 @@ class H2OContext(object):
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
 
-    def __default_h2o_connect(h2o_context, **kwargs):
+    def __h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
             warnings.warn("https argument is automatically set up and the specified value will be ignored.")
         schema = h2o_context._jhc.h2oContext().getConf().getScheme()
@@ -90,7 +90,7 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark, conf=None, verbose=True, pre_create_hook=None, h2o_connect_hook=__default_h2o_connect, **kwargs):
+    def getOrCreate(spark, conf=None, verbose=True, **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -100,8 +100,6 @@ class H2OContext(object):
         :param spark: Spark Context or Spark Session
         :param conf: H2O configuration as instance of H2OConf
         :param verbose; True if verbose H2O output
-        :param pre_create_hook:  hook to reconfigure conf on given spark context
-        :param h2o_connect_hook:  hook which realize connection of h2o client
         :param kwargs:  additional parameters which are passed to h2o_connect_hook
         :return:  instance of H2OContext
         """
@@ -120,10 +118,6 @@ class H2OContext(object):
         if "auth" in kwargs:
             H2OContext.__setCreds(selected_conf, kwargs["auth"])
 
-        # Call pre_create hook
-        if pre_create_hook:
-            pre_create_hook(spark_session, selected_conf)
-
         h2o_context = H2OContext(spark_session)
 
         jvm = h2o_context._jvm  # JVM
@@ -138,8 +132,7 @@ class H2OContext(object):
 
         # Create H2O REST API client
         if not h2o_context.__isClientConnected():
-            if h2o_connect_hook:
-                h2o_connect_hook(h2o_context, verbose=verbose, **kwargs)
+            h2o_context.__h2o_connect(verbose=verbose, **kwargs)
 
         h2o_context.__setClientConnected()
 
