@@ -126,7 +126,7 @@ Removal of Deprecated Methods and Classes
   ``setKillOnUnhealthyClusterInterval``, ``healthCheckInterval`` and ``setHealthCheckInterval``. On ``H2OConf`` Python
    API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
   the following methods were removed: ``ui_update_interval``, ``set_ui_update_interval``, ``kill_on_unhealthy_cluster_interval``,
-  ``set_kill_on_unhealthy_cluster_interval``, ``health_check_interval`` and ``set_health_check_interval``. The added methods are used
+  ``set_kill_on_unhealthy_cluster_interval``, ``get_health_check_interval`` and ``set_health_check_interval``. The added methods are used
   to configure single interval which was previously specified by these 3 different methods.
 
 Change of Versioning Scheme
