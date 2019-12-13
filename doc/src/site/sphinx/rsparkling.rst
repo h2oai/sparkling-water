@@ -97,7 +97,7 @@ of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.co
    install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
 
 
-Install rsparkling
+Install RSparkling
 ------------------
 
 RSparkling can be installed from hosted R repository in Sparkling Water's S3 buckets
@@ -108,6 +108,15 @@ from the link `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_S
    # Download, install, and initialize the RSparkling
    install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
+Enable RSparkling
+-----------------
+
+The call to ``library(rsparkling)`` automatically registers the Sparkling Water extension. This needs
+to be called before the ``spark_connect`` method.
+
+.. code:: r
+
+    library(rsparkling)
 
 Starting Spark
 --------------
@@ -151,8 +160,7 @@ Using RSparkling
 H2OContext & Flow
 ~~~~~~~~~~~~~~~~~
 
-The call to ``library(rsparkling)`` automatically registers the Sparkling Water extension.
-Let's inspect the `H2OContext` for our Spark connection:
+Let's inspect the ``H2OContext`` for our Spark connection:
 
 .. code:: r
 
