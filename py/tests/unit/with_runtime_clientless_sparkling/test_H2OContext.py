@@ -38,7 +38,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
 def testDownloadLogsAsLOG(spark):
     hc = H2OContext.getOrCreate(spark, createH2OConf(spark))
-    path = hc.download_h2o_logs(".", "LOG")
+    path = hc.download_h2o_logs("build", "LOG")
     clusterName = hc._conf.cloud_name()
 
     with open(path, 'r') as f:
@@ -49,7 +49,7 @@ def testDownloadLogsAsLOG(spark):
 
 def testDownloadLogsAsZIP(spark):
     hc = H2OContext.getOrCreate(spark, createH2OConf(spark))
-    path = hc.download_h2o_logs(".", "ZIP")
+    path = hc.download_h2o_logs("build", "ZIP")
     import zipfile
     archive = zipfile.ZipFile(path, 'r')
     # The zip should have nested zip files for each node in the cluster + 1 for the parent directory
@@ -77,7 +77,6 @@ def testStopAndStartAgain(spark):
 def testConversionWorksAfterNewlyStartedContext(spark):
     context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     context1.stop()
-
     context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
     h2o_frame = context2.as_h2o_frame(rdd)

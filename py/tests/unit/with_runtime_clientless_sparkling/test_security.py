@@ -26,10 +26,20 @@ def testStartWithSSLAndAuthorization(spark):
 
     with open(path, 'r') as f:
         originalLines = f.readlines()
-        for line in originalLines:
-            print(line)
         lines = list(filter(lambda line: "H2O node running in encrypted mode using" in line, originalLines))
         assert len(lines) >= 1
         lines = list(filter(lambda line: "-hash_login" in line, originalLines))
         assert len(lines) >= 1
+    context.stop()
+
+def testFailsWhenAuthNotSpecified(spark):
+    with open('build/login.conf', 'w') as f:
+        f.write('user:pass')
+
+    conf = createH2OConf(spark)
+    # Require authentication
+    conf.set_hash_login_enabled()
+    conf.set_login_conf("build/login.conf")
+
+    context = H2OContext.getOrCreate(spark, conf)
     context.stop()
