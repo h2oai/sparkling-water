@@ -80,6 +80,10 @@ class H2OContext(object):
             warnings.warn("https argument is automatically set up and the specified value will be ignored.")
         schema = h2o_context._jhc.h2oContext().getConf().getScheme()
         kwargs["https"] = False
+
+        conf = h2o_context._conf
+        if conf.userName() and conf.password():
+            kwargs["auth"] = (conf.userName(), conf.password())
         if schema == "https":
             kwargs["https"] = True
         if h2o_context._conf.context_path() is not None:
@@ -116,7 +120,11 @@ class H2OContext(object):
         else:
             selected_conf = H2OConf(spark_session)
         if "auth" in kwargs:
-            H2OContext.__setCreds(selected_conf, kwargs["auth"])
+            warnings.warn("Providing authentication via auth field on H2OContext is deprecated. "
+                          "Please use setUserName and setPassword setters on H2OConf object.")
+            selected_conf.setUserName(kwargs["auth"][0])
+            selected_conf.setPassword(kwargs["auth"][1])
+            del kwargs["auth"]
 
         h2o_context = H2OContext(spark_session)
 
@@ -140,16 +148,6 @@ class H2OContext(object):
             print(h2o_context)
 
         return h2o_context
-
-    @staticmethod
-    def __setCreds(conf, auth):
-        jconf = conf._jconf
-        field = jconf.getClass().getDeclaredField("nonJVMClientCreds")
-        field.setAccessible(True)
-        from pyspark.ml.wrapper import JavaWrapper
-        creds = JavaWrapper._new_java_obj("org.apache.spark.h2o.utils.FlowCredentials", auth[0], auth[1])
-        someCreds = JavaWrapper._new_java_obj("scala.Some", creds)
-        field.set(jconf, someCreds)
 
     def __isStopped(self):
         hc = self._jhc.h2oContext()

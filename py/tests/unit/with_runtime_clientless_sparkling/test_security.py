@@ -32,7 +32,9 @@ def testAuth(spark):
     conf = createH2OConf(spark)
     conf.set_hash_login_enabled()
     conf.set_login_conf("build/login.conf")
-    context = H2OContext.getOrCreate(spark, conf, auth=("user", "pass"))
+    conf.setUserName("user")
+    conf.setPassword("pass")
+    context = H2OContext.getOrCreate(spark, conf)
     path = context.download_h2o_logs("build", "LOG")
 
     with open(path, 'r') as f:

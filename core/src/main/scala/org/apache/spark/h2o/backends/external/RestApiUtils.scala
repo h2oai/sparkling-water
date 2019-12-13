@@ -30,7 +30,7 @@ import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.{FlowCredentials, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
@@ -264,11 +264,10 @@ trait RestApiUtils {
   }
 
   private def getCredentials(conf: H2OConf): Option[String] = {
-    val field = conf.getClass.getDeclaredField("nonJVMClientCreds")
-    field.setAccessible(true)
-    val creds = field.get(conf).asInstanceOf[Option[FlowCredentials]]
-    if (creds.isDefined) {
-      val userpass = creds.get.toString
+    val username = conf.userName
+    val password = conf.password
+    if (username.isDefined && password.isDefined) {
+      val userpass = s"${username.get}:${password.get}"
       Some("Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes))
     } else {
       None
