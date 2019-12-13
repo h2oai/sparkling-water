@@ -28,7 +28,9 @@ from tests import unit_test_utils
 @pytest.fixture(scope="module")
 def hc(spark):
     conf = createH2OConf(spark)
-    return H2OContext.getOrCreate(spark, conf)
+    hc =  H2OContext.getOrCreate(spark, conf)
+    yield hc
+    hc.stop()
 
 
 def testDataframeToH2OFrame(spark, hc):
