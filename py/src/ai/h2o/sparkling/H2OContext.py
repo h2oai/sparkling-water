@@ -82,8 +82,8 @@ class H2OContext(object):
         kwargs["https"] = False
 
         conf = h2o_context._conf
-        if conf.userName and conf.password:
-            kwargs["auth"] = (conf.userName, conf.password)
+        if conf.userName() and conf.password():
+            kwargs["auth"] = (conf.userName(), conf.password())
         if schema == "https":
             kwargs["https"] = True
         if h2o_context._conf.context_path() is not None:
@@ -124,7 +124,7 @@ class H2OContext(object):
                           "Please use setUserName and setPassword setters on H2OConf object.")
             selected_conf.setUserName(kwargs["auth"][0])
             selected_conf.setPassword(kwargs["auth"][1])
-            kwargs.remove("auth")
+            del kwargs["auth"]
 
         h2o_context = H2OContext(spark_session)
 

@@ -268,7 +268,7 @@ object SharedBackendConf {
   val PROP_USER_NAME = ("spark.ext.h2o.user.name", None)
 
   /** Password for the client authentication. */
-  val PROP_PASSWORD = ("spark.ext.h2o.user.name", None)
+  val PROP_PASSWORD = ("spark.ext.h2o.password", None)
 
   /** Path to Java KeyStore file used for the internal SSL communication. */
   val PROP_SSL_CONF = ("spark.ext.h2o.internal_security_conf", None)
