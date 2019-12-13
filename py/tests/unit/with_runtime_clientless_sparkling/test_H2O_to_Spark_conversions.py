@@ -19,9 +19,18 @@ import h2o
 import pytest
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pysparkling.context import H2OContext
 
 from tests import generic_test_utils
 from tests import unit_test_utils
+from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+
+
+@pytest.fixture(scope="module")
+def hc(spark):
+    conf = createH2OConf(spark)
+    return H2OContext.getOrCreate(spark, conf)
+
 
 def testH2OFrameToDataframe(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))

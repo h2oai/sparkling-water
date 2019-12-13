@@ -20,8 +20,16 @@ import time
 import pytest
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pysparkling.context import H2OContext
+from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 from tests import unit_test_utils
+
+@pytest.fixture(scope="module")
+def hc(spark):
+    conf = createH2OConf(spark)
+    return H2OContext.getOrCreate(spark, conf)
+
 
 def testDataframeToH2OFrame(spark, hc):
     df = spark.sparkContext.parallelize([(num, "text") for num in range(0, 100)]).toDF()

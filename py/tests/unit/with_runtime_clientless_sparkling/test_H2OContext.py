@@ -33,23 +33,28 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
     nodes2 = map(toIpPort, getNodes(context2))
 
     assert nodesToString(nodes1) == nodesToString(nodes2)
+    context1.stop()
 
 
-def testDownloadLogsAsLOG(hc):
+def testDownloadLogsAsLOG(spark):
+    hc = H2OContext.getOrCreate(spark, createH2OConf(spark))
     path = hc.download_h2o_logs(".", "LOG")
     clusterName = hc._conf.cloud_name()
 
     with open(path, 'r') as f:
         lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
         assert len(lines) >= 1
+    hc.stop()
 
 
-def testDownloadLogsAsZIP(hc):
+def testDownloadLogsAsZIP(spark):
+    hc = H2OContext.getOrCreate(spark, createH2OConf(spark))
     path = hc.download_h2o_logs(".", "ZIP")
     import zipfile
     archive = zipfile.ZipFile(path, 'r')
     # The zip should have nested zip files for each node in the cluster + 1 for the parent directory
     assert len(archive.namelist()) == 2
+    hc.stop()
 
 
 def testStopAndStartAgain(spark):
@@ -66,6 +71,7 @@ def testStopAndStartAgain(spark):
     yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 not in listYarnApps()
     assert yarnAppId2 in listYarnApps()
+    context2.stop()
 
 
 def testConversionWorksAfterNewlyStartedContext(spark):
@@ -78,3 +84,4 @@ def testConversionWorksAfterNewlyStartedContext(spark):
     assert h2o_frame[0, 0] == 0.5
     assert h2o_frame[1, 0] == 1.3333333333
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
+    context2.stop()
