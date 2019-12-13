@@ -13,9 +13,6 @@ Removal of Deprecated Methods and Classes
   ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
 
-- On PySparkling ``H2OConf`` API, the method ``user_name`` has been removed in favor of the ``userName`` method
-  and method ``set_user_name`` had been removed in favor of the ``setUserName`` method.
-
 From 3.26 To 3.28
 -----------------
 
@@ -118,6 +115,9 @@ Removal of Deprecated Methods and Classes
   ``externalH2ODriverIf`` and  ``setH2ODriverIf`` in favor of ``setExternalH2ODriverIf``. In
   PySparkling ``H2OConf`` API, we removed method ``h2o_driver_if`` in favor of
   ``externalH2ODriverIf`` and  ``set_h2o_driver_if`` in favor of ``setExternalH2ODriverIf``.
+
+- On PySparkling ``H2OConf`` API, the method ``user_name`` has been removed in favor of the ``userName`` method
+  and method ``set_user_name`` had been removed in favor of the ``setUserName`` method.
 
 Change of Versioning Scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

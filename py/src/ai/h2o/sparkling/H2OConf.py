@@ -145,10 +145,6 @@ class H2OConf(object):
         self._jconf.setLoginConf(file)
         return self
 
-    def set_user_name(self, username):
-        warnings.warn("The method 'set_user_name' is deprecated. Use 'setUserName' instead!")
-        return self.setUserName(username)
-
     def setUserName(self, username):
         self._jconf.setUserName(username)
         return self
@@ -515,10 +511,6 @@ class H2OConf(object):
 
     def login_conf(self):
         return self._get_option(self._jconf.loginConf())
-
-    def user_name(self):
-        warnings.warn("The method 'user_name' is deprecated. Use 'userName' instead!")
-        return self.userName()
 
     def userName(self):
         return self._get_option(self._jconf.userName())
