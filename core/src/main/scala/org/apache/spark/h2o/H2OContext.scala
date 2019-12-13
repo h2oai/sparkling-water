@@ -20,7 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import org.apache.spark._
-import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
+import org.apache.spark.h2o.backends.external._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.converters._
@@ -28,9 +28,9 @@ import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.util.ShutdownHookManager
 import water._
 import water.util.PrettyPrint
-import org.apache.spark.util.ShutdownHookManager
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -67,15 +67,17 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     override def run(): Unit = {
       while (!Thread.interrupted()) {
         val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
-        if (!swHeartBeatInfo.cloudHealthy) {
-          logError("External H2O cluster not healthy!")
-        }
-        if (!swHeartBeatInfo.cloudHealthy && conf.isKillOnUnhealthyClusterEnabled) {
-          logError("Stopping external H2O cluster as it is not healthy.")
-          if (isRestAPIBased) {
-            H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-          } else {
-            H2OContext.this.stop(true)
+        if (conf.runsInExternalClusterMode) {
+          if (!swHeartBeatInfo.cloudHealthy) {
+            logError("External H2O cluster not healthy!")
+            if (conf.isKillOnUnhealthyClusterEnabled) {
+              logError("Stopping external H2O cluster as it is not healthy.")
+              if (isRestAPIBased) {
+                H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+              } else {
+                H2OContext.this.stop(true)
+              }
+            }
           }
         }
         sparkContext.listenerBus.post(swHeartBeatInfo)
