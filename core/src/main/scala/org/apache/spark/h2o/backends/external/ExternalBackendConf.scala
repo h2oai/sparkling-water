@@ -108,7 +108,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   }
 
   def setYARNQueue(queueName: String) = set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
-  
+
   def setKillOnUnhealthyClusterEnabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, true)
   def setKillOnUnhealthyClusterDisabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
 
