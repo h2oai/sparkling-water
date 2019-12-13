@@ -30,10 +30,10 @@ setClientConnected <- function(hc) {
 #' @export
 h2o_context.spark_connection <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
   inputConf <- invoke_new(x, "org.apache.spark.h2o.H2OConf", spark_context(x))
-  if (username != NA_character_) {
+  if (!is.na(username)) {
     invoke(inputConf, "setUserName", username)
   }
-  if (password != NA_character_) {
+  if (!is.na(password)) {
     invoke(inputConf, "setPassword", password)
   }
   hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x), inputConf)
