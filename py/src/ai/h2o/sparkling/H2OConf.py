@@ -411,10 +411,6 @@ class H2OConf(object):
         self._jconf.setYARNQueue(queue_name)
         return self
 
-    def set_h2o_driver_if(self, ip):
-        warnings.warn("The method 'set_h2o_driver_if' is deprecated. Use 'setExternalH2ODriverIf' instead!")
-        return self.setExternalH2ODriverIf(ip)
-
     def set_health_check_interval(self, interval):
         self._jconf.setHealthCheckInterval(interval)
         return self
@@ -692,10 +688,6 @@ class H2OConf(object):
 
     def yarn_queue(self):
         return self._get_option(self._jconf.YARNQueue())
-
-    def h2o_driver_if(self):
-        warnings.warn("The method 'h2o_driver_if' is deprecated. Use 'externalH2ODriverIf' instead!")
-        return self.externalH2ODriverIf()
 
     def get_health_check_interval(self):
         return self._jconf.healthCheckInterval()
