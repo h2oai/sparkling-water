@@ -15,17 +15,16 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.algos.{H2ODRF, H2OGBM, H2OGLM, H2OGridSearch, H2OTreeBasedSupervisedAlgorithm, H2OXGBoost}
-import ai.h2o.sparkling.ml.models.H2OTreeBasedSupervisedMOJOModel
+import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
@@ -72,7 +71,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
       .setLabelCol("CAPSULE")
     val model = algo.fit(dataset)
     val path = s"ml/build/loaded_tree_based_has_positive_number_of_trees_${algo.getClass.getSimpleName}"
-    model.save(path)
+    model.write.overwrite().save(path)
 
     val loadedModel = H2OTreeBasedSupervisedMOJOModel.load(path)
     assert(loadedModel.getNumberOfTrees() > 0)
@@ -96,8 +95,8 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
       .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("CAPSULE")
     val model = algo.fit(dataset)
-    val path = s"ml/build/load_glm_as_tree_based_algorithm_fails"
-    model.save(path)
+    val path = "ml/build/load_glm_as_tree_based_algorithm_fails"
+    model.write.overwrite().save(path)
 
     intercept[RuntimeException] {
       H2OTreeBasedSupervisedMOJOModel.load(path)

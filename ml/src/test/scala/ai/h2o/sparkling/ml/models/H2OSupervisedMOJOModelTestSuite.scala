@@ -15,20 +15,18 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
-import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
-import ai.h2o.sparkling.ml.params.NullableStringParam
+import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
@@ -140,11 +138,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
     val resultWithOffset = extractResult(model)
 
-    val offsetColField = model.getClass.getDeclaredField("offsetCol")
-    offsetColField.setAccessible(true)
-    val offsetColParam = offsetColField.get(model).asInstanceOf[NullableStringParam]
-    model.set(offsetColParam, null)
-
+    model.set(model.offsetCol, null)
     val resultWithoutOffset = extractResult(model)
 
     resultWithOffset should not equal resultWithoutOffset
@@ -164,5 +158,44 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   // Setting offset on DeepLearningMojoModel doesn't take effect.
   ignore("The MOJO model with set offsetColumn returns a different result - DeepLearning") {
     testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2ODeepLearning())
+  }
+
+  test("Load K-means as supervised model fails") {
+    val algo = new H2OKMeans()
+      .setSeed(1)
+      .setFeaturesCols("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+    val model = algo.fit(dataset)
+    val path = s"ml/build/load_kmeans_as_supervised_model_fails"
+    model.write.overwrite().save(path)
+
+    intercept[RuntimeException] {
+      H2OSupervisedMOJOModel.load(path)
+    }
+  }
+
+  def testLoadingOfSuppervisedAlgorithmWorks(
+    algo: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+    val offsetCol = "PSA"
+    algo
+      .setSeed(1)
+      .setFeaturesCols("RACE", "DPROS", "DCAPS",  "VOL", "GLEASON")
+      .setLabelCol("AGE")
+      .setOffsetCol(offsetCol)
+
+    val model = algo.fit(dataset)
+    val path = s"ml/build/load_supervised_model_${algo.getClass.getSimpleName}"
+    model.write.overwrite().save(path)
+
+    val loadedModel = H2OSupervisedMOJOModel.load(path)
+
+    assert(loadedModel.getOffsetCol() == offsetCol)
+  }
+
+  test("Load GBM as supervised model works") {
+    testLoadingOfSuppervisedAlgorithmWorks(new H2OGBM())
+  }
+
+  test("Load GLM as supervised model works") {
+    testLoadingOfSuppervisedAlgorithmWorks(new H2OGLM())
   }
 }

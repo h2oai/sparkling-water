@@ -17,13 +17,13 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.Param
+import org.apache.spark.ml.param.IntParam
 
 /**
   * Parameters available on the tree-based supervised MOJO Model
   */
-trait H2OTreeBasedSupervisedMOJOParams extends H2OMOJOAlgoSharedParams {
-  protected final val numberOfTrees = new Param[Int](this, "numberOfTrees", "Number of trees representing the model")
+trait H2OTreeBasedSupervisedMOJOParams extends H2OSupervisedMOJOParams {
+  protected final val numberOfTrees = new IntParam(this, "numberOfTrees", "Number of trees representing the model")
 
   setDefault(numberOfTrees -> -1)
 
