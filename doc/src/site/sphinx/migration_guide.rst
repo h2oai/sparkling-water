@@ -119,6 +119,16 @@ Removal of Deprecated Methods and Classes
 - On PySparkling ``H2OConf`` API, the method ``user_name`` has been removed in favor of the ``userName`` method
   and method ``set_user_name`` had been removed in favor of the ``setUserName`` method.
 
+- The configurations ``spark.ext.h2o.external.kill.on.unhealthy.interval``, ``spark.ext.h2o.external.health.check.interval``
+  and ``spark.ext.h2o.ui.update.interval`` have been removed and were replaced by a single option ``spark.ext.h2o.backend.heartbeat.interval``.
+  On ``H2OConf`` Scala API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
+  the following methods were removed: ``uiUpdateInterval``, ``setUiUpdateInterval``, ``killOnUnhealthyClusterInterval``,
+  ``setKillOnUnhealthyClusterInterval``, ``healthCheckInterval`` and ``setHealthCheckInterval``. On ``H2OConf`` Python
+   API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
+  the following methods were removed: ``ui_update_interval``, ``set_ui_update_interval``, ``kill_on_unhealthy_cluster_interval``,
+  ``set_kill_on_unhealthy_cluster_interval``, ``health_check_interval`` and ``set_health_checkInterval``. The added methods are used
+  to configure single interval which was previously specified by these 3 different methods.
+
 Change of Versioning Scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

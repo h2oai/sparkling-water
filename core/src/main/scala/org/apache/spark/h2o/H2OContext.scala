@@ -63,20 +63,31 @@ import scala.util.control.NoStackTrace
 abstract class H2OContext private(val sparkSession: SparkSession, private val conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
   val sparkContext = sparkSession.sparkContext
-  private val uiUpdateThread = new Thread {
+  private val backendHeartbeatThread = new Thread {
     override def run(): Unit = {
       while (!Thread.interrupted()) {
         val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
+        if (!swHeartBeatInfo.cloudHealthy) {
+          logError("External H2O cluster not healthy!")
+        }
+        if (!swHeartBeatInfo.cloudHealthy && conf.isKillOnUnhealthyClusterEnabled) {
+          logError("Stopping external H2O cluster as it is not healthy.")
+          if (isRestAPIBased) {
+            H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+          } else {
+            H2OContext.this.stop(true)
+          }
+        }
         sparkContext.listenerBus.post(swHeartBeatInfo)
         try {
-          Thread.sleep(conf.uiUpdateInterval)
+          Thread.sleep(conf.backendHeartbeatInterval)
         } catch {
           case _: InterruptedException => Thread.currentThread.interrupt()
         }
       }
     }
   }
-  uiUpdateThread.setDaemon(true)
+  backendHeartbeatThread.setDaemon(true)
 
   /** IP of H2O client */
   private var localClientIp: String = _
@@ -148,7 +159,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
-    uiUpdateThread.start() // start periodical updates of the UI
+    backendHeartbeatThread.start() // start periodical updates of the UI
     this
   }
 
@@ -313,7 +324,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       ShutdownHookManager.removeShutdownHook(shutdownHookRef)
     }
     if (!stopped) {
-      uiUpdateThread.interrupt()
+      backendHeartbeatThread.interrupt()
       if (stopSparkContext) {
         sparkContext.stop()
       }
@@ -484,7 +495,7 @@ object H2OContext extends Logging {
         SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
       } catch {
         case cause: RestApiException =>
-          H2OContext.get().head.stop()
+          H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
           throw new H2OClusterNotReachableException(
             s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
                |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)

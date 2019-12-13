@@ -19,7 +19,6 @@ package org.apache.spark.h2o.backends.external
 
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
-import water.HeartBeatThread
 
 /**
   * External backend configuration
@@ -49,9 +48,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def clusterStartMode = sparkConf.get(PROP_EXTERNAL_CLUSTER_START_MODE._1, PROP_EXTERNAL_CLUSTER_START_MODE._2)
   def h2oDriverPath = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_DRIVER_PATH._1)
   def YARNQueue = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1)
-  def healthCheckInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def isKillOnUnhealthyClusterEnabled = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
-  def killOnUnhealthyClusterInterval = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._2)
   def kerberosPrincipal = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
   def kerberosKeytab = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
   def runAsUser = sparkConf.getOption(PROP_EXTERNAL_RUN_AS_USER._1)
@@ -111,13 +108,9 @@ trait ExternalBackendConf extends SharedBackendConf {
   }
 
   def setYARNQueue(queueName: String) = set(PROP_EXTERNAL_CLUSTER_YARN_QUEUE._1, queueName)
-
-  def setHealthCheckInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
-
+  
   def setKillOnUnhealthyClusterEnabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, true)
   def setKillOnUnhealthyClusterDisabled() = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, false)
-
-  def setKillOnUnhealthyClusterInterval(interval: Int) = set(PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL._1, interval.toString)
 
   def setKerberosPrincipal(principal: String) = set(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, principal)
   def setKerberosKeytab(path: String) = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
@@ -194,19 +187,11 @@ object ExternalBackendConf {
   /** Yarn queue on which external cluster should be started */
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE = ("spark.ext.h2o.external.yarn.queue", None)
 
-  /** Health check interval for external H2O nodes
-    */
-  val PROP_EXTERNAL_CLUSTER_HEALTH_CHECK_INTERVAL = ("spark.ext.h2o.external.health.check.interval", HeartBeatThread.TIMEOUT)
-
   /**
     * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
     */
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY = ("spark.ext.h2o.external.kill.on.unhealthy", true)
 
-  /**
-    * How often check the healthy status for the decision whether to kill the cloud or not.
-    */
-  val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY_INTERVAL = ("spark.ext.h2o.external.kill.on.unhealthy.interval", HeartBeatThread.TIMEOUT * 3)
 
   /**
     * Kerberos principal

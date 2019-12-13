@@ -41,8 +41,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
-  private var cloudHealthCheckKillThread: Option[Thread] = None
-  private var cloudHealthCheckThread: Option[Thread] = None
 
   private def isRestApiBasedClient(hc: H2OContext): Boolean = {
     hc.getConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
@@ -271,9 +269,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         }
       }
 
-      startUnhealthyStateKillThread()
-      startUnhealthyStateCheckThread()
-
       cloudMembers
     }
     nodes
@@ -281,39 +276,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   private def stopExternalH2OCluster(): Int = {
     ExternalH2OBackend.launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
-  }
-
-  def startUnhealthyStateKillThread(): Unit = {
-    if (hc.getConf.isKillOnUnhealthyClusterEnabled) {
-      cloudHealthCheckKillThread = Some(new Thread {
-        override def run(): Unit = {
-          while (true) {
-            Thread.sleep(hc.getConf.killOnUnhealthyClusterInterval)
-            if (!H2O.CLOUD.healthy() && hc.getConf.isKillOnUnhealthyClusterEnabled) {
-              Log.err("Exiting! External H2O cluster not healthy!!")
-              H2O.shutdown(-1)
-            }
-          }
-        }
-      })
-      cloudHealthCheckKillThread.get.setDaemon(true)
-      cloudHealthCheckKillThread.get.start()
-    }
-  }
-
-  def startUnhealthyStateCheckThread(): Unit = {
-    cloudHealthCheckThread = Some(new Thread {
-      override def run(): Unit = {
-        while (true) {
-          Thread.sleep(hc.getConf.healthCheckInterval)
-          if (!H2O.CLOUD.healthy()) {
-            Log.err("External H2O cluster not healthy!!")
-          }
-        }
-      }
-    })
-    cloudHealthCheckThread.get.setDaemon(true)
-    cloudHealthCheckThread.get.start()
   }
 
   override def backendUIInfo: Seq[(String, String)] = {
