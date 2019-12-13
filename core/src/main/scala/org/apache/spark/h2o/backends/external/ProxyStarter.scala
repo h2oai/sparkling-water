@@ -37,7 +37,7 @@ object ProxyStarter extends Logging {
         server.start()
         return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
-        case _: BindException => // continue searching the free port
+        case _: BindException =>
       }
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
