@@ -34,6 +34,7 @@ import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
   H2OMOJOCache.startCleanupThread()
@@ -156,7 +157,9 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   }
 }
 
-trait H2OSpecificMOJOLoader[T] extends H2OMOJOReadable[T] with H2OMOJOLoader[T] {
+abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData : ClassTag]
+  extends H2OMOJOReadable[T] with H2OMOJOLoader[T] {
+
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T = {
     val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)
     mojoModel match {
