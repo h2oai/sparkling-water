@@ -522,7 +522,7 @@ class H2OConf(object):
 
     def user_name(self):
         warnings.warn("The method 'user_name' is deprecated. Use 'userName' instead!")
-        return self._get_option(self._jconf.userName())
+        return self.userName()
 
     def userName(self):
         return self._get_option(self._jconf.userName())
