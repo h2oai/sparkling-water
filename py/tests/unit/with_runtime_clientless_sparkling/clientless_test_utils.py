@@ -16,6 +16,7 @@
 #
 
 from pysparkling.conf import H2OConf
+import subprocess
 
 
 def createH2OConf(spark):
@@ -26,3 +27,17 @@ def createH2OConf(spark):
     conf.set_external_cluster_mode()
     conf.set_h2o_node_web_enabled()
     return conf
+
+def listYarnApps():
+    return str(subprocess.check_output("yarn application -list", shell=True))
+
+def yarnLogs(appId):
+    return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
+
+def getYarnAppIdFromNotifyFile(path):
+    with open(path, 'r') as f:
+        return f.readlines()[1].replace("job", "application").strip()
+
+def getIpPortFromNotifyFile(path):
+    with open(path, 'r') as f:
+        return f.readlines()[0].strip()

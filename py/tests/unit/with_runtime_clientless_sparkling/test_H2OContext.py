@@ -15,10 +15,34 @@
 # limitations under the License.
 #
 
+import os
+import requests
+import subprocess
+import time
 from pysparkling.context import H2OContext
 
 from tests import unit_test_utils
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+
+
+def testZombieExternalH2OCluster():
+    jarPath = os.environ['H2O_DRIVER_JAR']
+    notifyFile = "notify.txt"
+    subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
+    ipPort = getIpPortFromNotifyFile(notifyFile)
+    appId = getYarnAppIdFromNotifyFile(notifyFile)
+    # Lock the cloud, from this time, the cluster should stop after 10 seconds if nothing pings the /3/Ping endpoint
+    requests.post(url = "http://" + ipPort + "/3/CloudLock")
+
+    # Keep pinging the cluster
+    for x in range(0, 5):
+        requests.get(url = "http://" + ipPort + "/3/Ping")
+        assert appId in listYarnApps()
+        time.sleep(5)
+    # Wait 20 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
+    time.sleep(20)
+    assert appId not in listYarnApps()
+    assert "Stopping H2O cluster since we haven't received any REST api request on 3/Ping!" in yarnLogs(appId)
 
 
 def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatically(spark):
