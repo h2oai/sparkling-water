@@ -9,11 +9,6 @@ From 3.28 to 3.30
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- In Sparkling Water ``H2OConf`` API, we removed method ``h2oDriverIf`` in favor of
-  ``externalH2ODriverIf`` and  ``setH2ODriverIf`` in favor of ``setExternalH2ODriverIf``. In
-  PySparkling ``H2OConf`` API, we removed method ``h2o_driver_if`` in favor of
-  ``externalH2ODriverIf`` and  ``set_h2o_driver_if`` in favor of ``setExternalH2ODriverIf``.
-
 - On PySparkling, passing authentication on ``H2OContext`` via ``auth`` param is removed in favor of methods
   ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
@@ -118,6 +113,11 @@ Removal of Deprecated Methods and Classes
   ``lambdaValue``. On Both PySparkling and Sparkling Water ``H2OGLM`` API, we removed methods ``getAlpha`` in favor of
   ``getAlphaValue``, ``getLambda`` in favor of ``getLambdaValue``, ``setAlpha`` in favor of ``setAlphaValue`` and
   ``setLambda`` in favor of ``setLambdaValue``. These changes ensure the consistency across Python and Scala APIs.
+
+- In Sparkling Water ``H2OConf`` API, we removed method ``h2oDriverIf`` in favor of
+  ``externalH2ODriverIf`` and  ``setH2ODriverIf`` in favor of ``setExternalH2ODriverIf``. In
+  PySparkling ``H2OConf`` API, we removed method ``h2o_driver_if`` in favor of
+  ``externalH2ODriverIf`` and  ``set_h2o_driver_if`` in favor of ``setExternalH2ODriverIf``.
 
 Change of Versioning Scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
