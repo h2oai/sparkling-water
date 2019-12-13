@@ -140,7 +140,7 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
     val h2oConf = propertySetter(new H2OConf(spark).setClusterSize(1), filePath)
     hc = H2OContext.getOrCreate(spark, h2oConf)
 
-    wait(5000)
+    Thread.sleep(5000)
 
     assert(file.exists(), s"H2O process didn't create a file on the path '$filePath'.")
   }
