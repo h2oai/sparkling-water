@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.net.{InetAddress, InetSocketAddress, ServerSocket, URI}
+import java.net._
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
@@ -28,9 +28,22 @@ import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
-    val port = findNextFreeFlowPort(conf)
-    val server = new Server(port)
+    while (true) {
+      try {
+        val port = findNextFreeFlowPort(conf)
+        val server = new Server(port)
+        server.setHandler(getContextHandler(conf))
+        // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
+        server.start()
+        return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
+      } catch {
+        case _: BindException => // continue searching the free port
+      }
+    }
+    throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
+  }
 
+  private def getContextHandler(conf: H2OConf): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     context.setContextPath("/")
 
@@ -43,9 +56,7 @@ object ProxyStarter extends Logging {
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
     context.setServletHandler(handler)
-    server.setHandler(context)
-    server.start()
-    new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
+    context
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
