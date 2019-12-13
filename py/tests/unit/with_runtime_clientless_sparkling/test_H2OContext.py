@@ -16,9 +16,9 @@
 #
 
 import os
-import requests
-import subprocess
 import time
+
+import requests
 from pysparkling.context import H2OContext
 
 from tests import unit_test_utils
@@ -42,7 +42,8 @@ def testZombieExternalH2OCluster():
     # Wait 20 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
     time.sleep(20)
     assert appId not in listYarnApps()
-    assert "Stopping H2O cluster since we haven't received any REST api request on 3/Ping!" in yarnLogs(appId)
+    logs = yarnLogs(appId).replace("haven\\'t", "haven't")
+    assert "Stopping H2O cluster since we haven't received any REST api request on 3/Ping!" in logs
 
 
 def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatically(spark):
