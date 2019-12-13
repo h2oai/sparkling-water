@@ -95,8 +95,8 @@ Configuration properties independent of selected backend
 |                                                    | or YARN        |                                        |
 |                                                    | container dir  |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.ui.update.interval``               | ``10000ms``    | Interval for updates of the Spark UI   |
-|                                                    |                | and History server in milliseconds     |
+| ``spark.ext.h2o.backend.heartbeat.interval``       | ``10000ms``    | Interval for getting heartbeat from    |
+|                                                    |                | the H2O backend.                       |
 +----------------------------------------------------+----------------+----------------------------------------+
 | ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | Timeout (in msec) for cluster          |
 |                                                    |                | formation.                             |
@@ -325,17 +325,10 @@ External backend configuration properties
 | ``spark.ext.h2o.external.driver.if``                  | ``None``       | IP address of H2O driver in case of |
 |                                                       |                | external cluster in automatic mode. |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.health.check.interval``      | ``HeartBeatThr | Health check interval for external  |
-|                                                       | ead.TIMEOUT``  | H2O nodes.                          |
-+-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.kill.on.unhealthy``          | ``true``       | If true, the client will try to     |
 |                                                       |                | kill the cluster and then itself in |
 |                                                       |                | case some nodes in the cluster      |
 |                                                       |                | report unhealthy status.            |
-+-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.kill.on.unhealthy.interval`` | ``HeartBeatThr | How often check the healthy status  |
-|                                                       | ead.TIMEOUT    | for the decision whether to kill    |
-|                                                       | * 3``          | the cloud or not.                   |
 +-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | Kerberos Principal.                 |
 +-------------------------------------------------------+----------------+-------------------------------------+

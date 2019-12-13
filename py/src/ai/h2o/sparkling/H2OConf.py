@@ -173,8 +173,8 @@ class H2OConf(object):
         self._jconf.setH2ONodeLogDir(dir)
         return self
 
-    def set_ui_update_interval(self, interval):
-        self._jconf.setUiUpdateInterval(interval)
+    def setBackendHeartbeatInterval(self, interval):
+        self._jconf.setBackendHeartbeatInterval(interval)
         return self
 
     def set_cloud_timeout(self, timeout):
@@ -407,20 +407,12 @@ class H2OConf(object):
         self._jconf.setYARNQueue(queue_name)
         return self
 
-    def set_health_check_interval(self, interval):
-        self._jconf.setHealthCheckInterval(interval)
-        return self
-
     def set_kill_on_unhealthy_cluster_enabled(self):
         self._jconf.setKillOnUnhealthyClusterEnabled()
         return self
 
     def set_kill_on_unhealthy_cluster_disabled(self):
         self._jconf.setKillOnUnhealthyClusterDisabled()
-        return self
-
-    def set_kill_on_unhealthy_cluster_interval(self, interval):
-        self._jconf.setKillOnUnhealthyClusterInterval(interval)
         return self
 
     def set_kerberos_principal(self, principal):
@@ -530,8 +522,8 @@ class H2OConf(object):
     def h2o_node_log_dir(self):
         return self._jconf.h2oNodeLogDir()
 
-    def ui_update_interval(self):
-        return self._jconf.uiUpdateInterval()
+    def backendHeartbeatInterval(self):
+        return self._jconf.backendHeartbeatInterval()
 
     def cloud_timeout(self):
         return self._jconf.cloudTimeout()
@@ -681,14 +673,8 @@ class H2OConf(object):
     def yarn_queue(self):
         return self._get_option(self._jconf.YARNQueue())
 
-    def get_health_check_interval(self):
-        return self._jconf.healthCheckInterval()
-
     def is_kill_on_unhealthy_cluster_enabled(self):
         return self._jconf.isKillOnUnhealthyClusterEnabled()
-
-    def kill_on_unhealthy_cluster_interval(self):
-        return self._jconf.killOnUnhealthyClusterInterval()
 
     def kerberos_principal(self):
         return self._get_option(self._jconf.kerberosPrincipal())

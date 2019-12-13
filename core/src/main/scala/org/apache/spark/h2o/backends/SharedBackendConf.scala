@@ -18,7 +18,8 @@
 package org.apache.spark.h2o.backends
 
 import org.apache.spark.h2o.H2OConf
-import collection.JavaConverters._
+
+import scala.collection.JavaConverters._
 
 /**
   * Shared configuration independent on used backend
@@ -52,7 +53,7 @@ trait SharedBackendConf {
   def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
   def h2oNodeLogLevel = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
   def h2oNodeLogDir  = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
-  def uiUpdateInterval = sparkConf.getInt(PROP_UI_UPDATE_INTERVAL._1, PROP_UI_UPDATE_INTERVAL._2)
+  def backendHeartbeatInterval: Int = sparkConf.getInt(PROP_BACKEND_HEARTBEAT_INTERVAL._1, PROP_BACKEND_HEARTBEAT_INTERVAL._2)
   def cloudTimeout = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
   def nodeNetworkMask = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
   def stacktraceCollectorInterval = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
@@ -144,7 +145,7 @@ trait SharedBackendConf {
 
   def setH2ONodeLogLevel(level: String) = set(PROP_NODE_LOG_LEVEL._1, level)
   def setH2ONodeLogDir(dir: String) = set(PROP_NODE_LOG_DIR._1, dir)
-  def setUiUpdateInterval(interval: Int) = set(PROP_UI_UPDATE_INTERVAL._1, interval.toString)
+  def setBackendHeartbeatInterval(interval: Int): H2OConf = set(PROP_BACKEND_HEARTBEAT_INTERVAL._1, interval.toString)
   def setCloudTimeout(timeout: Int) = set(PROP_CLOUD_TIMEOUT._1, timeout.toString)
 
   def setNodeNetworkMask(mask: String) = set(PROP_NODE_NETWORK_MASK._1, mask)
@@ -282,8 +283,8 @@ object SharedBackendConf {
   /** Location of log directory for remote nodes. */
   val PROP_NODE_LOG_DIR = ("spark.ext.h2o.node.log.dir", None)
 
-  /** Interval for updates of Spark UI in milliseconds */
-  val PROP_UI_UPDATE_INTERVAL = ("spark.ext.h2o.ui.update.interval", 10000)
+  /** Interval used to ping and check the H2O backend status. */
+  val PROP_BACKEND_HEARTBEAT_INTERVAL = ("spark.ext.h2o.backend.heartbeat.interval", 10000)
 
   /** Configuration property - timeout for cloud up. */
   val PROP_CLOUD_TIMEOUT = ("spark.ext.h2o.cloud.timeout", 60 * 1000)
