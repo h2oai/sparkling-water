@@ -62,6 +62,9 @@ def testStopAndStartAgain(spark):
     def listYarnApps():
         return str(subprocess.check_output("yarn application -list", shell=True))
 
+    def yarnLogs(appId):
+        return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
+
     context1 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     yarnAppId1 = str(context1._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 in listYarnApps()
@@ -70,6 +73,7 @@ def testStopAndStartAgain(spark):
     context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 not in listYarnApps()
+    assert "Orderly shutdown:  Shutting down now." in yarnLogs(yarnAppId1)
     assert yarnAppId2 in listYarnApps()
     context2.stop()
 
