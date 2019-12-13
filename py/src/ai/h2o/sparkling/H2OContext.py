@@ -131,7 +131,8 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
 
         # Create H2O REST API client
-        h2o_context.__h2o_connect(verbose=verbose, **kwargs)
+        if not h2o_context.__isClientConnected():
+            h2o_context.__h2o_connect(verbose=verbose, **kwargs)
 
         h2o_context.__setClientConnected()
 
