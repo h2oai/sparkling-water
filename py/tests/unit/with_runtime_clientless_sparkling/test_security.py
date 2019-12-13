@@ -42,3 +42,22 @@ def testAuth(spark):
         lines = list(filter(lambda line: "-hash_login" in line, originalLines))
         assert len(lines) >= 1
     context.stop()
+
+def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
+    with open('build/login.conf', 'w') as f:
+        f.write('user:pass')
+
+    conf = createH2OConf(spark)
+    conf.set_hash_login_enabled()
+    conf.set_cloud_name("test-cluster")
+    conf.set_cluster_config_file("notify_file.txt")
+    conf.set_login_conf("build/login.conf")
+
+    with pytest.raises(Exception):
+        H2OContext.getOrCreate(spark, conf)
+    # No app should be running
+    assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
+    conf.setUserName("user")
+    conf.setPassword("pass")
+    context = H2OContext.getOrCreate(spark, conf)
+    context.stop()
