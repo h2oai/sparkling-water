@@ -76,7 +76,7 @@ def gbmModelWithOffset(dataset):
 @pytest.fixture(scope="module")
 def savedGbmModel(gbmModelWithOffset):
     path = "file://" + os.path.abspath("build/gbm_model_with_offset")
-    gbmModelWithOffset.write().override().save(path)
+    gbmModelWithOffset.write().overwrite().save(path)
     return path
 
 def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
