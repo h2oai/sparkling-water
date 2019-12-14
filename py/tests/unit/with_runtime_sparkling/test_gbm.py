@@ -77,7 +77,7 @@ def gbmModelWithOffset(dataset):
 def savedGbmModel(gbmModelWithOffset):
     path = "file://" + os.path.abspath("build/gbm_model_with_offset")
     gbmModelWithOffset.write().overwrite().save(path)
-    return path
+    return path + "/mojo_model"
 
 def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
     predictionCol = col("prediction")
