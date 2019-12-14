@@ -164,14 +164,14 @@ def testMonotoneConstraintsGetProperlyPropagatedFromJavaBackend():
 
 def testLoadGBMModelAsMOJOModel(savedGbmModel):
     gbmModel = H2OMOJOModel.createFromMojo(savedGbmModel)
-    assert gbmModel.getNTrees() > 0
+    assert gbmModel.getNtrees() > 0
 
 
 def testLoadGBMModelAsSupervisedMOJOModel(savedGbmModel):
     gbmModel = H2OSupervisedMOJOModel.createFromMojo(savedGbmModel)
-    assert gbmModel.getNTrees() > 0
+    assert gbmModel.getNtrees() > 0
 
 
 def testLoadGBMModelAsTreeBasedSupervisedMOJOModel(savedGbmModel):
     gbmModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo(savedGbmModel)
-    assert gbmModel.getNTrees() > 0
+    assert gbmModel.getNtrees() > 0

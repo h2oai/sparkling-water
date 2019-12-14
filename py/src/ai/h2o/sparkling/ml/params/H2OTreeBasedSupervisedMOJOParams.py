@@ -30,4 +30,4 @@ class H2OTreeBasedSupervisedMOJOParams(H2OSupervisedMOJOParams):
         H2OTypeConverters.toInt())
 
     def getNtrees(self):
-        return self.getOrDefault(self.offsetCol)
+        return self.getOrDefault(self.ntrees)
