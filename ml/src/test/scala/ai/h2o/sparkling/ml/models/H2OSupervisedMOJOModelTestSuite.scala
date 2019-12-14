@@ -178,7 +178,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     val offsetCol = "PSA"
     algo
       .setSeed(1)
-      .setFeaturesCols("RACE", "DPROS", "DCAPS",  "VOL", "GLEASON")
+      .setFeaturesCols("RACE", "DPROS", "DCAPS", "VOL", "GLEASON")
       .setLabelCol("AGE")
       .setOffsetCol(offsetCol)
 
