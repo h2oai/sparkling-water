@@ -47,7 +47,8 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
       .setLabelCol("CAPSULE")
     val model = algo.fit(dataset)
 
-    assert(model.getNumberOfTrees() > 0)
+    assert(algo.getNtrees() > 0)
+    assert(model.getNtrees() > 0)
   }
 
   test("Positive number of trees after training - GBM") {
@@ -74,7 +75,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     model.write.overwrite().save(path)
 
     val loadedModel = H2OTreeBasedSupervisedMOJOModel.load(path)
-    assert(loadedModel.getNumberOfTrees() > 0)
+    assert(loadedModel.getNtrees() > 0)
   }
 
   test("Positive number of trees after save & load - GBM") {

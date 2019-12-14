@@ -31,7 +31,9 @@ class H2OMOJOModel(H2OMOJOModelBase):
         Initializer.load_sparkling_jar()
         javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
         className = javaModel.getClass().getSimpleName()
-        if className == "H2OSupervisedMOJOModel":
+        if className == "H2OTreeBasedSupervisedMOJOModel":
+            return H2OTreeBasedSupervisedMOJOModel(javaModel)
+        elif className == "H2OSupervisedMOJOModel":
             return H2OSupervisedMOJOModel(javaModel)
         elif className == "H2OUnsupervisedMOJOModel":
             return H2OUnsupervisedMOJOModel(javaModel)
