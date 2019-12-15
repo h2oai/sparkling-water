@@ -137,6 +137,15 @@ Create and Train the Pipeline
     val data = load("smsData.txt")
     val model = pipeline.fit(data)
 
+If you are interested in what hyper-parameter *("_ntrees")* value got selected for the best model, get a given stage from
+the pipeline model and cast it to ``H2OTreeBasedSupervisedMOJOModel``. *This statement is relevant only to tree-based
+algorithms like GBM, DRF and XGBoost.*
+
+.. code:: scala
+
+    val bestH2OModel = model.stages(4).asInstanceOf[H2OTreeBasedSupervisedMOJOModel]
+    println(s"_ntrees value: ${bestH2OModel.getNtrees()}")
+
 
 Run Predictions
 ~~~~~~~~~~~~~~~
