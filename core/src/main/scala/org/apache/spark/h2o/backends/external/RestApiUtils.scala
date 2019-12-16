@@ -25,10 +25,12 @@ import java.util.Date
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
-import org.apache.http.HttpHeaders
+import org.apache.http.{HttpEntity, HttpHeaders}
 import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
-import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.client.{DefaultHttpClient, HttpClientBuilder}
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import org.apache.http.util.EntityUtils
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
@@ -228,9 +230,12 @@ trait RestApiUtils {
                                              conf: H2OConf,
                                              skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     val response = readURLContent(endpoint, requestType, suffix, conf)
-    val content = IOUtils.toString(response)
-    response.close()
-
+    val content = IOUtils.toString(response.getContent)
+    try {
+      EntityUtils.consume(response)
+    } catch {
+      case _: Throwable =>
+    }
     deserialize[ResultType](content, skippedFields)
   }
 
@@ -252,14 +257,24 @@ trait RestApiUtils {
   private def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
     val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
     val output = new BufferedOutputStream(new FileOutputStream(file))
-    IOUtils.copy(response, output)
+    IOUtils.copy(response.getContent, output)
+    try {
+      EntityUtils.consume(response)
+    } catch {
+      case _: Throwable =>
+    }
     output.close()
   }
 
   private def downloadStringURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
     val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
     val output = new java.io.FileWriter(file)
-    IOUtils.copy(response, output)
+    IOUtils.copy(response.getContent, output)
+    try {
+      EntityUtils.consume(response)
+    } catch {
+      case _: Throwable =>
+    }
     output.close()
   }
 
@@ -274,9 +289,12 @@ trait RestApiUtils {
     }
   }
 
-  private lazy val httpClient = new DefaultHttpClient
+  private lazy val httpClient = HttpClientBuilder
+    .create()
+    .setConnectionManager(new PoolingHttpClientConnectionManager)
+    .build()
 
-  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
+  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): HttpEntity = {
     try {
       val request = requestType match {
         case HttpGet.METHOD_NAME => new HttpGet(s"$endpoint/$suffix")
@@ -293,7 +311,7 @@ trait RestApiUtils {
              |Status code $statusCode : ${result.getStatusLine.getReasonPhrase}.""".stripMargin)
         case _ =>
       }
-      result.getEntity.getContent
+      result.getEntity
     } catch {
       case e: RestApiException => throw e
       case cause: Exception =>
