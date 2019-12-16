@@ -106,9 +106,11 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     new InternalH2OBackend(this)
   }
 
-  protected def getFlowIp(): String
+  protected def getH2OEndpointIp(): String
 
-  protected def getFlowPort(): Int
+  protected def getH2OEndpointPort(): Int
+
+  protected def getFlowEndpoint(): String
 
   protected def getSelfNodeDesc(): Option[NodeDesc]
 
@@ -153,9 +155,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     initBackend()
-    localClientIp = getFlowIp()
+    localClientIp = getH2OEndpointIp()
 
-    localClientPort = getFlowPort()
+    localClientPort = getH2OEndpointPort()
 
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
 
@@ -364,7 +366,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     } else if (conf.clientFlowBaseurlOverride.isDefined) {
       conf.clientFlowBaseurlOverride.get + conf.contextPath.getOrElse("")
     } else {
-      s"${conf.getScheme()}://$h2oLocalClient"
+      s"${conf.getScheme()}://${getFlowEndpoint()}"
     }
   }
 
@@ -417,7 +419,7 @@ object H2OContext extends Logging {
     /** Runtime list of active H2O nodes */
     protected var h2oNodes: Array[NodeDesc] = _
 
-    override protected def getFlowIp(): String = {
+    override protected def getH2OEndpointIp(): String = {
       if (conf.ignoreSparkPublicDNS) {
         H2O.getIpPortString.split(":")(0)
       } else {
@@ -425,7 +427,7 @@ object H2OContext extends Logging {
       }
     }
 
-    override protected def getFlowPort(): Int = H2O.API_PORT
+    override protected def getH2OEndpointPort(): Int = H2O.API_PORT
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = Some(NodeDesc(H2O.SELF))
 
@@ -468,14 +470,16 @@ object H2OContext extends Logging {
       H2O.downloadLogs(destinationDir, logContainer).toString
     }
 
+    override protected def getFlowEndpoint(): String = s"${getH2OEndpointIp()}:${getH2OEndpointPort()}${conf.contextPath.getOrElse("")}"
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with RestApiUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
-    override protected def getFlowIp(): String = flowIp
+    private var leaderNode: NodeDesc = _
+    override protected def getH2OEndpointIp(): String = leaderNode.hostname
 
-    override protected def getFlowPort(): Int = flowPort
+    override protected def getH2OEndpointPort(): Int = leaderNode.port
 
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
@@ -509,6 +513,7 @@ object H2OContext extends Logging {
 
     override protected def initBackend(): Unit = {
       backend.init(conf)
+      leaderNode = getLeaderNode(conf)
       val uri = ProxyStarter.startFlowProxy(conf)
       flowIp = uri.getHost
       flowPort = uri.getPort
@@ -547,6 +552,9 @@ object H2OContext extends Logging {
     override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
       SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.RESTBasedExternalConverter)
     }
+
+    override protected def getFlowEndpoint(): String = s"$flowIp:$flowPort${conf.contextPath.getOrElse("")}"
+
   }
 
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
