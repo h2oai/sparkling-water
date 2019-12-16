@@ -106,3 +106,22 @@ or in Python:
     from pysparkling.ml import *
     settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
     model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+
+
+In Scala, the ``createFromMojo`` method returns a mojo model instance casted as a base class ``H2OMOJOModel``. This class holds
+only properties that are shared accross all MOJO model types from the following type hierarchy:
+
+- ``H2OMOJOModel``
+    - ``H2OUnsupervisedMOJOModel``
+    - ``H2OSupervisedMOJOModel``
+        - ``H2OTreeBasedSupervisedMOJOModel``
+
+
+If a Scala user wants to get a property specific for a given MOJO model type, he/she must utilize casting or
+call the ``createFromMojo`` method on the specific MOJO model type.
+
+.. code:: scala
+
+    import ai.h2o.sparkling.ml.models._
+    val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate.mojo")
+    println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost

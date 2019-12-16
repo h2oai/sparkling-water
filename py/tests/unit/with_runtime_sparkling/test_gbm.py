@@ -20,7 +20,7 @@ import json
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGBM, H2OMOJOModel
+from pysparkling.ml import H2OGBM, H2OMOJOModel, H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel
 from pyspark.sql.functions import log, col, min, max, mean, lit
 from h2o.estimators.gbm import H2OGradientBoostingEstimator
 
@@ -72,6 +72,12 @@ def gbmModelWithOffset(dataset):
                offsetCol="Offset")
     return gbm.fit(dataset)
 
+
+@pytest.fixture(scope="module")
+def savedGbmModel(gbmModelWithOffset):
+    path = "file://" + os.path.abspath("build/gbm_model_with_offset")
+    gbmModelWithOffset.write().overwrite().save(path)
+    return path + "/mojo_model"
 
 def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
     predictionCol = col("prediction")
@@ -154,3 +160,18 @@ def testMonotoneConstraintsGetProperlyPropagatedFromJavaBackend():
     constraints = gbm.getMonotoneConstraints()
     assert constraints["District"] == -1.0
     assert constraints["Group"] == 1.0
+
+
+def testLoadGBMModelAsMOJOModel(savedGbmModel):
+    gbmModel = H2OMOJOModel.createFromMojo(savedGbmModel)
+    assert gbmModel.getNtrees() > 0
+
+
+def testLoadGBMModelAsSupervisedMOJOModel(savedGbmModel):
+    gbmModel = H2OSupervisedMOJOModel.createFromMojo(savedGbmModel)
+    assert gbmModel.getNtrees() > 0
+
+
+def testLoadGBMModelAsTreeBasedSupervisedMOJOModel(savedGbmModel):
+    gbmModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo(savedGbmModel)
+    assert gbmModel.getNtrees() > 0

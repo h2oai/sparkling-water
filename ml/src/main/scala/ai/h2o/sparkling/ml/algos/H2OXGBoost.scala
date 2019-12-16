@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, HasMonotoneConstraints}
+import ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -28,7 +29,8 @@ import org.apache.spark.ml.util.Identifiable
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
   */
-class H2OXGBoost(override val uid: String) extends H2OSupervisedAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
+class H2OXGBoost(override val uid: String)
+  extends H2OTreeBasedSupervisedAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OXGBoost].getSimpleName))
 }
@@ -39,7 +41,8 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with HasMonotoneConstraints with DeprecatableParams {
+trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
+  with H2OTreeBasedSupervisedMOJOParams with HasMonotoneConstraints with DeprecatableParams {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -51,7 +54,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with H
   // Param definitions
   //
   private val quietMode = booleanParam("quietMode")
-  private val ntrees = intParam("ntrees")
   private val nEstimators = intParam("nEstimators")
   private val maxDepth = intParam("maxDepth")
   private val minRows = doubleParam("minRows")
@@ -140,8 +142,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters] with H
   // Getters
   //
   def getQuietMode(): Boolean = $(quietMode)
-
-  def getNtrees(): Int = $(ntrees)
 
   def getNEstimators(): Int = $(nEstimators)
 

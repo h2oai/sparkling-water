@@ -31,7 +31,9 @@ class H2OMOJOModel(H2OMOJOModelBase):
         Initializer.load_sparkling_jar()
         javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
         className = javaModel.getClass().getSimpleName()
-        if className == "H2OSupervisedMOJOModel":
+        if className == "H2OTreeBasedSupervisedMOJOModel":
+            return H2OTreeBasedSupervisedMOJOModel(javaModel)
+        elif className == "H2OSupervisedMOJOModel":
             return H2OSupervisedMOJOModel(javaModel)
         elif className == "H2OUnsupervisedMOJOModel":
             return H2OUnsupervisedMOJOModel(javaModel)
@@ -46,6 +48,12 @@ class H2OSupervisedMOJOModel(H2OMOJOModel):
 
     def getOffsetCol(self):
         return self._java_obj.getOffsetCol()
+
+
+class H2OTreeBasedSupervisedMOJOModel(H2OSupervisedMOJOModel):
+
+    def getNtrees(self):
+        return self._java_obj.getNtrees()
 
 
 class H2OUnsupervisedMOJOModel(H2OMOJOModel):

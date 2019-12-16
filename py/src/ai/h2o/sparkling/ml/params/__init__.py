@@ -24,5 +24,7 @@ from ai.h2o.sparkling.ml.params.H2OXGBoostParams import H2OXGBoostParams
 from ai.h2o.sparkling.ml.params.H2OGLMParams import H2OGLMParams
 from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
 from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
+from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
 from ai.h2o.sparkling.ml.params.H2ODRFParams import H2ODRFParams
+from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
