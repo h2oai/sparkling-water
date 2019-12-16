@@ -213,6 +213,11 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         if (!conf.isBackendVersionCheckDisabled()) {
           verifyVersionFromRestCall(nodes)
         }
+        val leaderIpPort = getLeaderNode(conf).ipPort()
+        if (conf.h2oCluster.get != leaderIpPort){
+          logInfo(s"Updating spark.ext.h2o.cloud.representative to H2O's leader node $leaderIpPort")
+          conf.setH2OCluster(leaderIpPort)
+        }
         nodes
       } catch {
         case cause: RestApiException =>
