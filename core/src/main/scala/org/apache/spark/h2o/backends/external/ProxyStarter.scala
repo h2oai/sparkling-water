@@ -22,17 +22,26 @@ import java.net._
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
-import org.eclipse.jetty.proxy.ProxyServlet
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.spark_project.jetty.client.HttpClient
+import org.spark_project.jetty.proxy.ProxyServlet.Transparent
+import org.spark_project.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
+import org.spark_project.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.spark_project.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
     while (true) {
       try {
         val port = findNextFreeFlowPort(conf)
-        val server = new Server(port)
+        val pool = new QueuedThreadPool()
+        pool.setDaemon(true)
+        val server = new Server(pool)
+        val s = server.getBean(classOf[Scheduler])
+        server.updateBean(s, new ScheduledExecutorScheduler(null, true))
         server.setHandler(getContextHandler(conf))
+        val connector = new ServerConnector(server, new HttpConnectionFactory())
+        connector.setPort(port)
+        server.setConnectors(Array(connector))
         // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
         server.start()
         return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
@@ -43,20 +52,26 @@ object ProxyStarter extends Logging {
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
   }
 
+
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     context.setContextPath("/")
-
     val handler = new ServletHandler()
-    val holder = handler.addServletWithMapping(classOf[ProxyServlet.Transparent], "/*")
+    val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
 
-    val cloudV3 = RestApiUtils.getCloudInfo(conf)
-    val ipPort = cloudV3.nodes(cloudV3.leader_idx).ip_port
-
+    val ipPort = RestApiUtils.getLeaderNode(conf).ipPort()
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
     context.setServletHandler(handler)
     context
+  }
+
+  class H2OFlowProxyServlet extends Transparent {
+    override def newHttpClient(): HttpClient = {
+      val client = super.newHttpClient()
+      client.setScheduler(new ScheduledExecutorScheduler(null, true))
+      client
+    }
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
