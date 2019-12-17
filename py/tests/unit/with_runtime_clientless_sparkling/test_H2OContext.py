@@ -39,8 +39,8 @@ def testZombieExternalH2OCluster():
         requests.get(url = "http://" + ipPort + "/3/Ping")
         assert appId in listYarnApps()
         time.sleep(5)
-    # Wait 20 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
-    time.sleep(20)
+    # Wait 60 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
+    time.sleep(60)
     assert appId not in listYarnApps()
     logs = yarnLogs(appId).replace("haven\\'t", "haven't")
     assert "Stopping H2O cluster since we haven't received any REST api request on 3/Ping!" in logs
