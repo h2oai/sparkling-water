@@ -296,6 +296,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     for (node <- nodes) {
       val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
       if (referencedVersion != externalVersion) {
+        if (hc.getConf.isAutoClusterStartUsed) {
+          stopExternalH2OCluster()
+        }
         throw new RuntimeException(
           s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
              |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
