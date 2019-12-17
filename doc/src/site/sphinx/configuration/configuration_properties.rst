@@ -285,12 +285,6 @@ External backend configuration properties
 |                                                       |                | Sparkling Water in external H2O     |
 |                                                       |                | cluster mode.                       |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.cluster.client.connect.timeout``      | ``180000ms``   | Timeout in milliseconds for         |
-|                                                       |                | watchdog client connection. If the  |
-|                                                       |                | client is not connected to the      |
-|                                                       |                | external cluster in the given time  |
-|                                                       |                | ,the cluster is killed.             |
-+-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.external.write.confirmation.timeout`` | ``60s``        | Timeout for confirmation of write   |
 |                                                       |                | operation (Spark frame => H2O       |
 |                                                       |                | frame) on external cluster.         |
