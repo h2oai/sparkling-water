@@ -9,7 +9,7 @@ import pytest
 from pysparkling.context import H2OContext
 
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
-
+from tests.generic
 
 def testSSL(spark):
     conf = createH2OConf(spark)

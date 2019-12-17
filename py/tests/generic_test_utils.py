@@ -18,6 +18,10 @@
 import os
 import socket
 from random import randrange
+import subprocess
+
+def listYarnApps():
+    return str(subprocess.check_output("yarn application -list", shell=True))
 
 
 def unique_cloud_name(script_name):

@@ -28,9 +28,6 @@ def createH2OConf(spark):
     conf.set_h2o_node_web_enabled()
     return conf
 
-def listYarnApps():
-    return str(subprocess.check_output("yarn application -list", shell=True))
-
 def yarnLogs(appId):
     return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 
