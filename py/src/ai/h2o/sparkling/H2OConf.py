@@ -352,17 +352,6 @@ class H2OConf(object):
         self._jconf.setClientCheckRetryTimeout(timeout)
         return self
 
-    def set_client_connection_timeout(self, timeout):
-        """Set timeout for watchdog client connection in external cluster mode. If the client is not connected to the
-         cluster within the specified time, the cluster kill itself.
-
-        Arguments:
-        timeout -- timeout in milliseconds
-
-        """
-        self._jconf.setClientConnectionTimeout(timeout)
-        return self
-
     def set_external_write_confirmation_timeout(self, timeout):
         self._jconf.setExternalWriteConfirmationTimeout(timeout)
         return self
@@ -639,9 +628,6 @@ class H2OConf(object):
 
     def client_check_retry_timeout(self):
         return self._jconf.clientCheckRetryTimeout()
-
-    def client_connection_timeout(self):
-        return self._jconf.clientConnectionTimeout()
 
     def external_write_confirmation_timeout(self):
         return self._jconf.externalWriteConfirmationTimeout()

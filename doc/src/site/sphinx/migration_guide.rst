@@ -129,6 +129,11 @@ Removal of Deprecated Methods and Classes
   ``set_kill_on_unhealthy_cluster_interval``, ``get_health_check_interval`` and ``set_health_check_interval``. The added methods are used
   to configure single interval which was previously specified by these 3 different methods.
 
+- The configuration ``spark.ext.h2o.cluster.client.connect.timeout`` is removed without replacement as it
+  is no longer needed. on ``H2OConf`` Scala API, the methods ``clientConnectionTimeout`` and ``setClientConnectionTimeout``
+  were removed and on ``H2OConf`` Python API, the methods ``set_client_connection_timeout`` and ``set_client_connection_timeout``
+  were removed.
+
 Change of Versioning Scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

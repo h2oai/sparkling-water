@@ -81,17 +81,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       "-baseport", conf.nodeBasePort.toString,
       "-timeout", conf.clusterStartTimeout.toString,
       "-disown",
-      "-sw_ext_backend"
+      "-sw_ext_backend",
+      "-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString
     )
 
-    if (isRestApiBasedClient(hc)) {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString)
-    } else {
+    if (!isRestApiBasedClient(hc)) {
       cmdToLaunch = cmdToLaunch ++ Seq[String](
         "-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString,
-        "-J", "-watchdog_stop_without_client",
-        "-J", "-watchdog_client_connect_timeout", "-J", conf.clientConnectionTimeout.toString,
-        "-J", "-watchdog_client_retry_timeout", "-J", conf.clientCheckRetryTimeout.toString,
         "-flatfile", conf.externalBackendFlatFileName().get
       )
     }
