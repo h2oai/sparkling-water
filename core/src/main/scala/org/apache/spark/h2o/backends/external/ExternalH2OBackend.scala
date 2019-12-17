@@ -22,7 +22,7 @@ import java.io.{File, FileInputStream}
 import java.util.Properties
 
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
+import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
@@ -46,97 +46,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   }
 
   def launchH2OOnYarn(conf: H2OConf): String = {
-
-    var cmdToLaunch = Seq[String]("hadoop", "jar", conf.h2oDriverPath.get)
-
-    conf.sslConf match {
-      case Some(internalSecurityConf) =>
-        // In External Backend, auto mode we need distribute the keystore files to the H2O cluster
-        val props = new Properties()
-        props.load(new FileInputStream(internalSecurityConf))
-        val keyStoreFiles = Array(props.get("h2o_ssl_jks_internal"), props.get("h2o_ssl_jts")).map(f => SparkFiles.get(f.asInstanceOf[String]))
-        cmdToLaunch = cmdToLaunch ++ Array("-files", keyStoreFiles.mkString(","))
-        logInfo(s"Running external H2O cluster in encrypted mode with config: $internalSecurityConf")
-      case _ =>
-    }
-
-    // Application tags shown in Yarn Resource Manager UI
-    val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
-
-    if (conf.YARNQueue.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-Dmapreduce.job.queuename=" + conf.YARNQueue.get)
-    }
-
-    cmdToLaunch = cmdToLaunch ++ Seq[String](
-      s"-Dmapreduce.job.tags=${yarnAppTags}",
-      s"-Dai.h2o.args.config=sparkling-water-external",
-      "-Dmapreduce.framework.name=h2o-yarn", // use H2O's custom application Master
-      "-nodes", conf.clusterSize.get,
-      "-notify", conf.clusterInfoFile.get,
-      "-jobname", conf.cloudName.get,
-      "-mapperXmx", conf.mapperXmx,
-      "-nthreads", conf.nthreads.toString,
-      "-J", "-log_level", "-J", conf.h2oNodeLogLevel,
-      "-port_offset", conf.internalPortOffset.toString,
-      "-baseport", conf.nodeBasePort.toString,
-      "-timeout", conf.clusterStartTimeout.toString,
-      "-disown",
-      "-sw_ext_backend",
-      "-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString
-    )
-
-    if (!isRestApiBasedClient(hc)) {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString)
-    }
-
-    if (conf.runAsUser.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-run_as_user", conf.runAsUser.get)
-    }
-
-    if (conf.stacktraceCollectorInterval != -1) { // -1 means don't do stacktrace collection
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString)
-    }
-
-    if (conf.HDFSOutputDir.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq[String]("-output", conf.HDFSOutputDir.get)
-    }
-
-    if (hc.getConf.contextPath.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-context_path", hc.getConf.contextPath.get)
-    }
-
-    if (hc.getConf.nodeNetworkMask.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-network", hc.getConf.nodeNetworkMask.get)
-    }
-
-    cmdToLaunch = cmdToLaunch ++ ExternalH2OBackend.getH2OSecurityArgs(hc.getConf)
-
-    if (hc.getConf.kerberosKeytab.isDefined && hc.getConf.kerberosPrincipal.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-principal",
-        hc.getConf.kerberosPrincipal.get, "-keytab", hc.getConf.kerberosKeytab.get)
-    }
-
-    if (conf.externalH2ODriverIf.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-driverif", conf.externalH2ODriverIf.get)
-    }
-
-    if (conf.externalH2ODriverPort.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-driverport", conf.externalH2ODriverPort.get)
-    }
-
-    if (conf.externalH2ODriverPortRange.isDefined) {
-      cmdToLaunch = cmdToLaunch ++ Seq("-driverportrange", conf.externalH2ODriverPortRange.get)
-    }
-
-    cmdToLaunch = cmdToLaunch ++ Seq("-extramempercent", conf.externalExtraMemoryPercent.toString)
-
-    if (conf.nodeExtraProperties.isDefined) {
-      cmdToLaunch = cmdToLaunch :+ conf.nodeExtraProperties.get
-    }
-
-    cmdToLaunch = cmdToLaunch ++ ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg))
-
-    // start external H2O cluster and log the output
+    val cmdToLaunch = getExternalH2ONodesArguments(conf)
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
     val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
@@ -220,6 +130,59 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val ping = getPingInfo(conf)
     val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
     SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
+  }
+
+  private def getExternalH2ONodesArguments(conf: H2OConf): Seq[String] = {
+    // Application tags shown in Yarn Resource Manager UI
+    val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
+    new ArgumentBuilder()
+      .add(Seq("hadoop", "jar", conf.h2oDriverPath.get))
+      .add("-files", getSecurityFiles(conf))
+      .add(conf.YARNQueue.map(queue => s"-Dmapreduce.job.queuename=$queue"))
+      .add(s"-Dmapreduce.job.tags=$yarnAppTags")
+      .add(s"-Dai.h2o.args.config=sparkling-water-external") // H2O custom application master
+      .add("-nodes", conf.clusterSize)
+      .add("-notify", conf.clusterInfoFile)
+      .add("-jobname", conf.cloudName)
+      .add("-mapperXmx", conf.mapperXmx)
+      .add(Seq("-J", "-log_level", "-J", conf.h2oNodeLogLevel))
+      .add("-nthreads", conf.nthreads)
+      .add("-port_offset", conf.internalPortOffset)
+      .add("-baseport", conf.nodeBasePort)
+      .add("-timeout", conf.clusterStartTimeout)
+      .add("-disown")
+      .add("-sw_ext_backend")
+      .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
+      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !isRestApiBasedClient(hc))
+      .add("-run_as_user", conf.runAsUser)
+      .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)
+      .add("-output", conf.HDFSOutputDir)
+      .add("-context_path", conf.contextPath)
+      .add("-network", conf.nodeNetworkMask)
+      .add(ExternalH2OBackend.getH2OSecurityArgs(hc.getConf))
+      .add("-principal", conf.kerberosPrincipal)
+      .add("-keytab", conf.kerberosKeytab)
+      .add("-driverif", conf.externalH2ODriverIf)
+      .add("-driverport", conf.externalH2ODriverPort)
+      .add("-driverportrange", conf.externalH2ODriverPortRange)
+      .add("-extramempercent", conf.externalExtraMemoryPercent)
+      .add(conf.nodeExtraProperties)
+      .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
+      .buildArgs()
+  }
+
+  private def getSecurityFiles(conf: H2OConf): Option[String] = {
+    conf.sslConf match {
+      case Some(internalSecurityConf) =>
+        // In External Backend, auto mode we need distribute the keystore files to the H2O cluster
+        val props = new Properties()
+        props.load(new FileInputStream(internalSecurityConf))
+        val keyStoreFiles = Array(props.get("h2o_ssl_jks_internal"), props.get("h2o_ssl_jts")).map(f => SparkFiles.get(f.asInstanceOf[String]))
+        logInfo(s"Starting external H2O cluster in encrypted mode with config: $internalSecurityConf")
+        Some(keyStoreFiles.mkString(","))
+      case _ =>
+        None
+    }
   }
 
   private def stopExternalH2OCluster(): Int = {

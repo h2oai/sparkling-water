@@ -32,6 +32,20 @@ class ArgumentBuilder() {
     this
   }
 
+  def add(args: Seq[String], condition: Boolean): ArgumentBuilder = {
+    if (condition) {
+      add(args)
+    }
+    this
+  }
+
+  def add(value: Option[Any]): ArgumentBuilder = {
+    if (value.isDefined) {
+      arguments = arguments ++ Seq(value.get.toString)
+    }
+    this
+  }
+
   def add(arg: String, value: String): ArgumentBuilder = {
     arguments = arguments ++ Seq(arg, value.toString)
     this
