@@ -140,7 +140,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-files", getSecurityFiles(conf))
       .add(conf.YARNQueue.map(queue => s"-Dmapreduce.job.queuename=$queue"))
       .add(s"-Dmapreduce.job.tags=$yarnAppTags")
-      .add(s"-Dai.h2o.args.config=sparkling-water-external")
+      .add(s"-Dai.h2o.args.config=sparkling-water-external") // H2O custom application master
       .add("-nodes", conf.clusterSize)
       .add("-notify", conf.clusterInfoFile)
       .add("-jobname", conf.cloudName)
