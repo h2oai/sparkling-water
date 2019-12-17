@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
+import java.io.{BufferedOutputStream, File, FileOutputStream}
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -25,12 +25,11 @@ import java.util.Date
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
-import org.apache.http.{HttpEntity, HttpHeaders}
 import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
-import org.apache.http.impl.client.{DefaultHttpClient, HttpClientBuilder}
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
+import org.apache.http.{HttpEntity, HttpHeaders}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
@@ -187,15 +186,15 @@ trait RestApiUtils {
   }
 
   /**
-    *
-    * @param endpoint      An address of H2O node with exposed REST endpoint
-    * @param suffix        REST relative path representing a specific call
-    * @param conf          H2O conf object
-    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-    *                      consists of the class containing the field and the field name.
-    * @tparam ResultType A type that the result will be deserialized to
-    * @return A deserialized object
-    */
+   *
+   * @param endpoint      An address of H2O node with exposed REST endpoint
+   * @param suffix        REST relative path representing a specific call
+   * @param conf          H2O conf object
+   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+   *                      consists of the class containing the field and the field name.
+   * @tparam ResultType A type that the result will be deserialized to
+   * @return A deserialized object
+   */
   private def query[ResultType: ClassTag](
                                            endpoint: URI,
                                            suffix: String,
@@ -206,15 +205,15 @@ trait RestApiUtils {
 
 
   /**
-    *
-    * @param endpoint      An address of H2O node with exposed REST endpoint
-    * @param suffix        REST relative path representing a specific call
-    * @param conf          H2O conf object
-    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-    *                      consists of the class containing the field and the field name.
-    * @tparam ResultType A type that the result will be deserialized to
-    * @return A deserialized object
-    */
+   *
+   * @param endpoint      An address of H2O node with exposed REST endpoint
+   * @param suffix        REST relative path representing a specific call
+   * @param conf          H2O conf object
+   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+   *                      consists of the class containing the field and the field name.
+   * @tparam ResultType A type that the result will be deserialized to
+   * @return A deserialized object
+   */
   private def update[ResultType: ClassTag](
                                             endpoint: URI,
                                             suffix: String,
@@ -289,9 +288,9 @@ trait RestApiUtils {
     }
   }
 
+
   private lazy val httpClient = HttpClientBuilder
     .create()
-    .setConnectionManager(new PoolingHttpClientConnectionManager)
     .build()
 
   private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): HttpEntity = {

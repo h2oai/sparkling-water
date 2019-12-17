@@ -25,7 +25,7 @@ import java.util.jar.JarFile
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
-import org.apache.spark.internal.Logging
+import org.apache.spark.expose.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.RestAPIManager
