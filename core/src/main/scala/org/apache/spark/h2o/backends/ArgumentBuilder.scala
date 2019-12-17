@@ -33,7 +33,7 @@ class ArgumentBuilder() {
   }
 
   def add(args: Seq[String], condition: Boolean): ArgumentBuilder = {
-    if (condition){
+    if (condition) {
       add(args)
     }
     this
