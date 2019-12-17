@@ -21,7 +21,7 @@ import time
 import requests
 from pysparkling.context import H2OContext
 
-from tests import unit_test_utils
+from tests.unit_test_utils import *
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 
 
@@ -111,5 +111,5 @@ def testConversionWorksAfterNewlyStartedContext(spark):
     h2o_frame = context2.as_h2o_frame(rdd)
     assert h2o_frame[0, 0] == 0.5
     assert h2o_frame[1, 0] == 1.3333333333
-    unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
+    asert_h2o_frame(h2o_frame, rdd)
     context2.stop()
