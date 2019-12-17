@@ -387,14 +387,6 @@ object ExternalH2OBackend extends ExternalBackendUtils {
           """.stripMargin)
       }
 
-      if (conf.clientCheckRetryTimeout < conf.backendHeartbeatInterval) {
-        logWarning(s"%s needs to be larger than %s, increasing the value to %d".format(
-          SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
-          SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
-          conf.backendHeartbeatInterval * 6
-        ))
-      }
-
       if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
         logInfo(
           s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
@@ -402,6 +394,15 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         conf.setH2ODriverPath(driverPath.get)
       }
 
+      if (conf.clientCheckRetryTimeout < conf.backendHeartbeatInterval) {
+        logWarning(s"%s needs to be larger than %s, increasing the value to %d".format(
+          SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
+          SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
+          conf.backendHeartbeatInterval * 6
+        ))
+        conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
+      }
+      
       if (conf.cloudName.isEmpty) {
         conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
       }
