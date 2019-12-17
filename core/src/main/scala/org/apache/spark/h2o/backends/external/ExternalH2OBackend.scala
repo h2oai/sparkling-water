@@ -30,7 +30,6 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.RestAPIManager
 import water.init.{AbstractBuildVersion, NetworkUtils}
-import water.util.Log
 import water.{H2O, H2OStarter, MRTask}
 
 import scala.io.Source
@@ -242,7 +241,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       }
       if (discoveredSize < expectedSize) {
         if (conf.isAutoClusterStartUsed) {
-          Log.err(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+          logError(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
           H2O.shutdown(-1)
         }
         throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
@@ -397,7 +396,7 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       }
 
       if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
-        log.info(
+        logInfo(
           s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
              |Specified path is: ${driverPath.get}""".stripMargin)
         conf.setH2ODriverPath(driverPath.get)
@@ -415,14 +414,14 @@ object ExternalH2OBackend extends ExternalBackendUtils {
 
       if (conf.getOption("spark.yarn.principal").isDefined &&
         conf.kerberosPrincipal.isEmpty) {
-        Log.info(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
+        logInfo(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
           s" not set. Passing the configuration to H2O.")
         conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
       }
 
       if (conf.getOption("spark.yarn.keytab").isDefined &&
         conf.kerberosKeytab.isEmpty) {
-        Log.info(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
+        logInfo(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
           s" not set. Passing the configuration to H2O.")
         conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
       }

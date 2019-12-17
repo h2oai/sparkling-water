@@ -21,7 +21,7 @@ import java.io.File
 
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.AzureDatabricksUtils
-import org.apache.spark.internal.Logging
+import org.apache.spark.expose.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
