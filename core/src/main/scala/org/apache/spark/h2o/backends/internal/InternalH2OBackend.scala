@@ -114,7 +114,7 @@ object InternalH2OBackend extends InternalBackendUtils {
 
 
   def startH2OWorker(conf: H2OConf): NodeDesc = {
-    var args = getH2OWorkerArgs(conf)
+    val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, true)
