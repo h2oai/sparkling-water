@@ -51,7 +51,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
     val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
 
-    val notifFile = new File(hc.getConf.clusterInfoFile.get)
+    val notifFile = new File(conf.clusterInfoFile.get)
     if (!notifFile.exists()) {
       throw new RuntimeException(
         s"""
@@ -66,12 +66,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       )
     }
     // get ip port
-    val clusterInfo = Source.fromFile(hc.getConf.clusterInfoFile.get).getLines
+    val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines
     val ipPort = clusterInfo.next()
     yarnAppId = Some(clusterInfo.next().replace("job", "application"))
     externalIP = Some(ipPort)
     // we no longer need the notification file
-    new File(hc.getConf.clusterInfoFile.get).delete()
+    new File(conf.clusterInfoFile.get).delete()
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
     logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
 
@@ -145,8 +145,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-notify", conf.clusterInfoFile)
       .add("-jobname", conf.cloudName)
       .add("-mapperXmx", conf.mapperXmx)
-      .add(Seq("-J", "-log_level", "-J", conf.h2oNodeLogLevel))
       .add("-nthreads", conf.nthreads)
+      .add(Seq("-J", "-log_level", "-J", conf.h2oNodeLogLevel))
       .add("-port_offset", conf.internalPortOffset)
       .add("-baseport", conf.nodeBasePort)
       .add("-timeout", conf.clusterStartTimeout)
@@ -159,7 +159,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-output", conf.HDFSOutputDir)
       .add("-context_path", conf.contextPath)
       .add("-network", conf.nodeNetworkMask)
-      .add(ExternalH2OBackend.getH2OSecurityArgs(hc.getConf))
+      .add(ExternalH2OBackend.getH2OSecurityArgs(conf))
       .add("-principal", conf.kerberosPrincipal)
       .add("-keytab", conf.kerberosKeytab)
       .add("-driverif", conf.externalH2ODriverIf)
