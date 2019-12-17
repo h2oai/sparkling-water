@@ -23,12 +23,14 @@ import java.util.Properties
 
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
+import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.RestAPIManager
 import water.init.NetworkUtils
+import water.util.PrettyPrint
 import water.{H2O, H2OStarter}
 
 import scala.io.Source
@@ -172,6 +174,32 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     ipPort
   }
 
+  private def verifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
+    try {
+      lockCloud(conf)
+      val nodes = getNodes(conf)
+      verifyWebOpen(nodes, conf)
+      if (!conf.isBackendVersionCheckDisabled()) {
+        verifyVersionFromRestCall(nodes)
+      }
+      val leaderIpPort = getLeaderNode(conf).ipPort()
+      if (conf.h2oCluster.get != leaderIpPort){
+        logInfo(s"Updating spark.ext.h2o.cloud.representative to H2O's leader node $leaderIpPort")
+        conf.setH2OCluster(leaderIpPort)
+      }
+      nodes
+    } catch {
+      case cause: RestApiException =>
+        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+        if (conf.isAutoClusterStartUsed) {
+          stopExternalH2OCluster()
+        }
+        throw new H2OClusterNotReachableException(
+          s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+             |H2OContext has not been created.""".stripMargin, cause)
+    }
+  }
+
   override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
       logInfo("Starting the external H2O cluster on YARN.")
@@ -194,30 +222,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
     logInfo("Connecting to external H2O cluster.")
     val clusterBuildTimeout = conf.cloudTimeout
+
+    val nodesFromRestApi = verifyWorkerNodes(conf)
     val nodes = if (isRestApiBasedClient(hc)) {
-      try {
-        lockCloud(conf)
-        val nodes = getNodes(conf)
-        verifyWebOpen(nodes, conf)
-        val leaderIpPort = getLeaderNode(conf).ipPort()
-        if (conf.h2oCluster.get != leaderIpPort){
-          logInfo(s"Updating spark.ext.h2o.cloud.representative to H2O's leader node $leaderIpPort")
-          conf.setH2OCluster(leaderIpPort)
-        }
-        if (!conf.isBackendVersionCheckDisabled()) {
-          verifyVersionFromRestCall(nodes)
-        }
-        nodes
-      } catch {
-        case cause: RestApiException =>
-          val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-          if (conf.isAutoClusterStartUsed) {
-            stopExternalH2OCluster()
-          }
-          throw new H2OClusterNotReachableException(
-            s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
-               |H2OContext has not been created.""".stripMargin, cause)
-      }
+      nodesFromRestApi
     } else {
       val h2oClientArgs = ExternalH2OBackend.getH2OClientArgs(conf).toArray
       logDebug(s"Arguments used for launching the H2O client node: ${h2oClientArgs.mkString(" ")}")
@@ -302,6 +310,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     }
   }
 
+  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
+    val conf = hc.getConf
+    val ping = getPingInfo(conf)
+    val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
+    SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
+  }
 }
 
 object ExternalH2OBackend extends ExternalBackendUtils {

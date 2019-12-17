@@ -19,6 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.backends.SparklingBackend
+import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
@@ -27,7 +28,7 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.RpcUtils
 import water.api.RestAPIManager
-import water.util.Log
+import water.util.{Log, PrettyPrint}
 import water.{H2O, H2OStarter}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
@@ -45,6 +46,12 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   }
 
   override def epilog = ""
+
+  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
+    val members = H2O.CLOUD.members() ++ Array(H2O.SELF)
+    val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
+    SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
+  }
 }
 
 object InternalH2OBackend extends InternalBackendUtils {
@@ -101,9 +108,9 @@ object InternalH2OBackend extends InternalBackendUtils {
   }
 
   /**
-    * Used in local mode where we start directly one H2O worker node
-    * without additional client
-    */
+   * Used in local mode where we start directly one H2O worker node
+   * without additional client
+   */
   private def startH2OWorkerAsClient(conf: H2OConf): NodeDesc = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)

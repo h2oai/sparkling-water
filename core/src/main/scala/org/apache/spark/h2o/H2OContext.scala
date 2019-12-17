@@ -30,7 +30,6 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.ShutdownHookManager
 import water._
-import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -38,49 +37,59 @@ import scala.reflect.runtime.universe._
 import scala.util.control.NoStackTrace
 
 /**
-  * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
-  * to operate with it.
-  *
-  * H2O Context provides conversion methods from RDD/DataFrame to H2OFrame and back and also provides implicits
-  * conversions for desired transformations
-  *
-  * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
-  * mode, it tries to connect to existing H2O cluster using the provided spark
-  * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
-  * that each Spark executor will have one h2o instance running in it.  This mode is not
-  * recommended for big clusters and clusters where Spark executors are not stable.
-  *
-  * Cluster mode can be set using the spark configuration
-  * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
-  * can be set in H2O configuration class H2OConf
-  */
+ * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
+ * to operate with it.
+ *
+ * H2O Context provides conversion methods from RDD/DataFrame to H2OFrame and back and also provides implicits
+ * conversions for desired transformations
+ *
+ * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
+ * mode, it tries to connect to existing H2O cluster using the provided spark
+ * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
+ * that each Spark executor will have one h2o instance running in it.  This mode is not
+ * recommended for big clusters and clusters where Spark executors are not stable.
+ *
+ * Cluster mode can be set using the spark configuration
+ * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
+ * can be set in H2O configuration class H2OConf
+ */
 /**
-  * Create new H2OContext based on provided H2O configuration
-  *
-  * @param sparkSession Spark Session
-  * @param conf         H2O configuration
-  */
+ * Create new H2OContext based on provided H2O configuration
+ *
+ * @param sparkSession Spark Session
+ * @param conf         H2O configuration
+ */
 abstract class H2OContext private(val sparkSession: SparkSession, private val conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
   val sparkContext = sparkSession.sparkContext
   private val backendHeartbeatThread = new Thread {
     override def run(): Unit = {
       while (!Thread.interrupted()) {
-        val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
-        if (conf.runsInExternalClusterMode) {
-          if (!swHeartBeatInfo.cloudHealthy) {
-            logError("External H2O cluster not healthy!")
-            if (conf.isKillOnUnhealthyClusterEnabled) {
-              logError("Stopping external H2O cluster as it is not healthy.")
-              if (isRestAPIBased) {
-                H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-              } else {
-                H2OContext.this.stop(true)
+        try {
+          val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
+          if (conf.runsInExternalClusterMode) {
+            if (!swHeartBeatInfo.cloudHealthy) {
+              logError("External H2O cluster not healthy!")
+              if (conf.isKillOnUnhealthyClusterEnabled) {
+                logError("Stopping external H2O cluster as it is not healthy.")
+                if (isRestAPIBased) {
+                  H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+                } else {
+                  H2OContext.this.stop(true)
+                }
               }
             }
           }
+          sparkContext.listenerBus.post(swHeartBeatInfo)
+        } catch {
+          case cause: RestApiException =>
+            H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+            throw new H2OClusterNotReachableException(
+              s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
+                 |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
+                 |external H2O cluster.""".stripMargin, cause)
         }
-        sparkContext.listenerBus.post(swHeartBeatInfo)
+
         try {
           Thread.sleep(conf.backendHeartbeatInterval)
         } catch {
@@ -121,15 +130,15 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   private var shutdownHookRef: AnyRef = _
 
   /**
-    * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
-    * otherwise it creates new H2O cluster living in Spark
-    */
+   * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
+   * otherwise it creates new H2O cluster living in Spark
+   */
   protected def init(): H2OContext = {
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
-    shutdownHookRef = ShutdownHookManager.addShutdownHook(10){ () =>
-        logWarning("Spark shutdown hook called, stopping H2OContext!")
-        stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
+    shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
+      logWarning("Spark shutdown hook called, stopping H2OContext!")
+      stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
     }
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + sparkContext.version)
@@ -163,7 +172,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
-    backendHeartbeatThread.start() // start periodical updates of the UI
+    backendHeartbeatThread.start() // start backend heartbeats
     this
   }
 
@@ -171,7 +180,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
   protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo
 
-  protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent
+  protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = backend.getSparklingWaterHeartbeatEvent
 
   private[this] def updateUIAfterStart(): Unit = {
     val nodes = getH2ONodes()
@@ -187,15 +196,16 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
 
   /**
-    * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
-    */
+   * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
+   */
   def getConf: H2OConf = conf.clone()
 
   /**
-    * The method transforms RDD to H2OFrame and returns String representation of its key.
-    * @param rdd Input RDD
-    * @return String representation of H2O Frame Key
-    */
+   * The method transforms RDD to H2OFrame and returns String representation of its key.
+   *
+   * @param rdd Input RDD
+   * @return String representation of H2O Frame Key
+   */
   def asH2OFrameKeyString(rdd: SupportedRDD): String = asH2OFrameKeyString(rdd, None)
 
   def asH2OFrameKeyString(rdd: SupportedRDD, frameName: String): String = asH2OFrameKeyString(rdd, Some(frameName))
@@ -230,10 +240,11 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
   /**
-    * The method transforms Spark DataFrame to H2OFrame and returns String representation of its key.
-    * @param df Input data frame
-    * @return String representation of H2O Frame Key
-    */
+   * The method transforms Spark DataFrame to H2OFrame and returns String representation of its key.
+   *
+   * @param df Input data frame
+   * @return String representation of H2O Frame Key
+   */
   def asH2OFrameKeyString(df: DataFrame): String = asH2OFrameKeyString(df, None)
 
   def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
@@ -269,21 +280,21 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   def asH2OFrame(fr: Frame): H2OFrame = new H2OFrame(fr)
 
   /** Convert given H2O frame into a Product RDD type
-    *
-    * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
-    * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
-    * and we are not able to create instance of class T without outer scope - which is impossible to get.
-    * */
+   *
+   * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
+   * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
+   * and we are not able to create instance of class T without outer scope - which is impossible to get.
+   * */
   def asRDD[A <: Product : TypeTag : ClassTag](fr: H2OFrame): RDD[A] = SupportedRDDConverter.toRDD[A, H2OFrame](this, fr)
 
   /** A generic convert of Frame into Product RDD type
-    *
-    * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
-    * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
-    * and we are not able to create instance of class T without outer scope - which is impossible to get.
-    *
-    * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
-    */
+   *
+   * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
+   * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
+   * and we are not able to create instance of class T without outer scope - which is impossible to get.
+   *
+   * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
+   */
   def asRDD[A <: Product : TypeTag : ClassTag] = new {
     def apply[T <: Frame](fr: T): H2ORDD[A, T] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
   }
@@ -353,9 +364,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
   }
 
   /** Stops H2O context.
-    *
-    * @param stopSparkContext stop also spark context
-    */
+   *
+   * @param stopSparkContext stop also spark context
+   */
   def stop(stopSparkContext: Boolean = false): Unit = {
     stop(stopSparkContext, stopJvm = true, inShutdownHook = false)
   }
@@ -442,12 +453,6 @@ object H2OContext extends Logging {
       )
     }
 
-    override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
-      val members = H2O.CLOUD.members() ++ Array(H2O.SELF)
-      val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
-      SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
-    }
-
     override def getH2ONodes(): Array[NodeDesc] = h2oNodes
 
     override protected def initBackend(): Unit = {
@@ -477,6 +482,7 @@ object H2OContext extends Logging {
     private var flowIp: String = _
     private var flowPort: Int = _
     private var leaderNode: NodeDesc = _
+
     override protected def getH2OEndpointIp(): String = leaderNode.hostname
 
     override protected def getH2OEndpointPort(): Int = leaderNode.port
@@ -492,21 +498,6 @@ object H2OContext extends Logging {
         nodes.map(_.ipPort()),
         backend.backendUIInfo,
         cloudV3.cloud_uptime_millis)
-    }
-
-    override protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = {
-      try {
-        val ping = getPingInfo(conf)
-        val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-        SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
-      } catch {
-        case cause: RestApiException =>
-          H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-          throw new H2OClusterNotReachableException(
-            s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
-               |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
-               |external H2O cluster.""".stripMargin, cause)
-      }
     }
 
     override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)
@@ -569,13 +560,13 @@ object H2OContext extends Logging {
   private val instantiatedContext = new AtomicReference[H2OContext]()
 
   /**
-    * Tries to get existing H2O Context. If it is not there, ok.
-    * Note that this method has to be here because otherwise ScalaCodeHandlerSuite will fail in one of the tests.
-    * If you want to throw an exception when the context is missing, use ensure()
-    * If you want to create the context if it is not missing, use getOrCreate() (if you can).
-    *
-    * @return Option containing H2O Context or None
-    */
+   * Tries to get existing H2O Context. If it is not there, ok.
+   * Note that this method has to be here because otherwise ScalaCodeHandlerSuite will fail in one of the tests.
+   * If you want to throw an exception when the context is missing, use ensure()
+   * If you want to create the context if it is not missing, use getOrCreate() (if you can).
+   *
+   * @return Option containing H2O Context or None
+   */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
   def ensure(onError: => String = "H2OContext has to be started in order to save/load data using H2O Data source."): H2OContext =
@@ -596,13 +587,14 @@ object H2OContext extends Logging {
       InternalH2OBackend.checkAndUpdateConf(conf)
     }
   }
+
   /**
-    * Get existing or create new H2OContext based on provided H2O configuration
-    *
-    * @param sparkSession Spark Session
-    * @param conf         H2O configuration
-    * @return H2O Context
-    */
+   * Get existing or create new H2OContext based on provided H2O configuration
+   *
+   * @param sparkSession Spark Session
+   * @param conf         H2O configuration
+   * @return H2O Context
+   */
   def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
     val checkedConf = checkAndUpdateConf(conf)
     val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
@@ -642,13 +634,13 @@ object H2OContext extends Logging {
   }
 
   /**
-    * Get existing or create new H2OContext based on provided H2O configuration. It searches the configuration
-    * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
-    * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
-    *
-    * @param sparkSession Spark Session
-    * @return H2O Context
-    */
+   * Get existing or create new H2OContext based on provided H2O configuration. It searches the configuration
+   * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
+   * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
+   *
+   * @param sparkSession Spark Session
+   * @return H2O Context
+   */
   def getOrCreate(sparkSession: SparkSession): H2OContext = {
     getOrCreate(sparkSession, Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf(sparkSession)))
   }
