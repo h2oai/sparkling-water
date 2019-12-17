@@ -20,7 +20,7 @@ package org.apache.spark.h2o.backends
 import java.io.File
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.AzureDatabricksUtils
+import org.apache.spark.h2o.utils.{AzureDatabricksUtils, NodeDesc}
 import org.apache.spark.expose.Logging
 import org.apache.spark.network.Security
 import org.apache.spark.sql.SparkSession
@@ -28,29 +28,29 @@ import org.apache.spark.util.Utils
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 
 /**
-  * Shared functions which can be used by both backends
-  */
+ * Shared functions which can be used by both backends
+ */
 private[backends] trait SharedBackendUtils extends Logging with Serializable {
 
   /**
-    * Return hostname of this node based on SparkEnv
-    *
-    * @param env SparkEnv instance
-    * @return hostname of the node
-    */
+   * Return hostname of this node based on SparkEnv
+   *
+   * @param env SparkEnv instance
+   * @return hostname of the node
+   */
   def getHostname(env: SparkEnv): String = env.blockManager.blockManagerId.host
 
   /** Check Spark and H2O environment, update it if necessary and and warn about possible problems.
-    *
-    * This method checks the environments for generic configuration which does not depend on particular backend used
-    * In order to check the configuration for specific backend, method checkAndUpdateConf on particular backend has to be
-    * called.
-    *
-    * This method has to be called at the start of each method which override this one
-    *
-    * @param conf H2O Configuration to check
-    * @return checked and updated configuration
-    * */
+   *
+   * This method checks the environments for generic configuration which does not depend on particular backend used
+   * In order to check the configuration for specific backend, method checkAndUpdateConf on particular backend has to be
+   * called.
+   *
+   * This method has to be called at the start of each method which override this one
+   *
+   * @param conf H2O Configuration to check
+   * @return checked and updated configuration
+   **/
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
     if (conf.h2oClientLogDir.isEmpty) {
@@ -116,16 +116,13 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   }
 
   def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
-    for(fileProperty <- conf.getFileProperties()) {
+    for (fileProperty <- conf.getFileProperties()) {
       for (filePath <- conf.getOption(fileProperty._1)) {
         sc.addFile(filePath)
       }
     }
   }
 
-  private def getDistributedFilePath(fileConf: Option[String]): Option[String] = {
-    fileConf.map(name => SparkFiles.get(new File(name).getName))
-  }
 
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
@@ -146,11 +143,11 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   }
 
   /**
-    * Get H2O arguments which are passed to every node - regular node, client node
-    *
-    * @param conf H2O Configuration
-    * @return sequence of arguments
-    */
+   * Get H2O arguments which are passed to every node - regular node, client node
+   *
+   * @param conf H2O Configuration
+   * @return sequence of arguments
+   */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add("-allow_clients")
@@ -196,39 +193,26 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   }
 
   /**
-    * Get common arguments for H2O client.
-    *
-    * @return array of H2O client arguments.
-    */
+   * Get common arguments for H2O client.
+   *
+   * @return array of H2O client arguments.
+   */
   def getH2OClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OWorkerAsClientArgs(conf))
       .add("-client")
       .buildArgs()
   }
-  
+
+  def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
+    val flatFileString = toFlatFileString(executors)
+    val flatFile = saveFlatFileAsFile(flatFileString)
+    h2oArgs.toArray ++ Array("-flatfile", flatFile.getAbsolutePath)
+  }
+
   def createTempDir(): File = {
     val sparkLocalDir = Utils.getLocalDir(SparkEnv.get.conf)
     Utils.createTempDir(sparkLocalDir, "sparkling-water")
-  }
-
-  /**
-    * Increment log level to at least desired minimal log level.
-    *
-    * @param logLevel    actual log level
-    * @param minLogLevel desired minimal log level
-    * @return if logLevel is less verbose than minLogLeve then minLogLevel, else logLevel
-    */
-  private def incLogLevel(logLevel: String, minLogLevel: String): String = {
-    val logLevels = Seq(("OFF", 0), ("FATAL", 1), ("ERROR", 2),
-      ("WARN", 3), ("INFO", 4), ("DEBUG", 5), ("TRACE", 6), ("ALL", 7))
-    val ll = logLevels.find(t => t._1 == logLevel)
-    val mll = logLevels.find(t => t._1 == minLogLevel)
-    if (mll.isEmpty) {
-      logLevel
-    } else {
-      ll.map(v => if (v._2 < mll.get._2) minLogLevel else logLevel).getOrElse(minLogLevel)
-    }
   }
 
   def saveFlatFileAsFile(content: String): File = {
@@ -242,4 +226,39 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
     flatFile
   }
+
+  protected def translateHostnameToIp(hostname: String): String = {
+    import java.net.InetAddress
+    InetAddress.getByName(hostname).getHostAddress
+  }
+
+  private def getDistributedFilePath(fileConf: Option[String]): Option[String] = {
+    fileConf.map(name => SparkFiles.get(new File(name).getName))
+  }
+
+  /**
+   * Increment log level to at least desired minimal log level.
+   *
+   * @param logLevel    actual log level
+   * @param minLogLevel desired minimal log level
+   * @return if logLevel is less verbose than minLogLeve then minLogLevel, else logLevel
+   */
+  private def incLogLevel(logLevel: String, minLogLevel: String): String = {
+    val logLevels = Seq(("OFF", 0), ("FATAL", 1), ("ERROR", 2),
+      ("WARN", 3), ("INFO", 4), ("DEBUG", 5), ("TRACE", 6), ("ALL", 7))
+    val ll = logLevels.find(t => t._1 == logLevel)
+    val mll = logLevels.find(t => t._1 == minLogLevel)
+    if (mll.isEmpty) {
+      logLevel
+    } else {
+      ll.map(v => if (v._2 < mll.get._2) minLogLevel else logLevel).getOrElse(minLogLevel)
+    }
+  }
+
+  private def toFlatFileString(executors: Array[NodeDesc]): String = {
+    executors.map {
+      en => s"${translateHostnameToIp(en.hostname)}:${en.port}"
+    }.mkString("\n")
+  }
+
 }

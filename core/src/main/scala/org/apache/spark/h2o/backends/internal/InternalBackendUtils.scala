@@ -40,12 +40,12 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
   }
 
   /**
-    * Produce arguments for H2O node based on provided configuration and environment
-    *
-    * It is expected to run on the executor machine
-    *
-    * @return array of H2O launcher command line arguments
-    */
+   * Produce arguments for H2O node based on provided configuration and environment
+   *
+   * It is expected to run on the executor machine
+   *
+   * @return array of H2O launcher command line arguments
+   */
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
     val ip = {
       val hostname = getHostname(SparkEnv.get)
@@ -64,28 +64,11 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
       .buildArgs()
   }
 
-  def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
-    val flatFileString = toFlatFileString(executors)
-    val flatFile = saveFlatFileAsFile(flatFileString)
-    h2oArgs.toArray ++ Array("-flatfile", flatFile.getAbsolutePath)
-  }
-
   private def getH2ONodeLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
     Option(System.getProperty("spark.yarn.app.container.log.dir"))
       .map(_ + java.io.File.separator)
       .orElse(conf.h2oNodeLogDir)
       .getOrElse(defaultLogDir(sparkEnv.conf.getAppId))
-  }
-
-  private def translateHostnameToIp(hostname: String): String = {
-    import java.net.InetAddress
-    InetAddress.getByName(hostname).getHostAddress
-  }
-
-  private def toFlatFileString(executors: Array[NodeDesc]): String = {
-    executors.map {
-      en => s"${translateHostnameToIp(en.hostname)}:${en.port}"
-    }.mkString("\n")
   }
 
   private[spark] def guessTotalExecutorSize(sc: SparkContext): Option[Int] = {
