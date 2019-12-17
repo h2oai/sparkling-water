@@ -45,7 +45,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     nodes
   }
 
-  override def epilog = ""
+  override def epilog: String = ""
 
   override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
     val members = H2O.CLOUD.members() ++ Array(H2O.SELF)

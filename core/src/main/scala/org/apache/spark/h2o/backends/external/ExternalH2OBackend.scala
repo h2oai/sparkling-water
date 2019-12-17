@@ -40,50 +40,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None
 
-  private def isRestApiBasedClient(hc: H2OContext): Boolean = {
-    hc.getConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
-  }
-
-  def launchH2OOnYarn(conf: H2OConf): String = {
-    val cmdToLaunch = getExternalH2ONodesArguments(conf)
-    logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
-
-    val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
-
-    val notifFile = new File(conf.clusterInfoFile.get)
-    if (!notifFile.exists()) {
-      throw new RuntimeException(
-        s"""
-           |Cluster notification file ${notifFile.getAbsolutePath} could not be created. The possible causes are:
-           |
-           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
-           |   to increase the timeout for starting the external cluster as:
-           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
-           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
-           |
-           |2) The file could not be created because of missing write rights.""".stripMargin
-      )
-    }
-    // get ip port
-    val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines
-    val ipPort = clusterInfo.next()
-    yarnAppId = Some(clusterInfo.next().replace("job", "application"))
-    externalIP = Some(ipPort)
-    // we no longer need the notification file
-    new File(conf.clusterInfoFile.get).delete()
-    logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
-    logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
-
-    assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
-    ipPort
-  }
-
-
   override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
       logInfo("Starting the external H2O cluster on YARN.")
-      val ipPort = launchH2OOnYarn(conf)
+      val ipPort = launchExternalH2OOnYarn(conf)
       conf.setH2OCluster(ipPort)
       val clientIp = NetworkUtils.indentifyClientIp(ipPort.split(":")(0))
       if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
@@ -116,7 +76,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
   }
 
-  override def epilog =
+  override def epilog: String =
     if (hc.getConf.isAutoClusterStartUsed) {
       s"""
          | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
@@ -130,6 +90,45 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val ping = getPingInfo(conf)
     val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
     SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
+  }
+
+  private def isRestApiBasedClient(hc: H2OContext): Boolean = {
+    hc.getConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
+      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
+  }
+
+  private def launchExternalH2OOnYarn(conf: H2OConf): String = {
+    val cmdToLaunch = getExternalH2ONodesArguments(conf)
+    logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
+
+    val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
+
+    val notifyFile = new File(conf.clusterInfoFile.get)
+    if (!notifyFile.exists()) {
+      throw new RuntimeException(
+        s"""
+           |Cluster notification file ${notifyFile.getAbsolutePath} could not be created. The possible causes are:
+           |
+           |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
+           |   to increase the timeout for starting the external cluster as:
+           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
+           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
+           |
+           |2) The file could not be created because of missing write rights.""".stripMargin
+      )
+    }
+    // get ip port
+    val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines()
+    val ipPort = clusterInfo.next()
+    yarnAppId = Some(clusterInfo.next().replace("job", "application"))
+    externalIP = Some(ipPort)
+    // we no longer need the notification file
+    new File(conf.clusterInfoFile.get).delete()
+    logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
+    logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
+
+    assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
+    ipPort
   }
 
   private def getExternalH2ONodesArguments(conf: H2OConf): Seq[String] = {
