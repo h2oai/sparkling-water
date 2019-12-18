@@ -65,7 +65,9 @@ dependencies {
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
     // Put Spark Assembly on runtime path
-    integTestRuntime fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar')
+    integTestRuntime fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
+    scriptsTestRuntime fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
+
 }
 
 integTest {
