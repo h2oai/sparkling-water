@@ -81,7 +81,11 @@ In manual mode of external backend always require a specification of cluster loc
 
 In previous versions, H2O client was able to discover nodes using the multicast search.
 That is now removed and IP:Port of any node of external cluster to which we need
-to connect is required. This requirement may be removed in the future architecture of Sparkling Water.
+to connect is required. This also means that in the users of multicast cloud up in case of external H2O backend in
+manual standalone (no Hadoop) mode now need to pass the flatfile argument external H2O.
+For more information, please see :ref:`external-backend-manual-standalone`.
+
+
 
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,7 +128,7 @@ Removal of Deprecated Methods and Classes
   On ``H2OConf`` Scala API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
   the following methods were removed: ``uiUpdateInterval``, ``setUiUpdateInterval``, ``killOnUnhealthyClusterInterval``,
   ``setKillOnUnhealthyClusterInterval``, ``healthCheckInterval`` and ``setHealthCheckInterval``. On ``H2OConf`` Python
-   API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
+  API, the methods ``backendHeartbeatInterval`` and ``setBackendHeartbeatInterval`` were added and
   the following methods were removed: ``ui_update_interval``, ``set_ui_update_interval``, ``kill_on_unhealthy_cluster_interval``,
   ``set_kill_on_unhealthy_cluster_interval``, ``get_health_check_interval`` and ``set_health_check_interval``. The added methods are used
   to configure single interval which was previously specified by these 3 different methods.

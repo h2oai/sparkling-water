@@ -254,6 +254,8 @@ To connect to this external cluster, run the following commands:
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
 Water should connect.
 
+.. _external-backend-manual-standalone:
+
 Manual Mode of External Backend without Hadoop (standalone)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -267,51 +269,7 @@ Get extended H2O driver:
     H2O_EXTENDED_JAR=$(./bin/get-extended-h2o.sh standalone)
 
 
-In general, an H2O cluster can be started in standalone mode in two ways: using the multicast discovery
-of the other nodes, or using the flatfile where we manually specify the exact locations of H2O nodes.
-We recommend using the flatfile for production usage of Sparkling Water, but in simple environments where
-multicast is supported, the multicast discovery works as well.
-
-
-To start an H2O cluster with 3 nodes using multicast discovery, run the following line three times:
-
-.. code:: bash
-
-    java -jar $H2O_EXTENDED_JAR -allow_clients -name test
-
-To connect to this external cluster, run the following commands:
-
-.. content-tabs::
-
-    .. tab-container:: Scala
-        :title: Scala
-
-         .. code:: scala
-
-            import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
-                        .setExternalClusterMode()
-                        .useManualClusterStart()
-                        .setClusterSize(3)
-                        .setCloudName("test")
-            val hc = H2OContext.getOrCreate(spark, conf)
-
-    .. tab-container:: Python
-        :title: Python
-
-
-         .. code:: python
-
-            from pysparkling import *
-            conf = H2OConf(spark)
-                    .set_external_cluster_mode()
-                    .use_manual_cluster_start()
-                    .set_cluster_size(3)
-                    .set_cloud_name("test")
-            hc = H2OContext.getOrCreate(spark, conf)
-
-
-To start an external H2O cluster where the nodes are discovered using the flatfile, run:
+To start an external H2O cluster, run:
 
 .. code:: bash
 
