@@ -28,6 +28,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.util.EntityUtils
 import org.apache.http.{HttpEntity, HttpHeaders}
 import org.apache.spark.h2o.H2OConf
@@ -291,6 +292,7 @@ trait RestApiUtils {
 
   private lazy val httpClient = HttpClientBuilder
     .create()
+    .setConnectionManager(new PoolingHttpClientConnectionManager)
     .build()
 
   private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): HttpEntity = {
