@@ -303,7 +303,9 @@ trait RestApiUtils {
         case unknown => throw new IllegalArgumentException(s"Unsupported HTTP request type $unknown")
       }
       getCredentials(conf).foreach(creds => request.setHeader(HttpHeaders.AUTHORIZATION, creds))
-      val result = httpClient.execute(request)
+      val result = retry(3) {
+        httpClient.execute(request)
+      }
       val statusCode = result.getStatusLine.getStatusCode
       statusCode match {
         case 401 => throw new RestApiUnauthorisedException(
@@ -320,6 +322,19 @@ trait RestApiUtils {
           s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.
              |Please verify that you are passing ip and port of existing cluster node and the cluster
              |is running with web enabled.""".stripMargin, cause)
+    }
+  }
+
+  @annotation.tailrec
+  private def retry[T](n: Int)(fn: => T): T = {
+    util.Try {
+      fn
+    } match {
+      case util.Success(x) => x
+      case _ if n > 1 =>
+        Thread.sleep(100)
+        retry(n - 1)(fn)
+      case util.Failure(e) => throw e
     }
   }
 }
