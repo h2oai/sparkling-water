@@ -20,6 +20,7 @@ start of external H2O backend.
 
 Changes on the API
 ~~~~~~~~~~~~~~~~~~
+
 The API remains unaffected for the users of automatic mode of external backend.
 
 For the users of the manual backend we have simplified the configuration and there is no need to specify a cluster size anymore in advance.
@@ -35,24 +36,26 @@ don't pass the following option to the starting command ``-disable_web``.
 
 Extended H2O Jars
 ~~~~~~~~~~~~~~~~~
+
 We removed the requirement of using extended H2O jars. So in both manual and automatic mode of the external backend you can
-download the corresponding H2O jars for the external backend via the script ``./bin/get-h2o-driver.sh``. This script
-just downloads the official H2O driver jars & they are not modified by Sparkling Water. In order to pass the Jar to
+download the corresponding H2O jars for the external backend via the script ``./bin/get-h2o-driver.sh``. This script downloads
+the official H2O driver jar which is not modified by Sparkling Water. In order to pass the Jar to
 Sparkling Water in automatic mode, please use the ``H2O_DRIVER_JAR`` environmental property instead
 of the ``H2O_EXTENDED_JAR``.
 
 This should reduce the complexity of deployment and brings more transparency as well.
 
-
 Benefits of the REST-API-based client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The new approach is the base for supporting dynamic allocation, but already has several benefits:
 
 - Extended H2O Jars should no longer be used, but original H2O driver jars.
 - No need to set client network or client ip address in case the driver and the H2O cluster
   are running in different networks. We avoid connection issues related to these configurations and
   simplify the deployment
-- Spark driver can now reconnect to a new or different H2O cluster. This can be done by running:
+- Spark driver can now reconnect to a new or different H2O cluster in case of manual start of
+  external H2O backed (Support for this in automatic mode is also planned). This can be done by running:
 
   .. code:: python
 
