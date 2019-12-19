@@ -29,16 +29,7 @@ task createDockerfile(type: Dockerfile) {
                """.stripMargin()
     
     runCommand """\\
-                R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
     getAllFullSparkVersions().each { version ->
@@ -54,50 +45,7 @@ task createDockerfile(type: Dockerfile) {
         def second = version.split("\\.")[1]
         environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
     }
-    user("jenkins")
-    runCommand """\\
-                cd /home/jenkins && \\
-                git clone https://github.com/h2oai/sparkling-water.git && \\
-                cd sparkling-water && \\
-                ./gradlew build testClasses resolveTestRuntimeDependencies -PtestMojoPipeline=true -x check -x :sparkling-water-r:build -x :sparkling-water-py:build && \\
-                cd ..
-                """
 
-    supportedSparkVersions.split(" ").each { majorVersion ->
-        runCommand """\\
-                    cd /home/jenkins/sparkling-water && \\
-                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \\
-                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin
-                    """
-    }
-    runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
-    user("root")
-
-    runCommand """\\
-                sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
-               """
-    runCommand "cd /home/jenkins && rm -rf sparkling-water"
-
-    user("jenkins")
-    environmentVariable("USER", "jenkins")
-    runCommand """\\
-               cd /home/jenkins && \\
-               wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \\
-               bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
-               rm /home/jenkins/miniconda.sh
-                """
-    environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
-    runCommand """\\
-                sudo env "PATH=\$PATH" conda install anaconda anaconda-client conda-build -y && \\
-                sudo env "PATH=\$PATH" conda update conda -y && \\
-                sudo env "PATH=\$PATH" conda update anaconda anaconda-client conda-build -y && \\
-                conda config --add channels conda-forge
-                """
-
-    runCommand "sudo chown -R jenkins:jenkins /home/jenkins/miniconda/pkgs"
-
-    environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
-    runCommand "pip install awscli --upgrade --user"
 }
 
 def getAllFullSparkVersions() {
