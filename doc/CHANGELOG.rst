@@ -1,6 +1,125 @@
 Change Log
 ==========
 
+v3.28.0.1-1 (2019-12-19)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.1-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-1492 <https://0xdata.atlassian.net/browse/SW-1492>`__ - [Spark-2.1] Switch minimal java version for Java 1.8
+   -  `SW-1743 <https://0xdata.atlassian.net/browse/SW-1743>`__ - Run rest api client tests only in external backend mode
+   -  `SW-1747 <https://0xdata.atlassian.net/browse/SW-1747>`__ - The option &quot;-sw_ext_backend&quot; must be enabled when REST-based client is used
+   -  `SW-1748 <https://0xdata.atlassian.net/browse/SW-1748>`__ - Try to fix NPE on Spark 2.1, 2.2 and 2.3 related to metadata
+   -  `SW-1749 <https://0xdata.atlassian.net/browse/SW-1749>`__ - Percentiles Are Not Propagated to Metadata
+   -  `SW-1750 <https://0xdata.atlassian.net/browse/SW-1750>`__ - Fix uploading nightlies when we build them against H2O branches
+   -  `SW-1754 <https://0xdata.atlassian.net/browse/SW-1754>`__ - H2OContext.getOrCreate Should Create Only One Cluster in Automatic Mode
+   -  `SW-1762 <https://0xdata.atlassian.net/browse/SW-1762>`__ - Fix unit_test_utils.assert_h2o_frames_are_identical for Python 2
+   -  `SW-1771 <https://0xdata.atlassian.net/browse/SW-1771>`__ - Fix documentation warnings
+   -  `SW-1774 <https://0xdata.atlassian.net/browse/SW-1774>`__ - Fix bug introduced in 3.26.11 - using flatfile for client connection in external backend
+   -  `SW-1777 <https://0xdata.atlassian.net/browse/SW-1777>`__ - Proper stopping of PySparkling in case of REST API
+   -  `SW-1782 <https://0xdata.atlassian.net/browse/SW-1782>`__ - Improve exception when the user is not authentification in rest api client
+   -  `SW-1789 <https://0xdata.atlassian.net/browse/SW-1789>`__ - Fix build with latest AutoML changes
+   -  `SW-1791 <https://0xdata.atlassian.net/browse/SW-1791>`__ - Make ProxyStarter more robust
+   -  `SW-1792 <https://0xdata.atlassian.net/browse/SW-1792>`__ - Remove extra pre_create_hook and h2o_connect_hook parameters from H2OContext on PySparkling
+   -  `SW-1793 <https://0xdata.atlassian.net/browse/SW-1793>`__ - In rest api approach, auto mode, external backend keeps running even if we weren&#39;t able to authentificate
+   -  `SW-1795 <https://0xdata.atlassian.net/browse/SW-1795>`__ - RSparkling doc is missing library(rsparkling) step
+   -  `SW-1798 <https://0xdata.atlassian.net/browse/SW-1798>`__ - Check that timeout for pinging the backend is always smaller then the timeout for killing the external cluster
+   -  `SW-1799 <https://0xdata.atlassian.net/browse/SW-1799>`__ - Fix  Invalid use of BasicClientConnManager error in client-less approach
+   -  `SW-1800 <https://0xdata.atlassian.net/browse/SW-1800>`__ - Add wait timeout to ConfigurationPropertiesTestSuite.testNotifyLocalPropertyCreatesFile 
+   -  `SW-1803 <https://0xdata.atlassian.net/browse/SW-1803>`__ - Sparkling Water does not stop automaticaly in client-less mode when hc.stop is not defined
+   -  `SW-1811 <https://0xdata.atlassian.net/browse/SW-1811>`__ - Client needs to recognize itself as client
+   -  `SW-1814 <https://0xdata.atlassian.net/browse/SW-1814>`__ - Register shutdown hook after H2O is running to avoid NPE in case app is stopped during start of H2OContext
+   -  `SW-1817 <https://0xdata.atlassian.net/browse/SW-1817>`__ - Implement retry for rest api requests
+                
+-  Epic
+        
+   -  `SW-1529 <https://0xdata.atlassian.net/browse/SW-1529>`__ - [PySparkling] Client Separation from Spark Driver
+                
+-  Story
+        
+   -  `SW-1647 <https://0xdata.atlassian.net/browse/SW-1647>`__ - Convert PySpark DataFrame to H2OFrame without Client 
+                
+-  New Feature
+        
+   -  `SW-1496 <https://0xdata.atlassian.net/browse/SW-1496>`__ - Expose H2O-3 DRF in Sparkling Water
+   -  `SW-1588 <https://0xdata.atlassian.net/browse/SW-1588>`__ - Add DRF to grid search
+   -  `SW-1606 <https://0xdata.atlassian.net/browse/SW-1606>`__ - Create gradle task to create pysparkling docker image for kubernetes
+   -  `SW-1607 <https://0xdata.atlassian.net/browse/SW-1607>`__ - Create gradle task to create rsparkling docker image for kubernetes
+   -  `SW-1689 <https://0xdata.atlassian.net/browse/SW-1689>`__ - Document how to use Sparkling Water with Kubernetes
+   -  `SW-1690 <https://0xdata.atlassian.net/browse/SW-1690>`__ - Create script to generate kubernetes docker images
+   -  `SW-1696 <https://0xdata.atlassian.net/browse/SW-1696>`__ - Remove announcement service as it is not used
+   -  `SW-1722 <https://0xdata.atlassian.net/browse/SW-1722>`__ - Ensure external backend (rest api) is stopped in automatic mode if the spark app is killed ( avoid zombie clusters)
+   -  `SW-1724 <https://0xdata.atlassian.net/browse/SW-1724>`__ - Create UDF for Ordinal Predictions
+   -  `SW-1740 <https://0xdata.atlassian.net/browse/SW-1740>`__ - Add parallelism option to GridSearch
+                
+-  Improvement
+        
+   -  `SW-1445 <https://0xdata.atlassian.net/browse/SW-1445>`__ - Remove Deprecated setters on algorithms which has enum as argument
+   -  `SW-1495 <https://0xdata.atlassian.net/browse/SW-1495>`__ - Expose Number of Trees in SW MOJO
+   -  `SW-1518 <https://0xdata.atlassian.net/browse/SW-1518>`__ - Remove deprecated parameter colsampleBytree and related methods from H2OXGBoost
+   -  `SW-1519 <https://0xdata.atlassian.net/browse/SW-1519>`__ - Switch to single value in the predictionCol and put all the details on the detailedPredictionCol
+   -  `SW-1545 <https://0xdata.atlassian.net/browse/SW-1545>`__ - Use argumentbuilder to build arguments for the external h2o backend
+   -  `SW-1572 <https://0xdata.atlassian.net/browse/SW-1572>`__ - Remove deprecated option spark.ext.h2o.external.cluster.num.h2o.nodes and related methods
+   -  `SW-1574 <https://0xdata.atlassian.net/browse/SW-1574>`__ - Remove algos and features in deprecated org.apache.spark.h2o.ml.algos package
+   -  `SW-1575 <https://0xdata.atlassian.net/browse/SW-1575>`__ - Remove deprecated option spark.ext.h2o.external.read.confirmation.timeout and related getters and setters
+   -  `SW-1586 <https://0xdata.atlassian.net/browse/SW-1586>`__ - Remove deprecated getLambda &amp; getAlpha getters and related setters
+   -  `SW-1587 <https://0xdata.atlassian.net/browse/SW-1587>`__ - Remove deprecated getter and setter SelectBestModelDecreasing on H2OGridSearch
+   -  `SW-1628 <https://0xdata.atlassian.net/browse/SW-1628>`__ - Create breaking changes document in doc there breaking changes so far in 3.28
+   -  `SW-1636 <https://0xdata.atlassian.net/browse/SW-1636>`__ - Enable to specify outputCols on H2OTargetEncoder
+   -  `SW-1661 <https://0xdata.atlassian.net/browse/SW-1661>`__ - Deprecate multicast search for cluster in external backend in manual mode
+   -  `SW-1681 <https://0xdata.atlassian.net/browse/SW-1681>`__ - Change sw version to include also patch within one h2o version
+   -  `SW-1684 <https://0xdata.atlassian.net/browse/SW-1684>`__ - Migration guide was missing several changes which are already resolved in 3.28
+   -  `SW-1704 <https://0xdata.atlassian.net/browse/SW-1704>`__ - Expose Extra Http Headers for H2O Nodes
+   -  `SW-1729 <https://0xdata.atlassian.net/browse/SW-1729>`__ - Remove deprecated option for ipBasedFlatfile
+
+   -  `SW-1730 <https://0xdata.atlassian.net/browse/SW-1730>`__ - Ensure worker nodes have always open Flow in the external Backend
+   -  `SW-1758 <https://0xdata.atlassian.net/browse/SW-1758>`__ - Reuse stopped field from scala backend
+   -  `SW-1765 <https://0xdata.atlassian.net/browse/SW-1765>`__ - Hide internal fields in H2OContext
+   -  `SW-1766 <https://0xdata.atlassian.net/browse/SW-1766>`__ - Move stacktrace extension to our sparkling water package ai.h2o.sparkling
+   -  `SW-1768 <https://0xdata.atlassian.net/browse/SW-1768>`__ - Get Default Values of AutoML Parameters synchronized with H2O-3 
+   -  `SW-1769 <https://0xdata.atlassian.net/browse/SW-1769>`__ - Avoid Usage of AutoML Deprecations
+   -  `SW-1773 <https://0xdata.atlassian.net/browse/SW-1773>`__ - Mention that worker nodes in manual modeneed to have rest api available in migration guide
+   -  `SW-1775 <https://0xdata.atlassian.net/browse/SW-1775>`__ - Add security tests for the client-less approach
+   -  `SW-1776 <https://0xdata.atlassian.net/browse/SW-1776>`__ - [TEST] Add test for download logs when using rest api client
+   -  `SW-1780 <https://0xdata.atlassian.net/browse/SW-1780>`__ - Deprecate set_h2o_driver_if, h2o_driver_if and scala counterparts 
+   -  `SW-1781 <https://0xdata.atlassian.net/browse/SW-1781>`__ - Remove deprecated methods deprecated by [SW-1780]
+   -  `SW-1783 <https://0xdata.atlassian.net/browse/SW-1783>`__ - Unify passing of authentication information
+   -  `SW-1785 <https://0xdata.atlassian.net/browse/SW-1785>`__ - Remove deprecated set_user_name and user_name method on H2OConf in Python
+   -  `SW-1787 <https://0xdata.atlassian.net/browse/SW-1787>`__ - Version checks can be done via rest API in all cases on External backend
+   -  `SW-1788 <https://0xdata.atlassian.net/browse/SW-1788>`__ - Lock cloud in case of rest api client, auto mode
+   -  `SW-1794 <https://0xdata.atlassian.net/browse/SW-1794>`__ - Add test for the zombie cluster in client-less approach
+   -  `SW-1796 <https://0xdata.atlassian.net/browse/SW-1796>`__ - In client-less tests, verify that stopped cluster contains are shutdown correctly
+   -  `SW-1797 <https://0xdata.atlassian.net/browse/SW-1797>`__ - Move several check threads under single backend heartbeat thread
+   -  `SW-1804 <https://0xdata.atlassian.net/browse/SW-1804>`__ - Ensure internal communication does not go throug proxy, no reason for it
+   -  `SW-1805 <https://0xdata.atlassian.net/browse/SW-1805>`__ - Communicate always via leader node
+   -  `SW-1806 <https://0xdata.atlassian.net/browse/SW-1806>`__ - Upgrade to H2O 3.28.0.1
+   -  `SW-1807 <https://0xdata.atlassian.net/browse/SW-1807>`__ - Use Spark for logging on client in case of External backend
+   -  `SW-1808 <https://0xdata.atlassian.net/browse/SW-1808>`__ - Add test for automatic cluster stopping
+   -  `SW-1809 <https://0xdata.atlassian.net/browse/SW-1809>`__ - Obtaining nodes can be done via rest API in all cases on External backend
+   -  `SW-1810 <https://0xdata.atlassian.net/browse/SW-1810>`__ - Watchdog can be replaced by rest API on external backend
+   -  `SW-1815 <https://0xdata.atlassian.net/browse/SW-1815>`__ - Remove support for multicast cloud up in case of external H2O backend in manual standalone (no Hadoop) mode
+   -  `SW-1816 <https://0xdata.atlassian.net/browse/SW-1816>`__ - Remove out-dated check for duke library. Sparkling Water package is now fat jar so this issue does not exist
+                
+-  Engineering Story
+        
+   -  `SW-1698 <https://0xdata.atlassian.net/browse/SW-1698>`__ - Remove unnecessary Log level change
+   -  `SW-1733 <https://0xdata.atlassian.net/browse/SW-1733>`__ - Tests for Clientless Conversion from H2OFrames to DataFrames
+   -  `SW-1734 <https://0xdata.atlassian.net/browse/SW-1734>`__ - Configuration File for Tests against H2O Branch
+   -  `SW-1741 <https://0xdata.atlassian.net/browse/SW-1741>`__ - Adapt internal Target encoding code to latest changes in H2O
+   -  `SW-1744 <https://0xdata.atlassian.net/browse/SW-1744>`__ - Tests for Clientless Conversion from DataFrames to H2OFrames
+   -  `SW-1745 <https://0xdata.atlassian.net/browse/SW-1745>`__ - Disable version check in tests on external backend
+   -  `SW-1746 <https://0xdata.atlassian.net/browse/SW-1746>`__ - spark.ext.h2o.external.disable.version.check was false also when we needed to run rest api tests
+   -  `SW-1767 <https://0xdata.atlassian.net/browse/SW-1767>`__ - Move remaining java classes under scala dir
+   -  `SW-1772 <https://0xdata.atlassian.net/browse/SW-1772>`__ - Add Python GBM Test Running with REST-based H2OContext
+   -  `SW-1812 <https://0xdata.atlassian.net/browse/SW-1812>`__ - Small refactor of ExternalH2OBackend class
+   -  `SW-1813 <https://0xdata.atlassian.net/browse/SW-1813>`__ - Fix script and integ tests
+                
+                            
 v3.26.11 (2019-12-06)
 ---------------------
 Downloads:
