@@ -8,7 +8,7 @@ description = "Create a Docker file for jenkins tests"
 
 ext {
     outputFile = file("$projectDir//docker/regular-tests/Dockerfile")
-    terraform_download_url = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
+    terraformDownloadUrl = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
 }
 
 task createDockerfile(type: Dockerfile) {
@@ -20,20 +20,10 @@ task createDockerfile(type: Dockerfile) {
     runCommand "rm -rf /etc/hadoop/conf/yarn-site.xml"
     copyFile("conf/yarn-site.xml", "/etc/hadoop/conf/yarn-site.xml")
     runCommand "rm /etc/startup/70_start_slapd"
-    runCommand """\\
-                apt-get update && apt-get install apt-transport-https && \\
-                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \\
-                add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
-                """
-    runCommand "apt-get update && apt-get install -y git npm curl zip unzip s3cmd r-base r-base-dev libxml2-dev libssl-dev libcurl4-openssl-dev"
-    runCommand """\\
-                curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash - && \\
-                sudo apt-get install -y nodejs
-                """
 
     // Install Terraform
     runCommand """\\
-                |   curl -s ${terraform_download_url} --output terraform.zip && \\
+                |   curl -s ${terraformDownloadUrl} --output terraform.zip && \\
                 |   unzip terraform.zip -d /usr/local/bin/ && \\
                 |   rm -f terraform.zip
                """.stripMargin()
@@ -87,8 +77,6 @@ task createDockerfile(type: Dockerfile) {
                 sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
                """
     runCommand "cd /home/jenkins && rm -rf sparkling-water"
-    // Change permissions so we can install R packages
-    runCommand "chmod 777 /usr/local/lib/R/site-library"
 
     user("jenkins")
     environmentVariable("USER", "jenkins")
