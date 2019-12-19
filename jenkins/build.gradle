@@ -29,16 +29,7 @@ task createDockerfile(type: Dockerfile) {
                """.stripMargin()
     
     runCommand """\\
-                R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("openssl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("httr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("bitops", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("usethis", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
     getAllFullSparkVersions().each { version ->
