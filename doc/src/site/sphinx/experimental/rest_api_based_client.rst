@@ -43,7 +43,7 @@ the official H2O driver jar which is not modified by Sparkling Water. In order t
 Sparkling Water in automatic mode, please use the ``H2O_DRIVER_JAR`` environmental property instead
 of the ``H2O_EXTENDED_JAR``.
 
-This should reduce the complexity of deployment and brings more transparency as well.
+This should reduce the complexity of deployment and bring more transparency.
 
 Benefits of the REST-API-based client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
