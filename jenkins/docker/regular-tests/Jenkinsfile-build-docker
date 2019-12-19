@@ -38,7 +38,7 @@ node('docker && !mr-0xc8') {
         dir("jenkins/docker/regular-tests") {
             sh """
                cp -R ../conf conf
-               docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:64
+               docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:73
                docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
                """
         }
