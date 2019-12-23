@@ -5,7 +5,7 @@
 #' @param username username
 #' @param password password
 #' @export
-h2o_context <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
+h2o_context <- function(x, conf = NULL, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
   UseMethod("h2o_context")
 }
 
@@ -28,26 +28,32 @@ setClientConnected <- function(hc) {
 }
 
 #' @export
-h2o_context.spark_connection <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
-  inputConf <- invoke_new(x, "org.apache.spark.h2o.H2OConf", spark_context(x))
+h2o_context.spark_connection <- function(x, conf = NULL, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
+  if (is.null(conf)) {
+    conf <- H2OConf(x)
+  }
   if (!is.na(username)) {
-    invoke(inputConf, "setUserName", username)
+    print("Providing username via username parameter on H2OContext is deprecated. Please use setUserName H2OConf object.")
+    conf$setUserName(username)
   }
+
   if (!is.na(password)) {
-    invoke(inputConf, "setPassword", password)
+    print("Providing password via password parameter on H2OContext is deprecated. Please use setUserName H2OConf object.")
+    conf$setPassword(password)
   }
-  hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x), inputConf)
-  conf = invoke(hc, "getConf")
+
+  hc <- invoke_static(x, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(x), conf$jconf)
+  returnedConf <- invoke(hc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
-  context_path_with_slash <- invoke(conf, "get", "spark.ext.h2o.context.path",  "")
+  context_path_with_slash <- invoke(returnedConf, "get", "spark.ext.h2o.context.path",  "")
   context_path <- substring(context_path_with_slash, 2, nchar(context_path_with_slash))
   ip <- invoke(hc, "h2oLocalClientIp")
   port <- invoke(hc, "h2oLocalClientPort")
   if (!isClientConnected(hc)){
     if (context_path == "") {
-      invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
+      invisible(capture.output(h2o.init(ip = ip, port = port, strict_version_check = strict_version_check, startH2O=F, username = conf$userName(), password = conf$password())))
     } else {
-      invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F, username = username, password = password)))
+      invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, strict_version_check = strict_version_check, startH2O=F, username = conf$userName(), password = conf$password())))
     }
     setClientConnected(hc)
   }
@@ -55,8 +61,8 @@ h2o_context.spark_connection <- function(x, strict_version_check = TRUE, usernam
 }
 
 #' @export
-h2o_context.spark_jobj <- function(x, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
-  h2o_context.spark_connection(spark_connection(x), strict_version_check=strict_version_check, username = username, password = password)
+h2o_context.spark_jobj <- function(x, conf = NULL, strict_version_check = TRUE, username = NA_character_, password = NA_character_) {
+  h2o_context.spark_connection(spark_connection(x), conf=conf, strict_version_check=strict_version_check, username = username, password = password)
 }
 
 #' Open the H2O Flow UI in a browser
@@ -67,8 +73,8 @@ h2o_context.spark_jobj <- function(x, strict_version_check = TRUE, username = NA
 #' @param strict_version_check (Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.
 #' @export
 h2o_flow <- function(sc, strict_version_check = TRUE) {
-  flow <- invoke(h2o_context(sc, strict_version_check = strict_version_check), "h2oLocalClient")
-  browseURL(paste0("http://", flow))
+  flowURL <- invoke(h2o_context(sc, strict_version_check = strict_version_check), "flowURL")
+  browseURL(flowURL)
 }
 
 #' Convert a Spark DataFrame to an H2O Frame

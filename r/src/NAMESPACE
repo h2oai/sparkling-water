@@ -2,6 +2,7 @@
 
 S3method(h2o_context,spark_connection)
 S3method(h2o_context,spark_jobj)
+export(H2OConf)
 export(as_h2o_frame)
 export(as_spark_dataframe)
 export(h2o_context)
@@ -21,5 +22,3 @@ importFrom(utils,browseURL)
 importFrom(utils,capture.output)
 importFrom(utils,packageVersion)
 importFrom(utils,read.table)
-importFrom("utils", "head")
-importFrom("utils", "unzip")

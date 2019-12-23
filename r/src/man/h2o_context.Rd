@@ -4,14 +4,23 @@
 \alias{h2o_context}
 \title{Get the H2OContext. Will create the context if it has not been previously created.}
 \usage{
-h2o_context(x, strict_version_check = TRUE)
+h2o_context(
+  x,
+  conf = NULL,
+  strict_version_check = TRUE,
+  username = NA_character_,
+  password = NA_character_
+)
 }
 \arguments{
 \item{x}{Object of type \code{spark_connection} or \code{spark_jobj}.}
 
 \item{strict_version_check}{(Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.}
+
+\item{username}{username}
+
+\item{password}{password}
 }
 \description{
 Get the H2OContext. Will create the context if it has not been previously created.
 }
-
