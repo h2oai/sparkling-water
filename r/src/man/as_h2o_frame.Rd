@@ -18,4 +18,3 @@ as_h2o_frame(sc, x, name = NULL, strict_version_check = TRUE)
 \description{
 Convert a Spark DataFrame to an H2O Frame
 }
-
