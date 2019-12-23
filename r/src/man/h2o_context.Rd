@@ -2,25 +2,18 @@
 % Please edit documentation in R/h2o_context.R
 \name{h2o_context}
 \alias{h2o_context}
-\title{Get the H2OContext. Will create the context if it has not been previously created.}
+\title{Get or create the H2OContext.}
 \usage{
 h2o_context(
-  x,
+  sc,
   conf = NULL,
-  strict_version_check = TRUE,
   username = NA_character_,
   password = NA_character_
 )
 }
 \arguments{
-\item{x}{Object of type \code{spark_connection} or \code{spark_jobj}.}
-
-\item{strict_version_check}{(Optional) Setting this to FALSE does not cross check version of H2O and attempts to connect.}
-
-\item{username}{username}
-
-\item{password}{password}
+\item{sc}{Object of type \code{spark_connection} or \code{spark_jobj}.}
 }
 \description{
-Get the H2OContext. Will create the context if it has not been previously created.
+Get or create the H2OContext.
 }
