@@ -7,9 +7,7 @@ NULL
 
 
 
-#' Verify H2O version
-#'
-#' @export
+# Verify H2O version
 verify_h2o_version <- function(h2o_version, h2o_build_name, h2o_build_version, sw_version) {
     current_h2o_version <- paste(packageVersion("h2o"))
     if (current_h2o_version != h2o_version) {

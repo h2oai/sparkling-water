@@ -22,8 +22,8 @@ test_that("Test transformation from h2o frame to data frame", {
   sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1,2,3,4,"A"))) # workaround for sparklyr#316
   sdf <- copy_to(sc, df)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
-  sdf2 <- as_spark_dataframe(sc, hf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
+  sdf2 <- as_spark_dataframe(sc, hf)
 
   expect_equal(sdf_nrow(sdf2), nrow(hf))
   expect_equal(sdf_ncol(sdf2), ncol(hf))
@@ -34,7 +34,7 @@ test_that("Test transformation of a spark data_frame of bools to an h2o frame of
   sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(TRUE,FALSE,TRUE,FALSE)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
 
   expect_equal(hf[1,1],1)
   expect_equal(hf[1,2],0)
@@ -49,7 +49,7 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
   b <- c(TRUE)
   df <- data.frame(n, s, b)
   sdf <- copy_to(sc, df, overwrite = TRUE)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
 
   expect_equal(hf[1,1],2)
   expect_equal(hf[1,2],"aa")
@@ -60,7 +60,7 @@ test_that("Test transformation of a spark data_frame of float types to an h2o fr
   sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1.5,1.3333333333,178.5555)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
 
   expect_equal(hf[1,1],1.5)
   expect_equal(hf[1,2],1.3333333333)
@@ -71,7 +71,7 @@ test_that("Test transformation of a spark data_frame of int types to an h2o fram
   sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1,125,1778)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
 
   expect_equal(hf[1,1],1)
   expect_equal(hf[1,2],125)
@@ -82,7 +82,7 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
   sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c("A","B","C")))
   sdf <- copy_to(sc, df, overwrite = TRUE)
-  hf <- as_h2o_frame(sc, sdf, strict_version_check=FALSE)
+  hf <- as_h2o_frame(sc, sdf)
 
   expect_equal(hf[1,1],"A")
   expect_equal(hf[1,2],"B")
@@ -92,7 +92,7 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
 test_that("Test transformation from dataframe to h2o frame", {
   sc <- spark_connect(master = "local[*]", config = config)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
-  mtcars_hf <- as_h2o_frame(sc, mtcars_tbl, strict_version_check=FALSE)
+  mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
   
   expect_equal(sdf_nrow(mtcars_tbl), nrow(mtcars_hf))
   expect_equal(sdf_ncol(mtcars_tbl), ncol(mtcars_hf))
@@ -102,7 +102,7 @@ test_that("Test transformation from dataframe to h2o frame", {
 test_that("Test transformation from dataframe to h2o frame", {
   sc <- spark_connect(master = "local[*]", config = config)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
-  mtcars_hf_name <- as_h2o_frame(sc, mtcars_tbl, name = "frame1", strict_version_check=FALSE)
+  mtcars_hf_name <- as_h2o_frame(sc, mtcars_tbl, name = "frame1")
   
   expect_equal(h2o.getId(mtcars_hf_name), "frame1")
 })
