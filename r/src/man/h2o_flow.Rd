@@ -14,4 +14,3 @@ h2o_flow(sc, strict_version_check = TRUE)
 \description{
 Open the H2O Flow UI in a browser
 }
-
