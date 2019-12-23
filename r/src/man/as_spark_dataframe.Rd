@@ -7,7 +7,7 @@
 as_spark_dataframe(
   sc,
   frame,
-  name = paste(deparse(substitute(x)), collapse = "")
+  name = paste(deparse(substitute(sc)), collapse = "")
 )
 }
 \arguments{
