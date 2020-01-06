@@ -104,7 +104,9 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.ext.h2o.hadoop.memory=$4" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
       ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
-      -o /home/hadoop/results
+      -s ${var.benchmarks_dataset_specifications_file} \
+      -o /home/hadoop/results \
+      ${var.benchmarks_other_arguments}
   }
 
 

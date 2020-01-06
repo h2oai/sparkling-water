@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-benchmark_execution_timeout=10800 # 3 hours
-
+if [ -z "$timeout" ]; then
+    timeout=10800 # 3 hours
+fi
+if [ -z "$datasets" ]; then
+    datasets="datasets.json"
+fi
 if [ -z "$aws_access_key" ]; then
     read -p "Enter your aws access key: "  aws_access_key
 fi
@@ -22,6 +26,8 @@ output_block=$(terraform apply \
     -var "aws_access_key=$aws_access_key" \
     -var "aws_secret_key=$aws_secret_key" \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
+    -var "benchmarks_dataset_specifications_file=$datasets" \
+    -var "benchmarks_other_arguments=$other_arguments" \
     -auto-approve \
     | tee /dev/stderr | tail -n 6)
 
@@ -35,7 +41,7 @@ if [ "$outputs_header" == "Outputs:" ]; then
 
     # Wait until benchmarks are finished
     polling_step=5
-    current_timeout="$benchmark_execution_timeout"
+    current_timeout="$timeout"
     printf 'Executing benchmarks...'
     until $(curl --output /dev/null --silent --head --fail "$finished_file_url"); do
         printf '.'
@@ -43,7 +49,7 @@ if [ "$outputs_header" == "Outputs:" ]; then
         current_timeout=$(expr $current_timeout - $polling_step)
         if [ "$current_timeout" -le 0 ]; then
             echo "" > /dev/stdout
-            echo "Timeout $benchmark_execution_timeout seconds for finishing execution of benchmarks has expired." > /dev/stderr
+            echo "Timeout $timeout seconds for finishing execution of benchmarks has expired." > /dev/stderr
             break
         fi
     done

@@ -32,7 +32,11 @@ import org.apache.spark.sql.DataFrame
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.storage.StorageLevel
+import water.MRTask
+import water.fvec.{Chunk, Frame, Vec}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -57,24 +61,77 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   protected def cleanUp(input: TInput): Unit = {}
 
   def loadDataToDataFrame(): DataFrame = {
-    val df = context.spark
+    val df = if (context.datasetDetails.isVirtual) {
+      loadRegularDataFrame()
+    } else {
+      loadVirtualDataFrame()
+    }
+
+    val persistedDF = df.persist(StorageLevel.DISK_ONLY)
+    persistedDF.foreach(_ => {}) // Load DataFrame to cache.
+    persistedDF
+  }
+
+  private def loadRegularDataFrame(): DataFrame = {
+    context.spark
       .read
       .option("header", "true")
       .option("inferSchema", "true")
-      .csv(context.datasetDetails.url)
-      .persist(StorageLevel.DISK_ONLY)
+      .csv(context.datasetDetails.url.get)
+  }
 
-    df.foreach(_ => {}) // Load DataFrame to cache.
+  private def generateVirtualColumns(): Seq[String] = {
+    val numberOfColumns = context.datasetDetails.nCols.get
+    require(numberOfColumns > 0, "Number of columns must be a positive number.")
+    context.datasetDetails.labelCol +: (1 until numberOfColumns).map(i => "feature_" + i)
+  }
 
-    df
+  private def loadVirtualDataFrame(): DataFrame = {
+    val columns = generateVirtualColumns()
+    val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
+    val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
+    val rangeSize = maxValue - minValue
+    val initialDF = context.spark.range(context.datasetDetails.nRows.get)
+    initialDF.select(columns.map(c => ((rand() * lit(rangeSize)) + lit(minValue)).cast(IntegerType).as(c)): _*)
   }
 
   def removeFromCache(dataFrame: DataFrame): Unit = dataFrame.unpersist(blocking = true)
 
   def loadDataToH2OFrame(): H2OFrame = {
-    val uri = new URI(context.datasetDetails.url)
+    if (context.datasetDetails.isVirtual) {
+      loadRegularH2OFrame()
+    } else {
+      loadVirtualH2OFrame()
+    }
+  }
+
+  def loadRegularH2OFrame(): H2OFrame = {
+    val uri = new URI(context.datasetDetails.url.get)
     val frame = new H2OFrame(uri)
     frame
+  }
+
+  def loadVirtualH2OFrame(): H2OFrame = {
+    val numberOfRows = context.datasetDetails.nRows.get
+    val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
+    val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
+    val rangeSize = maxValue - minValue
+    val columns = generateVirtualColumns().toArray
+    val initialVectors = columns.map(_ => Vec.makeCon(0d, numberOfRows, Vec.T_NUM))
+    val frame = new Frame(columns, initialVectors)
+
+    new MRTask() {
+      override def map(c: Chunk): Unit = {
+        var i = 0
+        while (i < c._len) {
+          val randDouble = scala.util.Random.nextDouble()
+          val randInteger = ((randDouble * rangeSize) + minValue).asInstanceOf[Int]
+          c.set(i, randInteger)
+          i = i + 1
+        }
+      }
+    }.doAll(frame)
+    new H2OFrame(frame)
   }
 
   def run(): Unit = {
@@ -130,6 +187,14 @@ case class AlgorithmBundle(
 
 case class Measurement(id: Int, name: String, value: Any)
 
-case class DatasetDetails(name: String, url: String, labelCol: String)
+case class DatasetDetails(
+  name: String,
+  isVirtual: Boolean,
+  labelCol: String,
+  url: Option[String],
+  nCols: Option[Int],
+  nRows: Option[Int],
+  minValue: Option[Int],
+  maxValue: Option[Int])
 
 case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails)

@@ -117,6 +117,43 @@ task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
             environment("aws_access_key", accessKey)
             environment("aws_secret_key", secretKey)
             environment("aws_ssh_public_key", publicKey)
+            environment("datasets", "datasets.json")
+
+            commandLine "./run_benchmarks.sh"
+        }
+    }
+}
+
+task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+    doLast {
+        exec {
+            def accessKey = project.property("aws_access_key")
+            def secretKey = project.property("aws_secret_key")
+            def publicKey = project.property("aws_ssh_public_key")
+
+            environment("aws_access_key", accessKey)
+            environment("aws_secret_key", secretKey)
+            environment("aws_ssh_public_key", publicKey)
+            environment("datasets", "bigDatasets.json")
+            environment("other_arguments", "-b DataFrameToH2OFrameConversionBenchmark")
+
+            commandLine "./run_benchmarks.sh"
+        }
+    }
+}
+
+task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+    doLast {
+        exec {
+            def accessKey = project.property("aws_access_key")
+            def secretKey = project.property("aws_secret_key")
+            def publicKey = project.property("aws_ssh_public_key")
+
+            environment("aws_access_key", accessKey)
+            environment("aws_secret_key", secretKey)
+            environment("aws_ssh_public_key", publicKey)
+            environment("datasets", "bigDatasets.json")
+            environment("other_arguments", "-b H2OFrameToDataFrameConversionBenchmark")
 
             commandLine "./run_benchmarks.sh"
         }
