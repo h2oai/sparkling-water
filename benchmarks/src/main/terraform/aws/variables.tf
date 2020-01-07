@@ -37,3 +37,9 @@ variable "benchmarks_dataset_specifications_file" {
 variable "benchmarks_other_arguments" {
   default = ""
 }
+variable "benchmarks_driver_memory_gb" {
+  default = "8"
+}
+variable "benchmarks_executor_memory_gb" {
+  default = "8"
+}

@@ -134,10 +134,14 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("aws_access_key", accessKey)
             environment("aws_secret_key", secretKey)
             environment("aws_ssh_public_key", publicKey)
-            environment("aws_core_instance_count", "10")
+            environment("aws_instance_type", "m5.4xlarge")
+            environment("aws_core_instance_count", "4")
             environment("datasets", "bigDatasetsTest.json")
             environment("other_arguments", "-b DataFrameToH2OFrameConversionBenchmark")
+            environment("aws_emr_timeout", "11 hours") // Must be greater then timeout for proper cleanup
             environment("timeout", "36000") // 10 hours
+            environment("driver_memory_gb", "8")
+            environment("executor_memory_gb", "20")
 
             commandLine "./run_benchmarks.sh"
         }
@@ -154,10 +158,14 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("aws_access_key", accessKey)
             environment("aws_secret_key", secretKey)
             environment("aws_ssh_public_key", publicKey)
-            environment("aws_core_instance_count", "10")
+            environment("aws_instance_type", "m5.4xlarge")
+            environment("aws_core_instance_count", "4")
             environment("datasets", "bigDatasetsTest.json")
             environment("other_arguments", "-b H2OFrameToDataFrameConversionBenchmark")
+            environment("aws_emr_timeout", "11 hours") // Must be greater then timeout for proper cleanup
             environment("timeout", "36000") // 10 hours
+            environment("driver_memory_gb", "8")
+            environment("executor_memory_gb", "20")
 
             commandLine "./run_benchmarks.sh"
         }

@@ -43,4 +43,6 @@ module "emr_benchmarks_deployment" {
 
   benchmarks_dataset_specifications_file = "${var.benchmarks_dataset_specifications_file}"
   benchmarks_other_arguments = "${var.benchmarks_other_arguments}"
+  benchmarks_driver_memory_gb = "${var.benchmarks_driver_memory_gb}"
+  benchmarks_executor_memory_gb = "${var.benchmarks_executor_memory_gb}"
 }
