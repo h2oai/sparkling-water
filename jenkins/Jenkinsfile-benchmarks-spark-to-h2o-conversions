@@ -3,7 +3,6 @@
 
 properties(
         [
-                pipelineTriggers([cron('H 8 * * 6')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -15,7 +14,7 @@ node("docker") {
     checkout scm
     withDocker {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'jenkins-full-aws-creds', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-            sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
+            sh "./gradlew :sparkling-water-benchmarks:runBigDataSparkToH2OConversionBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
         }
         arch '**/output/*'
     }
