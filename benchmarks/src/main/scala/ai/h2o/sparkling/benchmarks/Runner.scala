@@ -30,7 +30,7 @@ import org.json4s.jackson.Serialization._
 import scala.collection.JavaConverters._
 
 object Runner {
-  val datasetDetailsFilePath = "datasets.json"
+  val defaultDatasetSpecificationsFile = "bigDatasetsTest.json"
   val defaultOutputDir = new File("benchmarks", "output")
 
   val spark = SparkSession
@@ -57,7 +57,7 @@ object Runner {
 
   def main(args: Array[String]): Unit = {
     val settings = processArguments(args)
-    val datasetDetails = loadDatasetDetails()
+    val datasetDetails = loadDatasetDetails(settings.datasetSpecificationsFile)
     val benchmarks = getBenchmarkClasses()
     val algorithms = AlgorithmBenchmarkBase.supportedAlgorithms
 
@@ -81,14 +81,21 @@ object Runner {
   }
 
   private def processArguments(args: Array[String]): Settings = {
-    require(args.length % 2 == 0, "Wrong arguments. Example: -b benchmarkName -d datasetName -a algorithmName -o outputDir")
+    require(
+      args.length % 2 == 0,
+      "Wrong arguments. Example: -s datasetSpecificationFile -b benchmarkName -d datasetName -a algorithmName -o outputDir")
     val (keys, values) = args.zipWithIndex.partition { case (_, idx) => idx % 2 == 0 }
     val map = keys.map(_._1).zip(values.map(_._1)).toMap
-    Settings(map.get("-b"), map.get("-d"), map.get("-a"), map.get("-o"))
+    Settings(
+      map.getOrElse("-s", defaultDatasetSpecificationsFile),
+      map.get("-b"),
+      map.get("-d"),
+      map.get("-a"),
+      map.get("-o"))
   }
 
-  private def loadDatasetDetails(): Seq[DatasetDetails] = {
-    val stream = getClass.getClassLoader.getResourceAsStream(datasetDetailsFilePath)
+  private def loadDatasetDetails(datasetSpecificationsFile: String): Seq[DatasetDetails] = {
+    val stream = getClass.getClassLoader.getResourceAsStream(datasetSpecificationsFile)
     val reader = new InputStreamReader(stream)
     implicit val formats = DefaultFormats
     try {
@@ -165,5 +172,10 @@ object Runner {
 
   private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
 
-  private case class Settings(benchmark: Option[String], dataset: Option[String], algorithm: Option[String], outputDir: Option[String])
+  private case class Settings(
+    datasetSpecificationsFile: String,
+    benchmark: Option[String],
+    dataset: Option[String],
+    algorithm: Option[String],
+    outputDir: Option[String])
 }

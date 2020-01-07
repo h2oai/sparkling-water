@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
 
-benchmark_execution_timeout=10800 # 3 hours
-
+if [ -z "$timeout" ]; then
+    timeout=10800 # 3 hours
+fi
+if [ -z "$aws_core_instance_count" ]; then
+    aws_core_instance_count=2
+fi
+if [ -z "$aws_instance_type" ]; then
+    aws_instance_type="m5.2xlarge"
+fi
+if [ -z "$aws_emr_timeout" ]; then
+    aws_emr_timeout="4 hours"
+fi
+if [ -z "$datasets" ]; then
+    datasets="datasets.json"
+fi
+if [ -z "$driver_memory_gb" ]; then
+    driver_memory_gb="8"
+fi
+if [ -z "$executor_memory_gb" ]; then
+    executor_memory_gb="8"
+fi
 if [ -z "$aws_access_key" ]; then
     read -p "Enter your aws access key: "  aws_access_key
 fi
@@ -22,6 +41,13 @@ output_block=$(terraform apply \
     -var "aws_access_key=$aws_access_key" \
     -var "aws_secret_key=$aws_secret_key" \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
+    -var "aws_instance_type=$aws_instance_type" \
+    -var "aws_core_instance_count=$aws_core_instance_count" \
+    -var "aws_emr_timeout=$aws_emr_timeout" \
+    -var "benchmarks_dataset_specifications_file=$datasets" \
+    -var "benchmarks_other_arguments=$other_arguments" \
+    -var "benchmarks_driver_memory_gb=$driver_memory_gb" \
+    -var "benchmarks_executor_memory_gb=$executor_memory_gb" \
     -auto-approve \
     | tee /dev/stderr | tail -n 6)
 
@@ -35,7 +61,7 @@ if [ "$outputs_header" == "Outputs:" ]; then
 
     # Wait until benchmarks are finished
     polling_step=5
-    current_timeout="$benchmark_execution_timeout"
+    current_timeout="$timeout"
     printf 'Executing benchmarks...'
     until $(curl --output /dev/null --silent --head --fail "$finished_file_url"); do
         printf '.'
@@ -43,7 +69,7 @@ if [ "$outputs_header" == "Outputs:" ]; then
         current_timeout=$(expr $current_timeout - $polling_step)
         if [ "$current_timeout" -le 0 ]; then
             echo "" > /dev/stdout
-            echo "Timeout $benchmark_execution_timeout seconds for finishing execution of benchmarks has expired." > /dev/stderr
+            echo "Timeout $timeout seconds for finishing execution of benchmarks has expired." > /dev/stderr
             break
         fi
     done
