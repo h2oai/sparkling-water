@@ -1,0 +1,11 @@
+[
+  {
+    "name" : "random01Int400",
+    "isVirtual" : true,
+    "labelCol" : "Distance",
+    "nCols" : 400,
+    "nRows" : 320000000,
+    "minValue" : 0,
+    "maxValue" : 1
+  }
+]

@@ -34,3 +34,15 @@ variable "emr_managed_master_security_group_id" {}
 variable "emr_managed_slave_security_group_id" {}
 variable "emr_ec2_instance_profile_arn" {}
 variable "emr_role_arn" {}
+variable "benchmarks_dataset_specifications_file" {
+  default = "datasets.json"
+}
+variable "benchmarks_other_arguments" {
+  default = ""
+}
+variable "benchmarks_driver_memory_gb" {
+  default = "8"
+}
+variable "benchmarks_executor_memory_gb" {
+  default = "8"
+}
