@@ -1,9 +1,0 @@
-[
-  {
-    "name" : "randomInt1",
-    "isVirtual" : true,
-    "labelCol" : "label",
-    "nCols" : 1,
-    "nRows" : 320000
-  }
-]
