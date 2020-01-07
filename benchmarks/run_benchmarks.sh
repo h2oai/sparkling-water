@@ -3,6 +3,10 @@
 if [ -z "$timeout" ]; then
     timeout=10800 # 3 hours
 fi
+if [ -z "$aws_core_instance_count" ]; then
+    aws_core_instance_count=2
+fi
+aws_core_instance_count
 if [ -z "$datasets" ]; then
     datasets="datasets.json"
 fi
@@ -26,6 +30,7 @@ output_block=$(terraform apply \
     -var "aws_access_key=$aws_access_key" \
     -var "aws_secret_key=$aws_secret_key" \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
+    -var "aws_core_instance_count=$aws_core_instance_count" \
     -var "benchmarks_dataset_specifications_file=$datasets" \
     -var "benchmarks_other_arguments=$other_arguments" \
     -auto-approve \

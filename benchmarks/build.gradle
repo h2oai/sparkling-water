@@ -134,6 +134,7 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("aws_access_key", accessKey)
             environment("aws_secret_key", secretKey)
             environment("aws_ssh_public_key", publicKey)
+            environment("aws_core_instance_count", "10")
             environment("datasets", "bigDatasetsTest.json")
             environment("other_arguments", "-b DataFrameToH2OFrameConversionBenchmark")
             environment("timeout", "36000") // 10 hours
@@ -153,6 +154,7 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("aws_access_key", accessKey)
             environment("aws_secret_key", secretKey)
             environment("aws_ssh_public_key", publicKey)
+            environment("aws_core_instance_count", "10")
             environment("datasets", "bigDatasetsTest.json")
             environment("other_arguments", "-b H2OFrameToDataFrameConversionBenchmark")
             environment("timeout", "36000") // 10 hours
