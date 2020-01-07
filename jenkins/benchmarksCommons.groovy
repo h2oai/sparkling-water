@@ -1,5 +1,4 @@
 #!/usr/bin/groovy
-@Library('test-shared-library') _
 
 String getDockerImageVersion() {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
