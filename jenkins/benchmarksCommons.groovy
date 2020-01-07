@@ -20,3 +20,4 @@ def withDocker(code) {
         }
     }
 }
+return this
