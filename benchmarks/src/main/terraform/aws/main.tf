@@ -40,4 +40,7 @@ module "emr_benchmarks_deployment" {
   emr_managed_slave_security_group_id = "${module.emr_security.emr_managed_slave_security_group_id}"
   emr_ec2_instance_profile_arn = "${module.emr_security.emr_ec2_instance_profile_arn}"
   emr_role_arn = "${module.emr_security.emr_role_arn}"
+
+  benchmarks_dataset_specifications_file = "${var.benchmarks_dataset_specifications_file}"
+  benchmarks_other_arguments = "${var.benchmarks_other_arguments}"
 }

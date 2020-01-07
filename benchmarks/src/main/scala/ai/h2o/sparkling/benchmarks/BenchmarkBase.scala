@@ -62,9 +62,9 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def loadDataToDataFrame(): DataFrame = {
     val df = if (context.datasetDetails.isVirtual) {
-      loadRegularDataFrame()
-    } else {
       loadVirtualDataFrame()
+    } else {
+      loadRegularDataFrame()
     }
 
     val persistedDF = df.persist(StorageLevel.DISK_ONLY)
@@ -99,9 +99,9 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def loadDataToH2OFrame(): H2OFrame = {
     if (context.datasetDetails.isVirtual) {
-      loadRegularH2OFrame()
-    } else {
       loadVirtualH2OFrame()
+    } else {
+      loadRegularH2OFrame()
     }
   }
 

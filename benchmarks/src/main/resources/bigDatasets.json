@@ -1,26 +1,5 @@
 [
   {
-    "name" : "randomInt1",
-    "isVirtual" : true,
-    "labelCol" : "label",
-    "nCols" : 1,
-    "nRows" : 320000000
-  },
-  {
-    "name" : "randomInt10",
-    "isVirtual" : true,
-    "labelCol" : "Distance",
-    "nCols" : 10,
-    "nRows" : 320000000
-  },
-  {
-    "name" : "randomInt400",
-    "isVirtual" : true,
-    "labelCol" : "Distance",
-    "nCols" : 400,
-    "nRows" : 320000000
-  },
-  {
     "name" : "random01Int400",
     "isVirtual" : true,
     "labelCol" : "Distance",

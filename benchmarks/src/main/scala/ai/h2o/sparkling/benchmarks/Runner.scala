@@ -30,7 +30,7 @@ import org.json4s.jackson.Serialization._
 import scala.collection.JavaConverters._
 
 object Runner {
-  val defaultDatasetSpecificationsFile = "datasets.json"
+  val defaultDatasetSpecificationsFile = "bigDatasetsTest.json"
   val defaultOutputDir = new File("benchmarks", "output")
 
   val spark = SparkSession
