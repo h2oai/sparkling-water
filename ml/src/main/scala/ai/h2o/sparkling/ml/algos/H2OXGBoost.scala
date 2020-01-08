@@ -17,9 +17,9 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, HasMonotoneConstraints}
-import ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams
+import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import hex.ScoreKeeper.StoppingMetric
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
@@ -42,7 +42,8 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
   * Parameters for Spark's API exposing underlying H2O model.
   */
 trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
-  with H2OTreeBasedSupervisedMOJOParams with HasMonotoneConstraints with DeprecatableParams {
+  with H2OTreeBasedSupervisedMOJOParams with HasMonotoneConstraints with HasStoppingCriteria[XGBoostParameters]
+  with DeprecatableParams {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -367,6 +368,9 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     parameters._gpu_id = $(gpuId)
     parameters._backend = Backend.valueOf($(backend))
     parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
+    parameters._stopping_rounds = getStoppingRounds()
+    parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
+    parameters._stopping_tolerance = getStoppingTolerance()
   }
 
   /**

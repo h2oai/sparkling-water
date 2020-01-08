@@ -63,7 +63,10 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True):
+                 namedMojoOutputColumns=True,
+                 stoppingRounds=0,
+                 stoppingMetric="AUTO",
+                 stoppingTolerance=0.001):
         Initializer.load_sparkling_jar()
         super(H2ODRF, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODRF", self.uid)

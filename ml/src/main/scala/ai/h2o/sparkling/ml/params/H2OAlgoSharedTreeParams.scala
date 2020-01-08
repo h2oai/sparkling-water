@@ -17,11 +17,12 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
+import hex.ScoreKeeper.StoppingMetric
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
 
 trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervisedParams[P]
-  with H2OTreeBasedSupervisedMOJOParams {
+  with H2OTreeBasedSupervisedMOJOParams with HasStoppingCriteria[P] {
 
   //
   // Param definitions
@@ -139,6 +140,9 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
     parameters._min_split_improvement = $(minSplitImprovement)
     parameters._histogram_type = HistogramType.valueOf($(histogramType))
     parameters._r2_stopping = $(r2Stopping)
+    parameters._stopping_rounds = getStoppingRounds()
+    parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
+    parameters._stopping_tolerance = getStoppingTolerance()
     parameters._nbins_top_level = $(nbinsTopLevel)
     parameters._build_tree_one_node = $(buildTreeOneNode)
     parameters._score_tree_interval = $(scoreTreeInterval)
