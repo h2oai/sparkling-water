@@ -16,13 +16,15 @@
 */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.ScoreKeeper.StoppingMetric
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
+import org.apache.spark.expose.Logging
 
 trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervisedParams[P]
-  with H2OTreeBasedSupervisedMOJOParams with HasStoppingCriteria[P] {
+  with H2OTreeBasedSupervisedMOJOParams with HasStoppingCriteria[P] with Logging {
 
   //
   // Param definitions
@@ -78,6 +80,7 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
 
   def getHistogramType() = $(histogramType)
 
+  @DeprecatedMethod("getStoppingRounds, getStoppingMetric, getStoppingTolerance")
   def getR2Stopping() = $(r2Stopping)
 
   def getNbinsTopLevel() = $(nbinsTopLevel)
@@ -114,6 +117,7 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
     set(histogramType, validated)
   }
 
+  @DeprecatedMethod("setStoppingRounds, setStoppingMetric, setStoppingTolerance")
   def setR2Stopping(value: Double): this.type = set(r2Stopping, value)
 
   def setNbinsTopLevel(value: Int): this.type = set(nbinsTopLevel, value)
