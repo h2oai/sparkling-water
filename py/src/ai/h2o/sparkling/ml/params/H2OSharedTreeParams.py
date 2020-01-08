@@ -20,9 +20,10 @@ from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 
 
-class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams):
+class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasStoppingCriteria):
     ##
     # Param definitions
     ##

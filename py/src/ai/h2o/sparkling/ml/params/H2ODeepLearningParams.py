@@ -19,9 +19,10 @@ from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 
 
-class H2ODeepLearningParams(H2OAlgoSupervisedParams):
+class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria):
     ##
     # Param definitions
     ##

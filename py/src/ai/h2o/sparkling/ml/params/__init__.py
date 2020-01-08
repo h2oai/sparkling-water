@@ -28,3 +28,4 @@ from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeB
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
 from ai.h2o.sparkling.ml.params.H2ODRFParams import H2ODRFParams
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
+from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria

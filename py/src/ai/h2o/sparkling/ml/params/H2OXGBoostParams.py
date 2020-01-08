@@ -22,9 +22,11 @@ from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervised
 from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
+from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 
 
-class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints):
+class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
+                       HasStoppingCriteria):
     ##
     # Param definitions
     ##
