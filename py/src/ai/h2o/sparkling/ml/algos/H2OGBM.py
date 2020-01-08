@@ -68,7 +68,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  convertInvalidNumbersToNa=False,
                  namedMojoOutputColumns=True,
                  monotoneConstraints={},
-                 stoppingRounds=5,
+                 stoppingRounds=0,
                  stoppingMetric="AUTO",
                  stoppingTolerance=0.001):
         Initializer.load_sparkling_jar()
