@@ -45,4 +45,7 @@ module "emr_benchmarks_deployment" {
   benchmarks_other_arguments = "${var.benchmarks_other_arguments}"
   benchmarks_driver_memory_gb = "${var.benchmarks_driver_memory_gb}"
   benchmarks_executor_memory_gb = "${var.benchmarks_executor_memory_gb}"
+  benchmarks_run_yarn_internal = "${var.benchmarks_run_yarn_internal}"
+  benchmarks_run_yarn_external = "${var.benchmarks_run_yarn_external}"
+  benchmarks_run_local_internal = "${var.benchmarks_run_local_internal}"
 }
