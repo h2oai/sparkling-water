@@ -91,7 +91,11 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
     val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
     val rangeSize = maxValue - minValue
-    val initialDF = context.spark.range(context.datasetDetails.nRows.get)
+    val initialDF = context.spark.range(
+      start = 0,
+      end = context.datasetDetails.nRows.get,
+      step = 1,
+      numPartitions = context.datasetDetails.nPartitions.getOrElse(200))
     initialDF.select(columns.map(c => ((rand() * lit(rangeSize)) + lit(minValue)).cast(IntegerType).as(c)): _*)
   }
 
@@ -113,11 +117,12 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def loadVirtualH2OFrame(): H2OFrame = {
     val numberOfRows = context.datasetDetails.nRows.get
+    val numberOfPartitions = context.datasetDetails.nPartitions.getOrElse(200)
     val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
     val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
     val rangeSize = maxValue - minValue
     val columns = generateVirtualColumns().toArray
-    val initialVectors = columns.map(_ => Vec.makeCon(0d, numberOfRows, Vec.T_NUM))
+    val initialVectors = columns.map(_ => Vec.makeConN(numberOfRows, numberOfPartitions))
     val frame = new Frame(columns, initialVectors)
 
     new MRTask() {
@@ -194,6 +199,7 @@ case class DatasetDetails(
   url: Option[String],
   nCols: Option[Int],
   nRows: Option[Int],
+  nPartitions: Option[Int],
   minValue: Option[Int],
   maxValue: Option[Int])
 
