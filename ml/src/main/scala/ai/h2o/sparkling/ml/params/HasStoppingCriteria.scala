@@ -20,11 +20,11 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.ScoreKeeper.StoppingMetric
-import org.apache.spark.ml.param.{DoubleParam, IntParam, Param, Params}
+import org.apache.spark.ml.param.{DoubleParam => DblParam, IntParam, Param}
 
 trait HasStoppingCriteria[P <: Parameters] extends H2OAlgoParamsHelper[P] {
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
-  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
+  private val stoppingTolerance = new DblParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping metric")
 
   //
