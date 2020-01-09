@@ -43,3 +43,12 @@ variable "benchmarks_driver_memory_gb" {
 variable "benchmarks_executor_memory_gb" {
   default = "8"
 }
+variable "benchmarks_run_yarn_internal" {
+  default = "true"
+}
+variable "benchmarks_run_yarn_external" {
+  default = "true"
+}
+variable "benchmarks_run_local_internal" {
+  default = "true"
+}

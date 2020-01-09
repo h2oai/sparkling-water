@@ -30,7 +30,7 @@ import org.json4s.jackson.Serialization._
 import scala.collection.JavaConverters._
 
 object Runner {
-  val defaultDatasetSpecificationsFile = "bigDatasetsTest.json"
+  val defaultDatasetSpecificationsFile = "datasets.json"
   val defaultOutputDir = new File("benchmarks", "output")
 
   val spark = SparkSession
@@ -128,7 +128,7 @@ object Runner {
     case None => collection
     case Some(name) =>
       val result = collection.filter(nameGetter(_) == name)
-      require(result.length > 0, s"$entity '$name' does not exist!")
+      require(result.nonEmpty, s"$entity '$name' does not exist!")
       result
   }
 
