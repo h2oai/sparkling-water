@@ -1,10 +1,31 @@
 [
   {
+    "name" : "random01Int4",
+    "isVirtual" : true,
+    "labelCol" : "Distance",
+    "nCols" : 4,
+    "nRows" : 320000000,
+    "nPartitions" : 200,
+    "minValue" : 0,
+    "maxValue" : 1
+  },
+  {
+    "name" : "random01Int40",
+    "isVirtual" : true,
+    "labelCol" : "Distance",
+    "nCols" : 40,
+    "nRows" : 320000000,
+    "nPartitions" : 200,
+    "minValue" : 0,
+    "maxValue" : 1
+  },
+  {
     "name" : "random01Int400",
     "isVirtual" : true,
     "labelCol" : "Distance",
     "nCols" : 400,
     "nRows" : 320000000,
+    "nPartitions" : 2000,
     "minValue" : 0,
     "maxValue" : 1
   }
