@@ -3,11 +3,20 @@
 if [ -z "$timeout" ]; then
     timeout=10800 # 3 hours
 fi
-if [ -z "$aws_core_instance_count" ]; then
-    aws_core_instance_count=2
+if [ -z "$aws_access_key" ]; then
+    read -p "Enter your aws access key: "  aws_access_key
+fi
+if [ -z "$aws_secret_key" ]; then
+    read -p "Enter your aws secret key: "  aws_secret_key
+fi
+if [ -z "$aws_ssh_public_key" ]; then
+    read -p "Enter your aws ssh public key: "  aws_ssh_public_key
 fi
 if [ -z "$aws_instance_type" ]; then
     aws_instance_type="m5.2xlarge"
+fi
+if [ -z "$aws_core_instance_count" ]; then
+    aws_core_instance_count=2
 fi
 if [ -z "$aws_emr_timeout" ]; then
     aws_emr_timeout="4 hours"
@@ -21,14 +30,14 @@ fi
 if [ -z "$executor_memory_gb" ]; then
     executor_memory_gb="8"
 fi
-if [ -z "$aws_access_key" ]; then
-    read -p "Enter your aws access key: "  aws_access_key
+if [ -z "$run_yarn_internal" ]; then
+    run_yarn_internal="true"
 fi
-if [ -z "$aws_secret_key" ]; then
-    read -p "Enter your aws secret key: "  aws_secret_key
+if [ -z "$run_yarn_external" ]; then
+    run_yarn_external="true"
 fi
-if [ -z "$aws_ssh_public_key" ]; then
-    read -p "Enter your aws ssh public key: "  aws_ssh_public_key
+if [ -z "$run_local_internal" ]; then
+    run_local_internal="true"
 fi
 
 cd "$(dirname "$0")"
@@ -48,6 +57,9 @@ output_block=$(terraform apply \
     -var "benchmarks_other_arguments=$other_arguments" \
     -var "benchmarks_driver_memory_gb=$driver_memory_gb" \
     -var "benchmarks_executor_memory_gb=$executor_memory_gb" \
+    -var "benchmarks_run_yarn_internal=$run_yarn_internal" \
+    -var "benchmarks_run_yarn_external=$run_yarn_external" \
+    -var "benchmarks_run_local_internal=$run_local_internal" \
     -auto-approve \
     | tee /dev/stderr | tail -n 6)
 

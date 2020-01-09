@@ -109,13 +109,17 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       ${var.benchmarks_other_arguments}
   }
 
-
-  runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
-  aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
-  export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
-  runBenchmarks "yarn" "external" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb/2}G"
-  runBenchmarks "local" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
-
+  if ${var.benchmarks_run_yarn_internal}; then
+    runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
+  fi
+  if ${var.benchmarks_run_yarn_external}; then
+    aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
+    export H2O_EXTENDED_JAR=/home/hadoop/h2o.jar
+    runBenchmarks "yarn" "external" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb/2}G"
+  fi
+  if ${var.benchmarks_run_local_internal}; then
+    runBenchmarks "local" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
+  fi
   tar -zcvf /home/hadoop/results.tar.gz -C /home/hadoop/results .
   aws s3 cp /home/hadoop/results.tar.gz ${format("s3://%s/public-read/results.tar.gz", aws_s3_bucket.deployment_bucket.bucket)}
   touch /home/hadoop/finished

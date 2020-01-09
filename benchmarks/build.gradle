@@ -142,6 +142,9 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("timeout", "36000") // 10 hours
             environment("driver_memory_gb", "8")
             environment("executor_memory_gb", "80")
+            environment("run_yarn_internal", "false")
+            environment("run_yarn_external", "true")
+            environment("run_local_internal", "false")
 
             commandLine "./run_benchmarks.sh"
         }
@@ -166,6 +169,9 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteT
             environment("timeout", "36000") // 10 hours
             environment("driver_memory_gb", "8")
             environment("executor_memory_gb", "80")
+            environment("run_yarn_internal", "false")
+            environment("run_yarn_external", "true")
+            environment("run_local_internal", "false")
 
             commandLine "./run_benchmarks.sh"
         }
