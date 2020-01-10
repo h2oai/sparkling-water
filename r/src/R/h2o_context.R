@@ -48,9 +48,9 @@ h2o_context.spark_connection <- function(sc, conf = NULL, username = NA_characte
   port <- invoke(hc, "h2oLocalClientPort")
   if (!isClientConnected(hc)){
     if (context_path == "") {
-      invisible(capture.output(h2o.init(ip = ip, port = port, startH2O=F, username = conf$userName(), password = conf$password())))
+      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, startH2O=F, username = conf$userName(), password = conf$password())))
     } else {
-      invisible(capture.output(h2o.init(ip = ip, port = port, context_path = context_path, startH2O=F, username = conf$userName(), password = conf$password())))
+      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = context_path, startH2O=F, username = conf$userName(), password = conf$password())))
     }
     setClientConnected(hc)
   }
