@@ -15,12 +15,11 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml.models
 
 import java.io.File
 
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
-import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
@@ -33,7 +32,7 @@ import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class H2OMojoModelTest extends FunSuite with SharedH2OTestContext with Matchers {
+class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 

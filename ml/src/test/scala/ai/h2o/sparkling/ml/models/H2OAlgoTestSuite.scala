@@ -15,10 +15,9 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
-import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -28,10 +27,8 @@ import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 import water.{H2O, Key}
 
-import scala.collection.mutable
-
 @RunWith(classOf[JUnitRunner])
-class H2OAlgoTest extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OAlgoTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
