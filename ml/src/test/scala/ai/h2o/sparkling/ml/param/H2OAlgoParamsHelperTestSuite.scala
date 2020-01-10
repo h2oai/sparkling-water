@@ -15,17 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.h2o.param
+package ai.h2o.sparkling.ml.param
 
 import ai.h2o.automl.Algo
-import hex.genmodel.utils.DistributionFamily
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
+import hex.genmodel.utils.DistributionFamily
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class H2OAlgoParamsHelperTest extends FunSuite with Matchers {
+class H2OAlgoParamsHelperTestSuite extends FunSuite with Matchers {
 
   test("getValidatedEnumValue with unknown enum") {
     val thrown = intercept[IllegalArgumentException] {

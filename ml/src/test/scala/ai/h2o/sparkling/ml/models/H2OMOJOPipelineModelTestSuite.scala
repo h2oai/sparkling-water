@@ -15,25 +15,24 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml.models
 
 import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
-import ai.h2o.sparkling.ml.models.{H2OMOJOPipelineModel, H2OMOJOSettings}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OMOJOPipelineModelTest extends FunSuite with SparkTestContext {
+class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
   override def beforeAll(): Unit = {
     sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
