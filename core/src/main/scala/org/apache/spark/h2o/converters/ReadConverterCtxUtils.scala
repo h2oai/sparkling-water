@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.converters
 
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalReadConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
@@ -27,10 +28,10 @@ object ReadConverterCtxUtils {
              chksLocation: Option[Array[NodeDesc]],
              expectedTypes: Option[Array[Byte]],
              selectedColumnIndices: Array[Int],
-             driverTimestamp: Short): ReadConverterCtx = {
+             conf: H2OConf): ReadConverterCtx = {
 
     chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx),
-      expectedTypes.get, selectedColumnIndices, driverTimestamp))
+      expectedTypes.get, selectedColumnIndices, conf))
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }

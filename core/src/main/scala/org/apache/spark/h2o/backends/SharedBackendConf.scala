@@ -49,6 +49,14 @@ trait SharedBackendConf {
   def loginConf = sparkConf.getOption(PROP_LOGIN_CONF._1)
   def userName: Option[String] = sparkConf.getOption(PROP_USER_NAME._1)
   def password: Option[String] = sparkConf.getOption(PROP_PASSWORD._1)
+  private[h2o] def credentials: Option[String] = {
+    if (userName.isDefined && password.isDefined) {
+      val userpass = s"${userName.get}:${password.get}"
+      Some("Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userpass.getBytes))
+    } else {
+      None
+    }
+  }
   def sslConf = sparkConf.getOption(PROP_SSL_CONF._1)
   def autoFlowSsl = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
   def h2oNodeLogLevel = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)

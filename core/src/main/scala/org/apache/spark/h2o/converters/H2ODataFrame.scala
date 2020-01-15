@@ -19,7 +19,7 @@ package org.apache.spark.h2o.converters
 
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
@@ -36,7 +36,7 @@ import scala.language.postfixOps
   * The abstract class contains common methods for client-based and REST-based DataFrames
   */
 private[spark]
-abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, Nil) with H2OSparkEntity {
+abstract class H2ODataFrameBase(sc: SparkContext, h2OConf: H2OConf) extends RDD[InternalRow](sc, Nil) with H2OSparkEntity {
 
   protected def types: Array[DataType]
 
@@ -59,6 +59,7 @@ abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, N
     // Prepare iterator
     val iterator = new H2OChunkIterator[InternalRow] {
 
+      override val conf: H2OConf = h2OConf
       /** Frame reference */
       override val keyName = frameKeyName
       /** Processed partition index */
@@ -100,7 +101,7 @@ private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
                                          (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+  extends H2ODataFrameBase(hc.sparkContext, hc.getConf) with H2OClientBasedSparkEntity[T] {
 
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
@@ -136,7 +137,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 private[spark]
 class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
                       (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext) with H2ORESTBasedSparkEntity {
+  extends H2ODataFrameBase(hc.sparkContext, hc.getConf) with H2ORESTBasedSparkEntity {
 
   def this(frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, null)(hc)

@@ -19,6 +19,7 @@ package org.apache.spark.h2o.converters
 
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.Partition
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 import water.fvec.{Frame, FrameUtils}
 
@@ -60,6 +61,7 @@ private[converters] trait H2OSparkEntity {
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
 
+    val conf: H2OConf
     /* Key of pointing to underlying dataframe */
     val keyName: String
     /* Partition index */
@@ -72,7 +74,7 @@ private[converters] trait H2OSparkEntity {
         partIndex,
         // we need to send list of all expected types, not only the list filtered for expected columns
         // because on the h2o side we get the expected type using index from selectedColumnIndices array
-        chksLocation, expectedTypes, selectedColumnIndices, driverTimeStamp
+        chksLocation, expectedTypes, selectedColumnIndices, conf
       )
 
     override def hasNext: Boolean = converterCtx.hasNext
