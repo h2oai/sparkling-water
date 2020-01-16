@@ -46,6 +46,8 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext, con
 
   protected def colNames: Array[String]
 
+  override val isExternalBackend = conf.runsInExternalClusterMode
+
   /**
     * The method checks that H2OFrame & given Scala type are compatible
     */
@@ -232,7 +234,6 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
                                                                  (@(transient @param @field) hc: H2OContext)
   extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with H2OClientBasedSparkEntity[T] {
 
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   // Get product type before building an RDD
@@ -259,8 +260,6 @@ private[spark]
 class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, val productType: ProductType)
                                                          (@(transient @param @field) hc: H2OContext)
   extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with H2ORESTBasedSparkEntity {
-
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
 
   // Get product type before building an RDD
   def this(@transient frame: H2OFrame)

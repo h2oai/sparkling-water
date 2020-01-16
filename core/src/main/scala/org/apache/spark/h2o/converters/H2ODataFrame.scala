@@ -38,6 +38,8 @@ import scala.language.postfixOps
 private[spark]
 abstract class H2ODataFrameBase(sc: SparkContext, h2OConf: H2OConf) extends RDD[InternalRow](sc, Nil) with H2OSparkEntity {
 
+  override val isExternalBackend = h2OConf.runsInExternalClusterMode
+
   protected def types: Array[DataType]
 
   protected def indexToSupportedType(index: Int): SupportedType
@@ -106,7 +108,6 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   H2OFrameSupport.lockAndUpdate(frame)
@@ -141,8 +142,6 @@ class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
 
   def this(frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, null)(hc)
-
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
 
   private val colNames = frame.columns.map(_.name)
 
