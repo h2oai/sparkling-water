@@ -48,7 +48,7 @@ And later, you can create ``H2OContext`` as:
 
     import org.apache.spark.h2o._
     conf = new H2OConf(spark).setUserName("username").setPassword("password")
-    val hc = H2OContext.getOrCreate(spark)
+    val hc = H2OContext.getOrCreate(spark, conf)
 
 Or, you can also use setters available on ``H2OConf`` as:
 
@@ -79,7 +79,7 @@ And later, you can create ``H2OContext`` as:
 
     from pysparkling import *
     conf = H2OConf(spark).setUserName("username").setPassword("password")
-    hc = H2OContext.getOrCreate(spark)
+    hc = H2OContext.getOrCreate(spark, conf)
 
 
 Or, you can also use setters available on ``H2OConf`` as:
