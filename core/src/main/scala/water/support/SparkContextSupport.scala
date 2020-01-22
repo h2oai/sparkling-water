@@ -48,6 +48,17 @@ trait SparkContextSupport {
   def sparkContext(conf: SparkConf) = SparkContext.getOrCreate(conf)
 
   /**
+    * Returns true if the file has already been added to Spark files
+    * @param sc Spark context
+    * @param filePath any path containing the file name
+    * @return true if the file has already been added to Spark files, otherwise false
+    */
+  def isFileDistributed(sc: SparkContext, filePath: String): Boolean = {
+    val fileName = new File(filePath).getName
+    sc.listFiles().filter(new File(_).getName == fileName).nonEmpty
+  }
+
+  /**
     * Add files into Spark context
     * @param sc Spark context
     * @param files path to files to add

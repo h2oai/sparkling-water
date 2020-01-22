@@ -26,6 +26,7 @@ import org.apache.spark.network.Security
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
+import water.support.SparkContextSupport
 
 /**
  * Shared functions which can be used by both backends
@@ -62,7 +63,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       AzureDatabricksUtils.setClientCheckRetryTimeout(conf)
     }
 
-    if (conf.isInternalSecureConnectionsEnabled) {
+    if (conf.isInternalSecureConnectionsEnabled && conf.sslConf.isEmpty) {
       Security.enableSSL(SparkSession.builder().getOrCreate(), conf)
     }
 
@@ -118,7 +119,9 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
     for (fileProperty <- conf.getFileProperties()) {
       for (filePath <- conf.getOption(fileProperty._1)) {
-        sc.addFile(filePath)
+        if (!SparkContextSupport.isFileDistributed(sc, filePath)) {
+          sc.addFile(filePath)
+        }
       }
     }
   }
