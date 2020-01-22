@@ -35,7 +35,7 @@ import scala.io.Source
 import scala.util.control.NoStackTrace
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiClient {
 
   var yarnAppId: Option[String] = None
   private var externalIP: Option[String] = None

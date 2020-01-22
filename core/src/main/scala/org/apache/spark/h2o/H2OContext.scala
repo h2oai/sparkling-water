@@ -337,7 +337,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
         if (isRestAPIBased) {
-          RestApiUtils.shutdownCluster(conf)
+          RestApiClient.shutdownCluster(conf)
         } else {
           H2O.orderlyShutdown(conf.externalBackendStopTimeout)
         }
@@ -467,7 +467,7 @@ object H2OContext extends Logging {
     override protected def getFlowEndpoint(): String = s"${getH2OEndpointIp()}:${getH2OEndpointPort()}${conf.contextPath.getOrElse("")}"
   }
 
-  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with RestApiUtils {
+  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with RestApiClient {
     private var flowIp: String = _
     private var flowPort: Int = _
     private var leaderNode: NodeDesc = _
@@ -513,7 +513,7 @@ object H2OContext extends Logging {
 
     override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
       verifyLogContainer(logContainer)
-      RestApiUtils.downloadLogs(destinationDir, logContainer, conf)
+      downloadLogs(destinationDir, logContainer, conf)
     }
 
     override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
@@ -564,7 +564,7 @@ object H2OContext extends Logging {
     }
 
   private def connectingToNewCluster(hc: H2OContext, newConf: H2OConf): Boolean = {
-    val newCloudV3 = RestApiUtils.getCloudInfo(newConf)
+    val newCloudV3 = RestApiClient.getCloudInfo(newConf)
     val sameNodes = hc.getH2ONodes().map(_.ipPort()).sameElements(newCloudV3.nodes.map(_.ip_port))
     !sameNodes
   }
