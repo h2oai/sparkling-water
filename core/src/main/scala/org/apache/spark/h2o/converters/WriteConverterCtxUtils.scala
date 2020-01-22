@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.converters
 
 import org.apache.spark.TaskContext
-import org.apache.spark.h2o.backends.external.{ExternalWriteConverterCtx, RestApiClient}
+import org.apache.spark.h2o.backends.external.{ExternalWriteConverterCtx, RestApiUtils}
 import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
@@ -169,7 +169,7 @@ object WriteConverterCtxUtils {
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
       val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
       val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
-      val leaderNode = RestApiClient.getLeaderNode(hc.getConf)
+      val leaderNode = RestApiUtils.getLeaderNode(hc.getConf)
       val writerClient = new ExternalWriteConverterCtx(leaderNode, writeTimeout, -1, blockSize)
 
       writerClient.initFrame(keyName, colNames)

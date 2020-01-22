@@ -30,7 +30,7 @@ import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
-trait RestApiClient extends RestCommunication {
+trait RestApiUtils extends RestCommunication {
 
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
@@ -177,4 +177,4 @@ trait RestApiClient extends RestCommunication {
   }
 }
 
-object RestApiClient extends RestApiClient
+object RestApiUtils extends RestApiUtils
