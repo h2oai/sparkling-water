@@ -513,7 +513,7 @@ object H2OContext extends Logging {
 
     override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
       verifyLogContainer(logContainer)
-      RestApiUtils.downloadLogs(destinationDir, logContainer, conf)
+      downloadLogs(destinationDir, logContainer, conf)
     }
 
     override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
