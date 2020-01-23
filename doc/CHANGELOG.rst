@@ -1,6 +1,43 @@
 Change Log
 ==========
 
+v3.28.0.2-1 (2020-01-23)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.2-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-1841 <https://0xdata.atlassian.net/browse/SW-1841>`__ - Fix Examples in LDAP and Kerberos Tutorials
+   -  `SW-1843 <https://0xdata.atlassian.net/browse/SW-1843>`__ - The Second Call of H2OContext.getOrCreate Throws an Exception
+                
+-  New Feature
+        
+   -  `SW-1802 <https://0xdata.atlassian.net/browse/SW-1802>`__ - Introduce stoppingRounds, stoppingMetric and stoppingTolerance Parameters on GBM, DRF, XGBoost and DeepLearning 
+   -  `SW-1835 <https://0xdata.atlassian.net/browse/SW-1835>`__ - Enable to Specify Number of Partitions of Virtual Datasets Used in Benchmarks 
+                
+-  Improvement
+        
+   -  `SW-1801 <https://0xdata.atlassian.net/browse/SW-1801>`__ - Deprecate the r2stopping Parameter on GBM and DRF
+   -  `SW-1826 <https://0xdata.atlassian.net/browse/SW-1826>`__ - Deprecate using username and password in RSparkling in favor of the spark options used for this
+   -  `SW-1829 <https://0xdata.atlassian.net/browse/SW-1829>`__ - Remove sctrict version check argument in RSparkling
+   -  `SW-1831 <https://0xdata.atlassian.net/browse/SW-1831>`__ - Test Spark to H2O Conversions on Big Data 
+   -  `SW-1836 <https://0xdata.atlassian.net/browse/SW-1836>`__ - Make Execution of Individual Backends Configurable in Benchmarks
+   -  `SW-1842 <https://0xdata.atlassian.net/browse/SW-1842>`__ - Upgrade to H2O 3.28.0.2
+                
+-  Engineering Story
+        
+   -  `SW-1838 <https://0xdata.atlassian.net/browse/SW-1838>`__ - Move Model and Algorithm Tests to &#39;ai.h2o.sparkling.ml&#39; Namespace
+   -  `SW-1839 <https://0xdata.atlassian.net/browse/SW-1839>`__ - Iterate over Transformed DataFrame in H2OFrameToDataFrameConversionBenchmark
+                
+-  Docs
+        
+   -  `SW-1832 <https://0xdata.atlassian.net/browse/SW-1832>`__ - Update copyright year in conf.py file to include 2020
+                
+    
 v3.28.0.1-1 (2019-12-19)
 ------------------------
 Downloads:
