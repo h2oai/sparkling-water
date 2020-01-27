@@ -207,8 +207,8 @@ class H2OContext(object):
 
         Parameters
         ----------
-         h2o_frame : H2OFrame
-         copy_metadata: Bool = True
+         h2oFrame : H2OFrame
+         copyMetadata: Bool = True
 
         Returns
         -------
@@ -237,9 +237,9 @@ class H2OContext(object):
 
         Parameters
         ----------
-          dataframe : Spark RDD or DataFrame
-          framename : Optional name for resulting H2OFrame
-          full_cols : number of first n columns which are sent to the client together with the data
+          sparkFrame : Spark RDD or DataFrame
+          h2oFrameName : Optional name for resulting H2OFrame
+          fullCols : number of first n columns which are sent to the client together with the data
 
         Returns
         -------
