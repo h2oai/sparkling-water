@@ -17,21 +17,18 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{BufferedOutputStream, File, FileOutputStream}
-import java.net.URI
+import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
+import java.net.{HttpURLConnection, URI, URL}
 
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
-import org.apache.http.{HttpEntity, HttpHeaders}
-import org.apache.http.client.methods.{HttpGet, HttpPost}
-import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
-import org.apache.http.util.EntityUtils
 import org.apache.spark.h2o.H2OConf
 
 import scala.reflect.{ClassTag, classTag}
+import ai.h2o.sparkling.utils.ScalaUtils._
+import org.apache.spark.expose.Logging
 
-trait RestCommunication {
+trait RestCommunication extends Logging {
 
   /**
     *
@@ -48,7 +45,7 @@ trait RestCommunication {
       suffix: String,
       conf: H2OConf,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, HttpGet.METHOD_NAME, suffix, conf, skippedFields)
+    request(endpoint, "GET", suffix, conf, skippedFields)
   }
 
 
@@ -67,7 +64,7 @@ trait RestCommunication {
       suffix: String,
       conf: H2OConf,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, HttpPost.METHOD_NAME, suffix, conf, skippedFields)
+    request(endpoint, "POST", suffix, conf, skippedFields)
   }
 
   protected def request[ResultType: ClassTag](
@@ -76,14 +73,10 @@ trait RestCommunication {
       suffix: String,
       conf: H2OConf,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    val response = readURLContent(endpoint, requestType, suffix, conf)
-    val content = IOUtils.toString(response.getContent)
-    try {
-      EntityUtils.consume(response)
-    } catch {
-      case _: Throwable =>
+    withResource(readURLContent(endpoint, requestType, suffix, conf)) { response =>
+      val content = IOUtils.toString(response)
+      deserialize[ResultType](content, skippedFields)
     }
-    deserialize[ResultType](content, skippedFields)
   }
 
   private def deserialize[ResultType: ClassTag](content: String, skippedFields: Seq[(Class[_], String)]): ResultType = {
@@ -102,34 +95,20 @@ trait RestCommunication {
   }
 
   protected def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
-    val output = new BufferedOutputStream(new FileOutputStream(file))
-    IOUtils.copy(response.getContent, output)
-    try {
-      EntityUtils.consume(response)
-    } catch {
-      case _: Throwable =>
+    withResource(readURLContent(endpoint, "GET", suffix, conf)) { input =>
+      withResource(new BufferedOutputStream(new FileOutputStream(file))) { output =>
+        IOUtils.copy(input, output)
+      }
     }
-    output.close()
   }
 
   protected def downloadStringURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    val response = readURLContent(endpoint, HttpGet.METHOD_NAME, suffix, conf)
-    val output = new java.io.FileWriter(file)
-    IOUtils.copy(response.getContent, output)
-    try {
-      EntityUtils.consume(response)
-    } catch {
-      case _: Throwable =>
+    withResource(readURLContent(endpoint, "GET", suffix, conf)) { input =>
+      withResource(new java.io.FileWriter(file)) { output =>
+        IOUtils.copy(input, output)
+      }
     }
-    output.close()
   }
-
-
-  private lazy val httpClient = HttpClientBuilder
-    .create()
-    .setConnectionManager(new PoolingHttpClientConnectionManager)
-    .build()
 
   private def getCredentials(conf: H2OConf): Option[String] = {
     val username = conf.userName
@@ -142,31 +121,35 @@ trait RestCommunication {
     }
   }
 
-  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): HttpEntity = {
+  private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
+
+  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
+    val url = endpoint.resolve(suffix).toURL
     try {
-      val request = requestType match {
-        case HttpGet.METHOD_NAME => new HttpGet(s"$endpoint/$suffix")
-        case HttpPost.METHOD_NAME => new HttpPost(s"$endpoint/$suffix")
-        case unknown => throw new IllegalArgumentException(s"Unsupported HTTP request type $unknown")
+      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      connection.setRequestMethod(requestType)
+      getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+      val statusCode = retry(3) {
+        connection.getResponseCode()
       }
-      getCredentials(conf).foreach(creds => request.setHeader(HttpHeaders.AUTHORIZATION, creds))
-      val result = retry(3) {
-        httpClient.execute(request)
-      }
-      val statusCode = result.getStatusLine.getStatusCode
       statusCode match {
-        case 401 => throw new RestApiUnauthorisedException(
-          s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} could not be reached because the client is not authorized.
+        case HttpURLConnection.HTTP_OK => logInfo(
+          s"""External H2O node ${urlToString(url)} successfully responded
+             | for the $requestType request on the patch $suffix.""".stripMargin)
+        case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
+          s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
              |Please make sure you have passed valid credentials to the client.
-             |Status code $statusCode : ${result.getStatusLine.getReasonPhrase}.""".stripMargin)
-        case _ =>
+             |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
+        case _ => throw new RestApiNotReachableException(
+          s"""External H2O node ${urlToString(url)} responded with
+             |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
       }
-      result.getEntity
+      connection.getInputStream()
     } catch {
       case e: RestApiException => throw e
       case cause: Exception =>
         throw new RestApiNotReachableException(
-          s"""External H2O node ${endpoint.getHost}:${endpoint.getPort} is not reachable.
+          s"""External H2O node ${urlToString(url)} is not reachable.
              |Please verify that you are passing ip and port of existing cluster node and the cluster
              |is running with web enabled.""".stripMargin, cause)
     }
