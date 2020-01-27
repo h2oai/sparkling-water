@@ -157,35 +157,23 @@ and ``spark.ext.h2o.client.port.base`` affects the client.
 Using RSparkling
 ----------------
 
-H2OContext & Flow
+Create H2OContext
 ~~~~~~~~~~~~~~~~~
 
-Let's inspect the ``H2OContext`` for our Spark connection:
+To create H2OContext, call:
 
 .. code:: r
 
-   h2o_context(sc)
+   hc <- H2OContext.getOrCreate(sc)
 
-       ## <jobj[6]>
-       ##   class org.apache.spark.h2o.H2OContext
-       ##
-       ## Sparkling Water Context:
-       ##  * H2O name: sparkling-water-demo-1482215501
-       ##  * number of executors: 1
-       ##  * list of used executors:
-       ##   (executorId, host, port)
-       ##   ------------------------
-       ##   (driver,localhost,54323)
-       ##   ------------------------
-       ##
-       ##   Open H2O Flow in browser: http://127.0.0.1:54323 (CMD + click in Mac OSX)
-       ##
+Open H2O Flow
+~~~~~~~~~~~~~
 
 We can also view the H2O Flow web UI:
 
 .. code:: r
 
-   h2o_flow(sc)
+   hc$openFlow()
 
 
 H2O with Spark DataFrames
@@ -222,7 +210,7 @@ Here is how you convert a Spark DataFrame into an H2O Frame:
 
 .. code:: r
 
-   mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
+   mtcars_hf <- hc$asH2OFrame(mtcars_tbl)
    mtcars_hf
 
       ## <jobj[103]>
@@ -386,7 +374,7 @@ Now let's say you want to make this H2OFrame available to Spark. You can convert
 
 .. code:: r
 
-   pred_sdf <- as_spark_dataframe(sc, pred_hf)
+   pred_sdf <- hc$asSparkFrame(pred_hf)
    head(pred_sdf)
 
       Source:   query [?? x 1]

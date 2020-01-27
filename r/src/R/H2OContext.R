@@ -1,0 +1,70 @@
+getClientConnectedField <- function(jhc) {
+  child <- sparklyr::invoke(jhc, "getClass")
+  context <- sparklyr::invoke(child, "getSuperclass")
+  field <- sparklyr::invoke(context, "getDeclaredField", "clientConnected")
+  sparklyr::invoke(field, "setAccessible", TRUE)
+  field
+}
+
+isClientConnected <- function(jhc) {
+  field <- .self$getClientConnectedField()
+  sparklyr::invoke(field, "get", .self$jhc)
+}
+
+setClientConnected <- function(jhc) {
+  field <- .self$getClientConnectedField()
+  sparklyr::invoke(field, "set", .self$jhc, TRUE)
+}
+
+#' @export H2OContext.getOrCreate
+H2OContext.getOrCreate <- function(sc, conf = NULL) {
+  if (is.null(conf)) {
+    conf <- H2OConf(sc)
+  }
+
+  jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(sc), conf$jconf)
+  hc <- H2OContext(jhc)
+  returnedConf <- invoke(jhc, "getConf")
+  # Because of checks in Sparkling Water, we are sure context path starts with one slash
+  context_path_with_slash <- invoke(returnedConf, "get", "spark.ext.h2o.context.path", "")
+  context_path <- substring(context_path_with_slash, 2, nchar(context_path_with_slash))
+  ip <- invoke(jhc, "h2oLocalClientIp")
+  port <- invoke(jhc, "h2oLocalClientPort")
+  if (!isClientConnected(jhc)) {
+    if (context_path == "") {
+      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, startH2O = F, username = conf$userName(), password = conf$password())))
+    } else {
+      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = context_path, startH2O = F, username = conf$userName(), password = conf$password())))
+    }
+    setClientConnected(jhc)
+  }
+  hc
+}
+
+#' @export H2OContext
+H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = list(
+  initialize = function(jhc) {
+    .self$jhc <- jhc
+  },
+  openFlow = function() {
+    flowURL <- invoke(.self$jhc, "flowURL")
+    browseURL(flowURL)
+  },
+  asH2OFrame = function(df, frameName = NULL) {
+    # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
+    df <- spark_dataframe(df)
+    jhf <- if(is.null(frameName)) {
+      invoke(.self$jhc, "asH2OFrame", df)
+    } else {
+      invoke(.self$jhc, "asH2OFrame", df, frameName)
+    }
+
+    key <- invoke(invoke(jhf, "key"), "toString")
+    h2o.getFrame(key)
+  },
+  asSparkFrame = function(frame) {
+    sparkDf <- invoke(.self$jhc, "asDataFrame", h2o.getId(frame), TRUE)
+    # Register returned spark_jobj as a table for dplyr
+    sdf_register(sparkDf)
+  }
+))

@@ -26,6 +26,8 @@ setClientConnected <- function(hc) {
 
 #' @export
 h2o_context.spark_connection <- function(sc, conf = NULL, username = NA_character_, password = NA_character_) {
+  print("Method h2o_context is deprecated and will be deleted in major release 3.30. Create instance of H2OContext as hc <- H2OContext.getOrCreate(sc).")
+
   if (is.null(conf)) {
     conf <- H2OConf(sc)
   }
@@ -67,7 +69,8 @@ h2o_context.spark_jobj <- function(sc, conf = NULL, username = NA_character_, pa
 #' @param sc Object of type \code{spark_connection}.
 #' @export
 h2o_flow <- function(sc) {
-  flowURL <- invoke(h2o_context(sc), "flowURL")
+  print("Method h2o_flow is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$openFlow().")
+  flowURL <- invoke(h2o_context(sc), "flowUR     gsresL")
   browseURL(flowURL)
 }
 
@@ -78,6 +81,7 @@ h2o_flow <- function(sc) {
 #' @param name The name of the H2OFrame.
 #' @export
 as_h2o_frame <- function(sc, frame, name=NULL) {
+  print("Method as_h2o_frame is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$asH2OFrame().")
   # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
   frame <- spark_dataframe(frame)
   
@@ -100,6 +104,7 @@ as_h2o_frame <- function(sc, frame, name=NULL) {
 #' @param name The name to assign the data frame in Spark.
 #' @export
 as_spark_dataframe <- function(sc, frame, name = paste(deparse(substitute(sc)), collapse="")) {
+  print("Method as_spark_dataframe is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$asSparkFrame().")
   hc <- h2o_context(sc)
   spark_df <- invoke(hc, "asDataFrame", h2o.getId(frame), TRUE)
   # Register returned spark_jobj as a table for dplyr
