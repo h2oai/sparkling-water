@@ -108,7 +108,7 @@ def testConversionWorksAfterNewlyStartedContext(spark):
     context1.stop()
     context2 = H2OContext.getOrCreate(spark, createH2OConf(spark))
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
-    h2o_frame = context2.as_h2o_frame(rdd)
+    h2o_frame = context2.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
     assert h2o_frame[1, 0] == 1.3333333333
     asert_h2o_frame(h2o_frame, rdd)

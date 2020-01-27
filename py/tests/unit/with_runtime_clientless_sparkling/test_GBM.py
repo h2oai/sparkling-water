@@ -38,7 +38,7 @@ def hc(spark):
 def testLoadAndTrainMojo(hc, spark):
     referenceMojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
     df = spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True, inferSchema=True)
-    frame = hc.as_h2o_frame(df)
+    frame = hc.asH2OFrame(df)
     frame["CAPSULE"] = frame["CAPSULE"].asfactor()
     gbm = H2OGradientBoostingEstimator(distribution="bernoulli", ntrees=2, seed=42)
     gbm.train(y="CAPSULE", training_frame=frame)
@@ -56,7 +56,7 @@ def insuranceFrame(hc, spark):
     df = spark \
         .read.csv("file://" + unit_test_utils.locate("smalldata/insurance.csv"), header=True, inferSchema=True) \
         .withColumn("Offset", log(col("Holders")))
-    frame = hc.as_h2o_frame(df)
+    frame = hc.asH2OFrame(df)
     frame["Group"] = frame["Group"].asfactor()
     frame["Age"] = frame["Age"].asfactor()
     return frame
