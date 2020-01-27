@@ -19,7 +19,7 @@ verify_h2o_version <- function(h2o_version, h2o_build_name, h2o_build_version, s
      if ("package:h2o" %in% search()) { detach("package:h2o", unload = TRUE) }
      if (isNamespaceLoaded("h2o")){ unloadNamespace("h2o") }
      remove.packages("h2o")
-     install.packages("h2o", type = "source", repos = "https://h2o-release.s3.amazonaws.com/h2o/', h2o_build_name ,'/', h2o_build_version ,'/R")\n'))
+     install.packages("h2o", type = "source", repos = "https://h2o-release.s3.amazonaws.com/h2o/rel-', h2o_build_name ,'/', h2o_build_version ,'/R")\n'))
     }
 }
 
