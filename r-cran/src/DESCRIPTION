@@ -1,0 +1,36 @@
+Package: rsparkling
+Title: R Interface for H2O Sparkling Water
+Version: 0.0.0
+Authors@R: c(
+  person("Jakub", "Hava", role = c("aut", "cre"), email = "jakub@h2o.ai"),
+  person("Navdeep", "Gill", role = c("aut"), email = "navdeep@h2o.ai"),
+  person("Erin", "LeDell", role = c("aut"), email = "erin@h2o.ai"),
+  person("Michal", "Malohlava", role = c("aut"), email = "michal@h2o.ai"),
+  person("JJ", "Allaire", role = c("aut"), email = "jj@rstudio.com"),
+  person("H2O.ai", role = c("cph")),
+  person("RStudio", role = c("cph")))
+Author: Jakub Hava [aut, cre],
+    Navdeep Gill [aut],
+    Erin LeDell [aut],
+    Michal Malohlava [aut],
+    JJ Allaire [aut],
+    H2O.ai [cph],
+    RStudio [cph]
+Maintainer: Jakub Hava <jakub@h2o.ai>
+Imports:
+    utils,
+    sparklyr (>= 0.3),
+    h2o (>= 3.8.3.3)
+Suggests: dplyr, testthat
+Description: An extension package for 'sparklyr' that provides an R interface to
+    H2O Sparkling Water machine learning library (see <https://github.com/h2oai/sparkling-water> for more information).
+License: Apache License 2.0 | file LICENSE
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: no
+SystemRequirements: Java (>6)
+URL: https://github.com/h2oai/sparkling-water/tree/master/r
+BugReports: http://jira.h2o.ai
+RoxygenNote: 7.0.2
+Depends:
+    R (>= 2.10)
