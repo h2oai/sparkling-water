@@ -115,8 +115,8 @@ def testMOJOModelReturnsDifferentResultWithZeroOffset(gbmModelWithOffset, datase
 
 def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, dataset):
     [trainingDataset, testingDataset] =  dataset.randomSplit([0.8, 0.2], 1)
-    trainingFrame = hc.as_h2o_frame(trainingDataset)
-    testingFrame = hc.as_h2o_frame(testingDataset)
+    trainingFrame = hc.asH2OFrame(trainingDataset)
+    testingFrame = hc.asH2OFrame(testingDataset)
     gbm = H2OGradientBoostingEstimator(distribution="tweedie",
                                        ntrees=600,
                                        max_depth=1,
@@ -128,7 +128,7 @@ def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, datase
     mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
     mojoModel = H2OMOJOModel.createFromMojo("file://" + mojoFile)
 
-    binaryModelResult = hc.as_spark_frame(gbm.predict(testingFrame))
+    binaryModelResult = hc.asSparkFrame(gbm.predict(testingFrame))
     mojoResult = mojoModel.transform(testingDataset).select("prediction")
 
     unit_test_utils.assert_data_frames_are_identical(binaryModelResult, mojoResult)

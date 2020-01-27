@@ -28,7 +28,7 @@ from tests import unit_test_utils
 
 def testDataframeToH2OFrame(spark, hc):
     df = spark.sparkContext.parallelize([(num, "text") for num in range(0, 100)]).toDF()
-    h2o_frame = hc.as_h2o_frame(df)
+    h2o_frame = hc.asH2OFrame(df)
     assert h2o_frame.nrow == df.count(), "Number of rows should match"
     assert h2o_frame.ncol == len(df.columns), "Number of columns should match"
     assert h2o_frame.names == df.columns, "Column names should match"
@@ -38,7 +38,7 @@ def testDataframeToH2OFrame(spark, hc):
 def testWideDataframeToH2OFrameWithFollowingEdit(spark, hc):
     n_col = 110
     test_data_frame = spark.createDataFrame([tuple(range(n_col))])
-    h2o_frame = hc.as_h2o_frame(test_data_frame)
+    h2o_frame = hc.asH2OFrame(test_data_frame)
     assert h2o_frame.dim[1] == n_col, "Number of cols should match"
     assert h2o_frame['_107'] == 107, "Content of columns should be the same"
     # h2o_frame.refresh()     # this helps to pass the test
@@ -52,14 +52,14 @@ def testWideDataframeToH2OFrameWithFollowingEdit(spark, hc):
 
 def testIntegerRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([num for num in range(0, 100)])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 
 def testBooleanRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([True, False, True, True, False])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 1
     assert h2o_frame[1, 0] == 0
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
@@ -67,7 +67,7 @@ def testBooleanRDDToH2OFrame(spark, hc):
 
 def testStringRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize(["a", "b", "c"])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == "a"
     assert h2o_frame[2, 0] == "c"
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
@@ -75,7 +75,7 @@ def testStringRDDToH2OFrame(spark, hc):
 
 def testFloatRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
     assert h2o_frame[1, 0] == 1.3333333333
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
@@ -83,7 +83,7 @@ def testFloatRDDToH2OFrame(spark, hc):
 
 def testDoubleRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
     assert h2o_frame[1, 0] == 1.3333333333
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
@@ -91,7 +91,7 @@ def testDoubleRDDToH2OFrame(spark, hc):
 
 def testComplexRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([("a", 1, 0.5), ("b", 2, 1.5)])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == "a"
     assert h2o_frame[1, 0] == "b"
     assert h2o_frame[1, 2] == 1.5
@@ -104,7 +104,7 @@ def testLongRDDToH2OFrame(spark, hc):
     min = hc._jvm.Integer.MIN_VALUE - 1
     max = hc._jvm.Integer.MAX_VALUE + 1
     rdd = spark.sparkContext.parallelize([1, min, max])
-    h2o_frame = hc.as_h2o_frame(rdd)
+    h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 1
     assert h2o_frame[1, 0] == min
     assert h2o_frame[2, 0] == max
@@ -116,14 +116,14 @@ def testNumericRDDtoH2OFrameWithValueTooBig(spark, hc):
     max = hc._jvm.Long.MAX_VALUE + 1
     rdd = spark.sparkContext.parallelize([1, min, max])
     with pytest.raises(ValueError):
-        hc.as_h2o_frame(rdd)
+        hc.asH2OFrame(rdd)
 
 
-# test transformation from h2o frame to data frame, when given h2o frame was created without calling as_h2o_frame
+# test transformation from h2o frame to data frame, when given h2o frame was created without calling asH2OFrame
 # on h2o context
 def testH2OFrameToDataframeNew(hc):
     h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df = hc.as_spark_frame(h2o_frame)
+    df = hc.asSparkFrame(h2o_frame)
     assert df.count() == h2o_frame.nrow, "Number of rows should match"
     assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
     assert df.columns == h2o_frame.names, "Column names should match"
@@ -131,19 +131,19 @@ def testH2OFrameToDataframeNew(hc):
 
 def testH2OFrameToDataframeWithSecondConversion(hc):
     h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df1 = hc.as_spark_frame(h2o_frame)
-    df2 = hc.as_spark_frame(h2o_frame)
+    df1 = hc.asSparkFrame(h2o_frame)
+    df2 = hc.asSparkFrame(h2o_frame)
     assert df1.count() == df2.count(), "Number of rows should match"
     assert len(df1.columns) == len(df2.columns), "Number of columns should match"
     assert df1.columns == df2.columns, "Column names should match"
 
 
-# test transformation from h2o frame to data frame, when given h2o frame was obtained using as_h2o_frame method
+# test transformation from h2o frame to data frame, when given h2o frame was obtained using asH2OFrame method
 # on h2o context
 def testH2OFrameToDataframe(spark, hc):
     rdd = spark.sparkContext.parallelize(["a", "b", "c"])
-    h2o_frame = hc.as_h2o_frame(rdd)
-    df = hc.as_spark_frame(h2o_frame)
+    h2o_frame = hc.asH2OFrame(rdd)
+    df = hc.asSparkFrame(h2o_frame)
     assert df.count() == h2o_frame.nrow, "Number of rows should match"
     assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
     assert df.columns == h2o_frame.names, "Column names should match"
@@ -153,7 +153,7 @@ def testH2OFrameToDataframe(spark, hc):
 def testInnerCbindTransform(hc):
     h2o_df1 = h2o.H2OFrame({'A': [1, 2, 3]})
     h2o_df2 = h2o.H2OFrame({'B': [4, 5, 6]})
-    spark_frame = hc.as_spark_frame(h2o_df1.cbind(h2o_df2))
+    spark_frame = hc.asSparkFrame(h2o_df1.cbind(h2o_df2))
     count = spark_frame.count()
     assert count == 3, "Number of rows is 3"
 
@@ -163,11 +163,11 @@ def testLazyFrames(spark, hc):
     from pyspark.sql import Row
     data = [Row(c1=1, c2="first"), Row(c1=2, c2="second")]
     df = spark.createDataFrame(data)
-    hf = hc.as_h2o_frame(df)
+    hf = hc.asH2OFrame(df)
     # Modify H2O frame - this should invalidate internal cache
     hf['c3'] = 3
     # Now try to convert modified H2O frame back to Spark data frame
-    dfe = hc.as_spark_frame(hf)
+    dfe = hc.asSparkFrame(hf)
     assert dfe.count() == len(data), "Number of rows should match"
     assert len(dfe.columns) == 3, "Number of columns should match"
     assert dfe.collect() == [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)]
@@ -177,20 +177,20 @@ def testSparseDataConversion(spark, hc):
     data = [(float(x), SparseVector(5000, {x: float(x)})) for x in range(1, 90)]
     df = spark.sparkContext.parallelize(data).toDF()
     t0 = time.time()
-    hc.as_h2o_frame(df)
+    hc.asH2OFrame(df)
     total = time.time() - t0
     assert (total < 20) == True  # The conversion should not take longer then 20 seconds
 
 
 def testUnknownTypeConversion(hc):
     with pytest.raises(ValueError):
-        hc.as_h2o_frame("unknown type")
+        hc.asH2OFrame("unknown type")
 
 
 def testConvertEmptyDataframeEmptySchema(spark, hc):
     schema = StructType([])
     empty = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
-    fr = hc.as_h2o_frame(empty)
+    fr = hc.asH2OFrame(empty)
     assert fr.nrows == 0
     assert fr.ncols == 0
 
@@ -198,7 +198,7 @@ def testConvertEmptyDataframeEmptySchema(spark, hc):
 def testConvertEmptyDataframeNonEmptySchema(spark, hc):
     schema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])
     empty = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
-    fr = hc.as_h2o_frame(empty)
+    fr = hc.asH2OFrame(empty)
     assert fr.nrows == 0
     assert fr.ncols == 2
 
@@ -206,6 +206,6 @@ def testConvertEmptyDataframeNonEmptySchema(spark, hc):
 def testConvertEmptyRDD(spark, hc):
     schema = StructType([])
     empty = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
-    fr = hc.as_h2o_frame(empty)
+    fr = hc.asH2OFrame(empty)
     assert fr.nrows == 0
     assert fr.ncols == 0

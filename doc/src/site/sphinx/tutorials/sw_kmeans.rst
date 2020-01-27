@@ -76,7 +76,7 @@ The following sections describe how to train KMeans model in Sparkling Water in 
 
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv")
-            sparkDF = hc.as_spark_frame(frame)
+            sparkDF = hc.asSparkFrame(frame)
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
         Train the model. You can configure all the available KMeans arguments using provided setters or constructor parameters, such as the label column.

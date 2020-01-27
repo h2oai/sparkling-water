@@ -127,9 +127,9 @@ f_crimes = f_crimes.drop("Date")
 
 # Expose H2O frames as Spark DataFrame
 
-df_weather = h2oContext.as_spark_frame(f_weather)
-df_census = h2oContext.as_spark_frame(f_census)
-df_crimes = h2oContext.as_spark_frame(f_crimes)
+df_weather = h2oContext.asSparkFrame(f_weather)
+df_census = h2oContext.asSparkFrame(f_census)
+df_crimes = h2oContext.asSparkFrame(f_crimes)
 
 # Register DataFrames as tables
 df_weather.createOrReplaceTempView("chicagoWeather")
@@ -151,7 +151,7 @@ JOIN chicagoCensus c
 ON a.Community_Area = c.Community_Area_Number""")
 
 # Publish Spark DataFrame as H2OFrame with given name
-crimeWithWeatherHF = h2oContext.as_h2o_frame(crimeWithWeather, "crimeWithWeatherTable")
+crimeWithWeatherHF = h2oContext.asH2OFrame(crimeWithWeather, "crimeWithWeatherTable")
 
 # Transform selected String columns to categoricals
 cat_cols = ["Arrest", "Season", "WeekDay", "Primary_Type", "Location_Description", "Domestic"]
@@ -207,7 +207,7 @@ def score_event(crime, model, censusTable):
     srdd = spark.createDataFrame([crime])
     # Join table with census data
     df_row = censusTable.join(srdd).where("Community_Area = Community_Area_Number")
-    row = h2oContext.as_h2o_frame(df_row)
+    row = h2oContext.asH2OFrame(df_row)
     row["Season"] = row["Season"].asfactor()
     row["WeekDay"] = row["WeekDay"].asfactor()
     row["Primary_Type"] = row["Primary_Type"].asfactor()
