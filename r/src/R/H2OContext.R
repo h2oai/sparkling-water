@@ -62,8 +62,8 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
     key <- invoke(invoke(jhf, "key"), "toString")
     h2o.getFrame(key)
   },
-  asSparkFrame = function(h2oFrame) {
-    sparkFrame <- invoke(.self$jhc, "asDataFrame", h2o.getId(h2oFrame), TRUE)
+  asSparkFrame = function(h2oFrame, copyMetaData = TRUE) {
+    sparkFrame <- invoke(.self$jhc, "asDataFrame", h2o.getId(h2oFrame), copyMetaData)
     # Register returned spark_jobj as a table for dplyr
     sdf_register(sparkFrame)
   }
