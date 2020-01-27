@@ -50,21 +50,21 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
     flowURL <- invoke(.self$jhc, "flowURL")
     browseURL(flowURL)
   },
-  asH2OFrame = function(df, frameName = NULL) {
+  asH2OFrame = function(sparkFrame, h2oFrameName = NULL) {
     # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
-    df <- spark_dataframe(df)
-    jhf <- if(is.null(frameName)) {
-      invoke(.self$jhc, "asH2OFrame", df)
+    sparkFrame <- spark_dataframe(sparkFrame)
+    jhf <- if (is.null(h2oFrameName)) {
+      invoke(.self$jhc, "asH2OFrame", sparkFrame)
     } else {
-      invoke(.self$jhc, "asH2OFrame", df, frameName)
+      invoke(.self$jhc, "asH2OFrame", sparkFrame, h2oFrameName)
     }
 
     key <- invoke(invoke(jhf, "key"), "toString")
     h2o.getFrame(key)
   },
-  asSparkFrame = function(frame) {
-    sparkDf <- invoke(.self$jhc, "asDataFrame", h2o.getId(frame), TRUE)
+  asSparkFrame = function(h2oFrame) {
+    sparkFrame <- invoke(.self$jhc, "asDataFrame", h2o.getId(h2oFrame), TRUE)
     # Register returned spark_jobj as a table for dplyr
-    sdf_register(sparkDf)
+    sdf_register(sparkFrame)
   }
 ))
