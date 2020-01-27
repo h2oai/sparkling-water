@@ -26,15 +26,15 @@ H2OContext.getOrCreate <- function(sc, conf = NULL) {
   hc <- H2OContext(jhc)
   returnedConf <- invoke(jhc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
-  context_path_with_slash <- invoke(returnedConf, "get", "spark.ext.h2o.context.path", "")
-  context_path <- substring(context_path_with_slash, 2, nchar(context_path_with_slash))
+  contextPathWithSlash <- invoke(returnedConf, "get", "spark.ext.h2o.context.path", "")
+  contextPath <- substring(contextPathWithSlash, 2, nchar(contextPathWithSlash))
   ip <- invoke(jhc, "h2oLocalClientIp")
   port <- invoke(jhc, "h2oLocalClientPort")
   if (!isClientConnected(jhc)) {
-    if (context_path == "") {
+    if (contextPath == "") {
       invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, startH2O = F, username = conf$userName(), password = conf$password())))
     } else {
-      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = context_path, startH2O = F, username = conf$userName(), password = conf$password())))
+      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())))
     }
     setClientConnected(jhc)
   }
