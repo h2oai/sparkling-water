@@ -36,7 +36,7 @@ def hc(spark):
 
 def testH2OFrameToDataframe(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df = hc.as_spark_frame(frame)
+    df = hc.asSparkFrame(frame)
     assert df.count() == frame.nrow, "Number of rows should match"
     assert len(df.columns) == frame.ncol, "Number of columns should match"
     assert df.columns == frame.names, "Column names should match"
@@ -44,8 +44,8 @@ def testH2OFrameToDataframe(hc):
 
 def testH2OFrameToDataframeWithSecondConversion(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df1 = hc.as_spark_frame(frame)
-    df2 = hc.as_spark_frame(frame)
+    df1 = hc.asSparkFrame(frame)
+    df2 = hc.asSparkFrame(frame)
     assert df1.count() == df2.count(), "Number of rows should match"
     assert len(df1.columns) == len(df2.columns), "Number of columns should match"
     assert df1.columns == df2.columns, "Column names should match"
@@ -95,7 +95,7 @@ def testH2OFrameOfSpecificTypeToDataframe(spark, hc, data, sparkType):
     originalDF = spark.createDataFrame(map(lambda i: (i,), data), schema)
     frame = h2o.H2OFrame(data, column_names=[columnName])
 
-    transformedDF = hc.as_spark_frame(frame)
+    transformedDF = hc.asSparkFrame(frame)
 
     unit_test_utils.assert_data_frames_are_identical(originalDF, transformedDF)
     assert originalDF.dtypes == transformedDF.dtypes
@@ -105,7 +105,7 @@ def testH2OFrameOfSpecificTypeToDataframe(spark, hc, data, sparkType):
 def testInnerCbindTransform(hc):
     frame1 = h2o.H2OFrame({'A': [1, 2, 3]})
     frame2 = h2o.H2OFrame({'B': [4, 5, 6]})
-    df = hc.as_spark_frame(frame1.cbind(frame2))
+    df = hc.asSparkFrame(frame1.cbind(frame2))
     count = df.count()
     assert count == 3, "Number of rows is 3"
 
@@ -114,11 +114,11 @@ def testLazyFrames(spark, hc):
     from pyspark.sql import Row
     data = [Row(c1=1, c2="first"), Row(c1=2, c2="second")]
     df = spark.createDataFrame(data)
-    hf = hc.as_h2o_frame(df)
+    hf = hc.asH2OFrame(df)
     # Modify H2O frame - this should invalidate internal cache
     hf['c3'] = 3
     # Now try to convert modified H2O frame back to Spark data frame
-    dfe = hc.as_spark_frame(hf)
+    dfe = hc.asSparkFrame(hf)
     assert dfe.count() == len(data), "Number of rows should match"
     assert len(dfe.columns) == 3, "Number of columns should match"
     assert dfe.collect() == [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)]

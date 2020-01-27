@@ -145,7 +145,7 @@ Frequently Asked Questions
 
     .. code:: python
 
-        h2o_context.as_h2o_frame(dataframe, "Frame_Name", 200):
+        h2o_context.asH2OFrame(dataframe, "Frame_Name", 200):
 
     The last parameter specifies the number of columns to sent for the preview.
 

@@ -201,76 +201,84 @@ class H2OContext(object):
     def get_conf(self):
         return self._conf
 
-    def as_spark_frame(self, h2o_frame, copy_metadata=True):
+    def asSparkFrame(self, h2oFrame, copyMetadata=True):
         """
         Transforms given H2OFrame to Spark DataFrame
 
         Parameters
         ----------
-          h2o_frame : H2OFrame
-          copy_metadata: Bool = True
+         h2oFrame : H2OFrame
+         copyMetadata: Bool = True
 
         Returns
         -------
-          Spark DataFrame
+         Spark DataFrame
         """
-        if isinstance(h2o_frame, H2OFrame):
-            frame_id = h2o_frame.frame_id
-            jdf = self._jhc.asDataFrame(frame_id, copy_metadata)
+
+        if isinstance(h2oFrame, H2OFrame):
+            frame_id = h2oFrame.frame_id
+            jdf = self._jhc.asDataFrame(frame_id, copyMetadata)
             df = DataFrame(jdf, self._sql_context)
             # Attach h2o_frame to dataframe which forces python not to delete the frame when we leave the scope of this
             # method.
             # Without this, after leaving this method python would garbage collect the frame since it's not used
             # anywhere and spark. when executing any action on this dataframe, will fail since the frame
             # would be missing.
-            df._h2o_frame = h2o_frame
+            df._h2o_frame = h2oFrame
             return df
 
-    def as_h2o_frame(self, dataframe, framename=None, full_cols=-1):
+    def as_spark_frame(self, h2o_frame, copy_metadata=True):
+        warnings.warn("Method 'as_spark_frame' is deprecated and will be removed in release 3.30. Please use method 'asSparkFrame' instead!")
+        return self.asSparkFrame(h2o_frame, copy_metadata)
+
+    def asH2OFrame(self, sparkFrame, h2oFrameName=None, fullCols=-1):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
 
         Parameters
         ----------
-          dataframe : Spark RDD or DataFrame
-          framename : Optional name for resulting H2OFrame
-          full_cols : number of first n columns which are sent to the client together with the data
+          sparkFrame : Spark RDD or DataFrame
+          h2oFrameName : Optional name for resulting H2OFrame
+          fullCols : number of first n columns which are sent to the client together with the data
 
         Returns
         -------
           H2OFrame which contains data of original input Spark data structure
         """
-        if isinstance(dataframe, DataFrame):
-            return fc._as_h2o_frame_from_dataframe(self, dataframe, framename, full_cols)
-        elif isinstance(dataframe, RDD) and dataframe.isEmpty():
+        if isinstance(sparkFrame, DataFrame):
+            return fc._as_h2o_frame_from_dataframe(self, sparkFrame, h2oFrameName, fullCols)
+        elif isinstance(sparkFrame, RDD) and sparkFrame.isEmpty():
             schema = StructType([])
             empty = self._spark_session.createDataFrame(self._spark_session.sparkContext.emptyRDD(), schema)
-            return fc._as_h2o_frame_from_dataframe(self, empty, framename, full_cols)
-        elif isinstance(dataframe, RDD):
+            return fc._as_h2o_frame_from_dataframe(self, empty, h2oFrameName, fullCols)
+        elif isinstance(sparkFrame, RDD):
             # First check if the type T in RDD[T] is one of the python "primitive" types
             # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)
-            if _is_of_simple_type(dataframe):
-                first = _get_first(dataframe)
+            if _is_of_simple_type(sparkFrame):
+                first = _get_first(sparkFrame)
                 # Make this code compatible with python 3.6 and python 2.7
                 global long
                 if sys.version_info > (3,):
                     long = int
 
                 if isinstance(first, str):
-                    return fc._as_h2o_frame_from_RDD_String(self, dataframe, framename, full_cols)
+                    return fc._as_h2o_frame_from_RDD_String(self, sparkFrame, h2oFrameName, fullCols)
                 elif isinstance(first, bool):
-                    return fc._as_h2o_frame_from_RDD_Bool(self, dataframe, framename, full_cols)
-                elif (isinstance(dataframe.min(), int) and isinstance(dataframe.max(), int)) or (isinstance(dataframe.min(), long) and isinstance(dataframe.max(), long)):
-                    if dataframe.min() >= self._jvm.Integer.MIN_VALUE and dataframe.max() <= self._jvm.Integer.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Int(self, dataframe, framename, full_cols)
-                    elif dataframe.min() >= self._jvm.Long.MIN_VALUE and dataframe.max() <= self._jvm.Long.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Long(self, dataframe, framename, full_cols)
+                    return fc._as_h2o_frame_from_RDD_Bool(self, sparkFrame, h2oFrameName, fullCols)
+                elif (isinstance(sparkFrame.min(), int) and isinstance(sparkFrame.max(), int)) or (isinstance(sparkFrame.min(), long) and isinstance(sparkFrame.max(), long)):
+                    if sparkFrame.min() >= self._jvm.Integer.MIN_VALUE and sparkFrame.max() <= self._jvm.Integer.MAX_VALUE:
+                        return fc._as_h2o_frame_from_RDD_Int(self, sparkFrame, h2oFrameName, fullCols)
+                    elif sparkFrame.min() >= self._jvm.Long.MIN_VALUE and sparkFrame.max() <= self._jvm.Long.MAX_VALUE:
+                        return fc._as_h2o_frame_from_RDD_Long(self, sparkFrame, h2oFrameName, fullCols)
                     else:
                         raise ValueError('Numbers in RDD Too Big')
                 elif isinstance(first, float):
-                    return fc._as_h2o_frame_from_RDD_Float(self, dataframe, framename, full_cols)
+                    return fc._as_h2o_frame_from_RDD_Float(self, sparkFrame, h2oFrameName, fullCols)
             else:
-                return fc._as_h2o_frame_from_complex_type(self, dataframe, framename, full_cols)
+                return fc._as_h2o_frame_from_complex_type(self, sparkFrame, h2oFrameName, fullCols)
         else:
-            raise ValueError('The as_h2o_frame method expects Spark DataFrame or RDD as the input only!')
+            raise ValueError('The asH2OFrame method expects Spark DataFrame or RDD as the input only!')
 
+    def as_h2o_frame(self, dataframe, framename=None, full_cols=-1):
+        warnings.warn("Method 'as_h2o_frame' is deprecated and will be removed in release 3.30. Please use method 'asH2OFrame' instead!")
+        return self.asH2OFrame(dataframe, framename, full_cols)
