@@ -227,7 +227,7 @@ class H2OContext(object):
             df._h2o_frame = h2oFrame
             return df
 
-    def asSparkFrame(self, h2o_frame, copy_metadata=True):
+    def as_spark_frame(self, h2o_frame, copy_metadata=True):
         warnings.warn("Method 'as_spark_frame' is deprecated and will be removed in release 3.30. Please use method 'asSparkFrame' instead!")
         return self.asSparkFrame(h2o_frame, copy_metadata)
 
@@ -265,10 +265,10 @@ class H2OContext(object):
                     return fc._as_h2o_frame_from_RDD_String(self, sparkFrame, h2oFrameName, fullCols)
                 elif isinstance(first, bool):
                     return fc._as_h2o_frame_from_RDD_Bool(self, sparkFrame, h2oFrameName, fullCols)
-                elif (isinstance(dataframe.min(), int) and isinstance(sparkFrame.max(), int)) or (isinstance(sparkFrame.min(), long) and isinstance(sparkFrame.max(), long)):
-                    if dataframe.min() >= self._jvm.Integer.MIN_VALUE and sparkFrame.max() <= self._jvm.Integer.MAX_VALUE:
+                elif (isinstance(sparkFrame.min(), int) and isinstance(sparkFrame.max(), int)) or (isinstance(sparkFrame.min(), long) and isinstance(sparkFrame.max(), long)):
+                    if sparkFrame.min() >= self._jvm.Integer.MIN_VALUE and sparkFrame.max() <= self._jvm.Integer.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Int(self, sparkFrame, h2oFrameName, fullCols)
-                    elif dataframe.min() >= self._jvm.Long.MIN_VALUE and sparkFrame.max() <= self._jvm.Long.MAX_VALUE:
+                    elif sparkFrame.min() >= self._jvm.Long.MIN_VALUE and sparkFrame.max() <= self._jvm.Long.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Long(self, sparkFrame, h2oFrameName, fullCols)
                     else:
                         raise ValueError('Numbers in RDD Too Big')
