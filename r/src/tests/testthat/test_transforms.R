@@ -110,7 +110,7 @@ test_that("Test transformation from dataframe to h2o frame", {
   sc <- spark_connect(master = "local[*]", config = config)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
-  mtcars_hf_name <- hc$asH2OFrame(mtcars_tbl, frameName = "frame1")
+  mtcars_hf_name <- hc$asH2OFrame(mtcars_tbl, h2oFrameName = "frame1")
 
   expect_equal(h2o.getId(mtcars_hf_name), "frame1")
 })

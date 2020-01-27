@@ -7,13 +7,13 @@ getClientConnectedField <- function(jhc) {
 }
 
 isClientConnected <- function(jhc) {
-  field <- .self$getClientConnectedField()
-  sparklyr::invoke(field, "get", .self$jhc)
+  field <- getClientConnectedField(jhc)
+  sparklyr::invoke(field, "get", jhc)
 }
 
 setClientConnected <- function(jhc) {
-  field <- .self$getClientConnectedField()
-  sparklyr::invoke(field, "set", .self$jhc, TRUE)
+  field <- getClientConnectedField(jhc)
+  sparklyr::invoke(field, "set", jhc, TRUE)
 }
 
 #' @export H2OContext.getOrCreate
