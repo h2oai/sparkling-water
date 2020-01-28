@@ -21,7 +21,6 @@ import java.io.{Closeable, InputStream}
 import java.sql.Timestamp
 
 import water.AutoBuffer
-import water.AutoBufferExtensions._
 import SerializationUtils._
 
 final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeable {

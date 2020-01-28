@@ -15,10 +15,8 @@
 * limitations under the License.
 */
 
-package water
+package ai.h2o.sparkling.extensions.rest.api
 
-object AutoBufferExtensions {
-  implicit class AutoBufferWrapper(autoBuffer: AutoBuffer) {
-    def getInt(): Int = autoBuffer.getInt()
-  }
+object Paths {
+  val CHUNK: String = "/3/Chunk"
 }
