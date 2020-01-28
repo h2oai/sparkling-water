@@ -1,0 +1,20 @@
+description = "Sparkling Water Extensions"
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply from: "$rootDir/gradle/utils.gradle"
+
+dependencies {
+    // Scala libraries
+    compile "org.scala-lang:scala-library:${scalaVersion}"
+
+    // H2O dependencies
+    compileOnly "ai.h2o:h2o-core:${h2oVersion}"
+
+    // Servlet API
+    compileOnly "javax.servlet:servlet-api:2.5"
+}
+
+shadowJar {
+    mergeServiceFiles()
+    from "$project.buildDir/resources/main" include '**/*'
+}
