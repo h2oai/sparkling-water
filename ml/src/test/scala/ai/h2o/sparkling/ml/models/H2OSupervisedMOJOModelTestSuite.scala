@@ -73,6 +73,10 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testOffsetColumnGetsPropagatedToMOJOModel(new H2OGBM())
   }
 
+  test("Offset column gets propagated to MOJO model - XGBoost") {
+    testOffsetColumnGetsPropagatedToMOJOModel(new H2OXGBoost())
+  }
+
   test("Offset column gets propagated to MOJO model - GLM") {
     testOffsetColumnGetsPropagatedToMOJOModel(new H2OGLM())
   }
@@ -105,6 +109,10 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
   test("The original MOJO and deserialized MOJO return the same result - GBM") {
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2OGBM())
+  }
+
+  test("The original MOJO and deserialized MOJO return the same result - XGBoost") {
+    testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2OXGBoost())
   }
 
   // TODO: Enable test once PUBDEV-7067 is resolved.
@@ -146,6 +154,10 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
   test("The MOJO model with set offsetColumn returns a different result - GBM") {
     testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2OGBM())
+  }
+
+  test("The MOJO model with set offsetColumn returns a different result - XGBoost") {
+    testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2OXGBoost())
   }
 
   // TODO: Enable test once PUBDEV-7067 is resolved.
