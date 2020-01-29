@@ -4,6 +4,9 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
+    // Sparkling Water Projects
+    compile project(':sparkling-water-utils')
+
     // Scala libraries
     compile "org.scala-lang:scala-library:${scalaVersion}"
 
