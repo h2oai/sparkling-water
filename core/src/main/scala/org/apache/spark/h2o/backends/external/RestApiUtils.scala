@@ -34,12 +34,12 @@ trait RestApiUtils extends RestCommunication {
 
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "3/CloudLock", conf)
+    update[CloudLockV3](endpoint, "/3/CloudLock", conf)
   }
 
   def shutdownCluster(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
-    update[ShutdownV3](endpoint, "3/Shutdown", conf)
+    update[ShutdownV3](endpoint, "/3/Shutdown", conf)
   }
 
   def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
@@ -57,7 +57,7 @@ trait RestApiUtils extends RestCommunication {
   def downloadLogs(destinationDir: String, logContainer: String, conf: H2OConf): String = {
     val endpoint = getClusterEndpoint(conf)
     val file = new File(destinationDir, s"${logFileName()}.${logContainer.toLowerCase}")
-    val logEndpoint = s"3/Logs/download/$logContainer"
+    val logEndpoint = s"/3/Logs/download/$logContainer"
     logContainer match {
       case "LOG" =>
         downloadStringURLContent(endpoint, logEndpoint, conf, file)
@@ -76,7 +76,7 @@ trait RestApiUtils extends RestCommunication {
 
   def getPingInfo(conf: H2OConf): PingV3 = {
     val endpoint = getClusterEndpoint(conf)
-    query[PingV3](endpoint, "3/Ping", conf)
+    query[PingV3](endpoint, "/3/Ping", conf)
   }
 
   def getCloudInfo(conf: H2OConf): CloudV3 = {
@@ -103,11 +103,11 @@ trait RestApiUtils extends RestCommunication {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
       endpoint,
-      s"3/Frames/$frameId/summary?row_count=0",
+      s"/3/Frames/$frameId/summary?row_count=0",
       conf,
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
-    val frameChunks = query[FrameChunksV3](endpoint, s"3/FrameChunks/$frameId", conf)
+    val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
     val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
 
     H2OFrame(
@@ -173,7 +173,7 @@ trait RestApiUtils extends RestCommunication {
   }
 
   private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
-    query[CloudV3](endpoint, "3/Cloud", conf)
+    query[CloudV3](endpoint, "/3/Cloud", conf)
   }
 }
 
