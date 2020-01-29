@@ -124,7 +124,8 @@ trait RestCommunication extends Logging {
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
   private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
-    val url = endpoint.resolve(suffix).toURL
+    val suffixWithDelimiter = if(suffix.startsWith("/")) suffix else s"/$suffix"
+    val url = endpoint.resolve(suffixWithDelimiter).toURL
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
@@ -135,7 +136,7 @@ trait RestCommunication extends Logging {
       statusCode match {
         case HttpURLConnection.HTTP_OK => logInfo(
           s"""External H2O node ${urlToString(url)} successfully responded
-             | for the $requestType request on the patch $suffix.""".stripMargin)
+             | for the $requestType request on the patch $suffixWithDelimiter.""".stripMargin)
         case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
           s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
              |Please make sure you have passed valid credentials to the client.
