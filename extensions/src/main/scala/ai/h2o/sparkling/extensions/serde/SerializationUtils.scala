@@ -158,8 +158,7 @@ object SerializationUtils {
     }
   }
 
-  def isNA(ab: AutoBuffer, data: Boolean): Boolean = isNA(ab, if (data) 1.toLong
-  else 0)
+  def isNA(ab: AutoBuffer, data: Boolean): Boolean = isNA(ab, if (data) 1.toLong else 0)
 
   def isNA(ab: AutoBuffer, data: Long): Boolean = data == NUM_MARKER_NEXT_BYTE_FOLLOWS && ab.get1 == MARKER_NA
 
@@ -168,5 +167,4 @@ object SerializationUtils {
   def isNA(ab: AutoBuffer, data: Timestamp): Boolean = isNA(ab, data.getTime)
 
   def isNA(ab: AutoBuffer, data: String): Boolean = data != null && data == STR_MARKER_NEXT_BYTE_FOLLOWS && ab.get1 == MARKER_NA
-
 }

@@ -20,6 +20,7 @@ package ai.h2o.sparkling.extensions.rest.api
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.Base64
 
+import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.extensions.serde.{SerializationUtils, ChunkAutoBufferWriter}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
@@ -117,16 +118,6 @@ final class ChunkServlet extends HttpServlet {
         s"the number of selected_columns '${parameters.selectedColumnIndices.length}'"
       throw new RuntimeException(message)
     }
-    val expectedVecTypes = new Array[Byte](parameters.expectedTypes.length)
-    val frameTypes = frame.types
-    for (i <- parameters.expectedTypes.indices) {
-      val frameTypePosition = parameters.selectedColumnIndices(i)
-      if (expectedVecTypes(i) != frameTypes(frameTypePosition)) {
-        val message = s"Expected Type ('expected_types') at position $i doesn't correspond to " +
-          s"the frame column type at position $frameTypePosition."
-        throw new RuntimeException(message)
-      }
-    }
   }
 
   override protected def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = {
@@ -136,18 +127,14 @@ final class ChunkServlet extends HttpServlet {
       validateRequestParameters(parameters)
       response.setContentType("application/octet-stream")
       ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
-      val outputStream = response.getOutputStream
-      val writer = new ChunkAutoBufferWriter(outputStream)
-      try {
-        writer.writeChunk(
-          parameters.frameName,
-          parameters.chunkId,
-          parameters.expectedTypes,
-          parameters.selectedColumnIndices)
-      }
-      finally {
-        if (outputStream != null) outputStream.close()
-        if (writer != null) writer.close()
+      withResource(response.getOutputStream) { outputStream =>
+        withResource(new ChunkAutoBufferWriter(outputStream)) { writer =>
+          writer.writeChunk(
+            parameters.frameName,
+            parameters.chunkId,
+            parameters.expectedTypes,
+            parameters.selectedColumnIndices)
+        }
       }
     } catch {
       case e: Exception => ServletUtils.sendErrorResponse(response, e, uri)
