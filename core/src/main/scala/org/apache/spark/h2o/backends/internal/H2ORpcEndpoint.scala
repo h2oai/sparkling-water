@@ -24,7 +24,7 @@ import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.rpc.{RpcCallContext, RpcEnv, ThreadSafeRpcEndpoint}
 import water.util.Log
-import water.{H2O, H2ONode, HeartBeatUtils}
+import water.{H2O, H2ONode}
 
 import scala.collection.JavaConverters._
 
@@ -46,7 +46,6 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
         Log.info(s"Adding $h2oNode to ${H2O.SELF}'s flatfile")
         H2O.addNodeToFlatfile(h2oNode)
       }
-      HeartBeatUtils.sendHeartBeatToAll()
       Log.info(s"Full flatfile: ${H2O.getFlatfile.asScala.mkString(", ")}")
 
     case StopEndpointMsg =>
