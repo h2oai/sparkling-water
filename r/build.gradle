@@ -23,6 +23,12 @@ def copyRSetup() {
         filter {
             it.replaceAll("SUBST_SW_VERSION", version)
         }
+        exclude("R")
+    }
+
+    copy {
+        from fileTree("src/R").include("**/*.R").files
+        into file("${project.buildDir}/src/R")
     }
 
     // Copy sparkling water assembly jar
