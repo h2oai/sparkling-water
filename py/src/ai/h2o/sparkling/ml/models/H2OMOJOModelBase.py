@@ -19,8 +19,6 @@ from pyspark.ml.param import *
 from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaModel
 
-from ai.h2o.sparkling.ml.params import H2OMOJOAlgoSharedParams
-
 
 class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
 
