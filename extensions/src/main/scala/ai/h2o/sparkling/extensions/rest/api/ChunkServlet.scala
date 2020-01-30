@@ -18,9 +18,9 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import java.nio.{ByteBuffer, ByteOrder}
-import java.util.Base64
 
 import ai.h2o.sparkling.utils.ScalaUtils._
+import ai.h2o.sparkling.utils.Base64Encoding
 import ai.h2o.sparkling.extensions.serde.{SerializationUtils, ChunkAutoBufferWriter}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
@@ -58,12 +58,9 @@ final class ChunkServlet extends HttpServlet {
     val chunkIdString = getParameterAsString(request, "chunk_id")
     val chunkId = chunkIdString.toInt
     val expectedTypesString = getParameterAsString(request, "expected_types")
-    val expectedTypes = Base64.getDecoder.decode(expectedTypesString)
+    val expectedTypes = Base64Encoding.decode(expectedTypesString)
     val selectedColumnsString = getParameterAsString(request, "selected_columns")
-    val selectedColumnsBytes = Base64.getDecoder.decode(selectedColumnsString)
-    val buffer = ByteBuffer.wrap(selectedColumnsBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer
-    val selectedColumnIndices = new Array[Int](buffer.remaining)
-    buffer.get(selectedColumnIndices)
+    val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
     RequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
   }
 

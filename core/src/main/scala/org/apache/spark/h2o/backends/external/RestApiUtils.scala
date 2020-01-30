@@ -19,13 +19,12 @@ package org.apache.spark.h2o.backends.external
 
 import java.io.{File, InputStream}
 import java.net.URI
-import java.nio.{ByteBuffer, ByteOrder}
 import java.text.SimpleDateFormat
-import java.util.{Base64, Date}
+import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import ai.h2o.sparkling.extensions.rest.api.Paths
-
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -130,12 +129,8 @@ trait RestApiUtils extends RestCommunication {
       chunkId: Int,
       expectedTypes: Array[Byte],
       selectedColumnsIndices: Array[Int]): InputStream = {
-    val parameterEncoder = Base64.getEncoder()
-    val expectedTypesString = parameterEncoder.encodeToString(expectedTypes)
-
-    val buffer = ByteBuffer.allocate(selectedColumnsIndices.length * 4).order(ByteOrder.BIG_ENDIAN)
-    selectedColumnsIndices.foreach(columnIndex => buffer.putInt(columnIndex))
-    val selectedColumnsIndicesString = parameterEncoder.encodeToString(buffer.array())
+    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
 
     val parameters = Map[String, String](
       "frame_name" -> frameName,
