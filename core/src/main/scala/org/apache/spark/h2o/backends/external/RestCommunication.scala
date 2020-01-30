@@ -123,7 +123,7 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  private def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
+  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
     val url = endpoint.resolve(suffixWithDelimiter).toURL
     try {

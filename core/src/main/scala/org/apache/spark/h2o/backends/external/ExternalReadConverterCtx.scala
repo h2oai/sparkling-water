@@ -21,7 +21,8 @@ package org.apache.spark.h2o.backends.external
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.converters.ReadConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
-import water.ChunkAutoBufferReader
+
+import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
 
 /**
   *

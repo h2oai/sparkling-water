@@ -19,11 +19,13 @@ package org.apache.spark.h2o.backends.external
 
 import java.io.{File, InputStream}
 import java.net.URI
-import java.nio.{ByteBuffer, ByteOrder, IntBuffer}
+import java.nio.{ByteBuffer, ByteOrder}
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
+import ai.h2o.sparkling.extensions.rest.api.Paths
+
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -140,7 +142,7 @@ trait RestApiUtils extends RestCommunication {
       "chunk_id" -> chunkId.toString,
       "expected_types" -> expectedTypesString,
       "selected_columns" -> selectedColumnsIndicesString)
-    val query = "/3/Chunk" + parameters.map{ case (k, v) => s"$k=$v" }.mkString("?", "&", "")
+    val query = Paths.CHUNK + parameters.map{ case (k, v) => s"$k=$v" }.mkString("?", "&", "")
 
     val endpoint = resolveNodeEndpoint(node, conf)
     readURLContent(endpoint, "GET", query, conf)
