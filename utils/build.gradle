@@ -7,7 +7,7 @@ dependencies {
     compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
     compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
-    compile "org.scala-lang:scala-compiler:${scalaVersion}"
+    compileOnly "org.scala-lang:scala-compiler:${scalaVersion}"
 }
 
 defineStandardPublication().call()

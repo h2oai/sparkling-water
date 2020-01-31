@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.backends.external
 
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
 import org.apache.spark.expose.Logging
@@ -33,6 +33,8 @@ import water.util.PrettyPrint
 
 import scala.io.Source
 import scala.util.control.NoStackTrace
+import ai.h2o.sparkling.utils.ScalaUtils._
+import org.apache.commons.io.IOUtils
 
 
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
@@ -136,6 +138,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
     new ArgumentBuilder()
       .add(Seq(conf.externalHadoopExecutable, "jar", conf.h2oDriverPath.get))
+      .add("-libjar", getExtensionsAssemblyJar().getAbsolutePath)
       .add("-files", getSecurityFiles(conf))
       .add(conf.YARNQueue.map(queue => s"-Dmapreduce.job.queuename=$queue"))
       .add(s"-Dmapreduce.job.tags=$yarnAppTags")
@@ -168,6 +171,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add(conf.nodeExtraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
+  }
+
+  private def getExtensionsAssemblyJar(): File = {
+    val fileInJar = "assembly-extensions.jar.embedded"
+    val tempFile = File.createTempFile("assembly-extensions", "jar")
+    tempFile.deleteOnExit()
+    withResource(new FileOutputStream(tempFile)) { outputStream =>
+      withResource(getClass.getClassLoader.getResourceAsStream(fileInJar)) { inputStream =>
+        IOUtils.copy(inputStream, outputStream)
+      }
+    }
+    tempFile
   }
 
   private def getSecurityFiles(conf: H2OConf): Option[String] = {

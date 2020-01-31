@@ -7,6 +7,14 @@ import com.github.jk1.license.filter.*
 
 description = "Sparkling Water Assembly"
 
+sourceSets {
+    main {
+        resources {
+            srcDirs += "$rootDir/assembly-extensions/build/embedded"
+        }
+    }
+}
+
 dependencies {
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
@@ -55,4 +63,4 @@ artifacts {
 shadowJar.dependsOn generateLicenseReport
 build.dependsOn checkLicense
 build.dependsOn shadowJar
-
+shadowJar.dependsOn ":sparkling-water-assembly-extensions:embeddedAssemblyJar"
