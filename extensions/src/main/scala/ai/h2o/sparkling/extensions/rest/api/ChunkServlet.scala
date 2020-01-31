@@ -65,7 +65,7 @@ final class ChunkServlet extends HttpServlet {
   }
 
   private def validateRequestParameters(parameters: RequestParameters): Unit = {
-    val frame = DKV.getGet(parameters.frameName)
+    val frame = DKV.getGet[Frame](parameters.frameName)
     if (frame == null) throw new RuntimeException(s"A frame with name '${parameters.frameName}")
     validateChunkId(parameters, frame)
     validateSelectedColumns(parameters, frame)

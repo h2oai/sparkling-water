@@ -18,11 +18,10 @@
 package ai.h2o.sparkling.extensions.serde
 
 import SerializationUtils._
-
 import java.io.{Closeable, OutputStream}
 import java.util.UUID
 
-import water.fvec.ChunkUtils
+import water.fvec.{ChunkUtils, Frame}
 import water.parser.BufferedString
 import water.{AutoBuffer, DKV}
 
@@ -31,7 +30,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
   private val buffer = new AutoBuffer(outputStream, false)
 
   def writeChunk(frameName: String, chunkId: Int, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int]): Unit = {
-    val frame = DKV.getGet(frameName)
+    val frame = DKV.getGet[Frame](frameName)
     val chunks = ChunkUtils.getChunks(frame, chunkId)
     val numberOfRows = chunks(0)._len
     sendInt(buffer, numberOfRows)
