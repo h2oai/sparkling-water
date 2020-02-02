@@ -55,3 +55,5 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 7. Flow is accessible via the URL printed out after H2OContext is started. Internally we use
    open port 9009. If you have environment where different port is open on your Azure Databricks
    cluster, you can configure it via ``spark.ext.h2o.client.web.port``.
+
+Note: Currently, high concurrency clusters are note supported.
