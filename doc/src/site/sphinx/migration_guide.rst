@@ -45,8 +45,6 @@ Removal of Deprecated Methods and Classes
   ``getStoppingMetric``, ``getStoppingTolerance`` methods and the method ``setR2Stopping`` is removed in favor of
   ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
 
-Removal of Deprecated Methods and Classes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From 3.26 To 3.28
 -----------------
