@@ -29,8 +29,8 @@ Removal of Deprecated Methods and Classes
     conf$setPassword(password)
     hc <- H2OContext(sc, conf)
 
-  The Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` correspond to these setters and can
-  also be used directly.
+  The Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` correspond to these setters and can be
+  also used directly.
 
 - In ``H2OContext`` Python API, the method ``as_spark_frame`` is replaced by the method ``asSparkFrame`` and the method
   ``as_h2o_frame`` is replaced by ``asH2OFrame``.
