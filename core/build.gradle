@@ -12,6 +12,7 @@ sourceSets {
         }
         resources {
             srcDirs += getSparkSpecificResourceDir(sparkMajorVersion) + ["${projectDir}/flow-css"]
+            srcDirs += "$rootDir/assembly-extensions/build/embedded"
         }
     }
 }
@@ -201,3 +202,4 @@ bench {
 }
 
 defineStandardPublication().call()
+shadowJar.dependsOn ":sparkling-water-assembly-extensions:embeddedAssemblyJar"
