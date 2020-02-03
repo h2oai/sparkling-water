@@ -54,4 +54,4 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
    cluster, you can configure it via ``spark.ext.h2o.client.web.port`` or corresponding setter
    on ``H2OConf``.
 
-Note: Currently, high concurrency clusters are note supported.
+Note: Currently, `High Concurrency Clusters <https://docs.databricks.com/clusters/configure.html#high-concurrency-clusters>`__ are not supported.
