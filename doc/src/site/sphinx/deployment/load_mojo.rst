@@ -1,111 +1,208 @@
-Importing H2O Mojo
-------------------
+Importing H2O MOJOs
+-------------------
 
-H2O Mojo can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
+H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
 
 
-If HDFS is not available for Spark, then call, in Scala:
+When creating a MOJO specified by a relative path and HDFS is enabled, the method attempts to load
+the MOJO from the HDFS home directory of the current user. In case we are not running on HDFS-enabled system, we create
+the mojo from a current working directory.
 
-.. code:: scala
+.. content-tabs::
 
-    import ai.h2o.sparkling.ml.models._
-    val model = H2OMOJOModel.createFromMojo("prostate.mojo")
+    .. tab-container:: Scala
+        :title: Scala
 
-or in Python:
+        .. code:: scala
 
-.. code:: python
+            import ai.h2o.sparkling.ml.models._
+            val model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
-    from pysparkling.ml import *
-    model = H2OMOJOModel.createFromMojo("prostate.mojo")
+    .. tab-container:: Python
+        :title: Python
 
-attempts to load the mojo file with the specified name from the current working directory.
-You can also specify the full path such as, in Scala:
+        .. code:: python
 
-.. code:: scala
+            from pysparkling.ml import *
+            model = H2OMOJOModel.createFromMojo("prostate.mojo")
 
-    import ai.h2o.sparkling.ml.models._
-    val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
+    .. tab-container:: R
+        :title: R
 
-or in Python:
+        .. code:: r
 
-.. code:: python
-
-    from pysparkling.ml import *
-    model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
-
-
-In the case Spark is running on Hadoop and HDFS is available, then call, in Scala:
-
-.. code:: scala
-
-    import ai.h2o.sparkling.ml.models._
-    val model = H2OMOJOModel.createFromMojo("prostate.mojo")
-
-or in Python:
-
-.. code:: python
-
-    from pysparkling.ml import *
-    model = H2OMOJOModel.createFromMojo("prostate.mojo")
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            model <- H2OMOJOModel.createFromMojo("prostate.mojo")
 
 
-attempts to load the mojo from the HDFS home directory of the current user.
-You can also specify the absolute path in this case as, in Scala:
+Absolute local path can also be used. To create a MOJO model from a locally available MOJO, call:
 
-.. code:: scala
+.. content-tabs::
 
-    import ai.h2o.sparkling.ml.models._
-    val model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+    .. tab-container:: Scala
+        :title: Scala
 
-or in Python:
+        .. code:: scala
 
-.. code:: python
+            import ai.h2o.sparkling.ml.models._
+            val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
 
-    from pysparkling.ml import *
-    model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            from pysparkling.ml import *
+            model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            model <- H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
 
 
-Both calls load the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate.mojo``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
+
+Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO stored on HDFS, call:
 
 
-You can also manually specify the type of data source you need to use, in that case, you need to provide the schema, in Scala:
+.. content-tabs::
 
-.. code:: scala
+    .. tab-container:: Scala
+        :title: Scala
 
-    import ai.h2o.sparkling.ml.models._
-    // HDFS
-    val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
-    // Local file
-    val modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+        .. code:: scala
 
-or in Python:
+            import ai.h2o.sparkling.ml.models._
+            val model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
 
-.. code:: python
+    .. tab-container:: Python
+        :title: Python
 
-    from pysparkling.ml import *
-    # HDFS
-    modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
-    # Local file
-    modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+        .. code:: python
+
+            from pysparkling.ml import *
+            model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            model <- H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+
+
+
+The call loads the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate.mojo``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
+
+
+You can also manually specify the type of data source you need to use, in that case, you need to provide the schema:
+
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: scala
+
+            import ai.h2o.sparkling.ml.models._
+            // HDFS
+            val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            // Local file
+            val modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            from pysparkling.ml import *
+            # HDFS
+            modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            # Local file
+            modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+             # HDFS
+            modelHDFS <- H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            # Local file
+            modelLocal <- H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
 
 
 The loaded model is an immutable instance, so it's not possible to change the configuration of the model during its existence.
 On the other hand, the model can be configured during its creation via ``H2OMOJOSettings``, in Scala:
 
-.. code:: scala
 
-    import ai.h2o.sparkling.ml.models._
-    val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
-    val model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+.. content-tabs::
 
-or in Python:
+    .. tab-container:: Scala
+        :title: Scala
 
-.. code:: python
+        .. code:: scala
 
-    from pysparkling.ml import *
-    settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
-    model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+            import ai.h2o.sparkling.ml.models._
+            val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
+            val model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            from pysparkling.ml import *
+            settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
+            model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, convertInvalidNumbersToNa = TRUE)
+            model <- H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+
+
+To score the dataset using the loaded mojo, call:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: scala
+
+            model.transform(dataset)
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            model.transform(dataset)
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            model$transform(dataset)
 
 
 In Scala, the ``createFromMojo`` method returns a mojo model instance casted as a base class ``H2OMOJOModel``. This class holds
