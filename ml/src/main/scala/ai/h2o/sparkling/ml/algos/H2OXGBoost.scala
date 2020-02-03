@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -55,7 +56,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   // Param definitions
   //
   private val quietMode = booleanParam("quietMode")
-  private val nEstimators = intParam("nEstimators")
   private val maxDepth = intParam("maxDepth")
   private val minRows = doubleParam("minRows")
   private val minChildWeight = doubleParam("minChildWeight")
@@ -99,7 +99,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   setDefault(
     quietMode -> true,
     ntrees -> 50,
-    nEstimators -> 0,
     maxDepth -> 6,
     minRows -> 1,
     minChildWeight -> 1,
@@ -144,7 +143,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   //
   def getQuietMode(): Boolean = $(quietMode)
 
-  def getNEstimators(): Int = $(nEstimators)
+  @DeprecatedMethod
+  def getNEstimators(): Int = 0
 
   def getMaxDepth(): Int = $(maxDepth)
 
@@ -227,7 +227,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def setNtrees(value: Int): this.type = set(ntrees, value)
 
-  def setNEstimators(value: Int): this.type = set(nEstimators, value)
+  @DeprecatedMethod
+  def setNEstimators(value: Int): this.type = this
 
   def setMaxDepth(value: Int): this.type = set(maxDepth, value)
 
@@ -329,7 +330,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     super.updateH2OParams()
     parameters._quiet_mode = $(quietMode)
     parameters._ntrees = $(ntrees)
-    parameters._n_estimators = $(nEstimators)
     parameters._max_depth = $(maxDepth)
     parameters._min_rows = $(minRows)
     parameters._min_child_weight = $(minChildWeight)
