@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import warnings
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
@@ -23,7 +22,7 @@ from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeB
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
-
+from ai.h2o.sparkling.ml.Utils import Utils
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
                        HasStoppingCriteria):
@@ -271,7 +270,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self.getOrDefault(self.quietMode)
 
     def getNEstimators(self):
-        return self.getOrDefault(self.nEstimators)
+        Utils.methodDeprecationWarning("getNEstimators")
+        return 0
 
     def getMaxDepth(self):
         return self.getOrDefault(self.maxDepth)
@@ -394,7 +394,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self._set(ntrees=value)
 
     def setNEstimators(self, value):
-        return self._set(nEstimators=value)
+        Utils.methodDeprecationWarning("setNEstimators")
+        return self
 
     def setMaxDepth(self, value):
         return self._set(maxDepth=value)
