@@ -13,9 +13,40 @@ Removal of Deprecated Methods and Classes
   ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
 
-- In H2OXGBoost Scala API, the methods ``getNEstimators`` and ``setNEstimators`` are removed. Please use ``getNtrees`` and
-  ``setNtrees`` instead. The same holds for the H2OXGBoost Python API.
+- On RSparkling, the method ``h2o_context`` is removed. To create H2OContext, please call
+  ``hc <- H2OContext.getOrCreate(sc)``. Also the methods ``h2o_flow``, ``as_h2o_frame`` and ``as_spark_dataframe`` are
+  removed. Please use the methods available on the ``H2OContext`` instance created via ``hc <- H2OContext.getOrCreate(sc)``.
+  Instead of ``h2o_flow``, use ``hc$openFlow``, instead of ``as_h2o_frame``, use ``asH2OFrame`` and instead of
+  ``as_spark_dataframe`` use ``asSparkFrame``.
 
+  Also the ``H2OContext.getOrCreate(sc)`` does not have ``username`` and ``password`` arguments anymore.
+  The correct way how to pass authentication details to ``H2OContext`` is via ``H2OConf`` class, such as:
+
+  .. code-block:: r
+
+    conf <- H2OConf(sc)
+    conf$setUserName(username)
+    conf$setPassword(password)
+    hc <- H2OContext(sc, conf)
+
+  The Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` correspond to these setters and can
+  also be used directly.
+
+- In ``H2OContext`` Python API, the method ``as_spark_frame`` is replaced by the method ``asSparkFrame`` and the method
+  ``as_h2o_frame`` is replaced by ``asH2OFrame``.
+
+- In ``H2OXGBoost`` Scala And Python API, the methods ``getNEstimators`` and ``setNEstimators`` are removed. Please use ``getNtrees`` and
+  ``setNtrees`` instead.
+
+- The default value of ``spark.ext.h2o.internal_secure_connections`` has changed to ``true`` which means that Sparkling Water
+  in internal backend and automatic mode of external backend is now running secured by default.
+
+- In Scala and Python API for tree-based algorithms, the method ``getR2Stopping`` is removed in favor of ``getStoppingRounds``,
+  ``getStoppingMetric``, ``getStoppingTolerance`` methods and the method ``setR2Stopping`` is removed in favor of
+  ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
+
+Removal of Deprecated Methods and Classes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From 3.26 To 3.28
 -----------------
