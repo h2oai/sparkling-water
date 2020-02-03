@@ -60,6 +60,7 @@ trait ExternalBackendConf extends SharedBackendConf {
     PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
+  def externalHadoopExecutable: String = sparkConf.get(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, PROP_EXTERNAL_HADOOP_EXECUTABLE._2)
   private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
   /** Setters */
@@ -119,6 +120,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
   def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
+  def setExternalHadoopExecutable(executable: String): H2OConf = set(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, executable)
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -213,4 +215,7 @@ object ExternalBackendConf {
 
   /** Disable version check of external H2O backend */
   val PROP_EXTERNAL_DISABLE_VERSION_CHECK = ("spark.ext.h2o.external.disable.version.check", false)
+
+  /** Hadoop executable used to start external H2O cluster on Hadoop */
+  val PROP_EXTERNAL_HADOOP_EXECUTABLE = ("spark.ext.h2o.external.hadoop.executable", "hadoop")
 }
