@@ -82,6 +82,19 @@ def withDocker(config, code) {
     }
 }
 
+def checkoutH2O(config) {
+    sh """
+         # Clone H2O
+        git clone https://github.com/h2oai/h2o-3.git
+        cd h2o-3
+        git checkout ${config.h2oBranch}
+        . /envs/h2o_env_python2.7/bin/activate
+        ./gradlew build -x check -x :h2o-r:build
+        ./gradlew publishToMavenLocal
+        cd ..
+        """
+}
+
 def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
     node('docker && micro') {
         docker.withRegistry("http://harbor.h2o.ai") {
@@ -91,6 +104,7 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 cleanWs()
                 if (shouldCheckout) {
                     checkout scm
+                    checkoutH2O(config)
                 } else {
                     unstash "sw-build-${config.sparkMajorVersion}"
                 }
@@ -238,29 +252,19 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             sh """
-                # Check if we are bulding against specific H2O branch
-                if [ ${config.buildAgainstH2OBranch} = true ]; then
-                    # Clone H2O
-                    git clone https://github.com/h2oai/h2o-3.git
-                    cd h2o-3
-                    git checkout ${config.h2oBranch}
-                    . /envs/h2o_env_python2.7/bin/activate
-                    ./gradlew build -x check -x :h2o-r:build
-                    ./gradlew publishToMavenLocal
-                    cd ..
-                    if [ ${config.backendMode} = external ]; then
+                if [ ${config.backendMode} = external ]; then
+                    # Check if we are bulding against specific H2O branch
+                    if [ ${config.buildAgainstH2OBranch} = true ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
                         ${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                         # Copy also original driver JAR to desired location so rest API based client can use it
                         cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
-                    fi
-                else if [ ${config.backendMode} = external ]; then
+                    else
                         cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
                         cp `${config.gradleCmd} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
-    
                 """
         }
     }
