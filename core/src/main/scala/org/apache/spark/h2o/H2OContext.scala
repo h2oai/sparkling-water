@@ -157,7 +157,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     localClientIp = getH2OEndpointIp()
     localClientPort = getH2OEndpointPort()
 
-    SparkSpecificUtils.addSparklingWaterTab(sparkContext)
+    if (sparkContext.ui.isDefined) {
+      SparkSpecificUtils.addSparklingWaterTab(sparkContext)
+    }
 
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
