@@ -35,12 +35,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Quiet mode",
         H2OTypeConverters.toBoolean())
 
-    nEstimators = Param(
-        Params._dummy(),
-        "nEstimators",
-        "number of estimators",
-        H2OTypeConverters.toInt())
-
     maxDepth = Param(
         Params._dummy(),
         "maxDepth",
