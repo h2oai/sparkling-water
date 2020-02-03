@@ -363,9 +363,10 @@ External backend configuration properties
 |                                                       |                | the indefinite timeout. The unit is |
 |                                                       |                | milliseconds.                       |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.hadoop.executable``          | ``hadoop``     | Name or path to hadoop binary       |
-|                                                       |                | which is used to start external     |
-|                                                       |                | H2O backend on YARN.                |
+| ``spark.ext.h2o.external.hadoop.executable``          | ``hadoop``     | Name or path to path to a hadoop    |
+|                                                       |                | executable binary which is used     |
+|                                                       |                | to start external H2O backend on    |
+|                                                       |                | YARN.                               |
 +-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
