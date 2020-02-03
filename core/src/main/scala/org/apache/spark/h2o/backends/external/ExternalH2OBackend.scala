@@ -137,8 +137,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     // Application tags shown in Yarn Resource Manager UI
     val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
     new ArgumentBuilder()
-      .add(Seq(conf.externalHadoopExecutable, "jar", conf.h2oDriverPath.get))
-      .add("-libjar", getExtensionsAssemblyJar().getAbsolutePath)
+      .add(conf.externalHadoopExecutable)
+      .add("-libjars", getExtensionsAssemblyJar().getAbsolutePath)
+      .add("jar", conf.h2oDriverPath.get)
       .add("-files", getSecurityFiles(conf))
       .add(conf.YARNQueue.map(queue => s"-Dmapreduce.job.queuename=$queue"))
       .add(s"-Dmapreduce.job.tags=$yarnAppTags")

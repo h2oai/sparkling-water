@@ -202,4 +202,4 @@ bench {
 }
 
 defineStandardPublication().call()
-shadowJar.dependsOn ":sparkling-water-assembly-extensions:embeddedAssemblyJar"
+build.dependsOn ":sparkling-water-assembly-extensions:embeddedAssemblyJar"
