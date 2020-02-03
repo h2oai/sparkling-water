@@ -1,11 +1,13 @@
-Importing H2O Mojo
-------------------
+Importing H2O MOJOs
+-------------------
 
-H2O Mojo can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
+H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
 
 
-If HDFS is not available for Spark, then call:
+When creating a MOJO specified by a relative path and HDFS is enabled, the method attempts to load
+the MOJO from the HDFS home directory of the current user. In case we are not running on HDFS-enabled system, we create
+the mojo from a current working directory.
 
 .. content-tabs::
 
@@ -35,8 +37,7 @@ If HDFS is not available for Spark, then call:
             model <- H2OMOJOModel.createFromMojo("prostate.mojo")
 
 
-attempts to load the mojo file with the specified name from the current working directory.
-You can also specify the full path such as:
+Absolute local path can also be used. To create a MOJO model from a locally available MOJO, call:
 
 .. content-tabs::
 
@@ -66,38 +67,8 @@ You can also specify the full path such as:
             model <- H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
 
 
-In the case Spark is running on Hadoop and HDFS is available, then call:
 
-.. content-tabs::
-
-    .. tab-container:: Scala
-        :title: Scala
-
-        .. code:: scala
-
-            import ai.h2o.sparkling.ml.models._
-            val model = H2OMOJOModel.createFromMojo("prostate.mojo")
-
-    .. tab-container:: Python
-        :title: Python
-
-        .. code:: python
-
-            from pysparkling.ml import *
-            model = H2OMOJOModel.createFromMojo("prostate.mojo")
-
-    .. tab-container:: R
-        :title: R
-
-        .. code:: r
-
-            library(rsparkling)
-            sc <- spark_connect(master = "local")
-            model <- H2OMOJOModel.createFromMojo("prostate.mojo")
-
-
-attempts to load the mojo from the HDFS home directory of the current user.
-You can also specify the absolute path in this case as:
+Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO stored on HDFS, call:
 
 
 .. content-tabs::
