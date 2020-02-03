@@ -13,6 +13,10 @@ Removal of Deprecated Methods and Classes
   ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
 
+- In H2OXGBoost Scala API, the methods ``getNEstimators`` and ``setNEstimators`` are removed. Please use ``getNtrees`` and
+  ``setNtrees`` instead. The same holds for the H2OXGBoost Python API.
+
+
 From 3.26 To 3.28
 -----------------
 

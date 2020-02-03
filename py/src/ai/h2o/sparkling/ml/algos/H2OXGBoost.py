@@ -29,7 +29,6 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
     def __init__(self,
                  quietMode=True,
                  ntrees=50,
-                 nEstimators=0,
                  maxDepth=6,
                  minRows=1.0,
                  minChildWeight=1.0,
@@ -91,7 +90,8 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  monotoneConstraints={},
                  stoppingRounds=0,
                  stoppingMetric="AUTO",
-                 stoppingTolerance=0.001):
+                 stoppingTolerance=0.001,
+                 **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OXGBoost", self.uid)
