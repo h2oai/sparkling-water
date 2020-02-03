@@ -32,5 +32,7 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
   userName = function() { getOption(invoke(jconf, "userName")) },
   password = function() { getOption(invoke(jconf, "password")) },
   setUserName = function(value) { invoke(jconf, "setUserName", value) },
-  setPassword = function(value) { invoke(jconf, "setPassword", value) }
+  setPassword = function(value) { invoke(jconf, "setPassword", value) },
+  externalHadoopExecutable = function() {invoke(jconf, "externalHadoopExecutable")},
+  setExternalHadoopExecutable = function(value) {invoke(jconf, "setExternalHadoopExecutable", value)}
 ))
