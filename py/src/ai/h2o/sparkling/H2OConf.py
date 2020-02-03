@@ -440,6 +440,10 @@ class H2OConf(object):
         self._jconf.setExternalBackendStopTimeout(timeout)
         return self
 
+    def setExternalHadoopExecutable(self, executable):
+        self._jconf.setExternalHadoopExecutable(executable)
+        return self
+
     # getters independent on backend
 
     def backend_cluster_mode(self):
@@ -688,6 +692,9 @@ class H2OConf(object):
 
     def externalBackendStopTimeout(self):
         return self._jconf.externalBackendStopTimeout()
+
+    def externalHadoopExecutable(self):
+        return self._jconf.externalHadoopExecutable()
 
     def set(self, key, value):
         self._jconf.set(key, value)
