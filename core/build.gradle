@@ -178,6 +178,7 @@ test.dependsOn testJar
 processResources.dependsOn createSparkVersionFile
 processResources.dependsOn createH2OVersionFile
 processResources.dependsOn createSparklingWaterVersionFile
+processResources.dependsOn ':sparkling-water-assembly-extensions:embeddedAssemblyJar'
 
 integTest {
     // Pass references to libraries to test launcher
@@ -202,4 +203,3 @@ bench {
 }
 
 defineStandardPublication().call()
-build.dependsOn ":sparkling-water-assembly-extensions:embeddedAssemblyJar"

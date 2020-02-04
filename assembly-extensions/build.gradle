@@ -8,7 +8,6 @@ dependencies {
     compile("org.scala-lang:scala-library:${scalaVersion}")
     compile(project(":sparkling-water-extension-stack-trace")) { transitive = false }
     compile(project(":sparkling-water-extensions"))
-    compile(project(":sparkling-water-core")) { transitive = false }
     compile(project(":sparkling-water-utils")) { transitive = false }
 }
 

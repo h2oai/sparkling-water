@@ -175,7 +175,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   private def getExtensionsAssemblyJar(): File = {
     val fileInJar = "assembly-extensions.jar.embedded"
-    val tempFile = File.createTempFile("assembly-extensions", "jar")
+    val tempFile = File.createTempFile("assembly-extensions-", ".jar")
     tempFile.deleteOnExit()
     withResource(new FileOutputStream(tempFile)) { outputStream =>
       withResource(getClass.getClassLoader.getResourceAsStream(fileInJar)) { inputStream =>
