@@ -155,7 +155,7 @@ Configuration properties independent of selected backend
 |                                                    |                | special characters when passing        |
 |                                                    |                | the parameter from a command line.     |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.internal_secure_connections``      | ``true``       | Enables secure communications among    |
+| ``spark.ext.h2o.internal_secure_connections``      | ``false``      | Enables secure communications among    |
 |                                                    |                | H2O nodes. The security is based on    |
 |                                                    |                | automatically generated keystore       |
 |                                                    |                | and truststore. This is equivalent for |

@@ -326,7 +326,7 @@ object SharedBackendConf {
   val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.flow.extra.http.headers", None)
 
   /** Secure internal connections by automatically generated credentials */
-  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", true)
+  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
