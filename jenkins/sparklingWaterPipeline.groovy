@@ -54,10 +54,14 @@ String getH2OMajorName() {
     return versionLine.split("=")[1]
 }
 
+String getH2OBuildVersion() {
+    return "1-SNAPSHOT"
+}
+
 def getGradleCommand(config) {
     def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OMajorVersion()} -Ph2oMajorName=${getH2OMajorName()} -Ph2oBuild=1-SNAPSHOT"
+        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OMajorVersion()} -Ph2oMajorName=${getH2OMajorName()} -Ph2oBuild=${getH2OBuildVersion()}"
     } else {
         return cmd
     }
@@ -89,8 +93,9 @@ def checkoutH2O(config) {
         cd h2o-3
         git checkout ${config.h2oBranch}
         . /envs/h2o_env_python2.7/bin/activate
-        ./gradlew build -x check -x :h2o-r:build -x :h2o-py:build
+        ./gradlew build -x check
         ./gradlew publishToMavenLocal
+        ./gradlew :h2o-r:buildPKG
         cd ..
         """
 }
@@ -343,7 +348,8 @@ def rUnitTests() {
             if (config.runRUnitTests.toBoolean()) {
                 try {
                     sh """
-                         ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
+                         R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.${getH2OBuildVersion()}.tar.gz", type="source", repos=NULL)'
+                         ${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage
                          ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                          """
                 } finally {
