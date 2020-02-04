@@ -24,13 +24,29 @@ import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
+
+  def isRestAPIBased(hc: Option[H2OContext] = None): Boolean = {
+    hc.getOrElse(H2OContext.ensure()).getConf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
+  }
+
+  def convertAllStringVecToCategorical(frameId: String): Unit = {
+
+  }
+
+  def convertColumnsToCategorical(frameId: String, columns: Array[String]): Unit = {
+
+  }
+
+  def splitFrameToTrainAndValidationFrames(frameId: String, splitRatio: Double): Array[String] = {
+
+  }
 
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)

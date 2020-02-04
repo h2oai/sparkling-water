@@ -28,6 +28,7 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
+import water.DKV
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.util.control.NoStackTrace
@@ -50,9 +51,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec
 
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    spec.input_spec.training_frame = train._key
-    spec.input_spec.validation_frame = valid.map(_._key).orNull
+    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    spec.input_spec.training_frame = DKV.getGet(trainKey)
+    spec.input_spec.validation_frame = validKey.map(DKV.getGet).orNull
 
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
