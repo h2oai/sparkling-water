@@ -44,10 +44,14 @@ trait RestApiUtils extends RestCommunication {
 
   def convertColumnsToCategorical(conf: H2OConf, frameId: String, columns: Array[String]): Unit = {
     //TODO
+    // Use rapids REST API endpooint to execute as.factor
   }
 
   def splitFrameToTrainAndValidationFrames(conf: H2OConf, frameId: String, splitRatio: Double): Array[String] = {
-    //TODO
+    val endpoint = getClusterEndpoint(conf)
+    // TODO: be able to pass parameters to update method
+    val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf)
+    splitFrameV3.destination_frames.map(_.name)
   }
 
   def lockCloud(conf: H2OConf): Unit = {
