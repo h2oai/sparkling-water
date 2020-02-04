@@ -101,40 +101,13 @@ lead (as in the previous mode) to h2o cluster being killed as well.
 
 There are two deployment strategies of the external cluster: manual and automatic. In manual mode, we need to start
 the H2O cluster, and in automatic mode, the cluster is started for us automatically based on our configuration.
-In both modes, we can not use the regular H2O driver jar as the deployment artifact for the external H2O cluster.
+In hadoop environments, the creation of the cluster is performed by a simple process called H2O driver.
+When the cluster is fully formed, the H2O driver terminates. In both modes, we have to store a path of H2O driver jar
+to the environment variable ``H2O_DRIVER_JAR``.
 
-Obtaining Extended H2O Jar
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code:: bash
 
-The extended H2O jar can be downloaded using our helper script available in the official Sparkling Water distribution which
-can be downloaded from `http://www.h2o.ai <http://www.h2o.ai/>`_.
-After you download and unpack the Sparkling Water distribution package, you can use the ``./bin/get-extendend-h2o.sh``
-script to download the extended H2O jar. This script expects a single argument that specifies the Hadoop version
-for which you obtained the jar.
-
-The following code downloads H2O extended JAR for the cdh5.8:
-
- .. code:: bash
-
-    ./bin/get-extended-h2o.sh cdh5.8
-
-If you don't want to run on Hadoop and instead want to run H2O in standalone mode, you can get the corresponding
-extended H2O standalone jar as:
-
- .. code:: bash
-
-    ./bin/get-extended-h2o.sh standalone
-
-If you want to see a list of supported Hadoop versions, just run the shell script without any arguments as:
-
- .. code:: bash
-
-    ./bin/get-extended-h2o.sh
-
-The script downloads the jar to the current directory and prints the absolute path to the downloaded jar.
-
-**Note**: If you want to get an extended H2O jar for Sparkling Water and H2O versions that have not yet been
-released, you need to extend the JAR manually. This is explained in the following tutorial: :ref:`extend_jar_manually`.
+    H2O_DRIVER_JAR=/path/to/h2o-driver.jar
 
 Automatic Mode of External Backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -144,11 +117,11 @@ environment at the moment. We recommend this approach, as it is easier to deploy
 and it is also more suitable for production environments. When the H2O cluster is started on YARN, it is started
 as a map reduce job, and it always uses the flatfile approach for nodes to cloud up.
 
-Get extended H2O driver, for example, for cdh 5.8:
+Get H2O driver, for example, for cdh 5.8:
 
 .. code:: bash
 
-    H2O_EXTENDED_JAR=$(./bin/get-extended-h2o.sh cdh5.8)
+    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8)
 
 To start an H2O cluster and connect to it, run:
 
@@ -163,13 +136,13 @@ To start an H2O cluster and connect to it, run:
             val conf = new H2OConf(spark)
                         .setExternalClusterMode()
                         .useAutoClusterStart()
-                        .setH2ODriverPath("path_to_extended_driver")
+                        .setH2ODriverPath("path_to_h2o_driver")
                         .setClusterSize(1) // Number of H2O worker nodes to start
                         .setMapperXmx("2G") // Memory per single H2O worker node
                         .setYARNQueue("abc")
             val hc = H2OContext.getOrCreate(spark, conf)
 
-        In case we stored the path of the extended H2O jar to environmental variable ``H2O_EXTENDED_JAR``, we don't
+        In case we stored the path of the driver H2O jar to environmental variable ``H2O_DRIVER_JAR``, we don't
         have to specify ``setH2ODriverPath`` as Sparkling Water will read the path from the environmental variable.
 
     .. tab-container:: Python
@@ -187,7 +160,7 @@ To start an H2O cluster and connect to it, run:
                     .setYARNQueue("abc")
             hc = H2OContext.getOrCreate(spark, conf)
 
-        In case we stored the path of the extended H2O jar to environmental variable ``H2O_EXTENDED_JAR``, we don't
+        In case we stored the path of the driver H2O jar to environmental variable ``H2O_DRIVER_JAR``, we don't
         have to specify ``setH2ODriverPath`` as Sparkling Water will read the path from the environmental variable.
 
 When specifying the queue, we recommend that this queue has YARN preemption off in order to have stable a H2O cluster.
@@ -201,18 +174,23 @@ Manual Mode of External Backend on Hadoop
 In manual mode, we need to start the H2O cluster before connecting to it manually. At this section, we will start the cluster
 on Hadoop.
 
-Get extended H2O driver, for example, for cdh 5.8:
+Get H2O driver, for example, for cdh 5.8:
 
 .. code:: bash
 
-    H2O_EXTENDED_JAR=$(./bin/get-extended-h2o.sh cdh5.8)
+    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8)
 
+Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive.
+
+.. code:: bash
+
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
 
 Start H2O cluster on Hadoop:
 
 .. code:: bash
 
-    hadoop -jar $H2O_EXTENDED -sw_ext_backend -jobname test -nodes 3 -mapperXmx 6g
+    hadoop -jar $H2O_DRIVER_JAR -libjars $SW_EXTENSIONS_ASSEMBLY -sw_ext_backend -jobname test -nodes 3 -mapperXmx 6g
 
 The ``-sw_ext_backend`` is required as without it, the cluster won't allow Sparkling Water client to connect to it.
 
@@ -262,18 +240,23 @@ Manual Mode of External Backend without Hadoop (standalone)
 In manual mode, we need to start the H2O cluster before connecting to it manually. At this section, we will start the cluster
 as a standalone application (without Hadoop).
 
-Get extended H2O driver:
+Get assembly H2O jar:
 
 .. code:: bash
 
-    H2O_EXTENDED_JAR=$(./bin/get-extended-h2o.sh standalone)
+    H2O_JAR=$(./bin/get-h2o.sh)
 
+Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive.
+
+.. code:: bash
+
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
 
 To start an external H2O cluster, run:
 
 .. code:: bash
 
-    java -jar $H2O_EXTENDED_JAR -allow_clients -name test -flatfile path_to_flatfile
+    java -cp "$H2O_JAR:$SW_EXTENSIONS_ASSEMBLY" water.H2OApp -allow_clients -name test -flatfile path_to_flatfile
 
 where the flatfile content are lines in the format of ip:port of the nodes where H2O is supposed to run. To
 read more about flatfile and its format, please

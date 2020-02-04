@@ -40,8 +40,7 @@ Extended H2O Jars
 We removed the requirement of using extended H2O jars. So in both manual and automatic mode of the external backend you can
 download the corresponding H2O jars for the external backend via the script ``./bin/get-h2o-driver.sh``. This script downloads
 the official H2O driver jar which is not modified by Sparkling Water. In order to pass the Jar to
-Sparkling Water in automatic mode, please use the ``H2O_DRIVER_JAR`` environmental property instead
-of the ``H2O_EXTENDED_JAR``.
+Sparkling Water in automatic mode, please use the ``H2O_DRIVER_JAR``.
 
 This should reduce the complexity of deployment and bring more transparency.
 

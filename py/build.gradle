@@ -96,7 +96,7 @@ static def downloadH2OWheel(String url, File out) {
 task checkPythonEnv {
     doLast {
         def H2O_HOME = System.getenv("H2O_HOME")
-        def H2O_EXTENDED_JAR = System.getenv("H2O_EXTENDED_JAR")
+        def H2O_DRIVER_JAR = System.getenv("H2O_DRIVER_JAR")
 
         if (H2O_HOME == null) {
             downloadH2OWheel(h2oPythonWheelPackageLocation, wheelFile)
@@ -105,13 +105,13 @@ task checkPythonEnv {
         }
 
         // if the spark.ext.h2o.backend.cluster.mode is set to external, then
-        // we need to have also H2O_EXTENDED_JAR property set in order to be able to perform tests
-        if (detectBackendClusterMode() == "external" && H2O_EXTENDED_JAR == null) {
-            throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_EXTENDED_JAR property is required.
+        // we need to have also H2O_DRIVER_JAR property set in order to be able to perform tests
+        if (detectBackendClusterMode() == "external" && H2O_DRIVER_JAR == null) {
+            throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_DRIVER_JAR property is required.
+Download H2O driver for the corresonding hadoop distribution via the shell script ``./bin/get-h2o-driver.sh`` and
+and please set it, for example as:
 
-Please set it, for example as:
-
-export H2O_EXTENDED_JAR=`./gradlew -q extendJar -PdownloadH2O`
+export H2O_DRIVER_JAR=/path/to/h2o-driver.jar
                                   """)
         }
 
