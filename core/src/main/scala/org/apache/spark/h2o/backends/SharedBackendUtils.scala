@@ -51,7 +51,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
    *
    * @param conf H2O Configuration to check
    * @return checked and updated configuration
-   **/
+   * */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
     if (conf.h2oClientLogDir.isEmpty) {
@@ -63,8 +63,11 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       AzureDatabricksUtils.setClientCheckRetryTimeout(conf)
     }
 
-    if (conf.isInternalSecureConnectionsEnabled && conf.sslConf.isEmpty) {
-      Security.enableSSL(SparkSession.builder().getOrCreate(), conf)
+    if (conf.sslConf.isEmpty) {
+      val isAutoInternalSecureConnectionsPossible = conf.runsInInternalClusterMode || conf.runsInExternalClusterMode && !conf.isManualClusterStartUsed
+      if (conf.isInternalSecureConnectionsEnabled || conf.autoInternalSecureConnections && isAutoInternalSecureConnectionsPossible) {
+        Security.enableSSL(SparkSession.builder().getOrCreate(), conf)
+      }
     }
 
     if (conf.autoFlowSsl) {
