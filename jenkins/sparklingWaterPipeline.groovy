@@ -252,7 +252,6 @@ def prepareSparklingWaterEnvironment() {
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             sh """
                 if [ ${config.backendMode} = external ]; then
-                    # Check if we are bulding against specific H2O branch
                     if [ ${config.buildAgainstH2OBranch} = true ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
