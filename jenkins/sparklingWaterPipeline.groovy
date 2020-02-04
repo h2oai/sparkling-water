@@ -104,7 +104,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 cleanWs()
                 if (shouldCheckout) {
                     checkout scm
-                    checkoutH2O(config)
                 } else {
                     unstash "sw-build-${config.sparkMajorVersion}"
                 }
@@ -146,6 +145,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
+                    checkoutH2O(config)
                     prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
