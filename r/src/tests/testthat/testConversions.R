@@ -1,26 +1,22 @@
-
 context("Test transformations of H2O frames and Spark frames in rsparkling using H2OContext class")
 
 
-config=spark_config()
-config=c(config, list(
-                "spark.hadoop.yarn.timeline-service.enabled"="false",
-                "spark.ext.h2o.external.cluster.size"="1",
-                "spark.ext.h2o.backend.cluster.mode"=Sys.getenv("spark.ext.h2o.backend.cluster.mode"),
-                "spark.ext.h2o.client.ip"=Sys.getenv("H2O_CLIENT_IP"),
-                "sparklyr.gateway.connect.timeout"=240,
-                "sparklyr.gateway.start.timeout"=240,
-                "sparklyr.backend.timeout"=240,
-                "spark.ext.h2o.external.start.mode"="auto",
-                "sparklyr.log.console"="true",
-                "sparklyr.log.invoke"="true",
-                "sparklyr.verbose"="true",
-                "spark.ext.h2o.external.disable.version.check"="true"
+config <- spark_config()
+config <- c(config, list(
+  "spark.hadoop.yarn.timeline-service.enabled" = "false",
+  "spark.ext.h2o.external.cluster.size" = "1",
+  "spark.ext.h2o.backend.cluster.mode" = Sys.getenv("spark.ext.h2o.backend.cluster.mode"),
+  "spark.ext.h2o.client.ip" = Sys.getenv("H2O_CLIENT_IP"),
+  "sparklyr.gateway.connect.timeout" = 240,
+  "sparklyr.gateway.start.timeout" = 240,
+  "sparklyr.backend.timeout" = 240,
+  "spark.ext.h2o.external.start.mode" = "auto",
+  "spark.ext.h2o.external.disable.version.check" = "true"
 ))
 
 test_that("Test transformation from h2o frame to data frame", {
   sc <- spark_connect(master = "local[*]", config = config)
-  df <- as.data.frame(t(c(1,2,3,4,"A"))) # workaround for sparklyr#316
+  df <- as.data.frame(t(c(1, 2, 3, 4, "A"))) # workaround for sparklyr#316
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
@@ -33,15 +29,15 @@ test_that("Test transformation from h2o frame to data frame", {
 
 test_that("Test transformation of a spark data_frame of bools to an h2o frame of bools", {
   sc <- spark_connect(master = "local[*]", config = config)
-  df <- as.data.frame(t(c(TRUE,FALSE,TRUE,FALSE)))
+  df <- as.data.frame(t(c(TRUE, FALSE, TRUE, FALSE)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1,1],1)
-  expect_equal(hf[1,2],0)
-  expect_equal(hf[1,3],1)
-  expect_equal(hf[1,4],0)
+  expect_equal(hf[1, 1], 1)
+  expect_equal(hf[1, 2], 0)
+  expect_equal(hf[1, 3], 1)
+  expect_equal(hf[1, 4], 0)
 })
 
 test_that("Test transformation of a spark data_frame of complex types to an h2o frame of complex types", {
@@ -54,45 +50,45 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1,1],2)
-  expect_equal(hf[1,2],"aa")
-  expect_equal(hf[1,3],1)
+  expect_equal(hf[1, 1], 2)
+  expect_equal(hf[1, 2], "aa")
+  expect_equal(hf[1, 3], 1)
 })
 
 test_that("Test transformation of a spark data_frame of float types to an h2o frame of floats", {
   sc <- spark_connect(master = "local[*]", config = config)
-  df <- as.data.frame(t(c(1.5,1.3333333333,178.5555)))
+  df <- as.data.frame(t(c(1.5, 1.3333333333, 178.5555)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1,1],1.5)
-  expect_equal(hf[1,2],1.3333333333)
-  expect_equal(hf[1,3],178.5555)
+  expect_equal(hf[1, 1], 1.5)
+  expect_equal(hf[1, 2], 1.3333333333)
+  expect_equal(hf[1, 3], 178.5555)
 })
 
 test_that("Test transformation of a spark data_frame of int types to an h2o frame of ints", {
   sc <- spark_connect(master = "local[*]", config = config)
-  df <- as.data.frame(t(c(1,125,1778)))
+  df <- as.data.frame(t(c(1, 125, 1778)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1,1],1)
-  expect_equal(hf[1,2],125)
-  expect_equal(hf[1,3],1778)
+  expect_equal(hf[1, 1], 1)
+  expect_equal(hf[1, 2], 125)
+  expect_equal(hf[1, 3], 1778)
 })
 
 test_that("Test transformation of a spark data_frame of str types to an h2o frame of str", {
   sc <- spark_connect(master = "local[*]", config = config)
-  df <- as.data.frame(t(c("A","B","C")))
+  df <- as.data.frame(t(c("A", "B", "C")))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate(sc)
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1,1],"A")
-  expect_equal(hf[1,2],"B")
-  expect_equal(hf[1,3],"C")
+  expect_equal(hf[1, 1], "A")
+  expect_equal(hf[1, 2], "B")
+  expect_equal(hf[1, 3], "C")
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
