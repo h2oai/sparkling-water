@@ -22,7 +22,7 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.utils.NodeDesc
@@ -36,16 +36,18 @@ trait RestApiUtils extends RestCommunication {
     hc.getOrElse(H2OContext.ensure()).getConf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
   }
 
-  def convertAllStringVecToCategorical(frameId: String): Unit = {
-
+  def convertAllStringVecToCategorical(conf: H2OConf, frameId: String): Unit = {
+    val fr = getFrame(conf, frameId)
+    val columns = fr.columns.filter(_.dataType == H2OColumnType.string).map(_.name)
+    convertColumnsToCategorical(conf, frameId, columns)
   }
 
-  def convertColumnsToCategorical(frameId: String, columns: Array[String]): Unit = {
-
+  def convertColumnsToCategorical(conf: H2OConf, frameId: String, columns: Array[String]): Unit = {
+    //TODO
   }
 
-  def splitFrameToTrainAndValidationFrames(frameId: String, splitRatio: Double): Array[String] = {
-
+  def splitFrameToTrainAndValidationFrames(conf: H2OConf, frameId: String, splitRatio: Double): Array[String] = {
+    //TODO
   }
 
   def lockCloud(conf: H2OConf): Unit = {
@@ -135,7 +137,7 @@ trait RestApiUtils extends RestCommunication {
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
     H2OColumn(
       name = sourceColumn.label,
-      dataType = sourceColumn.`type`,
+      dataType = H2OColumnType.fromString(sourceColumn.`type`),
       min = sourceColumn.mins(0),
       max = sourceColumn.maxs(0),
       mean = sourceColumn.mean,
@@ -146,6 +148,7 @@ trait RestApiUtils extends RestCommunication {
       domain = sourceColumn.domain,
       domainCardinality = sourceColumn.domain_cardinality)
   }
+
 
   private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
     H2OChunk(

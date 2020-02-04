@@ -31,7 +31,7 @@ case class H2OFrame(
 
 case class H2OColumn(
     name: String,
-    dataType: String,
+    dataType: H2OColumnType.Value,
     min: Double,
     max: Double,
     mean: Double,
@@ -43,5 +43,22 @@ case class H2OColumn(
     domainCardinality: Long) {
   def nullable: Boolean = numberOfMissingElements > 0
 }
+
+object H2OColumnType extends Enumeration {
+  val enum, string, int, real, time, uuid = Value
+
+  def fromString(dataType: String): Value = {
+    dataType match {
+      case "enum" => `enum`
+      case "string" => string
+      case "int" => int
+      case "real" => real
+      case "time" => time
+      case "uuid" => uuid
+      case unknown => throw new RuntimeException(s"Unknown H2O's Data type $unknown")
+    }
+  }
+}
+
 
 case class H2OChunk(index: Int, numberOfRows: Long, location: NodeDesc)

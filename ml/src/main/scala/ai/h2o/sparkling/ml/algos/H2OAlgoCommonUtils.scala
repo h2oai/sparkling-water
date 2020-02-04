@@ -51,14 +51,14 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
     if (getAllStringColumnsToCategorical()) {
       if (RestApiUtils.isRestAPIBased()) {
-        RestApiUtils.convertAllStringVecToCategorical(h2oFrameKey)
+        RestApiUtils.convertAllStringVecToCategorical(h2oContext.getConf, h2oFrameKey)
       } else {
         H2OFrameSupport.allStringVecToCategorical(DKV.getGet(h2oFrameKey))
       }
     }
 
     if (RestApiUtils.isRestAPIBased()) {
-      RestApiUtils.convertColumnsToCategorical(h2oFrameKey, getColumnsToCategorical())
+      RestApiUtils.convertColumnsToCategorical(h2oContext.getConf, h2oFrameKey, getColumnsToCategorical())
     } else {
       H2OFrameSupport.columnsToCategorical(DKV.getGet(h2oFrameKey), getColumnsToCategorical())
     }
@@ -66,7 +66,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     if (getSplitRatio() < 1.0) {
       // need to do splitting
       val keys = if (RestApiUtils.isRestAPIBased()) {
-        RestApiUtils.splitFrameToTrainAndValidationFrames(h2oFrameKey, getSplitRatio())
+        RestApiUtils.splitFrameToTrainAndValidationFrames(h2oContext.getConf, h2oFrameKey, getSplitRatio())
       } else {
         H2OFrameSupport.split(DKV.getGet(h2oFrameKey), Seq(Key.rand(), Key.rand()), Seq(getSplitRatio())).map(_._key.toString)
       }
