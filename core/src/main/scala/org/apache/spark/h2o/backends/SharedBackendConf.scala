@@ -67,8 +67,6 @@ trait SharedBackendConf {
   def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
     PROP_INTERNAL_SECURE_CONNECTIONS._2)
-  private[backends] def autoInternalSecureConnections = sparkConf.getBoolean(PROP_AUTO_SECURE_CONNECTIONS._1,
-    PROP_AUTO_SECURE_CONNECTIONS._2)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -328,11 +326,7 @@ object SharedBackendConf {
   val PROP_FLOW_EXTRA_HTTP_HEADERS = ("spark.ext.h2o.flow.extra.http.headers", None)
 
   /** Secure internal connections by automatically generated credentials */
-  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", false)
-
-  /** Automatically switch spark.ext.h2o.internal_secure_connections to true on internal
-   * backend and automatic mode of external backend. */
-  val PROP_AUTO_SECURE_CONNECTIONS = ("spark.ext.h2o.auto.internal_secure_connections", true)
+  val PROP_INTERNAL_SECURE_CONNECTIONS = ("spark.ext.h2o.internal_secure_connections", true)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP = ("spark.ext.h2o.client.ip", None)
