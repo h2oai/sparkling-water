@@ -5,7 +5,7 @@
 //
 
 def getS3Path(config) {
-    return sh(script: "${config.gradleCmd} -q s3path", returnStdout: true).trim()
+    return sh(script: "${getGradleCommand(config)} -q s3path", returnStdout: true).trim()
 }
 
 String getNightlyVersion(config) {
@@ -108,7 +108,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                     unstash "sw-build-${config.sparkMajorVersion}"
                 }
 
-                config.put("gradleCmd", getGradleCommand(config))
                 config.put("sparkVersion", getSparkVersion(config))
 
                 def customEnv = [
@@ -257,12 +256,12 @@ def prepareSparklingWaterEnvironment() {
                     if [ ${config.buildAgainstH2OBranch} = true ]; then
                         # In this case, PySparkling build is driven by H2O_HOME property
                         # When extending from specific jar the jar has already the desired name
-                        ${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
+                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
                         # Copy also original driver JAR to desired location so rest API based client can use it
                         cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
                     else
-                        cp `${config.gradleCmd} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                        cp `${config.gradleCmd} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
+                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
+                        cp `${getGradleCommand(config)}-q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
                 """
@@ -274,7 +273,7 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                sh "${config.gradleCmd} clean build -x check scalaStyle"
+                sh "${getGradleCommand(config)} clean build -x check scalaStyle"
                 if (config.runIntegTests.toBoolean() || config.uploadNightly.toBoolean()) {
                     stash "sw-build-${config.sparkMajorVersion}"
                 }
@@ -292,7 +291,7 @@ def unitTests() {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                         sh """
-                            ${config.gradleCmd} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
@@ -314,7 +313,7 @@ def pyUnitTests() {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                         sh """
-                        ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                        ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                         """
                     }
                 } finally {
@@ -328,7 +327,7 @@ def pyUnitTests() {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
                         sh """
-                        ${config.gradleCmd} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                        ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
                         """
                     }
                 } finally {
@@ -345,8 +344,8 @@ def rUnitTests() {
             if (config.runRUnitTests.toBoolean()) {
                 try {
                     sh """
-                         ${config.gradleCmd} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
-                         ${config.gradleCmd} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
+                         ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage :sparkling-water-r:installRSparklingPackage
+                         ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                          """
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
@@ -362,7 +361,7 @@ def localIntegTest() {
             if (config.runLocalIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${config.gradleCmd} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -382,7 +381,7 @@ def localPyIntegTest() {
             if (config.runLocalPyIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${config.gradleCmd} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
@@ -398,7 +397,7 @@ def scriptsTest() {
             if (config.runScriptTests.toBoolean()) {
                 try {
                     sh """
-                    ${config.gradleCmd} scriptTest -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
@@ -418,7 +417,7 @@ def integTest() {
                     cleanWs()
                     unstash "sw-build-${config.sparkMajorVersion}"
                     sh """
-                    ${config.gradleCmd} integTest -PbackendMode=${config.backendMode} -PsparklingTestEnv=yarn -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
+                    ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PsparklingTestEnv=yarn -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*,**/build/reports/'
@@ -436,7 +435,7 @@ def pysparklingIntegTest() {
             if (config.runPySparklingIntegTests.toBoolean()) {
                 try {
                     sh """
-                     ${config.gradleCmd} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
+                     ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
                     """
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
@@ -459,7 +458,7 @@ def publishNightly() {
                     sh  """
                         sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                         echo "doRelease=true" >> gradle.properties
-                        ${config.gradleCmd} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                        ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                                             
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
