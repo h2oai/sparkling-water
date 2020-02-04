@@ -348,7 +348,7 @@ def rUnitTests() {
             if (config.runRUnitTests.toBoolean()) {
                 try {
                     sh """
-                         R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.99999}.tar.gz", type="source", repos=NULL)'
+                         R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
                          ${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage
                          ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                          """
