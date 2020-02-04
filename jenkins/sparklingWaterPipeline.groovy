@@ -88,8 +88,7 @@ def checkoutH2O(config) {
         git clone https://github.com/h2oai/h2o-3.git
         cd h2o-3
         git checkout ${config.h2oBranch}
-        . /envs/h2o_env_python2.7/bin/activate
-        ./gradlew build -x check -x :h2o-r:build
+        ./gradlew build -x check -x :h2o-r:build -x :h2o-py:build
         ./gradlew publishToMavenLocal
         cd ..
         """
