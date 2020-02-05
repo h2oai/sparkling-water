@@ -3,8 +3,8 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
-From 3.28 to 3.30
------------------
+From 3.28.1 to 3.30
+-------------------
 
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,8 +46,17 @@ Removal of Deprecated Methods and Classes
   ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
 
 
-From 3.26 To 3.28
------------------
+From 3.28.0 to 3.28.1
+---------------------
+
+- On ``H2OConf`` Python API, the methods ``external_write_confirmation_timeout`` and ``set_external_write_confirmation_timeout``
+  are removed without replacement. On ``H2OConf`` Scala API, the methods ``externalWriteConfirmationTimeout`` and
+  ``setExternalWriteConfirmationTimeout`` are removed without replacement. Also the option
+  ``spark.ext.h2o.external.write.confirmation.timeout`` does not have any effect anymore.
+
+
+From 3.26 To 3.28.0
+-------------------
 
 Passing Authentication in Scala
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
