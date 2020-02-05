@@ -29,6 +29,7 @@ task substitute() {
             if (it.name.endsWith('.html')) {
                 def contents = file(it).getText('UTF-8')
                 contents = contents
+                        .replaceAll("SUBST_SCALA_BASE_VERSION", scalaBaseVersion)
                         .replaceAll("SUBST_SW_VERSION", version)
                         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
                         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
