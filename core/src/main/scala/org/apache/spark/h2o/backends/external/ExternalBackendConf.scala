@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 
@@ -35,6 +36,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   def h2oClusterPort = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1).map(_.split(":")(1).toInt)
 
   def clusterSize = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_SIZE._1)
+  @DeprecatedMethod
   def externalWriteConfirmationTimeout = sparkConf.getInt(PROP_EXTERNAL_WRITE_TIMEOUT._1, PROP_EXTERNAL_WRITE_TIMEOUT._2)
   def clusterStartTimeout = sparkConf.getInt(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, PROP_EXTERNAL_CLUSTER_START_TIMEOUT._2)
   def clusterInfoFile = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
@@ -84,6 +86,7 @@ trait ExternalBackendConf extends SharedBackendConf {
   }
 
   def setClusterSize(clusterSize: Int) = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
+  @DeprecatedMethod
   def setExternalWriteConfirmationTimeout(timeout: Int) = set(PROP_EXTERNAL_WRITE_TIMEOUT._1, timeout.toString)
   def setClusterStartTimeout(clusterStartTimeout: Int) = set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
   def setClusterConfigFile(path: String) = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
