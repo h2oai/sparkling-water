@@ -106,7 +106,7 @@ trait SharedBackendConf {
   }
 
   def setCloudName(cloudName: String) = set(PROP_CLOUD_NAME._1, cloudName)
-  def setNthreads(numThreads: Int) = set(PROP_NTHREADS._1, nthreads.toString)
+  def setNthreads(numThreads: Int) = set(PROP_NTHREADS._1, numThreads.toString)
 
   def setReplEnabled() = set(PROP_REPL_ENABLED._1, true)
   def setReplDisabled() = set(PROP_REPL_ENABLED._1, false)
