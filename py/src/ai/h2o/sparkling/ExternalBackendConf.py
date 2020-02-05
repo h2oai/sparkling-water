@@ -205,8 +205,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         warnings.warn("Method 'set_cluster_start_timeout' is deprecated and will be removed in the next major release. Please use 'setClusterStartTimeout'.")
         return self.setClusterStartTimeout(timeout)
 
-    def setClusterStartTimeout(self, timeout):
-        self._jconf.setClusterStartTimeout(timeout)
+    def setClusterStartTimeout(self, clusterStartTimeout):
+        self._jconf.setClusterStartTimeout(clusterStartTimeout)
         return self
 
     def set_cluster_config_file(self, path):
@@ -229,8 +229,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         warnings.warn("Method 'set_hdfs_output_dir' is deprecated and will be removed in the next major release. Please use 'setHDFSOutputDir'.")
         return self.setHDFSOutputDir(hdfs_output_dir)
 
-    def setHDFSOutputDir(self, outputDir):
-        self._jconf.setHDFSOutputDir(outputDir)
+    def setHDFSOutputDir(self, dir):
+        self._jconf.setHDFSOutputDir(dir)
         return self
 
     def use_auto_cluster_start(self):
@@ -253,16 +253,16 @@ class ExternalBackendConf(SharedBackendConfUtils):
         warnings.warn("Method 'set_h2o_driver_path' is deprecated and will be removed in the next major release. Please use 'setH2ODriverPath'.")
         return self.setH2ODriverPath(driver_path)
 
-    def setH2ODriverPath(self, driverPath):
-        self._jconf.setH2ODriverPath(driverPath)
+    def setH2ODriverPath(self, path):
+        self._jconf.setH2ODriverPath(path)
         return self
 
     def set_yarn_queue(self, queue_name):
         warnings.warn("Method 'set_yarn_queue' is deprecated and will be removed in the next major release. Please use 'setYARNQueue'.")
         return self.setYARNQueue(queue_name)
 
-    def setYARNQueue(self, queue):
-        self._jconf.setYARNQueue(queue)
+    def setYARNQueue(self, queueName):
+        self._jconf.setYARNQueue(queueName)
         return self
 
     def set_kill_on_unhealthy_cluster_enabled(self):
