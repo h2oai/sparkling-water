@@ -45,7 +45,7 @@ Removal of Deprecated Methods and Classes
   ``getStoppingMetric``, ``getStoppingTolerance`` methods and the method ``setR2Stopping`` is removed in favor of
   ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
 
-- On H2OConf Python API, the following methods have been renamed:
+- On H2OConf Python API, the following methods have been renamed to be consistent with the Scala counterparts:
 
        - ``h2o_cluster`` -> ``h2oCluster``
        - ``h2o_cluster_host`` -> ``h2oClusterHost``
@@ -81,6 +81,21 @@ Removal of Deprecated Methods and Classes
        - ``set_kerberos_principal`` -> ``setKerberosPrincipal``
        - ``set_kerberos_keytab`` -> ``setKerberosKeytab``
        - ``set_run_as_user`` -> ``setRunAsUser``
+       - ``num_h2o_workers`` -> ``numH2OWorkers``
+       - ``drdd_mul_factor`` -> ``drddMulFactor``
+       - ``num_rdd_retries`` -> ``numRddRetries``
+       - ``default_cloud_size`` -> ``defaultCloudSize``
+       - ``subseq_tries`` -> ``subseqTries``
+       - ``h2o_node_web_enabled`` -> ``h2oNodeWebEnabled``
+       - ``node_iced_dir`` -> ``nodeIcedDir``
+       - ``set_num_h2o_workers`` -> ``setNumH2OWorkers``
+       - ``set_drdd_mul_factor`` -> ``setDrddMulFactor``
+       - ``set_num_rdd_retries`` -> ``setNumRddRetries``
+       - ``set_default_cloud_size`` -> ``setDefaultCloudSize``
+       - ``set_subseq_tries`` -> ``setSubseqTries``
+       - ``set_h2o_node_web_enabled`` -> ``setH2ONodeWebEnabled``
+       - ``set_h2o_node_web_disabled`` -> ``setH2ONodeWebDisabled``
+       - ``set_node_iced_dir`` -> ``setNodeIcedDir``
 
 
 From 3.28.0 to 3.28.1
