@@ -27,7 +27,7 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def h2o_cluster(self):
         warnings.warn("Method 'h2o_cluster' is deprecated and will be removed in the next major release. Please use 'h2oCluster'.")
-        return self.h2o_cluster()
+        return self.h2oCluster()
 
     def h2oCluster(self):
         return self._get_option(self._jconf.h2oCluster())
