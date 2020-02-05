@@ -132,6 +132,9 @@ class SharedBackendConf(SharedBackendConfUtils):
     def flow_extra_http_headers(self):
         return self._get_option(self._jconf.flowExtraHttpHeaders())
 
+    def is_internal_secure_connections_enabled(self):
+        return self._jconf.isInternalSecureConnectionsEnabled()
+
     def flow_dir(self):
         return self._get_option(self._jconf.flowDir())
 
@@ -353,6 +356,14 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def set_flow_extra_http_headers(self, headers):
         self._jconf.setFlowExtraHttpHeaders(headers)
+        return self
+
+    def set_internal_secure_connections_enabled(self):
+        self._jconf.setInternalSecureConnectionsEnabled()
+        return self
+
+    def set_internal_secure_connections_disabled(self):
+        self._jconf.setInternalSecureConnectionsDisabled()
         return self
 
     def set_flow_dir(self, dir):
