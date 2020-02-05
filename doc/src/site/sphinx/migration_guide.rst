@@ -45,6 +45,43 @@ Removal of Deprecated Methods and Classes
   ``getStoppingMetric``, ``getStoppingTolerance`` methods and the method ``setR2Stopping`` is removed in favor of
   ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
 
+- On H2OConf Python API, the following methods have been renamed:
+
+       - ``h2o_cluster`` -> ``h2oCluster``
+       - ``h2o_cluster_host`` -> ``h2oClusterHost``
+       - ``h2o_cluster_port`` -> ``h2oClusterPort``
+       - ``cluster_size`` -> ``clusterSize``
+       - ``client_check_retry_timeout`` -> ``clientCheckRetryTimeout``
+       - ``cluster_start_timeout`` -> ``clusterStartTimeout``
+       - ``cluster_config_file`` -> ``clusterInfoFile``
+       - ``mapper_xmx`` -> ``mapperXmx``
+       - ``hdfs_output_dir`` -> ``HDFSOutputDir``
+       - ``cluster_start_mode`` -> ``clusterStartMode``
+       - ``is_auto_cluster_start_used`` -> ``isAutoClusterStartUsed``
+       - ``is_manual_cluster_start_used`` -> ``isManualClusterStartUsed``
+       - ``h2o_driver_path`` -> ``h2oDriverPath``
+       - ``yarn_queue`` -> ``YARNQueue``
+       - ``is_kill_on_unhealthy_cluster_enabled`` -> ``isKillOnUnhealthyClusterEnabled``
+       - ``kerberos_principal`` -> ``kerberosPrincipal``
+       - ``kerberos_keytab`` -> ``kerberosKeytab``
+       - ``run_as_user`` -> ``runAsUser``
+       - ``set_h2o_cluster`` -> ``setH2OCluster``
+       - ``set_cluster_size`` -> ``setClusterSize``
+       - ``set_client_check_retry_timeout`` -> ``setClientCheckRetryTimeout``
+       - ``set_cluster_start_timeout`` -> ``setClusterStartTimeout``
+       - ``set_cluster_config_file`` -> ``setClusterConfigFile``
+       - ``set_mapper_xmx`` -> ``setMapperXmx``
+       - ``set_hdfs_output_dir`` -> ``setHDFSOutputDir``
+       - ``use_auto_cluster_start`` -> ``useAutoClusterStart``
+       - ``use_manual_cluster_start`` -> ``useManualClusterStart``
+       - ``set_h2o_driver_path`` -> ``setH2ODriverPath``
+       - ``set_yarn_queue`` -> ``setYARNQueue``
+       - ``set_kill_on_unhealthy_cluster_enabled`` -> ``setKillOnUnhealthyClusterEnabled``
+       - ``set_kill_on_unhealthy_cluster_disabled`` -> ``setKillOnUnhealthyClusterDisabled``
+       - ``set_kerberos_principal`` -> ``setKerberosPrincipal``
+       - ``set_kerberos_keytab`` -> ``setKerberosKeytab``
+       - ``set_run_as_user`` -> ``setRunAsUser``
+
 
 From 3.28.0 to 3.28.1
 ---------------------
