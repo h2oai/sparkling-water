@@ -21,7 +21,7 @@ from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 class SharedBackendConf(SharedBackendConfUtils):
 
     #
-    # Setters
+    # Getters
     #
 
     def backend_cluster_mode(self):
@@ -172,7 +172,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clientExtraProperties())
 
     #
-    # Getters
+    # Setters
     #
 
     def set_internal_cluster_mode(self):
