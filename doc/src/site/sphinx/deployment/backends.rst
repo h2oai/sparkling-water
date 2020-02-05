@@ -107,7 +107,7 @@ to the environment variable ``H2O_DRIVER_JAR``.
 
 .. code:: bash
 
-    H2O_DRIVER_JAR=/path/to/h2o-driver.jar
+    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh some_hadoop_distribution)
 
 Automatic Mode of External Backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,7 +121,7 @@ Get H2O driver, for example, for cdh 5.8:
 
 .. code:: bash
 
-    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8 | tail -n 1 | awk 'NF>1{print $NF})
+    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8)
 
 To start an H2O cluster and connect to it, run:
 
@@ -178,7 +178,7 @@ Get H2O driver, for example, for cdh 5.8:
 
 .. code:: bash
 
-    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8 | tail -n 1 | awk 'NF>1{print $NF})
+    H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh cdh5.8)
 
 Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive.
 
@@ -244,7 +244,7 @@ Get assembly H2O jar:
 
 .. code:: bash
 
-    H2O_JAR=$(./bin/get-h2o-driver.sh standalone | tail -n 1 | awk 'NF>1{print $NF})
+    H2O_JAR=$(./bin/get-h2o-driver.sh standalone)
 
 Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive.
 

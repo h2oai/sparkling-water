@@ -5,6 +5,8 @@ TOPDIR=$(cd "$(dirname "$0")/.."; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
 
+echoerr() { echo "$@" 1>&2; }
+
 if [ ! $# -eq 1 ]; then
 cat <<EOF
 Download H2O driver for external H2O backend mode of Sparkling Water.
@@ -45,11 +47,11 @@ output_file="h2odriver-${DRIVER_VERSION}"
 WORKDIR=$(mktemp -d)
 output_zip_file="$WORKDIR/${output_file}.zip"
 
-echo
-echo "Getting H2O driver distribution from ${h2odriver_dist_url} ..."
-curl -f -o "$output_zip_file" --progress-bar "$h2odriver_dist_url" && echo && echo "H2O driver distribution saved into: ${output_zip_file}" || echo "File not found: $h2odriver_dist_url"
+echoerr
+echoerr "Getting H2O driver distribution from ${h2odriver_dist_url} ..."
+curl -f -o "$output_zip_file" --progress-bar "$h2odriver_dist_url" && echoerr && echoerr "H2O driver distribution saved into: ${output_zip_file}" || echoerr "File not found: $h2odriver_dist_url"
 
-echo "Unzipping H2O driver distribution and extracting H2O driver jar ..."
+echoerr "Unzipping H2O driver distribution and extracting H2O driver jar ..."
 unzip -q "${output_zip_file}" -d "$WORKDIR"
 if [ "$1" == "standalone" ]; then
     cp "$WORKDIR/h2o-${DRIVER_VERSION}/h2o.jar" "${output_file}.jar"
@@ -57,7 +59,9 @@ else
     cp "$WORKDIR/h2o-${DRIVER_VERSION}/h2odriver.jar" "${output_file}.jar"
 fi
 
-echo "Removing temporary directory ${WORKDIR} ..."
+echoerr "Removing temporary directory ${WORKDIR} ..."
 rm -rf "$WORKDIR"
 
-echo "H2O driver is available at $(pwd)/${output_file}.jar"
+echoerr "H2O driver is available at $(pwd)/${output_file}.jar"
+echoerr
+echo "$(pwd)/${output_file}.jar"
