@@ -70,6 +70,29 @@ trait RestCommunication extends Logging {
     request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
+  /**
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @return HttpUrlConnection facilitating the insertion and holding the outputStream
+    */
+  protected def insert(endpoint: URI, suffix: String, conf: H2OConf): HttpURLConnection  = {
+    val url = resolveUrl(endpoint, suffix)
+    try {
+      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      setHeaders(connection, conf)
+      connection.setRequestMethod("PUT")
+      connection.setDoOutput(true)
+      connection.setChunkedStreamingMode(-1) // -1 to use default size
+      connection.getOutputStream() // Initialize connection
+      connection
+    } catch {
+      case e: Exception => throwRestApiNotReachableException(url, e)
+    }
+  }
+
+  protected def request[ResultType: ClassTag](
   def request[ResultType: ClassTag](
                                                endpoint: URI,
                                                requestType: String,
@@ -195,12 +218,15 @@ trait RestCommunication extends Logging {
       connection.getInputStream()
     } catch {
       case e: RestApiException => throw e
-      case cause: Exception =>
-        throw new RestApiNotReachableException(
-          s"""External H2O node ${urlToString(url)} is not reachable.
-             |Please verify that you are passing ip and port of existing cluster node and the cluster
-             |is running with web enabled.""".stripMargin, cause)
+      case cause: Exception => throwRestApiNotReachableException(url, cause)
     }
+  }
+
+  private def throwRestApiNotReachableException(url: URL,  e: Exception) = {
+    throw new RestApiNotReachableException(
+      s"""External H2O node ${urlToString(url)} is not reachable.
+         |Please verify that you are passing ip and port of existing cluster node and the cluster
+         |is running with web enabled.""".stripMargin, e)
   }
 
   @annotation.tailrec

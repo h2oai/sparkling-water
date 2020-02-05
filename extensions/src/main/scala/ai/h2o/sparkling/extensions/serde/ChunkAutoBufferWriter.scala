@@ -19,6 +19,7 @@ package ai.h2o.sparkling.extensions.serde
 
 import SerializationUtils._
 import java.io.{Closeable, OutputStream}
+import java.sql.Timestamp
 import java.util.UUID
 
 import water.fvec.{ChunkUtils, Frame}
@@ -67,6 +68,39 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
       }
       rowIdx = rowIdx + 1
     }
+  }
+
+  def writeBoolean(data: Boolean): Unit = sendBoolean(buffer, data)
+
+  def writeByte(data: Byte): Unit = sendByte(buffer, data)
+
+  def writeChar(data: Char): Unit = sendChar(buffer, data)
+
+  def writeShort(data: Short): Unit = sendShort(buffer, data)
+
+  def writeInt(data: Int): Unit = sendInt(buffer, data)
+
+  def writeLong(data: Long): Unit = sendLong(buffer, data)
+
+  def writeFloat(data: Float): Unit = sendFloat(buffer, data)
+
+  def writeDouble(data: Double): Unit = sendDouble(buffer, data)
+
+  def writeString(data: String): Unit = sendString(buffer, data)
+
+  def writeTimestamp(timestamp: Timestamp): Unit = sendTimestamp(buffer, timestamp)
+
+  def writeNA(expectedType: Byte): Unit = sendNA(buffer, expectedType)
+
+  def writeSparseVector(indices: Array[Int], values: Array[Double]): Unit = {
+    sendBoolean(buffer, VECTOR_IS_SPARSE)
+    sendIntArray(buffer, indices)
+    sendDoubleArray(buffer, values)
+  }
+
+  def writeDenseVector(values: Array[Double]): Unit = {
+    sendBoolean(buffer, VECTOR_IS_DENSE)
+    sendDoubleArray(buffer, values)
   }
 
   override def close(): Unit = buffer.close()

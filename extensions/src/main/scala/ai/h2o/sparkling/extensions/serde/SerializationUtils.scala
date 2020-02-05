@@ -35,6 +35,12 @@ object SerializationUtils {
   val EXPECTED_VECTOR = 10
 
   /**
+    * Meta Information used to specify whether we should expect sparse or dense vector
+    */
+  val VECTOR_IS_SPARSE = true
+  val VECTOR_IS_DENSE = false
+
+  /**
     * This is used to inform us that another byte is coming.
     * That byte can be either {@code MARKER_ORIGINAL_VALUE} or {@code MARKER_NA}. If it's
     * {@code MARKER_ORIGINAL_VALUE}, that means
