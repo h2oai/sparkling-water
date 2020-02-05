@@ -134,9 +134,9 @@ trait RestCommunication extends Logging {
         connection.getResponseCode()
       }
       statusCode match {
-        case HttpURLConnection.HTTP_OK => logInfo(
+        case HttpURLConnection.HTTP_OK => logDebug(
           s"""External H2O node ${urlToString(url)} successfully responded
-             | for the $requestType request on the patch $suffixWithDelimiter.""".stripMargin)
+             | for the $requestType request on the path $suffixWithDelimiter.""".stripMargin)
         case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
           s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
              |Please make sure you have passed valid credentials to the client.
