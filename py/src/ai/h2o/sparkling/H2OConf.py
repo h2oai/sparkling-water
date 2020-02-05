@@ -353,6 +353,8 @@ class H2OConf(object):
         return self
 
     def set_external_write_confirmation_timeout(self, timeout):
+        warnings.warn("Method 'set_external_write_confirmation_timeout' is deprecated without replacement and will be removed"
+                      " in the next major release")
         self._jconf.setExternalWriteConfirmationTimeout(timeout)
         return self
 
@@ -634,6 +636,8 @@ class H2OConf(object):
         return self._jconf.clientCheckRetryTimeout()
 
     def external_write_confirmation_timeout(self):
+        warnings.warn("Method 'external_write_confirmation_timeout' is deprecated without replacement and will be removed"
+                      " in the next major release")
         return self._jconf.externalWriteConfirmationTimeout()
 
     def cluster_start_timeout(self):
