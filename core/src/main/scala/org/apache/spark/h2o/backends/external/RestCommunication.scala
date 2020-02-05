@@ -134,7 +134,7 @@ trait RestCommunication extends Logging {
         connection.getResponseCode()
       }
       statusCode match {
-        case HttpURLConnection.HTTP_OK => logDebug(
+        case HttpURLConnection.HTTP_OK => logInfo(
           s"""External H2O node ${urlToString(url)} successfully responded
              | for the $requestType request on the path $suffixWithDelimiter.""".stripMargin)
         case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
