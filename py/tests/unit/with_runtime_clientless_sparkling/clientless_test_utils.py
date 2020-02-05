@@ -21,9 +21,9 @@ import subprocess
 
 def createH2OConf(spark):
     conf = H2OConf(spark)
-    conf.set_cluster_size(1)
+    conf.setClusterSize(1)
     conf.set("spark.ext.h2o.rest.api.based.client", "true")
-    conf.use_auto_cluster_start()
+    conf.useAutoClusterStart()
     conf.set_external_cluster_mode()
     conf.set_h2o_node_web_enabled()
     return conf

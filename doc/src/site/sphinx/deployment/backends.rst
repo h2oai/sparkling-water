@@ -181,14 +181,14 @@ To start an H2O cluster and connect to it, run:
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
                     .use_auto_cluster_start()
-                    .set_h2o_driver_path("path_to_extended_driver")
-                    .set_cluster_size(1) # Number of H2O worker nodes to start
-                    .set_mapper_xmx("2G") # Memory per single H2O worker node
-                    .set_yarn_queue("abc")
+                    .setH2ODriverPath("path_to_extended_driver")
+                    .setClusterSize(1) # Number of H2O worker nodes to start
+                    .setMapperXmx("2G") # Memory per single H2O worker node
+                    .setYARNQueue("abc")
             hc = H2OContext.getOrCreate(spark, conf)
 
         In case we stored the path of the extended H2O jar to environmental variable ``H2O_EXTENDED_JAR``, we don't
-        have to specify ``set_h2o_driver_path`` as Sparkling Water will read the path from the environmental variable.
+        have to specify ``setH2ODriverPath`` as Sparkling Water will read the path from the environmental variable.
 
 When specifying the queue, we recommend that this queue has YARN preemption off in order to have stable a H2O cluster.
 
@@ -246,8 +246,8 @@ To connect to this external cluster, run the following commands:
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
                     .use_manual_cluster_start()
-                    .set_h2o_cluster("representant_ip", representant_port)
-                    .set_cluster_size(3)
+                    .setH2OCluster("representant_ip", representant_port)
+                    .setClusterSize(3)
                     .set_cloud_name("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
@@ -308,8 +308,8 @@ To connect to this external cluster, run the following commands:
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
                     .use_manual_cluster_start()
-                    .set_h2o_cluster("representant_ip", representant_port)
-                    .set_cluster_size(3)
+                    .setH2OCluster("representant_ip", representant_port)
+                    .setClusterSize(3)
                     .set_cloud_name("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
@@ -368,9 +368,9 @@ We can force the client to use the correct network or address using the followin
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
                     .use_manual_cluster_start()
-                    .set_h2o_cluster("representant_ip", representant_port)
+                    .setH2OCluster("representant_ip", representant_port)
                     .set_client_network_mask("192.168.0.0/24")
-                    .set_cluster_size(2)
+                    .setClusterSize(2)
                     .set_cloud_name("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
