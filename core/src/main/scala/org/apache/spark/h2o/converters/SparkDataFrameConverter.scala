@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
 import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -99,11 +99,11 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
     val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
     converter.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices, blockSize))
+      sparse = sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
-    *
+    * @param conf             H2O conf
     * @param keyName          key of the frame
     * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
     * @param elemMaxSizes     array containing max size of each element in the dataframe
@@ -115,14 +115,13 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]
-  def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int], blockSize: Long)
+  def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
                       writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
-
     val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, chunkIdx , writeTimeout, driverTimeStamp, blockSize)
+    val con = WriteConverterCtxUtils.create(conf, uploadPlan, chunkIdx)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))

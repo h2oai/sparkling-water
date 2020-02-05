@@ -20,6 +20,7 @@ package ai.h2o.sparkling.utils
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
+import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
@@ -31,15 +32,16 @@ import scala.reflect.{ClassTag, classTag}
 trait RestCommunication extends Logging {
 
   /**
-   *
-   * @param endpoint      An address of H2O node with exposed REST endpoint
-   * @param suffix        REST relative path representing a specific call
-   * @param conf          H2O conf object
-   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-   *                      consists of the class containing the field and the field name.
-   * @tparam ResultType A type that the result will be deserialized to
-   * @return A deserialized object
-   */
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
   def query[ResultType: ClassTag](
                                              endpoint: URI,
                                              suffix: String,
@@ -51,16 +53,16 @@ trait RestCommunication extends Logging {
 
 
   /**
-   *
-   * @param endpoint      An address of H2O node with exposed REST endpoint
-   * @param suffix        REST relative path representing a specific call
-   * @param conf          H2O conf object
-   * @param params        Query parameters
-   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-   *                      consists of the class containing the field and the field name.
-   * @tparam ResultType A type that the result will be deserialized to
-   * @return A deserialized object
-   */
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
   def update[ResultType: ClassTag](
                                               endpoint: URI,
                                               suffix: String,
@@ -77,7 +79,7 @@ trait RestCommunication extends Logging {
     * @param conf          H2O conf object
     * @return HttpUrlConnection facilitating the insertion and holding the outputStream
     */
-  protected def insert(endpoint: URI, suffix: String, conf: H2OConf): HttpURLConnection  = {
+  protected def insert(endpoint: URI, suffix: String, conf: H2OConf): OutputStream  = {
     val url = resolveUrl(endpoint, suffix)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
@@ -85,14 +87,13 @@ trait RestCommunication extends Logging {
       connection.setRequestMethod("PUT")
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
-      connection.getOutputStream() // Initialize connection
-      connection
+      val outputStream = connection.getOutputStream()
+      new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
     } catch {
       case e: Exception => throwRestApiNotReachableException(url, e)
     }
   }
 
-  protected def request[ResultType: ClassTag](
   def request[ResultType: ClassTag](
                                                endpoint: URI,
                                                requestType: String,

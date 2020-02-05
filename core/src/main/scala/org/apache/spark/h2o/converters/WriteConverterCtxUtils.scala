@@ -37,10 +37,9 @@ object WriteConverterCtxUtils {
   type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
-  def create(uploadPlan: Option[UploadPlan], partitionId: Int, writeTimeout: Int, driverTimeStamp: Short,
-             blockSize: Long): WriteConverterCtx = {
+  def create(conf: H2OConf, uploadPlan: Option[UploadPlan], partitionId: Int): WriteConverterCtx = {
     uploadPlan
-      .map { _ => new ExternalWriteConverterCtx(uploadPlan.get(partitionId), writeTimeout, driverTimeStamp, blockSize) }
+      .map { _ => new ExternalWriteConverterCtx(conf, uploadPlan.get(partitionId)) }
       .getOrElse(new InternalWriteConverterCtx())
   }
 
@@ -107,7 +106,7 @@ object WriteConverterCtxUtils {
       } else {
         val leader = H2O.CLOUD.leader()
         val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
-        new ExternalWriteConverterCtx(NodeDesc(leader), writeTimeout, H2O.SELF.getTimestamp, blockSize)
+        new ExternalWriteConverterCtx(hc.getConf, NodeDesc(leader))
       }
 
       writerClient.initFrame(keyName, colNames)
@@ -170,8 +169,9 @@ object WriteConverterCtxUtils {
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
       val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
       val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
-      val leaderNode = RestApiUtils.getLeaderNode(hc.getConf)
-      val writerClient = new ExternalWriteConverterCtx(leaderNode, writeTimeout, -1, blockSize)
+      val conf = hc.getConf
+      val leaderNode = RestApiUtils.getLeaderNode(conf)
+      val writerClient = new ExternalWriteConverterCtx(conf, leaderNode)
 
       writerClient.initFrame(keyName, colNames)
 

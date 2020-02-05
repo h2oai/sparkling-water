@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.SupportedTypes._
@@ -25,12 +25,10 @@ import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
 import water._
-
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferWriter
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short, blockSize: Long) extends WriteConverterCtx {
-
-  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout, blockSize)
+class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
+  extends WriteConverterCtx {
 
   private var expectedTypes: Array[Byte] = null
   private var currentColIdx: Int = 0
@@ -42,24 +40,21 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTim
   }
 
   override def initFrame(key: String, columns: Array[String]): Unit = {
-    externalFrameWriter.initFrame(key, columns)
+    ???
   }
 
   override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): Unit = {
-    externalFrameWriter.finalizeFrame(key, rowsPerChunk, colTypes, domains)
+    ???
   }
-
 
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunk(keystr: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+  override def createChunk(frameName: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
-    externalFrameWriter.createChunk(keystr, expectedTypes, chunkId, numRows.get, maxVecSizes)
-    // Call put request
     this.expectedTypes = expectedTypes
-
-    this.chunkWriter = new ChunkAutoBufferWriter(???)
+    val outputStream = RestApiUtils.putChunk(nodeDesc, conf, frameName, chunkId, expectedTypes, maxVecSizes)
+    this.chunkWriter = new ChunkAutoBufferWriter(outputStream)
   }
 
   override def put(colIdx: Int, data: Boolean): Unit = {
@@ -148,7 +143,6 @@ class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTim
     }
   }
 }
-
 
 object ExternalWriteConverterCtx {
 
