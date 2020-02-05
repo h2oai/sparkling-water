@@ -180,7 +180,7 @@ To start an H2O cluster and connect to it, run:
             from pysparkling import *
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
-                    .use_auto_cluster_start()
+                    .useAutoClusterStart()
                     .setH2ODriverPath("path_to_extended_driver")
                     .setClusterSize(1) # Number of H2O worker nodes to start
                     .setMapperXmx("2G") # Memory per single H2O worker node
@@ -245,7 +245,7 @@ To connect to this external cluster, run the following commands:
             from pysparkling import *
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
-                    .use_manual_cluster_start()
+                    .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
                     .set_cloud_name("test")
@@ -307,7 +307,7 @@ To connect to this external cluster, run the following commands:
             from pysparkling import *
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
-                    .use_manual_cluster_start()
+                    .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
                     .set_cloud_name("test")
@@ -367,7 +367,7 @@ We can force the client to use the correct network or address using the followin
             from pysparkling import *
             conf = H2OConf(spark)
                     .set_external_cluster_mode()
-                    .use_manual_cluster_start()
+                    .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
                     .set_client_network_mask("192.168.0.0/24")
                     .setClusterSize(2)
