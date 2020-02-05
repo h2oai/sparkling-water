@@ -16,8 +16,3 @@ dependencies {
     // Servlet API
     compileOnly "javax.servlet:servlet-api:2.5"
 }
-
-shadowJar {
-    mergeServiceFiles()
-    from "$project.buildDir/resources/main" include '**/*'
-}

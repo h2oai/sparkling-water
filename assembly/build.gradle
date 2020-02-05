@@ -7,6 +7,7 @@ import com.github.jk1.license.filter.*
 
 description = "Sparkling Water Assembly"
 
+
 dependencies {
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
@@ -55,4 +56,3 @@ artifacts {
 shadowJar.dependsOn generateLicenseReport
 build.dependsOn checkLicense
 build.dependsOn shadowJar
-

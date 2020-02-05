@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+description = "Sparkling Water Extensions Assembly"
+
+dependencies {
+    compile("ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}") { transitive = false }
+    compile("org.scala-lang:scala-library:${scalaVersion}")
+    compile(project(":sparkling-water-extension-stack-trace")) { transitive = false }
+    compile(project(":sparkling-water-extensions"))
+    compile(project(":sparkling-water-utils")) { transitive = false }
+}
+
+jar {
+    enabled = false // we do not need to generate jar file in this case
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+artifacts {
+    compile shadowJar
+}
+
+task embeddedAssemblyJar(type: Copy, dependsOn: shadowJar) {
+    from file("$buildDir/libs")
+    into file("$buildDir/embedded")
+    rename { _ -> 'assembly-extensions.jar.embedded' }
+}
+
+build.dependsOn embeddedAssemblyJar

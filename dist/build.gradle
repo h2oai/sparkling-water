@@ -108,6 +108,7 @@ def distTaskDependencies = [
         ":sparkling-water-doc:site",
         ":sparkling-water-r:distR",
         ":sparkling-water-assembly:shadowJar",
+        ":sparkling-water-assembly-extensions:shadowJar",
         ":sparkling-water-templates:build",
         ":sparkling-water-py:distPython",
         ":sparkling-water-r:createCranRepo",
@@ -149,6 +150,7 @@ task copyFilesForZipDistribution {
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
+        copyAndKeepPath("assembly/build/libs/sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir")
         copyAndKeepPath("py/build/dist/h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir")
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")
