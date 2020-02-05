@@ -53,13 +53,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def clusterSize(self):
         return self._get_option(self._jconf.clusterSize())
 
-    def client_check_retry_timeout(self):
-        warnings.warn("Method 'client_check_retry_timeout' is deprecated and will be removed in the next major release. Please use 'clientCheckRetryTimeout'.")
-        return self.clientCheckRetryTimeout()
-
-    def clientCheckRetryTimeout(self):
-        return self._jconf.clientCheckRetryTimeout()
-
     def external_write_confirmation_timeout(self):
         warnings.warn(
             "Method 'external_write_confirmation_timeout' is deprecated without replacement and will be removed"
@@ -94,13 +87,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def HDFSOutputDir(self):
         return self._get_option(self._jconf.HDFSOutputDir())
 
-    def cluster_start_mode(self):
-        warnings.warn("Method 'cluster_start_mode' is deprecated and will be removed in the next major release. Please use 'clusterStartMode'.")
-        return self.clusterStartMode()
-
-    def clusterStartMode(self):
-        return self._jconf.clusterStartMode()
-
     def is_auto_cluster_start_used(self):
         warnings.warn("Method 'is_auto_cluster_start_used' is deprecated and will be removed in the next major release. Please use 'isAutoClusterStartUsed'.")
         return self.isAutoClusterStartUsed()
@@ -114,6 +100,13 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def isManualClusterStartUsed(self):
         return self._jconf.isManualClusterStartUsed()
+
+    def cluster_start_mode(self):
+        warnings.warn("Method 'cluster_start_mode' is deprecated and will be removed in the next major release. Please use 'clusterStartMode'.")
+        return self.clusterStartMode()
+
+    def clusterStartMode(self):
+        return self._jconf.clusterStartMode()
 
     def h2o_driver_path(self):
         warnings.warn("Method 'h2o_driver_path' is deprecated and will be removed in the next major release. Please use 'h2oDriverPath'.")
@@ -172,6 +165,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalCommunicationBlockSizeAsBytes(self):
         return self._jconf.externalCommunicationBlockSizeAsBytes()
 
+    def externalCommunicationBlockSize(self):
+        return self._jconf.externalCommunicationBlockSize()
+
     def externalBackendStopTimeout(self):
         return self._jconf.externalBackendStopTimeout()
 
@@ -196,14 +192,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setClusterSize(self, clusterSize):
         self._jconf.setClusterSize(clusterSize)
-        return self
-
-    def set_client_check_retry_timeout(self, timeout):
-        warnings.warn("Method 'set_client_check_retry_timeout' is deprecated and will be removed in the next major release. Please use 'setClientCheckRetryTimeout'.")
-        return self.setClientCheckRetryTimeout(timeout)
-
-    def setClientCheckRetryTimeout(self, timeout):
-        self._jconf.setClientCheckRetryTimeout(timeout)
         return self
 
     def set_external_write_confirmation_timeout(self, timeout):
