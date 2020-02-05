@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+import warnings
+
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 
 
@@ -32,6 +34,13 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def runs_in_internal_cluster_mode(self):
         return self._jconf.runsInInternalClusterMode()
+
+    def client_check_retry_timeout(self):
+        warnings.warn("Method 'client_check_retry_timeout' is deprecated and will be removed in the next major release. Please use 'clientCheckRetryTimeout'.")
+        return self.clientCheckRetryTimeout()
+
+    def clientCheckRetryTimeout(self):
+        return self._jconf.clientCheckRetryTimeout()
 
     def cloud_name(self):
         return self._get_option(self._jconf.cloudName())
@@ -426,6 +435,14 @@ class SharedBackendConf(SharedBackendConfUtils):
         self._jconf.setClientFlowBaseurlOverride(value)
         return self
 
+    def set_client_check_retry_timeout(self, timeout):
+        warnings.warn("Method 'set_client_check_retry_timeout' is deprecated and will be removed in the next major release. Please use 'setClientCheckRetryTimeout'.")
+        return self.setClientCheckRetryTimeout(timeout)
+
+    def setClientCheckRetryTimeout(self, timeout):
+        self._jconf.setClientCheckRetryTimeout(timeout)
+        return self
+    
     def set_client_extra_properties(self, extraProperties):
         self._jconf.setClientExtraProperties(extraProperties)
         return self
