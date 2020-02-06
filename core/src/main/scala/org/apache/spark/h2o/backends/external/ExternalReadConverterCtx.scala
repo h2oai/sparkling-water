@@ -18,9 +18,11 @@
 package org.apache.spark.h2o.backends.external
 
 
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.converters.ReadConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
-import water.ExternalFrameReaderClient
+
+import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
 
 /**
   *
@@ -30,23 +32,22 @@ import water.ExternalFrameReaderClient
   */
 class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int,
                                val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
-                               val driverTimeStamp: Short)
+                               val conf: H2OConf)
   extends ReadConverterCtx {
-  override type DataSource = ExternalFrameReaderClient
+  override type DataSource = ChunkAutoBufferReader
 
-  private val externalFrameReader = ExternalFrameReaderClient.create(
-    nodeDesc.hostname, nodeDesc.port, driverTimeStamp,
-    keyName, chunkIdx, selectedColumnIndices, expectedTypes)
+  private val reader = new ChunkAutoBufferReader(
+    RestApiUtils.getChunk(nodeDesc, conf, keyName, chunkIdx, expectedTypes, selectedColumnIndices))
 
-  override def numRows: Int = externalFrameReader.getNumRows
+  override def numRows: Int = reader.getNumRows
 
   override def returnOption[T](read: DataSource => T)(columnNum: Int): Option[T] = {
-    Option(read(externalFrameReader)).filter(_ => !externalFrameReader.isLastNA)
+    Option(read(reader)).filter(_ => !reader.isLastNA)
   }
 
   override def returnSimple[T](ifMissing: String => T, read: DataSource => T)(columnNum: Int): T = {
-    val value = read(externalFrameReader)
-    if (externalFrameReader.isLastNA) ifMissing(s"Row $rowIdx column $columnNum") else value
+    val value = read(reader)
+    if (reader.isLastNA) ifMissing(s"Row $rowIdx column $columnNum") else value
   }
 
   override protected def booleanAt(source: DataSource): Boolean = source.readBoolean()
@@ -68,7 +69,7 @@ class ExternalReadConverterCtx(override val keyName: String, override val chunkI
   override def hasNext: Boolean = {
     val isNext = super.hasNext
     if (!isNext) {
-      externalFrameReader.close()
+      reader.close()
     }
     isNext
   }

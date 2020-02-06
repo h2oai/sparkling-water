@@ -21,7 +21,7 @@ package org.apache.spark.h2o.converters
 import java.lang.reflect.Constructor
 
 import ai.h2o.sparkling.frame.H2OFrame
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
@@ -39,12 +39,14 @@ import scala.reflect.runtime.universe._
   * The abstract class contains common methods for client-based and REST-based RDDs.
   */
 private[spark]
-abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
+abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext, conf: H2OConf)
   extends RDD[A](sc, Nil) with H2OSparkEntity {
 
   def productType: ProductType
 
   protected def colNames: Array[String]
+
+  override val isExternalBackend = conf.runsInExternalClusterMode
 
   /**
     * The method checks that H2OFrame & given Scala type are compatible
@@ -67,7 +69,7 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
     * Implemented by subclasses to compute a given partition.
     */
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    val iterator = new H2ORDDIterator(frameKeyName, split.index)
+    val iterator = new H2ORDDIterator(frameKeyName, split.index, conf)
     ReadConverterCtxUtils.backendSpecificIterator[A](isExternalBackend, iterator)
   }
 
@@ -112,7 +114,7 @@ abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
     }
   }
 
-  class H2ORDDIterator(val keyName: String, val partIndex: Int) extends H2OChunkIterator[A] {
+  class H2ORDDIterator(val keyName: String, val partIndex: Int, val conf: H2OConf) extends H2OChunkIterator[A] {
 
 
     private lazy val readers = columnReaders(converterCtx)
@@ -230,9 +232,8 @@ private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
                                                                   val productType: ProductType)
                                                                  (@(transient @param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+  extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with H2OClientBasedSparkEntity[T] {
 
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   // Get product type before building an RDD
@@ -258,9 +259,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
 private[spark]
 class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, val productType: ProductType)
                                                          (@(transient @param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext) with H2ORESTBasedSparkEntity {
-
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with H2ORESTBasedSparkEntity {
 
   // Get product type before building an RDD
   def this(@transient frame: H2OFrame)

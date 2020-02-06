@@ -17,12 +17,14 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.File
+import java.io.{File, InputStream}
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
+import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -42,8 +44,8 @@ trait RestApiUtils extends RestCommunication {
     update[ShutdownV3](endpoint, "/3/Shutdown", conf)
   }
 
-  def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
-    val endpoint = new URI(
+  private def resolveNodeEndpoint(node: NodeDesc, conf: H2OConf): URI = {
+    new URI(
       conf.getScheme(),
       null,
       node.hostname,
@@ -51,6 +53,10 @@ trait RestApiUtils extends RestCommunication {
       conf.contextPath.orNull,
       null,
       null)
+  }
+
+  def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
+    val endpoint = resolveNodeEndpoint(node, conf)
     getCloudInfoFromNode(endpoint, conf)
   }
 
@@ -114,6 +120,27 @@ trait RestApiUtils extends RestCommunication {
       frameId = frame.frame_id.name,
       columns = frame.columns.map(convertColumn),
       chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+  }
+
+  def getChunk(
+      node: NodeDesc,
+      conf : H2OConf,
+      frameName: String,
+      chunkId: Int,
+      expectedTypes: Array[Byte],
+      selectedColumnsIndices: Array[Int]): InputStream = {
+    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
+
+    val parameters = Map[String, String](
+      "frame_name" -> frameName,
+      "chunk_id" -> chunkId.toString,
+      "expected_types" -> expectedTypesString,
+      "selected_columns" -> selectedColumnsIndicesString)
+    val query = Paths.CHUNK + parameters.map{ case (k, v) => s"$k=$v" }.mkString("?", "&", "")
+
+    val endpoint = resolveNodeEndpoint(node, conf)
+    readURLContent(endpoint, "GET", query, conf)
   }
 
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
