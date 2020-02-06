@@ -206,6 +206,9 @@ From 3.28.0 to 3.28.1
   ``setExternalWriteConfirmationTimeout`` are removed without replacement. Also the option
   ``spark.ext.h2o.external.write.confirmation.timeout`` does not have any effect anymore.
 
+- The environment variable ``H2O_EXTENDED_JAR`` specifying path to an extended driver jar was entirely replaced with ``H2O_DRIVER_JAR``.
+  The ``H2O_DRIVER_JAR`` should contain a path to a plain H2O driver jar without any extensions.
+  For more details, see :ref:`external-backend`.
 
 From 3.26 To 3.28.0
 -------------------

@@ -17,6 +17,8 @@ jar {
 
 shadowJar {
     mergeServiceFiles()
+
+    archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 artifacts {

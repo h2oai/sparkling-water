@@ -276,12 +276,8 @@ object ExternalH2OBackend extends ExternalBackendUtils {
     }
 
     if (conf.isAutoClusterStartUsed) {
-      lazy val envDriverJar = if (conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-        SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
-        ExternalH2OBackend.ENV_H2O_DRIVER_JAR
-      } else {
-        ExternalH2OBackend.ENV_H2O_EXTENDED_JAR
-      }
+      val envDriverJar = ExternalH2OBackend.ENV_H2O_DRIVER_JAR
+
       lazy val driverPath = sys.env.get(envDriverJar)
       if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
         throw new IllegalArgumentException(
@@ -368,9 +364,6 @@ object ExternalH2OBackend extends ExternalBackendUtils {
 
   // Job name for H2O Yarn job
   val H2O_JOB_NAME = "H2O_via_SparklingWater_%s"
-
-  // Name of the environmental property, which may contain path to the extended H2O driver
-  val ENV_H2O_EXTENDED_JAR = "H2O_EXTENDED_JAR"
 
   // Name of the environmental property, which may contain path to the external H2O driver
   val ENV_H2O_DRIVER_JAR = "H2O_DRIVER_JAR"
