@@ -162,8 +162,7 @@ trait RestApiUtils extends RestCommunication {
       domain = sourceColumn.domain,
       domainCardinality = sourceColumn.domain_cardinality)
   }
-
-
+  
   private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
     H2OChunk(
       index = sourceChunk.chunk_id,
