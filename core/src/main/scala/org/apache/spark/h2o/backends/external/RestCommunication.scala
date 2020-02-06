@@ -170,6 +170,7 @@ trait RestCommunication extends Logging {
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
         connection.setRequestProperty("charset", "UTF-8")
         connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
+        connection.setDoOutput(true)
         withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
           writer.write(paramsAsBytes)
         }

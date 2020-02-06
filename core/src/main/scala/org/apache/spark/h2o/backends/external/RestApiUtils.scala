@@ -40,7 +40,7 @@ trait RestApiUtils extends RestCommunication {
 
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked after Sparkling Water cloud up."))
+    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
   }
 
   def shutdownCluster(conf: H2OConf): Unit = {
