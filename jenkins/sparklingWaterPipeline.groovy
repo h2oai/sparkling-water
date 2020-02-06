@@ -149,7 +149,9 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
-                    checkoutH2O(config)
+                    if (config.buildAgainstH2OBranch.toBoolean()) {
+                        checkoutH2O(config)
+                    }
                     prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
@@ -265,7 +267,7 @@ def prepareSparklingWaterEnvironment() {
                         cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
                     else
                         cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                        cp `${getGradleCommand(config)}-q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
+                        cp `${getGradleCommand(config)} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
                 """
@@ -347,8 +349,16 @@ def rUnitTests() {
         stage('QA: RUnit Tests - ' + config.backendMode) {
             if (config.runRUnitTests.toBoolean()) {
                 try {
+                    if (config.buildAgainstH2OBranch.toBoolean()) {
+                        sh  """
+                                R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
+                            """
+                    } else {
+                        sh  """
+                            ${getGradleCommand(config)} :sparkling-water-r:installH2ORPackage
+                            """
+                    }
                     sh """
-                         R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
                          ${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage
                          ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
                          """
