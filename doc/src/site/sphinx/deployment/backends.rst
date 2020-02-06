@@ -91,6 +91,7 @@ We can however also explicitly pass the ``H2OConf``:
             hc = H2OContext.getOrCreate(spark)
 
 
+.. _external-backend:
 
 External Backend
 ~~~~~~~~~~~~~~~~
