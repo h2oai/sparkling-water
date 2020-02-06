@@ -125,7 +125,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                         // Properties used in case we are building against specific H2O version
                         "BUILD_HADOOP=true",
                         "H2O_TARGET=${config.driverHadoopVersion}",
-                        "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
                 ]
 
                 ansiColor('xterm') {
@@ -170,7 +169,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                                 "SPARK_HOME=${env.WORKSPACE}/spark",
                                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                 "MASTER=yarn-client",
-                                "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
                                 "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
@@ -260,14 +258,9 @@ def prepareSparklingWaterEnvironment() {
             sh """
                 if [ ${config.backendMode} = external ]; then
                     if [ ${config.buildAgainstH2OBranch} = true ]; then
-                        # In this case, PySparkling build is driven by H2O_HOME property
-                        # When extending from specific jar the jar has already the desired name
-                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
-                        # Copy also original driver JAR to desired location so rest API based client can use it
-                        cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
+                        cp ${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar ${env.H2O_DRIVER_JAR}
                     else
-                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                        cp `${getGradleCommand(config)} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
+                        cp `${getGradleCommand(config)} -q  downlodH2ODriverJar` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
                 """

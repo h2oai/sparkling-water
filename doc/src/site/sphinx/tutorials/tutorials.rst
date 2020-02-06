@@ -7,7 +7,6 @@ How to...
 .. toctree::
    :maxdepth: 1
 
-   extending_h2o_jar_manually
    calling_h2o_algos
    run_sparkling_water
    change_default_port
