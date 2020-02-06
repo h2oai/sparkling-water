@@ -30,9 +30,9 @@ import org.spark_project.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorS
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
+    var port = findNextFreeFlowPort(conf.clientWebPort, conf.clientBasePort)
     while (true) {
       try {
-        val port = findNextFreeFlowPort(conf)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         val server = new Server(pool)
@@ -46,7 +46,8 @@ object ProxyStarter extends Logging {
         server.start()
         return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
-        case _: BindException =>
+        case _: BindException => port = findNextFreeFlowPort(conf.clientWebPort, port)
+
       }
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
@@ -86,16 +87,16 @@ object ProxyStarter extends Logging {
     }.getOrElse(false)
   }
 
-  private def findNextFreeFlowPort(conf: H2OConf): Int = {
-    if (conf.clientWebPort == -1) {
-      var port = conf.clientBasePort
+  private def findNextFreeFlowPort(clientWebPort: Int, clientBasePort: Int): Int = {
+    if (clientWebPort == -1) {
+      var port = clientBasePort
       while (!isTcpPortAvailable(port)) {
-        logDebug(s"Tried using port $port for Flow proxy, but port was already occupied!")
+        logWarning(s"Tried using port $port for Flow proxy, but port was already occupied!")
         port = port + 1
       }
       port
     } else {
-      val port = conf.clientWebPort
+      val port = clientWebPort
       if (!isTcpPortAvailable(port)) {
         throw new RuntimeException(s"Explicitly specified client web port $port is already occupied, please specify a free port!")
       } else {
