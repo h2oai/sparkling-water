@@ -39,7 +39,7 @@ Explicitly specify internal backend on ``H2OConf``:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).set_internal_cluster_mode()
+            conf = H2OConf(spark).setInternalClusterMode()
             hc = H2OContext.getOrCreate(spark, conf)
 
 
@@ -179,7 +179,7 @@ To start an H2O cluster and connect to it, run:
 
             from pysparkling import *
             conf = H2OConf(spark)
-                    .set_external_cluster_mode()
+                    .setExternalClusterMode()
                     .useAutoClusterStart()
                     .setH2ODriverPath("path_to_extended_driver")
                     .setClusterSize(1) # Number of H2O worker nodes to start
@@ -244,11 +244,11 @@ To connect to this external cluster, run the following commands:
 
             from pysparkling import *
             conf = H2OConf(spark)
-                    .set_external_cluster_mode()
+                    .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
-                    .set_cloud_name("test")
+                    .setCloudName("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
@@ -306,11 +306,11 @@ To connect to this external cluster, run the following commands:
 
             from pysparkling import *
             conf = H2OConf(spark)
-                    .set_external_cluster_mode()
+                    .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
-                    .set_cloud_name("test")
+                    .setCloudName("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
@@ -366,16 +366,16 @@ We can force the client to use the correct network or address using the followin
 
             from pysparkling import *
             conf = H2OConf(spark)
-                    .set_external_cluster_mode()
+                    .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
-                    .set_client_network_mask("192.168.0.0/24")
+                    .setClientNetworkMask("192.168.0.0/24")
                     .setClusterSize(2)
-                    .set_cloud_name("test")
+                    .setCloudName("test")
             hc = H2OContext.getOrCreate(spark, conf)
 
-        Instead of ``set_client_network_mask``, we can also use more strict variant and specify the IP address directly using
-        ``set_client_ip("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
+        Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
+        ``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
         the same network as the rest of the H2O worker nodes.
 
 The same configuration can be applied when the H2O cluster has been started via multicast discovery.

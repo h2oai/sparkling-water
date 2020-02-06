@@ -51,7 +51,6 @@ Removal of Deprecated Methods and Classes
        - ``h2o_cluster_host`` -> ``h2oClusterHost``
        - ``h2o_cluster_port`` -> ``h2oClusterPort``
        - ``cluster_size`` -> ``clusterSize``
-       - ``client_check_retry_timeout`` -> ``clientCheckRetryTimeout``
        - ``cluster_start_timeout`` -> ``clusterStartTimeout``
        - ``cluster_config_file`` -> ``clusterInfoFile``
        - ``mapper_xmx`` -> ``mapperXmx``
@@ -67,7 +66,6 @@ Removal of Deprecated Methods and Classes
        - ``run_as_user`` -> ``runAsUser``
        - ``set_h2o_cluster`` -> ``setH2OCluster``
        - ``set_cluster_size`` -> ``setClusterSize``
-       - ``set_client_check_retry_timeout`` -> ``setClientCheckRetryTimeout``
        - ``set_cluster_start_timeout`` -> ``setClusterStartTimeout``
        - ``set_cluster_config_file`` -> ``setClusterConfigFile``
        - ``set_mapper_xmx`` -> ``setMapperXmx``
@@ -96,7 +94,109 @@ Removal of Deprecated Methods and Classes
        - ``set_h2o_node_web_enabled`` -> ``setH2ONodeWebEnabled``
        - ``set_h2o_node_web_disabled`` -> ``setH2ONodeWebDisabled``
        - ``set_node_iced_dir`` -> ``setNodeIcedDir``
-
+       - ``backend_cluster_mode`` -> ``backendClusterMode``
+       - ``cloud_name`` -> ``cloudName``
+       - ``is_h2o_repl_enabled`` -> ``isH2OReplEnabled``
+       - ``scala_int_default_num`` -> ``scalaIntDefaultNum``
+       - ``is_cluster_topology_listener_enabled`` -> ``isClusterTopologyListenerEnabled``
+       - ``is_spark_version_check_enabled`` -> ``isSparkVersionCheckEnabled``
+       - ``is_fail_on_unsupported_spark_param_enabled`` -> ``isFailOnUnsupportedSparkParamEnabled``
+       - ``jks_pass`` -> ``jksPass``
+       - ``jks_alias`` -> ``jksAlias``
+       - ``hash_login`` -> ``hashLogin``
+       - ``ldap_login`` -> ``ldapLogin``
+       - ``kerberos_login`` -> ``kerberosLogin``
+       - ``login_conf`` -> ``loginConf``
+       - ``ssl_conf`` -> ``sslConf``
+       - ``auto_flow_ssl`` -> ``autoFlowSsl``
+       - ``h2o_node_log_level`` -> ``h2oNodeLogLevel``
+       - ``h2o_node_log_dir`` -> ``h2oNodeLogDir``
+       - ``cloud_timeout`` -> ``cloudTimeout``
+       - ``node_network_mask`` -> ``nodeNetworkMask``
+       - ``stacktrace_collector_interval`` -> ``stacktraceCollectorInterval``
+       - ``context_path`` -> ``contextPath``
+       - ``flow_scala_cell_async`` -> ``flowScalaCellAsync``
+       - ``max_parallel_scala_cell_jobs`` -> ``maxParallelScalaCellJobs``
+       - ``internal_port_offset`` -> ``internalPortOffset``
+       - ``mojo_destroy_timeout`` -> ``mojoDestroyTimeout``
+       - ``node_base_port`` -> ``nodeBasePort``
+       - ``node_extra_properties`` -> ``nodeExtraProperties``
+       - ``flow_extra_http_headers`` -> ``flowExtraHttpHeaders``
+       - ``is_internal_secure_connections_enabled`` -> ``isInternalSecureConnectionsEnabled``
+       - ``flow_dir`` -> ``flowDir``
+       - ``client_ip`` -> ``clientIp``
+       - ``client_iced_dir`` -> ``clientIcedDir``
+       - ``h2o_client_log_level`` -> ``h2oClientLogLevel``
+       - ``h2o_client_log_dir`` -> ``h2oClientLogDir``
+       - ``client_base_port`` -> ``clientBasePort``
+       - ``client_web_port`` -> ``clientWebPort``
+       - ``client_verbose_output`` -> ``clientVerboseOutput``
+       - ``client_network_mask`` -> ``clientNetworkMask``
+       - ``ignore_spark_public_dns`` -> ``ignoreSparkPublicDNS``
+       - ``client_web_enabled`` -> ``clientWebEnabled``
+       - ``client_flow_baseurl_override`` -> ``clientFlowBaseurlOverride``
+       - ``client_extra_properties`` -> ``clientExtraProperties``
+       - ``runs_in_external_cluster_mode`` -> ``runsInExternalClusterMode``
+       - ``runs_in_internal_cluster_mode`` -> ``runsInInternalClusterMode``
+       - ``client_check_retry_timeout`` -> ``clientCheckRetryTimeout``
+       - ``set_internal_cluster_mode`` -> ``setInternalClusterMode``
+       - ``set_external_cluster_mode`` -> ``setExternalClusterMode``
+       - ``set_cloud_name`` -> ``setCloudName``
+       - ``set_nthreads`` -> ``setNthreads``
+       - ``set_repl_enabled`` -> ``setReplEnabled``
+       - ``set_repl_disabled`` -> ``setReplDisabled``
+       - ``set_default_num_repl_sessions`` -> ``setDefaultNumReplSessions``
+       - ``set_cluster_topology_listener_enabled`` -> ``setClusterTopologyListenerEnabled``
+       - ``set_cluster_topology_listener_disabled`` -> ``setClusterTopologyListenerDisabled``
+       - ``set_spark_version_check_disabled`` -> ``setSparkVersionCheckDisabled``
+       - ``set_fail_on_unsupported_spark_param_enabled`` -> ``setFailOnUnsupportedSparkParamEnabled``
+       - ``set_fail_on_unsupported_spark_param_disabled`` -> ``setFailOnUnsupportedSparkParamDisabled``
+       - ``set_jks`` -> ``setJks``
+       - ``set_jks_pass`` -> ``setJksPass``
+       - ``set_jks_alias`` -> ``setJksAlias``
+       - ``set_hash_login_enabled`` -> ``setHashLoginEnabled``
+       - ``set_hash_login_disabled`` -> ``setHashLoginDisabled``
+       - ``set_ldap_login_enabled`` -> ``setLdapLoginEnabled``
+       - ``set_ldap_login_disabled`` -> ``setLdapLoginDisabled``
+       - ``set_kerberos_login_enabled`` -> ``setKerberosLoginEnabled``
+       - ``set_kerberos_login_disabled`` -> ``setKerberosLoginDisabled``
+       - ``set_login_conf`` -> ``setLoginConf``
+       - ``set_ssl_conf`` -> ``setSslConf``
+       - ``set_auto_flow_ssl_enabled`` -> ``setAutoFlowSslEnabled``
+       - ``set_auto_flow_ssl_disabled`` -> ``setAutoFlowSslDisabled``
+       - ``set_h2o_node_log_level`` -> ``setH2ONodeLogLevel``
+       - ``set_h2o_node_log_dir`` -> ``setH2ONodeLogDir``
+       - ``set_cloud_timeout`` -> ``setCloudTimeout``
+       - ``set_node_network_mask`` -> ``setNodeNetworkMask``
+       - ``set_stacktrace_collector_interval`` -> ``setStacktraceCollectorInterval``
+       - ``set_context_path`` -> ``setContextPath``
+       - ``set_flow_scala_cell_async_enabled`` -> ``setFlowScalaCellAsyncEnabled``
+       - ``set_flow_scala_cell_async_disabled`` -> ``setFlowScalaCellAsyncDisabled``
+       - ``set_max_parallel_scala_cell_jobs`` -> ``setMaxParallelScalaCellJobs``
+       - ``set_internal_port_offset`` -> ``setInternalPortOffset``
+       - ``set_node_base_port`` -> ``setNodeBasePort``
+       - ``set_mojo_destroy_timeout`` -> ``setMojoDestroyTimeout``
+       - ``set_node_extra_properties`` -> ``setNodeExtraProperties``
+       - ``set_flow_extra_http_headers`` -> ``setFlowExtraHttpHeaders``
+       - ``set_internal_secure_connections_enabled`` -> ``setInternalSecureConnectionsEnabled``
+       - ``set_internal_secure_connections_disabled`` -> ``setInternalSecureConnectionsDisabled``
+       - ``set_flow_dir`` -> ``setFlowDir``
+       - ``set_client_ip`` -> ``setClientIp``
+       - ``set_client_iced_dir`` -> ``setClientIcedDir``
+       - ``set_h2o_client_log_level`` -> ``setH2OClientLogLevel``
+       - ``set_h2o_client_log_dir`` -> ``setH2OClientLogDir``
+       - ``set_client_port_base`` -> ``setClientPortBase``
+       - ``set_client_web_port`` -> ``setClientWebPort``
+       - ``set_client_verbose_enabled`` -> ``setClientVerboseEnabled``
+       - ``set_client_verbose_disabled`` -> ``setClientVerboseDisabled``
+       - ``set_client_network_mask`` -> ``setClientNetworkMask``
+       - ``set_ignore_spark_public_dns_enabled`` -> ``setIgnoreSparkPublicDNSEnabled``
+       - ``set_ignore_spark_public_dns_disabled`` -> ``setIgnoreSparkPublicDNSDisabled``
+       - ``set_client_web_enabled`` -> ``setClientWebEnabled``
+       - ``set_client_web_disabled`` -> ``setClientWebDisabled``
+       - ``set_client_flow_baseurl_override`` -> ``setClientFlowBaseurlOverride``
+       - ``set_client_check_retry_timeout`` -> ``setClientCheckRetryTimeout``
+       - ``set_client_extra_properties`` -> ``setClientExtraProperties``
 
 From 3.28.0 to 3.28.1
 ---------------------
@@ -264,13 +364,13 @@ Default Values of Some AutoML Parameters Have Changed
 The default values of the following AutoML parameters have changed across all APIs.
 
 +------------------------------------+------------+---------------------+
-| Parameter Name                     | Old Value  | New Value           |
+| Parameter Name                   | Old Value  | New Value          |
 +====================================+============+=====================+
-| ``maxRuntimeSecs``                 | ``3600.0`` | ``0.0`` (unlimited) |
+| ``maxRuntimeSecs``               | ``3600.0`` | ``0.0`` (unlimited) |
 +------------------------------------+------------+---------------------+
-| ``keepCrossValidationPredictions`` | ``true``   | ``false``           |
+| ``keepCrossValidationPredictions`` | ``true``   | ``false``          |
 +------------------------------------+------------+---------------------+
-| ``keepCrossValidationModels``      | ``true``   | ``false``           |
+| ``keepCrossValidationModels``      | ``true``   | ``false``          |
 +------------------------------------+------------+---------------------+
 
 From any previous version to 3.26.11

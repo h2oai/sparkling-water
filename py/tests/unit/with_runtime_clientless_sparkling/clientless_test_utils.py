@@ -24,8 +24,8 @@ def createH2OConf(spark):
     conf.setClusterSize(1)
     conf.set("spark.ext.h2o.rest.api.based.client", "true")
     conf.useAutoClusterStart()
-    conf.set_external_cluster_mode()
-    conf.set_h2o_node_web_enabled()
+    conf.setExternalClusterMode()
+    conf.setH2ONodeWebEnabled()
     return conf
 
 def yarnLogs(appId):

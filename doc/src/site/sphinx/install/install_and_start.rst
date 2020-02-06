@@ -157,7 +157,7 @@ Sparkling Water Kluster mode supports a connection to external H2O clusters (sta
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).set_external_cluster_mode().useManualClusterStart().set_cloud_name("test")
+    conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
     hc = H2OContext.getOrCreate(spark, conf)
 
 **Note**: The following is a list of supported Hadoop distributions: SUBST_H2O_DRIVERS_LIST
