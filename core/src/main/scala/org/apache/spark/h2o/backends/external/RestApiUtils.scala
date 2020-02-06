@@ -22,21 +22,25 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
 
+  def isRestAPIBased(hc: Option[H2OContext] = None): Boolean = {
+    hc.getOrElse(H2OContext.ensure()).getConf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
+  }
+
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "/3/CloudLock", conf)
+    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked after Sparkling Water cloud up."))
   }
 
   def shutdownCluster(conf: H2OConf): Unit = {
@@ -111,6 +115,7 @@ trait RestApiUtils extends RestCommunication {
       endpoint,
       s"/3/Frames/$frameId/summary?row_count=0",
       conf,
+      Map.empty,
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
@@ -146,7 +151,7 @@ trait RestApiUtils extends RestCommunication {
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
     H2OColumn(
       name = sourceColumn.label,
-      dataType = sourceColumn.`type`,
+      dataType = H2OColumnType.fromString(sourceColumn.`type`),
       min = sourceColumn.mins(0),
       max = sourceColumn.maxs(0),
       mean = sourceColumn.mean,
@@ -157,6 +162,7 @@ trait RestApiUtils extends RestCommunication {
       domain = sourceColumn.domain,
       domainCardinality = sourceColumn.domain_cardinality)
   }
+
 
   private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
     H2OChunk(
