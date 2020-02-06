@@ -22,7 +22,7 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder

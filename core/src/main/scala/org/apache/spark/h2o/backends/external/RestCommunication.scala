@@ -155,10 +155,14 @@ trait RestCommunication extends Logging {
   protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
 
-    val suffixWithParams = if (params.nonEmpty) {
+    val suffixWithParams = if (params.nonEmpty && requestType == "GET") {
       s"$suffixWithDelimiter?${decodeParams(params)}"
     } else {
       suffixWithDelimiter
+    }
+
+    if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
+
     }
 
     val url = endpoint.resolve(suffixWithParams).toURL
