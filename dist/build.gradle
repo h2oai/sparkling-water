@@ -200,7 +200,7 @@ task s3path {
     }
 }
 
-task downloadH2ODriverJar(){
+task downloadH2ODriverJar() {
     doLast {
         def outputDir = "${rootDir}/.gradle/h2oDriverJars"
         def hadoopVersion = "standalone"

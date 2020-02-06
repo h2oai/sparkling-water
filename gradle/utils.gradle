@@ -199,7 +199,6 @@ def static saveFile(InputStream is, File to) {
 }
 
 
-
 // Export methods by turning them into closures
 ext {
     getOsSpecificCommandLine = this.&getOsSpecificCommandLine
