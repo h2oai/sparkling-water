@@ -260,7 +260,7 @@ def prepareSparklingWaterEnvironment() {
                     if [ ${config.buildAgainstH2OBranch} = true ]; then
                         cp ${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar ${env.H2O_DRIVER_JAR}
                     else
-                        cp `${getGradleCommand(config)} -q  downlodH2ODriverJar` ${env.H2O_DRIVER_JAR}
+                        cp `${getGradleCommand(config)} -q  downloadH2ODriverJar` ${env.H2O_DRIVER_JAR}
                      fi
                 fi
                 """
