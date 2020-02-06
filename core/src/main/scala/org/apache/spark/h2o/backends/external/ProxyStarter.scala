@@ -30,9 +30,10 @@ import org.spark_project.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorS
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
-    var port = findNextFreeFlowPort(conf.clientWebPort, conf.clientBasePort)
+    var port = conf.clientBasePort
     while (true) {
       try {
+        port = findNextFreeFlowPort(conf.clientWebPort, port)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         val server = new Server(pool)
@@ -46,7 +47,7 @@ object ProxyStarter extends Logging {
         server.start()
         return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
-        case _: BindException => port = findNextFreeFlowPort(conf.clientWebPort, port)
+        case _: BindException =>
 
       }
     }
