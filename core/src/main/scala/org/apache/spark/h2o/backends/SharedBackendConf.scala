@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 
 import scala.collection.JavaConverters._
@@ -116,7 +117,9 @@ trait SharedBackendConf {
   def setClusterTopologyListenerEnabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, true)
   def setClusterTopologyListenerDisabled() = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, false)
 
-  def setSparkVersionCheckEnable() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, true)
+  @DeprecatedMethod("setSparkVersionCheckEnabled")
+  def setSparkVersionCheckEnable() = setSparkVersionCheckEnabled()
+  def setSparkVersionCheckEnabled() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, true)
   def setSparkVersionCheckDisabled() = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, false)
 
   def setFailOnUnsupportedSparkParamEnabled() = set(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, true)

@@ -17,4 +17,4 @@
 
 
 def testH2OConf(hc, spark):
-    assert hc.get_conf().cloud_name() == spark.conf.get("spark.ext.h2o.cloud.name")
+    assert hc.get_conf().cloudName() == spark.conf.get("spark.ext.h2o.cloud.name")
