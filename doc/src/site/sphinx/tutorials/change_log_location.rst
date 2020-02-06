@@ -27,7 +27,7 @@ In Python:
 
 .. code:: python
 
-    conf = H2OConf(spark).set_h2o_client_log_dir("log_location")
+    conf = H2OConf(spark).setH2OClientLogDir("log_location")
     hc = H2OContext.getOrCreate(spark, conf)
 
 Worker Nodes
@@ -68,5 +68,5 @@ In Python:
 
 .. code:: python
 
-    conf = H2OConf(spark).set_h2o_node_log_dir("log_location")
+    conf = H2OConf(spark).setH2ONodeLogDir("log_location")
     hc = H2OContext.getOrCreate(spark, conf)
