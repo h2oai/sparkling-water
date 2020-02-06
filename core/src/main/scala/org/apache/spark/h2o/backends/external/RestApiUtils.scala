@@ -151,7 +151,7 @@ trait RestApiUtils extends RestCommunication {
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
     H2OColumn(
       name = sourceColumn.label,
-      dataType = H2OColumnType.fromString(sourceColumn.`type`),
+      dataType = sourceColumn.`type`,
       min = sourceColumn.mins(0),
       max = sourceColumn.maxs(0),
       mean = sourceColumn.mean,
