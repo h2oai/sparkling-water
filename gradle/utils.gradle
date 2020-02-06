@@ -115,11 +115,11 @@ def getS3Path() {
     return path
 }
 
-String downloadH2ODriverJar(outputDir, hadoopVersion, h2oMajorVersion, h2oBuild, h2oMajorName) {
+String downloadH2ODriverJar(outputDir, hadoopDist, h2oMajorVersion, h2oBuild, h2oMajorName) {
     def saveDir = file(outputDir)
     saveDir.mkdirs()
     def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
-    if (hadoopVersion == "standalone") {
+    if (hadoopDist == "standalone") {
         def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/Rjar/h2o.jar".toURL()
         def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}.jar")
         if (!h2oJarFile.exists()) {
@@ -128,19 +128,19 @@ String downloadH2ODriverJar(outputDir, hadoopVersion, h2oMajorVersion, h2oBuild,
         }
         return h2oJarFile.absolutePath
     } else {
-        def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.zip".toURL()
+        def url = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopDist}.zip".toURL()
 
-        def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}.jar")
+        def h2oJarFile = new File(saveDir, "h2odriver-${h2oMajorVersion}.${h2oBuild}-${hadoopDist}.jar")
         if (!h2oJarFile.exists()) {
-            def zipEntryName = "h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopVersion}/h2odriver.jar"
+            def zipEntryName = "h2o-${h2oMajorVersion}.${h2oBuild}-${hadoopDist}/h2odriver.jar"
 
             def distributions = getSupportedHadoopDistributions(h2oMajorName, h2oBuild)
-            if (!distributions.contains(hadoopVersion)) {
+            if (!distributions.contains(hadoopDist)) {
                 throw new IOException("""
-The hadoop version you have specified is $hadoopVersion, however supported hadoop versions are $distributions
+The hadoop version you have specified is $hadoopDist, however supported hadoop versions are $distributions
 """)
             }
-            logger.info("Downloading h2o driver for hadoop version: $hadoopVersion from: $url")
+            logger.info("Downloading h2o driver for hadoop version: $hadoopDist from: $url")
             downloadFileFromZip(url, h2oJarFile, zipEntryName)
 
         }

@@ -203,12 +203,12 @@ task s3path {
 task downloadH2ODriverJar() {
     doLast {
         def outputDir = "${rootDir}/.gradle/h2oDriverJars"
-        def hadoopVersion = "standalone"
-        if (project.hasProperty("hadoopVersion")) {
-            if (project.hadoopVersion != null && !project.hadoopDistribution.isEmpty()) {
-                hadoopVersion = project.hadoopVersion
+        def hadoopDist = "standalone"
+        if (project.hasProperty("hadoopDist")) {
+            if (project.hadoopDist != null && !project.hadoopDist.isEmpty()) {
+                hadoopDist = project.hadoopDist
             }
         }
-        println(downloadH2ODriverJar(outputDir, hadoopVersion, h2oMajorVersion, h2oBuild, h2oMajorName))
+        println(downloadH2ODriverJar(outputDir, hadoopDist, h2oMajorVersion, h2oBuild, h2oMajorName))
     }
 }
