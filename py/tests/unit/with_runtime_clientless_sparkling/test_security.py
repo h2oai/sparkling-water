@@ -13,7 +13,7 @@ from tests.unit_test_utils import *
 
 def testSSL(spark):
     conf = createH2OConf(spark)
-    conf.set_internal_secure_connections_enabled()
+    conf.setInternalSecureConnectionsEnabled()
 
     context = H2OContext.getOrCreate(spark, conf)
     path = context.download_h2o_logs("build", "LOG")
@@ -30,8 +30,8 @@ def testAuth(spark):
         f.write('user:pass')
 
     conf = createH2OConf(spark)
-    conf.set_hash_login_enabled()
-    conf.set_login_conf("build/login.conf")
+    conf.setHashLoginEnabled()
+    conf.setLoginConf("build/login.conf")
     conf.setUserName("user")
     conf.setPassword("pass")
     context = H2OContext.getOrCreate(spark, conf)
@@ -48,10 +48,10 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
         f.write('user:pass')
 
     conf = createH2OConf(spark)
-    conf.set_hash_login_enabled()
-    conf.set_cloud_name("test-cluster")
-    conf.set_cluster_config_file("notify_file.txt")
-    conf.set_login_conf("build/login.conf")
+    conf.setHashLoginEnabled()
+    conf.setCloudName("test-cluster")
+    conf.setClusterConfigFile("notify_file.txt")
+    conf.setLoginConf("build/login.conf")
 
     with pytest.raises(Exception):
         H2OContext.getOrCreate(spark, conf)
