@@ -37,7 +37,7 @@ class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
                  stoppingTolerance=0.001,
                  stoppingMetric="AUTO",
                  selectBestModelBy="AUTO",
-                 parallelism=0,
+                 parallelism=1,
                  labelCol="label",
                  foldCol=None,
                  weightCol=None,

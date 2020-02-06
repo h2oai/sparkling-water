@@ -410,7 +410,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
     selectBestModelBy -> H2OGridSearchMetric.AUTO.name(),
-    parallelism -> 0
+    parallelism -> 1
   )
 
   //
