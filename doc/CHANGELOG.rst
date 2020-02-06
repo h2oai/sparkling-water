@@ -1,6 +1,52 @@
 Change Log
 ==========
 
+v3.28.0.3-1 (2020-02-06)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.3-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-1559 <https://0xdata.atlassian.net/browse/SW-1559>`__ - Cloud up of SW fails on EMR
+   -  `SW-1650 <https://0xdata.atlassian.net/browse/SW-1650>`__ - SparklingWater forms only H2O cluster on Azure only with one node
+   -  `SW-1830 <https://0xdata.atlassian.net/browse/SW-1830>`__ - Support h2o3 mojo prediction in rsparkling
+   -  `SW-1849 <https://0xdata.atlassian.net/browse/SW-1849>`__ - Add missing &#39;rel-&#39; prefix when suggesting correct H2O package to install in R
+   -  `SW-1865 <https://0xdata.atlassian.net/browse/SW-1865>`__ - Fix Typo in Backends Documentation
+   -  `SW-1867 <https://0xdata.atlassian.net/browse/SW-1867>`__ - Add Sparkling Water UI tab only in case the UI is enabled
+   -  `SW-1871 <https://0xdata.atlassian.net/browse/SW-1871>`__ - Use local maven in our test infra instead of --includeBuild
+   -  `SW-1879 <https://0xdata.atlassian.net/browse/SW-1879>`__ - Fix R tests
+   -  `SW-1882 <https://0xdata.atlassian.net/browse/SW-1882>`__ - Fix setNthreads method on H2OConf
+   -  `SW-1887 <https://0xdata.atlassian.net/browse/SW-1887>`__ - is_internal_secure_connections_enabled method needs to be in SharedBackendConf.py
+   -  `SW-1895 <https://0xdata.atlassian.net/browse/SW-1895>`__ - Fix jenkins pipeline so it can also run PRE_RELEASE_TESTS
+                
+-  Improvement
+        
+   -  `SW-1686 <https://0xdata.atlassian.net/browse/SW-1686>`__ - Expose offset_column in XGBoost
+   -  `SW-1790 <https://0xdata.atlassian.net/browse/SW-1790>`__ - RSparkling in cran should be dummy code to point to our rsparkling in custom repo
+   -  `SW-1828 <https://0xdata.atlassian.net/browse/SW-1828>`__ - Ensure H2OContext in RSparkling is a class so we don&#39;t have to pass sc to methods asH2OFrame and asDataFrame
+   -  `SW-1848 <https://0xdata.atlassian.net/browse/SW-1848>`__ - Cleanup package.R in RSparkling
+   -  `SW-1851 <https://0xdata.atlassian.net/browse/SW-1851>`__ - [Proposal]Rename conversion methods to be consistent with other changes
+   -  `SW-1860 <https://0xdata.atlassian.net/browse/SW-1860>`__ - Fix ArrayIndexOutOfBoundsException on internal backend
+   -  `SW-1861 <https://0xdata.atlassian.net/browse/SW-1861>`__ - Remove extra import
+   -  `SW-1863 <https://0xdata.atlassian.net/browse/SW-1863>`__ - Mention in documentation that High Currency clusters are not yet supported
+   -  `SW-1866 <https://0xdata.atlassian.net/browse/SW-1866>`__ - Add option to specify full path to hadoop command
+   -  `SW-1873 <https://0xdata.atlassian.net/browse/SW-1873>`__ - Use ntrees instead of deprecated nEstimators on H2OXGBoost API
+   -  `SW-1874 <https://0xdata.atlassian.net/browse/SW-1874>`__ - Keep migration guide up-to-date
+   -  `SW-1884 <https://0xdata.atlassian.net/browse/SW-1884>`__ - Deprecate externalWriteConfirmationTimeout option
+   -  `SW-1885 <https://0xdata.atlassian.net/browse/SW-1885>`__ - Upgrade to H2O 3.28.0.3
+   -  `SW-1889 <https://0xdata.atlassian.net/browse/SW-1889>`__ - Make sure getters and setters on python ExternalBackendConf are consistent with scala counterpart
+   -  `SW-1891 <https://0xdata.atlassian.net/browse/SW-1891>`__ - Make sure getters and setters on python InternalBackendConf are consistent with scala counterpart
+   -  `SW-1893 <https://0xdata.atlassian.net/browse/SW-1893>`__ - Make sure getters and setters on python SharedBackendConf are consistent with scala counterpart
+                
+-  Engineering Story
+        
+   -  `SW-1852 <https://0xdata.atlassian.net/browse/SW-1852>`__ - Add Tests Covering Scenarios with XGBoost and Offset Column
+                
+                            
 v3.28.0.2-1 (2020-01-23)
 ------------------------
 Downloads:
