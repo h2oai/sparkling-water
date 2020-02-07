@@ -54,7 +54,6 @@ class H2OFrameToDataFrameHA extends FunSuite with SharedH2OTestContext {
 
     // Clean up
     h2oFrame.delete()
-    rdd.unpersist()
   }
 
   private type RowValueAssert = (Long, Vec) => Unit
