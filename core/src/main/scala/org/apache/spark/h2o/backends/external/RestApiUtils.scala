@@ -113,9 +113,9 @@ trait RestApiUtils extends RestCommunication {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
       endpoint,
-      s"/3/Frames/$frameId/summary?row_count=0",
+      s"/3/Frames/$frameId/summary",
       conf,
-      Map.empty,
+      Map("row_count" -> 0),
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
@@ -137,15 +137,14 @@ trait RestApiUtils extends RestCommunication {
     val expectedTypesString = Base64Encoding.encode(expectedTypes)
     val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
 
-    val parameters = Map[String, String](
+    val parameters = Map(
       "frame_name" -> frameName,
       "chunk_id" -> chunkId.toString,
       "expected_types" -> expectedTypesString,
       "selected_columns" -> selectedColumnsIndicesString)
-    val query = Paths.CHUNK + parameters.map{ case (k, v) => s"$k=$v" }.mkString("?", "&", "")
 
     val endpoint = resolveNodeEndpoint(node, conf)
-    readURLContent(endpoint, "GET", query, conf)
+    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
   }
 
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
