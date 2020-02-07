@@ -259,7 +259,7 @@ def prepareSparklingWaterEnvironment() {
                         cd ..
                         """
                 } else {
-                    sh "${getGradleCommand(config)} -PhadoopVersion=${config.driverHadoopVersion} downloadH2ODriverJar"
+                    sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
                 }
             }
         }
