@@ -112,7 +112,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 }
 
                 def customEnv = [
-                        "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
                         "SPARK_HOME=${env.WORKSPACE}/spark",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "MASTER=yarn-client",
@@ -154,11 +153,10 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 node("dX-hadoop") {
                     ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                         def customEnvNew = [
-                                "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
                                 "SPARK_HOME=${env.WORKSPACE}/spark",
                                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                 "MASTER=yarn-client",
-                                "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
+                                "H2O_DRIVER_JAR=${config.driverJarPath}",
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
                         withEnv(customEnvNew) {
