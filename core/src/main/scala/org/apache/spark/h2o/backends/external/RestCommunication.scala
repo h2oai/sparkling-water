@@ -17,54 +17,57 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
-import java.net.{HttpURLConnection, URI, URL}
+import java.io.{BufferedOutputStream, DataOutputStream, File, FileOutputStream, InputStream}
+import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
+import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
 import scala.reflect.{ClassTag, classTag}
-import ai.h2o.sparkling.utils.ScalaUtils._
-import org.apache.spark.expose.Logging
 
 trait RestCommunication extends Logging {
 
   /**
-    *
-    * @param endpoint      An address of H2O node with exposed REST endpoint
-    * @param suffix        REST relative path representing a specific call
-    * @param conf          H2O conf object
-    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-    *                      consists of the class containing the field and the field name.
-    * @tparam ResultType A type that the result will be deserialized to
-    * @return A deserialized object
-    */
+   *
+   * @param endpoint      An address of H2O node with exposed REST endpoint
+   * @param suffix        REST relative path representing a specific call
+   * @param conf          H2O conf object
+   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+   *                      consists of the class containing the field and the field name.
+   * @tparam ResultType A type that the result will be deserialized to
+   * @return A deserialized object
+   */
   protected def query[ResultType: ClassTag](
       endpoint: URI,
       suffix: String,
       conf: H2OConf,
+      params: Map[String, Any] = Map.empty,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, "GET", suffix, conf, skippedFields)
+    request(endpoint, "GET", suffix, conf, params, skippedFields)
   }
 
 
   /**
-    *
-    * @param endpoint      An address of H2O node with exposed REST endpoint
-    * @param suffix        REST relative path representing a specific call
-    * @param conf          H2O conf object
-    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-    *                      consists of the class containing the field and the field name.
-    * @tparam ResultType A type that the result will be deserialized to
-    * @return A deserialized object
-    */
+   *
+   * @param endpoint      An address of H2O node with exposed REST endpoint
+   * @param suffix        REST relative path representing a specific call
+   * @param conf          H2O conf object
+   * @param params        Query parameters
+   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+   *                      consists of the class containing the field and the field name.
+   * @tparam ResultType A type that the result will be deserialized to
+   * @return A deserialized object
+   */
   protected def update[ResultType: ClassTag](
       endpoint: URI,
       suffix: String,
       conf: H2OConf,
+      params: Map[String, Any] = Map.empty,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, "POST", suffix, conf, skippedFields)
+    request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
   protected def request[ResultType: ClassTag](
@@ -72,8 +75,9 @@ trait RestCommunication extends Logging {
       requestType: String,
       suffix: String,
       conf: H2OConf,
+      params: Map[String, Any] = Map.empty,
       skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf)) { response =>
+    withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
     }
@@ -123,13 +127,56 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf): InputStream = {
+
+  private def decodeSimpleParam(value: Any): String = {
+    val charset = "UTF-8"
+    value match {
+      case v: String => URLEncoder.encode(v, charset)
+      case v: Int => v.toString
+      case v: Double => v.toString
+      case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
+    }
+  }
+
+  private def decodeArray(arr: Array[_]): String = {
+    java.util.Arrays.toString(arr.map(decodeSimpleParam).map(_.asInstanceOf[AnyRef]))
+  }
+
+  private def decodeParams(params: Map[String, Any] = Map.empty): String = {
+    params.map { case (key, value) =>
+      val encodedValue = value match {
+        case v: Array[_] => decodeArray(v)
+        case v: Any => decodeSimpleParam(v)
+      }
+      s"$key=$encodedValue"
+    }.mkString("&")
+  }
+
+  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
-    val url = endpoint.resolve(suffixWithDelimiter).toURL
+
+    val suffixWithParams = if (params.nonEmpty && requestType == "GET") {
+      s"$suffixWithDelimiter?${decodeParams(params)}"
+    } else {
+      suffixWithDelimiter
+    }
+
+    val url = endpoint.resolve(suffixWithParams).toURL
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
+      if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
+        val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        connection.setRequestProperty("charset", "UTF-8")
+        connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
+        connection.setDoOutput(true)
+        withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
+          writer.write(paramsAsBytes)
+        }
+      }
       getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+
       val statusCode = retry(3) {
         connection.getResponseCode()
       }
