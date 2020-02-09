@@ -242,9 +242,8 @@ def prepareSparkEnvironment() {
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
-            if (config.backendMode.toString() == "external") {
-                if (config.buildAgainstH2OBranch.toBoolean()) {
-                    sh """
+            if (config.buildAgainstH2OBranch.toBoolean()) {
+                sh """
                         git clone https://github.com/h2oai/h2o-3.git
                         cd h2o-3
                         git checkout ${config.h2oBranch}
@@ -255,10 +254,9 @@ def prepareSparklingWaterEnvironment() {
                         ./gradlew publishToMavenLocal
                         ./gradlew :h2o-r:buildPKG
                         cd ..
-                        """
-                } else {
-                    sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
-                }
+                    """
+            } else {
+                sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
             }
         }
     }
