@@ -44,24 +44,24 @@ String getSparkVersion(config) {
     return versionLine.split("=")[1]
 }
 
-String getH2OMajorVersion() {
+String getH2OBranchMajorVersion() {
     def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('version') }
     return versionLine.split("=")[1]
 }
 
-String getH2OMajorName() {
+String getH2OBranchMajorName() {
     def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('codename') }
     return versionLine.split("=")[1]
 }
 
-String getH2OBuildVersion() {
+String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
 }
 
 def getGradleCommand(config) {
     def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OMajorVersion()} -Ph2oMajorName=${getH2OMajorName()} -Ph2oBuild=${getH2OBuildVersion()}"
+        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
     } else {
         return cmd
     }
@@ -86,20 +86,6 @@ def withDocker(config, code) {
     }
 }
 
-def checkoutH2O(config) {
-    sh """
-         # Clone H2O
-        git clone https://github.com/h2oai/h2o-3.git
-        cd h2o-3
-        git checkout ${config.h2oBranch}
-        . /envs/h2o_env_python2.7/bin/activate
-        ./gradlew build -x check
-        ./gradlew publishToMavenLocal
-        ./gradlew :h2o-r:buildPKG
-        cd ..
-        """
-}
-
 def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
     node('docker && micro') {
         docker.withRegistry("http://harbor.h2o.ai") {
@@ -115,17 +101,21 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
 
                 config.put("sparkVersion", getSparkVersion(config))
 
+                if (config.buildAgainstH2OBranch.toBoolean()) {
+                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+                } else {
+                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                    def majorVersion = majorVersionLine.split("=")[1]
+                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                    def buildVersion = buildVersionLine.split("=")[1]
+                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2oDriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+                }
+
                 def customEnv = [
-                        "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
                         "SPARK_HOME=${env.WORKSPACE}/spark",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "MASTER=yarn-client",
-                        "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
-                        "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
-                        // Properties used in case we are building against specific H2O version
-                        "BUILD_HADOOP=true",
-                        "H2O_TARGET=${config.driverHadoopVersion}",
-                        "H2O_ORIGINAL_JAR=${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+                        "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
 
                 ansiColor('xterm') {
@@ -149,9 +139,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
-                    if (config.buildAgainstH2OBranch.toBoolean()) {
-                        checkoutH2O(config)
-                    }
                     prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
@@ -166,12 +153,10 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 node("dX-hadoop") {
                     ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                         def customEnvNew = [
-                                "SPARK=spark-${config.sparkVersion}-bin-hadoop${config.hadoopVersion}",
                                 "SPARK_HOME=${env.WORKSPACE}/spark",
                                 "HADOOP_CONF_DIR=/etc/hadoop/conf",
                                 "MASTER=yarn-client",
-                                "H2O_EXTENDED_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver-extended.jar",
-                                "H2O_DRIVER_JAR=${env.WORKSPACE}/assembly-h2o/private/extended/h2odriver.jar",
+                                "H2O_DRIVER_JAR=${config.driverJarPath}",
                                 "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
                                 "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
                         withEnv(customEnvNew) {
@@ -257,20 +242,22 @@ def prepareSparkEnvironment() {
 def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
-            sh """
-                if [ ${config.backendMode} = external ]; then
-                    if [ ${config.buildAgainstH2OBranch} = true ]; then
-                        # In this case, PySparkling build is driven by H2O_HOME property
-                        # When extending from specific jar the jar has already the desired name
-                        ${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar
-                        # Copy also original driver JAR to desired location so rest API based client can use it
-                        cp ${env.H2O_ORIGINAL_JAR} ${env.H2O_DRIVER_JAR}
-                    else
-                        cp `${getGradleCommand(config)} -q :sparkling-water-examples:build -x check -PdoExtend extendJar -PdownloadH2O=${config.driverHadoopVersion}` ${env.H2O_EXTENDED_JAR}
-                        cp `${getGradleCommand(config)} -q -PdoExtend -x check -PdownloadH2O=${config.driverHadoopVersion} getDownlodedJarPath` ${env.H2O_DRIVER_JAR}
-                     fi
-                fi
-                """
+            if (config.buildAgainstH2OBranch.toBoolean()) {
+                sh """
+                        git clone https://github.com/h2oai/h2o-3.git
+                        cd h2o-3
+                        git checkout ${config.h2oBranch}
+                        . /envs/h2o_env_python2.7/bin/activate
+                        export BUILD_HADOOP=true
+                        export H2O_TARGET=${config.driverHadoopVersion}
+                        ./gradlew build -x check
+                        ./gradlew publishToMavenLocal
+                        ./gradlew :h2o-r:buildPKG
+                        cd ..
+                    """
+            } else {
+                sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+            }
         }
     }
 }
@@ -351,7 +338,7 @@ def rUnitTests() {
                 try {
                     if (config.buildAgainstH2OBranch.toBoolean()) {
                         sh  """
-                                R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
+                                R -e 'install.packages("h2o-3/h2o-r/h2o_${getH2OBranchMajorVersion()}.99999.tar.gz", type="source", repos=NULL)'
                             """
                     } else {
                         sh  """
