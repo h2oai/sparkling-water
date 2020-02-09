@@ -585,7 +585,7 @@
             <p>Python</p>
             <p class="terminal">
               from pysparkling import *<br/>
-              conf = H2OConf(spark).set_external_cluster_mode().use_manual_cluster_start().set_cloud_name("test")<br/>
+              conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
               hc = H2OContext.getOrCreate(spark, conf)<br/>
             </p>
 
@@ -684,7 +684,7 @@
 
             <p>8. Now, H2OContext is available and we can use any H2O features available in R.</p>
             <p class="terminal">
-              h2o_context(sc)
+              hc <- H2OContext.getOrCreate(sc)
             </p>
 
 
