@@ -147,7 +147,7 @@ export SPARK_VERSION=$(grep sparkVersion "$PROP_FILE" | sed -e "s/.*=//")
 SCALA_VERSION=$(grep scalaBaseVersion "$PROP_FILE" | sed -e "s/.*=//" | cut -d . -f 1,2)
 # Fat jar for this distribution
 FAT_JAR="sparkling-water-assembly_$SCALA_VERSION-$VERSION-all.jar"
-export FAT_JAR_FILE="$TOPDIR/assembly/build/libs/$FAT_JAR"
+export FAT_JAR_FILE="$TOPDIR/jars/$FAT_JAR"
 export MAJOR_VERSION
 MAJOR_VERSION=$(echo "$VERSION" | cut -d . -f 1,2)
 export PATCH_VERSION
