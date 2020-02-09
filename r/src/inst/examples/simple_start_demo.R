@@ -1,41 +1,24 @@
-# Example of rsparkling for machine learning:
-
-# R packages you'll need to install up front if you don't already have them:
 #
-# install.packages("digest")
-# install.packages("devtools")
-# install.packages("dplyr")
+# Example of RSparkling for machine learning:
 #
-# If you don't have the h2o package yet, first install the latest version from CRAN to grab all the dependencies:
-# install.packages("h2o")
+# For more information about how to install RSparkling, please check http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/latest.html
 #
-# But this is the specific version of h2o that works with rsparkling today (Sept. 2016):
-# install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-turing/6/R")
-#
-# devtools::install_github("h2oai/sparkling-water", subdir = "/r/rsparkling")
-# devtools::install_github("rstudio/sparklyr")
 
 library(sparklyr)
 library(h2o)
-
-#Set version of spark. 
-#Note: At the time of spark_connect sparklyr will call the spark_dependencies function in the rsparkling package.
-options(rsparkling.sparklingwater.version = "1.6.7")
-
 library(rsparkling)
 
 # If you don't already have it installed, Spark can be installed via the sparklyr command:
-spark_install(version = "1.6.2")
+spark_install(version = "2.4.5")
 
 # Create a spark connection
-sc <- spark_connect(master = "local", version = "1.6.2")
+sc <- spark_connect(master = "local", version = "2.4.5")
 
-# Inspect the H2OContext for our Spark connection
-# This will also start an H2O cluster
-h2o_context(sc)
+# Start H2OContext
+hc <- H2OContext.getOrCreate(sc)
 
-# We can also view the H2O Flow web UI:
-h2o_flow(sc)
+# Open H2O Flow web UI:
+hc$openFlow()
 
 
 # H2O with Spark DataFrames
@@ -46,7 +29,7 @@ mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
 mtcars_tbl
 
 # Convert the Spark DataFrame into an H2OFrame
-mtcars_hf <- as_h2o_frame(sc, mtcars_tbl)
+mtcars_hf <- hc$asH2OFrame(mtcars_tbl)
 mtcars_hf
 
 
