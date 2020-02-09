@@ -555,20 +555,26 @@
             </div>
             <h2>Kluster</h2>
             <p>Kluster mode of Sparkling Water supports connection to external H2O clusters (standalone/hadoop).
-              The extended H2O cluster needs to be started with a corresponding H2O build which can be downloaded below.</p>
+              The H2O cluster needs to be started with a corresponding H2O, which can be downloaded as below.</p>
 
             <p>1. Download and unpack Sparkling Water distribution</p>
 
-            <p>2. Download corresponding h2odriver for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:</p>
+            <p>2. Download corresponding H2O driver for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:</p>
             <p class="terminal">
-              bin/get-extended-h2o.sh standalone
-            </p>
-            <p>3. Start H2O cluster, for example, in standalone mode:</p>
-            <p class="terminal">
-              java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
+              export H2O_DRIVER_JAR=$(/path/to/sparkling-water-SUBST_SW_VERSION/bin/get-h2o-driver.sh hdp2.2)
             </p>
 
-            <p>4. In your Sparkling Water application, create H2OContext:</p>
+            <p>3. Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive:</p>
+            <p class="terminal">
+              SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
+            </p>
+
+            <p>4. Start H2O cluster on Hadoop:</p>
+            <p class="terminal">
+              hadoop -jar $H2O_DRIVER_JAR -libjars $SW_EXTENSIONS_ASSEMBLY -sw_ext_backend -jobname test -nodes 3 -mapperXmx 6g
+            </p>
+
+            <p>5. In your Sparkling Water application, create H2OContext:</p>
             <p>Scala</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br/>

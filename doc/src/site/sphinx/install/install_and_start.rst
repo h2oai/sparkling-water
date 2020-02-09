@@ -29,7 +29,7 @@ This section describes how to quickly get started with Sparkling Water on your p
     cd ~/Downloads
     unzip sparkling-water-SUBST_SW_VERSION.zip
     cd sparkling-water-SUBST_SW_VERSION
-    bin/sparkling-shell --conf "spark.executor.memory=1g"
+    bin/sparkling-shell
 
 4. Create an H2O cloud inside the Spark cluster:
 
@@ -76,7 +76,7 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
     cd sparkling-water-SUBST_SW_VERSION/
     bin/sparkling-shell --num-executors 3 --executor-memory 2g --master yarn --deploy-mode client
 
-5. Create an H2O cloud inside the Spark cluster:
+5. Create an H2O cluster inside the Spark cluster:
 
 .. code:: scala
 
@@ -126,23 +126,30 @@ This section describes how to launch H2O on a standalone Spark cluster.
 Kluster Mode
 ------------
 
-Sparkling Water Kluster mode supports a connection to external H2O clusters (standalone/hadoop). The extended H2O cluster needs to be started with a corresponding H2O build, which can be downloaded below.
+Sparkling Water Kluster mode supports a connection to external H2O clusters (standalone/hadoop).
+The H2O cluster needs to be started with a corresponding H2O, which can be downloaded as below.
 
 1. Download and unpack the Sparkling Water distribution.
 
-2. Download the corresponding ``h2odriver`` for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:
+2. Download the corresponding H2O driver for your Hadoop distribution (e.g., hdp2.2, cdh5.4) or standalone one:
 
 .. code:: bash
 
-    bin/get-extended-h2o.sh standalone
+    export H2O_DRIVER_JAR=$(/path/to/sparkling-water-SUBST_SW_VERSION/bin/get-h2o-driver.sh hdp2.2)
 
-3. Start an H2O cluster, for example, in standalone mode:
+3. Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which is bundled in Sparkling Water archive:
 
 .. code:: bash
 
-    java -cp h2odriver-extended.jar water.H2OApp -md5skip -name test
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
 
-4. In your Sparkling Water application, create H2OContext:
+4. Start an H2O cluster on Hadoop
+
+.. code:: bash
+
+    hadoop -jar $H2O_DRIVER_JAR -libjars $SW_EXTENSIONS_ASSEMBLY -sw_ext_backend -jobname test -nodes 3 -mapperXmx 6g
+
+5. In your Sparkling Water application, create H2OContext:
 
 **Scala**
 
