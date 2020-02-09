@@ -64,7 +64,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 def testDownloadLogsAsLOG(spark):
     hc = H2OContext.getOrCreate(spark, createH2OConf(spark))
     path = hc.download_h2o_logs("build", "LOG")
-    clusterName = hc._conf.cloud_name()
+    clusterName = hc._conf.cloudName()
 
     with open(path, 'r') as f:
         lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
