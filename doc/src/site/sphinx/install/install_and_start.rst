@@ -141,7 +141,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 
 .. code:: bash
 
-    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/jars/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
 
 4. Start an H2O cluster on Hadoop
 
