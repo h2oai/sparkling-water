@@ -17,7 +17,10 @@
 
 package org.apache.spark.h2o.backends
 
+import java.io.{File, FileWriter}
+
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.h2o.H2OConf
 
 import scala.collection.JavaConverters._
@@ -68,6 +71,8 @@ trait SharedBackendConf {
   def flowExtraHttpHeaders = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
     PROP_INTERNAL_SECURE_CONNECTIONS._2)
+
+  def hadoopConf = sparkConf.getOption(PROP_HADOOP_CONF._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -164,6 +169,19 @@ trait SharedBackendConf {
 
   def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
 
+  def setHadoopConf(path: String) = set(PROP_HADOOP_CONF._1, path)
+
+  def setHadoopConf(conf: Configuration): H2OConf = {
+    val hadoopConfigTempFile: File = File.createTempFile("hadoop_config_all", ".xml")
+    val fileWriter: FileWriter = new FileWriter(hadoopConfigTempFile)
+    try {
+      conf.writeXml(fileWriter)
+    } finally {
+      fileWriter.close()
+    }
+    set(PROP_HADOOP_CONF._1, hadoopConfigTempFile.getAbsolutePath())
+  }
+
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
   def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
@@ -171,8 +189,9 @@ trait SharedBackendConf {
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
     setFlowExtraHttpHeaders(headers.asScala.toMap[String, String])
   }
+
   def setFlowExtraHttpHeaders(headers: Map[String, String]): H2OConf = {
-    val stringRepresentation =  headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
+    val stringRepresentation = headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
   }
 
@@ -210,7 +229,7 @@ trait SharedBackendConf {
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
 
-  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
+  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_HADOOP_CONF)
 }
 
 object SharedBackendConf {
@@ -380,4 +399,7 @@ object SharedBackendConf {
 
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)
+
+  /** Path to Java KeyStore file used for the internal SSL communication. */
+  val PROP_HADOOP_CONF = ("spark.ext.h2o.hadoof_conf", None)
 }
