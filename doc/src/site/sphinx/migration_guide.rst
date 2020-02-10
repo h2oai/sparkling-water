@@ -214,6 +214,11 @@ From 3.28.0 to 3.28.1
   can download from our `download page <https://www.h2o.ai/download/#sparkling-water>`_.
   It has been moved from ``assembly/build/libs`` to just ``jars``.
 
+- H2OSVM has been removed from the Scala API. We have removed this API as it just wrapping Spark SVM and complicates
+  are future development. If you still need
+  to use H2OSVM, please use `Spark SVM <https://spark.apache.org/docs/latest/mllib-linear-methods.html#linear-support-vector-machines-svms>`__ directly. All the parameters remain the same. We are planning to expose proper
+  H2O's SVM implementation in Sparkling Water in the following major releases.
+
 From 3.26 To 3.28.0
 -------------------
 
