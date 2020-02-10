@@ -224,6 +224,13 @@ Configuration properties independent of selected backend
 |                                                    |                | corresponding parameters in Sparkling  |
 |                                                    |                | Water.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.hdfs_conf``            | ``sc.hadoopConfiguration`` | Either a string with the Path to a file|
+|                                                    |                | with Hadoop HDFS configuration or the  |
+|                                                    |                | org.apache.hadoop.conf.Configuration   |
+|                                                    |                | object. Useful for HDFS credentials    |
+|                                                    |                | settings and other HDFS-related        |
+|                                                    |                | configurations.                        |
++----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 
