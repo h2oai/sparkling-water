@@ -77,14 +77,20 @@ trait RestCommunication extends Logging {
     * @param endpoint      An address of H2O node with exposed REST endpoint
     * @param suffix        REST relative path representing a specific call
     * @param conf          H2O conf object
+    * @param params        Query parameters
     * @return HttpUrlConnection facilitating the insertion and holding the outputStream
     */
-  protected def insert(endpoint: URI, suffix: String, conf: H2OConf): OutputStream  = {
+  protected def insert(
+      endpoint: URI,
+      suffix: String,
+      conf: H2OConf,
+      params: Map[String, Any] = Map.empty): OutputStream  = {
     val url = resolveUrl(endpoint, suffix)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
-      setHeaders(connection, conf)
-      connection.setRequestMethod("PUT")
+      val requestMethod = "PUT"
+      connection.setRequestMethod(requestMethod)
+      setHeaders(connection, conf, requestMethod, params)
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
       val outputStream = connection.getOutputStream()
@@ -175,51 +181,57 @@ trait RestCommunication extends Logging {
     }.mkString("&")
   }
 
-  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
+  private def resolveUrl(endpoint: URI, suffix: String): URL = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
+    endpoint.resolve(suffixWithDelimiter).toURL
+  }
 
-    val suffixWithParams = if (params.nonEmpty && requestType == "GET") {
-      s"$suffixWithDelimiter?${decodeParams(params)}"
-    } else {
-      suffixWithDelimiter
+  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String,  params: Map[String, Any]): Unit = {
+    getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+
+    if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
+      val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
+      connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      connection.setRequestProperty("charset", "UTF-8")
+      connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
+      connection.setDoOutput(true)
+      withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
+        writer.write(paramsAsBytes)
+      }
     }
+  }
 
+  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
+    val suffixWithParams = if (params.nonEmpty && requestType == "GET") s"$suffix?${decodeParams(params)}" else suffix
     val url = endpoint.resolve(suffixWithParams).toURL
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
-
-      if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
-        val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        connection.setRequestProperty("charset", "UTF-8")
-        connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
-        connection.setDoOutput(true)
-        withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
-          writer.write(paramsAsBytes)
-        }
-      }
-
-      val statusCode = retry(3) {
-        connection.getResponseCode()
-      }
-      statusCode match {
-        case HttpURLConnection.HTTP_OK => logInfo(
-          s"""External H2O node ${urlToString(url)} successfully responded
-             | for the $requestType request on the path $suffixWithDelimiter.""".stripMargin)
-        case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
-          s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
-             |Please make sure you have passed valid credentials to the client.
-             |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
-        case _ => throw new RestApiNotReachableException(
-          s"""External H2O node ${urlToString(url)} responded with
-             |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
-      }
+      setHeaders(connection, conf, requestType, params)
+      checkResponseCode(connection)
       connection.getInputStream()
     } catch {
       case e: RestApiException => throw e
       case cause: Exception => throwRestApiNotReachableException(url, cause)
+    }
+  }
+
+  def checkResponseCode(connection: HttpURLConnection): Unit = {
+    val url = connection.getURL
+    val requestType = connection.getRequestMethod
+    val statusCode = retry(3) {
+      connection.getResponseCode()
+    }
+    statusCode match {
+      case HttpURLConnection.HTTP_OK => logInfo(
+        s"External H2O node $url successfully responded for the $requestType.")
+      case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
+        s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
+           |Please make sure you have passed valid credentials to the client.
+           |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
+      case _ => throw new RestApiNotReachableException(
+        s"""External H2O node ${urlToString(url)} responded with
+           |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
     }
   }
 

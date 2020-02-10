@@ -17,9 +17,6 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import java.nio.{ByteBuffer, ByteOrder}
-import java.util.Base64
-
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.Base64Encoding
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
@@ -40,7 +37,7 @@ final class ChunkServlet extends HttpServlet {
       selectedColumnIndices: Array[Int]) {
 
     def validate(): Unit = {
-      val frame = DKV.getGet(this.frameName)
+      val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
       validateChunkId(frame)
       validateSelectedColumns(frame)
@@ -91,12 +88,9 @@ final class ChunkServlet extends HttpServlet {
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
-      val expectedTypes = Base64.getDecoder.decode(expectedTypesString)
+      val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
-      val selectedColumnsBytes = Base64.getDecoder.decode(selectedColumnsString)
-      val buffer = ByteBuffer.wrap(selectedColumnsBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer
-      val selectedColumnIndices = new Array[Int](buffer.remaining)
-      buffer.get(selectedColumnIndices)
+      val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
       GetRequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
     }
   }
@@ -173,9 +167,9 @@ final class ChunkServlet extends HttpServlet {
     }
 
     def validateMaxVecSizes(): Unit = {
-      val numberOfVectoryTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
-      if(numberOfVectoryTypes != maxVecSizes.length) {
-        val message = s"The number of vector types ($numberOfVectoryTypes) doesn't correspond to" +
+      val numberOfVectorTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
+      if(numberOfVectorTypes != maxVecSizes.length) {
+        val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
           s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
         new RuntimeException(message)
       }
@@ -188,12 +182,9 @@ final class ChunkServlet extends HttpServlet {
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
-      val expectedTypes = Base64.getDecoder.decode(expectedTypesString)
-      val selectedColumnsString = getParameterAsString(request, "maximum_vector_sizes")
-      val selectedColumnsBytes = Base64.getDecoder.decode(selectedColumnsString)
-      val buffer = ByteBuffer.wrap(selectedColumnsBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer
-      val maxVecSizes = new Array[Int](buffer.remaining)
-      buffer.get(maxVecSizes)
+      val expectedTypes = Base64Encoding.decode(expectedTypesString)
+      val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
+      val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
       PutRequestParameters(frameName, chunkId, expectedTypes, maxVecSizes)
     }
   }
