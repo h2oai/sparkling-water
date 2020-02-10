@@ -187,7 +187,7 @@ trait RestCommunication extends Logging {
     endpoint.resolve(suffixWithDelimiter).toURL
   }
 
-  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String,  params: Map[String, Any]): Unit = {
+  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
     if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
@@ -236,7 +236,7 @@ trait RestCommunication extends Logging {
     }
   }
 
-  private def throwRestApiNotReachableException(url: URL,  e: Exception) = {
+  private def throwRestApiNotReachableException(url: URL, e: Exception) = {
     throw new RestApiNotReachableException(
       s"""External H2O node ${urlToString(url)} is not reachable.
          |Please verify that you are passing ip and port of existing cluster node and the cluster
