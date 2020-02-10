@@ -147,10 +147,10 @@ task copyFilesForZipDistribution {
         }
 
         copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
+        copySingle("assembly-extensions/build/libs/", "sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
         createSupportedHadoopFile("$zipDir")
 
         copyAndKeepPath("assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir")
-        copyAndKeepPath("assembly-extensions/build/libs/sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir")
         copyAndKeepPath("py/build/dist/h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir")
         copyAndKeepPath("LICENSE", "$zipDir")
         copyAndKeepPath("README.rst", "$zipDir")

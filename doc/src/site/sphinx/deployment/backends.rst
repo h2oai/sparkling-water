@@ -185,7 +185,7 @@ Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which i
 
 .. code:: bash
 
-    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/jars/sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar
 
 Start H2O cluster on Hadoop:
 
@@ -251,7 +251,7 @@ Set path to sparkling-water-assembly-extensions-SUBST_SW_VERSION-all.jar which i
 
 .. code:: bash
 
-    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/sparkling-water-assembly-extensions_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+    SW_EXTENSIONS_ASSEMBLY=/path/to/sparkling-water-SUBST_SW_VERSION/jars/sparkling-water-assembly-extensions_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
 
 To start an external H2O cluster, run:
 
