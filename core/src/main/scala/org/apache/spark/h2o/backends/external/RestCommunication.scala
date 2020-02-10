@@ -165,6 +165,8 @@ trait RestCommunication extends Logging {
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
+      getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+
       if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
         val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
@@ -175,7 +177,6 @@ trait RestCommunication extends Logging {
           writer.write(paramsAsBytes)
         }
       }
-      getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
       val statusCode = retry(3) {
         connection.getResponseCode()
