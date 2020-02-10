@@ -32,6 +32,7 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  l2=0.0,
                  hidden=[200, 200],
                  reproducible=False,
+                 quantileAlpha=0.5,
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,

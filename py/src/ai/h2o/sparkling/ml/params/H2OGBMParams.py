@@ -20,9 +20,11 @@ from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.params.H2OSharedTreeParams import H2OSharedTreeParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
+from ai.h2o.sparkling.ml.params.HasQuantileAlpha import HasQuantileAlpha
 
 
-class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints):
+
+class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha):
     ##
     # Param definitions
     ##
