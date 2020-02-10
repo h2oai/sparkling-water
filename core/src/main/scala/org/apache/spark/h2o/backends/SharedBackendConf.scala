@@ -20,6 +20,7 @@ package org.apache.spark.h2o.backends
 import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.h2o.H2OConf
 
@@ -173,11 +174,9 @@ trait SharedBackendConf {
 
   def setHadoopConf(conf: Configuration): H2OConf = {
     val hadoopConfigTempFile: File = File.createTempFile("hadoop_config_all", ".xml")
-    val fileWriter: FileWriter = new FileWriter(hadoopConfigTempFile)
-    try {
+    hadoopConfigTempFile.deleteOnExit()
+    withResource(new FileWriter(hadoopConfigTempFile)) { fileWriter =>
       conf.writeXml(fileWriter)
-    } finally {
-      fileWriter.close()
     }
     set(PROP_HADOOP_CONF._1, hadoopConfigTempFile.getAbsolutePath())
   }
@@ -400,6 +399,6 @@ object SharedBackendConf {
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)
 
-  /** Path to Java KeyStore file used for the internal SSL communication. */
-  val PROP_HADOOP_CONF = ("spark.ext.h2o.hadoof_conf", None)
+  /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
+  val PROP_HADOOP_CONF = ("spark.ext.h2o.hadoop_conf", None)
 }
