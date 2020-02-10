@@ -58,7 +58,9 @@ airlines_tbl <- copy_to(sc, nycflights13::airlines, "airlines")
 
 # Prepare data for modelling
 model_tbl <- flights_tbl %>%
-  filter(!is.na(arr_delay) & !is.na(dep_delay) & !is.na(distance)) %>%
+  filter(!is.na(arr_delay) &
+           !is.na(dep_delay) &
+           !is.na(distance)) %>%
   filter(dep_delay > 15 & dep_delay < 240) %>%
   filter(arr_delay > -60 & arr_delay < 360) %>%
   left_join(airlines_tbl, by = c("carrier" = "carrier")) %>%
@@ -66,7 +68,7 @@ model_tbl <- flights_tbl %>%
   select(origin, dest, carrier, airline = name, distance, dep_delay, arr_delay, gain)
 
 # Data has been processed using Sparklyr. Convert it into H2O.
-df_hex <- hc$asH2oFrame(model_tbl, h2oFrameName="model_hex")
+df_hex <- hc$asH2oFrame(model_tbl, h2oFrameName = "model_hex")
 
 # Set up some character variables as factors, which can be used in model building
 df_hex$origin = as.factor(df_hex$origin)
@@ -78,20 +80,20 @@ df_hex$airline = as.factor(df_hex$airline)
 dim(df_hex)
 head(df_hex)
 tail(df_hex)
-summary(df_hex,exact_quantiles=TRUE)
+summary(df_hex, exact_quantiles = TRUE)
 
 #P ick a response for the supervised problem
 response <- "gain"
 
 # Use all other columns (except for response) as predictors
-predictors <- setdiff(names(df_hex), c(response)) 
+predictors <- setdiff(names(df_hex), c(response))
 print(predictors)
 
 # Set up train, validation, and test set
 splits <- h2o.splitFrame(
-  data = df_hex, 
-  ratios = c(0.7,0.2),   ## only need to specify 2 fractions, the 3rd is implied
-  destination_frames = c("train.hex","valid.hex", "test.hex"), seed = 1234
+  data = df_hex,
+  ratios = c(0.7, 0.2),   ## only need to specify 2 fractions, the 3rd is implied
+  destination_frames = c("train.hex", "valid.hex", "test.hex"), seed = 1234
 )
 train <- splits[[1]]
 valid <- splits[[2]]
@@ -105,7 +107,7 @@ glm <- h2o.glm(x = predictors, y = response, training_frame = train)
 glm
 
 # Get the rmse on the validation set
-h2o.rmse(h2o.performance(glm, newdata = valid)) 
+h2o.rmse(h2o.performance(glm, newdata = valid))
 
 # The second model is another default glm, but trained on 80% of the data (here, we combine the training and validation splits to get more training data),
 # and cross-validated using 4 folds. Note that cross-validation takes longer and is not usually done for really large datasets.
@@ -122,7 +124,7 @@ h2o.rmse(h2o.performance(glm, xval = TRUE))
 
 # Make prediction on test set
 preds <- h2o.predict(glm, test)
-preds <- h2o.cbind(test,preds)
+preds <- h2o.cbind(test, preds)
 
 # Convert back to Spark to utilize dplyr backend for aggregations that will later be used for visuals (Shiny app)
 pred_tbl <- hc$asSparkFrame(preds)
@@ -149,97 +151,97 @@ carrier_dest <- c("BOS", "DCA", "DEN", "HNL", "LAX", "SEA", "SFO", "STL")
 
 # Shiny UI
 ui <- fluidPage(theme = shinytheme("yeti"),
-  
-  # Set display mode to bottom
-  tags$script(' var setInitialCodePosition = function() 
+
+                # Set display mode to bottom
+                tags$script(' var setInitialCodePosition = function()
               { setCodePosition(false, false); }; '),
-  
-  # Title
-  titlePanel("NYCFlights13: Time Gained in Flight"),
-  
-  # Create sidebar 
-  sidebarLayout(
-    sidebarPanel(
-      radioButtons("origin", "Flight origin:",
-                   carrier_origin, selected = "JFK"),
-      br(),
-      
-      radioButtons("dest", "Flight destination:",
-                   carrier_dest, selected = "SFO")
-      
-    ),
-    
-    # Show a tabset that includes a plot, model, and table view
-    mainPanel(
-      tabsetPanel(type = "tabs", 
-                  tabPanel("Plot", plotOutput("plot")),
-                  tabPanel("Variable Importance", plotOutput("plotvarimp")),
-                  tabPanel("Data", DT::dataTableOutput("datatable")),
-                  tabPanel("Map", leafletOutput("map"))
-      )
-    )
-  )
-  )
+
+                # Title
+                titlePanel("NYCFlights13: Time Gained in Flight"),
+
+                # Create sidebar
+                sidebarLayout(
+                  sidebarPanel(
+                    radioButtons("origin", "Flight origin:",
+                                 carrier_origin, selected = "JFK"),
+                    br(),
+
+                    radioButtons("dest", "Flight destination:",
+                                 carrier_dest, selected = "SFO")
+
+                  ),
+
+                  # Show a tabset that includes a plot, model, and table view
+                  mainPanel(
+                    tabsetPanel(type = "tabs",
+                                tabPanel("Plot", plotOutput("plot")),
+                                tabPanel("Variable Importance", plotOutput("plotvarimp")),
+                                tabPanel("Data", DT::dataTableOutput("datatable")),
+                                tabPanel("Map", leafletOutput("map"))
+                    )
+                  )
+                )
+)
 
 # Shiny server function
 server <- function(input, output) {
-  
+
   # Identify origin lat and log
   origin <- reactive({
-    req(input$origin)
-    filter(nycflights13::airports, faa == input$origin)
-  })
-  
+                       req(input$origin)
+                       filter(nycflights13::airports, faa == input$origin)
+                     })
+
   # Identify destination lat and log
   dest <- reactive({
-    req(input$dest)
-    filter(nycflights13::airports, faa == input$dest)
-  })
-  
+                     req(input$dest)
+                     filter(nycflights13::airports, faa == input$dest)
+                   })
+
   # Create plot data
   plot_data <- reactive({
-    req(input$origin, input$dest)
-    lookup_tbl %>%
-      filter(origin==input$origin & dest==input$dest) %>%
-      ungroup() %>%
-      select(airline, flights, distance, avg_gain, pred_gain) %>%
-      collect
-  })
-  
+                          req(input$origin, input$dest)
+                          lookup_tbl %>%
+                            filter(origin == input$origin & dest == input$dest) %>%
+                            ungroup() %>%
+                            select(airline, flights, distance, avg_gain, pred_gain) %>%
+                            collect
+                        })
+
   # Plot observed versus predicted time gain for carriers and route
   output$plot <- renderPlot({
-    ggplot(plot_data(), aes(factor(airline), pred_gain)) + 
-      geom_bar(stat = "identity", fill = '#2780E3') +
-      geom_point(aes(factor(airline), avg_gain)) +
-      coord_flip() +
-      labs(x = "", y = "Time gained in flight (minutes)") +
-      labs(title = "Observed gain (point) vs Predicted gain (bar)")
-  })
-  
+                              ggplot(plot_data(), aes(factor(airline), pred_gain)) +
+                                geom_bar(stat = "identity", fill = '#2780E3') +
+                                geom_point(aes(factor(airline), avg_gain)) +
+                                coord_flip() +
+                                labs(x = "", y = "Time gained in flight (minutes)") +
+                                labs(title = "Observed gain (point) vs Predicted gain (bar)")
+                            })
+
   # Output the route map
   output$map <- renderLeaflet({
-    gcIntermediate(
-      select(origin(), lon, lat),
-      select(dest(), lon, lat),
-      n=100, addStartEnd=TRUE, sp=TRUE
-    ) %>%
-      leaflet() %>%
-      addProviderTiles("CartoDB.Positron") %>%
-      addPolylines()
-  })  
-  
+                                gcIntermediate(
+                                  select(origin(), lon, lat),
+                                  select(dest(), lon, lat),
+                                  n = 100, addStartEnd = TRUE, sp = TRUE
+                                ) %>%
+                                  leaflet() %>%
+                                  addProviderTiles("CartoDB.Positron") %>%
+                                  addPolylines()
+                              })
+
   # Print table of observed and predicted gains by airline
   output$datatable <- DT::renderDataTable(
-    datatable(plot_data()) %>% 
+    datatable(plot_data()) %>%
       formatRound(c("flights", "distance"), 0) %>%
       formatRound(c("avg_gain", "pred_gain"), 1)
   )
-  
+
   output$plotvarimp <- renderPlot({
-    # Plot top 20 variable importances
-    h2o.varimp_plot(glm,20)
-  })
-  
+                                    # Plot top 20 variable importances
+                                    h2o.varimp_plot(glm, 20)
+                                  })
+
 }
 
 # Run Shiny Application
