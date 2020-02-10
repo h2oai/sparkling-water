@@ -73,7 +73,7 @@ trait SharedBackendConf {
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
     PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
-  def hadoopConf = sparkConf.getOption(PROP_HADOOP_CONF._1)
+  def hadoopConf = sparkConf.getOption(PROP_HDFS_CONF._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -170,15 +170,15 @@ trait SharedBackendConf {
 
   def setNodeBasePort(port: Int) = set(PROP_NODE_PORT_BASE._1, port.toString)
 
-  def setHadoopConf(path: String) = set(PROP_HADOOP_CONF._1, path)
+  def setHdfsConf(path: String) = set(PROP_HDFS_CONF._1, path)
 
-  def setHadoopConf(conf: Configuration): H2OConf = {
-    val hadoopConfigTempFile: File = File.createTempFile("hadoop_config_all", ".xml")
-    hadoopConfigTempFile.deleteOnExit()
-    withResource(new FileWriter(hadoopConfigTempFile)) { fileWriter =>
+  def setHdfsConf(conf: Configuration): H2OConf = {
+    val hdfsConfigTempFile: File = File.createTempFile("hdfs_conf", ".xml")
+    hdfsConfigTempFile.deleteOnExit()
+    withResource(new FileWriter(hdfsConfigTempFile)) { fileWriter =>
       conf.writeXml(fileWriter)
     }
-    set(PROP_HADOOP_CONF._1, hadoopConfigTempFile.getAbsolutePath())
+    set(PROP_HDFS_CONF._1, hdfsConfigTempFile.getAbsolutePath())
   }
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
@@ -228,7 +228,7 @@ trait SharedBackendConf {
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
 
-  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_HADOOP_CONF)
+  private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_HDFS_CONF)
 }
 
 object SharedBackendConf {
@@ -400,5 +400,5 @@ object SharedBackendConf {
   val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)
 
   /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
-  val PROP_HADOOP_CONF = ("spark.ext.h2o.hadoop_conf", None)
+  val PROP_HDFS_CONF = ("spark.ext.h2o.hdfs_conf", None)
 }

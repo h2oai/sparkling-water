@@ -114,7 +114,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if(!conf.hadoopConf.isDefined){
-      conf.setHadoopConf(SparkContext.getOrCreate().hadoopConfiguration)
+      conf.setHdfsConf(SparkContext.getOrCreate().hadoopConfiguration)
     }
 
     conf
@@ -164,7 +164,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       .add("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0))
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
-      .add("-hadoop_config", getDistributedFilePath(conf.hadoopConf))
+      .add("-hdfs_config", getDistributedFilePath(conf.hadoopConf))
       .add(getExtraHttpHeaderArgs(conf))
       .add("-embedded")
       .buildArgs()
