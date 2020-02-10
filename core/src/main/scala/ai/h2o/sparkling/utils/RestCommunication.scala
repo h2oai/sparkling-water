@@ -162,6 +162,7 @@ trait RestCommunication extends Logging {
     value match {
       case v: String => URLEncoder.encode(v, charset)
       case v: Int => v.toString
+      case v: Long => v.toString
       case v: Double => v.toString
       case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
     }

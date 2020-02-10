@@ -24,14 +24,14 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
   override def registerEndPoints(context: RestApiContext): Unit = {
     context.registerEndpoint(
       "sw_frame_initialize",
-      "POST /3/InitializeFrame",
+      "POST" + Paths.INITIALIZE_FRAME,
       classOf[ImportFrameHandler],
       "initialize",
       "Initializes a new frame before pushing chunks to the server")
 
     context.registerEndpoint(
       "sw_frame_finalize",
-      "POST /3/FinalizeFrame",
+      "POST " + Paths.FINALIZE_FRAME,
       classOf[ImportFrameHandler],
       "finalize",
       "Performs finalizing procedures after the date chunks were delivered to the server")

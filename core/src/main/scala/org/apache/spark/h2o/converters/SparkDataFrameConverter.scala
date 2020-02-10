@@ -99,7 +99,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
     val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
     converter.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparse = sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices))
+      sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
@@ -117,7 +117,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   private[this]
   def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
                      (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
+                      driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)

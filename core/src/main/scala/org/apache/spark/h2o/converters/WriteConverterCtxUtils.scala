@@ -34,7 +34,7 @@ import scala.reflect.runtime.universe._
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Int, Short, Array[Boolean], Seq[Int]) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Short, Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(conf: H2OConf, uploadPlan: Option[UploadPlan], partitionId: Int): WriteConverterCtx = {
@@ -99,8 +99,6 @@ object WriteConverterCtxUtils {
       */
     def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
-      val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
-
       val writerClient = if (hc.getConf.runsInInternalClusterMode) {
         new InternalWriteConverterCtx()
       } else {
@@ -130,7 +128,7 @@ object WriteConverterCtxUtils {
       } else {
         None
       }
-      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
       val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
       val res = new Array[Long](nonEmptyPartitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
@@ -167,8 +165,6 @@ object WriteConverterCtxUtils {
       */
     def convert[T: ClassTag : TypeTag](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
-      val writeTimeout = hc.getConf.externalWriteConfirmationTimeout
-      val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
       val conf = hc.getConf
       val leaderNode = RestApiUtils.getLeaderNode(conf)
       val writerClient = new ExternalWriteConverterCtx(conf, leaderNode)
@@ -180,7 +176,7 @@ object WriteConverterCtxUtils {
       // prepare required metadata
       val uploadPlan = Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
 
-      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, writeTimeout, -1, sparse, nonEmptyPartitions)
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, -1, sparse, nonEmptyPartitions)
       val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
       val res = new Array[Long](nonEmptyPartitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }

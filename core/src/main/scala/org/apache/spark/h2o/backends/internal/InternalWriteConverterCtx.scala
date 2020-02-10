@@ -51,9 +51,9 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
     sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
   }
 
-  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]]): Unit = {
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
     val fr = DKV.getGet[Frame](key)
-    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, domains, colTypes)
+    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, null, colTypes)
     InternalWriteConverterCtx.logChunkLocations(fr)
     InternalWriteConverterCtx.validateFrame(fr)
   }

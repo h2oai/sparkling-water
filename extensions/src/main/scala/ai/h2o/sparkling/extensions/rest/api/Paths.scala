@@ -19,4 +19,6 @@ package ai.h2o.sparkling.extensions.rest.api
 
 object Paths {
   val CHUNK: String = "/3/Chunk"
+  val INITIALIZE_FRAME: String = "/3/InitializeFrame"
+  val FINALIZE_FRAME: String = "/3/FinalizeFrame"
 }

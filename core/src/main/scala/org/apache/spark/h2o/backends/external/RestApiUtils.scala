@@ -18,7 +18,7 @@
 package org.apache.spark.h2o.backends.external
 
 import java.io.{File, InputStream, OutputStream}
-import java.net.{HttpURLConnection, URI}
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -122,6 +122,28 @@ trait RestApiUtils extends RestCommunication {
       frameId = frame.frame_id.name,
       columns = frame.columns.map(convertColumn),
       chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+  }
+
+  def initializeFrame(conf: H2OConf, frameId: String, columns: Array[String]) : InitializeFrameV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    val parameters = Map(
+      "key" -> frameId,
+      "columns" -> columns)
+    update[InitializeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
+  }
+
+  def finalizeFrame(
+      conf: H2OConf,
+      frameId: String,
+      rowsPerChunk: Array[Long],
+      columnTypes: Array[Byte]): FinalizeFrameV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    val parameters = Map(
+      "key" -> frameId,
+      "rows_per_chunk" -> rowsPerChunk,
+      "column_types" -> columnTypes
+    )
+    update[FinalizeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
   }
 
   def getChunk(

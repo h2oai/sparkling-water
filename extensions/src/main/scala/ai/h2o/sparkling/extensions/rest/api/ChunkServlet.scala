@@ -118,7 +118,7 @@ final class ChunkServlet extends HttpServlet {
   private def processRequest[R](request: HttpServletRequest, response: HttpServletResponse)(processor: => Unit): Unit = {
     val uri = ServletUtils.getDecodedUri(request)
     try {
-      processor()
+      processor
       ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
     } catch {
       case e: Exception => ServletUtils.sendErrorResponse(response, e, uri)

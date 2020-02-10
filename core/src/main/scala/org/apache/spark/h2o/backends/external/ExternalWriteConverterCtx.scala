@@ -24,7 +24,6 @@ import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
-import water._
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferWriter
 
 class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
@@ -40,11 +39,11 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   }
 
   override def initFrame(key: String, columns: Array[String]): Unit = {
-    ???
+    RestApiUtils.initializeFrame(conf, key, columns)
   }
 
-  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): Unit = {
-    ???
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
+    RestApiUtils.finalizeFrame(conf, key, rowsPerChunk, colTypes)
   }
 
   /**
