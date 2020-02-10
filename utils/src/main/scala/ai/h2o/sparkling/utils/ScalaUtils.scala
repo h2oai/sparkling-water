@@ -35,7 +35,7 @@ object ScalaUtils {
     }
   }
 
-  private def closeResource(resource: AutoCloseable, e: Throwable)= {
+  private def closeResource(resource: AutoCloseable, e: Throwable): Unit = {
     if (e != null) {
       try {
         resource.close()

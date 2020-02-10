@@ -15,19 +15,18 @@
 * limitations under the License.
 */
 
-package org.apache.spark.ml.spark.models
+package ai.h2o.sparkling.ml
 
 import java.io.{File, PrintWriter}
+import java.nio.file.Files
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
-import org.apache.spark.util.Utils
 import org.apache.spark.{SparkContext, SparkFiles}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -156,18 +155,23 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
     SparkContextSupport.addFiles(sc, smsDataFilePath)
 
-    // This directory is automatically deleted when the JVM shuts down
-    val streamingDataDir = Utils.createTempDir()
+
+    val tmpPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
+    val tmpDir = tmpPath.toFile
+    tmpDir.setWritable(true, false)
+    tmpDir.setReadable(true, false)
+    tmpDir.setExecutable(true, false)
+    tmpDir.deleteOnExit()
 
     val data = load(sc, "smsData.txt")
     // Create data for streaming input
     data.select("text").collect().zipWithIndex.foreach { case (r, idx) =>
-      val printer = new PrintWriter(new File(streamingDataDir, s"$idx.txt"))
+      val printer = new PrintWriter(new File(tmpDir, s"$idx.txt"))
       printer.write(r.getString(0))
       printer.close()
     }
     val schema = StructType(Seq(StructField("text", StringType)))
-    val inputDataStream = spark.readStream.schema(schema).text(streamingDataDir.getAbsolutePath)
+    val inputDataStream = spark.readStream.schema(schema).text(tmpDir.getAbsolutePath)
 
     val outputDataStream = pipelineModel.transform(inputDataStream)
     outputDataStream.writeStream.format("memory").queryName("predictions").start()
