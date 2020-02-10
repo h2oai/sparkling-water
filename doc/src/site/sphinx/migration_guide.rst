@@ -207,6 +207,10 @@ From 3.28.0 to 3.28.1
   ``spark.ext.h2o.external.write.confirmation.timeout`` does not have any effect anymore.
 
 
+- The location of Sparkling Water assembly JAR has changed inside the Sparkling Water distribution archive which you
+  can download from our `download page <https://www.h2o.ai/download/#sparkling-water>`_.
+  It has been moved from ``assembly/build/libs`` to just ``jars``.
+
 From 3.26 To 3.28.0
 -------------------
 
