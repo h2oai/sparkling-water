@@ -44,8 +44,8 @@ object ChicagoCrimeAppSmall {
 
     // Score
     val crimes = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", domestic = false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", domestic = false, 923, 9, 14, 63, 11))
+      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
+      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
     app.score(crimes, gbmModel, dlModel, censusTable)
     spark.stop()
   }
