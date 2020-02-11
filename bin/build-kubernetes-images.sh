@@ -5,7 +5,7 @@ TOPDIR=$(cd "$(dirname "$0")/.." || exit; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
 
-( cd "$SPARK_HOME" && docker-image-tool.sh -t "$SPARK_VERSION" build )
+( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$SPARK_VERSION" build )
 
 echo "Creating Working Directory"
 WORKDIR=$(mktemp -d)
