@@ -25,11 +25,7 @@ import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{date_format, dayofmonth, from_unixtime, hour, month, unix_timestamp, weekofyear, year}
 import org.apache.spark.sql.types.StringType
-import org.joda.time.DateTimeConstants._
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.fvec.Vec
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport}
@@ -39,9 +35,7 @@ import water.support.{H2OFrameSupport, ModelMetricsSupport}
  */
 class ChicagoCrimeApp(weatherFile: String,
                       censusFile: String,
-                      crimesFile: String,
-                      val datePattern: String = "MM/dd/yyyy hh:mm:ss a",
-                      val dateTimeZone: String = "Etc/UTC")
+                      crimesFile: String)
                      (@transient val hc: H2OContext) extends ModelMetricsSupport with H2OFrameSupport {
 
   @transient private val spark = hc.sparkSession
@@ -203,8 +197,8 @@ class ChicagoCrimeApp(weatherFile: String,
   private val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
 
   def addAdditionalDateColumns(df: DataFrame): DataFrame = {
-    import spark.implicits._
     import org.apache.spark.sql.functions._
+    import spark.implicits._
     df
       .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
       .withColumn("Year", year('Date))
@@ -273,14 +267,14 @@ object ChicagoCrimeApp {
 
   def getSeason(month: Int): String = {
     val seasonNum =
-      if (month >= MARCH && month <= MAY) 0 // Spring
-      else if (month >= JUNE && month <= AUGUST) 1 // Summer
-      else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
+      if (month >= 3 && month <= 5) 0 // Spring
+      else if (month >= 6 && month <= 8) 1 // Summer
+      else if (month >= 9 && month <= 10) 2 // Autumn
       else 3 // Winter
     SEASONS(seasonNum)
   }
 
-  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
+  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 
 }
 
@@ -288,7 +282,7 @@ case class Crime(date: String,
                  IUCR: Short,
                  Primary_Type: String,
                  Location_Description: String,
-                 Domestic: String,
+                 Domestic: Boolean,
                  Beat: Short,
                  District: Byte,
                  Ward: Byte,
