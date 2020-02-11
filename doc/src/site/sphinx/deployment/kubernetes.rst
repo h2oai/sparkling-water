@@ -18,46 +18,95 @@ To start Sparkling Water on Kubernetes, the steps are:
 
 1. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution.
 
-2. Run ``./bin/build-kubernetes-images.sh`` script inside of the Sparkling Water distribution.
-   This step builds docker images for all Sparkling Water, PySparkling and RSparkling which are
-   later used as the base image for the Kubernetes pods. Please also make sure that your Docker
-   environment is the one managed by Kubernetes as Kubernetes needs to see the created images.
-   You can also extend these images by putting inside our application dependencies.
+2. Create the Sparkling Water base image for Kubernetes:
+
+    Run ``./bin/build-kubernetes-images.sh`` script inside of the Sparkling Water distribution, which can be downloaded
+    from `H2O Download page <https://www.h2o.ai/download/>`__.
+    The script takes one argument which can be either ``scala``, ``python`` or ``r`` and creates a docker image
+    for that specific Sparkling Water client.
+
+    Note: Make sure that your Docker environment is the one managed by Kubernetes as Kubernetes needs to see the created images.
+
+    .. content-tabs::
+
+        .. tab-container:: Scala
+            :title: Scala
+
+            .. code:: bash
+
+                ./bin/build-kubernetes-images.sh scala
+
+        .. tab-container:: Python
+            :title: Python
+
+            .. code:: bash
+
+                ./bin/build-kubernetes-images.sh python
+
 
 3. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
 
-4. Start Sparkling Water with 3 worker nodes:
+4. Create a custom Dockerfile with your application resources inside and build the image:
+
+    .. content-tabs::
+
+        .. tab-container:: Scala
+            :title: Scala
+
+            .. code:: bash
+
+                cat <<EOT > Dockerfile-Scala-CustomApp
+                FROM sparkling-water-scala:SUBST_SW_VERSION
+                COPY ./app.jar "/opt/app.jar"
+                EOT
+
+                docker build -t "sparkling-water-scala-custom-app:SUBST_SW_VERSION" -f Dockerfile-Scala-CustomApp .
 
 
-.. content-tabs::
+        .. tab-container:: Python
+            :title: Python
 
-    .. tab-container:: Scala
-        :title: Scala
+            .. code:: bash
 
-        .. code:: bash
+                cat <<EOT > Dockerfile-Python-CustomApp
+                FROM sparkling-water-python:SUBST_SW_VERSION
+                COPY ./app.py "/opt/app.py"
+                EOT
 
-            $SPARK_HOME/bin/spark-submit \
-            --master k8s://IP:PORT \
-            --deploy-mode cluster \
-            --name CustomApplication \
-            --class custom.app.class \
-            --conf spark.kubernetes.container.image=sparkling-water-scala:${SUBST_SW_VERSION} \
-            --conf spark.executor.instances=3 \
-            local:///opt/app.jar
+                docker build -t "sparkling-water-python-custom-app:SUBST_SW_VERSION" -f  Dockerfile-Python-CustomApp .
 
 
-    .. tab-container:: Python
-        :title: Python
+5. Start Sparkling Water with 3 worker nodes:
 
-        .. code:: bash
+    .. content-tabs::
 
-            $SPARK_HOME/bin/spark-submit \
-            --master k8s://IP:PORT \
-            --deploy-mode cluster \
-            --name CustomApplication \
-            --conf spark.kubernetes.container.image=sparkling-water-python:${SUBST_SW_VERSION} \
-            --conf spark.executor.instances=3 \
-            local:///opt/app.py
+        .. tab-container:: Scala
+            :title: Scala
+
+            .. code:: bash
+
+                $SPARK_HOME/bin/spark-submit \
+                --master k8s://IP:PORT \
+                --deploy-mode cluster \
+                --name CustomApplication \
+                --class custom.app.class \
+                --conf spark.kubernetes.container.image=sparkling-water-scala-custom-app:SUBST_SW_VERSION \
+                --conf spark.executor.instances=3 \
+                local:///opt/app.jar
+
+
+        .. tab-container:: Python
+            :title: Python
+
+            .. code:: bash
+
+                $SPARK_HOME/bin/spark-submit \
+                --master k8s://IP:PORT \
+                --deploy-mode cluster \
+                --name CustomApplication \
+                --conf spark.kubernetes.container.image=sparkling-water-python-custom-app:SUBST_SW_VERSION \
+                --conf spark.executor.instances=3 \
+                local:///opt/app.py
 
 
 The ``IP:PORT`` represents the Kubernetes master obtained in step 3. It is important to mention
