@@ -24,19 +24,16 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
+
 @RunWith(classOf[JUnitRunner])
-class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
-  import spark.implicits._
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
-    // iris dataset has 3 classes, filter out one class
-    // to do binomial classification
-    .filter('class =!= "Iris-virginica")
 
   test("predictionCol content") {
     val algo = new H2OGBM()
@@ -68,13 +65,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("label", "probabilities", "contributions")
+    val expectedCols = Seq("label", "probabilities")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
-    assert(probabilities.keys.toList.sorted == Seq("Iris-setosa", "Iris-versicolor").sorted)
-    val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
-    assert(contributions != null)
-    assert(contributions.size == 5)
+    assert(probabilities.keys.toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
   }
 
   test("transformSchema with detailed prediction col") {
@@ -91,8 +85,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val labelField = StructField("label", StringType, nullable = false)
     val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = false)
-    val contributionsField = StructField("contributions", ArrayType(FloatType))
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: contributionsField :: Nil), nullable = false)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = false)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
     val schema = model.transformSchema(dataset.schema)

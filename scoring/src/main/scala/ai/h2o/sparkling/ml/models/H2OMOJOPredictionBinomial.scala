@@ -37,25 +37,25 @@ trait H2OMOJOPredictionBinomial {
     if (getWithDetailedPredictionCol()) {
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         udf[DetailedWithCalibration, Row, Double] { (r: Row, offset: Double) =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-            .predictBinomial(RowConverter.toH2ORowData(r), offset)
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
+          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+          val calibratedProbabilities = model.getResponseDomainValues.zip(pred.calibratedClassProbabilities).toMap
           DetailedWithCalibration(
             pred.label,
-            pred.classProbabilities(0),
-            pred.classProbabilities(1),
+            probabilities,
             pred.contributions,
-            pred.calibratedClassProbabilities(0),
-            pred.calibratedClassProbabilities(1)
+            calibratedProbabilities
           )
         }
       } else {
         udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-          val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-            .predictBinomial(RowConverter.toH2ORowData(r), offset)
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+          val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
+          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
           Detailed(
             pred.label,
-            pred.classProbabilities(0),
-            pred.classProbabilities(1),
+            probabilities,
             pred.contributions
           )
         }
@@ -80,17 +80,13 @@ trait H2OMOJOPredictionBinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      logWarning("From next major release 3.28.1.1, the fields 'p0' and 'p1' in the detailed prediction " +
-        "column are replaced by a single field 'probabilities' which is a map from label to predicted probability.")
-      val probabilitiesFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
+      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
       val contributionsField = StructField("contributions", ArrayType(FloatType))
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
-        logWarning("From next major release 3.28.1.1, the fields 'p0_calibrated' and 'p1_calibrated' in the detailed prediction " +
-          "column are replaced by a single field 'calibratedProbabilities' which is a map from label to predicted probability.")
-        val calibratedProbabilitiesFields = Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
-        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField) ++ calibratedProbabilitiesFields
+        val calibratedProbabilitiesField = StructField("calibratedProbabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
+        labelField :: probabilitiesField :: contributionsField :: calibratedProbabilitiesField :: Nil
       } else {
-        Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField)
+        labelField :: probabilitiesField :: contributionsField :: Nil
       }
     } else {
       labelField :: Nil
@@ -108,8 +104,8 @@ object H2OMOJOPredictionBinomial {
 
   case class Base(label: String)
 
-  case class Detailed(label: String, p0: Double, p1: Double, contributions: Array[Float])
+  case class Detailed(label: String, probabilities: Map[String, Double], contributions: Array[Float])
 
-  case class DetailedWithCalibration(label: String, p0: Double, p1: Double, contributions: Array[Float], p0_calibrated: Double, p1_calibrated: Double)
+  case class DetailedWithCalibration(label: String, probabilities: Map[String, Double], contributions: Array[Float], calibratedProbabilities: Map[String, Double])
 
 }

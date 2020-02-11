@@ -195,12 +195,15 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   def assertGBMPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit = {
-    val records = predictionDF.select( "detailed_prediction.p0", "detailed_prediction.p1").collect()
+    val records = predictionDF.select( "detailed_prediction.probabilities").collect()
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
     records.foreach { row =>
-      row.getDouble(0) should (be >= 0.0 and be <= 1.0)
-      row.getDouble(1) should (be >= 0.0 and be <= 1.0)
+      val m = row.getMap[String, Double](0)
+      assert(m.keys.toList.sorted == Seq("0", "1"))
+      m.values.foreach { value =>
+       value should (be >= 0.0 and be <= 1.0)
+      }
     }
   }
 
