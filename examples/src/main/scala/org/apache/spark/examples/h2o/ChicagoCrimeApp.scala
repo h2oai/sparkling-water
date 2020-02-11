@@ -35,8 +35,8 @@ import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
 /**
-  * Chicago Crimes Application predicting probability of arrest in Chicago.
-  */
+ * Chicago Crimes Application predicting probability of arrest in Chicago.
+ */
 class ChicagoCrimeApp(weatherFile: String,
                       censusFile: String,
                       crimesFile: String,
@@ -167,9 +167,9 @@ class ChicagoCrimeApp(weatherFile: String,
 
 
   /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
-    *
-    * @return tuple of weather, census and crime data
-    */
+   *
+   * @return tuple of weather, census and crime data
+   */
   def loadAll(): (DataFrame, DataFrame, DataFrame) = {
     implicit val sqlc = sqlContext
     // Weather data
@@ -226,7 +226,7 @@ class ChicagoCrimeApp(weatherFile: String,
     val sparkFrame = h2oContext.asDataFrame(fr)
     import org.apache.spark.sql.functions._
     import sqlContext.implicits._
-    
+
     sparkFrame
       .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
       .withColumn("Year", year('Date))
@@ -314,6 +314,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
       else 3 // Winter
     SEASONS(seasonNum)
   }
+
   def isWeekend(dayOfWeek: Int) = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
 }
 
