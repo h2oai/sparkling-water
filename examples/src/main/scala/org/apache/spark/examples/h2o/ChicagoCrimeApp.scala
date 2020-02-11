@@ -23,16 +23,15 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.fvec.Vec
 import water.parser.ParseSetup
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
+import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -42,17 +41,11 @@ class ChicagoCrimeApp(weatherFile: String,
                       crimesFile: String,
                       val datePattern: String = "MM/dd/yyyy hh:mm:ss a",
                       val dateTimeZone: String = "Etc/UTC")
-                     (@transient override val sc: SparkContext,
-                      @transient override val sqlContext: SQLContext,
-                      @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-  with ModelMetricsSupport with H2OFrameSupport {
+                     (@transient val hc: H2OContext) extends ModelMetricsSupport with H2OFrameSupport {
+
+  @transient private val spark = hc.sparkSession
 
   def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
-    // Prepare environment
-    @transient implicit val sqlc = sqlContext
-    @transient implicit val h2oc = h2oContext
-    import h2oContext.implicits._
-
     // Register tables in SQL Context
     weatherTable.createOrReplaceTempView("chicagoWeather")
     censusTable.createOrReplaceTempView("chicagoCensus")
@@ -61,7 +54,7 @@ class ChicagoCrimeApp(weatherFile: String,
     //
     // Join crime data with weather and census tables
     //
-    val crimeWeather = sqlContext.sql(
+    val crimeWeather = spark.sql(
       """SELECT
         |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
         |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
@@ -76,8 +69,7 @@ class ChicagoCrimeApp(weatherFile: String,
         |JOIN chicagoCensus c
         |ON a.Community_Area = c.Community_Area_Number""".stripMargin)
 
-    //crimeWeather.printSchema()
-    val crimeWeatherDF: H2OFrame = crimeWeather
+    val crimeWeatherDF: H2OFrame = hc.asH2OFrame(crimeWeather)
     // Transform all string columns into categorical
     allStringVecToCategorical(crimeWeatherDF)
 
@@ -87,18 +79,18 @@ class ChicagoCrimeApp(weatherFile: String,
     val keys = Array[String]("train.hex", "test.hex")
     val ratios = Array[Double](0.8, 0.2)
     val frs = splitFrame(crimeWeatherDF, keys, ratios)
-    val (train, test) = (frs(0), frs(1))
+    val (train, test) = (hc.asH2OFrame(frs(0)), hc.asH2OFrame(frs(1)))
 
     //
     // Build GBM model and collect model metrics
     //
-    val gbmModel = GBMModel(train, test, 'Arrest)
+    val gbmModel = GBMModel(train, test, "Arrest")
     val (trainMetricsGBM, testMetricsGBM) = binomialMetrics(gbmModel, train, test)
 
     //
     // Build Deep Learning model and collect model metrics
     //
-    val dlModel = DLModel(train, test, 'Arrest)
+    val dlModel = DLModel(train, test, "Arrest")
     val (trainMetricsDL, testMetricsDL) = binomialMetrics(dlModel, train, test)
 
     //
@@ -118,15 +110,13 @@ class ChicagoCrimeApp(weatherFile: String,
   }
 
   def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-               ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli)
-              (implicit h2oContext: H2OContext): GBMModel = {
-    import h2oContext.implicits._
+               ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli): GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
-    gbmParams._train = train
-    gbmParams._valid = test
+    gbmParams._train = train.key
+    gbmParams._valid = test.key
     gbmParams._response_column = response
     gbmParams._ntrees = ntrees
     gbmParams._max_depth = depth
@@ -139,14 +129,12 @@ class ChicagoCrimeApp(weatherFile: String,
 
   def DLModel(train: H2OFrame, test: H2OFrame, response: String,
               epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
-              activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200))
-             (implicit h2oContext: H2OContext): DeepLearningModel = {
-    import h2oContext.implicits._
+              activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
     import hex.deeplearning.DeepLearning
 
     val dlParams = new DeepLearningParameters()
-    dlParams._train = train
-    dlParams._valid = test
+    dlParams._train = train.key
+    dlParams._valid = test.key
     dlParams._response_column = response
     dlParams._epochs = epochs
     dlParams._l1 = l1
@@ -171,7 +159,6 @@ class ChicagoCrimeApp(weatherFile: String,
    * @return tuple of weather, census and crime data
    */
   def loadAll(): (DataFrame, DataFrame, DataFrame) = {
-    implicit val sqlc = sqlContext
     // Weather data
     val weatherTable = createWeatherTable(weatherFile)
     weatherTable.createOrReplaceTempView("chicagoWeather")
@@ -197,7 +184,7 @@ class ChicagoCrimeApp(weatherFile: String,
       // Remove first column since we do not need it
       _.remove(0).remove()
     }
-    h2oContext.asDataFrame(fr)
+    hc.asDataFrame(fr)
   }
 
   def createCensusTable(datafile: String): DataFrame = {
@@ -206,7 +193,7 @@ class ChicagoCrimeApp(weatherFile: String,
       val colNames = fr.names().map(n => n.trim.replace(' ', '_').replace('+', '_'))
       fr._names = colNames
     }
-    h2oContext.asDataFrame(fr)
+    hc.asDataFrame(fr)
   }
 
   def createCrimeTable(datafile: String): DataFrame = {
@@ -223,9 +210,9 @@ class ChicagoCrimeApp(weatherFile: String,
       fr._names = colNames
     }
 
-    val sparkFrame = h2oContext.asDataFrame(fr)
+    val sparkFrame = hc.asDataFrame(fr)
     import org.apache.spark.sql.functions._
-    import sqlContext.implicits._
+    import spark.implicits._
 
     sparkFrame
       .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
@@ -242,14 +229,12 @@ class ChicagoCrimeApp(weatherFile: String,
   val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
   val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
 
-  def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame)
-                (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
-    import h2oContext.implicits._
-    import sqlContext.implicits._
+  def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
+    import spark.implicits._
     // Create a single row table
-    val srdd: DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF
+    val srdd: DataFrame = spark.sparkContext.parallelize(Seq(crime)).toDF
     // Join table with census data
-    val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
+    val row: H2OFrame = hc.asH2OFrame(censusTable.join(srdd).where('Community_Area === 'Community_Area_Number))
     // Transform all string columns into categorical
     allStringVecToCategorical(row)
 
@@ -265,16 +250,14 @@ object ChicagoCrimeApp extends SparkContextSupport {
 
   def main(args: Array[String]) {
     // Prepare environment
-    val sc = new SparkContext(configure("ChicagoCrimeTest"))
-    // SQL support
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
+    val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val hc = H2OContext.getOrCreate(spark)
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv",
       censusFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv",
-      crimesFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
+      crimesFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(hc)
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
     // Train model
@@ -287,10 +270,10 @@ object ChicagoCrimeApp extends SparkContextSupport {
     for (crime <- crimeExamples) {
       val arrestProbGBM = 100 * app.scoreEvent(crime,
         gbmModel,
-        censusTable)(sqlContext, h2oContext)
+        censusTable)
       val arrestProbDL = 100 * app.scoreEvent(crime,
         dlModel,
-        censusTable)(sqlContext, h2oContext)
+        censusTable)
       println(
         s"""
            |Crime: $crime
@@ -300,8 +283,7 @@ object ChicagoCrimeApp extends SparkContextSupport {
         """.stripMargin)
     }
 
-    // Shutdown full stack
-    app.shutdown()
+    spark.stop()
   }
 
   def SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")

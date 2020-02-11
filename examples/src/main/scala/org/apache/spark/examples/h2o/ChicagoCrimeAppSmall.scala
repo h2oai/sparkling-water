@@ -17,7 +17,6 @@
 
 package org.apache.spark.examples.h2o
 
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 import water.support.SparkContextSupport
@@ -29,17 +28,14 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
 
   def main(args: Array[String]) {
     // Prepare environment
-    val sc = new SparkContext(configure("ChicagoCrimeTest"))
-
-    // SQL support
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
+    val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val hc = H2OContext.getOrCreate(spark)
 
     val app = new ChicagoCrimeApp(
       weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv"),
       censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv"),
-      crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip"))(sc, sqlContext, h2oContext)
+      crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip"))(hc)
 
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
@@ -53,20 +49,18 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
     for (crime <- crimeExamples) {
       val arrestProbGBM = 100 * app.scoreEvent(crime,
         gbmModel,
-        censusTable)(sqlContext, h2oContext)
+        censusTable)
       val arrestProbDL = 100 * app.scoreEvent(crime,
         dlModel,
-        censusTable)(sqlContext, h2oContext)
+        censusTable)
       println(
         s"""
            |Crime: $crime
-            |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-            |  Probability of arrest best on GBM: ${arrestProbGBM} %
-                                                                                                                                    |
+           |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
+           |  Probability of arrest best on GBM: ${arrestProbGBM} %
+           |
         """.stripMargin)
     }
-
-    // Shutdown full stack
-    app.shutdown()
+    spark.stop()
   }
 }
