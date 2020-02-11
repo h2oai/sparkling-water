@@ -54,6 +54,7 @@ public class StackTraceExtension extends AbstractH2OExtension {
   private class StackTraceCollectorThread extends Thread {
     public StackTraceCollectorThread() {
       super("StackTraceCollectorThread");
+      setDaemon(true);
     }
 
     @Override
