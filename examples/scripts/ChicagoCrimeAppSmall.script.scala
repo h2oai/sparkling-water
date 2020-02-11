@@ -1,7 +1,7 @@
 /**
  * Launch following commands:
 *    export MASTER="local-cluster[3,2,4096]"
- *   bin/sparkling-shell -i examples/scripts/chicagoCrimeSmallShell.script.scala --conf spark.executor.memory=3G
+ *   bin/sparkling-shell -i examples/scripts/ChicagoCrimeAppSmall.script.scala --conf spark.executor.memory=3G
  *
   * When running using spark shell or using scala rest API:
   *    SQLContext is available as sqlContext

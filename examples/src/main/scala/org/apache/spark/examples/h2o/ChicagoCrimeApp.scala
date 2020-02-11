@@ -24,14 +24,13 @@ import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.fvec.Vec
 import water.parser.ParseSetup
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
+import water.support.{H2OFrameSupport, ModelMetricsSupport}
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -211,8 +210,8 @@ class ChicagoCrimeApp(weatherFile: String,
     }
 
     val sparkFrame = hc.asDataFrame(fr)
-    import org.apache.spark.sql.functions._
     import spark.implicits._
+    import org.apache.spark.sql.functions._
 
     sparkFrame
       .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
@@ -222,12 +221,13 @@ class ChicagoCrimeApp(weatherFile: String,
       .withColumn("WeekNum", weekofyear('Date))
       .withColumn("HourOfDay", hour('Date))
       .withColumn("Season", seasonUdf('Month))
-      .withColumn("WeekDay", dayofweek('Date))
+      .withColumn("WeekDay", date_format('Date, "u"))
       .withColumn("Weekend", weekendUdf('WeekDay))
   }
+  import org.apache.spark.sql.functions.udf
 
-  val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
-  val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
+  private val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
+  private val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
 
   def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
     import spark.implicits._
@@ -244,51 +244,26 @@ class ChicagoCrimeApp(weatherFile: String,
     probOfArrest.toFloat
   }
 
-}
-
-object ChicagoCrimeApp extends SparkContextSupport {
-
-  def main(args: Array[String]) {
-    // Prepare environment
-    val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
-    // Start H2O services
-    val hc = H2OContext.getOrCreate(spark)
-
-    val app = new ChicagoCrimeApp(
-      weatherFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv",
-      censusFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv",
-      crimesFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(hc)
-    // Load data
-    val (weatherTable, censusTable, crimesTable) = app.loadAll()
-    // Train model
-    val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
-
-    val crimeExamples = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
-
-    for (crime <- crimeExamples) {
-      val arrestProbGBM = 100 * app.scoreEvent(crime,
-        gbmModel,
-        censusTable)
-      val arrestProbDL = 100 * app.scoreEvent(crime,
-        dlModel,
-        censusTable)
+  def score(crimes: Seq[Crime], gbmModel: GBMModel, dlModel: DeepLearningModel, censusTable: DataFrame): Unit = {
+    crimes.foreach { crime =>
+      val arrestProbGBM = 100 * scoreEvent(crime, gbmModel, censusTable)
+      val arrestProbDL = 100 * scoreEvent(crime, dlModel, censusTable)
       println(
         s"""
            |Crime: $crime
-           |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-           |  Probability of arrest best on GBM: ${arrestProbGBM} %
+           |  Probability of arrest best on DeepLearning: $arrestProbDL %
+           |  Probability of arrest best on GBM: $arrestProbGBM %
            |
         """.stripMargin)
     }
-
-    spark.stop()
   }
+}
 
-  def SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")
+object ChicagoCrimeApp {
 
-  def getSeason(month: Int) = {
+  def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
+
+  def getSeason(month: Int): String = {
     val seasonNum =
       if (month >= MARCH && month <= MAY) 0 // Spring
       else if (month >= JUNE && month <= AUGUST) 1 // Summer
@@ -297,7 +272,8 @@ object ChicagoCrimeApp extends SparkContextSupport {
     SEASONS(seasonNum)
   }
 
-  def isWeekend(dayOfWeek: Int) = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
+  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
+
 }
 
 // scalastyle:off rddtype

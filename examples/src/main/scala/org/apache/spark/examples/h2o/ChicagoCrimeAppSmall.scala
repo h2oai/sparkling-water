@@ -19,12 +19,11 @@ package org.apache.spark.examples.h2o
 
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import water.support.SparkContextSupport
 
 /**
  * Chicago crime app on small data.
  */
-object ChicagoCrimeAppSmall extends SparkContextSupport {
+object ChicagoCrimeAppSmall {
 
   def main(args: Array[String]) {
     // Prepare environment
@@ -39,25 +38,15 @@ object ChicagoCrimeAppSmall extends SparkContextSupport {
 
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
+
     // Train model
     val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
 
-    val crimeExamples = Seq(
+    // Score
+    val crimes = Seq(
       Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", domestic = false, 422, 4, 7, 46, 18),
       Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", domestic = false, 923, 9, 14, 63, 11))
-
-    crimeExamples.foreach { crime =>
-      val arrestProbGBM = 100 * app.scoreEvent(crime, gbmModel, censusTable)
-      val arrestProbDL = 100 * app.scoreEvent(crime, dlModel, censusTable)
-      println(
-        s"""
-           |Crime: $crime
-           |  Probability of arrest best on DeepLearning: $arrestProbDL %
-           |  Probability of arrest best on GBM: $arrestProbGBM %
-           |
-        """.stripMargin)
-
-    }
+    app.score(crimes, gbmModel, dlModel, censusTable)
     spark.stop()
   }
 }

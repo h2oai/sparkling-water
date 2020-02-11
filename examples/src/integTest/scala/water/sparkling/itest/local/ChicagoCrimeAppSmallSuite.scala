@@ -20,8 +20,8 @@ class ChicagoCrimeAppSmallSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object ChicagoCrimeAppSmallTest extends IntegTestStopper{
-  def main(args: Array[String]): Unit = exitOnException{
+object ChicagoCrimeAppSmallTest extends IntegTestStopper {
+  def main(args: Array[String]): Unit = exitOnException {
     ChicagoCrimeAppSmall.main(args)
   }
 }
