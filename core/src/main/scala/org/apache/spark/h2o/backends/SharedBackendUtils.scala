@@ -113,10 +113,6 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
       conf.setH2OClientLogLevel(incLogLevel(conf.h2oClientLogLevel, "INFO"))
     }
 
-    if(!conf.hadoopConf.isDefined){
-      conf.setHdfsConf(SparkContext.getOrCreate().hadoopConfiguration)
-    }
-
     conf
   }
 
