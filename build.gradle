@@ -70,7 +70,6 @@ ext {
             project(':sparkling-water-macros'),
             project(':sparkling-water-utils'),
             project(':sparkling-water-scoring'),
-            project(':sparkling-water-extension-stack-trace'),
             project(':sparkling-water-extensions')
 
     ]

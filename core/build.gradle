@@ -134,12 +134,10 @@ dependencies {
     // And use scalatest for Scala testing
     testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     testCompile "junit:junit:4.11"
-    testCompile(project(":sparkling-water-extension-stack-trace"))
 
     // Integration tests requirements
     integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
     integTestCompile "junit:junit:4.11"
-    integTestCompile(project(":sparkling-water-extension-stack-trace"))
 
     // Requirements of benchmarks
     benchCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
