@@ -195,6 +195,11 @@ class ChicagoCrimeApp(weatherFile: String,
     hc.asDataFrame(fr)
   }
 
+  import org.apache.spark.sql.functions.udf
+
+  private val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
+  private val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
+
   def createCrimeTable(datafile: String): DataFrame = {
     val table = loadData(datafile, (parseSetup: ParseSetup) => {
       val colNames = parseSetup.getColumnNames
@@ -224,10 +229,6 @@ class ChicagoCrimeApp(weatherFile: String,
       .withColumn("WeekDay", date_format('Date, "u"))
       .withColumn("Weekend", weekendUdf('WeekDay))
   }
-  import org.apache.spark.sql.functions.udf
-
-  private val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
-  private val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
 
   def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
     import spark.implicits._
