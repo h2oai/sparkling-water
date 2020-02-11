@@ -40,6 +40,8 @@ task createPythonDockerfile(type: Dockerfile) {
     destFile = outputFilePython
     from "spark-py:${sparkVersion}"
     copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
+    runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
+
 }
 
 task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])
