@@ -25,13 +25,13 @@ import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.joda.time.DateTimeConstants._
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTimeZone, MutableDateTime}
-import water.MRTask
-import water.fvec.{Chunk, NewChunk, Vec}
-import water.parser.{BufferedString, ParseSetup}
+import water.fvec.Vec
+import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
 
 /**
@@ -172,16 +172,14 @@ class ChicagoCrimeApp(weatherFile: String,
     */
   def loadAll(): (DataFrame, DataFrame, DataFrame) = {
     implicit val sqlc = sqlContext
-    implicit val h2oc = h2oContext
-    import h2oContext._
     // Weather data
-    val weatherTable = asDataFrame(createWeatherTable(weatherFile))
+    val weatherTable = createWeatherTable(weatherFile)
     weatherTable.createOrReplaceTempView("chicagoWeather")
     // Census data
-    val censusTable = asDataFrame(createCensusTable(censusFile))
+    val censusTable = createCensusTable(censusFile)
     censusTable.createOrReplaceTempView("chicagoCensus")
     // Crime data
-    val crimeTable = asDataFrame(createCrimeTable(crimesFile))
+    val crimeTable = createCrimeTable(crimesFile)
     crimeTable.createOrReplaceTempView("chicagoCrime")
 
     (weatherTable, censusTable, crimeTable)
@@ -193,23 +191,25 @@ class ChicagoCrimeApp(weatherFile: String,
     new H2OFrame(parseSetup, new java.net.URI(datafile))
   }
 
-  def createWeatherTable(datafile: String): H2OFrame = {
+  def createWeatherTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
-    withLockAndUpdate(table) {
+    val fr = withLockAndUpdate(table) {
       // Remove first column since we do not need it
       _.remove(0).remove()
     }
+    h2oContext.asDataFrame(fr)
   }
 
-  def createCensusTable(datafile: String): H2OFrame = {
+  def createCensusTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
-    withLockAndUpdate(table) { fr =>
+    val fr = withLockAndUpdate(table) { fr =>
       val colNames = fr.names().map(n => n.trim.replace(' ', '_').replace('+', '_'))
       fr._names = colNames
     }
+    h2oContext.asDataFrame(fr)
   }
 
-  def createCrimeTable(datafile: String): H2OFrame = {
+  def createCrimeTable(datafile: String): DataFrame = {
     val table = loadData(datafile, (parseSetup: ParseSetup) => {
       val colNames = parseSetup.getColumnNames
       val typeNames = parseSetup.getColumnTypes
@@ -218,28 +218,30 @@ class ChicagoCrimeApp(weatherFile: String,
       }
       parseSetup
     })
-    withLockAndUpdate(table) { fr =>
-      // Refine date into multiple columns
-      val dateCol = fr.vec(2)
-      fr.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
-      // Update names, replace all ' ' by '_'
+    val fr = withLockAndUpdate(table) { fr =>
       val colNames = fr.names().map(n => n.trim.replace(' ', '_'))
       fr._names = colNames
-      // Remove Date column
-      fr.remove(2).remove()
     }
+
+    val sparkFrame = h2oContext.asDataFrame(fr)
+    import org.apache.spark.sql.functions._
+    import sqlContext.implicits._
+    
+    sparkFrame
+      .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("Day", dayofmonth('Date))
+      .withColumn("WeekNum", weekofyear('Date))
+      .withColumn("HourOfDay", hour('Date))
+      .withColumn("Season", seasonUdf('Month))
+      .withColumn("WeekDay", dayofweek('Date))
+      .withColumn("Weekend", weekendUdf('WeekDay))
   }
 
-  /**
-    * For given crime and model returns probability of crime.
-    *
-    * @param crime
-    * @param model
-    * @param censusTable
-    * @param sqlContext
-    * @param h2oContext
-    * @return
-    */
+  val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
+  val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
+
   def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame)
                 (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
     import h2oContext.implicits._
@@ -304,11 +306,15 @@ object ChicagoCrimeApp extends SparkContextSupport {
 
   def SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")
 
-  def getSeason(month: Int) =
-    if (month >= MARCH && month <= MAY) 0 // Spring
-    else if (month >= JUNE && month <= AUGUST) 1 // Summer
-    else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
-    else 3 // Winter
+  def getSeason(month: Int) = {
+    val seasonNum =
+      if (month >= MARCH && month <= MAY) 0 // Spring
+      else if (month >= JUNE && month <= AUGUST) 1 // Summer
+      else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
+      else 3 // Winter
+    SEASONS(seasonNum)
+  }
+  def isWeekend(dayOfWeek: Int) = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
 }
 
 // scalastyle:off rddtype
@@ -354,8 +360,8 @@ object Crime {
       mDateTime.getDayOfMonth.toByte,
       mDateTime.getWeekOfWeekyear.toByte,
       mDateTime.getHourOfDay.toByte,
-      if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0,
-      ChicagoCrimeApp.SEASONS(ChicagoCrimeApp.getSeason(month)),
+      ChicagoCrimeApp.isWeekend(dayOfWeek).toByte,
+      ChicagoCrimeApp.getSeason(month),
       mDateTime.getDayOfWeek.toByte,
       iucr, primaryType, locationDescr,
       if (domestic) "true" else "false",
@@ -365,58 +371,3 @@ object Crime {
 }
 
 // scalastyle:on rddtype
-
-/**
-  * Adhoc date column refinement.
-  *
-  * It takes column in the specified format 'MM/dd/yyyy hh:mm:ss a' and refines
-  * it into 8 columns: "Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"
-  */
-class RefineDateColumn(val datePattern: String,
-                       val dateTimeZone: String) extends MRTask[RefineDateColumn] {
-  // Entry point
-  def doIt(col: Vec): H2OFrame = {
-    val inputCol = if (col.isCategorical) col.toStringVec else col
-    val result = new H2OFrame(
-      doAll(Array[Byte](Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM), inputCol).outputFrame(
-        Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
-        Array[Array[String]](null, null, null, null, null, null, ChicagoCrimeApp.SEASONS, null)))
-    if (col.isCategorical) inputCol.remove()
-    result
-  }
-
-  override def map(cs: Array[Chunk], ncs: Array[NewChunk]): Unit = {
-    // Initialize DataTime convertor (cannot be done in setupLocal since it is not H2O serializable :-/
-    val dtFmt = DateTimeFormat.forPattern(datePattern).withZone(DateTimeZone.forID(dateTimeZone))
-    // Get input and output chunks
-    val dateChunk = cs(0)
-    val (dayNC, monthNC, yearNC, weekNC, weekdayNC, weekendNC, seasonNC, hourNC)
-    = (ncs(0), ncs(1), ncs(2), ncs(3), ncs(4), ncs(5), ncs(6), ncs(7))
-    val valStr = new BufferedString()
-    val mDateTime = new MutableDateTime()
-    for (row <- 0 until dateChunk.len()) {
-      if (dateChunk.isNA(row)) {
-        addNAs(ncs)
-      } else {
-        // Extract data
-        val ds = dateChunk.atStr(valStr, row).toString
-        if (dtFmt.parseInto(mDateTime, ds, 0) > 0) {
-          val month = mDateTime.getMonthOfYear
-          dayNC.addNum(mDateTime.getDayOfMonth, 0)
-          monthNC.addNum(month, 0)
-          yearNC.addNum(mDateTime.getYear, 0)
-          weekNC.addNum(mDateTime.getWeekOfWeekyear)
-          val dayOfWeek = mDateTime.getDayOfWeek
-          weekdayNC.addNum(dayOfWeek)
-          weekendNC.addNum(if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0, 0)
-          seasonNC.addNum(ChicagoCrimeApp.getSeason(month), 0)
-          hourNC.addNum(mDateTime.getHourOfDay)
-        } else {
-          addNAs(ncs)
-        }
-      }
-    }
-  }
-
-  private def addNAs(ncs: Array[NewChunk]): Unit = ncs.foreach(nc => nc.addNA())
-}
