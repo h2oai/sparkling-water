@@ -6,7 +6,7 @@ import water.{AbstractH2OExtension, H2O}
 import water.util.Log
 
 
-class StackTraceExtension extends AbstractH2OExtension {
+class StackTraceCollector extends AbstractH2OExtension {
   private var interval = -1 // -1 means disabled
 
   override def getExtensionName = "StackTraceCollector"

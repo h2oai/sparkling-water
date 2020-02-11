@@ -1,1 +1,1 @@
-ai.h2o.sparkling.extensions.stacktrace.StackTraceExtension
+ai.h2o.sparkling.extensions.stacktrace.StackTraceCollector
