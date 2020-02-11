@@ -52,6 +52,8 @@ trait H2OMOJOPredictionOrdinal {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
+      logWarning("From next major release 3.28.1.1, the type of field 'probabilities' in the detailed prediction " +
+        "column has changed from array of probabilities to a map from label to predicted probability.")
       val probabilitiesField = StructField("probabilities", ArrayType(DoubleType))
       labelField :: probabilitiesField :: Nil
     } else {
