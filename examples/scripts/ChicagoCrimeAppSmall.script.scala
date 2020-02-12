@@ -4,6 +4,7 @@
  * bin/sparkling-shell -i examples/scripts/ChicagoCrimeAppSmall.script.scala --conf spark.executor.memory=3G
  *
  */
+
 import _root_.hex.genmodel.utils.DistributionFamily
 import _root_.hex.deeplearning.DeepLearningModel
 import _root_.hex.tree.gbm.GBMModel
@@ -111,7 +112,7 @@ weatherTable.createOrReplaceTempView("chicagoWeather")
 val censusTable = createCensusTable(censusFile)
 censusTable.createOrReplaceTempView("chicagoCensus")
 // Crime data
-val crimeTable  = createCrimeTable(crimesFile)
+val crimeTable = createCrimeTable(crimesFile)
 crimeTable.createOrReplaceTempView("chicagoCrime")
 
 //
@@ -203,10 +204,10 @@ val gbmModel = GBMModel(train, test, "Arrest")
 val dlModel = DLModel(train, test, "Arrest")
 
 // Collect model metrics
-def binomialMetrics[M <: Model[M,P,O], P <: _root_.hex.Model.Parameters, O <: _root_.hex.Model.Output]
-(model: Model[M,P,O], train: H2OFrame, test: H2OFrame):(ModelMetricsBinomial, ModelMetricsBinomial) = {
+def binomialMetrics[M <: Model[M, P, O], P <: _root_.hex.Model.Parameters, O <: _root_.hex.Model.Output]
+(model: Model[M, P, O], train: H2OFrame, test: H2OFrame): (ModelMetricsBinomial, ModelMetricsBinomial) = {
   import water.support.ModelMetricsSupport._
-  (modelMetrics(model,train), modelMetrics(model, test))
+  (modelMetrics(model, train), modelMetrics(model, test))
 }
 
 val (trainMetricsGBM, testMetricsGBM) = binomialMetrics(gbmModel, train, test)
@@ -219,10 +220,10 @@ println(
   s"""Model performance:
      |  GBM:
      |    train AUC = ${trainMetricsGBM.auc}
-      |    test  AUC = ${testMetricsGBM.auc}
-      |  DL:
-      |    train AUC = ${trainMetricsDL.auc}
-      |    test  AUC = ${testMetricsDL.auc}
+     |    test  AUC = ${testMetricsGBM.auc}
+     |  DL:
+     |    train AUC = ${trainMetricsDL.auc}
+     |    test  AUC = ${testMetricsDL.auc}
       """.stripMargin)
 
 // Create Crime class for scoring
@@ -239,6 +240,7 @@ case class Crime(date: String,
                  minTemp: Option[Byte] = None,
                  maxTemp: Option[Byte] = None,
                  meanTemp: Option[Byte] = None)
+
 //
 // Create a predictor
 //
@@ -287,15 +289,16 @@ val allCrimes = spark.sql("SELECT Primary_Type, count(*) FROM chicagoCrime GROUP
 val crimesWithArrest = spark.sql("SELECT Primary_Type, count(*) FROM chicagoCrime WHERE Arrest = 'true' GROUP BY Primary_Type").collect
 // Compute scores
 val crimeTypeToArrest = collection.mutable.Map[String, Long]()
-allCrimes.foreach( c => if (!c.isNullAt(0)) crimeTypeToArrest += ( c.getString(0) -> c.getLong(1) ) )
+allCrimes.foreach(c => if (!c.isNullAt(0)) crimeTypeToArrest += (c.getString(0) -> c.getLong(1)))
 val numOfAllCrimes = crimeTable.count
 val numOfAllArrests = spark.sql("SELECT * FROM chicagoCrime WHERE Arrest = 'true'").count
 // Create a table with:
 val crimeTypeArrestRate = crimesWithArrest.map(c =>
   if (!c.isNullAt(0)) {
     val crimeType = c.getString(0)
-    val count:Long = crimeTypeToArrest.get(crimeType).getOrElse(0)
-    Row(crimeType, c.getLong(1).toDouble/count, c.getLong(1), count, c.getLong(1)/numOfAllArrests.toDouble, c.getLong(1)/count.toDouble, count/numOfAllCrimes.toDouble) } ).map(_.asInstanceOf[Row])
+    val count: Long = crimeTypeToArrest.get(crimeType).getOrElse(0)
+    Row(crimeType, c.getLong(1).toDouble / count, c.getLong(1), count, c.getLong(1) / numOfAllArrests.toDouble, c.getLong(1) / count.toDouble, count / numOfAllCrimes.toDouble)
+  }).map(_.asInstanceOf[Row])
 val schema = StructType(Seq(
   StructField("CrimeType", StringType, false),
   StructField("ArrestRate", DoubleType, false),
@@ -309,7 +312,7 @@ val rowRdd = spark.sparkContext.parallelize(crimeTypeArrestRate).sortBy(x => -x.
 val rateSRdd = spark.createDataFrame(rowRdd, schema)
 
 // Transfer it into H2O
-val rateFrame:H2OFrame = hc.asH2OFrame(rateSRdd, Some("RATES"))
+val rateFrame: H2OFrame = hc.asH2OFrame(rateSRdd, Some("RATES"))
 
 /*
 In flow type this:
