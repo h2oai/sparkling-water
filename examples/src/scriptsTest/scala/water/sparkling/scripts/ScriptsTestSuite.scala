@@ -82,7 +82,7 @@ class BasicInterpreterTests extends ScriptsTestHelper {
 }
 
 @RunWith(classOf[JUnitRunner])
-class ScriptChicagoCrimeSmall extends ScriptsTestHelper {
+class ScriptChicagoCrimeAppSmall extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
     sparkConf = defaultConf.setMaster("local[*]")
       .set("spark.driver.memory", "2G")
@@ -90,23 +90,8 @@ class ScriptChicagoCrimeSmall extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("chicagoCrimeSmall.script.scala ") {
-    val result = launchScript("chicagoCrimeSmall.script.scala")
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
-class ScriptChicagoCrimeSmallShell extends ScriptsTestHelper {
-  override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local[*]")
-      .set("spark.driver.memory", "2G")
-      .set("spark.executor.memory", "2G")
-    super.beforeAll()
-  }
-
-  test("chicagoCrimeSmallShell.script.scala") {
-    val result = launchScript("chicagoCrimeSmallShell.script.scala")
+  test("ChicagoCrimeAppSmall.script.scala") {
+    val result = launchScript("ChicagoCrimeAppSmall.script.scala")
     assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
   }
 }

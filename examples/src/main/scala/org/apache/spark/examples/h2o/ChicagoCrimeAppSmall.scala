@@ -17,56 +17,36 @@
 
 package org.apache.spark.examples.h2o
 
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import water.support.SparkContextSupport
 
 /**
  * Chicago crime app on small data.
  */
-object ChicagoCrimeAppSmall extends SparkContextSupport {
+object ChicagoCrimeAppSmall {
 
   def main(args: Array[String]) {
     // Prepare environment
-    val sc = new SparkContext(configure("ChicagoCrimeTest"))
-
-    // SQL support
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
+    val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val hc = H2OContext.getOrCreate(spark)
 
     val app = new ChicagoCrimeApp(
       weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv"),
       censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv"),
-      crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip"))(sc, sqlContext, h2oContext)
+      crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip"))(hc)
 
     // Load data
     val (weatherTable, censusTable, crimesTable) = app.loadAll()
+
     // Train model
     val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
 
-    val crimeExamples = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
-
-    for (crime <- crimeExamples) {
-      val arrestProbGBM = 100 * app.scoreEvent(crime,
-        gbmModel,
-        censusTable)(sqlContext, h2oContext)
-      val arrestProbDL = 100 * app.scoreEvent(crime,
-        dlModel,
-        censusTable)(sqlContext, h2oContext)
-      println(
-        s"""
-           |Crime: $crime
-            |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-            |  Probability of arrest best on GBM: ${arrestProbGBM} %
-                                                                                                                                    |
-        """.stripMargin)
-    }
-
-    // Shutdown full stack
-    app.shutdown()
+    // Score
+    val crimes = Seq(
+      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", Domestic = false, 422, 4, 7, 46, 18),
+      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", Domestic = false, 923, 9, 14, 63, 11))
+    app.score(crimes, gbmModel, dlModel, censusTable)
+    hc.stop(stopSparkContext = true)
   }
 }

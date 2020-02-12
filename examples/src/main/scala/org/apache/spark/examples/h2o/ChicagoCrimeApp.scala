@@ -23,36 +23,43 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
-import org.joda.time.DateTimeConstants._
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.{DateTimeZone, MutableDateTime}
-import water.MRTask
-import water.fvec.{Chunk, NewChunk, Vec}
-import water.parser.{BufferedString, ParseSetup}
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport, SparklingWaterApp}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.StringType
+import water.fvec.Vec
+import water.parser.ParseSetup
+import water.support.{H2OFrameSupport, ModelMetricsSupport}
+import org.apache.spark.sql.functions.udf
 
 /**
-  * Chicago Crimes Application predicting probability of arrest in Chicago.
-  */
+ * Chicago Crimes Application predicting probability of arrest in Chicago.
+ */
 class ChicagoCrimeApp(weatherFile: String,
                       censusFile: String,
-                      crimesFile: String,
-                      val datePattern: String = "MM/dd/yyyy hh:mm:ss a",
-                      val dateTimeZone: String = "Etc/UTC")
-                     (@transient override val sc: SparkContext,
-                      @transient override val sqlContext: SQLContext,
-                      @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-  with ModelMetricsSupport with H2OFrameSupport {
+                      crimesFile: String)
+                     (@transient val hc: H2OContext) extends ModelMetricsSupport with H2OFrameSupport {
+
+  @transient private val spark = hc.sparkSession
+
+  /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
+   *
+   * @return tuple of weather, census and crime data
+   */
+  def loadAll(): (DataFrame, DataFrame, DataFrame) = {
+    // Weather data
+    val weatherTable = createWeatherTable(weatherFile)
+    weatherTable.createOrReplaceTempView("chicagoWeather")
+    // Census data
+    val censusTable = createCensusTable(censusFile)
+    censusTable.createOrReplaceTempView("chicagoCensus")
+    // Crime data
+    val crimeTable = createCrimeTable(crimesFile)
+    crimeTable.createOrReplaceTempView("chicagoCrime")
+
+    (weatherTable, censusTable, crimeTable)
+  }
 
   def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
-    // Prepare environment
-    @transient implicit val sqlc = sqlContext
-    @transient implicit val h2oc = h2oContext
-    import h2oContext.implicits._
-
     // Register tables in SQL Context
     weatherTable.createOrReplaceTempView("chicagoWeather")
     censusTable.createOrReplaceTempView("chicagoCensus")
@@ -61,7 +68,7 @@ class ChicagoCrimeApp(weatherFile: String,
     //
     // Join crime data with weather and census tables
     //
-    val crimeWeather = sqlContext.sql(
+    val crimeWeather = spark.sql(
       """SELECT
         |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
         |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
@@ -76,8 +83,7 @@ class ChicagoCrimeApp(weatherFile: String,
         |JOIN chicagoCensus c
         |ON a.Community_Area = c.Community_Area_Number""".stripMargin)
 
-    //crimeWeather.printSchema()
-    val crimeWeatherDF: H2OFrame = crimeWeather
+    val crimeWeatherDF: H2OFrame = hc.asH2OFrame(crimeWeather)
     // Transform all string columns into categorical
     allStringVecToCategorical(crimeWeatherDF)
 
@@ -87,18 +93,18 @@ class ChicagoCrimeApp(weatherFile: String,
     val keys = Array[String]("train.hex", "test.hex")
     val ratios = Array[Double](0.8, 0.2)
     val frs = splitFrame(crimeWeatherDF, keys, ratios)
-    val (train, test) = (frs(0), frs(1))
+    val (train, test) = (hc.asH2OFrame(frs(0)), hc.asH2OFrame(frs(1)))
 
     //
     // Build GBM model and collect model metrics
     //
-    val gbmModel = GBMModel(train, test, 'Arrest)
+    val gbmModel = GBMModel(train, test, "Arrest")
     val (trainMetricsGBM, testMetricsGBM) = binomialMetrics(gbmModel, train, test)
 
     //
     // Build Deep Learning model and collect model metrics
     //
-    val dlModel = DLModel(train, test, 'Arrest)
+    val dlModel = DLModel(train, test, "Arrest")
     val (trainMetricsDL, testMetricsDL) = binomialMetrics(dlModel, train, test)
 
     //
@@ -117,16 +123,28 @@ class ChicagoCrimeApp(weatherFile: String,
     (gbmModel, dlModel)
   }
 
-  def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-               ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli)
-              (implicit h2oContext: H2OContext): GBMModel = {
-    import h2oContext.implicits._
+  def score(crimes: Seq[Crime], gbmModel: GBMModel, dlModel: DeepLearningModel, censusTable: DataFrame): Unit = {
+    crimes.foreach { crime =>
+      val arrestProbGBM = 100 * scoreEvent(crime, gbmModel, censusTable)
+      val arrestProbDL = 100 * scoreEvent(crime, dlModel, censusTable)
+      println(
+        s"""
+           |Crime: $crime
+           |  Probability of arrest best on DeepLearning: $arrestProbDL %
+           |  Probability of arrest best on GBM: $arrestProbGBM %
+           |
+        """.stripMargin)
+    }
+  }
+
+  private def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
+                       ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli): GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 
     val gbmParams = new GBMParameters()
-    gbmParams._train = train
-    gbmParams._valid = test
+    gbmParams._train = train.key
+    gbmParams._valid = test.key
     gbmParams._response_column = response
     gbmParams._ntrees = ntrees
     gbmParams._max_depth = depth
@@ -137,16 +155,14 @@ class ChicagoCrimeApp(weatherFile: String,
     model
   }
 
-  def DLModel(train: H2OFrame, test: H2OFrame, response: String,
-              epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
-              activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200))
-             (implicit h2oContext: H2OContext): DeepLearningModel = {
-    import h2oContext.implicits._
+  private def DLModel(train: H2OFrame, test: H2OFrame, response: String,
+                      epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
+                      activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
     import hex.deeplearning.DeepLearning
 
     val dlParams = new DeepLearningParameters()
-    dlParams._train = train
-    dlParams._valid = test
+    dlParams._train = train.key
+    dlParams._valid = test.key
     dlParams._response_column = response
     dlParams._epochs = epochs
     dlParams._l1 = l1
@@ -160,31 +176,9 @@ class ChicagoCrimeApp(weatherFile: String,
     model
   }
 
-  def binomialMetrics[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+  private def binomialMetrics[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
   (model: Model[M, P, O], train: H2OFrame, test: H2OFrame): (ModelMetricsBinomial, ModelMetricsBinomial) = {
     (modelMetrics(model, train), modelMetrics(model, test))
-  }
-
-
-  /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
-    *
-    * @return tuple of weather, census and crime data
-    */
-  def loadAll(): (DataFrame, DataFrame, DataFrame) = {
-    implicit val sqlc = sqlContext
-    implicit val h2oc = h2oContext
-    import h2oContext._
-    // Weather data
-    val weatherTable = asDataFrame(createWeatherTable(weatherFile))
-    weatherTable.createOrReplaceTempView("chicagoWeather")
-    // Census data
-    val censusTable = asDataFrame(createCensusTable(censusFile))
-    censusTable.createOrReplaceTempView("chicagoCensus")
-    // Crime data
-    val crimeTable = asDataFrame(createCrimeTable(crimesFile))
-    crimeTable.createOrReplaceTempView("chicagoCrime")
-
-    (weatherTable, censusTable, crimeTable)
   }
 
   private def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
@@ -193,23 +187,41 @@ class ChicagoCrimeApp(weatherFile: String,
     new H2OFrame(parseSetup, new java.net.URI(datafile))
   }
 
-  def createWeatherTable(datafile: String): H2OFrame = {
+  private def createWeatherTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
-    withLockAndUpdate(table) {
+    val fr = withLockAndUpdate(table) {
       // Remove first column since we do not need it
       _.remove(0).remove()
     }
+    hc.asDataFrame(fr)
   }
 
-  def createCensusTable(datafile: String): H2OFrame = {
+  private def createCensusTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
-    withLockAndUpdate(table) { fr =>
+    val fr = withLockAndUpdate(table) { fr =>
       val colNames = fr.names().map(n => n.trim.replace(' ', '_').replace('+', '_'))
       fr._names = colNames
     }
+    hc.asDataFrame(fr)
   }
 
-  def createCrimeTable(datafile: String): H2OFrame = {
+  private def addAdditionalDateColumns(df: DataFrame): DataFrame = {
+    import org.apache.spark.sql.functions._
+    import spark.implicits._
+    df
+      .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("Day", dayofmonth('Date))
+      .withColumn("WeekNum", weekofyear('Date))
+      .withColumn("HourOfDay", hour('Date))
+      .withColumn("Season", ChicagoCrimeApp.seasonUdf('Month))
+      .withColumn("WeekDay", date_format('Date, "u"))
+      .withColumn("Weekend", ChicagoCrimeApp.weekendUdf('WeekDay))
+      .drop('Date)
+  }
+
+  private def createCrimeTable(datafile: String): DataFrame = {
     val table = loadData(datafile, (parseSetup: ParseSetup) => {
       val colNames = parseSetup.getColumnNames
       val typeNames = parseSetup.getColumnTypes
@@ -218,36 +230,22 @@ class ChicagoCrimeApp(weatherFile: String,
       }
       parseSetup
     })
-    withLockAndUpdate(table) { fr =>
-      // Refine date into multiple columns
-      val dateCol = fr.vec(2)
-      fr.add(new RefineDateColumn(datePattern, dateTimeZone).doIt(dateCol))
-      // Update names, replace all ' ' by '_'
+    val fr = withLockAndUpdate(table) { fr =>
       val colNames = fr.names().map(n => n.trim.replace(' ', '_'))
       fr._names = colNames
-      // Remove Date column
-      fr.remove(2).remove()
     }
+
+    val sparkFrame = hc.asDataFrame(fr)
+    addAdditionalDateColumns(sparkFrame)
   }
 
-  /**
-    * For given crime and model returns probability of crime.
-    *
-    * @param crime
-    * @param model
-    * @param censusTable
-    * @param sqlContext
-    * @param h2oContext
-    * @return
-    */
-  def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame)
-                (implicit sqlContext: SQLContext, h2oContext: H2OContext): Float = {
-    import h2oContext.implicits._
-    import sqlContext.implicits._
-    // Create a single row table
-    val srdd: DataFrame = sqlContext.sparkContext.parallelize(Seq(crime)).toDF
+  private def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
+    import spark.implicits._
+    // Create Spark DataFrame from a single row
+    val df = addAdditionalDateColumns(spark.sparkContext.parallelize(Seq(crime)).toDF)
+      .withColumn("Domestic", 'Domestic.cast(StringType))
     // Join table with census data
-    val row: H2OFrame = censusTable.join(srdd).where('Community_Area === 'Community_Area_Number) //.printSchema
+    val row: H2OFrame = hc.asH2OFrame(censusTable.join(df).where('Community_Area === 'Community_Area_Number))
     // Transform all string columns into categorical
     allStringVecToCategorical(row)
 
@@ -256,167 +254,37 @@ class ChicagoCrimeApp(weatherFile: String,
 
     probOfArrest.toFloat
   }
-
 }
 
-object ChicagoCrimeApp extends SparkContextSupport {
+object ChicagoCrimeApp {
 
-  def main(args: Array[String]) {
-    // Prepare environment
-    val sc = new SparkContext(configure("ChicagoCrimeTest"))
-    // SQL support
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-    // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+  private val seasonUdf = udf(getSeason _)
+  private val weekendUdf = udf(isWeekend _)
 
-    val app = new ChicagoCrimeApp(
-      weatherFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv",
-      censusFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCensus.csv",
-      crimesFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoCrimes.csv")(sc, sqlContext, h2oContext)
-    // Load data
-    val (weatherTable, censusTable, crimesTable) = app.loadAll()
-    // Train model
-    val (gbmModel, dlModel) = app.train(weatherTable, censusTable, crimesTable)
+  private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
 
-    val crimeExamples = Seq(
-      Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", false, 422, 4, 7, 46, 18),
-      Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923, 9, 14, 63, 11))
-
-    for (crime <- crimeExamples) {
-      val arrestProbGBM = 100 * app.scoreEvent(crime,
-        gbmModel,
-        censusTable)(sqlContext, h2oContext)
-      val arrestProbDL = 100 * app.scoreEvent(crime,
-        dlModel,
-        censusTable)(sqlContext, h2oContext)
-      println(
-        s"""
-           |Crime: $crime
-           |  Probability of arrest best on DeepLearning: ${arrestProbDL} %
-           |  Probability of arrest best on GBM: ${arrestProbGBM} %
-           |
-        """.stripMargin)
-    }
-
-    // Shutdown full stack
-    app.shutdown()
+  private def getSeason(month: Int): String = {
+    val seasonNum =
+      if (month >= 3 && month <= 5) 0 // Spring
+      else if (month >= 6 && month <= 8) 1 // Summer
+      else if (month >= 9 && month <= 10) 2 // Autumn
+      else 3 // Winter
+    SEASONS(seasonNum)
   }
 
-  def SEASONS = Array[String]("Spring", "Summer", "Autumn", "Winter")
-
-  def getSeason(month: Int) =
-    if (month >= MARCH && month <= MAY) 0 // Spring
-    else if (month >= JUNE && month <= AUGUST) 1 // Summer
-    else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
-    else 3 // Winter
+  private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 }
 
-// scalastyle:off rddtype
-case class Crime(Year: Short, Month: Byte, Day: Byte, WeekNum: Byte, HourOfDay: Byte,
-                 Weekend: Byte, Season: String, WeekDay: Byte,
+case class Crime(date: String,
                  IUCR: Short,
                  Primary_Type: String,
                  Location_Description: String,
-                 Domestic: String,
+                 Domestic: Boolean,
                  Beat: Short,
                  District: Byte,
                  Ward: Byte,
                  Community_Area: Byte,
                  FBI_Code: Byte,
-                 minTemp: Option[Byte],
-                 maxTemp: Option[Byte],
-                 meanTemp: Option[Byte])
-
-object Crime {
-  def apply(date: String,
-            iucr: Short,
-            primaryType: String,
-            locationDescr: String,
-            domestic: Boolean,
-            beat: Short,
-            district: Byte,
-            ward: Byte,
-            communityArea: Byte,
-            fbiCode: Byte,
-            minTemp: Option[Byte] = None,
-            maxTemp: Option[Byte] = None,
-            meanTemp: Option[Byte] = None,
-            datePattern: String = "MM/dd/yyyy hh:mm:ss a",
-            dateTimeZone: String = "Etc/UTC"): Crime = {
-    val dtFmt = DateTimeFormat.forPattern(datePattern).withZone(DateTimeZone.forID(dateTimeZone))
-    val mDateTime = new MutableDateTime()
-    dtFmt.parseInto(mDateTime, date, 0)
-    val month = mDateTime.getMonthOfYear.toByte
-    val dayOfWeek = mDateTime.getDayOfWeek
-
-    Crime(mDateTime.getYear.toShort,
-      month,
-      mDateTime.getDayOfMonth.toByte,
-      mDateTime.getWeekOfWeekyear.toByte,
-      mDateTime.getHourOfDay.toByte,
-      if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0,
-      ChicagoCrimeApp.SEASONS(ChicagoCrimeApp.getSeason(month)),
-      mDateTime.getDayOfWeek.toByte,
-      iucr, primaryType, locationDescr,
-      if (domestic) "true" else "false",
-      beat, district, ward, communityArea, fbiCode,
-      minTemp, maxTemp, meanTemp)
-  }
-}
-
-// scalastyle:on rddtype
-
-/**
-  * Adhoc date column refinement.
-  *
-  * It takes column in the specified format 'MM/dd/yyyy hh:mm:ss a' and refines
-  * it into 8 columns: "Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"
-  */
-class RefineDateColumn(val datePattern: String,
-                       val dateTimeZone: String) extends MRTask[RefineDateColumn] {
-  // Entry point
-  def doIt(col: Vec): H2OFrame = {
-    val inputCol = if (col.isCategorical) col.toStringVec else col
-    val result = new H2OFrame(
-      doAll(Array[Byte](Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM, Vec.T_NUM), inputCol).outputFrame(
-        Array[String]("Day", "Month", "Year", "WeekNum", "WeekDay", "Weekend", "Season", "HourOfDay"),
-        Array[Array[String]](null, null, null, null, null, null, ChicagoCrimeApp.SEASONS, null)))
-    if (col.isCategorical) inputCol.remove()
-    result
-  }
-
-  override def map(cs: Array[Chunk], ncs: Array[NewChunk]): Unit = {
-    // Initialize DataTime convertor (cannot be done in setupLocal since it is not H2O serializable :-/
-    val dtFmt = DateTimeFormat.forPattern(datePattern).withZone(DateTimeZone.forID(dateTimeZone))
-    // Get input and output chunks
-    val dateChunk = cs(0)
-    val (dayNC, monthNC, yearNC, weekNC, weekdayNC, weekendNC, seasonNC, hourNC)
-    = (ncs(0), ncs(1), ncs(2), ncs(3), ncs(4), ncs(5), ncs(6), ncs(7))
-    val valStr = new BufferedString()
-    val mDateTime = new MutableDateTime()
-    for (row <- 0 until dateChunk.len()) {
-      if (dateChunk.isNA(row)) {
-        addNAs(ncs)
-      } else {
-        // Extract data
-        val ds = dateChunk.atStr(valStr, row).toString
-        if (dtFmt.parseInto(mDateTime, ds, 0) > 0) {
-          val month = mDateTime.getMonthOfYear
-          dayNC.addNum(mDateTime.getDayOfMonth, 0)
-          monthNC.addNum(month, 0)
-          yearNC.addNum(mDateTime.getYear, 0)
-          weekNC.addNum(mDateTime.getWeekOfWeekyear)
-          val dayOfWeek = mDateTime.getDayOfWeek
-          weekdayNC.addNum(dayOfWeek)
-          weekendNC.addNum(if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0, 0)
-          seasonNC.addNum(ChicagoCrimeApp.getSeason(month), 0)
-          hourNC.addNum(mDateTime.getHourOfDay)
-        } else {
-          addNAs(ncs)
-        }
-      }
-    }
-  }
-
-  private def addNAs(ncs: Array[NewChunk]): Unit = ncs.foreach(nc => nc.addNA())
-}
+                 minTemp: Option[Byte] = None,
+                 maxTemp: Option[Byte] = None,
+                 meanTemp: Option[Byte] = None)
