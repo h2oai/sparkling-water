@@ -17,8 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{BufferedOutputStream, DataOutputStream, File, FileOutputStream, InputStream}
-import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
+import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
 import ai.h2o.sparkling.utils.ScalaUtils._
@@ -128,11 +127,35 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
+  private def decodeSimpleParam(value: Any): String = {
+    val charset = "UTF-8"
+    value match {
+      case v: String => URLEncoder.encode(v, charset)
+      case v: Int => v.toString
+      case v: Double => v.toString
+      case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
+    }
+  }
+
+  private def decodeArray(arr: Array[_]): String = {
+    java.util.Arrays.toString(arr.map(decodeSimpleParam).map(_.asInstanceOf[AnyRef]))
+  }
+
+  private def decodeParams(params: Map[String, Any] = Map.empty): String = {
+    params.map { case (key, value) =>
+      val encodedValue = value match {
+        case v: Array[_] => decodeArray(v)
+        case v: Any => decodeSimpleParam(v)
+      }
+      s"$key=$encodedValue"
+    }.mkString("&")
+  }
+
   protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
 
     val suffixWithParams = if (params.nonEmpty && requestType == "GET") {
-      s"$suffixWithDelimiter?${RestCommunication.decodeParams(params)}"
+      s"$suffixWithDelimiter?${decodeParams(params)}"
     } else {
       suffixWithDelimiter
     }
@@ -144,7 +167,7 @@ trait RestCommunication extends Logging {
       getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
       if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
-        val paramsAsBytes = RestCommunication.decodeParams(params).getBytes("UTF-8")
+        val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
         connection.setRequestProperty("charset", "UTF-8")
         connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
@@ -194,31 +217,6 @@ trait RestCommunication extends Logging {
   }
 }
 
-object RestCommunication {
-  def decodeSimpleParam(value: Any): String = {
-    val charset = "UTF-8"
-    value match {
-      case v: String => URLEncoder.encode(v, charset)
-      case v: Int => v.toString
-      case v: Double => v.toString
-      case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
-    }
-  }
-
-  def decodeParams(params: Map[String, Any] = Map.empty): String = {
-    params.map { case (key, value) =>
-      val encodedValue = value match {
-        case v: Array[_] => decodeArray(v)
-        case v: Any => decodeSimpleParam(v)
-      }
-      s"$key=$encodedValue"
-    }.mkString("&")
-  }
-
-  def decodeArray(arr: Array[_]): String = {
-    java.util.Arrays.toString(arr.map(decodeSimpleParam).map(_.asInstanceOf[AnyRef]))
-  }
-}
 abstract class RestApiException(msg: String, cause: Throwable) extends Exception(msg, cause) {
   def this(msg: String) = this(msg, null)
 }
