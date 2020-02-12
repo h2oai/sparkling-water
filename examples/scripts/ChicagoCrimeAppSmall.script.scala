@@ -17,7 +17,6 @@ import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport}
 import water.support.H2OFrameSupport._
 import org.apache.spark.sql.functions.udf
-import org.joda.time.DateTimeConstants._
 import water.fvec.Vec
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
