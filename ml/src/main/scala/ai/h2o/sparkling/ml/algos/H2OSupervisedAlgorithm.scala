@@ -44,13 +44,14 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
   }
 
   override protected def preProcessBeforeFit(trainFrame: Frame): Unit = {
-      if ((parameters._distribution == DistributionFamily.bernoulli
-        || parameters._distribution == DistributionFamily.multinomial)
-        && !trainFrame.vec(getLabelCol()).isCategorical) {
-        trainFrame.replace(trainFrame.find(getLabelCol()),
-          trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
-      }
+    super.preProcessBeforeFit(trainFrame)
+    if ((parameters._distribution == DistributionFamily.bernoulli
+      || parameters._distribution == DistributionFamily.multinomial)
+      && !trainFrame.vec(getLabelCol()).isCategorical) {
+      trainFrame.replace(trainFrame.find(getLabelCol()),
+        trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
     }
+  }
 
   override def fit(dataset: Dataset[_]): H2OSupervisedMOJOModel = {
     super.fit(dataset).asInstanceOf[H2OSupervisedMOJOModel]
