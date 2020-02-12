@@ -558,7 +558,7 @@ object H2OContext extends Logging {
    */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
-  def ensure(onError: => String = "H2OContext has to be started in order to save/load data using H2O Data source."): H2OContext =
+  def ensure(onError: => String = "H2OContext has to be running."): H2OContext =
     Option(instantiatedContext.get()) getOrElse {
       throw new RuntimeException(onError)
     }

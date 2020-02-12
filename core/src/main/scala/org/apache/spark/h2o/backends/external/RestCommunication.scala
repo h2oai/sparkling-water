@@ -17,8 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{BufferedOutputStream, DataOutputStream, File, FileOutputStream, InputStream}
-import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
+import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
 import ai.h2o.sparkling.utils.ScalaUtils._
@@ -41,7 +40,7 @@ trait RestCommunication extends Logging {
    * @tparam ResultType A type that the result will be deserialized to
    * @return A deserialized object
    */
-  protected def query[ResultType: ClassTag](
+  def query[ResultType: ClassTag](
                                              endpoint: URI,
                                              suffix: String,
                                              conf: H2OConf,
@@ -62,7 +61,7 @@ trait RestCommunication extends Logging {
    * @tparam ResultType A type that the result will be deserialized to
    * @return A deserialized object
    */
-  protected def update[ResultType: ClassTag](
+  def update[ResultType: ClassTag](
                                               endpoint: URI,
                                               suffix: String,
                                               conf: H2OConf,
@@ -71,7 +70,7 @@ trait RestCommunication extends Logging {
     request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
-  protected def request[ResultType: ClassTag](
+  def request[ResultType: ClassTag](
                                                endpoint: URI,
                                                requestType: String,
                                                suffix: String,

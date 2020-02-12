@@ -188,7 +188,7 @@ trait RestApiUtils extends RestCommunication {
     }
   }
 
-  private def getClusterEndpoint(conf: H2OConf): URI = {
+  def getClusterEndpoint(conf: H2OConf): URI = {
     val uriBuilder = new URIBuilder(s"${conf.getScheme()}://${conf.h2oCluster.get}")
     uriBuilder.setPath(conf.contextPath.orNull)
     uriBuilder.build()
