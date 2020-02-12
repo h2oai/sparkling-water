@@ -1,8 +1,5 @@
 description = "Sparkling Water Extensions"
 
-apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/utils.gradle"
-
 dependencies {
     // Sparkling Water Projects
     compile project(':sparkling-water-utils')
