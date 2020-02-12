@@ -22,7 +22,9 @@ import java.io.{File, FileWriter}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.H2OConf
+import org.apache.spark.util.Utils
 
 import scala.collection.JavaConverters._
 
@@ -73,7 +75,7 @@ trait SharedBackendConf {
   def isInternalSecureConnectionsEnabled = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
     PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
-  def hadoopConf = sparkConf.getOption(PROP_HDFS_CONF._1)
+  def hdfsConf = sparkConf.getOption(PROP_HDFS_CONF._1)
 
   /** H2O Client parameters */
   def flowDir = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -173,12 +175,13 @@ trait SharedBackendConf {
   def setHdfsConf(path: String) = set(PROP_HDFS_CONF._1, path)
 
   def setHdfsConf(conf: Configuration): H2OConf = {
-    val hdfsConfigTempFile: File = File.createTempFile("hdfs_conf", ".xml")
+    val sparkTmpDir = new File(Utils.getLocalDir(SparkEnv.get.conf))
+    val hdfsConfigTempFile = File.createTempFile("hdfs_conf", ".xml", sparkTmpDir)
     hdfsConfigTempFile.deleteOnExit()
     withResource(new FileWriter(hdfsConfigTempFile)) { fileWriter =>
       conf.writeXml(fileWriter)
     }
-    set(PROP_HDFS_CONF._1, hdfsConfigTempFile.getAbsolutePath())
+    set(PROP_HDFS_CONF._1, hdfsConfigTempFile.getAbsolutePath)
   }
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)

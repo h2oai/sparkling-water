@@ -83,7 +83,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
     distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
 
-    if(!conf.hadoopConf.isDefined){
+    if(conf.hdfsConf.isEmpty){
       conf.setHdfsConf(SparkContext.getOrCreate().hadoopConfiguration)
     }
 
