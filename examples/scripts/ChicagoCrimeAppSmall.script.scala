@@ -51,18 +51,18 @@ def createCensusTable(datafile: String): DataFrame = {
   hc.asDataFrame(fr)
 }
 
-def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == SUNDAY || dayOfWeek == SATURDAY) 1 else 0
-
 def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
 
 def getSeason(month: Int): String = {
   val seasonNum =
-    if (month >= MARCH && month <= MAY) 0 // Spring
-    else if (month >= JUNE && month <= AUGUST) 1 // Summer
-    else if (month >= SEPTEMBER && month <= OCTOBER) 2 // Autumn
+    if (month >= 3 && month <= 5) 0 // Spring
+    else if (month >= 6 && month <= 8) 1 // Summer
+    else if (month >= 9 && month <= 10) 2 // Autumn
     else 3 // Winter
   SEASONS(seasonNum)
 }
+
+def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 
 val seasonUdf = udf(getSeason _)
 val weekendUdf = udf(isWeekend _)

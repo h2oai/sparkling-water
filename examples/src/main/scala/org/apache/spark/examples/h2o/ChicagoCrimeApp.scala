@@ -182,6 +182,19 @@ class ChicagoCrimeApp(weatherFile: String,
     hc.asDataFrame(fr)
   }
 
+  def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
+
+  def getSeason(month: Int): String = {
+    val seasonNum =
+      if (month >= 3 && month <= 5) 0 // Spring
+      else if (month >= 6 && month <= 8) 1 // Summer
+      else if (month >= 9 && month <= 10) 2 // Autumn
+      else 3 // Winter
+    SEASONS(seasonNum)
+  }
+
+  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
+
   def createCensusTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
     val fr = withLockAndUpdate(table) { fr =>
@@ -193,8 +206,8 @@ class ChicagoCrimeApp(weatherFile: String,
 
   import org.apache.spark.sql.functions.udf
 
-  private val seasonUdf = udf(ChicagoCrimeApp.getSeason _)
-  private val weekendUdf = udf(ChicagoCrimeApp.isWeekend _)
+  private val seasonUdf = udf(getSeason _)
+  private val weekendUdf = udf(isWeekend _)
 
   def addAdditionalDateColumns(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions._
@@ -259,23 +272,6 @@ class ChicagoCrimeApp(weatherFile: String,
         """.stripMargin)
     }
   }
-}
-
-object ChicagoCrimeApp {
-
-  def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
-
-  def getSeason(month: Int): String = {
-    val seasonNum =
-      if (month >= 3 && month <= 5) 0 // Spring
-      else if (month >= 6 && month <= 8) 1 // Summer
-      else if (month >= 9 && month <= 10) 2 // Autumn
-      else 3 // Winter
-    SEASONS(seasonNum)
-  }
-
-  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
-
 }
 
 case class Crime(date: String,

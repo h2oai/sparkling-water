@@ -1,3 +1,20 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package water.sparkling.itest.yarn
 
 import org.apache.spark.examples.h2o.{ChicagoCrimeApp, Crime}
@@ -10,8 +27,8 @@ import water.sparkling.itest.{IntegTestHelper, IntegTestStopper}
 import water.support.SparkContextSupport
 
 /**
-  * Test following Alex's chicago crime demo.
-  */
+ * Test following Alex's chicago crime demo.
+ */
 @RunWith(classOf[JUnitRunner])
 class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
 
@@ -34,7 +51,7 @@ class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
 
 object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
     val hc = H2OContext.getOrCreate(spark)
@@ -57,5 +74,4 @@ object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
     app.score(crimes, gbmModel, dlModel, censusTable)
     spark.stop()
   }
-
 }
