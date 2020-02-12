@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoSupervisedParams, HasStoppingCriteria}
+import ai.h2o.sparkling.ml.params.{H2OAlgoSupervisedParams, HasQuantileAlpha, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ScoreKeeper.StoppingMetric
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
@@ -39,7 +39,8 @@ object H2ODeepLearning extends H2OParamsReadable[H2ODeepLearning]
   * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object
   */
 trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParameters]
-  with HasStoppingCriteria[DeepLearningParameters] {
+  with HasStoppingCriteria[DeepLearningParameters]
+  with HasQuantileAlpha {
 
   type H2O_SCHEMA = DeepLearningParametersV3
 
@@ -102,5 +103,6 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
     parameters._stopping_rounds = getStoppingRounds()
     parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
     parameters._stopping_tolerance = getStoppingTolerance()
+    parameters._quantile_alpha = getQuantileAlpha()
   }
 }

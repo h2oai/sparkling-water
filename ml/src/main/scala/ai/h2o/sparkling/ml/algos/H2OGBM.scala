@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoSharedTreeParams, HasMonotoneConstraints}
+import ai.h2o.sparkling.ml.params.{H2OAlgoSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -37,7 +37,9 @@ object H2OGBM extends H2OParamsReadable[H2OGBM]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonotoneConstraints {
+trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
+  with HasMonotoneConstraints
+  with HasQuantileAlpha {
 
   type H2O_SCHEMA = GBMParametersV3
 
@@ -100,5 +102,6 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
     parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
     parameters._pred_noise_bandwidth = $(predNoiseBandwidth)
     parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
+    parameters._quantile_alpha = getQuantileAlpha()
   }
 }
