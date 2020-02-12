@@ -30,7 +30,7 @@ case class H2OFrame(
                      frameId: String,
                      columns: Array[H2OColumn],
                      chunks: Array[H2OChunk]) {
-  private val conf = H2OContext.ensure().getConf
+  private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
 
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
