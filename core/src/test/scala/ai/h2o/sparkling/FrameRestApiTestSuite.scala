@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling
 
-import ai.h2o.sparkling.frame.H2OColumnType
+import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrameUtils}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.h2o.utils.SharedH2OTestContext
@@ -44,7 +44,7 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
 
     val stringColumns = originalFrame.columns.filter(_.dataType == H2OColumnType.string).map(_.name)
     assert(stringColumns.nonEmpty)
-    val alteredFrame = RestApiUtils.convertAllStringVecToCategorical(hc.getConf, h2oFrameKey)
+    val alteredFrame = H2OFrameUtils.convertAllStringVecToCategorical(h2oFrameKey)
     val convertedColumns = alteredFrame.columns.filter(col => stringColumns.contains(col.name))
 
     // Verify that columns we asked to convert to categorical has been converted
@@ -61,7 +61,7 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     val h2oFrameKey = uploadH2OFrame()
     val originalFrame = RestApiUtils.getFrame(hc.getConf, h2oFrameKey)
     val columnsToConvert = Array("ID", "AGE")
-    val alteredFrame = RestApiUtils.convertColumnsToCategorical(hc.getConf, h2oFrameKey, columnsToConvert)
+    val alteredFrame = H2OFrameUtils.convertColumnsToCategorical(h2oFrameKey, columnsToConvert)
     val convertedColumns = alteredFrame.columns.filter(col => columnsToConvert.contains(col.name))
     // Verify that columns we asked to convert to categorical has been converted
     convertedColumns.foreach { col =>
@@ -76,14 +76,14 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
   test("splitFrameToTrainAndValidationFrames with ratio 1.0") {
     val h2oFrameKey = uploadH2OFrame()
     val thrown = intercept[IllegalArgumentException] {
-      RestApiUtils.splitFrameToTrainAndValidationFrames(hc.getConf, h2oFrameKey, 1.0)
+      H2OFrameUtils.splitFrameToTrainAndValidationFrames(h2oFrameKey, 1.0)
     }
     assert(thrown.getMessage == "Split ratio must be lower than 1.0")
   }
 
   test("splitFrameToTrainAndValidationFrames with ratio lower than 1.0") {
     val h2oFrameKey = uploadH2OFrame()
-    val splitFrames = RestApiUtils.splitFrameToTrainAndValidationFrames(hc.getConf, h2oFrameKey, 0.9)
+    val splitFrames = H2OFrameUtils.splitFrameToTrainAndValidationFrames(h2oFrameKey, 0.9)
     assert(splitFrames.length == 2)
     val train = splitFrames(0)
     val valid = splitFrames(1)
