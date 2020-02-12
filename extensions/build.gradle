@@ -1,7 +1,5 @@
 description = "Sparkling Water Extensions"
 
-apply from: "$rootDir/gradle/utils.gradle"
-
 dependencies {
     // Sparkling Water Projects
     compile project(':sparkling-water-utils')
