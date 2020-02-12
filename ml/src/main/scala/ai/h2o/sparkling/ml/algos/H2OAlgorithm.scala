@@ -28,7 +28,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 import water.exceptions.H2OModelBuilderIllegalArgumentException
 import water.support.ModelSerializationSupport
-import water.{H2O, Key}
+import water.{DKV, H2O, Key}
 
 import scala.reflect.{ClassTag, classTag}
 
@@ -44,9 +44,9 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     // Update H2O params based on provided configuration
     updateH2OParams()
 
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    parameters._train = train._key
-    parameters._valid = valid.map(_._key).orNull
+    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    parameters._train = DKV.getGet[Frame](trainKey)._key
+    parameters._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
 
     val trainFrame = parameters._train.get()
     preProcessBeforeFit(trainFrame)

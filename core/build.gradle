@@ -175,6 +175,13 @@ task createSparklingWaterVersionFile {
     }
 }
 test.dependsOn testJar
+
+test {
+    if (detectBackendClusterMode() == "internal") {
+        exclude 'ai/h2o/sparkling/FrameRestApiTestSuite.class'
+    }
+}
+
 processResources.dependsOn createSparkVersionFile
 processResources.dependsOn createH2OVersionFile
 processResources.dependsOn createSparklingWaterVersionFile

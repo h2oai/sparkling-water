@@ -38,7 +38,7 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
-import water.Key
+import water.{DKV, Key}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.PojoUtils
 
@@ -70,9 +70,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val hyperParams = processHyperParams(algoParams, getHyperParameters())
 
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    algoParams._train = train._key
-    algoParams._valid = valid.map(_._key).orNull
+    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    algoParams._train = DKV.getGet[Frame](trainKey)._key
+    algoParams._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
 
     algoParams._nfolds = getNfolds()
     algoParams._fold_column = getFoldCol()
