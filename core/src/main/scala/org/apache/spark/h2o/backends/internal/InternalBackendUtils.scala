@@ -19,7 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendConf, SharedBackendUtils}
-import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{SparkContext, SparkEnv}
 
