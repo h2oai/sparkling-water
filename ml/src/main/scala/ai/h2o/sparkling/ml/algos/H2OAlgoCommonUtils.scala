@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.frame.H2OFrameUtils
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
@@ -52,14 +52,14 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
     if (getAllStringColumnsToCategorical()) {
       if (RestApiUtils.isRestAPIBased()) {
-        H2OFrameUtils.convertAllStringVecToCategorical(h2oFrameKey)
+        H2OFrame(h2oFrameKey).convertAllStringColumnsToCategorical()
       } else {
         H2OFrameSupport.allStringVecToCategorical(DKV.getGet(h2oFrameKey))
       }
     }
 
     if (RestApiUtils.isRestAPIBased()) {
-      H2OFrameUtils.convertColumnsToCategorical(h2oFrameKey, getColumnsToCategorical())
+      H2OFrame(h2oFrameKey).convertColumnsToCategorical(getColumnsToCategorical())
     } else {
       H2OFrameSupport.columnsToCategorical(DKV.getGet(h2oFrameKey), getColumnsToCategorical())
     }
@@ -67,7 +67,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     if (getSplitRatio() < 1.0) {
       // need to do splitting
       val keys = if (RestApiUtils.isRestAPIBased()) {
-        H2OFrameUtils.splitFrameToTrainAndValidationFrames(h2oFrameKey, getSplitRatio()).map(_.frameId)
+        H2OFrame(h2oFrameKey).splitToTrainAndValidationFrames(getSplitRatio()).map(_.frameId)
       } else {
         H2OFrameSupport.split(DKV.getGet(h2oFrameKey), Seq(Key.rand(), Key.rand()), Seq(getSplitRatio())).map(_._key.toString)
       }
