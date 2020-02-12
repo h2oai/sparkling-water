@@ -20,6 +20,7 @@ import org.apache.spark.sql.functions.udf
 import water.fvec.Vec
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import java.io.File
 
 // Start H2O services
 val hc = H2OContext.getOrCreate(spark)
@@ -101,9 +102,9 @@ def createCrimeTable(datafile: String): DataFrame = {
   addAdditionalDateColumns(sparkFrame)
 }
 
-val weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv")
-val censusFile = TestUtils.locate("smalldata/chicago/chicagoCensus.csv")
-val crimesFile = TestUtils.locate("smalldata/chicago/chicagoCrimes10k.csv.zip")
+val weatherFile = new File("./examples/smalldata/chicago/chicagoAllWeather.csv").getAbsolutePath
+val censusFile = new File("./examples/smalldata/chicago/chicagoCensus.csv").getAbsolutePath
+val crimesFile = new File("./examples/smalldata/chicago/chicagoCrimes10k.csv.zip").getAbsolutePath
 
 val weatherTable = createWeatherTable(weatherFile)
 weatherTable.createOrReplaceTempView("chicagoWeather")
