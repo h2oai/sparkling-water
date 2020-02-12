@@ -21,8 +21,8 @@ package org.apache.spark.h2o.backends.external
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.converters.ReadConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
-
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
+import ai.h2o.sparkling.frame.H2OChunk
 
 /**
   *
@@ -37,7 +37,7 @@ class ExternalReadConverterCtx(override val keyName: String, override val chunkI
   override type DataSource = ChunkAutoBufferReader
 
   private val reader = new ChunkAutoBufferReader(
-    RestApiUtils.getChunk(nodeDesc, conf, keyName, chunkIdx, expectedTypes, selectedColumnIndices))
+    H2OChunk.getChunkAsInputStream(nodeDesc, conf, keyName, chunkIdx, expectedTypes, selectedColumnIndices))
 
   override def numRows: Int = reader.getNumRows
 

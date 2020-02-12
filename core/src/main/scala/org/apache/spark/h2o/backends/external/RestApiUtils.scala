@@ -17,19 +17,14 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{File, InputStream}
+import java.io.File
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
-import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
@@ -48,7 +43,7 @@ trait RestApiUtils extends RestCommunication {
     update[ShutdownV3](endpoint, "/3/Shutdown", conf)
   }
 
-  private def resolveNodeEndpoint(node: NodeDesc, conf: H2OConf): URI = {
+  def resolveNodeEndpoint(node: NodeDesc, conf: H2OConf): URI = {
     new URI(
       conf.getScheme(),
       null,
@@ -109,66 +104,6 @@ trait RestApiUtils extends RestCommunication {
     nodes(cloudV3.leader_idx)
   }
 
-  def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
-    val endpoint = getClusterEndpoint(conf)
-    val frames = query[FramesV3](
-      endpoint,
-      s"/3/Frames/$frameId/summary",
-      conf,
-      Map("row_count" -> 0),
-      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
-    val frame = frames.frames(0)
-    val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
-    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
-
-    H2OFrame(
-      frameId = frame.frame_id.name,
-      columns = frame.columns.map(convertColumn),
-      chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
-  }
-
-  def getChunk(
-                node: NodeDesc,
-                conf: H2OConf,
-                frameName: String,
-                chunkId: Int,
-                expectedTypes: Array[Byte],
-                selectedColumnsIndices: Array[Int]): InputStream = {
-    val expectedTypesString = Base64Encoding.encode(expectedTypes)
-    val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
-
-    val parameters = Map(
-      "frame_name" -> frameName,
-      "chunk_id" -> chunkId.toString,
-      "expected_types" -> expectedTypesString,
-      "selected_columns" -> selectedColumnsIndicesString)
-
-    val endpoint = resolveNodeEndpoint(node, conf)
-    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
-  }
-
-  private def convertColumn(sourceColumn: ColV3): H2OColumn = {
-    H2OColumn(
-      name = sourceColumn.label,
-      dataType = H2OColumnType.fromString(sourceColumn.`type`),
-      min = sourceColumn.mins(0),
-      max = sourceColumn.maxs(0),
-      mean = sourceColumn.mean,
-      sigma = sourceColumn.sigma,
-      numberOfZeros = sourceColumn.zero_count,
-      numberOfMissingElements = sourceColumn.missing_count,
-      percentiles = sourceColumn.percentiles,
-      domain = sourceColumn.domain,
-      domainCardinality = sourceColumn.domain_cardinality)
-  }
-
-  private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
-    H2OChunk(
-      index = sourceChunk.chunk_id,
-      numberOfRows = sourceChunk.row_count,
-      location = clusterNodes(sourceChunk.node_idx))
-  }
-
   def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
     val nodesWithoutWeb = nodes.flatMap { node =>
       try {
@@ -194,7 +129,7 @@ trait RestApiUtils extends RestCommunication {
     uriBuilder.build()
   }
 
-  private def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
+  def getNodes(cloudV3: CloudV3): Array[NodeDesc] = {
     cloudV3.nodes.zipWithIndex.map { case (node, idx) =>
       val splits = node.ip_port.split(":")
       val ip = splits(0)
@@ -203,7 +138,7 @@ trait RestApiUtils extends RestCommunication {
     }
   }
 
-  private def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
+  def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
     query[CloudV3](endpoint, "/3/Cloud", conf)
   }
 }

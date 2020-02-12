@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.frame.H2OColumnType
+import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
@@ -34,14 +34,12 @@ class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMean
 
   override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
     super.preProcessBeforeFit(trainFrameKey)
-    val hc = H2OContext.ensure()
-    val stringCols = if (RestApiUtils.isRestAPIBased(Some(hc))) {
-      RestApiUtils.getFrame(hc.getConf, trainFrameKey).columns.filter(_.dataType == H2OColumnType.string).map(_.name)
+    val stringCols = if (RestApiUtils.isRestAPIBased()) {
+      H2OFrame(trainFrameKey).columns.filter(_.dataType == H2OColumnType.string).map(_.name)
     } else {
       val trainFrame = DKV.getGet[Frame](trainFrameKey)
       trainFrame.names.filter(name => trainFrame.vec(name).isString)
     }
-
     if (stringCols.nonEmpty) {
       throw new IllegalArgumentException(s"Following columns are of type string: '${stringCols.mkString(", ")}', but" +
         s" H2OKMeans does not accept string columns. However, you can use the `allStringColumnsToCategorical`" +

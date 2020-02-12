@@ -16,14 +16,14 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.frame.H2OColumnType
+import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.backends.external.RestApiUtils
-import org.apache.spark.h2o.{Frame, H2OBaseModel, H2OBaseModelBuilder, H2OContext}
+import org.apache.spark.h2o.{Frame, H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 import water.DKV
@@ -49,11 +49,10 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
   override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
     super.preProcessBeforeFit(trainFrameKey)
     if (parameters._distribution == DistributionFamily.bernoulli || parameters._distribution == DistributionFamily.multinomial) {
-      val hc = H2OContext.ensure()
-      if (RestApiUtils.isRestAPIBased(Some(hc))) {
-        val trainFrame = RestApiUtils.getFrame(hc.getConf, trainFrameKey)
+      if (RestApiUtils.isRestAPIBased()) {
+        val trainFrame = H2OFrame(trainFrameKey)
         if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType == H2OColumnType.`enum`) {
-          RestApiUtils.convertColumnsToCategorical(hc.getConf, trainFrameKey, Array(getLabelCol()))
+          trainFrame.convertColumnsToCategorical(Array(getLabelCol()))
         }
       } else {
         val trainFrame = DKV.getGet[Frame](trainFrameKey)
