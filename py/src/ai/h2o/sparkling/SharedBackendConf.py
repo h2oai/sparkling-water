@@ -356,8 +356,8 @@ class SharedBackendConf(SharedBackendConfUtils):
     def clientCheckRetryTimeout(self):
         return self._jconf.clientCheckRetryTimeout()
 
-    def hdfsConfig(self):
-        return self._jconf.hdfsConfig()
+    def hdfsConf(self):
+        return self._get_option(self._jconf.hdfsConf())
 
     #
     # Setters
@@ -843,6 +843,6 @@ class SharedBackendConf(SharedBackendConfUtils):
         self._jconf.setClientExtraProperties(extraProperties)
         return self
 
-    def setHdfsConfig(self, hdfsConfig):
-        self._jconf.setHdfsConfig(hdfsConfig)
+    def setHdfsConf(self, hdfsConf):
+        self._jconf.setHdfsConf(hdfsConf)
         return self
