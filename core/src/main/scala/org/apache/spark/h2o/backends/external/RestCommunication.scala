@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.backends.external
 
 import java.io.{BufferedOutputStream, DataOutputStream, File, FileOutputStream, InputStream}
+import java.io.{BufferedOutputStream, File, FileOutputStream, InputStream}
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
 import ai.h2o.sparkling.utils.ScalaUtils._
@@ -41,11 +42,11 @@ trait RestCommunication extends Logging {
    * @return A deserialized object
    */
   protected def query[ResultType: ClassTag](
-      endpoint: URI,
-      suffix: String,
-      conf: H2OConf,
-      params: Map[String, Any] = Map.empty,
-      skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                             endpoint: URI,
+                                             suffix: String,
+                                             conf: H2OConf,
+                                             params: Map[String, Any] = Map.empty,
+                                             skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "GET", suffix, conf, params, skippedFields)
   }
 
@@ -62,21 +63,21 @@ trait RestCommunication extends Logging {
    * @return A deserialized object
    */
   protected def update[ResultType: ClassTag](
-      endpoint: URI,
-      suffix: String,
-      conf: H2OConf,
-      params: Map[String, Any] = Map.empty,
-      skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                              endpoint: URI,
+                                              suffix: String,
+                                              conf: H2OConf,
+                                              params: Map[String, Any] = Map.empty,
+                                              skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
   protected def request[ResultType: ClassTag](
-      endpoint: URI,
-      requestType: String,
-      suffix: String,
-      conf: H2OConf,
-      params: Map[String, Any] = Map.empty,
-      skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                               endpoint: URI,
+                                               requestType: String,
+                                               suffix: String,
+                                               conf: H2OConf,
+                                               params: Map[String, Any] = Map.empty,
+                                               skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
@@ -126,7 +127,6 @@ trait RestCommunication extends Logging {
   }
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
-
 
   private def decodeSimpleParam(value: Any): String = {
     val charset = "UTF-8"

@@ -22,8 +22,8 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OFrame}
 import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
@@ -128,12 +128,12 @@ trait RestApiUtils extends RestCommunication {
   }
 
   def getChunk(
-      node: NodeDesc,
-      conf : H2OConf,
-      frameName: String,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      selectedColumnsIndices: Array[Int]): InputStream = {
+                node: NodeDesc,
+                conf: H2OConf,
+                frameName: String,
+                chunkId: Int,
+                expectedTypes: Array[Byte],
+                selectedColumnsIndices: Array[Int]): InputStream = {
     val expectedTypesString = Base64Encoding.encode(expectedTypes)
     val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
 
@@ -150,7 +150,7 @@ trait RestApiUtils extends RestCommunication {
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
     H2OColumn(
       name = sourceColumn.label,
-      dataType = sourceColumn.`type`,
+      dataType = H2OColumnType.fromString(sourceColumn.`type`),
       min = sourceColumn.mins(0),
       max = sourceColumn.maxs(0),
       mean = sourceColumn.mean,

@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql
 
-import ai.h2o.sparkling.frame.{H2OColumn, H2OFrame}
+import ai.h2o.sparkling.frame.{H2OColumn, H2OColumnType, H2OFrame}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.converters.H2ORESTDataFrame
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -53,13 +53,13 @@ case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
       .putLong("count", numberOfRows)
       .putLong("naCnt", column.numberOfMissingElements)
 
-    if (column.dataType == "enum") {
+    if (column.dataType == H2OColumnType.`enum`) {
       builder
         .putLong("cardinality", column.domainCardinality)
       if (column.domain != null) {
         builder.putStringArray("vals", column.domain)
       }
-    } else if (Seq("int", "real").contains(column.dataType)) {
+    } else if (Seq(H2OColumnType.int, H2OColumnType.real).contains(column.dataType)) {
       builder
         .putDouble("min", column.min)
         .putDouble("mean", column.mean)

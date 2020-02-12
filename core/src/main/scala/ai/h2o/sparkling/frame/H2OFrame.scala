@@ -21,27 +21,36 @@ import org.apache.spark.h2o.utils.NodeDesc
 
 /* This case class contains metadata describing H2O Frame accessed via REST API */
 case class H2OFrame(
-    frameId: String,
-    columns: Array[H2OColumn],
-    chunks: Array[H2OChunk]) {
+                     frameId: String,
+                     columns: Array[H2OColumn],
+                     chunks: Array[H2OChunk]) {
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
   def numberOfColumns: Int = columns.length
 }
 
 case class H2OColumn(
-    name: String,
-    dataType: String,
-    min: Double,
-    max: Double,
-    mean: Double,
-    sigma: Double,
-    numberOfZeros: Long,
-    numberOfMissingElements: Long,
-    percentiles: Array[Double],
-    domain: Array[String],
-    domainCardinality: Long) {
+                      name: String,
+                      dataType: H2OColumnType.Value,
+                      min: Double,
+                      max: Double,
+                      mean: Double,
+                      sigma: Double,
+                      numberOfZeros: Long,
+                      numberOfMissingElements: Long,
+                      percentiles: Array[Double],
+                      domain: Array[String],
+                      domainCardinality: Long) {
   def nullable: Boolean = numberOfMissingElements > 0
 }
+
+object H2OColumnType extends Enumeration {
+  val enum, string, int, real, time, uuid = Value
+
+  def fromString(dataType: String): Value = {
+    values.find(_.toString == dataType).getOrElse(throw new RuntimeException(s"Unknown H2O's Data type $dataType"))
+  }
+}
+
 
 case class H2OChunk(index: Int, numberOfRows: Long, location: NodeDesc)
