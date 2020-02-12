@@ -255,7 +255,7 @@ case class Crime(date: String,
 //
 // Create a predictor
 //
-def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
+def scoreEvent(crime: Row, model: Model[_, _, _], censusTable: DataFrame): Float = {
   import spark.implicits._
   // Create Spark DataFrame from a single row
   val df = addAdditionalDateColumns(spark.sparkContext.parallelize(Seq(crime)).toDF)
