@@ -30,6 +30,8 @@ case class H2OFrame(
                      frameId: String,
                      columns: Array[H2OColumn],
                      chunks: Array[H2OChunk]) {
+  private val conf = H2OContext.ensure().getConf
+
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
   def numberOfColumns: Int = columns.length
@@ -40,7 +42,6 @@ case class H2OFrame(
   }
 
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
-    val conf = H2OContext.ensure().getConf
     val endpoint = getClusterEndpoint(conf)
     val indices = this.columns.map(_.name).zipWithIndex.toMap
     val selectedIndices = columns.map { name =>
@@ -54,7 +55,6 @@ case class H2OFrame(
   }
 
   def splitToTrainAndValidationFrames(splitRatio: Double): Array[H2OFrame] = {
-    val conf = H2OContext.ensure().getConf
     if (splitRatio >= 1.0) {
       throw new IllegalArgumentException("Split ratio must be lower than 1.0")
     }
