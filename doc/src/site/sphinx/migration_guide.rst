@@ -217,6 +217,17 @@ From 3.28.0 to 3.28.1
   All the parameters remain the same. We are planning to expose proper
   H2O's SVM implementation in Sparkling Water in the following major releases.
 
+- In case of binomial predictions on H2O MOJOs, the fields ``p0`` and ``p1`` in the detailed prediction column
+  are replaced by a single field ``probabilities`` which is a map from label to predicted probability.
+  The same is done for the fields ``p0_calibrated`` and ``p1_calibrated``. These fields are replaced
+  by a single field ``calibratedProbabilities`` which is a map from label to predicted calibrated probability.
+
+- In case of multinomial predictions on H2O MOJOs, the type of field ``probabilities`` in the detailed
+  prediction column is changed from array of probabilities to a map from label to predicted probability.
+
+- In case of ordinal predictions on H2O MOJOs, the type of field ``probabilities`` in the detailed
+  prediction column is changed from array of probabilities to a map from label to predicted probability.
+
 From 3.26 To 3.28.0
 -------------------
 
