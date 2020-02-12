@@ -227,39 +227,25 @@ println(
      |    test  AUC = ${testMetricsDL.auc}
       """.stripMargin)
 
-val schema = StructType(Array(
-  StructField("Date", StringType, true),
-  StructField("IUCR", ShortType, true),
-  StructField("Primary_Type", StringType, true),
-  StructField("Location_Description", StringType, true),
-  StructField("Domestic", BooleanType, true),
-  StructField("Beat", ShortType, true),
-  StructField("District", ByteType, true),
-  StructField("District", ByteType, true),
-  StructField("Community_Area", ByteType, true),
-  StructField("FBI_Code", ByteType, true)))
-
-
-// Create Crime class for scoring
-case class Crime(date: String,
-                 IUCR: Short,
-                 Primary_Type: String,
-                 Location_Description: String,
-                 Domestic: Boolean,
-                 Beat: Short,
-                 District: Byte,
-                 Ward: Byte,
-                 Community_Area: Byte,
-                 FBI_Code: Byte)
-
 //
 // Create a predictor
 //
 def scoreEvent(crime: Row, model: Model[_, _, _], censusTable: DataFrame): Float = {
-  import spark.implicits._
   // Create Spark DataFrame from a single row
-  val df = addAdditionalDateColumns(spark.sparkContext.parallelize(Seq(crime)).toDF)
-    .withColumn("Domestic", 'Domestic.cast(StringType))
+  val schema = StructType(Array(
+    StructField("Date", StringType, true),
+    StructField("IUCR", ShortType, true),
+    StructField("Primary_Type", StringType, true),
+    StructField("Location_Description", StringType, true),
+    StructField("Domestic", BooleanType, true),
+    StructField("Beat", ShortType, true),
+    StructField("District", ByteType, true),
+    StructField("District", ByteType, true),
+    StructField("Community_Area", ByteType, true),
+    StructField("FBI_Code", ByteType, true)))
+
+  val rdd = spark.sparkContext.parallelize(Seq(crime))
+  val df = addAdditionalDateColumns(spark.createDataFrame(rdd, schema)).withColumn("Domestic", 'Domestic.cast(StringType))
   // Join table with census data
   val row: H2OFrame = hc.asH2OFrame(censusTable.join(df).where('Community_Area === 'Community_Area_Number))
   // Transform all string columns into categorical
