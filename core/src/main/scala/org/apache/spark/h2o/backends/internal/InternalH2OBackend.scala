@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
-import org.apache.spark.SparkEnv
+import org.apache.spark.{SparkContext, SparkEnv}
 import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
@@ -82,6 +82,11 @@ object InternalH2OBackend extends InternalBackendUtils {
 
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
     distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
+
+    if (conf.hdfsConf.isEmpty) {
+      conf.setHdfsConf(SparkContext.getOrCreate().hadoopConfiguration)
+    }
+
     conf
   }
 

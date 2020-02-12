@@ -356,6 +356,8 @@ class SharedBackendConf(SharedBackendConfUtils):
     def clientCheckRetryTimeout(self):
         return self._jconf.clientCheckRetryTimeout()
 
+    def hdfsConf(self):
+        return self._get_option(self._jconf.hdfsConf())
 
     #
     # Setters
@@ -832,11 +834,15 @@ class SharedBackendConf(SharedBackendConfUtils):
     def setClientCheckRetryTimeout(self, timeout):
         self._jconf.setClientCheckRetryTimeout(timeout)
         return self
-    
+
     def set_client_extra_properties(self, extraProperties):
         warnings.warn("Method 'set_client_extra_properties' is deprecated and will be removed in the next major release. Please use 'setClientExtraProperties'.")
         return self.setClientExtraProperties(extraProperties)
 
     def setClientExtraProperties(self, extraProperties):
         self._jconf.setClientExtraProperties(extraProperties)
+        return self
+
+    def setHdfsConf(self, hdfsConf):
+        self._jconf.setHdfsConf(hdfsConf)
         return self
