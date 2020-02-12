@@ -72,6 +72,6 @@ object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
       Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", Domestic = false, 422, 4, 7, 46, 18),
       Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", Domestic = false, 923, 9, 14, 63, 11))
     app.score(crimes, gbmModel, dlModel, censusTable)
-    spark.stop()
+    hc.stop(stopSparkContext = true)
   }
 }

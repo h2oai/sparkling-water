@@ -29,6 +29,7 @@ import org.apache.spark.sql.types.StringType
 import water.fvec.Vec
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport}
+import org.apache.spark.sql.functions.udf
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.
@@ -39,6 +40,24 @@ class ChicagoCrimeApp(weatherFile: String,
                      (@transient val hc: H2OContext) extends ModelMetricsSupport with H2OFrameSupport {
 
   @transient private val spark = hc.sparkSession
+
+  /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
+   *
+   * @return tuple of weather, census and crime data
+   */
+  def loadAll(): (DataFrame, DataFrame, DataFrame) = {
+    // Weather data
+    val weatherTable = createWeatherTable(weatherFile)
+    weatherTable.createOrReplaceTempView("chicagoWeather")
+    // Census data
+    val censusTable = createCensusTable(censusFile)
+    censusTable.createOrReplaceTempView("chicagoCensus")
+    // Crime data
+    val crimeTable = createCrimeTable(crimesFile)
+    crimeTable.createOrReplaceTempView("chicagoCrime")
+
+    (weatherTable, censusTable, crimeTable)
+  }
 
   def train(weatherTable: DataFrame, censusTable: DataFrame, crimesTable: DataFrame): (GBMModel, DeepLearningModel) = {
     // Register tables in SQL Context
@@ -104,8 +123,22 @@ class ChicagoCrimeApp(weatherFile: String,
     (gbmModel, dlModel)
   }
 
-  def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
-               ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli): GBMModel = {
+  def score(crimes: Seq[Crime], gbmModel: GBMModel, dlModel: DeepLearningModel, censusTable: DataFrame): Unit = {
+    crimes.foreach { crime =>
+      val arrestProbGBM = 100 * scoreEvent(crime, gbmModel, censusTable)
+      val arrestProbDL = 100 * scoreEvent(crime, dlModel, censusTable)
+      println(
+        s"""
+           |Crime: $crime
+           |  Probability of arrest best on DeepLearning: $arrestProbDL %
+           |  Probability of arrest best on GBM: $arrestProbGBM %
+           |
+        """.stripMargin)
+    }
+  }
+
+  private def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
+                       ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli): GBMModel = {
     import hex.tree.gbm.GBM
     import hex.tree.gbm.GBMModel.GBMParameters
 
@@ -122,9 +155,9 @@ class ChicagoCrimeApp(weatherFile: String,
     model
   }
 
-  def DLModel(train: H2OFrame, test: H2OFrame, response: String,
-              epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
-              activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
+  private def DLModel(train: H2OFrame, test: H2OFrame, response: String,
+                      epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
+                      activation: Activation = Activation.RectifierWithDropout, hidden: Array[Int] = Array(200, 200)): DeepLearningModel = {
     import hex.deeplearning.DeepLearning
 
     val dlParams = new DeepLearningParameters()
@@ -143,28 +176,9 @@ class ChicagoCrimeApp(weatherFile: String,
     model
   }
 
-  def binomialMetrics[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
+  private def binomialMetrics[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output]
   (model: Model[M, P, O], train: H2OFrame, test: H2OFrame): (ModelMetricsBinomial, ModelMetricsBinomial) = {
     (modelMetrics(model, train), modelMetrics(model, test))
-  }
-
-
-  /** Load all data from given 3 sources and returns Spark's DataFrame for each of them.
-   *
-   * @return tuple of weather, census and crime data
-   */
-  def loadAll(): (DataFrame, DataFrame, DataFrame) = {
-    // Weather data
-    val weatherTable = createWeatherTable(weatherFile)
-    weatherTable.createOrReplaceTempView("chicagoWeather")
-    // Census data
-    val censusTable = createCensusTable(censusFile)
-    censusTable.createOrReplaceTempView("chicagoCensus")
-    // Crime data
-    val crimeTable = createCrimeTable(crimesFile)
-    crimeTable.createOrReplaceTempView("chicagoCrime")
-
-    (weatherTable, censusTable, crimeTable)
   }
 
   private def loadData(datafile: String, modifyParserSetup: ParseSetup => ParseSetup = identity[ParseSetup]): H2OFrame = {
@@ -173,7 +187,7 @@ class ChicagoCrimeApp(weatherFile: String,
     new H2OFrame(parseSetup, new java.net.URI(datafile))
   }
 
-  def createWeatherTable(datafile: String): DataFrame = {
+  private def createWeatherTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
     val fr = withLockAndUpdate(table) {
       // Remove first column since we do not need it
@@ -182,20 +196,7 @@ class ChicagoCrimeApp(weatherFile: String,
     hc.asDataFrame(fr)
   }
 
-  def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
-
-  def getSeason(month: Int): String = {
-    val seasonNum =
-      if (month >= 3 && month <= 5) 0 // Spring
-      else if (month >= 6 && month <= 8) 1 // Summer
-      else if (month >= 9 && month <= 10) 2 // Autumn
-      else 3 // Winter
-    SEASONS(seasonNum)
-  }
-
-  def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
-
-  def createCensusTable(datafile: String): DataFrame = {
+  private def createCensusTable(datafile: String): DataFrame = {
     val table = loadData(datafile)
     val fr = withLockAndUpdate(table) { fr =>
       val colNames = fr.names().map(n => n.trim.replace(' ', '_').replace('+', '_'))
@@ -204,12 +205,7 @@ class ChicagoCrimeApp(weatherFile: String,
     hc.asDataFrame(fr)
   }
 
-  import org.apache.spark.sql.functions.udf
-
-  private val seasonUdf = udf(getSeason _)
-  private val weekendUdf = udf(isWeekend _)
-
-  def addAdditionalDateColumns(df: DataFrame): DataFrame = {
+  private def addAdditionalDateColumns(df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions._
     import spark.implicits._
     df
@@ -219,13 +215,13 @@ class ChicagoCrimeApp(weatherFile: String,
       .withColumn("Day", dayofmonth('Date))
       .withColumn("WeekNum", weekofyear('Date))
       .withColumn("HourOfDay", hour('Date))
-      .withColumn("Season", seasonUdf('Month))
+      .withColumn("Season", ChicagoCrimeApp.seasonUdf('Month))
       .withColumn("WeekDay", date_format('Date, "u"))
-      .withColumn("Weekend", weekendUdf('WeekDay))
+      .withColumn("Weekend", ChicagoCrimeApp.weekendUdf('WeekDay))
       .drop('Date)
   }
 
-  def createCrimeTable(datafile: String): DataFrame = {
+  private def createCrimeTable(datafile: String): DataFrame = {
     val table = loadData(datafile, (parseSetup: ParseSetup) => {
       val colNames = parseSetup.getColumnNames
       val typeNames = parseSetup.getColumnTypes
@@ -243,7 +239,7 @@ class ChicagoCrimeApp(weatherFile: String,
     addAdditionalDateColumns(sparkFrame)
   }
 
-  def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
+  private def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Float = {
     import spark.implicits._
     // Create Spark DataFrame from a single row
     val df = addAdditionalDateColumns(spark.sparkContext.parallelize(Seq(crime)).toDF)
@@ -258,20 +254,25 @@ class ChicagoCrimeApp(weatherFile: String,
 
     probOfArrest.toFloat
   }
+}
 
-  def score(crimes: Seq[Crime], gbmModel: GBMModel, dlModel: DeepLearningModel, censusTable: DataFrame): Unit = {
-    crimes.foreach { crime =>
-      val arrestProbGBM = 100 * scoreEvent(crime, gbmModel, censusTable)
-      val arrestProbDL = 100 * scoreEvent(crime, dlModel, censusTable)
-      println(
-        s"""
-           |Crime: $crime
-           |  Probability of arrest best on DeepLearning: $arrestProbDL %
-           |  Probability of arrest best on GBM: $arrestProbGBM %
-           |
-        """.stripMargin)
-    }
+object ChicagoCrimeApp {
+
+  private val seasonUdf = udf(getSeason _)
+  private val weekendUdf = udf(isWeekend _)
+
+  private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
+
+  private def getSeason(month: Int): String = {
+    val seasonNum =
+      if (month >= 3 && month <= 5) 0 // Spring
+      else if (month >= 6 && month <= 8) 1 // Summer
+      else if (month >= 9 && month <= 10) 2 // Autumn
+      else 3 // Winter
+    SEASONS(seasonNum)
   }
+
+  private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 }
 
 case class Crime(date: String,
