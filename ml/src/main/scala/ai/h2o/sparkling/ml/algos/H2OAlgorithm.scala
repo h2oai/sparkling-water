@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
+import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
@@ -50,7 +51,9 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
 
     val trainFrame = parameters._train.get()
     preProcessBeforeFit(trainFrame)
-    water.DKV.put(trainFrame)
+    if (!RestApiUtils.isRestAPIBased()) {
+      water.DKV.put(trainFrame)
+    }
     
     // Train
     val binaryModel: H2OBaseModel = trainModel(parameters)
