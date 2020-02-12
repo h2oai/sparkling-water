@@ -21,6 +21,7 @@ import water.fvec.Vec
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import java.io.File
+import org.apache.spark.sql.Row
 
 // Start H2O services
 val hc = H2OContext.getOrCreate(spark)
@@ -226,6 +227,19 @@ println(
      |    test  AUC = ${testMetricsDL.auc}
       """.stripMargin)
 
+val schema = StructType(Array(
+  StructField("Date", StringType, true),
+  StructField("IUCR", ShortType, true),
+  StructField("Primary_Type", StringType, true),
+  StructField("Location_Description", StringType, true),
+  StructField("Domestic", BooleanType, true),
+  StructField("Beat", ShortType, true),
+  StructField("District", ByteType, true),
+  StructField("District", ByteType, true),
+  StructField("Community_Area", ByteType, true),
+  StructField("FBI_Code", ByteType, true)))
+
+
 // Create Crime class for scoring
 case class Crime(date: String,
                  IUCR: Short,
@@ -236,10 +250,7 @@ case class Crime(date: String,
                  District: Byte,
                  Ward: Byte,
                  Community_Area: Byte,
-                 FBI_Code: Byte,
-                 minTemp: Option[Byte] = None,
-                 maxTemp: Option[Byte] = None,
-                 meanTemp: Option[Byte] = None)
+                 FBI_Code: Byte)
 
 //
 // Create a predictor
@@ -264,8 +275,8 @@ def scoreEvent(crime: Crime, model: Model[_, _, _], censusTable: DataFrame): Flo
 
 // Define crimes
 val crimes = Seq(
-  Crime("02/08/2015 11:43:58 PM", 1811, "NARCOTICS", "STREET", Domestic = false, 422, 4, 7, 46, 18),
-  Crime("02/08/2015 11:00:39 PM", 1150, "DECEPTIVE PRACTICE", "RESIDENCE", Domestic = false, 923, 9, 14, 63, 11))
+  Row("02/08/2015 11:43:58 PM", 1811.toShort, "NARCOTICS", "STREET", false, 422.toShort, 4.toByte, 7.toByte, 46.toByte, 18.toByte),
+  Row("02/08/2015 11:00:39 PM", 1150.toShort, "DECEPTIVE PRACTICE", "RESIDENCE", false, 923.toShort, 9.toByte, 14.toByte, 63.toByte, 11.toByte))
 
 // Score
 crimes.foreach { crime =>
