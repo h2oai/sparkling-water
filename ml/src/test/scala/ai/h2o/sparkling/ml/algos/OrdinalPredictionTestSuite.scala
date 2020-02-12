@@ -69,6 +69,8 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
     assertExistenceOfColumns(predictions, "*", dataset.columns ++ Seq("detailed_prediction", "prediction"))
     assertExistenceOfColumns(predictions, "detailed_prediction.*", Seq("label", "probabilities"))
+    val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
+    assert(probabilities.keys.toList.sorted == Seq("25-29", "30-35", "<25", ">35").sorted)
   }
 
   test("transformSchema without details returns expected result") {
@@ -92,7 +94,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val datasetFields = dataset.schema.fields
     val labelField = StructField("label", StringType, nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = false)
-    val probabilitiesField = StructField("probabilities", ArrayType(DoubleType))
+    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
     val detailedPredictionColField = StructField("detailed_prediction", StructType(Seq(labelField, probabilitiesField)), nullable = false)
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
 

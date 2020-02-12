@@ -28,9 +28,10 @@ trait H2OMOJOPredictionOrdinal {
   def getOrdinalPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-          .predictOrdinal(RowConverter.toH2ORowData(r), offset)
-        Detailed(pred.label, pred.classProbabilities)
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+        val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
+        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        Detailed(pred.label, probabilities)
       }
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
@@ -52,9 +53,7 @@ trait H2OMOJOPredictionOrdinal {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      logWarning("From next major release 3.28.1.1, the type of field 'probabilities' in the detailed prediction " +
-        "column has changed from array of probabilities to a map from label to predicted probability.")
-      val probabilitiesField = StructField("probabilities", ArrayType(DoubleType))
+      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
       labelField :: probabilitiesField :: Nil
     } else {
       labelField :: Nil
