@@ -31,6 +31,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  colSampleRate=1.0,
                  maxAbsLeafnodePred=Utils.javaDoubleMaxValue,
                  predNoiseBandwidth=0.0,
+                 quantileAlpha=0.5,
                  ntrees=50,
                  maxDepth=5,
                  minRows=10.0,
