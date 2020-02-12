@@ -30,12 +30,12 @@ trait WriteConverterCtx {
 
   def initFrame(key: String, columns: Array[String]): Unit
 
-  def createChunk(keyName: String, numRows: Option[Int], h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+  def createChunk(keyName: String, numRows: Int, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                   sparse: Array[Boolean], vecStartSize: Map[Int, Int] = Map.empty)
 
   def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit
 
-  def closeChunks(numRows: Int = -1)
+  def closeChunks(numRows: Int)
 
   def startRow(rowIdx: Int)
 

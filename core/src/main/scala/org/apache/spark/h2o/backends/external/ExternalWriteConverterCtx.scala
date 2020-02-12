@@ -30,9 +30,8 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   extends WriteConverterCtx {
 
   private var expectedTypes: Array[Byte] = null
-  private var currentColIdx: Int = 0
-  private var currentRowIdx: Int = 0
   private var chunkWriter: ChunkAutoBufferWriter = null
+  private var numberOfRows: Int = -1
 
   override def closeChunks(numRows: Int): Unit = {
     chunkWriter.close()
@@ -49,98 +48,53 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunk(frameName: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+  override def createChunk(frameName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     this.expectedTypes = expectedTypes
     val outputStream = RestApiUtils.putChunk(nodeDesc, conf, frameName, chunkId, expectedTypes, maxVecSizes)
     this.chunkWriter = new ChunkAutoBufferWriter(outputStream)
+    this.numberOfRows = numRows
   }
 
-  override def put(colIdx: Int, data: Boolean): Unit = {
-    chunkWriter.writeBoolean(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Boolean): Unit = chunkWriter.writeBoolean(data)
 
-  override def put(colIdx: Int, data: Byte): Unit = {
-    chunkWriter.writeByte(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Byte): Unit = chunkWriter.writeByte(data)
 
-  override def put(colIdx: Int, data: Char): Unit = {
-    chunkWriter.writeChar(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Char): Unit = chunkWriter.writeChar(data)
 
-  override def put(colIdx: Int, data: Short): Unit = {
-    chunkWriter.writeShort(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Short): Unit = chunkWriter.writeShort(data)
 
-  override def put(colIdx: Int, data: Int): Unit = {
-    chunkWriter.writeInt(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Int): Unit = chunkWriter.writeInt(data)
 
-  override def put(colIdx: Int, data: Long): Unit = {
-    chunkWriter.writeLong(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Long): Unit = chunkWriter.writeLong(data)
 
-  override def put(colIdx: Int, data: Float): Unit = {
-    chunkWriter.writeFloat(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Float): Unit = chunkWriter.writeFloat(data)
 
-  override def put(colIdx: Int, data: Double): Unit = {
-    chunkWriter.writeDouble(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: Double): Unit = chunkWriter.writeDouble(data)
 
-  override def put(colIdx: Int, data: java.sql.Timestamp): Unit = {
-    chunkWriter.writeTimestamp(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: java.sql.Timestamp): Unit = chunkWriter.writeTimestamp(data)
 
   // Here we should call externalFrameWriter.sendDate - however such method does not exist
   // Hence going through the same path as sending Timestamp long value.
-  override def put(colIdx: Int, data: java.sql.Date): Unit = {
-    chunkWriter.writeLong(data.getTime)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: java.sql.Date): Unit = chunkWriter.writeLong(data.getTime)
 
-  override def put(colIdx: Int, data: String): Unit = {
-    chunkWriter.writeString(data)
-    increaseCounters()
-  }
+  override def put(colIdx: Int, data: String): Unit = chunkWriter.writeString(data)
 
-  override def putNA(columnNum: Int): Unit = {
-    chunkWriter.writeNA(expectedTypes(columnNum))
-    increaseCounters()
-  }
+  override def putNA(columnNum: Int): Unit = chunkWriter.writeNA(expectedTypes(columnNum))
 
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
     chunkWriter.writeSparseVector(vector.indices, vector.values)
-    increaseCounters()
   }
 
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
     chunkWriter.writeDenseVector(vector.values)
-    increaseCounters()
   }
 
-  override def numOfRows(): Int = currentRowIdx
+  override def numOfRows(): Int = this.numberOfRows
 
   override def startRow(rowIdx: Int): Unit = {}
 
   override def finishRow(): Unit = {}
-
-  private def increaseCounters(): Unit = {
-    currentColIdx += 1
-    if (currentColIdx == expectedTypes.length) {
-      currentRowIdx += 1
-      currentColIdx = 0
-    }
-  }
 }
 
 object ExternalWriteConverterCtx {

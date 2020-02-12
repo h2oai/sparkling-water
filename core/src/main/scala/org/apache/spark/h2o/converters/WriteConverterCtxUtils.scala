@@ -34,7 +34,7 @@ import scala.reflect.runtime.universe._
 object WriteConverterCtxUtils {
 
   type SparkJob[T] = (TaskContext, Iterator[T]) => (Int, Long)
-  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Short, Array[Boolean], Seq[Int]) => SparkJob[T]
+  type ConversionFunction[T] = (String, Array[Byte], Option[UploadPlan], Array[Boolean], Seq[Int]) => SparkJob[T]
   type UploadPlan = immutable.Map[Int, NodeDesc]
 
   def create(conf: H2OConf, uploadPlan: Option[UploadPlan], partitionId: Int): WriteConverterCtx = {
@@ -49,11 +49,11 @@ object WriteConverterCtxUtils {
     * In case of internal backend it returns the original iterator and empty length because we do not need it
     * In case of external backend it returns new iterator with the same data and the length of the data
     */
-  def bufferedIteratorWithSize[T](uploadPlan: Option[UploadPlan], original: Iterator[T]): (Iterator[T], Option[Int]) = {
+  def bufferedIteratorWithSize[T](uploadPlan: Option[UploadPlan], original: Iterator[T]): (Iterator[T], Int) = {
     uploadPlan.map { _ =>
       val buffered = original.toList
-      (buffered.iterator, Some(buffered.size))
-    }.getOrElse(original, None)
+      (buffered.iterator, buffered.size)
+    }.getOrElse(original, -1)
   }
 
   trait Converter {
@@ -103,7 +103,6 @@ object WriteConverterCtxUtils {
         new InternalWriteConverterCtx()
       } else {
         val leader = H2O.CLOUD.leader()
-        val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
         new ExternalWriteConverterCtx(hc.getConf, NodeDesc(leader))
       }
 
@@ -128,7 +127,7 @@ object WriteConverterCtxUtils {
       } else {
         None
       }
-      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, H2O.SELF.getTimestamp(), sparse, nonEmptyPartitions)
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, sparse, nonEmptyPartitions)
       val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
       val res = new Array[Long](nonEmptyPartitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
@@ -176,7 +175,7 @@ object WriteConverterCtxUtils {
       // prepare required metadata
       val uploadPlan = Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
 
-      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, -1, sparse, nonEmptyPartitions)
+      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, sparse, nonEmptyPartitions)
       val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
       val res = new Array[Long](nonEmptyPartitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }

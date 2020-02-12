@@ -30,7 +30,7 @@ import water.server.ServletUtils
   */
 final class ChunkServlet extends HttpServlet {
 
-  private case class GetRequestParameters(
+  private case class GETRequestParameters(
       frameName: String,
       chunkId: Int,
       expectedTypes: Array[Byte],
@@ -38,7 +38,7 @@ final class ChunkServlet extends HttpServlet {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
-      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
+      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName' doesn't exist.")
       validateChunkId(frame)
       validateSelectedColumns(frame)
       validateExpectedTypes(expectedTypes, frame)
@@ -82,8 +82,8 @@ final class ChunkServlet extends HttpServlet {
     }
   }
 
-  private object GetRequestParameters {
-    def parse(request: HttpServletRequest): GetRequestParameters = {
+  private object GETRequestParameters {
+    def parse(request: HttpServletRequest): GETRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
@@ -91,7 +91,7 @@ final class ChunkServlet extends HttpServlet {
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
       val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
-      GetRequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
+      GETRequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
     }
   }
 
@@ -139,7 +139,7 @@ final class ChunkServlet extends HttpServlet {
    */
   override protected def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = {
     processRequest(request, response) {
-      val parameters = GetRequestParameters.parse(request)
+      val parameters = GETRequestParameters.parse(request)
       parameters.validate()
       response.setContentType("application/octet-stream")
       withResource(response.getOutputStream) { outputStream =>
@@ -154,7 +154,7 @@ final class ChunkServlet extends HttpServlet {
     }
   }
 
-  private case class PutRequestParameters(
+  private case class PUTRequestParameters(
       frameName: String,
       chunkId: Int,
       expectedTypes: Array[Byte],
@@ -176,8 +176,8 @@ final class ChunkServlet extends HttpServlet {
     }
   }
 
-  private object PutRequestParameters {
-    def parse(request: HttpServletRequest): PutRequestParameters = {
+  private object PUTRequestParameters {
+    def parse(request: HttpServletRequest): PUTRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
@@ -185,7 +185,7 @@ final class ChunkServlet extends HttpServlet {
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
       val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
-      PutRequestParameters(frameName, chunkId, expectedTypes, maxVecSizes)
+      PUTRequestParameters(frameName, chunkId, expectedTypes, maxVecSizes)
     }
   }
 
@@ -201,7 +201,7 @@ final class ChunkServlet extends HttpServlet {
    */
   override def doPut(request: HttpServletRequest, response: HttpServletResponse): Unit = {
     processRequest(request, response) {
-      val parameters = PutRequestParameters.parse(request)
+      val parameters = PUTRequestParameters.parse(request)
       parameters.validate()
       withResource(request.getInputStream) { inputStream =>
         withResource(new ChunkAutoBufferReader(inputStream)) { reader =>

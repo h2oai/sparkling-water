@@ -25,7 +25,7 @@ import water.fvec.{ChunkUtils, NewChunk, Vec}
 
 final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeable with ChunkSerdeConstants {
   private val buffer = new AutoBuffer(inputStream)
-  private val numRows = readInt
+  private val numRows = readInt()
   private var isLastNAVar: Boolean = false
 
   def getNumRows: Int = numRows
@@ -40,14 +40,14 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
       var typeIdx = 0
       while (typeIdx < expectedTypes.length) {
         expectedTypes(typeIdx) match {
-          case EXPECTED_BOOL | EXPECTED_BYTE => addToChunk(chunks(startPositions(typeIdx)), readByte)
-          case EXPECTED_CHAR => addToChunk(chunks(startPositions(typeIdx)), readChar)
-          case EXPECTED_SHORT => addToChunk(chunks(startPositions(typeIdx)), readShort)
-          case EXPECTED_INT => addToChunk(chunks(startPositions(typeIdx)), readInt);
-          case EXPECTED_LONG | EXPECTED_TIMESTAMP => addToChunk(chunks(startPositions(typeIdx)), readLong)
-          case EXPECTED_FLOAT => addToChunk(chunks(startPositions(typeIdx)), readFloat)
-          case EXPECTED_DOUBLE => addToChunk(chunks(startPositions(typeIdx)), readDouble)
-          case EXPECTED_STRING => addToChunk(chunks(startPositions(typeIdx)), readString)
+          case EXPECTED_BOOL | EXPECTED_BYTE => addToChunk(chunks(startPositions(typeIdx)), readByte())
+          case EXPECTED_CHAR => addToChunk(chunks(startPositions(typeIdx)), readChar())
+          case EXPECTED_SHORT => addToChunk(chunks(startPositions(typeIdx)), readShort())
+          case EXPECTED_INT => addToChunk(chunks(startPositions(typeIdx)), readInt());
+          case EXPECTED_LONG | EXPECTED_TIMESTAMP => addToChunk(chunks(startPositions(typeIdx)), readLong())
+          case EXPECTED_FLOAT => addToChunk(chunks(startPositions(typeIdx)), readFloat())
+          case EXPECTED_DOUBLE => addToChunk(chunks(startPositions(typeIdx)), readDouble())
+          case EXPECTED_STRING => addToChunk(chunks(startPositions(typeIdx)), readString())
           case EXPECTED_VECTOR =>
             val isSparse = buffer.getZ
             if (isSparse) addSparseVectorToChunk(chunks, elementSizes(typeIdx), startPositions(typeIdx))
@@ -160,7 +160,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
 
   def readByte(): Byte = {
     val data = buffer.get1
-    isLastNAVar= isNA(data)
+    isLastNAVar = isNA(data)
     data
   }
 

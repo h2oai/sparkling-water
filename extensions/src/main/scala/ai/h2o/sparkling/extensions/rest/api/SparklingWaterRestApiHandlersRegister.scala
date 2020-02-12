@@ -34,7 +34,7 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       "POST " + Paths.FINALIZE_FRAME,
       classOf[ImportFrameHandler],
       "finalize",
-      "Performs finalizing procedures after the date chunks were delivered to the server")
+      "Performs finalizing procedures after the data chunks were delivered to the server")
   }
 
   override def getName(): String =  "Sparkling Water REST API Extensions"
