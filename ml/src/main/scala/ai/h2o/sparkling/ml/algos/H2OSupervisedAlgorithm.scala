@@ -16,14 +16,17 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.h2o.{Frame, H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
+import water.DKV
 
 import scala.reflect.ClassTag
 
@@ -43,13 +46,21 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
     schema
   }
 
-  override protected def preProcessBeforeFit(trainFrame: Frame): Unit = {
-    super.preProcessBeforeFit(trainFrame)
-    if ((parameters._distribution == DistributionFamily.bernoulli
-      || parameters._distribution == DistributionFamily.multinomial)
-      && !trainFrame.vec(getLabelCol()).isCategorical) {
-      trainFrame.replace(trainFrame.find(getLabelCol()),
-        trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
+  override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
+    super.preProcessBeforeFit(trainFrameKey)
+    if (parameters._distribution == DistributionFamily.bernoulli || parameters._distribution == DistributionFamily.multinomial) {
+      if (RestApiUtils.isRestAPIBased()) {
+        val trainFrame = H2OFrame(trainFrameKey)
+        if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType == H2OColumnType.`enum`) {
+          trainFrame.convertColumnsToCategorical(Array(getLabelCol()))
+        }
+      } else {
+        val trainFrame = DKV.getGet[Frame](trainFrameKey)
+        if (!trainFrame.vec(getLabelCol()).isCategorical) {
+          trainFrame.replace(trainFrame.find(getLabelCol()),
+            trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
+        }
+      }
     }
   }
 

@@ -16,22 +16,30 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3
+import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import org.apache.spark.sql.SparkSession
+import water.DKV
 
 /**
   * H2O KMeans algorithm exposed via Spark ML pipelines.
   */
 class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
 
-  override protected def preProcessBeforeFit(trainFrame: Frame): Unit = {
-    super.preProcessBeforeFit(trainFrame)
-    val stringCols = trainFrame.names.filter(name => trainFrame.vec(name).isString)
+  override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
+    super.preProcessBeforeFit(trainFrameKey)
+    val stringCols = if (RestApiUtils.isRestAPIBased()) {
+      H2OFrame(trainFrameKey).columns.filter(_.dataType == H2OColumnType.string).map(_.name)
+    } else {
+      val trainFrame = DKV.getGet[Frame](trainFrameKey)
+      trainFrame.names.filter(name => trainFrame.vec(name).isString)
+    }
     if (stringCols.nonEmpty) {
       throw new IllegalArgumentException(s"Following columns are of type string: '${stringCols.mkString(", ")}', but" +
         s" H2OKMeans does not accept string columns. However, you can use the `allStringColumnsToCategorical`" +

@@ -17,7 +17,35 @@
 
 package ai.h2o.sparkling.frame
 
+import java.io.InputStream
+
+import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.utils.Base64Encoding
+import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.backends.external.{RestApiUtils, RestCommunication}
 import org.apache.spark.h2o.utils.NodeDesc
 
 
 case class H2OChunk(index: Int, numberOfRows: Long, location: NodeDesc)
+
+object H2OChunk extends RestCommunication {
+  def getChunkAsInputStream(
+                             node: NodeDesc,
+                             conf: H2OConf,
+                             frameName: String,
+                             chunkId: Int,
+                             expectedTypes: Array[Byte],
+                             selectedColumnsIndices: Array[Int]): InputStream = {
+    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
+
+    val parameters = Map(
+      "frame_name" -> frameName,
+      "chunk_id" -> chunkId.toString,
+      "expected_types" -> expectedTypesString,
+      "selected_columns" -> selectedColumnsIndicesString)
+
+    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
+    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+  }
+}

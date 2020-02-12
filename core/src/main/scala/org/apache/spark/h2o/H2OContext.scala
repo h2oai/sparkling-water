@@ -517,7 +517,7 @@ object H2OContext extends Logging {
     }
 
     override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
-      val frame = getFrame(conf, frameId)
+      val frame = ai.h2o.sparkling.frame.H2OFrame(frameId)
       SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
     }
 
