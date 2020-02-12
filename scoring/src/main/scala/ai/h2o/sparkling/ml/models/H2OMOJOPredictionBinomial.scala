@@ -104,8 +104,14 @@ object H2OMOJOPredictionBinomial {
 
   case class Base(label: String)
 
-  case class Detailed(label: String, probabilities: Map[String, Double], contributions: Array[Float])
+  case class Detailed(label: String,
+                      probabilities: Map[String, Double],
+                      contributions: Array[Float])
 
-  case class DetailedWithCalibration(label: String, probabilities: Map[String, Double], contributions: Array[Float], calibratedProbabilities: Map[String, Double])
+  case class DetailedWithCalibration(
+                                      label: String,
+                                      probabilities: Map[String, Double],
+                                      contributions: Array[Float],
+                                      calibratedProbabilities: Map[String, Double])
 
 }

@@ -92,7 +92,8 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = false)
     val contributionsField = StructField("contributions", ArrayType(FloatType))
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: contributionsField :: Nil), nullable = false)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(
+      labelField :: probabilitiesField :: contributionsField :: Nil), nullable = false)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
     val schema = model.transformSchema(dataset.schema)
