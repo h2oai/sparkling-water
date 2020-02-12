@@ -72,7 +72,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
               logError("External H2O cluster not healthy!")
               if (conf.isKillOnUnhealthyClusterEnabled) {
                 logError("Stopping external H2O cluster as it is not healthy.")
-                if (isRestAPIBased) {
+                if (RestApiUtils.isRestAPIBased(Some(H2OContext.this))) {
                   H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
                 } else {
                   H2OContext.this.stop(true)
@@ -323,8 +323,6 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
     LogUtil.setH2ONodeLogLevel(level)
   }
 
-  private def isRestAPIBased: Boolean = conf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
-
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
     if (!inShutdownHook) {
       ShutdownHookManager.removeShutdownHook(shutdownHookRef)
@@ -338,7 +336,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       // In internal backend, Spark takes care of stopping executors automatically
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
-        if (isRestAPIBased) {
+        if (RestApiUtils.isRestAPIBased(Some(this))) {
           RestApiUtils.shutdownCluster(conf)
         } else {
           H2O.orderlyShutdown(conf.externalBackendStopTimeout)
@@ -346,7 +344,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
       }
       H2OContext.instantiatedContext.set(null)
       stopped = true
-      if (stopJvm && !isRestAPIBased) {
+      if (stopJvm && !RestApiUtils.isRestAPIBased(Some(this))) {
         H2O.exit(0)
       }
     } else {

@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
-import ai.h2o.sparkling.frame.H2OColumn
+import ai.h2o.sparkling.frame.{H2OColumn, H2OColumnType}
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.sql.types._
 import water.api.API
@@ -177,8 +177,8 @@ object ReflectionUtils {
     * @return A data type supported by Spark
     */
   def supportedType(column: H2OColumn): SupportedType = column.dataType match {
-    case "enum" | "string" | "uuid" => String
-    case "int" =>
+    case H2OColumnType.`enum` | H2OColumnType.string | H2OColumnType.uuid => String
+    case H2OColumnType.int =>
       val min = column.min
       val max = column.max
       if (min > scala.Byte.MinValue && max < scala.Byte.MaxValue) {
@@ -190,8 +190,8 @@ object ReflectionUtils {
       } else {
         Long
       }
-    case "real" => Double
-    case "time" => Timestamp
+    case H2OColumnType.real => Double
+    case H2OColumnType.time => Timestamp
     case unknown => throw new IllegalArgumentException(s"Unknown type $unknown")
   }
 
