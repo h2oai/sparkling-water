@@ -61,7 +61,6 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
             trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
         }
       }
-
     }
   }
 
