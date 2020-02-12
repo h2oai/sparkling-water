@@ -80,9 +80,13 @@ trait H2OMOJOPredictionBinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
+      logWarning("From next major release 3.28.1.1, the fields 'p0' and 'p1' in the detailed prediction " +
+        "column are replaced by a single field 'probabilities' which is a map from label to predicted probability.")
       val probabilitiesFields = Seq("p0", "p1").map(StructField(_, DoubleType, nullable = false))
       val contributionsField = StructField("contributions", ArrayType(FloatType))
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
+        logWarning("From next major release 3.28.1.1, the fields 'p0_calibrated' and 'p1_calibrated' in the detailed prediction " +
+          "column are replaced by a single field 'calibratedProbabilities' which is a map from label to predicted probability.")
         val calibratedProbabilitiesFields = Seq("p0_calibrated", "p1_calibrated").map(StructField(_, DoubleType, nullable = false))
         Seq(labelField) ++ probabilitiesFields ++ Seq(contributionsField) ++ calibratedProbabilitiesFields
       } else {
