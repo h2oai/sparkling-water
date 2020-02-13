@@ -22,9 +22,15 @@ import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
+import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import water.api.schemas3.FrameChunksV3.FrameChunkV3
+import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
