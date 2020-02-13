@@ -160,7 +160,7 @@ final class ChunkServlet extends HttpServlet {
       expectedTypes: Array[Byte],
       maxVecSizes: Array[Int]) {
     def validate(): Unit = {
-      val frame = DKV.getGet(this.frameName)
+      val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
       validateExpectedTypes(expectedTypes, frame)
       validateMaxVecSizes()

@@ -24,7 +24,7 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
   override def registerEndPoints(context: RestApiContext): Unit = {
     context.registerEndpoint(
       "sw_frame_initialize",
-      "POST" + Paths.INITIALIZE_FRAME,
+      "POST " + Paths.INITIALIZE_FRAME,
       classOf[ImportFrameHandler],
       "initialize",
       "Initializes a new frame before pushing chunks to the server")

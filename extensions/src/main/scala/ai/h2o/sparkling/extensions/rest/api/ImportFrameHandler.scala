@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
+import ai.h2o.sparkling.utils.Base64Encoding
 import water.api.Handler
 import water.fvec.ChunkUtils
 
@@ -28,7 +29,9 @@ class ImportFrameHandler extends Handler {
   }
 
   def finalize(version: Int, request: FinalizeFrameV3): FinalizeFrameV3 = {
-    ChunkUtils.finalizeFrame(request.key, request.rows_per_chunk, request.column_types, null)
+    val rowsPerChunk = Base64Encoding.decodeToLongArray(request.rows_per_chunk)
+    val columnTypes = Base64Encoding.decode(request.column_types)
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, null)
     request
   }
 }

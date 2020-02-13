@@ -20,7 +20,6 @@ package ai.h2o.sparkling.utils
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
-import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
@@ -43,11 +42,11 @@ trait RestCommunication extends Logging {
     * @return A deserialized object
     */
   def query[ResultType: ClassTag](
-                                             endpoint: URI,
-                                             suffix: String,
-                                             conf: H2OConf,
-                                             params: Map[String, Any] = Map.empty,
-                                             skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                   endpoint: URI,
+                                   suffix: String,
+                                   conf: H2OConf,
+                                   params: Map[String, Any] = Map.empty,
+                                   skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "GET", suffix, conf, params, skippedFields)
   }
 
@@ -64,11 +63,11 @@ trait RestCommunication extends Logging {
     * @return A deserialized object
     */
   def update[ResultType: ClassTag](
-                                              endpoint: URI,
-                                              suffix: String,
-                                              conf: H2OConf,
-                                              params: Map[String, Any] = Map.empty,
-                                              skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                    endpoint: URI,
+                                    suffix: String,
+                                    conf: H2OConf,
+                                    params: Map[String, Any] = Map.empty,
+                                    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
@@ -90,9 +89,9 @@ trait RestCommunication extends Logging {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       val requestMethod = "PUT"
       connection.setRequestMethod(requestMethod)
-      setHeaders(connection, conf, requestMethod, params)
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
+      setHeaders(connection, conf, requestMethod, params)
       val outputStream = connection.getOutputStream()
       new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
     } catch {
@@ -101,12 +100,12 @@ trait RestCommunication extends Logging {
   }
 
   def request[ResultType: ClassTag](
-                                               endpoint: URI,
-                                               requestType: String,
-                                               suffix: String,
-                                               conf: H2OConf,
-                                               params: Map[String, Any] = Map.empty,
-                                               skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                     endpoint: URI,
+                                     requestType: String,
+                                     suffix: String,
+                                     conf: H2OConf,
+                                     params: Map[String, Any] = Map.empty,
+                                     skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
@@ -161,6 +160,7 @@ trait RestCommunication extends Logging {
     val charset = "UTF-8"
     value match {
       case v: String => URLEncoder.encode(v, charset)
+      case v: Byte => v.toString
       case v: Int => v.toString
       case v: Long => v.toString
       case v: Double => v.toString

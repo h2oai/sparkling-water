@@ -24,7 +24,9 @@ import water.AutoBuffer
 import water.fvec.{ChunkUtils, NewChunk, Vec}
 
 final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeable with ChunkSerdeConstants {
-  private val buffer = new AutoBuffer(inputStream)
+
+  private val channel = new InputStreamByteChannel(inputStream)
+  private val buffer = new AutoBuffer(channel)
   private val numRows = readInt()
   private var isLastNAVar: Boolean = false
 
@@ -178,7 +180,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
 
   def readInt(): Int = {
     val data = buffer.getInt
-    isLastNAVar= isNA(data)
+    isLastNAVar = isNA(data)
     data
   }
 
@@ -230,6 +232,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   def isLastNA: Boolean = isLastNAVar
 
   override def close(): Unit = {
-    buffer.close
+    buffer.close()
+    channel.close()
   }
 }
