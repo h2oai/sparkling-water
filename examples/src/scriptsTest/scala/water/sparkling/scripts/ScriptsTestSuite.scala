@@ -139,7 +139,7 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper {
   * examples/bigdata/laptop/citibike-nyc directory
   */
 @RunWith(classOf[JUnitRunner])
-class ScriptStrata2015 extends ScriptsTestHelper {
+class CityBikeSharing extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
     sparkConf = defaultConf.setMaster("local[*]")
       .set("spark.driver.memory", "2G")
@@ -147,8 +147,8 @@ class ScriptStrata2015 extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("strata2015.script.scala") {
-    val result = launchScript("strata2015.script.scala")
+  test("CityBikeSharing.script.scala") {
+    val result = launchScript("CityBikeSharing.script.scala")
     var msg = "Problem during interpreting the script!"
     if (result.codeExecutionStatus == CodeResults.Exception) {
       msg = "Exception occurred during the execution. One possible cause could be missing necessary citibike-nyc data files in examples/bigdata/laptop/citibike-nyc/ folder."
