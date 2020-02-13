@@ -66,7 +66,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val nodes = getAndVerifyWorkerNodes(conf)
     if (!isRestApiBasedClient(hc)) {
       ExternalH2OBackend.startH2OClient(hc, nodes)
-      ExternalH2OBackend.verifyH2OClientCloudUp(conf, nodes)
     }
     nodes
   }

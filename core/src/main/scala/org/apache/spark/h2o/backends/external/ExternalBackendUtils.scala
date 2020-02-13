@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.RestAPIManager
@@ -76,31 +76,6 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
 
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
-  }
-
-  protected[backends] def verifyH2OClientCloudUp(conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
-    val cloudMembers = H2O.CLOUD.members()
-    if (cloudMembers.isEmpty) {
-      if (conf.isManualClusterStartUsed) {
-        throw new H2OClusterNotRunning(
-          s"""
-             |External H2O cluster is not running or could not be connected to. Provided configuration:
-             |  cluster name            : ${conf.cloudName.get}
-             |  cluster representative  : ${conf.h2oCluster.getOrElse("Using multi-cast discovery!")}
-             |  cluster start timeout   : ${conf.clusterStartTimeout} sec
-             |
-             |It is possible that in case you provided only the cluster name, h2o is not able to cloud up
-             |because multi-cast communication is limited in your network. In that case, please consider starting the
-             |external H2O cluster with flatfile and set the following configuration '${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1}'
-        """.stripMargin)
-      } else {
-        throw new H2OClusterNotRunning("Problem with connecting to external H2O cluster started on yarn." +
-          "Please check the YARN logs.")
-      }
-    }
-    if (cloudMembers.size != nodes.length) {
-      throw new RuntimeException("Invalid number of discovered H2O nodes.")
-    }
   }
 
   protected[backends] def launchShellCommand(cmdToLaunch: Seq[String]): Int = {
