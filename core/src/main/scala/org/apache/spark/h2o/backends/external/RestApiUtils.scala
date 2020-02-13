@@ -17,20 +17,14 @@
 
 package org.apache.spark.h2o.backends.external
 
-import java.io.{File, InputStream, OutputStream}
+import java.io.File
 import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
-import ai.h2o.sparkling.frame.{H2OChunk, H2OColumn, H2OColumnType, H2OFrame}
-import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import water.api.schemas3.FrameChunksV3.FrameChunkV3
-import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
@@ -110,108 +104,6 @@ trait RestApiUtils extends RestCommunication {
         s"The leader index '${cloudV3.leader_idx}' doesn't correspond to the size of the H2O cluster ${nodes.length}.")
     }
     nodes(cloudV3.leader_idx)
-  }
-
-  def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
-    val endpoint = getClusterEndpoint(conf)
-    val frames = query[FramesV3](
-      endpoint,
-      s"/3/Frames/$frameId/summary",
-      conf,
-      Map("row_count" -> 0),
-      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
-    val frame = frames.frames(0)
-    val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
-    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
-
-    H2OFrame(
-      frameId = frame.frame_id.name,
-      columns = frame.columns.map(convertColumn),
-      chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
-  }
-
-  def initializeFrame(conf: H2OConf, frameId: String, columns: Array[String]) : InitializeFrameV3 = {
-    val endpoint = getClusterEndpoint(conf)
-    val parameters = Map(
-      "key" -> frameId,
-      "columns" -> columns)
-    update[InitializeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
-  }
-
-  def finalizeFrame(
-      conf: H2OConf,
-      frameId: String,
-      rowsPerChunk: Array[Long],
-      columnTypes: Array[Byte]): FinalizeFrameV3 = {
-    val endpoint = getClusterEndpoint(conf)
-    val parameters = Map(
-      "key" -> frameId,
-      "rows_per_chunk" -> rowsPerChunk,
-      "column_types" -> columnTypes
-    )
-    update[FinalizeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
-  }
-
-  def getChunk(
-                node: NodeDesc,
-                conf: H2OConf,
-                frameName: String,
-                chunkId: Int,
-                expectedTypes: Array[Byte],
-                selectedColumnsIndices: Array[Int]): InputStream = {
-    val expectedTypesString = Base64Encoding.encode(expectedTypes)
-    val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
-
-    val parameters = Map(
-      "frame_name" -> frameName,
-      "chunk_id" -> chunkId.toString,
-      "expected_types" -> expectedTypesString,
-      "selected_columns" -> selectedColumnsIndicesString)
-
-    val endpoint = resolveNodeEndpoint(node, conf)
-    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
-  }
-
-  def putChunk(
-      node: NodeDesc,
-      conf : H2OConf,
-      frameName: String,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      maxVecSizes: Array[Int]): OutputStream = {
-    val expectedTypesString = Base64Encoding.encode(expectedTypes)
-    val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
-
-    val parameters = Map[String, String](
-      "frame_name" -> frameName,
-      "chunk_id" -> chunkId.toString,
-      "expected_types" -> expectedTypesString,
-      "maximum_vector_sizes" -> maxVecSizesString)
-
-    val endpoint = resolveNodeEndpoint(node, conf)
-    insert(endpoint, Paths.CHUNK, conf, parameters)
-  }
-
-  private def convertColumn(sourceColumn: ColV3): H2OColumn = {
-    H2OColumn(
-      name = sourceColumn.label,
-      dataType = H2OColumnType.fromString(sourceColumn.`type`),
-      min = sourceColumn.mins(0),
-      max = sourceColumn.maxs(0),
-      mean = sourceColumn.mean,
-      sigma = sourceColumn.sigma,
-      numberOfZeros = sourceColumn.zero_count,
-      numberOfMissingElements = sourceColumn.missing_count,
-      percentiles = sourceColumn.percentiles,
-      domain = sourceColumn.domain,
-      domainCardinality = sourceColumn.domain_cardinality)
-  }
-
-  private def convertChunk(sourceChunk: FrameChunkV3, clusterNodes: Array[NodeDesc]): H2OChunk = {
-    H2OChunk(
-      index = sourceChunk.chunk_id,
-      numberOfRows = sourceChunk.row_count,
-      location = clusterNodes(sourceChunk.node_idx))
   }
 
   def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {

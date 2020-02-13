@@ -81,10 +81,10 @@ trait RestCommunication extends Logging {
     * @return HttpUrlConnection facilitating the insertion and holding the outputStream
     */
   protected def insert(
-      endpoint: URI,
-      suffix: String,
-      conf: H2OConf,
-      params: Map[String, Any] = Map.empty): OutputStream  = {
+                        endpoint: URI,
+                        suffix: String,
+                        conf: H2OConf,
+                        params: Map[String, Any] = Map.empty): OutputStream  = {
     val url = resolveUrl(endpoint, suffix)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]

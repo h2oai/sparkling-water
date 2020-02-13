@@ -25,6 +25,7 @@ import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferWriter
+import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
 
 class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   extends WriteConverterCtx {
@@ -38,11 +39,11 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   }
 
   override def initFrame(key: String, columns: Array[String]): Unit = {
-    RestApiUtils.initializeFrame(conf, key, columns)
+    H2OFrame.initializeFrame(conf, key, columns)
   }
 
   override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
-    RestApiUtils.finalizeFrame(conf, key, rowsPerChunk, colTypes)
+    H2OFrame.finalizeFrame(conf, key, rowsPerChunk, colTypes)
   }
 
   /**
@@ -51,7 +52,7 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   override def createChunk(frameName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     this.expectedTypes = expectedTypes
-    val outputStream = RestApiUtils.putChunk(nodeDesc, conf, frameName, chunkId, expectedTypes, maxVecSizes)
+    val outputStream = H2OChunk.putChunk(nodeDesc, conf, frameName, chunkId, expectedTypes, maxVecSizes)
     this.chunkWriter = new ChunkAutoBufferWriter(outputStream)
     this.numberOfRows = numRows
   }

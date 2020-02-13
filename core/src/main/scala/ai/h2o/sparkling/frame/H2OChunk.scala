@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.frame
 
-import java.io.InputStream
+import java.io.{InputStream, OutputStream}
 
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, RestApiUtils, RestCommunication}
@@ -46,5 +46,25 @@ object H2OChunk extends RestCommunication {
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
     readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+  }
+
+  def putChunk(
+                node: NodeDesc,
+                conf : H2OConf,
+                frameName: String,
+                chunkId: Int,
+                expectedTypes: Array[Byte],
+                maxVecSizes: Array[Int]): OutputStream = {
+    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
+
+    val parameters = Map[String, String](
+      "frame_name" -> frameName,
+      "chunk_id" -> chunkId.toString,
+      "expected_types" -> expectedTypesString,
+      "maximum_vector_sizes" -> maxVecSizesString)
+
+    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
+    insert(endpoint, Paths.CHUNK, conf, parameters)
   }
 }
