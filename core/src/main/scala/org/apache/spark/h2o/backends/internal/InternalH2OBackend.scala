@@ -80,12 +80,12 @@ object InternalH2OBackend extends InternalBackendUtils {
       conf.setCloudName("sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + conf.sparkConf.getAppId)
     }
 
-    checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
-    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
-
     if (conf.hdfsConf.isEmpty) {
       conf.setHdfsConf(SparkContext.getOrCreate().hadoopConfiguration)
     }
+
+    checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
+    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
 
     conf
   }
