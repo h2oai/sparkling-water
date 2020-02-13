@@ -6,6 +6,18 @@ ext {
     zipDir = file("$buildDir/zip/sparkling-water-${version}")
 }
 
+def getH2OMajorName() {
+    if (isNightlyBuild.toBoolean()) {
+        if (h2oMajorName == "bleeding_edge") {
+            return "master"
+        } else {
+            return h2oMajorName
+        }
+    } else {
+        return h2oMajorName
+    }
+}
+
 def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
     def content = file("src/buildinfo.json").getText('UTF-8')
             .replaceAll("SUBST_BUILD_TIME_MILLIS", buildTimeMillis)
@@ -13,11 +25,11 @@ def substituteBuildInfoFile(buildTimeMillis, buildTimeIso8601, buildTimeLocal) {
             .replaceAll("SUBST_BUILD_TIME_LOCAL", buildTimeLocal)
             .replaceAll("SUBST_SW_VERSION", version)
             .replaceAll("SUBST_LAST_COMMIT_HASH", getGitHash())
-            .replaceAll("SUBST_H2O_NAME", h2oMajorName)
+            .replaceAll("SUBST_H2O_NAME", getH2OMajorName())
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
             .replaceAll("SUBST_H2O_PROJECT_VERSION", h2oVersion)
             .replaceAll("SUBST_H2O_BRANCH_NAME", getH2OBranch(h2oMajorName))
-            .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+            .replaceAll("SUBST_H2O_BUILD_NUMBER", getH2OBuild(h2oBuild))
             .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
 
     def buildInfoFile = file("$distDir/buildinfo.json")
@@ -58,8 +70,8 @@ def substituteIndexHtml(buildTimeLocal) {
             .replaceAll("SUBST_SW_VERSION", version)
             .replaceAll("SUBST_PROJECT_GITHASH", getGitHash())
             .replaceAll("SUBST_H2O_VERSION", h2oMajorVersion)
-            .replaceAll("SUBST_H2O_BUILD", h2oBuild)
-            .replaceAll("SUBST_H2O_NAME", h2oMajorName)
+            .replaceAll("SUBST_H2O_BUILD", getH2OBuild(h2oBuild))
+            .replaceAll("SUBST_H2O_NAME", getH2OMajorName())
             .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
             .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
             .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
