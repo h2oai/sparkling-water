@@ -21,6 +21,8 @@ package org.apache.spark.h2o.backends.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
+import ai.h2o.sparkling.utils.ScalaUtils._
+import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
@@ -32,9 +34,6 @@ import water.init.NetworkUtils
 import water.util.PrettyPrint
 
 import scala.io.Source
-import scala.util.control.NoStackTrace
-import ai.h2o.sparkling.utils.ScalaUtils._
-import org.apache.commons.io.IOUtils
 
 
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
@@ -66,7 +65,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val nodes = getAndVerifyWorkerNodes(conf)
     if (!RestApiUtils.isRestAPIBased()) {
       ExternalH2OBackend.startH2OClient(hc, nodes)
-      ExternalH2OBackend.verifyH2OClientCloudUp(conf, nodes)
     }
     nodes
   }
@@ -368,5 +366,3 @@ object ExternalH2OBackend extends ExternalBackendUtils {
   // Name of the environmental property, which may contain path to the external H2O driver
   val ENV_H2O_DRIVER_JAR = "H2O_DRIVER_JAR"
 }
-
-class H2OClusterNotRunning(msg: String) extends Exception(msg) with NoStackTrace
