@@ -78,7 +78,7 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     assert(thrown.getMessage == "Split ratio must be lower than 1.0")
   }
 
-  test("splitFrameToTrainAndValidationFrames with ratio lower than 1.0") {
+  ignore("splitFrameToTrainAndValidationFrames with ratio lower than 1.0") {
     val originalFrame = uploadH2OFrame()
     val splitFrames = originalFrame.splitToTrainAndValidationFrames(0.9)
     assert(splitFrames.length == 2)
