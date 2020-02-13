@@ -33,6 +33,8 @@ trait RestApiUtils extends RestCommunication {
     hc.getOrElse(H2OContext.ensure()).getConf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
   }
 
+  def isRestAPIBased(hc: H2OContext): Boolean = isRestAPIBased(Some(hc))
+
   def lockCloud(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
     update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))

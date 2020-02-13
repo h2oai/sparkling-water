@@ -63,7 +63,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
     logInfo("Connecting to external H2O cluster.")
     val nodes = getAndVerifyWorkerNodes(conf)
-    if (!RestApiUtils.isRestAPIBased(Some(hc))) {
+    if (!RestApiUtils.isRestAPIBased(hc)) {
       ExternalH2OBackend.startH2OClient(hc, nodes)
     }
     nodes
@@ -90,11 +90,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val ping = getPingInfo(conf)
     val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
     SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
-  }
-
-  private def isRestApiBasedClient(hc: H2OContext): Boolean = {
-    hc.getConf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
   }
 
   private def launchExternalH2OOnYarn(conf: H2OConf): String = {
@@ -153,7 +148,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-disown")
       .add("-sw_ext_backend")
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
-      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !RestApiUtils.isRestAPIBased())
+      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !RestApiUtils.isRestAPIBased(hc))
       .add("-run_as_user", conf.runAsUser)
       .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)
       .add("-output", conf.HDFSOutputDir)
