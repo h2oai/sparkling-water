@@ -81,7 +81,15 @@ object WriteConverterCtxUtils {
                                       maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String
   }
 
-  object ClientBasedConverter extends Converter {
+  def getConverter(conf: H2OConf): Converter = {
+    if (conf.runsInExternalClusterMode) {
+      WriteConverterCtxUtils.ExternalBackendConverter
+    } else {
+      WriteConverterCtxUtils.InternalBackendConverter
+    }
+  }
+
+  object InternalBackendConverter extends Converter {
 
     /**
       * Converts the RDD to H2O Frame using specified conversion function
@@ -99,54 +107,24 @@ object WriteConverterCtxUtils {
       */
     def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
-      val writerClient = if (hc.getConf.runsInInternalClusterMode) {
-        new InternalWriteConverterCtx()
-      } else {
-        val leader = H2O.CLOUD.leader()
-        new ExternalWriteConverterCtx(hc.getConf, NodeDesc(leader))
-      }
-
+      val writerClient = new InternalWriteConverterCtx()
       writerClient.initFrame(keyName, colNames)
 
-
-      val rdd = if (hc.getConf.runsInInternalClusterMode) {
-        // this is only required in internal cluster mode
-        val prefs = hc.getH2ONodes().map { nodeDesc =>
-          s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
-        }
-        new H2OAwareRDD(prefs, rddInput)
-      } else {
-        rddInput
-      }
-
+      val prefs = hc.getH2ONodes().map(nodeDesc => s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}")
+      val rdd = new H2OAwareRDD(prefs, rddInput)
       val nonEmptyPartitions = getNonEmptyPartitions(rdd)
-
-      // prepare required metadata based on the used backend
-      val uploadPlan = if (hc.getConf.runsInExternalClusterMode) {
-        Some(ExternalWriteConverterCtx.scheduleUpload(nonEmptyPartitions.size))
-      } else {
-        None
-      }
-      val operation: SparkJob[T] = func(keyName, expectedTypes, uploadPlan, sparse, nonEmptyPartitions)
+      val operation: SparkJob[T] = func(keyName, expectedTypes, None, sparse, nonEmptyPartitions)
       val rows = hc.sparkContext.runJob(rdd, operation, nonEmptyPartitions) // eager, not lazy, evaluation
       val res = new Array[Long](nonEmptyPartitions.size)
       rows.foreach { case (cidx, nrows) => res(cidx) = nrows }
-      // Add Vec headers per-Chunk, and finalize the H2O Frame
 
-      // get the vector types from expected types in case of external h2o cluster
-      val types = if (hc.getConf.runsInExternalClusterMode) {
-        ExternalFrameUtils.vecTypesFromExpectedTypes(expectedTypes, maxVecSizes)
-      } else {
-        expectedTypes
-      }
-
-      writerClient.finalizeFrame(keyName, res, types)
+      writerClient.finalizeFrame(keyName, res, expectedTypes)
       keyName
     }
 
   }
 
-  object RESTBasedExternalConverter extends Converter {
+  object ExternalBackendConverter extends Converter {
 
     /**
       * Converts the RDD to H2O Frame using specified conversion function
