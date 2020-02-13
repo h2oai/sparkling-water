@@ -64,7 +64,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
     logInfo("Connecting to external H2O cluster.")
     val nodes = getAndVerifyWorkerNodes(conf)
-    if (!isRestApiBasedClient(hc)) {
+    if (!RestApiUtils.isRestAPIBased()) {
       ExternalH2OBackend.startH2OClient(hc, nodes)
       ExternalH2OBackend.verifyH2OClientCloudUp(conf, nodes)
     }
@@ -155,7 +155,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-disown")
       .add("-sw_ext_backend")
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
-      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !isRestApiBasedClient(hc))
+      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !RestApiUtils.isRestAPIBased())
       .add("-run_as_user", conf.runAsUser)
       .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)
       .add("-output", conf.HDFSOutputDir)
