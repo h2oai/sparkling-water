@@ -21,6 +21,7 @@ package org.apache.spark.h2o.backends.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
+import ai.h2o.sparkling.utils.RestApiUtils
 import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
@@ -30,6 +31,7 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
+import water.api.schemas3.{CloudLockV3, PingV3}
 import water.init.NetworkUtils
 import water.util.PrettyPrint
 
@@ -196,7 +198,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     ExternalH2OBackend.launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
   }
 
-  private def verifyVersionFromRestCall(nodes: Array[NodeDesc]): Unit = {
+  private def verifyVersion(nodes: Array[NodeDesc]): Unit = {
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
       val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
@@ -211,13 +213,42 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     }
   }
 
+  private def lockCloud(conf: H2OConf): Unit = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
+  }
+
+  private def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
+    val nodesWithoutWeb = nodes.flatMap { node =>
+      try {
+        getCloudInfoFromNode(node, conf)
+        None
+      } catch {
+        case cause: RestApiException => Some((node, cause))
+      }
+    }
+    if (nodesWithoutWeb.nonEmpty) {
+      throw new H2OClusterNotReachableException(
+        s"""
+    The following worker nodes are not reachable, but belong to the cluster:
+    ${conf.h2oCluster.get} - ${conf.cloudName.get}:
+    ----------------------------------------------
+    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""", nodesWithoutWeb.head._2)
+    }
+  }
+
+  private def getPingInfo(conf: H2OConf): PingV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    query[PingV3](endpoint, "/3/Ping", conf)
+  }
+
   private def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
     try {
       lockCloud(conf)
       val nodes = getNodes(conf)
       verifyWebOpen(nodes, conf)
       if (!conf.isBackendVersionCheckDisabled()) {
-        verifyVersionFromRestCall(nodes)
+        verifyVersion(nodes)
       }
       val leaderIpPort = getLeaderNode(conf).ipPort()
       if (conf.h2oCluster.get != leaderIpPort) {

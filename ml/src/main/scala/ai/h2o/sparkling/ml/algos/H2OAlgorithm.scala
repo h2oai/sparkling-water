@@ -18,10 +18,10 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
+import ai.h2o.sparkling.utils.RestApiUtils
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
