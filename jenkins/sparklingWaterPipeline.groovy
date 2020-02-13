@@ -61,7 +61,7 @@ String getH2OBranchBuildVersion() {
 def getGradleCommand(config) {
     def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
+        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
     } else {
         return cmd
     }
@@ -251,7 +251,7 @@ def prepareSparklingWaterEnvironment() {
                         export BUILD_HADOOP=true
                         export H2O_TARGET=${config.driverHadoopVersion}
                         ./gradlew build -x check
-                        ./gradlew publishToMavenLocal
+                        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2
                         ./gradlew :h2o-r:buildPKG
                         cd ..
                     """

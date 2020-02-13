@@ -48,16 +48,35 @@ String getGitBranch() {
 }
 
 def getH2OBranch(h2oMajorName) {
-    return h2oMajorName == "master" ? "master" : "rel-${h2oMajorName}"
+    return (h2oMajorName == "master" || h2oMajorName == "bleeding_edge") ? "master" : "rel-${h2oMajorName}"
+}
+
+def getH2OBuild(h2oBuild) {
+    if (h2oBuild == "1-SNAPSHOT") {
+        return "https://h2o-release.s3.amazonaws.com/h2o/master/latest".toURL().text.trim()
+    } else {
+        return h2oBuild
+    }
+}
+
+static def getBuildInfo(h2oMajorName, h2oBuild) {
+    if (h2oMajorName == "bleeding_edge") {
+        // We are building against H2O published to Maven local
+        // In this case we need to read the supported Hadoop distributions directly from H2O-3
+        // code, therefore the H2O_HOME env variable needs to be setup
+        def content = "file://${System.getenv("H2O_HOME")}/h2o-dist/buildinfo.json".toURL().text
+        return content.replaceAll("SUBST_BUILD_TIME_MILLIS", "1").replaceAll("SUBST_BUILD_NUMBER", "1")
+    } else {
+        def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
+        return "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/buildinfo.json".toURL().text
+    }
 }
 
 /**
  * Return list of Hadoop distributions for this Sparkling Water
  */
 def getSupportedHadoopDistributions(h2oMajorName, h2oBuild) {
-    def relName = h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"
-
-    def buildInfo = "https://s3.amazonaws.com/h2o-release/h2o/${relName}/${h2oBuild}/buildinfo.json".toURL().text
+    def buildInfo = getBuildInfo(h2oMajorName, h2oBuild)
     def jsonResp = new JsonSlurper().parseText(buildInfo)
     // we need to ensure that the distribution names does not contain minor versions
     def distributions = jsonResp.hadoop_distributions.collect { it.distribution }
@@ -208,6 +227,7 @@ ext {
     getGitHash = this.&getGitHash
     getGitBranch = this.&getGitBranch
     getH2OBranch = this.&getH2OBranch
+    getH2OBuild = this.&getH2OBuild
     getSupportedHadoopDistributions = this.&getSupportedHadoopDistributions
     downloadH2ODriverJar = this.&downloadH2ODriverJar
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
