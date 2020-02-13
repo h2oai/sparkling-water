@@ -61,7 +61,7 @@ String getH2OBuildVersion() {
 def getGradleCommand(config) {
     def cmd = "${env.WORKSPACE}/gradlew -PisNightlyBuild=${config.uploadNightly} -Pspark=${config.sparkMajorVersion} -PsparkVersion=${getSparkVersion(config)} -PtestMojoPipeline=true -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
     if (config.buildAgainstH2OBranch.toBoolean()) {
-        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OMajorVersion()} -Ph2oMajorName=${getH2OMajorName()} -Ph2oBuild=${getH2OBuildVersion()}"
+        return "H2O_HOME=${env.WORKSPACE}/h2o-3 ${cmd} -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${config.h2oBranch} -Ph2oMajorVersion=${getH2OMajorVersion()} -Ph2oMajorName=${getH2OMajorName()} -Ph2oBuild=${getH2OBuildVersion()}"
     } else {
         return cmd
     }
@@ -94,7 +94,7 @@ def checkoutH2O(config) {
         git checkout ${config.h2oBranch}
         . /envs/h2o_env_python2.7/bin/activate
         ./gradlew build -x check
-        ./gradlew publishToMavenLocal
+        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2
         ./gradlew :h2o-r:buildPKG
         cd ..
         """
