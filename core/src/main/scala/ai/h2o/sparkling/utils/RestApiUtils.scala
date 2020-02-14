@@ -20,7 +20,6 @@ package ai.h2o.sparkling.utils
 import java.net.URI
 
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.backends.external.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3._

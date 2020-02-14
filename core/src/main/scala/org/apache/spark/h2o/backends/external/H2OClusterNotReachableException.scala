@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.utils.RestApiException
+
 class H2OClusterNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
   def this(msg: String) = this(msg, null)
 }

@@ -21,7 +21,7 @@ package org.apache.spark.h2o.backends.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
-import ai.h2o.sparkling.utils.RestApiUtils
+import ai.h2o.sparkling.utils.{RestApiException, RestApiUtils}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging

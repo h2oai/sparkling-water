@@ -15,11 +15,10 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.utils
 
 import java.net._
 
-import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf

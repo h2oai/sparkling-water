@@ -21,7 +21,7 @@ import java.text.MessageFormat
 import java.util
 
 import ai.h2o.sparkling.utils.RestApiUtils._
-import org.apache.spark.h2o.backends.external.RestCommunication
+import ai.h2o.sparkling.utils.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3

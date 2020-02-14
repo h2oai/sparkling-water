@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
-import ai.h2o.sparkling.utils.RestApiUtils
+import ai.h2o.sparkling.utils.{ProxyStarter, RestApiException, RestApiUtils}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.external._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.utils
 
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}

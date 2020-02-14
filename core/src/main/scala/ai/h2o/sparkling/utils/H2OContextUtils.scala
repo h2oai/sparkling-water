@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.external.RestCommunication
 
 trait H2OContextUtils extends RestCommunication with RestApiUtils {
 
