@@ -25,13 +25,14 @@ import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 
 
-case class H2OChunk(index: Int, numberOfRows: Long, location: NodeDesc)
+case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
 
 object H2OChunk extends RestCommunication {
   def getChunkAsInputStream(
                              node: NodeDesc,
                              conf: H2OConf,
                              frameName: String,
+                             numRows: Int,
                              chunkId: Int,
                              expectedTypes: Array[Byte],
                              selectedColumnsIndices: Array[Int]): InputStream = {
@@ -40,6 +41,7 @@ object H2OChunk extends RestCommunication {
 
     val parameters = Map(
       "frame_name" -> frameName,
+      "num_rows" -> numRows,
       "chunk_id" -> chunkId.toString,
       "expected_types" -> expectedTypesString,
       "selected_columns" -> selectedColumnsIndicesString)
@@ -52,6 +54,7 @@ object H2OChunk extends RestCommunication {
                 node: NodeDesc,
                 conf : H2OConf,
                 frameName: String,
+                numRows: Int,
                 chunkId: Int,
                 expectedTypes: Array[Byte],
                 maxVecSizes: Array[Int]): OutputStream = {
@@ -60,6 +63,7 @@ object H2OChunk extends RestCommunication {
 
     val parameters = Map[String, String](
       "frame_name" -> frameName,
+      "num_rows" -> numRows.toString,
       "chunk_id" -> chunkId.toString,
       "expected_types" -> expectedTypesString,
       "maximum_vector_sizes" -> maxVecSizesString)

@@ -29,15 +29,13 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
 
   private val buffer = new AutoBuffer(outputStream, false)
 
-  def writeChunk(frameName: String, chunkId: Int, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int]): Unit = {
+  def writeChunk(frameName: String, chunkId: Int, numRows: Int, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int]): Unit = {
     val frame = DKV.getGet[Frame](frameName)
     val chunks = ChunkUtils.getChunks(frame, chunkId)
-    val numberOfRows = chunks(0)._len
-    writeInt(numberOfRows)
     // buffered string to be reused for strings to avoid multiple allocation in the loop
     val valStr = new BufferedString
     var rowIdx = 0
-    while (rowIdx < numberOfRows) {
+    while (rowIdx < numRows) {
       var i = 0
       while (i < selectedColumnIndices.length) {
         if (chunks(selectedColumnIndices(i)).isNA(rowIdx)) {

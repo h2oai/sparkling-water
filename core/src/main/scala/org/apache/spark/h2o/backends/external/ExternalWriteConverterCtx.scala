@@ -32,7 +32,6 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
 
   private var expectedTypes: Array[Byte] = null
   private var chunkWriter: ChunkAutoBufferWriter = null
-  private var numberOfRows: Int = -1
 
   override def closeChunks(numRows: Int): Unit = {
     chunkWriter.close()
@@ -52,9 +51,8 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   override def createChunk(frameName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     this.expectedTypes = expectedTypes
-    val outputStream = H2OChunk.putChunk(nodeDesc, conf, frameName, chunkId, expectedTypes, maxVecSizes)
+    val outputStream = H2OChunk.putChunk(nodeDesc, conf, frameName, numRows, chunkId, expectedTypes, maxVecSizes)
     this.chunkWriter = new ChunkAutoBufferWriter(outputStream)
-    this.numberOfRows = numRows
   }
 
   override def put(colIdx: Int, data: Boolean): Unit = chunkWriter.writeBoolean(data)
@@ -90,8 +88,6 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
     chunkWriter.writeDenseVector(vector.values)
   }
-
-  override def numOfRows(): Int = this.numberOfRows
 
   override def startRow(rowIdx: Int): Unit = {}
 

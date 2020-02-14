@@ -138,7 +138,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     con.closeChunks(localRowIdx)
 
     // Return H2O chunk index and number of rows in this chunk
-    (chunkIdx, con.numOfRows())
+    (chunkIdx, dataSize)
   }
 
   /**

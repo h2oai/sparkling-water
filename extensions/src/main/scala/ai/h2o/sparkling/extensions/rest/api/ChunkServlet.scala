@@ -32,6 +32,7 @@ final class ChunkServlet extends HttpServlet {
 
   private case class GETRequestParameters(
       frameName: String,
+      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[Byte],
       selectedColumnIndices: Array[Int]) {
@@ -85,13 +86,15 @@ final class ChunkServlet extends HttpServlet {
   private object GETRequestParameters {
     def parse(request: HttpServletRequest): GETRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
+      val numRowsString = getParameterAsString(request, "num_rows")
+      val numRows = numRowsString.toInt
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
       val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
-      GETRequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
+      GETRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices)
     }
   }
 
@@ -146,6 +149,7 @@ final class ChunkServlet extends HttpServlet {
         withResource(new ChunkAutoBufferWriter(outputStream)) { writer =>
           writer.writeChunk(
             parameters.frameName,
+            parameters.numRows,
             parameters.chunkId,
             parameters.expectedTypes,
             parameters.selectedColumnIndices)
@@ -156,6 +160,7 @@ final class ChunkServlet extends HttpServlet {
 
   private case class PUTRequestParameters(
       frameName: String,
+      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[Byte],
       maxVecSizes: Array[Int]) {
@@ -179,13 +184,15 @@ final class ChunkServlet extends HttpServlet {
   private object PUTRequestParameters {
     def parse(request: HttpServletRequest): PUTRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
+      val numRowsString = getParameterAsString(request, "num_rows")
+      val numRows = numRowsString.toInt
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
       val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
-      PUTRequestParameters(frameName, chunkId, expectedTypes, maxVecSizes)
+      PUTRequestParameters(frameName, numRows, chunkId, expectedTypes, maxVecSizes)
     }
   }
 
@@ -207,6 +214,7 @@ final class ChunkServlet extends HttpServlet {
         withResource(new ChunkAutoBufferReader(inputStream)) { reader =>
           reader.readChunk(
             parameters.frameName,
+            parameters.numRows,
             parameters.chunkId,
             parameters.expectedTypes,
             parameters.maxVecSizes

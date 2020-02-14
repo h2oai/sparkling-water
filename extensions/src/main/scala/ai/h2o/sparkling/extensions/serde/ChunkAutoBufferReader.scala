@@ -27,12 +27,9 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
 
   private val channel = new InputStreamByteChannel(inputStream)
   private val buffer = new AutoBuffer(channel)
-  private val numRows = readInt()
   private var isLastNAVar: Boolean = false
 
-  def getNumRows: Int = numRows
-
-  def readChunk(frameName: String, chunkId: Int, expectedTypes: Array[Byte], maxVecSizes: Array[Int]): Unit = {
+  def readChunk(frameName: String, numRows: Int, chunkId: Int, expectedTypes: Array[Byte], maxVecSizes: Array[Int]): Unit = {
     val vecTypes = expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
     val startPositions = getStartPositions(elementSizes)

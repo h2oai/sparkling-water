@@ -23,7 +23,7 @@ import org.apache.spark.h2o.Frame
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import water.fvec.FrameUtils._
-import water.fvec.{Chunk, FrameUtils, H2OFrame, NewChunk}
+import water.fvec.{Chunk, FrameUtils, NewChunk}
 import water.util.Log
 import water.{DKV, Key, MRTask, _}
 
@@ -97,8 +97,6 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
 
   override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
-
-  override def numOfRows(): Int = chunks(0).len()
 
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
     sparseVectorInUse(startIdx) = true

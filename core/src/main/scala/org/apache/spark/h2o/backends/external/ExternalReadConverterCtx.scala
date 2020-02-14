@@ -30,16 +30,14 @@ import ai.h2o.sparkling.frame.H2OChunk
   * @param chunkIdx chunk index
   * @param nodeDesc the h2o node which has data for chunk with the chunkIdx
   */
-class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int,
+class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int, override val numRows: Int,
                                val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
                                val conf: H2OConf)
   extends ReadConverterCtx {
   override type DataSource = ChunkAutoBufferReader
 
   private val reader = new ChunkAutoBufferReader(
-    H2OChunk.getChunkAsInputStream(nodeDesc, conf, keyName, chunkIdx, expectedTypes, selectedColumnIndices))
-
-  override def numRows: Int = reader.getNumRows
+    H2OChunk.getChunkAsInputStream(nodeDesc, conf, keyName, numRows, chunkIdx, expectedTypes, selectedColumnIndices))
 
   override def returnOption[T](read: DataSource => T)(columnNum: Int): Option[T] = {
     Option(read(reader)).filter(_ => !reader.isLastNA)

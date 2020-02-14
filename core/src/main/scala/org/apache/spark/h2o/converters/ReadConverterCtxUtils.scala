@@ -17,21 +17,23 @@
 
 package org.apache.spark.h2o.converters
 
+import ai.h2o.sparkling.frame.H2OChunk
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalReadConverterCtx
-import org.apache.spark.h2o.utils.NodeDesc
 
 object ReadConverterCtxUtils {
 
   def create(keyName: String, chunkIdx: Int,
-             chksLocation: Option[Array[NodeDesc]],
+             chunkLocations: Option[Array[H2OChunk]],
              expectedTypes: Option[Array[Byte]],
              selectedColumnIndices: Array[Int],
              conf: H2OConf): ReadConverterCtx = {
 
-    chksLocation.map(loc => new ExternalReadConverterCtx(keyName, chunkIdx, loc(chunkIdx),
-      expectedTypes.get, selectedColumnIndices, conf))
+      chunkLocations.map{ chunks =>
+        val chnk = chunks.find(_.index == chunkIdx).head
+        new ExternalReadConverterCtx(keyName, chunkIdx, chnk.numberOfRows, chnk.location, expectedTypes.get, selectedColumnIndices, conf)
+      }
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }

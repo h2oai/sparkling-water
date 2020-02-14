@@ -96,6 +96,4 @@ trait WriteConverterCtx {
         putDenseVector(startIdx, denseVector, maxVecSize)
     }
   }
-
-  def numOfRows(): Int
 }
