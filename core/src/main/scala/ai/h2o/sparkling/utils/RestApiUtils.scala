@@ -15,14 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.utils
 
-import java.io.File
 import java.net.URI
-import java.text.SimpleDateFormat
-import java.util.Date
 
 import org.apache.http.client.utils.URIBuilder
+import org.apache.spark.h2o.backends.external.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3._
@@ -34,11 +32,6 @@ trait RestApiUtils extends RestCommunication {
   }
 
   def isRestAPIBased(hc: H2OContext): Boolean = isRestAPIBased(Some(hc))
-
-  def lockCloud(conf: H2OConf): Unit = {
-    val endpoint = getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
-  }
 
   def shutdownCluster(conf: H2OConf): Unit = {
     val endpoint = getClusterEndpoint(conf)
@@ -61,68 +54,24 @@ trait RestApiUtils extends RestCommunication {
     getCloudInfoFromNode(endpoint, conf)
   }
 
-  def downloadLogs(destinationDir: String, logContainer: String, conf: H2OConf): String = {
-    val endpoint = getClusterEndpoint(conf)
-    val file = new File(destinationDir, s"${logFileName()}.${logContainer.toLowerCase}")
-    val logEndpoint = s"/3/Logs/download/$logContainer"
-    logContainer match {
-      case "LOG" =>
-        downloadStringURLContent(endpoint, logEndpoint, conf, file)
-      case "ZIP" =>
-        downloadBinaryURLContent(endpoint, logEndpoint, conf, file)
-    }
-    file.getAbsolutePath
-  }
-
-  private def logFileName(): String = {
-    val pattern = "yyyyMMdd_hhmmss"
-    val formatter = new SimpleDateFormat(pattern)
-    val now = formatter.format(new Date)
-    s"h2ologs_$now"
-  }
-
-  def getPingInfo(conf: H2OConf): PingV3 = {
-    val endpoint = getClusterEndpoint(conf)
-    query[PingV3](endpoint, "/3/Ping", conf)
-  }
-
-  def getCloudInfo(conf: H2OConf): CloudV3 = {
+  def getClusterInfo(conf: H2OConf): CloudV3 = {
     val endpoint = getClusterEndpoint(conf)
     getCloudInfoFromNode(endpoint, conf)
   }
 
   def getNodes(conf: H2OConf): Array[NodeDesc] = {
-    val cloudV3 = getCloudInfo(conf)
+    val cloudV3 = getClusterInfo(conf)
     getNodes(cloudV3)
   }
 
   def getLeaderNode(conf: H2OConf): NodeDesc = {
-    val cloudV3 = getCloudInfo(conf)
+    val cloudV3 = getClusterInfo(conf)
     val nodes = getNodes(cloudV3)
     if (cloudV3.leader_idx < 0 || cloudV3.leader_idx >= nodes.length) {
       throw new RuntimeException(
         s"The leader index '${cloudV3.leader_idx}' doesn't correspond to the size of the H2O cluster ${nodes.length}.")
     }
     nodes(cloudV3.leader_idx)
-  }
-
-  def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
-    val nodesWithoutWeb = nodes.flatMap { node =>
-      try {
-        getCloudInfoFromNode(node, conf)
-        None
-      } catch {
-        case cause: RestApiException => Some((node, cause))
-      }
-    }
-    if (nodesWithoutWeb.nonEmpty) {
-      throw new H2OClusterNotReachableException(
-        s"""
-    The following worker nodes are not reachable, but belong to the cluster:
-    ${conf.h2oCluster.get} - ${conf.cloudName.get}:
-    ----------------------------------------------
-    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""", nodesWithoutWeb.head._2)
-    }
   }
 
   def getClusterEndpoint(conf: H2OConf): URI = {

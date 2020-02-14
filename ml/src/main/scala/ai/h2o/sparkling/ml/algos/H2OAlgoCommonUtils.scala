@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, SparkSession}
 import water.support.H2OFrameSupport

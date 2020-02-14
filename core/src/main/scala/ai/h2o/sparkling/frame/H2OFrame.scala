@@ -20,8 +20,8 @@ package ai.h2o.sparkling.frame
 import java.text.MessageFormat
 import java.util
 
-import org.apache.spark.h2o.backends.external.RestApiUtils.{getClusterEndpoint, update}
-import org.apache.spark.h2o.backends.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.utils.RestApiUtils._
+import org.apache.spark.h2o.backends.external.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
@@ -90,7 +90,7 @@ object H2OFrame extends RestCommunication {
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
     val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
-    val clusterNodes = RestApiUtils.getNodes(RestApiUtils.getCloudInfoFromNode(endpoint, conf))
+    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
 
     H2OFrame(
       frameId = frame.frame_id.name,

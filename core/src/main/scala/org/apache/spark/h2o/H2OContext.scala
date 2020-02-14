@@ -19,6 +19,7 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark._
 import org.apache.spark.h2o.backends.external._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -467,7 +468,8 @@ object H2OContext extends Logging {
     override protected def getFlowEndpoint(): String = s"${getH2OEndpointIp()}:${getH2OEndpointPort()}${conf.contextPath.getOrElse("")}"
   }
 
-  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with RestApiUtils {
+  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with
+    ai.h2o.sparkling.utils.H2OContextUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
     private var leaderNode: NodeDesc = _
@@ -479,7 +481,7 @@ object H2OContext extends Logging {
     override protected def getSelfNodeDesc(): Option[NodeDesc] = None
 
     override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val cloudV3 = getCloudInfo(conf)
+      val cloudV3 = getClusterInfo(conf)
       H2OClusterInfo(
         s"$flowIp:$flowPort",
         cloudV3.cloud_healthy,
@@ -500,7 +502,7 @@ object H2OContext extends Logging {
     }
 
     override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
-      val cloudV3 = getCloudInfo(conf)
+      val cloudV3 = getClusterInfo(conf)
       H2OBuildInfo(
         cloudV3.version,
         cloudV3.branch_name,
@@ -564,7 +566,7 @@ object H2OContext extends Logging {
     }
 
   private def connectingToNewCluster(hc: H2OContext, newConf: H2OConf): Boolean = {
-    val newCloudV3 = RestApiUtils.getCloudInfo(newConf)
+    val newCloudV3 = RestApiUtils.getClusterInfo(newConf)
     val sameNodes = hc.getH2ONodes().map(_.ipPort()).sameElements(newCloudV3.nodes.map(_.ip_port))
     !sameNodes
   }

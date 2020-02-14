@@ -19,10 +19,10 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+import ai.h2o.sparkling.utils.RestApiUtils
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.backends.external.RestApiUtils
 import org.apache.spark.h2o.{Frame, H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType

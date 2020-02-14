@@ -17,8 +17,9 @@
 
 package org.apache.spark.h2o.converters
 
+import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark.TaskContext
-import org.apache.spark.h2o.backends.external.{ExternalWriteConverterCtx, RestApiUtils}
+import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
 import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}

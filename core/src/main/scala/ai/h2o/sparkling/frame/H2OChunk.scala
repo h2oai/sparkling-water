@@ -20,9 +20,9 @@ package ai.h2o.sparkling.frame
 import java.io.InputStream
 
 import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.utils.Base64Encoding
+import ai.h2o.sparkling.utils.{Base64Encoding, RestApiUtils}
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.external.{RestApiUtils, RestCommunication}
+import org.apache.spark.h2o.backends.external.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
 
 
