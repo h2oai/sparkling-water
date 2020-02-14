@@ -17,38 +17,39 @@
 
 package org.apache.spark.h2o.backends.external
 
+import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.RestAPIManager
-import water.{ExternalFrameUtils, H2O, H2OStarter, Paxos}
+import water.{H2O, H2OStarter, Paxos}
 
 private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
 
   def prepareExpectedTypes(classes: Array[Class[_]]): Array[Byte] = {
     classes.map { clazz =>
       if (clazz == classOf[java.lang.Boolean]) {
-        ExternalFrameUtils.EXPECTED_BOOL
+        ChunkSerdeConstants.EXPECTED_BOOL
       } else if (clazz == classOf[java.lang.Byte]) {
-        ExternalFrameUtils.EXPECTED_BYTE
+        ChunkSerdeConstants.EXPECTED_BYTE
       } else if (clazz == classOf[java.lang.Short]) {
-        ExternalFrameUtils.EXPECTED_SHORT
+        ChunkSerdeConstants.EXPECTED_SHORT
       } else if (clazz == classOf[java.lang.Character]) {
-        ExternalFrameUtils.EXPECTED_CHAR
+        ChunkSerdeConstants.EXPECTED_CHAR
       } else if (clazz == classOf[java.lang.Integer]) {
-        ExternalFrameUtils.EXPECTED_INT
+        ChunkSerdeConstants.EXPECTED_INT
       } else if (clazz == classOf[java.lang.Long]) {
-        ExternalFrameUtils.EXPECTED_LONG
+        ChunkSerdeConstants.EXPECTED_LONG
       } else if (clazz == classOf[java.lang.Float]) {
-        ExternalFrameUtils.EXPECTED_FLOAT
+        ChunkSerdeConstants.EXPECTED_FLOAT
       } else if (clazz == classOf[java.lang.Double]) {
-        ExternalFrameUtils.EXPECTED_DOUBLE
+        ChunkSerdeConstants.EXPECTED_DOUBLE
       } else if (clazz == classOf[java.lang.String]) {
-        ExternalFrameUtils.EXPECTED_STRING
+        ChunkSerdeConstants.EXPECTED_STRING
       } else if (clazz == classOf[java.sql.Timestamp]) {
-        ExternalFrameUtils.EXPECTED_TIMESTAMP
+        ChunkSerdeConstants.EXPECTED_TIMESTAMP
       } else if (clazz == classOf[org.apache.spark.ml.linalg.Vector]) {
-        ExternalFrameUtils.EXPECTED_VECTOR
+        ChunkSerdeConstants.EXPECTED_VECTOR
       } else {
         throw new RuntimeException("Unsupported class: " + clazz)
       }
