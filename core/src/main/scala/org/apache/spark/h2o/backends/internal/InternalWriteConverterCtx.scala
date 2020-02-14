@@ -98,6 +98,8 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
 
+  override def numOfRows(): Int = chunks(0).len()
+
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
     sparseVectorInUse(startIdx) = true
     val sparseVectorPt = sparseVectorPts(startIdx)
