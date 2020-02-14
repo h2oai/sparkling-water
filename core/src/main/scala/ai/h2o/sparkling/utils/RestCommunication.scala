@@ -204,7 +204,7 @@ trait RestCommunication extends Logging {
 
   protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
     val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${decodeParams(params)}" else suffix
-    val url = endpoint.resolve(suffixWithParams).toURL
+    val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
