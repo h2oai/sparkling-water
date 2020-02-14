@@ -84,7 +84,7 @@ trait RestCommunication extends Logging {
                         suffix: String,
                         conf: H2OConf,
                         params: Map[String, Any] = Map.empty): OutputStream  = {
-    val url = resolveUrl(endpoint, suffix)
+    val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       val requestMethod = "PUT"
@@ -190,7 +190,7 @@ trait RestCommunication extends Logging {
   private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
-    if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
+    if (params.nonEmpty && requestType == "POST") {
       val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
       connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
       connection.setRequestProperty("charset", "UTF-8")
@@ -203,7 +203,7 @@ trait RestCommunication extends Logging {
   }
 
   protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
-    val suffixWithParams = if (params.nonEmpty && requestType == "GET") s"$suffix?${decodeParams(params)}" else suffix
+    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${decodeParams(params)}" else suffix
     val url = endpoint.resolve(suffixWithParams).toURL
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
