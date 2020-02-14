@@ -42,7 +42,7 @@ object H2OChunk extends RestCommunication {
     val parameters = Map(
       "frame_name" -> frameName,
       "num_rows" -> numRows,
-      "chunk_id" -> chunkId.toString,
+      "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
       "selected_columns" -> selectedColumnsIndicesString)
 
@@ -61,10 +61,10 @@ object H2OChunk extends RestCommunication {
     val expectedTypesString = Base64Encoding.encode(expectedTypes)
     val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
 
-    val parameters = Map[String, String](
+    val parameters = Map(
       "frame_name" -> frameName,
-      "num_rows" -> numRows.toString,
-      "chunk_id" -> chunkId.toString,
+      "num_rows" -> numRows,
+      "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
       "maximum_vector_sizes" -> maxVecSizesString)
 
