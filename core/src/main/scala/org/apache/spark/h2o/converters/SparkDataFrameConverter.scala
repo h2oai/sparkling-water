@@ -115,7 +115,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     */
   private[this]
   def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
-                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],  sparse: Array[Boolean],
+                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], sparse: Array[Boolean],
                       partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
