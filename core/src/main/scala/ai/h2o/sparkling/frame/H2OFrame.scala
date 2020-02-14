@@ -20,6 +20,7 @@ package ai.h2o.sparkling.frame
 import java.text.MessageFormat
 import java.util
 
+import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.utils.RestApiUtils._
 import ai.h2o.sparkling.utils.RestCommunication
 import org.apache.spark.h2o.utils.NodeDesc
@@ -31,10 +32,7 @@ import water.api.schemas3._
 /**
  * H2OFrame representation via Rest API
  */
-case class H2OFrame(
-                     frameId: String,
-                     columns: Array[H2OColumn],
-                     chunks: Array[H2OChunk]) {
+class H2OFrame private (val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
 
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
@@ -66,9 +64,11 @@ case class H2OFrame(
     val endpoint = getClusterEndpoint(conf)
     val params = Map(
       "ratios" -> Array(splitRatio),
-      "dataset" -> frameId
+      "dataset" -> frameId,
+      "destination_frames" -> Array(s"${frameId}_train", s"${frameId}_valid")
     )
     val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf, params)
+    H2OJob(splitFrameV3.key.name).waitForFinish()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
   }
 }
@@ -92,10 +92,10 @@ object H2OFrame extends RestCommunication {
     val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
     val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
 
-    H2OFrame(
-      frameId = frame.frame_id.name,
-      columns = frame.columns.map(convertColumn),
-      chunks = frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+    new H2OFrame(
+      frame.frame_id.name,
+      frame.columns.map(convertColumn),
+      frameChunks.chunks.map(convertChunk(_, clusterNodes)))
   }
 
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
