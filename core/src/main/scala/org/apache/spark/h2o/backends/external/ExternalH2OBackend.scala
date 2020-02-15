@@ -294,11 +294,6 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       """)
     }
 
-    if (conf.clusterSize.isEmpty && !conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)) {
-      throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified!")
-    }
-
     if (conf.isAutoClusterStartUsed) {
       val envDriverJar = ExternalH2OBackend.ENV_H2O_DRIVER_JAR
 
@@ -325,6 +320,10 @@ object ExternalH2OBackend extends ExternalBackendUtils {
           conf.backendHeartbeatInterval * 6
         ))
         conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
+      }
+
+      if (conf.clusterSize.isEmpty) {
+        throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified in automatic mode of external H2O backend!")
       }
 
       if (conf.cloudName.isEmpty) {
