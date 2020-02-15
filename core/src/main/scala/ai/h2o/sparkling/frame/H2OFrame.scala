@@ -32,7 +32,7 @@ import water.api.schemas3._
 /**
  * H2OFrame representation via Rest API
  */
-class H2OFrame private (val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) {
+class H2OFrame private (val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
 
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
