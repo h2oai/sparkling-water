@@ -39,10 +39,11 @@ class H2OJob private(val id: String) extends Logging {
           return
         case H2OJobStatus.FAILED => throw new Exception(s"H2O Job $id has failed!")
         case H2OJobStatus.CANCELLED => throw new Exception(s"H2O Job $id has been cancelled!")
+        case H2OJobStatus.RUNNING =>
+          logInfo(s"Waiting for job $id to finish...")
+          Thread.sleep(1000)
         case _ => throw new RuntimeException(s"Job state '$status' is not handled at this moment.")
       }
-      logInfo(s"Waiting for job $id to finish...")
-      Thread.sleep(1000)
     }
   }
 }
