@@ -47,6 +47,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
           case EXPECTED_DOUBLE => addToChunk(chunks(startPositions(typeIdx)), readDouble())
           case EXPECTED_STRING => addToChunk(chunks(startPositions(typeIdx)), readString())
           case EXPECTED_VECTOR =>
+            isLastNAVar = false
             val isSparse = buffer.getZ
             if (isSparse) addSparseVectorToChunk(chunks, elementSizes(typeIdx), startPositions(typeIdx))
             else addDenseVectorToChunk(chunks, elementSizes(typeIdx), startPositions(typeIdx))
@@ -84,7 +85,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     }
   }
 
-  private def addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
+  private def   addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
     val values = buffer.getA8d
     if (values == null) throw new RuntimeException("Values of dense Vector can't be null!")
     // fill values
