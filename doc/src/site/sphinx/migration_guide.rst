@@ -231,6 +231,10 @@ From 3.28.0 to 3.28.1
 - In case of ordinal predictions on H2O MOJOs, the type of field ``probabilities`` in the detailed
   prediction column is changed from array of probabilities to a map from label to predicted probability.
 
+- On ``H2OConf`` in all clients, the methods ``externalCommunicationBlockSizeAsBytes``,
+  ``externalCommunicationBlockSize`` and``setExternalCommunicationBlockSize`` have been removed as they are no longer
+  needed.
+
 From 3.26 To 3.28.0
 -------------------
 
