@@ -63,28 +63,11 @@ trait WriteConverterCtx {
 
   def put(colIdx: Int, data: String)
 
-  def putNA(colIdx: Int)
+  def putNA(colIdx: Int, sparkIdx: Int)
 
   def putSparseVector(startIdx: Int, vector: ml.linalg.SparseVector, maxVecSize: Int)
 
   def putDenseVector(startIdx: Int, vector: ml.linalg.DenseVector, maxVecSize: Int)
-
-  def putAnySupportedType[T](colIdx: Int, data: T): Unit = {
-    data match {
-      case n: Boolean => put(colIdx, n)
-      case n: Byte => put(colIdx, n)
-      case n: Char => put(colIdx, n)
-      case n: Short => put(colIdx, n)
-      case n: Int => put(colIdx, n)
-      case n: Long => put(colIdx, n)
-      case n: Float => put(colIdx, n)
-      case n: Double => put(colIdx, n)
-      case n: String => put(colIdx, n)
-      case n: java.sql.Timestamp => put(colIdx, n)
-      case n: java.sql.Date => put(colIdx, n)
-      case _ => putNA(colIdx)
-    }
-  }
 
   def putVector(startIdx: Int, vec: mllib.linalg.Vector, maxVecSize: Int): Unit = putVector(startIdx, vec.asML, maxVecSize)
 

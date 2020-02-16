@@ -149,7 +149,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       val idxH2O = elemStartIndices(idxField)
       if (row.isNullAt(idxField)) {
-        con.putNA(idxH2O)
+        con.putNA(idxH2O, idxField)
       } else {
         entry.dataType match {
           case BooleanType => con.put(idxH2O, row.getBoolean(idxField))
@@ -166,7 +166,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           case _: ml.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
-          case _ => con.putNA(idxH2O)
+          case _ => con.putNA(idxH2O, idxField)
         }
       }
     }

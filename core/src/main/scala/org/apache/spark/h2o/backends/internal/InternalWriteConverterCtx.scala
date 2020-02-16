@@ -96,7 +96,7 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
 
-  override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
+  override def putNA(columnNum: Int, sparkIdx: Int): Unit = chunks(columnNum).addNA()
 
   override def numOfRows(): Int = chunks(0).len()
 

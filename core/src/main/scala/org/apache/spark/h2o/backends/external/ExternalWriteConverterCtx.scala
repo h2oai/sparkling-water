@@ -81,7 +81,7 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
 
   override def put(colIdx: Int, data: String): Unit = chunkWriter.writeString(data)
 
-  override def putNA(columnNum: Int): Unit = chunkWriter.writeNA(expectedTypes(columnNum))
+  override def putNA(columnIdx: Int, sparkIdx: Int): Unit = chunkWriter.writeNA(expectedTypes(sparkIdx))
 
   override def numOfRows(): Int = this.numberOfRows
 
