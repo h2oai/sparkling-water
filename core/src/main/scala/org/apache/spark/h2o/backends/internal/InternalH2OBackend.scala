@@ -18,7 +18,6 @@
 package org.apache.spark.h2o.backends.internal
 
 import ai.h2o.sparkling.backend.shared.SparklingBackend
-import org.apache.spark.{SparkContext, SparkEnv}
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -27,6 +26,7 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.RpcUtils
+import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
 import water.util.{Log, PrettyPrint}
 import water.{H2O, H2OStarter}
@@ -155,9 +155,12 @@ object InternalH2OBackend extends InternalBackendUtils {
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
     val endpoints = new SpreadRDDBuilder(hc, guessTotalExecutorSize(hc.sparkContext)).build()
-    endpoints.map { ref =>
-      SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name)
+    val endpointsFinal = if (hc.getConf.numH2OWorkers.isDefined) {
+      endpoints.take(hc.getConf.numH2OWorkers.get)
+    } else {
+      endpoints
     }
+    endpointsFinal.map(ref => SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name))
   }
 
   private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf): Array[NodeDesc] = {

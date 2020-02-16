@@ -16,19 +16,20 @@
 */
 package ai.h2o.sparkling.backend.internal
 
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, TaskContext}
+import org.apache.spark.{Partition, SparkContext}
 
 import scala.reflect.ClassTag
 
-private[internal] class H2OAwareRDD[U: ClassTag](nodes: Array[NodeDesc], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
+private[internal] abstract class H2OAwareEmptyRDD[U: ClassTag](sc: SparkContext, nodes: Seq[NodeDesc], conf: H2OConf) extends RDD[U](sc, Nil) {
 
-  override def getPreferredLocations(split: Partition): Seq[String] = nodes.map { nodeDesc =>
-    s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}"
+  override def getPreferredLocations(split: Partition): Seq[String] = {
+    if (conf.runsInInternalClusterMode) {
+      nodes.map(nodeDesc => s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}")
+    } else {
+      Nil
+    }
   }
-
-  override def compute(split: Partition, context: TaskContext): Iterator[U] = prev.compute(split, context)
-
-  override protected def getPartitions: Array[Partition] = prev.partitions
 }

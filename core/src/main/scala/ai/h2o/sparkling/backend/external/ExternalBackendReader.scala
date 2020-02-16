@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend.external
 
-import ai.h2o.sparkling.backend.shared.ReadConverterCtx
+import ai.h2o.sparkling.backend.shared.Reader
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
 import ai.h2o.sparkling.frame.H2OChunk
 import org.apache.spark.h2o.H2OConf
@@ -29,10 +29,10 @@ import org.apache.spark.h2o.utils.NodeDesc
  * @param chunkIdx chunk index
  * @param nodeDesc the h2o node which has data for chunk with the chunkIdx
  */
-class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int, override val numRows: Int,
-                               val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
-                               val conf: H2OConf)
-  extends ReadConverterCtx {
+class ExternalBackendReader(override val keyName: String, override val chunkIdx: Int, override val numRows: Int,
+                            val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
+                            val conf: H2OConf)
+  extends Reader {
   override type DataSource = ChunkAutoBufferReader
 
   private val reader = new ChunkAutoBufferReader(

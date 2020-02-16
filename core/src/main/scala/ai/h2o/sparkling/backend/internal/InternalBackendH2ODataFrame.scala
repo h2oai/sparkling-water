@@ -17,12 +17,13 @@
 
 package ai.h2o.sparkling.backend.internal
 
-import ai.h2o.sparkling.backend.shared.H2ODataFrameBase
+import ai.h2o.sparkling.backend.shared.{H2ODataFrameBase, Reader}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
-import water.H2O
+import org.apache.spark.{Partition, TaskContext}
 import water.support.H2OFrameSupport
 
 import scala.language.postfixOps
@@ -37,24 +38,24 @@ import scala.language.postfixOps
 private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                                                           val requiredColumns: Array[String])
                                                                          (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext, hc.getConf) with InternalBackendSparkEntity[T] {
+  extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2ODataFrameBase with InternalBackendSparkEntity[T] {
 
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
-
-  override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
   protected override val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 
-  override val selectedColumnIndices = (if (requiredColumns == null) {
+  override val selectedColumnIndices: Array[Int] = (if (requiredColumns == null) {
     colNames.indices
   } else {
     requiredColumns.toSeq.map(colName => colNames.indexOf(colName))
   }) toArray
 
-  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
+  override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = new H2ODataFrameIterator {
+    override val converterCtx: Reader = new InternalBackendReader(frameKeyName, split.index)
+  }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
     ReflectionUtils.supportedType(frame.vec(index))

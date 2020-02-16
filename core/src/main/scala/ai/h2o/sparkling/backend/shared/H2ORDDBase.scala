@@ -19,35 +19,26 @@ package ai.h2o.sparkling.backend.shared
 
 import java.lang.reflect.Constructor
 
-import ai.h2o.sparkling.backend.external.ExternalH2OBackend
-import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.ProductType
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 import scala.annotation.meta.{field, getter}
 import scala.language.postfixOps
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
 
 /**
  * The abstract class contains common methods for client-based and REST-based RDDs.
  */
-private[backend] abstract class H2ORDDBase[A <: Product : TypeTag : ClassTag](sc: SparkContext, conf: H2OConf)
-  extends RDD[A](sc, Nil) with H2OSparkEntity {
+private[backend] trait H2ORDDBase[A <: Product] extends H2OSparkEntity {
 
   def productType: ProductType
 
   protected def colNames: Array[String]
 
-  override val isExternalBackend = conf.runsInExternalClusterMode
-
   /**
    * The method checks that H2OFrame & given Scala type are compatible
    */
   protected def checkColumnNames(columnNames: Array[String]): Unit = {
-
     if (!productType.isSingleton) {
       val productFields = productType.members.map(_.name)
       val problems = productFields.diff(columnNames).mkString(", ")
@@ -58,19 +49,9 @@ private[backend] abstract class H2ORDDBase[A <: Product : TypeTag : ClassTag](sc
       }
     }
   }
+  protected val jc : Class[_]
 
-  /**
-   * :: DeveloperApi ::
-   * Implemented by subclasses to compute a given partition.
-   */
-  override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    val iterator = new H2ORDDIterator(frameKeyName, split.index, conf)
-    ReadConverterCtxUtils.backendSpecificIterator[A](isExternalBackend, iterator)
-  }
-
-  private val jc = implicitly[ClassTag[A]].runtimeClass
-
-  private def columnReaders(rcc: ReadConverterCtx) = productType.memberTypeNames map rcc.readerMapByName
+  private def columnReaders(rcc: Reader) = productType.memberTypeNames map rcc.readerMapByName
 
   private def opt[X](op: => Any): Option[X] = try {
     Option(op.asInstanceOf[X])
@@ -99,18 +80,7 @@ private[backend] abstract class H2ORDDBase[A <: Product : TypeTag : ClassTag](sc
 
   override lazy val selectedColumnIndices: Array[Int] = columnMapping
 
-  override val expectedTypes: Option[Array[Byte]] = {
-    // there is no need to prepare expected types in internal backend
-    if (isExternalBackend) {
-      // prepare expected types for selected columns in the same order ar are selected columns(
-      Option(ExternalH2OBackend.prepareExpectedTypes(productType.memberClasses))
-    } else {
-      None
-    }
-  }
-
-  class H2ORDDIterator(val keyName: String, val partIndex: Int, val conf: H2OConf) extends H2OChunkIterator[A] {
-
+  abstract class H2ORDDIterator extends H2OChunkIterator[A] {
 
     private lazy val readers = columnReaders(converterCtx)
 
@@ -211,5 +181,4 @@ private[backend] abstract class H2ORDDBase[A <: Product : TypeTag : ClassTag](sc
   }
 
   @(transient@field @getter) private lazy val instanceBuilders = constructors map InstanceBuilder
-
 }
