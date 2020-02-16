@@ -117,7 +117,7 @@ class Initializer(object):
                 .check_output(full_command, shell=True, stderr=DEVNULL) \
                 .decode('utf-8') \
                 .replace("\n", "")
-            if not previous_version == sw_h2o_version and previous_version is not "":
+            if not previous_version == sw_h2o_version and previous_version != "":
                 warnings.warn("PySparkling is using internally bundled H2O of version {}, but H2O"
                               " installed in the python environment is of version {}."
                               .format(sw_h2o_version, previous_version))
