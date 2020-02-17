@@ -156,14 +156,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalExtraMemoryPercent(self):
         return self._jconf.externalExtraMemoryPercent()
 
-    def externalCommunicationBlockSizeAsBytes(self):
-        warnings.warn("Method 'externalCommunicationBlockSizeAsBytes' is deprecated and will be removed in the next major release without replacement.")
-        return self._jconf.externalCommunicationBlockSizeAsBytes()
-
-    def externalCommunicationBlockSize(self):
-        warnings.warn("Method 'externalCommunicationBlockSize' is deprecated and will be removed in the next major release without replacement.")
-        return self._jconf.externalCommunicationBlockSize()
-
     def externalBackendStopTimeout(self):
         return self._jconf.externalBackendStopTimeout()
 
@@ -308,11 +300,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalExtraMemoryPercent(self, memoryPercent):
         self._jconf.setExternalExtraMemoryPercent(memoryPercent)
-        return self
-
-    def setExternalCommunicationBlockSize(self, blockSize):
-        warnings.warn("Method 'setExternalCommunicationBlockSize' is deprecated and will be removed in the next major release without replacement.")
-        self._jconf.setExternalCommunicationBlockSize(blockSize)
         return self
 
     def setExternalBackendStopTimeout(self, timeout):
