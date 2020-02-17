@@ -162,6 +162,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalHadoopExecutable(self):
         return self._jconf.externalHadoopExecutable()
 
+    def externalExtraJars(self):
+        return self._jconf.externalExtraJars()
+
     #
     # Setters
     #
@@ -308,4 +311,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalHadoopExecutable(self, executable):
         self._jconf.setExternalHadoopExecutable(executable)
+        return self
+
+    def setExternalExtraJars(self, paths):
+        self._jconf.setExternalExtraJars(paths)
         return self

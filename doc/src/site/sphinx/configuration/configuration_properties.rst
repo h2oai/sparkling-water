@@ -363,6 +363,10 @@ External backend configuration properties
 |                                                       |                | to start external H2O backend on    |
 |                                                       |                | YARN.                               |
 +-------------------------------------------------------+----------------+-------------------------------------+
+| ``spark.ext.h2o.external.extra.jars``                 | ``None``       | Comma-separated paths to jars that  |
+|                                                       |                | will be placed onto classpath of    |
+|                                                       |                | each H2O node.                      |
++-------------------------------------------------------+----------------+-------------------------------------+
 
 --------------
 
