@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.backend.external.{ExternalBackendH2OFrameRelation, ExternalH2OBackend, ExternalWriteConverterCtx}
+import ai.h2o.sparkling.backend.external.{ExternalBackendConverter, ExternalBackendH2OFrameRelation, ExternalH2OBackend}
 import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
-import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils.UploadPlan
-import ai.h2o.sparkling.backend.shared.{WriteConverterCtx, WriteConverterCtxUtils}
+import ai.h2o.sparkling.backend.shared.{Converter, Writer}
+import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -29,7 +29,6 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{mllib, _}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
-
 
 object SparkDataFrameConverter extends Logging {
 
@@ -70,11 +69,11 @@ object SparkDataFrameConverter extends Logging {
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName, WriteConverterCtxUtils.getConverter(hc.getConf))
+    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName, Converter.getConverter(hc.getConf))
     new H2OFrame(DKV.getGet[Frame](key))
   }
 
-  def toH2OFrameKeyString(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String], converter: WriteConverterCtxUtils.Converter): String = {
+  def toH2OFrameKeyString(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String], converter: Converter): String = {
     import ai.h2o.sparkling.ml.utils.SchemaUtils._
 
     val flatDataFrame = flattenDataFrame(dataFrame)
@@ -97,7 +96,7 @@ object SparkDataFrameConverter extends Logging {
       flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
     } else {
       val internalJavaClasses = flatDataFrame.schema.map { f =>
-        ExternalWriteConverterCtx.internalJavaClassOf(f.dataType)
+        ExternalBackendConverter.internalJavaClassOf(f.dataType)
       }.toArray
       ExternalH2OBackend.prepareExpectedTypes(internalJavaClasses)
     }
@@ -119,36 +118,38 @@ object SparkDataFrameConverter extends Logging {
    * @return pair (partition ID, number of rows in this partition)
    */
   private def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
-                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], sparse: Array[Boolean],
-                              partitions: Seq[Int])
+                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[Converter.UploadPlan], sparse: Array[Boolean],
+                              partitions: Seq[Int], partitionSizes: Map[Int, Int])
                              (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
-    val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(conf, uploadPlan, chunkIdx)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
     }).toMap
-    // Creates array of H2O NewChunks; A place to record all the data in this partition
-    con.createChunk(keyName, dataSize, expectedTypes, chunkIdx, vecIndices.map(elemMaxSizes(_)), sparse, vecStartSize)
 
-    var localRowIdx = 0
-    iterator.foreach { row =>
-      sparkRowToH2ORow(row, localRowIdx, con, elemStartIndices, elemMaxSizes)
-      localRowIdx += 1
+    val partitionSize = partitionSizes(context.partitionId())
+    withResource(
+      Converter.createWriter(
+        conf,
+        uploadPlan,
+        chunkIdx,
+        keyName,
+        partitionSize,
+        expectedTypes,
+        vecIndices.map(elemMaxSizes(_)),
+        sparse,
+        vecStartSize)) { writer =>
+      it.foldLeft(0) {
+        case (localRowIdx, row) => sparkRowToH2ORow(row, localRowIdx, writer, elemStartIndices, elemMaxSizes)
+      }
     }
-
-    //Compress & write data in partitions to H2O Chunks
-    con.closeChunks(localRowIdx)
-
-    // Return H2O chunk index and number of rows in this chunk
-    (chunkIdx, con.numOfRows())
+    (chunkIdx, partitionSize)
   }
 
   /**
    * Converts a single Spark Row to H2O Row with expanded vectors and arrays
    */
-  private def sparkRowToH2ORow(row: Row, rowIdx: Int, con: WriteConverterCtx, elemStartIndices: Array[Int], elemSizes: Array[Int]) {
+  private def sparkRowToH2ORow(row: Row, rowIdx: Int, con: Writer, elemStartIndices: Array[Int], elemSizes: Array[Int]): Int = {
     con.startRow(rowIdx)
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       val idxH2O = elemStartIndices(idxField)
@@ -170,10 +171,11 @@ object SparkDataFrameConverter extends Logging {
           case v if ExposeUtils.isMLVectorUDT(v) => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
-          case _ => con.putNA(idxH2O, idxField)
+          case unsupported => throw new UnsupportedOperationException(s"Data of type ${unsupported.getClass} are not supported for the conversion" +
+            s"to H2OFrame.")
         }
       }
     }
-    con.finishRow()
+    rowIdx + 1
   }
 }

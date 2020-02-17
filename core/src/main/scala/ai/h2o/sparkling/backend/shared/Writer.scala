@@ -17,28 +17,18 @@
 
 package ai.h2o.sparkling.backend.shared
 
+import java.io.Closeable
+
 import org.apache.spark._
 
 /**
- * Methods which each WriteConverterCtx has to implement.
+ * Methods which each Writer has to implement.
  *
- * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
- * via unified API
+ * Writer is used to transfer data into specific H2O backend
  */
-private[backend] trait WriteConverterCtx {
-
-  def initFrame(key: String, columns: Array[String]): Unit
-
-  def createChunk(keyName: String, numRows: Int, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
-                  sparse: Array[Boolean], vecStartSize: Map[Int, Int] = Map.empty)
-
-  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit
-
-  def closeChunks(numRows: Int)
+trait Writer extends Closeable {
 
   def startRow(rowIdx: Int)
-
-  def finishRow()
 
   def put(colIdx: Int, data: Boolean)
 
@@ -78,6 +68,4 @@ private[backend] trait WriteConverterCtx {
         putDenseVector(startIdx, denseVector, maxVecSize)
     }
   }
-
-  def numOfRows(): Int
 }

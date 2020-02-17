@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.backend.external.ExternalBackendH2ORDD
 import ai.h2o.sparkling.backend.internal.InternalBackendH2ORDD
-import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils
+import ai.h2o.sparkling.backend.shared.Converter
 import org.apache.spark.h2o._
 import water.fvec.Frame
 
@@ -38,7 +38,7 @@ object SupportedRDDConverter {
                            hc: H2OContext,
                            rdd: SupportedRDD,
                            frameKeyName: Option[String],
-                           converter: WriteConverterCtxUtils.Converter): String = {
+                           converter: Converter): String = {
     rdd.toH2OFrameKeyString(hc, frameKeyName, converter)
   }
 
