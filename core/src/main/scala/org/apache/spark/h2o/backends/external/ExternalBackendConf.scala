@@ -17,7 +17,6 @@
 
 package org.apache.spark.h2o.backends.external
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 
@@ -55,12 +54,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalH2ODriverPort = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT._1)
   def externalH2ODriverPortRange = sparkConf.getOption(PROP_EXTERNAL_DRIVER_PORT_RANGE._1)
   def externalExtraMemoryPercent = sparkConf.getInt(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._2)
-  @DeprecatedMethod
-  def externalCommunicationBlockSizeAsBytes: Long = sparkConf.getSizeAsBytes(
-    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1,
-    PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
-  @DeprecatedMethod
-  def externalCommunicationBlockSize: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._2)
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
   def externalHadoopExecutable: String = sparkConf.get(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, PROP_EXTERNAL_HADOOP_EXECUTABLE._2)
   private[backends] def isBackendVersionCheckDisabled() = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
@@ -119,8 +112,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalH2ODriverPort(port: Int): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT._1, port.toString)
   def setExternalH2ODriverPortRange(portRange: String): H2OConf = set(PROP_EXTERNAL_DRIVER_PORT_RANGE._1, portRange)
   def setExternalExtraMemoryPercent(memoryPercent: Int): H2OConf = set(PROP_EXTERNAL_EXTRA_MEMORY_PERCENT._1, memoryPercent.toString)
-  @DeprecatedMethod
-  def setExternalCommunicationBlockSize(blockSize: String): H2OConf = set(PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE._1, blockSize)
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
   def setExternalHadoopExecutable(executable: String): H2OConf = set(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, executable)
 
@@ -200,11 +191,6 @@ object ExternalBackendConf {
     * Impersonated Hadoop user
     */
   val PROP_EXTERNAL_RUN_AS_USER = ("spark.ext.h2o.external.run.as.user", None)
-
-  /**
-    * The size of blocks representing data traffic from Spark nodes to H2O-3 nodes.
-    */
-  val PROP_EXTERNAL_COMMUNICATION_BLOCK_SIZE = ("spark.ext.h2o.external.communication.blockSize", "1m")
 
   /**
     * Timeout for confirmation from worker nodes when stopping the external backend. It is also
