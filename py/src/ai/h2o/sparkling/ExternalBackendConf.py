@@ -53,12 +53,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def clusterSize(self):
         return self._get_option(self._jconf.clusterSize())
 
-    def external_write_confirmation_timeout(self):
-        warnings.warn(
-            "Method 'external_write_confirmation_timeout' is deprecated without replacement and will be removed"
-            " in the next major release")
-        return self._jconf.externalWriteConfirmationTimeout()
-
     def cluster_start_timeout(self):
         warnings.warn("Method 'cluster_start_timeout' is deprecated and will be removed in the next major release. Please use 'clusterStartTimeout'.")
         return self.clusterStartTimeout()
@@ -194,13 +188,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setClusterSize(self, clusterSize):
         self._jconf.setClusterSize(clusterSize)
-        return self
-
-    def set_external_write_confirmation_timeout(self, timeout):
-        warnings.warn(
-            "Method 'set_external_write_confirmation_timeout' is deprecated without replacement and will be removed"
-            " in the next major release")
-        self._jconf.setExternalWriteConfirmationTimeout(timeout)
         return self
 
     def set_cluster_start_timeout(self, timeout):

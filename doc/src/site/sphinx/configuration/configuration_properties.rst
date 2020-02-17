@@ -292,10 +292,6 @@ External backend configuration properties
 |                                                       |                | Sparkling Water in external H2O     |
 |                                                       |                | cluster mode.                       |
 +-------------------------------------------------------+----------------+-------------------------------------+
-| ``spark.ext.h2o.external.write.confirmation.timeout`` | ``60s``        | Timeout for confirmation of write   |
-|                                                       |                | operation (Spark frame => H2O       |
-|                                                       |                | frame) on external cluster.         |
-+-------------------------------------------------------+----------------+-------------------------------------+
 | ``spark.ext.h2o.cluster.start.timeout``               | ``120s``       | Timeout in seconds for starting     |
 |                                                       |                | H2O external cluster.               |
 +-------------------------------------------------------+----------------+-------------------------------------+
