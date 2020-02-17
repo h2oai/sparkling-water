@@ -19,7 +19,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, DataFrame}
 import water.Key
 import water.support.{H2OFrameSupport, SparkContextSupport, ModelMetricsSupport}
-import water.api.TestUtils
+import ai.h2o.sparkling.examples.TestUtils
 
 // Register files to SparkContext
 SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/smsData.txt"))

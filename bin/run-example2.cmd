@@ -10,7 +10,7 @@ call %LIBSW% checkSparkVersion
 call %LIBSW% checkFatJarExists
 
 rem Example prefix
-set PREFIX=org.apache.spark.examples.h2o
+set PREFIX=ai.h2o.sparkling.examples
 rem Name of default example
 set DEFAULT_EXAMPLE=AirlinesWithWeatherDemo2
 

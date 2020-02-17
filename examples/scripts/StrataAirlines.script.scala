@@ -12,7 +12,7 @@
 // Common imports
 import org.apache.spark.SparkFiles
 import org.apache.spark.h2o._
-import org.apache.spark.examples.h2o._
+import ai.h2o.sparkling.examples._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import water.Key
 import java.io.File

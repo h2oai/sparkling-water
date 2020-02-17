@@ -17,7 +17,7 @@ import org.apache.spark.mllib.feature.Word2Vec
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.sql.DataFrame
-import water.api.TestUtils
+import ai.h2o.sparkling.examples.TestUtils
 import water.support.SparkContextSupport
 import org.apache.spark.SparkFiles
 

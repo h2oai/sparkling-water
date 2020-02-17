@@ -38,17 +38,14 @@ Available Demos for Sparkling Shell
 +-----------------------------------+--------------------------------------------------------------------------+
 | Example                           | Description                                                              |
 +===================================+==========================================================================+
-| |chicagoCrimeSmallShellScript|    | Demo showing full source code of predicting arrest probability for a     |
+| |ChicagoCrimeAppSmallScript|      | Demo showing full source code of predicting arrest probability for a     |
 |                                   | given crime. It covers whole machine learning process from loading and   |
 |                                   | transforming data, building models, scoring incoming events.             |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |chicagoCrimeSmallScript|         | Example of using |ChicagoCrimeApp|. Creating application and using it    |
-|                                   | for scoring individual crime events.                                     |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |hamOrSpamScript|                 | HamOrSpam application which detects Spam messages. Presented at          |
 |                                   | MLConf 2015 NYC.                                                         |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |strata2015Script|                | NYC CitiBike demo presented at Strata 2015 in San Jose.                  |
+| |CityBikeSharingScript|           | NYC Bike Sharing Demo.                                                   |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |StrataAirlinesScript|            | Example of using flights and weather data to predict delay of a flight.  |
 +-----------------------------------+--------------------------------------------------------------------------+
@@ -175,20 +172,19 @@ The generated code can be run in RStudio to produce residual plots.
 
 .. Links to the examples
 
-.. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesStreamingApp.scala>`__
-.. |CraigslistJobTitlesApp| replace:: `CraigslistJobTitlesApp <src/main/scala/org/apache/spark/examples/h2o/CraigslistJobTitlesApp.scala>`__
-.. |ChicagoCrimeAppSmall| replace:: `ChicagoCrimeAppSmall <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeAppSmall.scala>`__
-.. |ChicagoCrimeApp| replace:: `ChicagoCrimeApp <src/main/scala/org/apache/spark/examples/h2o/ChicagoCrimeApp.scala>`__
-.. |CitiBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/org/apache/spark/examples/h2o/CitiBikeSharingDemo.scala>`__
-.. |HamOrSpamDemo| replace:: `HamOrSpamDemo <src/main/scala/org/apache/spark/examples/h2o/HamOrSpamDemo.scala>`__
-.. |ProstateDemo| replace:: `ProstateDemo <src/main/scala/org/apache/spark/examples/h2o/ProstateDemo.scala>`__
-.. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/org/apache/spark/examples/h2o/DeepLearningDemo.scala>`__
-.. |AirlinesWithWeatherDemo| replace:: `AirlinesWithWeatherDemo <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo.scala>`__
-.. |AirlinesWithWeatherDemo2| replace:: `AirlinesWithWeatherDemo2 <src/main/scala/org/apache/spark/examples/h2o/AirlinesWithWeatherDemo2.scala>`__
-.. |chicagoCrimeSmallShellScript| replace:: `chicagoCrimeSmallShell.script.scala <scripts/chicagoCrimeSmallShell.script.scala>`__
-.. |chicagoCrimeSmallScript| replace:: `chicagoCrimeSmall.script.scala <scripts/chicagoCrimeSmall.script.scala>`__
+.. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesStreamingApp.scala>`__
+.. |CraigslistJobTitlesApp| replace:: `CraigslistJobTitlesApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesApp.scala>`__
+.. |ChicagoCrimeAppSmall| replace:: `ChicagoCrimeAppSmall <src/main/scala/ai/h2o/sparkling/examples/ChicagoCrimeAppSmall.scala>`__
+.. |ChicagoCrimeApp| replace:: `ChicagoCrimeApp <src/main/scala/ai/h2o/sparkling/examples/ChicagoCrimeApp.scala>`__
+.. |CitiBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/ai/h2o/sparkling/examples/CitiBikeSharingDemo.scala>`__
+.. |HamOrSpamDemo| replace:: `HamOrSpamDemo <src/main/scala/ai/h2o/sparkling/examples/HamOrSpamDemo.scala>`__
+.. |ProstateDemo| replace:: `ProstateDemo <src/main/scala/ai/h2o/sparkling/examples/ProstateDemo.scala>`__
+.. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/ai/h2o/sparkling/examples/DeepLearningDemo.scala>`__
+.. |AirlinesWithWeatherDemo| replace:: `AirlinesWithWeatherDemo <src/main/scala/ai/h2o/sparkling/examples/AirlinesWithWeatherDemo.scala>`__
+.. |AirlinesWithWeatherDemo2| replace:: `AirlinesWithWeatherDemo2 <src/main/scala/ai/h2o/sparkling/examples/AirlinesWithWeatherDemo2.scala>`__
+.. |ChicagoCrimeAppSmallScript| replace:: `ChicagoCrimeAppSmall.script.scala <scripts/ChicagoCrimeAppSmall.script.scala>`__
 .. |hamOrSpamScript| replace:: `hamOrSpam.script.scala <scripts/hamOrSpam.script.scala>`__
-.. |strata2015Script| replace:: `strata2015.script.scala <scripts/strata2015.script.scala>`__
+.. |CityBikeSharingScript| replace:: `CityBikeSharing.script.scala <scripts/CityBikeSharing.script.scala>`__
 .. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
 .. |ProstateDataset| replace:: `prostate dataset <smalldata/prostate/prostate.csv>`__
 .. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.zip>`__
