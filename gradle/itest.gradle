@@ -51,7 +51,7 @@ task integTest(type: Test) {
             systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
             systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
-            include "water/sparkling/itest/yarn/**"
+            include "ai/h2o/sparkling/yarn/**"
             break
 
         case "standalone":
@@ -60,7 +60,7 @@ task integTest(type: Test) {
             systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
             systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
-            include "water/sparkling/itest/standalone/**"
+            include "ai/h2o/sparkling/standalone/**"
             break
 
         case "local":
@@ -69,7 +69,7 @@ task integTest(type: Test) {
             systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
             systemProperty "spark.ext.h2o.external.disable.version.check", "true"
 
-            include "water/sparkling/itest/local/**"
+            include "ai/h2o/sparkling/local/**"
             break
     }
     // Also setup expected Scala version for Spark launcher

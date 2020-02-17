@@ -11,7 +11,7 @@ checkSparkHome
 # Check sparkling water assembly Jar exists
 checkFatJarExists
 # Example prefix
-PREFIX=org.apache.spark.examples.h2o
+PREFIX=ai.h2o.sparkling.examples
 # Name of default example
 DEFAULT_EXAMPLE=AirlinesWithWeatherDemo2
 

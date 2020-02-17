@@ -15,7 +15,7 @@ import _root_.hex.tree.gbm.GBMModel.GBMParameters
 import _root_.hex.ModelMetricsSupervised
 import java.net.URI
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
-import org.apache.spark.examples.h2o._
+import ai.h2o.sparkling.examples._
 
 // Start H2O services
 val hc = H2OContext.getOrCreate(spark)
