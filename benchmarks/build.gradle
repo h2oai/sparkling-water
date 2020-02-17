@@ -33,35 +33,6 @@ shadowJar {
     exclude 'www/flow/packs/test-*/**'
 }
 
-task buildH2OExtendedJar() {
-    doLast {
-        def outputStream = new ByteArrayOutputStream()
-        exec {
-            workingDir(project.parent.rootDir)
-            commandLine './gradlew', '-PdoExtend', 'extendJar', '-PdownloadH2O=hdp2.6'
-            standardOutput = outputStream
-        }
-        def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }
-        copy {
-            from h2oExtendedJar
-            into "${project.buildDir}/libs/"
-            rename { _ -> "h2o-extended.jar" }
-        }
-        buildH2OExtendedJar.ext.fileName = h2oExtendedJar
-    }
-}
-
-task buildH2OExtendedJarWithBenchmarks(type: Jar, dependsOn: buildH2OExtendedJar) {
-    manifest{
-        attributes 'Main-Class': 'water.hadoop.h2odriver'
-    }
-    version = ''
-    archiveBaseName = 'h2o-extended-with-benchmarks'
-    zip64 true
-    from "$buildDir/classes/scala/main/"
-    from zipTree("$buildDir/libs/h2o-extended.jar")
-}
-
 task cleanTerraform(type: Delete) {
     delete "build/terraform"
 }
@@ -82,7 +53,7 @@ task copyTerraform(dependsOn: cleanTerraform) {
     }
 }
 
-task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerraform]) {
+task substituteTerraform(dependsOn: copyTerraform) {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = [
@@ -92,8 +63,10 @@ task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerr
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
                 .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
+                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+                .replaceAll("SUBST_H2O_BUILD", h2oBuild)
                 .replaceAll("SUBST_SW_VERSION", version.toString())
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
                 .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)

@@ -56,13 +56,6 @@ resource "aws_s3_bucket_object" "benchmarks_jar" {
   source = "${var.sw_package_file}"
 }
 
-resource "aws_s3_bucket_object" "h2o_jar" {
-  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
-  key = "h2o.jar"
-  acl = "private"
-  source = "${var.h2o_jar_file}"
-}
-
 resource "aws_s3_bucket_object" "set_automatic_shutdown" {
   bucket = "${aws_s3_bucket.deployment_bucket.id}"
   key = "set_automatic_shutdown.sh"
@@ -113,8 +106,9 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
     runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
   fi
   if ${var.benchmarks_run_yarn_external}; then
-    aws s3 cp ${format("s3://%s/h2o.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/h2o.jar
-    export H2O_DRIVER_JAR=/home/hadoop/h2o.jar
+    aws s3 cp ${format("s3://h2o-release/h2o/%s/%s/h2o-%s-hdp2.6.zip", var.h2o_version_name, var.h2o_build, var.h2o_version)} /home/hadoop/h2o.zip
+    unzip -q /home/hadoop/h2o.zip -d /home/hadoop
+    export H2O_DRIVER_JAR="/home/hadoop/h2o-${var.h2o_version}-hdp2.6/h2odriver.jar"
     runBenchmarks "yarn" "external" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb/2}G"
   fi
   if ${var.benchmarks_run_local_internal}; then
@@ -135,7 +129,6 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   applications = ["Spark", "Hadoop"]
   depends_on = [
     aws_s3_bucket_object.benchmarks_jar,
-    aws_s3_bucket_object.h2o_jar,
     aws_s3_bucket_object.run_benchmarks_script,
     aws_s3_bucket_object.set_automatic_shutdown
   ]
