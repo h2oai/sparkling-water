@@ -4,7 +4,7 @@
 
 package water.sparkling.scripts
 
-import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
+import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 

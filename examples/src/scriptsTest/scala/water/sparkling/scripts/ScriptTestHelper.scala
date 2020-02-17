@@ -2,11 +2,11 @@ package water.sparkling.scripts
 
 import java.io.File
 
+import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
 import org.apache.spark.h2o.FunSuiteWithLogging
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.h2o.backends.SharedBackendConf._
 import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.repl.h2o.{CodeResults, H2OInterpreter}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import water.init.NetworkInit
