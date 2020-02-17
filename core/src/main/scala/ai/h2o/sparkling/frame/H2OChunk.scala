@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.frame
 
-import java.io.InputStream
+import java.io.{InputStream, OutputStream}
 
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, RestApiUtils, RestCommunication}
@@ -25,13 +25,14 @@ import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 
 
-case class H2OChunk(index: Int, numberOfRows: Long, location: NodeDesc)
+case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
 
 object H2OChunk extends RestCommunication {
   def getChunkAsInputStream(
                              node: NodeDesc,
                              conf: H2OConf,
                              frameName: String,
+                             numRows: Int,
                              chunkId: Int,
                              expectedTypes: Array[Byte],
                              selectedColumnsIndices: Array[Int]): InputStream = {
@@ -40,11 +41,34 @@ object H2OChunk extends RestCommunication {
 
     val parameters = Map(
       "frame_name" -> frameName,
-      "chunk_id" -> chunkId.toString,
+      "num_rows" -> numRows,
+      "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
       "selected_columns" -> selectedColumnsIndicesString)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
     readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+  }
+
+  def putChunk(
+                node: NodeDesc,
+                conf : H2OConf,
+                frameName: String,
+                numRows: Int,
+                chunkId: Int,
+                expectedTypes: Array[Byte],
+                maxVecSizes: Array[Int]): OutputStream = {
+    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
+
+    val parameters = Map(
+      "frame_name" -> frameName,
+      "num_rows" -> numRows,
+      "chunk_id" -> chunkId,
+      "expected_types" -> expectedTypesString,
+      "maximum_vector_sizes" -> maxVecSizesString)
+
+    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
+    insert(endpoint, Paths.CHUNK, conf, parameters)
   }
 }

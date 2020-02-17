@@ -21,8 +21,11 @@ import java.text.MessageFormat
 import java.util
 
 import ai.h2o.sparkling.job.H2OJob
+import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.utils.RestApiUtils._
 import ai.h2o.sparkling.utils.RestCommunication
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
@@ -120,4 +123,24 @@ object H2OFrame extends RestCommunication {
       location = clusterNodes(sourceChunk.node_idx))
   }
 
+  def initializeFrame(conf: H2OConf, frameId: String, columns: Array[String]): InitializeFrameV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    val parameters = Map(
+      "key" -> frameId,
+      "columns" -> columns)
+    update[InitializeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
+  }
+
+  def finalizeFrame(
+                     conf: H2OConf,
+                     frameId: String,
+                     rowsPerChunk: Array[Long],
+                     columnTypes: Array[Byte]): FinalizeFrameV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    val parameters = Map(
+      "key" -> frameId,
+      "rows_per_chunk" -> Base64Encoding.encode(rowsPerChunk),
+      "column_types" -> Base64Encoding.encode(columnTypes))
+    update[FinalizeFrameV3](endpoint, Paths.FINALIZE_FRAME, conf, parameters)
+  }
 }

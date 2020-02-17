@@ -57,7 +57,8 @@ object SupportedRDDConverter {
   */
 trait SupportedRDD {
   def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, frameKeyName, WriteConverterCtxUtils.ClientBasedConverter)
+    val converter = WriteConverterCtxUtils.getConverter(hc.getConf)
+    val key = toH2OFrameKeyString(hc, frameKeyName, converter)
     new H2OFrame(DKV.getGet[Frame](key))
   }
 

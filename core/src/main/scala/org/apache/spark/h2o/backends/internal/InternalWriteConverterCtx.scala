@@ -23,7 +23,7 @@ import org.apache.spark.h2o.Frame
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import water.fvec.FrameUtils._
-import water.fvec.{Chunk, FrameUtils, H2OFrame, NewChunk}
+import water.fvec.{Chunk, FrameUtils, NewChunk}
 import water.util.Log
 import water.{DKV, Key, MRTask, _}
 
@@ -44,16 +44,16 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
     fr.update()
   }
 
-  override def createChunk(keyName: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int,
+  override def createChunk(keyName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int,
                            maxVecSizes: Array[Int], sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     chunks = FrameUtils.createNewChunks(keyName, expectedTypes, chunkId, sparse)
     sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
     sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
   }
 
-  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]]): Unit = {
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
     val fr = DKV.getGet[Frame](key)
-    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, domains, colTypes)
+    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, null, colTypes)
     InternalWriteConverterCtx.logChunkLocations(fr)
     InternalWriteConverterCtx.validateFrame(fr)
   }
@@ -96,7 +96,7 @@ class InternalWriteConverterCtx extends WriteConverterCtx {
 
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
 
-  override def putNA(columnNum: Int): Unit = chunks(columnNum).addNA()
+  override def putNA(columnNum: Int, sparkIdx: Int): Unit = chunks(columnNum).addNA()
 
   override def numOfRows(): Int = chunks(0).len()
 

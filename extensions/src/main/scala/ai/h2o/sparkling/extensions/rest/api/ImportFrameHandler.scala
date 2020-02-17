@@ -17,8 +17,21 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-object Paths {
-  val CHUNK: String = "/3/Chunk"
-  val INITIALIZE_FRAME: String = "/3/InitializeFrame"
-  val FINALIZE_FRAME: String = "/3/FinalizeFrame"
+import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
+import ai.h2o.sparkling.utils.Base64Encoding
+import water.api.Handler
+import water.fvec.ChunkUtils
+
+class ImportFrameHandler extends Handler {
+  def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
+    ChunkUtils.initFrame(request.key, request.columns)
+    request
+  }
+
+  def finalize(version: Int, request: FinalizeFrameV3): FinalizeFrameV3 = {
+    val rowsPerChunk = Base64Encoding.decodeToLongArray(request.rows_per_chunk)
+    val columnTypes = Base64Encoding.decode(request.column_types)
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, null)
+    request
+  }
 }

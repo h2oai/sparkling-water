@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
 import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -65,7 +65,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName, WriteConverterCtxUtils.ClientBasedConverter)
+    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName, WriteConverterCtxUtils.getConverter(hc.getConf))
     new H2OFrame(DKV.getGet[Frame](key))
   }
 
@@ -97,13 +97,12 @@ private[h2o] object SparkDataFrameConverter extends Logging {
       ExternalH2OBackend.prepareExpectedTypes(internalJavaClasses)
     }
 
-    val blockSize = hc.getConf.externalCommunicationBlockSizeAsBytes
     converter.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparse = sparseInfo, perSQLPartition(elemMaxSizes, elemStartIndices, vecIndices, blockSize))
+      sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices))
   }
 
   /**
-    *
+    * @param conf             H2O conf
     * @param keyName          key of the frame
     * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
     * @param elemMaxSizes     array containing max size of each element in the dataframe
@@ -115,14 +114,13 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     * @return pair (partition ID, number of rows in this partition)
     */
   private[this]
-  def perSQLPartition(elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int], blockSize: Long)
-                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan],
-                      writeTimeout: Int, driverTimeStamp: Short, sparse: Array[Boolean], partitions: Seq[Int])
+  def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
+                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], sparse: Array[Boolean],
+                      partitions: Seq[Int])
                      (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
-
     val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
-    val con = WriteConverterCtxUtils.create(uploadPlan, chunkIdx , writeTimeout, driverTimeStamp, blockSize)
+    val con = WriteConverterCtxUtils.create(conf, uploadPlan, chunkIdx)
     // Collect mapping start position of vector and its size
     val vecStartSize = (for (vecIdx <- vecIndices) yield {
       (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
@@ -151,7 +149,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       val idxH2O = elemStartIndices(idxField)
       if (row.isNullAt(idxField)) {
-        con.putNA(idxH2O)
+        con.putNA(idxH2O, idxField)
       } else {
         entry.dataType match {
           case BooleanType => con.put(idxH2O, row.getBoolean(idxField))
@@ -168,7 +166,7 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           case _: ml.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
-          case _ => con.putNA(idxH2O)
+          case _ => con.putNA(idxH2O, idxField)
         }
       }
     }

@@ -30,12 +30,12 @@ trait WriteConverterCtx {
 
   def initFrame(key: String, columns: Array[String]): Unit
 
-  def createChunk(keyName: String, numRows: Option[Int], h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+  def createChunk(keyName: String, numRows: Int, h2oTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                   sparse: Array[Boolean], vecStartSize: Map[Int, Int] = Map.empty)
 
-  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): Unit
+  def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit
 
-  def closeChunks(numRows: Int = -1)
+  def closeChunks(numRows: Int)
 
   def startRow(rowIdx: Int)
 
@@ -63,28 +63,11 @@ trait WriteConverterCtx {
 
   def put(colIdx: Int, data: String)
 
-  def putNA(colIdx: Int)
+  def putNA(colIdx: Int, sparkIdx: Int)
 
   def putSparseVector(startIdx: Int, vector: ml.linalg.SparseVector, maxVecSize: Int)
 
   def putDenseVector(startIdx: Int, vector: ml.linalg.DenseVector, maxVecSize: Int)
-
-  def putAnySupportedType[T](colIdx: Int, data: T): Unit = {
-    data match {
-      case n: Boolean => put(colIdx, n)
-      case n: Byte => put(colIdx, n)
-      case n: Char => put(colIdx, n)
-      case n: Short => put(colIdx, n)
-      case n: Int => put(colIdx, n)
-      case n: Long => put(colIdx, n)
-      case n: Float => put(colIdx, n)
-      case n: Double => put(colIdx, n)
-      case n: String => put(colIdx, n)
-      case n: java.sql.Timestamp => put(colIdx, n)
-      case n: java.sql.Date => put(colIdx, n)
-      case _ => putNA(colIdx)
-    }
-  }
 
   def putVector(startIdx: Int, vec: mllib.linalg.Vector, maxVecSize: Int): Unit = putVector(startIdx, vec.asML, maxVecSize)
 

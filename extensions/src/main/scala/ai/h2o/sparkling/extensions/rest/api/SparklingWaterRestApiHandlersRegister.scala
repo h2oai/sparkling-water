@@ -17,8 +17,25 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-object Paths {
-  val CHUNK: String = "/3/Chunk"
-  val INITIALIZE_FRAME: String = "/3/InitializeFrame"
-  val FINALIZE_FRAME: String = "/3/FinalizeFrame"
+import water.api.{AbstractRegister, RestApiContext}
+
+class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
+
+  override def registerEndPoints(context: RestApiContext): Unit = {
+    context.registerEndpoint(
+      "sw_frame_initialize",
+      "POST " + Paths.INITIALIZE_FRAME,
+      classOf[ImportFrameHandler],
+      "initialize",
+      "Initializes a new frame before pushing chunks to the server")
+
+    context.registerEndpoint(
+      "sw_frame_finalize",
+      "POST " + Paths.FINALIZE_FRAME,
+      classOf[ImportFrameHandler],
+      "finalize",
+      "Performs finalizing procedures after the data chunks were delivered to the server")
+  }
+
+  override def getName(): String =  "Sparkling Water REST API Extensions"
 }

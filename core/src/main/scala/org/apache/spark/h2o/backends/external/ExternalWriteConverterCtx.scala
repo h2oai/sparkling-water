@@ -17,81 +17,86 @@
 
 package org.apache.spark.h2o.backends.external
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
 import org.apache.spark.sql.types._
-import water._
-import water.fvec.Frame
+import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferWriter
+import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
 
-class ExternalWriteConverterCtx(nodeDesc: NodeDesc, writeTimeout: Int, driverTimeStamp: Short, blockSize: Long) extends WriteConverterCtx {
+class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
+  extends WriteConverterCtx {
 
-  private val externalFrameWriter = ExternalFrameWriterClient.create(nodeDesc.hostname, nodeDesc.port, driverTimeStamp, writeTimeout, blockSize)
+  private var expectedTypes: Array[Byte] = null
+  private var chunkWriter: ChunkAutoBufferWriter = null
+  private var numberOfRows: Int = -1
 
   override def closeChunks(numRows: Int): Unit = {
-    externalFrameWriter.close()
+    chunkWriter.close()
   }
 
   override def initFrame(key: String, columns: Array[String]): Unit = {
-    externalFrameWriter.initFrame(key, columns)
+    H2OFrame.initializeFrame(conf, key, columns)
   }
 
-  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte], domains: Array[Array[String]] = null): Unit = {
-    externalFrameWriter.finalizeFrame(key, rowsPerChunk, colTypes, domains)
+  override def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
+    H2OFrame.finalizeFrame(conf, key, rowsPerChunk, colTypes)
   }
 
   /**
     * Initialize the communication before the chunks are created
     */
-  override def createChunk(keystr: String, numRows: Option[Int], expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
+  override def createChunk(frameName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
-    externalFrameWriter.createChunk(keystr, expectedTypes, chunkId, numRows.get, maxVecSizes)
+    this.expectedTypes = expectedTypes
+    val outputStream = H2OChunk.putChunk(nodeDesc, conf, frameName, numRows, chunkId, expectedTypes, maxVecSizes)
+    this.chunkWriter = new ChunkAutoBufferWriter(outputStream)
+    this.numberOfRows = numRows
   }
 
-  override def put(colIdx: Int, data: Boolean) = externalFrameWriter.sendBoolean(data)
+  override def put(colIdx: Int, data: Boolean): Unit = chunkWriter.writeBoolean(data)
 
-  override def put(colIdx: Int, data: Byte) = externalFrameWriter.sendByte(data)
+  override def put(colIdx: Int, data: Byte): Unit = chunkWriter.writeByte(data)
 
-  override def put(colIdx: Int, data: Char) = externalFrameWriter.sendChar(data)
+  override def put(colIdx: Int, data: Char): Unit = chunkWriter.writeChar(data)
 
-  override def put(colIdx: Int, data: Short) = externalFrameWriter.sendShort(data)
+  override def put(colIdx: Int, data: Short): Unit = chunkWriter.writeShort(data)
 
-  override def put(colIdx: Int, data: Int) = externalFrameWriter.sendInt(data)
+  override def put(colIdx: Int, data: Int): Unit = chunkWriter.writeInt(data)
 
-  override def put(colIdx: Int, data: Long) = externalFrameWriter.sendLong(data)
+  override def put(colIdx: Int, data: Long): Unit = chunkWriter.writeLong(data)
 
-  override def put(colIdx: Int, data: Float) = externalFrameWriter.sendFloat(data)
+  override def put(colIdx: Int, data: Float): Unit = chunkWriter.writeFloat(data)
 
-  override def put(colIdx: Int, data: Double) = externalFrameWriter.sendDouble(data)
+  override def put(colIdx: Int, data: Double): Unit = chunkWriter.writeDouble(data)
 
-  override def put(colIdx: Int, data: java.sql.Timestamp) = externalFrameWriter.sendTimestamp(data)
+  override def put(colIdx: Int, data: java.sql.Timestamp): Unit = chunkWriter.writeTimestamp(data)
 
   // Here we should call externalFrameWriter.sendDate - however such method does not exist
   // Hence going through the same path as sending Timestamp long value.
-  override def put(colIdx: Int, data: java.sql.Date) = externalFrameWriter.sendLong(data.getTime)
+  override def put(colIdx: Int, data: java.sql.Date): Unit = chunkWriter.writeLong(data.getTime)
 
-  override def put(colIdx: Int, data: String) = externalFrameWriter.sendString(data)
+  override def put(colIdx: Int, data: String): Unit = chunkWriter.writeString(data)
 
-  override def putNA(columnNum: Int) = externalFrameWriter.sendNA()
+  override def putNA(columnIdx: Int, sparkIdx: Int): Unit = chunkWriter.writeNA(expectedTypes(sparkIdx))
 
-  override def numOfRows(): Int = externalFrameWriter.getNumberOfWrittenRows
+  override def numOfRows(): Int = this.numberOfRows
 
   override def putSparseVector(startIdx: Int, vector: SparseVector, maxVecSize: Int): Unit = {
-    externalFrameWriter.sendSparseVector(vector.indices, vector.values)
+    chunkWriter.writeSparseVector(vector.indices, vector.values)
   }
 
   override def putDenseVector(startIdx: Int, vector: DenseVector, maxVecSize: Int): Unit = {
-    externalFrameWriter.sendDenseVector(vector.values)
+    chunkWriter.writeDenseVector(vector.values)
   }
 
   override def startRow(rowIdx: Int): Unit = {}
 
   override def finishRow(): Unit = {}
 }
-
 
 object ExternalWriteConverterCtx {
 

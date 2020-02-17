@@ -31,52 +31,81 @@ import scala.reflect.{ClassTag, classTag}
 trait RestCommunication extends Logging {
 
   /**
-   *
-   * @param endpoint      An address of H2O node with exposed REST endpoint
-   * @param suffix        REST relative path representing a specific call
-   * @param conf          H2O conf object
-   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-   *                      consists of the class containing the field and the field name.
-   * @tparam ResultType A type that the result will be deserialized to
-   * @return A deserialized object
-   */
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
   def query[ResultType: ClassTag](
-                                             endpoint: URI,
-                                             suffix: String,
-                                             conf: H2OConf,
-                                             params: Map[String, Any] = Map.empty,
-                                             skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                   endpoint: URI,
+                                   suffix: String,
+                                   conf: H2OConf,
+                                   params: Map[String, Any] = Map.empty,
+                                   skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "GET", suffix, conf, params, skippedFields)
   }
 
 
   /**
-   *
-   * @param endpoint      An address of H2O node with exposed REST endpoint
-   * @param suffix        REST relative path representing a specific call
-   * @param conf          H2O conf object
-   * @param params        Query parameters
-   * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
-   *                      consists of the class containing the field and the field name.
-   * @tparam ResultType A type that the result will be deserialized to
-   * @return A deserialized object
-   */
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
   def update[ResultType: ClassTag](
-                                              endpoint: URI,
-                                              suffix: String,
-                                              conf: H2OConf,
-                                              params: Map[String, Any] = Map.empty,
-                                              skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                    endpoint: URI,
+                                    suffix: String,
+                                    conf: H2OConf,
+                                    params: Map[String, Any] = Map.empty,
+                                    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     request(endpoint, "POST", suffix, conf, params, skippedFields)
   }
 
+  /**
+    *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @return HttpUrlConnection facilitating the insertion and holding the outputStream
+    */
+  protected def insert(
+                        endpoint: URI,
+                        suffix: String,
+                        conf: H2OConf,
+                        params: Map[String, Any] = Map.empty): OutputStream  = {
+    val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
+    try {
+      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      val requestMethod = "PUT"
+      connection.setRequestMethod(requestMethod)
+      connection.setDoOutput(true)
+      connection.setChunkedStreamingMode(-1) // -1 to use default size
+      setHeaders(connection, conf, requestMethod, params)
+      val outputStream = connection.getOutputStream()
+      new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
+    } catch {
+      case e: Exception => throwRestApiNotReachableException(url, e)
+    }
+  }
+
   def request[ResultType: ClassTag](
-                                               endpoint: URI,
-                                               requestType: String,
-                                               suffix: String,
-                                               conf: H2OConf,
-                                               params: Map[String, Any] = Map.empty,
-                                               skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
+                                     endpoint: URI,
+                                     requestType: String,
+                                     suffix: String,
+                                     conf: H2OConf,
+                                     params: Map[String, Any] = Map.empty,
+                                     skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
     withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
@@ -131,7 +160,9 @@ trait RestCommunication extends Logging {
     val charset = "UTF-8"
     value match {
       case v: String => URLEncoder.encode(v, charset)
+      case v: Byte => v.toString
       case v: Int => v.toString
+      case v: Long => v.toString
       case v: Double => v.toString
       case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
     }
@@ -151,56 +182,65 @@ trait RestCommunication extends Logging {
     }.mkString("&")
   }
 
-  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
+  private def resolveUrl(endpoint: URI, suffix: String): URL = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
+    endpoint.resolve(suffixWithDelimiter).toURL
+  }
 
-    val suffixWithParams = if (params.nonEmpty && requestType == "GET") {
-      s"$suffixWithDelimiter?${decodeParams(params)}"
-    } else {
-      suffixWithDelimiter
+  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
+    getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+
+    if (params.nonEmpty && requestType == "POST") {
+      val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
+      connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      connection.setRequestProperty("charset", "UTF-8")
+      connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
+      connection.setDoOutput(true)
+      withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
+        writer.write(paramsAsBytes)
+      }
     }
+  }
 
-    val url = endpoint.resolve(suffixWithParams).toURL
+  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
+    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${decodeParams(params)}" else suffix
+    val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
-
-      if (params.nonEmpty && (requestType == "POST" || requestType == "PUT")) {
-        val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        connection.setRequestProperty("charset", "UTF-8")
-        connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
-        connection.setDoOutput(true)
-        withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
-          writer.write(paramsAsBytes)
-        }
-      }
-
-      val statusCode = retry(3) {
-        connection.getResponseCode()
-      }
-      statusCode match {
-        case HttpURLConnection.HTTP_OK => logInfo(
-          s"""External H2O node ${urlToString(url)} successfully responded
-             | for the $requestType request on the path $suffixWithDelimiter.""".stripMargin)
-        case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
-          s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
-             |Please make sure you have passed valid credentials to the client.
-             |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
-        case _ => throw new RestApiNotReachableException(
-          s"""External H2O node ${urlToString(url)} responded with
-             |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
-      }
+      setHeaders(connection, conf, requestType, params)
+      checkResponseCode(connection)
       connection.getInputStream()
     } catch {
       case e: RestApiException => throw e
-      case cause: Exception =>
-        throw new RestApiNotReachableException(
-          s"""External H2O node ${urlToString(url)} is not reachable.
-             |Please verify that you are passing ip and port of existing cluster node and the cluster
-             |is running with web enabled.""".stripMargin, cause)
+      case cause: Exception => throwRestApiNotReachableException(url, cause)
     }
+  }
+
+  def checkResponseCode(connection: HttpURLConnection): Unit = {
+    val url = connection.getURL
+    val requestType = connection.getRequestMethod
+    val statusCode = retry(3) {
+      connection.getResponseCode()
+    }
+    statusCode match {
+      case HttpURLConnection.HTTP_OK => logInfo(
+        s"External H2O node $url successfully responded for the $requestType.")
+      case HttpURLConnection.HTTP_UNAUTHORIZED => throw new RestApiUnauthorisedException(
+        s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
+           |Please make sure you have passed valid credentials to the client.
+           |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
+      case _ => throw new RestApiNotReachableException(
+        s"""External H2O node ${urlToString(url)} responded with
+           |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
+    }
+  }
+
+  private def throwRestApiNotReachableException(url: URL, e: Exception) = {
+    throw new RestApiNotReachableException(
+      s"""External H2O node ${urlToString(url)} is not reachable.
+         |Please verify that you are passing ip and port of existing cluster node and the cluster
+         |is running with web enabled.""".stripMargin, e)
   }
 
   @annotation.tailrec

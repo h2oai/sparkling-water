@@ -209,7 +209,8 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", {
-      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.ClientBasedConverter)
+      val converter = WriteConverterCtxUtils.getConverter(conf)
+      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, converter)
       new H2OFrame(DKV.getGet[Frame](key))
     })
 
@@ -528,11 +529,11 @@ object H2OContext extends Logging {
     }
 
     override def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
-      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, WriteConverterCtxUtils.RESTBasedExternalConverter)
+      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, WriteConverterCtxUtils.ExternalBackendConverter)
     }
 
     override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
-      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.RESTBasedExternalConverter)
+      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.ExternalBackendConverter)
     }
 
     override protected def getFlowEndpoint(): String = s"$flowIp:$flowPort${conf.contextPath.getOrElse("")}"

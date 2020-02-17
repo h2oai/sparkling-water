@@ -17,11 +17,10 @@
 
 package org.apache.spark.h2o.converters
 
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
 import org.apache.spark.Partition
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.NodeDesc
-import water.fvec.{Frame, FrameUtils}
+import water.fvec.Frame
 
 import scala.annotation.meta.{field, getter}
 
@@ -43,7 +42,7 @@ private[converters] trait H2OSparkEntity {
   def numChunks: Int
 
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  def chksLocation : Option[Array[NodeDesc]]
+  def chksLocation : Option[Array[H2OChunk]] = None
 
   /** Selected column indices */
   val selectedColumnIndices: Array[Int]
@@ -93,9 +92,6 @@ private[converters] trait H2OClientBasedSparkEntity[T <: Frame] extends H2OSpark
 
   /** Number of chunks per a vector */
   override val numChunks: Int = frame.anyVec().nChunks()
-
-  /** Chunk locations helps us to determine the node which really has the data we needs. */
-  override val chksLocation = if (isExternalBackend) Some(FrameUtils.getChunksLocations(frame)) else None
 }
 
 /**
@@ -115,7 +111,7 @@ private[converters] trait H2ORESTBasedSparkEntity extends H2OSparkEntity {
   override val numChunks: Int = frame.chunks.length
 
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  override val chksLocation: Option[Array[NodeDesc]] = Some(frame.chunks.map(_.location))
+  override val chksLocation: Option[Array[H2OChunk]] = Some(frame.chunks)
 }
 
 

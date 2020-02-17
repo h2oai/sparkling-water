@@ -17,33 +17,98 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import java.nio.{ByteBuffer, ByteOrder}
-
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.Base64Encoding
-import ai.h2o.sparkling.extensions.serde.{SerializationUtils, ChunkAutoBufferWriter}
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
 import water.fvec.Frame
 import water.server.ServletUtils
 
 /**
-  * This servlet class handles GET requests for the path /3/Chunk
-  * It requires 4 get parameters
-  * - frame_name - a unique string identifier of H2O Frame
-  * - chunk_id - a unique identifier of the chunk within the H2O Frame
-  * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
-  * - selected_columns - selected columns indices encoded int Base64 encoding.
-  * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
-  * The data stream starts with the integer representing the number of rows.
+  * This servlet class handles GET and PUT requests for the path /3/Chunk
   */
 final class ChunkServlet extends HttpServlet {
 
-  private case class RequestParameters(
+  private case class GETRequestParameters(
       frameName: String,
+      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[Byte],
-      selectedColumnIndices: Array[Int])
+      selectedColumnIndices: Array[Int]) {
+
+    def validate(): Unit = {
+      val frame = DKV.getGet[Frame](this.frameName)
+      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName' doesn't exist.")
+      validateChunkId(frame)
+      validateSelectedColumns(frame)
+      validateExpectedTypes(expectedTypes, frame)
+      validateExpectedTypesAndSelectedColumnsCompatibility(frame)
+    }
+
+    def validateChunkId(frame: Frame): Unit = {
+      if (chunkId < 0) {
+        throw new RuntimeException(s"chunk_id can't be negative. Current value: $chunkId")
+      }
+      val numberOfChunks = frame.anyVec.nChunks
+      if (chunkId >= numberOfChunks) {
+        val message = s"chunk_id '$chunkId' is out of range." +
+          s"The frame '$frameName' has $numberOfChunks chunks."
+        throw new RuntimeException(message)
+      }
+    }
+
+    def validateSelectedColumns(frame: Frame): Unit = {
+      for (i <- selectedColumnIndices.indices) {
+        if (selectedColumnIndices(i) < 0) {
+          val message = s"Selected column index ('selected_columns') at position $i " +
+            s"with the value '${selectedColumnIndices(i)}' is negative."
+          throw new RuntimeException(message)
+        }
+        if (selectedColumnIndices(i) >= frame.numCols) {
+          val message = s"Selected column index ('selected_columns') at position $i " +
+            s"with the value '${selectedColumnIndices(i)}' is out of range. " +
+            s"Frame '$frameName' has ${frame.numCols} columns."
+          throw new RuntimeException(message)
+        }
+      }
+    }
+
+    def validateExpectedTypesAndSelectedColumnsCompatibility(frame: Frame): Unit = {
+      if (selectedColumnIndices.length != expectedTypes.length) {
+        val message = s"The number of expected_types '${expectedTypes.length}' is not the same as " +
+          s"the number of selected_columns '${selectedColumnIndices.length}'"
+        throw new RuntimeException(message)
+      }
+    }
+  }
+
+  private object GETRequestParameters {
+    def parse(request: HttpServletRequest): GETRequestParameters = {
+      val frameName = getParameterAsString(request, "frame_name")
+      val numRowsString = getParameterAsString(request, "num_rows")
+      val numRows = numRowsString.toInt
+      val chunkIdString = getParameterAsString(request, "chunk_id")
+      val chunkId = chunkIdString.toInt
+      val expectedTypesString = getParameterAsString(request, "expected_types")
+      val expectedTypes = Base64Encoding.decode(expectedTypesString)
+      val selectedColumnsString = getParameterAsString(request, "selected_columns")
+      val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
+      GETRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices)
+    }
+  }
+
+  def validateExpectedTypes(expectedTypes: Array[Byte], frame: Frame): Unit = {
+    val lowerBound = ChunkSerdeConstants.EXPECTED_BOOL
+    val upperBound = ChunkSerdeConstants.EXPECTED_VECTOR
+    for (i <- expectedTypes.indices) {
+      if (expectedTypes(i) < lowerBound || expectedTypes(i) > upperBound) {
+        val message = s"Expected Type ('expected_types') at position $i with " +
+          s"the value '${expectedTypes(i)}' is invalid."
+        throw new RuntimeException(message)
+      }
+    }
+  }
 
   private def getParameterAsString(request: HttpServletRequest, parameterName: String): String = {
     val result = request.getParameter(parameterName)
@@ -53,90 +118,110 @@ final class ChunkServlet extends HttpServlet {
     result
   }
 
-  private def parseRequestParameters(request: HttpServletRequest): RequestParameters = {
-    val frameName = getParameterAsString(request, "frame_name")
-    val chunkIdString = getParameterAsString(request, "chunk_id")
-    val chunkId = chunkIdString.toInt
-    val expectedTypesString = getParameterAsString(request, "expected_types")
-    val expectedTypes = Base64Encoding.decode(expectedTypesString)
-    val selectedColumnsString = getParameterAsString(request, "selected_columns")
-    val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
-    RequestParameters(frameName, chunkId, expectedTypes, selectedColumnIndices)
-  }
-
-  private def validateRequestParameters(parameters: RequestParameters): Unit = {
-    val frame = DKV.getGet[Frame](parameters.frameName)
-    if (frame == null) throw new RuntimeException(s"A frame with name '${parameters.frameName}")
-    validateChunkId(parameters, frame)
-    validateSelectedColumns(parameters, frame)
-    validateExpectedTypes(parameters, frame)
-  }
-
-  private def validateChunkId(parameters: RequestParameters, frame: Frame): Unit = {
-    if (parameters.chunkId < 0) {
-      throw new RuntimeException(s"chunk_id can't be negative. Current value: ${parameters.chunkId}")
-    }
-    val numberOfChunks = frame.anyVec.nChunks
-    if (parameters.chunkId >= numberOfChunks) {
-      val message = s"chunk_id '${parameters.chunkId}' is out of range." +
-        s"The frame '${parameters.frameName}' has $numberOfChunks chunks."
-      throw new RuntimeException(message)
-    }
-  }
-
-  private def validateSelectedColumns(parameters: RequestParameters, frame: Frame): Unit = {
-    for (i <- parameters.selectedColumnIndices.indices) {
-      if (parameters.selectedColumnIndices(i) < 0) {
-        val message = s"Selected column index ('selected_columns') at position $i " +
-          s"with the value '${parameters.selectedColumnIndices(i)}' is negative."
-        throw new RuntimeException(message)
-      }
-      if (parameters.selectedColumnIndices(i) >= frame.numCols) {
-        val message = s"Selected column index ('selected_columns') at position $i " +
-          s"with the value '${parameters.selectedColumnIndices(i)}' is out of range. " +
-          s"Frame '${parameters.frameName}' has ${frame.numCols} columns."
-        throw new RuntimeException(message)
-      }
-    }
-  }
-
-  private def validateExpectedTypes(parameters: RequestParameters, frame: Frame): Unit = {
-    val lowerBound = SerializationUtils.EXPECTED_BOOL
-    val upperBound = SerializationUtils.EXPECTED_VECTOR
-    for (i <- parameters.expectedTypes.indices) {
-      if (parameters.expectedTypes(i) < lowerBound || parameters.expectedTypes(i) > upperBound) {
-        val message = s"Expected Type ('expected_types') at position $i with " +
-          s"the value '${parameters.expectedTypes(i)}' is invalid."
-        throw new RuntimeException(message)
-      }
-    }
-    if (parameters.selectedColumnIndices.length != parameters.expectedTypes.length) {
-      val message = s"The number of expected_types '${parameters.expectedTypes.length}' is not the same as " +
-        s"the number of selected_columns '${parameters.selectedColumnIndices.length}'"
-      throw new RuntimeException(message)
-    }
-  }
-
-  override protected def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = {
+  private def processRequest[R](request: HttpServletRequest, response: HttpServletResponse)(processor: => Unit): Unit = {
     val uri = ServletUtils.getDecodedUri(request)
     try {
-      val parameters = parseRequestParameters(request)
-      validateRequestParameters(parameters)
-      response.setContentType("application/octet-stream")
+      processor
       ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
+    } catch {
+      case e: Exception => ServletUtils.sendErrorResponse(response, e, uri)
+    } finally {
+      ServletUtils.logRequest(request.getMethod, request, response)
+    }
+  }
+
+  /*
+   * The method handles handles GET requests for the path /3/Chunk
+   * It requires 4 get parameters
+   * - frame_name - a unique string identifier of H2O Frame
+   * - chunk_id - a unique identifier of the chunk within the H2O Frame
+   * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
+   * - selected_columns - selected columns indices encoded into Base64 encoding.
+   * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
+   * The data stream starts with the integer representing the number of rows.
+   */
+  override protected def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = {
+    processRequest(request, response) {
+      val parameters = GETRequestParameters.parse(request)
+      parameters.validate()
+      response.setContentType("application/octet-stream")
       withResource(response.getOutputStream) { outputStream =>
         withResource(new ChunkAutoBufferWriter(outputStream)) { writer =>
           writer.writeChunk(
             parameters.frameName,
+            parameters.numRows,
             parameters.chunkId,
             parameters.expectedTypes,
             parameters.selectedColumnIndices)
         }
       }
-    } catch {
-      case e: Exception => ServletUtils.sendErrorResponse(response, e, uri)
-    } finally {
-      ServletUtils.logRequest(request.getMethod, request, response)
+    }
+  }
+
+  private case class PUTRequestParameters(
+      frameName: String,
+      numRows: Int,
+      chunkId: Int,
+      expectedTypes: Array[Byte],
+      maxVecSizes: Array[Int]) {
+    def validate(): Unit = {
+      val frame = DKV.getGet[Frame](this.frameName)
+      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
+      validateExpectedTypes(expectedTypes, frame)
+      validateMaxVecSizes()
+    }
+
+    def validateMaxVecSizes(): Unit = {
+      val numberOfVectorTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
+      if(numberOfVectorTypes != maxVecSizes.length) {
+        val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
+          s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
+        new RuntimeException(message)
+      }
+    }
+  }
+
+  private object PUTRequestParameters {
+    def parse(request: HttpServletRequest): PUTRequestParameters = {
+      val frameName = getParameterAsString(request, "frame_name")
+      val numRowsString = getParameterAsString(request, "num_rows")
+      val numRows = numRowsString.toInt
+      val chunkIdString = getParameterAsString(request, "chunk_id")
+      val chunkId = chunkIdString.toInt
+      val expectedTypesString = getParameterAsString(request, "expected_types")
+      val expectedTypes = Base64Encoding.decode(expectedTypesString)
+      val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
+      val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
+      PUTRequestParameters(frameName, numRows, chunkId, expectedTypes, maxVecSizes)
+    }
+  }
+
+  /*
+   * The method handles handles PUT requests for the path /3/Chunk
+   * It requires 4 get parameters
+   * - frame_name - a unique string identifier of H2O Frame
+   * - chunk_id - a unique identifier of the chunk within the H2O Frame
+   * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
+   * - maximum_vector_sizes - maximum vector sizes for each vector column encoded into Base64 encoding.
+   * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
+   * The data stream starts with the integer representing the number of rows.
+   */
+  override def doPut(request: HttpServletRequest, response: HttpServletResponse): Unit = {
+    processRequest(request, response) {
+      val parameters = PUTRequestParameters.parse(request)
+      parameters.validate()
+      withResource(request.getInputStream) { inputStream =>
+        withResource(new ChunkAutoBufferReader(inputStream)) { reader =>
+          reader.readChunk(
+            parameters.frameName,
+            parameters.numRows,
+            parameters.chunkId,
+            parameters.expectedTypes,
+            parameters.maxVecSizes
+          )
+        }
+      }
+      ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
     }
   }
 }

@@ -1,0 +1,2 @@
+ai.h2o.sparkling.extensions.rest.api.schema.InitializeFrameV3
+ai.h2o.sparkling.extensions.rest.api.schema.FinalizeFrameV3

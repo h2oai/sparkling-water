@@ -29,7 +29,13 @@ object Base64Encoding {
 
   def encode(data: Array[Int]): String = {
     val buffer = ByteBuffer.allocate(data.length * 4).order(byteOrder)
-    data.foreach(columnIndex => buffer.putInt(columnIndex))
+    data.foreach(int => buffer.putInt(int))
+    Base64.getEncoder.encodeToString(buffer.array())
+  }
+
+  def encode(data: Array[Long]): String = {
+    val buffer = ByteBuffer.allocate(data.length * 8).order(byteOrder)
+    data.foreach(long => buffer.putLong(long))
     Base64.getEncoder.encodeToString(buffer.array())
   }
 
@@ -41,6 +47,14 @@ object Base64Encoding {
     val bytes = decode(string)
     val buffer = ByteBuffer.wrap(bytes).order(byteOrder).asIntBuffer
     val result = new Array[Int](buffer.remaining)
+    buffer.get(result)
+    result
+  }
+
+  def decodeToLongArray(string: String): Array[Long] = {
+    val bytes = decode(string)
+    val buffer = ByteBuffer.wrap(bytes).order(byteOrder).asLongBuffer
+    val result = new Array[Long](buffer.remaining)
     buffer.get(result)
     result
   }
