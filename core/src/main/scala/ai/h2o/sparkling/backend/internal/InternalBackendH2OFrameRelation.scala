@@ -15,25 +15,26 @@
 * limitations under the License.
 */
 
-package org.apache.spark.sql
+package ai.h2o.sparkling.backend.internal
 
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.converters.H2ODataFrame
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{MetadataBuilder, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 import water.fvec.Frame
 
 /** Client-based H2O relation implementing column filter operation.
-  */
-case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
-                                        @transient copyMetadata: Boolean)
-                                       (@transient val sqlContext: SQLContext)
-  extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */  {
+ */
+case class InternalBackendH2OFrameRelation[T <: Frame](@transient h2oFrame: T,
+                                                       @transient copyMetadata: Boolean)
+                                                      (@transient val sqlContext: SQLContext)
+  extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */ {
 
   lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to do " +
     "transformations between spark and h2o frames"))
+
   // Get rid of annoying print
   override def toString: String = getClass.getSimpleName
 
@@ -42,10 +43,10 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
   override val schema: StructType = createSchema(h2oFrame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
-    new H2ODataFrame(h2oFrame)(h2oContext).asInstanceOf[RDD[Row]]
+    new InternalBackendH2ODataFrame(h2oFrame)(h2oContext).asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] =
-    new H2ODataFrame(h2oFrame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
+    new InternalBackendH2ODataFrame(h2oFrame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
 
   private def createSchema(f: T, copyMetadata: Boolean): StructType = {
     import ReflectionUtils._
@@ -88,4 +89,3 @@ case class H2OFrameRelation[T <: Frame](@transient h2oFrame: T,
     StructType(types)
   }
 }
-

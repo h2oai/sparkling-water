@@ -15,9 +15,9 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.internal
+package ai.h2o.sparkling.backend.internal
 
-import org.apache.spark.h2o.converters.ReadConverterCtx
+import ai.h2o.sparkling.backend.shared.ReadConverterCtx
 import water.fvec.{Chunk, Frame, Vec}
 import water.parser.BufferedString
 import water.{DKV, Key}
@@ -48,27 +48,36 @@ class InternalReadConverterCtx(override val keyName: String, override val chunkI
 
   override def returnSimple[T](ifMissing: String => T, read: DataSource => T)(columnNum: Int): T = {
     val chunk = chks(columnNum)
-      if (chunk.isNA(rowIdx)) ifMissing(s"Row $rowIdx column $columnNum") else read(chunk)
+    if (chunk.isNA(rowIdx)) ifMissing(s"Row $rowIdx column $columnNum") else read(chunk)
   }
 
   override protected def booleanAt(source: Chunk): Boolean = longAt(source) == 1
+
   override protected def byteAt(source: Chunk): Byte = longAt(source).toByte
+
   override protected def shortAt(source: Chunk): Short = longAt(source).toShort
+
   override protected def intAt(source: Chunk): Int = longAt(source).toInt
+
   override protected def longAt(source: DataSource): Long = source.at8(rowIdx)
+
   override protected def floatAt(source: Chunk): Float = doubleAt(source).toFloat
+
   override protected def doubleAt(source: DataSource): Double = source.atd(rowIdx)
+
   override protected def string(source: DataSource): String = StringProviders(source.vec().get_type())(source)
 
   private def categoricalString(source: DataSource): String = source.vec().domain()(longAt(source).toInt)
+
   private def uuidString(source: DataSource) = new java.util.UUID(source.at16h(rowIdx), source.at16l(rowIdx)).toString
+
   private def plainString(source: DataSource) = source.atStr(new BufferedString(), rowIdx).toString
 
   private val StringProviders = Map[Byte, DataSource => String](
     Vec.T_CAT -> categoricalString,
     Vec.T_UUID -> uuidString,
     Vec.T_STR -> plainString
-  ) withDefault((t: Byte) => {
+  ) withDefault ((t: Byte) => {
     assert(assertion = false, s"Should never be here, type is $t")
     _: Chunk => null
   })

@@ -15,21 +15,20 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.backend.external
 
-
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.converters.ReadConverterCtx
-import org.apache.spark.h2o.utils.NodeDesc
+import ai.h2o.sparkling.backend.shared.ReadConverterCtx
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
 import ai.h2o.sparkling.frame.H2OChunk
+import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.utils.NodeDesc
 
 /**
-  *
-  * @param keyName  key name of frame to query data from
-  * @param chunkIdx chunk index
-  * @param nodeDesc the h2o node which has data for chunk with the chunkIdx
-  */
+ *
+ * @param keyName  key name of frame to query data from
+ * @param chunkIdx chunk index
+ * @param nodeDesc the h2o node which has data for chunk with the chunkIdx
+ */
 class ExternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int, override val numRows: Int,
                                val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
                                val conf: H2OConf)

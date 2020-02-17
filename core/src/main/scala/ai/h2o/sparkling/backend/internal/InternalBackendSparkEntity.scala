@@ -15,18 +15,23 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.internal
 
+import ai.h2o.sparkling.backend.shared.H2OSparkEntity
+import water.fvec.Frame
 
-import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
+import scala.annotation.meta.{field, getter}
 
-import scala.language.{implicitConversions, postfixOps}
-import scala.reflect.runtime.universe._
+/**
+ * Contains functions that are shared between all client-based H2O DataFrames and RDDs.
+ */
+private[internal] trait InternalBackendSparkEntity[T <: Frame] extends H2OSparkEntity {
+  /** Underlying DataFrame */
+  @(transient @field @getter) val frame: T
 
-private[h2o] object DatasetConverter extends Logging {
+  /** Cache frame key to get H2OFrame from the K/V store */
+  override val frameKeyName: String = frame._key.toString
 
-  def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag: TypeTag[T]) = {
-    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF() , frameKeyName)
-  }
+  /** Number of chunks per a vector */
+  override val numChunks: Int = frame.anyVec().nChunks()
 }

@@ -170,10 +170,10 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
   }
 
   test("Dataset[PartialPerson] - extracting SemiPartialPersons should give something") {
-    val rdd0 = new H2ORDD[PartialPerson, H2OFrame](testH2oFrametWithPartialData)(hc)
+    val rdd0 = hc.asRDD[PartialPerson](testH2oFrametWithPartialData)
     val c0 = rdd0.count()
     assert(c0 == 24)
-    val rdd1 = new H2ORDD[SemiPartialPerson, H2OFrame](testH2oFrametWithPartialData)(hc)
+    val rdd1 = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
     val c1 = rdd1.count()
     assert(c1 > 0)
     val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)

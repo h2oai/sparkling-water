@@ -15,18 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.shared
 
 import org.apache.spark._
-import org.apache.spark.h2o.H2OFrame
 
 /**
-  * Methods which each WriteConverterCtx has to implement.
-  *
-  * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
-  * via unified API
-  */
-trait WriteConverterCtx {
+ * Methods which each WriteConverterCtx has to implement.
+ *
+ * Write Converter Context is a class which holds the state of connection/chunks and allows us to write/upload to those chunks
+ * via unified API
+ */
+private[backend] trait WriteConverterCtx {
 
   def initFrame(key: String, columns: Array[String]): Unit
 

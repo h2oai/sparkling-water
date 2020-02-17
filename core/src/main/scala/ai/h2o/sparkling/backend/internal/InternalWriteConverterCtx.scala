@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.internal
+package ai.h2o.sparkling.backend.internal
 
 import java.sql.{Date, Timestamp}
 
+import ai.h2o.sparkling.backend.shared.WriteConverterCtx
 import org.apache.spark.h2o.Frame
-import org.apache.spark.h2o.converters.WriteConverterCtx
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import water.fvec.FrameUtils._
 import water.fvec.{Chunk, FrameUtils, NewChunk}
@@ -158,7 +158,7 @@ object InternalWriteConverterCtx {
     checkESPCIsSameInEachVector(fr)
     checkNumberOfEntriesInEachChunk(fr)
   }
-  
+
   private def checkNumberOfEntriesInEachChunk(fr: Frame): Unit = {
     if (!fr.vecs().isEmpty) {
       new MRTask() {

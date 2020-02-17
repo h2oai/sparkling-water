@@ -15,8 +15,9 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
+import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils
 import org.apache.spark._
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -29,32 +30,9 @@ import scala.reflect.runtime.universe._
 
 
 /**
-  * This converter just wraps the existing RDD converters and hides the internal RDD converters
-  */
-
-object SupportedRDDConverter {
-  /** Transform supported type for conversion to a key string of H2OFrame */
-  def toH2OFrameKeyString(
-      hc: H2OContext,
-      rdd: SupportedRDD,
-      frameKeyName: Option[String],
-      converter: WriteConverterCtxUtils.Converter): String = {
-    rdd.toH2OFrameKeyString(hc, frameKeyName, converter)
-  }
-
-  /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): H2ORDD[A, T] = new H2ORDD[A, T](fr)(hc)
-
-  /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame): H2ORESTRDD[A] = {
-    new H2ORESTRDD[A](fr)(hc)
-  }
-}
-
-/**
-  * Magnet pattern (Type Class pattern) for conversion from various primitive types to their appropriate H2OFrame using
-  * the method with the same name
-  */
+ * Magnet pattern (Type Class pattern) for conversion from various primitive types to their appropriate H2OFrame using
+ * the method with the same name
+ */
 trait SupportedRDD {
   def toH2OFrame(hc: H2OContext, frameKeyName: Option[String]): H2OFrame = {
     val converter = WriteConverterCtxUtils.getConverter(hc.getConf)
@@ -211,5 +189,4 @@ private[this] object SupportedRDD {
       SparkDataFrameConverter.toH2OFrameKeyString(hc, rdd.map(v => Tuple1(v)).toDF, frameKeyName, converter)
     }
   }
-
 }

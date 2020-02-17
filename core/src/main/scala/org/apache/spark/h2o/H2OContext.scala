@@ -19,12 +19,13 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
+import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils
 import ai.h2o.sparkling.utils.{ProxyStarter, RestApiException, RestApiUtils}
 import org.apache.spark._
-import org.apache.spark.h2o.backends.external._
+import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException}
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
-import org.apache.spark.h2o.converters._
 import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.internal.Logging
@@ -289,7 +290,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
    * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
    */
   def asRDD[A <: Product : TypeTag : ClassTag] = new {
-    def apply[T <: Frame](fr: T): H2ORDD[A, T] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
+    def apply[T <: Frame](fr: T): RDD[A] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
   }
 
   /** Convert given H2O frame into DataFrame type */

@@ -15,16 +15,16 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.shared
 
+import ai.h2o.sparkling.backend.external.ExternalWriteConverterCtx
+import ai.h2o.sparkling.backend.internal.InternalWriteConverterCtx
 import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark.TaskContext
-import org.apache.spark.h2o.backends.external.ExternalWriteConverterCtx
-import org.apache.spark.h2o.backends.internal.InternalWriteConverterCtx
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}
 import org.apache.spark.rdd.h2o.H2OAwareRDD
-import water.{ExternalFrameUtils, _}
+import water.ExternalFrameUtils
 
 import scala.collection.immutable
 import scala.reflect.ClassTag
@@ -44,11 +44,11 @@ object WriteConverterCtxUtils {
   }
 
   /**
-    * This method is used for writing data from spark partitions to h2o chunks.
-    *
-    * In case of internal backend it returns the original iterator and empty length because we do not need it
-    * In case of external backend it returns new iterator with the same data and the length of the data
-    */
+   * This method is used for writing data from spark partitions to h2o chunks.
+   *
+   * In case of internal backend it returns the original iterator and empty length because we do not need it
+   * In case of external backend it returns new iterator with the same data and the length of the data
+   */
   def bufferedIteratorWithSize[T](uploadPlan: Option[UploadPlan], original: Iterator[T]): (Iterator[T], Int) = {
     uploadPlan.map { _ =>
       val buffered = original.toList
@@ -64,21 +64,21 @@ object WriteConverterCtxUtils {
     }
 
     /**
-      * Converts the RDD to H2O Frame using specified conversion function
-      *
-      * @param hc            H2O context
-      * @param rddInput      rdd to convert
-      * @param keyName       key of the resulting frame
-      * @param colNames      names of the columns in the H2O Frame
-      * @param expectedTypes expected types of the vectors in the H2O Frame
-      * @param sparse        if at least one column in the dataset is sparse
-      * @param func          conversion function - the function takes parameters needed extra by specific transformations
-      *                      and returns function which does the general transformation
-      * @tparam T type of RDD to convert
-      * @return H2O Frame
-      */
-    def convert[T: ClassTag: TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
-                                      maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String
+     * Converts the RDD to H2O Frame using specified conversion function
+     *
+     * @param hc            H2O context
+     * @param rddInput      rdd to convert
+     * @param keyName       key of the resulting frame
+     * @param colNames      names of the columns in the H2O Frame
+     * @param expectedTypes expected types of the vectors in the H2O Frame
+     * @param sparse        if at least one column in the dataset is sparse
+     * @param func          conversion function - the function takes parameters needed extra by specific transformations
+     *                      and returns function which does the general transformation
+     * @tparam T type of RDD to convert
+     * @return H2O Frame
+     */
+    def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
+                                       maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String
   }
 
   def getConverter(conf: H2OConf): Converter = {
@@ -92,19 +92,19 @@ object WriteConverterCtxUtils {
   object InternalBackendConverter extends Converter {
 
     /**
-      * Converts the RDD to H2O Frame using specified conversion function
-      *
-      * @param hc            H2O context
-      * @param rddInput      rdd to convert
-      * @param keyName       key of the resulting frame
-      * @param colNames      names of the columns in the H2O Frame
-      * @param expectedTypes expected types of the vectors in the H2O Frame
-      * @param sparse        if at least one column in the dataset is sparse
-      * @param func          conversion function - the function takes parameters needed extra by specific transformations
-      *                      and returns function which does the general transformation
-      * @tparam T type of RDD to convert
-      * @return H2O Frame
-      */
+     * Converts the RDD to H2O Frame using specified conversion function
+     *
+     * @param hc            H2O context
+     * @param rddInput      rdd to convert
+     * @param keyName       key of the resulting frame
+     * @param colNames      names of the columns in the H2O Frame
+     * @param expectedTypes expected types of the vectors in the H2O Frame
+     * @param sparse        if at least one column in the dataset is sparse
+     * @param func          conversion function - the function takes parameters needed extra by specific transformations
+     *                      and returns function which does the general transformation
+     * @tparam T type of RDD to convert
+     * @return H2O Frame
+     */
     def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
       val writerClient = new InternalWriteConverterCtx()
@@ -127,19 +127,19 @@ object WriteConverterCtxUtils {
   object ExternalBackendConverter extends Converter {
 
     /**
-      * Converts the RDD to H2O Frame using specified conversion function
-      *
-      * @param hc            H2O context
-      * @param rdd           rdd to convert
-      * @param keyName       key of the resulting frame
-      * @param colNames      names of the columns in the H2O Frame
-      * @param expectedTypes expected types of the vectors in the H2O Frame
-      * @param sparse        if at least one column in the dataset is sparse
-      * @param func          conversion function - the function takes parameters needed extra by specific transformations
-      *                      and returns function which does the general transformation
-      * @tparam T type of RDD to convert
-      * @return H2OFrame Key
-      */
+     * Converts the RDD to H2O Frame using specified conversion function
+     *
+     * @param hc            H2O context
+     * @param rdd           rdd to convert
+     * @param keyName       key of the resulting frame
+     * @param colNames      names of the columns in the H2O Frame
+     * @param expectedTypes expected types of the vectors in the H2O Frame
+     * @param sparse        if at least one column in the dataset is sparse
+     * @param func          conversion function - the function takes parameters needed extra by specific transformations
+     *                      and returns function which does the general transformation
+     * @tparam T type of RDD to convert
+     * @return H2OFrame Key
+     */
     def convert[T: ClassTag : TypeTag](hc: H2OContext, rdd: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                        maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
       val conf = hc.getConf
@@ -165,4 +165,5 @@ object WriteConverterCtxUtils {
       keyName
     }
   }
+
 }

@@ -123,7 +123,7 @@ object H2OFrame extends RestCommunication {
       location = clusterNodes(sourceChunk.node_idx))
   }
 
-  def initializeFrame(conf: H2OConf, frameId: String, columns: Array[String]): InitializeFrameV3 = {
+  private[sparkling] def initializeFrame(conf: H2OConf, frameId: String, columns: Array[String]): InitializeFrameV3 = {
     val endpoint = getClusterEndpoint(conf)
     val parameters = Map(
       "key" -> frameId,
@@ -131,7 +131,7 @@ object H2OFrame extends RestCommunication {
     update[InitializeFrameV3](endpoint, Paths.INITIALIZE_FRAME, conf, parameters)
   }
 
-  def finalizeFrame(
+  private[sparkling] def finalizeFrame(
                      conf: H2OConf,
                      frameId: String,
                      rowsPerChunk: Array[Long],

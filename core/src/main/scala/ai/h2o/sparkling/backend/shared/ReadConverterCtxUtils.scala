@@ -15,14 +15,14 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.shared
 
+import ai.h2o.sparkling.backend.external.ExternalReadConverterCtx
+import ai.h2o.sparkling.backend.internal.InternalReadConverterCtx
 import ai.h2o.sparkling.frame.H2OChunk
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.external.ExternalReadConverterCtx
-import org.apache.spark.h2o.backends.internal.InternalReadConverterCtx
 
-object ReadConverterCtxUtils {
+private[backend] object ReadConverterCtxUtils {
 
   def create(keyName: String, chunkIdx: Int,
              chunkLocations: Option[Array[H2OChunk]],
@@ -30,20 +30,20 @@ object ReadConverterCtxUtils {
              selectedColumnIndices: Array[Int],
              conf: H2OConf): ReadConverterCtx = {
 
-      chunkLocations.map{ chunks =>
-        val chnk = chunks.find(_.index == chunkIdx).head
-        new ExternalReadConverterCtx(keyName, chunkIdx, chnk.numberOfRows, chnk.location, expectedTypes.get, selectedColumnIndices, conf)
-      }
+    chunkLocations.map { chunks =>
+      val chnk = chunks.find(_.index == chunkIdx).head
+      new ExternalReadConverterCtx(keyName, chunkIdx, chnk.numberOfRows, chnk.location, expectedTypes.get, selectedColumnIndices, conf)
+    }
       .getOrElse(new InternalReadConverterCtx(keyName, chunkIdx))
 
   }
 
   /**
-    * In case of internal backend the method returns original iterator.
-    *
-    * In case of external backend the iterator is buffered ( = all elements are downloaded from remote h2o node )
-    * so they are available locally and are provided as a new iterator
-    */
+   * In case of internal backend the method returns original iterator.
+   *
+   * In case of external backend the iterator is buffered ( = all elements are downloaded from remote h2o node )
+   * so they are available locally and are provided as a new iterator
+   */
   def backendSpecificIterator[T](runningOnExternalBackend: Boolean,
                                  iterator: Iterator[T]): Iterator[T] = {
     if (runningOnExternalBackend) {

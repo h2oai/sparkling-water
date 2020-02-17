@@ -15,51 +15,57 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
-import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
-import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
-import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
+import ai.h2o.sparkling.backend.external.{ExternalBackendH2OFrameRelation, ExternalWriteConverterCtx}
+import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
+import ai.h2o.sparkling.backend.shared.{WriteConverterCtx, WriteConverterCtxUtils}
+import org.apache.spark.h2o.backends.external.ExternalH2OBackend
+import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, H2ORESTFrameRelation, Row}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{mllib, _}
-import water.{DKV, Key}
 import water.fvec.{Frame, H2OFrame}
+import water.{DKV, Key}
 
 
-private[h2o] object SparkDataFrameConverter extends Logging {
+object SparkDataFrameConverter extends Logging {
 
   /**
-    * Create a Spark DataFrame from given H2O frame.
-    *
-    * @param hc           an instance of H2O context
-    * @param fr           an instance of H2O frame
-    * @param copyMetadata copy H2O metadata into Spark DataFrame
-    * @tparam T type of H2O frame
-    * @return a new DataFrame definition using given H2OFrame as data source
-    */
+   * Create a Spark DataFrame from given H2O frame.
+   *
+   * @param hc           an instance of H2O context
+   * @param fr           an instance of H2O frame
+   * @param copyMetadata copy H2O metadata into Spark DataFrame
+   * @tparam T type of H2O frame
+   * @return a new DataFrame definition using given H2OFrame as data source
+   */
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
-    hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+    if (hc.getConf.runsInInternalClusterMode) {
+      val relation = InternalBackendH2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
+      hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+    } else {
+      toDataFrame(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString), copyMetadata)
+    }
   }
 
   /**
-    * Create a Spark DataFrame from a given REST-based H2O frame.
-    *
-    * @param hc           an instance of H2O context
-    * @param fr           an instance of H2O frame
-    * @param copyMetadata copy H2O metadata into Spark DataFrame
-
-    * @return a new DataFrame definition using given H2OFrame as data source
-    */
+   * Create a Spark DataFrame from a given REST-based H2O frame.
+   *
+   * @param hc           an instance of H2O context
+   * @param fr           an instance of H2O frame
+   * @param copyMetadata copy H2O metadata into Spark DataFrame
+   * @return a new DataFrame definition using given H2OFrame as data source
+   */
 
   def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2ORESTFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
+    val relation = ExternalBackendH2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
     hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
   }
 
@@ -102,22 +108,21 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   }
 
   /**
-    * @param conf             H2O conf
-    * @param keyName          key of the frame
-    * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
-    * @param elemMaxSizes     array containing max size of each element in the dataframe
-    * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
-    * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
-    * @param sparse           identifies which columns are sparse
-    * @param context          spark task context
-    * @param it               iterator over data in the partition
-    * @return pair (partition ID, number of rows in this partition)
-    */
-  private[this]
-  def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
-                     (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], sparse: Array[Boolean],
-                      partitions: Seq[Int])
-                     (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
+   * @param conf             H2O conf
+   * @param keyName          key of the frame
+   * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
+   * @param elemMaxSizes     array containing max size of each element in the dataframe
+   * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
+   * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
+   * @param sparse           identifies which columns are sparse
+   * @param context          spark task context
+   * @param it               iterator over data in the partition
+   * @return pair (partition ID, number of rows in this partition)
+   */
+  private def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
+                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[UploadPlan], sparse: Array[Boolean],
+                              partitions: Seq[Int])
+                             (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val (iterator, dataSize) = WriteConverterCtxUtils.bufferedIteratorWithSize(uploadPlan, it)
     val con = WriteConverterCtxUtils.create(conf, uploadPlan, chunkIdx)
@@ -142,9 +147,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
   }
 
   /**
-    * Converts a single Spark Row to H2O Row with expanded vectors and arrays
-    */
-  def sparkRowToH2ORow(row: Row, rowIdx: Int, con: WriteConverterCtx, elemStartIndices: Array[Int], elemSizes: Array[Int]) {
+   * Converts a single Spark Row to H2O Row with expanded vectors and arrays
+   */
+  private def sparkRowToH2ORow(row: Row, rowIdx: Int, con: WriteConverterCtx, elemStartIndices: Array[Int], elemSizes: Array[Int]) {
     con.startRow(rowIdx)
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       val idxH2O = elemStartIndices(idxField)
@@ -163,9 +168,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
           case StringType => con.put(idxH2O, row.getString(idxField))
           case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxField))
           case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxField))
-          case _: ml.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
+          case v if ExposeUtils.isMLVectorUDT(v) => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
-          case udt: UserDefinedType[_] => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+          case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
           case _ => con.putNA(idxH2O, idxField)
         }
       }

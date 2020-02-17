@@ -15,17 +15,18 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.backend.external
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.h2o.converters.WriteConverterCtx
-import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
-import org.apache.spark.h2o.utils.SupportedTypes._
-import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
-import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
-import org.apache.spark.sql.types._
+import ai.h2o.sparkling.backend.shared.WriteConverterCtx
+import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils.UploadPlan
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferWriter
 import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
+import org.apache.spark.ExposeUtils
+import org.apache.spark.h2o.utils.SupportedTypes._
+import org.apache.spark.h2o.utils.{NodeDesc, ReflectionUtils}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vector}
+import org.apache.spark.sql.types._
 
 class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   extends WriteConverterCtx {
@@ -47,8 +48,8 @@ class ExternalWriteConverterCtx(conf: H2OConf, nodeDesc: NodeDesc)
   }
 
   /**
-    * Initialize the communication before the chunks are created
-    */
+   * Initialize the communication before the chunks are created
+   */
   override def createChunk(frameName: String, numRows: Int, expectedTypes: Array[Byte], chunkId: Int, maxVecSizes: Array[Int],
                            sparse: Array[Boolean], vecStartSize: Map[Int, Int]): Unit = {
     this.expectedTypes = expectedTypes
@@ -112,7 +113,7 @@ object ExternalWriteConverterCtx {
     dt match {
       case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
       case _: DateType => Long.javaClass
-      case _: UserDefinedType[_ /*ml.linalg.Vector */ ] => classOf[Vector]
+      case v if ExposeUtils.isAnyVectorUDT(v) => classOf[Vector]
       case _: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
     }
   }

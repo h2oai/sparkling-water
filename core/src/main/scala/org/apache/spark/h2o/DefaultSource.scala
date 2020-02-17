@@ -17,9 +17,10 @@
 
 package org.apache.spark.h2o
 
+import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, H2OFrameRelation, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import water.{DKV, Key}
 
 /**
@@ -58,10 +59,10 @@ class DefaultSource extends RelationProvider
     */
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
-                              schema: StructType): H2OFrameRelation[_] = {
+                              schema: StructType): InternalBackendH2OFrameRelation[_] = {
     val key = checkKey(parameters)
 
-    H2OFrameRelation(getFrame(key), copyMetadata = true)(sqlContext)
+    InternalBackendH2OFrameRelation(getFrame(key), copyMetadata = true)(sqlContext)
   }
 
   override def createRelation(sqlContext: SQLContext,

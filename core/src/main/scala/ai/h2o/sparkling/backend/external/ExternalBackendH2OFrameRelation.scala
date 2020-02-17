@@ -15,20 +15,20 @@
 * limitations under the License.
 */
 
-package org.apache.spark.sql
+package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.frame.{H2OColumn, H2OColumnType, H2OFrame}
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.converters.H2ORESTDataFrame
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 /** REST-based H2O relation implementing column filter operation.
-  */
-case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
-                               (@transient val sqlContext: SQLContext)
+ */
+private[backend] case class ExternalBackendH2OFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
+                                                           (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */ {
 
   lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to do " +
@@ -42,10 +42,10 @@ case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
   override val schema: StructType = createSchema(frame, copyMetadata)
 
   override def buildScan(): RDD[Row] =
-    new H2ORESTDataFrame(frame)(h2oContext).asInstanceOf[RDD[Row]]
+    new ExternalBackendH2ODataFrame(frame)(h2oContext).asInstanceOf[RDD[Row]]
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] =
-    new H2ORESTDataFrame(frame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
+    new ExternalBackendH2ODataFrame(frame, requiredColumns)(h2oContext).asInstanceOf[RDD[Row]]
 
 
   private def extractMetadata(column: H2OColumn, numberOfRows: Long): Metadata = {
@@ -87,4 +87,3 @@ case class H2ORESTFrameRelation(frame: H2OFrame, copyMetadata: Boolean)
     StructType(types)
   }
 }
-
