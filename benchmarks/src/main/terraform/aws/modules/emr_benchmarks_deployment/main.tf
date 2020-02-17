@@ -96,11 +96,14 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.ext.h2o.external.cluster.size=${var.aws_core_instance_count}" \
       --conf "spark.ext.h2o.hadoop.memory=$4" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
-      ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} \
+      --conf "spark.ext.h2o.external.extra.jars=/home/hadoop/benchmarks.jar" \
+      /home/hadoop/benchmarks.jar \
       -s ${var.benchmarks_dataset_specifications_file} \
       -o /home/hadoop/results \
       ${var.benchmarks_other_arguments}
   }
+
+  aws s3 cp ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/benchmarks.jar
 
   if ${var.benchmarks_run_yarn_internal}; then
     runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"

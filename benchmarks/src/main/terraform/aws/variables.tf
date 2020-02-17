@@ -37,9 +37,6 @@ variable "h2o_version_name" {
 variable "h2o_build" {
   default = "SUBST_H2O_BUILD"
 }
-variable "h2o_driver_zip_name" {
-  default = "SUBST_H2O_DRIVER_ZIP_NAME"
-}
 variable "benchmarks_dataset_specifications_file" {
   default = "datasets.json"
 }
