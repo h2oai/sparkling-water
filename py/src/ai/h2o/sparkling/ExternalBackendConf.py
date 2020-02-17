@@ -163,7 +163,7 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self._jconf.externalHadoopExecutable()
 
     def externalExtraJars(self):
-        return self._jconf.externalExtraJars()
+        return self._get_option(self._jconf.externalExtraJars())
 
     #
     # Setters
