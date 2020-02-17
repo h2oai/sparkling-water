@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.{DoubleParam, Params}
+import org.apache.spark.ml.param._
 
 trait HasQuantileAlpha extends Params {
   private val quantileAlpha = new DoubleParam(
