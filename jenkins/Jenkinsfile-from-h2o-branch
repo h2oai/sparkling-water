@@ -34,7 +34,7 @@ cancelPreviousBuilds()
 
 def pipeline
 def sparkVersions
-node("master") {
+node("docker") {
     cleanWs()
     checkout scm
     pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
@@ -45,7 +45,6 @@ node("master") {
     if (isPrJob()) {
         // test PRs only in first and last supported Spark
         sparkVersions = [sparkVersions.first(), sparkVersions.last()]
-        throw new RuntimeException("Running on $sparkVersions")
     }
 }
 
