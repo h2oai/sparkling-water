@@ -19,15 +19,17 @@ package org.apache.spark.h2o.utils
 
 import java.util.UUID
 
+import org.apache.spark.h2o.{Dataset, H2OFrame}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions.{lit, rand}
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.Matchers
-import water.{DKV, Key}
 import water.fvec._
 import water.parser.BufferedString
+import water.{DKV, Key}
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -116,12 +118,66 @@ object TestFrameUtils extends Matchers {
        """.stripMargin)
   }
 
+  private type RowValueAssert = (Long, Vec) => Unit
+
+  def assertBasicInvariants[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+    assertRDDHolderProperties(df)
+    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
+    // Check numbering
+    val vec = df.vec(0)
+    var rowIdx = 0
+    while (rowIdx < df.numRows()) {
+      assert(!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
+      rowAssert(rowIdx, vec)
+      rowIdx += 1
+    }
+  }
+
+  def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+    assertRDDHolderProperties(df)
+    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
+    // Check numbering
+    val vec = df.vec(0)
+    var rowIdx = 0
+    while (rowIdx < df.numRows()) {
+      rowAssert(rowIdx, vec)
+      rowIdx += 1
+    }
+  }
+
+  private def assertRDDHolderProperties(df: H2OFrame): Unit = {
+    assert(df.numCols() == 1, "H2OFrame should contain single column")
+    assert(df.names().length == 1, "H2OFrame column names should have single value")
+    assert(df.names()(0).equals("result"),
+      "H2OFrame column name should be 'result' since Holder object was used to define RDD")
+  }
+
+  private def assertDatasetHolderProperties(df: H2OFrame, names: List[String]): Unit = {
+    val actualNames = df.names().toList
+    val numCols = names.length
+    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
+    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert(actualNames.equals(names),
+      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
+  }
+
+  def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+    assertDatasetHolderProperties(df, names)
+    assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
+
+    val vec = df.vec(0)
+    for (row <- Range(0, df.numRows().toInt)) {
+      rowAssert(row, vec)
+    }
+  }
+
+
   case class GenerateDataFrameSettings(
-    numberOfRows: Int,
-    rowsPerPartition: Int,
-    maxCollectionSize: Int,
-    nullProbability: Double = 0.1,
-    seed: Long = 1234L)
+                                        numberOfRows: Int,
+                                        rowsPerPartition: Int,
+                                        maxCollectionSize: Int,
+                                        nullProbability: Double = 0.1,
+                                        seed: Long = 1234L)
 
   trait SchemaHolder {
     def schema: StructType

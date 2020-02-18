@@ -25,6 +25,7 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.h2o.H2OAwareEmptyRDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 import water.H2O
 import water.fvec.Frame
@@ -39,8 +40,8 @@ import scala.reflect.runtime.universe._
   * The abstract class contains common methods for client-based and REST-based RDDs.
   */
 private[spark]
-abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](sc: SparkContext)
-  extends RDD[A](sc, Nil) with H2OSparkEntity {
+abstract class H2ORDDBase[A <: Product: TypeTag: ClassTag](hc: H2OContext)
+  extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2OSparkEntity {
 
   def productType: ProductType
 
@@ -230,7 +231,7 @@ private[spark]
 class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @param @field) val frame: T,
                                                                   val productType: ProductType)
                                                                  (@(transient @param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+  extends H2ORDDBase[A](hc) with H2OClientBasedSparkEntity[T] {
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
@@ -258,7 +259,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
 private[spark]
 class H2ORESTRDD[A <: Product: TypeTag: ClassTag] private(val frame: H2OFrame, val productType: ProductType)
                                                          (@(transient @param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext) with H2ORESTBasedSparkEntity {
+  extends H2ORDDBase[A](hc) with H2ORESTBasedSparkEntity {
 
   override val isExternalBackend = hc.getConf.runsInExternalClusterMode
 

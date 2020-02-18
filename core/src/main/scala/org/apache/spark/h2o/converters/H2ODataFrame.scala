@@ -24,6 +24,7 @@ import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.h2o.H2OAwareEmptyRDD
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, SparkContext, TaskContext}
@@ -36,7 +37,7 @@ import scala.language.postfixOps
   * The abstract class contains common methods for client-based and REST-based DataFrames
   */
 private[spark]
-abstract class H2ODataFrameBase(sc: SparkContext) extends RDD[InternalRow](sc, Nil) with H2OSparkEntity {
+abstract class H2ODataFrameBase(hc: H2OContext) extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2OSparkEntity {
 
   protected def types: Array[DataType]
 
@@ -100,7 +101,7 @@ private[spark]
 class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                           val requiredColumns: Array[String])
                                          (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext) with H2OClientBasedSparkEntity[T] {
+  extends H2ODataFrameBase(hc) with H2OClientBasedSparkEntity[T] {
 
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
@@ -136,7 +137,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
 private[spark]
 class H2ORESTDataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
                       (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext) with H2ORESTBasedSparkEntity {
+  extends H2ODataFrameBase(hc) with H2ORESTBasedSparkEntity {
 
   def this(frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, null)(hc)

@@ -23,12 +23,12 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import water.fvec.Vec
 import water.parser.BufferedString
 
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+import org.apache.spark.h2o.utils.TestFrameUtils._
 
 /**
  * Testing schema for h2o schema spark dataset transformation.
@@ -170,10 +170,10 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
   }
 
   test("Dataset[PartialPerson] - extracting SemiPartialPersons should give something") {
-    val rdd0 = new H2ORDD[PartialPerson, H2OFrame](testH2oFrametWithPartialData)(hc)
+    val rdd0 = hc.asRDD[PartialPerson](testH2oFrametWithPartialData)
     val c0 = rdd0.count()
     assert(c0 == 24)
-    val rdd1 = new H2ORDD[SemiPartialPerson, H2OFrame](testH2oFrametWithPartialData)(hc)
+    val rdd1 = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
     val c1 = rdd1.count()
     assert(c1 > 0)
     val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
@@ -194,32 +194,11 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
     lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
 
     val sampleCats =
-    samplePartialPeopleWithAges.flatMap(p =>
-      SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil)
+      samplePartialPeopleWithAges.flatMap(p =>
+        SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil)
     val extracted = readWholeFrame[SampleCat](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
 
     matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored
-  }
-
-  private type RowValueAssert = (Long, Vec) => Unit
-
-  private def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
-    assertHolderProperties(df, names)
-    assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
-
-    val vec = df.vec(0)
-    for (row <- Range(0, df.numRows().toInt)) {
-      rowAssert(row, vec)
-    }
-  }
-
-  private def assertHolderProperties(df: H2OFrame, names: List[String]): Unit = {
-    val actualNames = df.names().toList
-    val numCols = names.length
-    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
-    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
-    assert(actualNames.equals(names),
-      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
   }
 
   lazy val testSourceDataset = {
