@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
 import org.apache.spark.h2o.H2OConf
+import collection.JavaConverters._
 
 /**
  * External backend configuration
@@ -75,6 +76,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalBackendStopTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._2)
 
   def externalHadoopExecutable: String = sparkConf.get(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, PROP_EXTERNAL_HADOOP_EXECUTABLE._2)
+
+  def externalExtraJars: Option[String] = sparkConf.getOption(PROP_EXTERNAL_EXTRA_JARS._1)
 
   private[backend] def isBackendVersionCheckDisabled = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -146,6 +149,12 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalBackendStopTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_BACKEND_STOP_TIMEOUT._1, timeout.toString)
 
   def setExternalHadoopExecutable(executable: String): H2OConf = set(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, executable)
+
+  def setExternalExtraJars(commaSeparatedPaths: String): H2OConf = set(PROP_EXTERNAL_EXTRA_JARS._1, commaSeparatedPaths)
+
+  def setExternalExtraJars(paths: java.util.ArrayList[String]): H2OConf = setExternalExtraJars(paths.asScala)
+
+  def setExternalExtraJars(paths: Seq[String]): H2OConf = setExternalExtraJars(paths.mkString(","))
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -234,4 +243,7 @@ object ExternalBackendConf {
 
   /** Hadoop executable used to start external H2O cluster on Hadoop */
   val PROP_EXTERNAL_HADOOP_EXECUTABLE: (String, String) = ("spark.ext.h2o.external.hadoop.executable", "hadoop")
+
+  /** Comma-separated paths to jar files that will be placed onto classpath of each H2O node. */
+  val PROP_EXTERNAL_EXTRA_JARS: (String, None.type) = ("spark.ext.h2o.external.extra.jars", None)
 }
