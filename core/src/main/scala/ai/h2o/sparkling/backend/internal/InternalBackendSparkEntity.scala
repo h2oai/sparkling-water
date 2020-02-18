@@ -27,7 +27,7 @@ import scala.annotation.meta.{field, getter}
  */
 private[internal] trait InternalBackendSparkEntity[T <: Frame] extends H2OSparkEntity {
   /** Underlying DataFrame */
-  @(transient@field @getter) val frame: T
+  @(transient @field @getter) val frame: T
 
   /** Cache frame key to get H2OFrame from the K/V store */
   override val frameKeyName: String = frame._key.toString
