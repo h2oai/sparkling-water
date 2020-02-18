@@ -55,7 +55,7 @@ private[backend] class ExternalBackendH2ORDD[A <: Product : TypeTag : ClassTag] 
     // to h2o opened indefinitely(spark works in a lazy way)
     new H2ORDDIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
-      override val converterCtx: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
+      override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
     }.toList.toIterator
   }

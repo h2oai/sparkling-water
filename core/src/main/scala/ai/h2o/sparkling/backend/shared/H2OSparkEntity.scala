@@ -43,9 +43,9 @@ private[backend] trait H2OSparkEntity {
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
 
-    val converterCtx: Reader
+    val reader: Reader
 
-    override def hasNext: Boolean = converterCtx.hasNext
+    override def hasNext: Boolean = reader.hasNext
   }
 
 }

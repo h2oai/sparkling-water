@@ -39,7 +39,7 @@ private[backend] trait H2ODataFrameBase extends H2OSparkEntity {
     private lazy val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(types(i))))
 
     /*a sequence of value providers, per column*/
-    private lazy val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)
+    private lazy val columnValueProviders: Array[() => Option[Any]] = reader.columnValueProviders(columnIndicesWithTypes)
 
     def readOptionalData: Seq[Option[Any]] = columnValueProviders map (_ ())
 
@@ -51,7 +51,7 @@ private[backend] trait H2ODataFrameBase extends H2OSparkEntity {
 
     override def next(): InternalRow = {
       val row = readRow
-      converterCtx.increaseRowIdx()
+      reader.increaseRowIdx()
       row
     }
   }

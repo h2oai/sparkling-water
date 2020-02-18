@@ -82,16 +82,16 @@ private[backend] trait H2ORDDBase[A <: Product] extends H2OSparkEntity {
 
   abstract class H2ORDDIterator extends H2OChunkIterator[A] {
 
-    private lazy val readers = columnReaders(converterCtx)
+    private lazy val readers = columnReaders(reader)
 
-    private val convertPerColumn: Array[() => AnyRef] =
+    private lazy val convertPerColumn: Array[() => AnyRef] =
       (columnMapping zip readers) map { case (j, r) => () =>
         r.apply(j).asInstanceOf[AnyRef] // this last trick converts primitives to java.lang wrappers
       }
 
     def extractRow: Array[AnyRef] = {
       val rowOpt = convertPerColumn map (_ ())
-      converterCtx.increaseRowIdx()
+      reader.increaseRowIdx()
       rowOpt
     }
 
@@ -126,7 +126,7 @@ private[backend] trait H2ORDDBase[A <: Product] extends H2OSparkEntity {
         cachedRow = None
         row
       } else {
-        throw new NoSuchElementException(s"No more elements in this iterator: found $rowsRead  out of ${converterCtx.numRows}")
+        throw new NoSuchElementException(s"No more elements in this iterator: found $rowsRead  out of ${reader.numRows}")
       }
     }
 
