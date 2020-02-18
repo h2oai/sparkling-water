@@ -310,4 +310,54 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (prostateDataFrame, mojo)
   }
 
+  def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
+    val mojo = H2OMOJOModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
+      "airlines_boolean.mojo")
+    val data = Seq(
+      Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
+      Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
+      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true)
+    )
+
+    val schema = StructType(List(
+      StructField("Year", IntegerType, true),
+      StructField("Month", IntegerType, true),
+      StructField("DayOfWeek", IntegerType, true),
+      StructField("UniqueCarrier", StringType, true),
+      StructField("FlightNum", IntegerType, true),
+      StructField("Origin", StringType, true),
+      StructField("Dest", StringType, true),
+      StructField("Distance", IntegerType, true),
+      StructField("IsDepDelayed", BooleanType, true),
+      StructField("IsArrDelayed", BooleanType, true))
+    )
+
+    val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+
+    val outputSchema = mojo.transform(df).schema
+    val transformedSchema = mojo.transformSchema(df.schema)
+
+    assert(transformedSchema === outputSchema)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are disabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = false)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = true)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = false)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - detailedPredictionCol is enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = true)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
 }

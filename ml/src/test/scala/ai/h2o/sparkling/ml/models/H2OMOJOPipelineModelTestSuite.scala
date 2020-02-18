@@ -270,4 +270,37 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     assert(preds(3).getDouble(0) == 65.78772654671035)
     assert(preds(4).getDouble(0) == 66.11327967814829)
   }
+
+  def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
+    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
+      "prostate_pipeline.mojo",
+      mojoSettings)
+
+    val outputSchema = mojo.transform(df).schema
+    val transformedSchema = mojo.transformSchema(df.schema)
+
+    assert(transformedSchema === outputSchema)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are disabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = false)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = true)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = false)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Transform and transformSchema methods are aligned - detailedPredictionCol is enabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = true)
+    testTransformAndTransformSchemaAreAligned(settings)
+  }
 }
