@@ -71,7 +71,6 @@ class H2OTargetEncoderModel(
       getNoiseSeed())
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputColumnsOnlyFrame = outputFrame.subframe(internalOutputColumns ++ Array(temporaryColumn))
-    DKV.put(outputColumnsOnlyFrame)
     val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
