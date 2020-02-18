@@ -80,7 +80,7 @@ object ExternalBackendConverter extends Converter {
     dt match {
       case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
       case _: DateType => Long.javaClass
-      case v if ExposeUtils.isMLVectorUDT(v) => classOf[Vector]
+      case v if ExposeUtils.isAnyVectorUDT(v) => classOf[Vector]
       case _: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
     }
   }
