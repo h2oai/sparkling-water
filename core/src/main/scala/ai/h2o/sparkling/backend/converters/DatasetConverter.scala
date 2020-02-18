@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o._
-import org.apache.spark.internal.Logging
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.runtime.universe._

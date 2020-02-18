@@ -15,23 +15,22 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends
+package ai.h2o.sparkling.backend.shared
 
 import java.io.File
 
-import org.apache.spark.expose.Logging
+import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.{AzureDatabricksUtils, NodeDesc}
+import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.network.Security
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.util.Utils
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 import water.support.SparkContextSupport
 
 /**
  * Shared functions which can be used by both backends
  */
-private[backends] trait SharedBackendUtils extends Logging with Serializable {
+trait SharedBackendUtils extends Logging with Serializable {
 
   /**
    * Return hostname of this node based on SparkEnv
@@ -117,7 +116,7 @@ private[backends] trait SharedBackendUtils extends Logging with Serializable {
   }
 
   def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
-    for (fileProperty <- conf.getFileProperties()) {
+    for (fileProperty <- conf.getFileProperties) {
       for (filePath <- conf.getOption(fileProperty._1)) {
         if (!SparkContextSupport.isFileDistributed(sc, filePath)) {
           sc.addFile(filePath)

@@ -15,17 +15,15 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
-
+package ai.h2o.sparkling.backend.external
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
-import ai.h2o.sparkling.utils.{RestApiException, RestApiUtils}
+import ai.h2o.sparkling.backend.shared.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.backends.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
@@ -247,7 +245,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       lockCloud(conf)
       val nodes = getNodes(conf)
       verifyWebOpen(nodes, conf)
-      if (!conf.isBackendVersionCheckDisabled()) {
+      if (!conf.isBackendVersionCheckDisabled) {
         verifyVersion(nodes)
       }
       val leaderIpPort = getLeaderNode(conf).ipPort()

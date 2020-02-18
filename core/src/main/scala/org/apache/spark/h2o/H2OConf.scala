@@ -17,10 +17,10 @@
 
 package org.apache.spark.h2o
 
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import ai.h2o.sparkling.repl.H2OInterpreter
 import org.apache.spark.api.java.JavaSparkContext
-import org.apache.spark.h2o.backends.external.ExternalBackendConf
-import org.apache.spark.h2o.backends.internal.InternalBackendConf
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}

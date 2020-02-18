@@ -15,15 +15,14 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.backend.shared
 
 import java.io.FileNotFoundException
 
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.SharedBackendConf
 
-private[h2o] object AzureDatabricksUtils extends Logging {
+object AzureDatabricksUtils extends Logging {
   private val externalFlowPort = 9009 // This port is exposed in Azure DBC
   private val defaultIncreasedTimeout = 600000
 

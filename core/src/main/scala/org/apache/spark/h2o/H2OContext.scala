@@ -20,12 +20,11 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
-import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils
-import ai.h2o.sparkling.utils.{ProxyStarter, RestApiException, RestApiUtils}
+import ai.h2o.sparkling.backend.external
+import ai.h2o.sparkling.backend.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
+import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, SharedBackendConf, SparklingBackend, WriteConverterCtxUtils}
 import org.apache.spark._
-import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, H2OClusterNotReachableException}
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
-import org.apache.spark.h2o.backends.{SharedBackendConf, SparklingBackend}
 import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.internal.Logging
@@ -471,7 +470,7 @@ object H2OContext extends Logging {
   }
 
   private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with
-    ai.h2o.sparkling.utils.H2OContextUtils {
+    external.H2OContextUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
     private var leaderNode: NodeDesc = _

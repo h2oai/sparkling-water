@@ -16,8 +16,8 @@
 */
 package org.apache.spark.network
 
+import ai.h2o.sparkling.backend.shared.SharedBackendConf
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}

@@ -17,14 +17,13 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.backend.external.{ExternalBackendH2OFrameRelation, ExternalWriteConverterCtx}
+import ai.h2o.sparkling.backend.external.{ExternalBackendH2OFrameRelation, ExternalH2OBackend, ExternalWriteConverterCtx}
 import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
-import ai.h2o.sparkling.backend.shared.{WriteConverterCtx, WriteConverterCtxUtils}
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import ai.h2o.sparkling.backend.shared.WriteConverterCtxUtils.UploadPlan
+import ai.h2o.sparkling.backend.shared.{WriteConverterCtx, WriteConverterCtxUtils}
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{mllib, _}

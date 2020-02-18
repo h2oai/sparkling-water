@@ -20,11 +20,11 @@ package ai.h2o.sparkling.frame
 import java.text.MessageFormat
 import java.util
 
-import ai.h2o.sparkling.job.H2OJob
+import ai.h2o.sparkling.backend.external.RestApiUtils._
+import ai.h2o.sparkling.backend.external.RestCommunication
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
-import ai.h2o.sparkling.utils.RestApiUtils._
-import ai.h2o.sparkling.utils.RestCommunication
+import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -35,7 +35,7 @@ import water.api.schemas3._
 /**
  * H2OFrame representation via Rest API
  */
-class H2OFrame private (val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
+class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
 
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
@@ -132,10 +132,10 @@ object H2OFrame extends RestCommunication {
   }
 
   private[sparkling] def finalizeFrame(
-                     conf: H2OConf,
-                     frameId: String,
-                     rowsPerChunk: Array[Long],
-                     columnTypes: Array[Byte]): FinalizeFrameV3 = {
+                                        conf: H2OConf,
+                                        frameId: String,
+                                        rowsPerChunk: Array[Long],
+                                        columnTypes: Array[Byte]): FinalizeFrameV3 = {
     val endpoint = getClusterEndpoint(conf)
     val parameters = Map(
       "key" -> frameId,

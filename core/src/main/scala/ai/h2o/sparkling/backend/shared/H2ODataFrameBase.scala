@@ -17,9 +17,9 @@
 
 package ai.h2o.sparkling.backend.shared
 
+import ai.h2o.sparkling.backend.external.ExternalH2OBackend
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.SupportedTypes.{SimpleType, SupportedType, bySparkType}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow

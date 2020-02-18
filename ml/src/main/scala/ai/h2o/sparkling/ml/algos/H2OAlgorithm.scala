@@ -16,9 +16,9 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
-import ai.h2o.sparkling.utils.RestApiUtils
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._

@@ -17,8 +17,8 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.backend.shared.SparklingBackend
 import org.apache.spark.{SparkContext, SparkEnv}
-import org.apache.spark.h2o.backends.SparklingBackend
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
