@@ -19,8 +19,8 @@ package ai.h2o.sparkling.backend.shared
 
 import java.lang.reflect.Constructor
 
+import ai.h2o.sparkling.backend.external.ExternalH2OBackend
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.backends.external.ExternalH2OBackend
 import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}

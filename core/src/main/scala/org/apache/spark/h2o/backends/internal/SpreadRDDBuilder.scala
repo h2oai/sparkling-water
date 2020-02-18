@@ -18,9 +18,9 @@
 package org.apache.spark.h2o.backends.internal
 
 
+import ai.h2o.sparkling.backend.shared.SharedBackendUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
 import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
 import org.apache.spark.scheduler.local.LocalSchedulerBackend

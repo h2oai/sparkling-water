@@ -17,9 +17,8 @@
 
 package ai.h2o.sparkling.backend.shared
 
-import ai.h2o.sparkling.backend.external.ExternalWriteConverterCtx
+import ai.h2o.sparkling.backend.external.{ExternalWriteConverterCtx, RestApiUtils}
 import ai.h2o.sparkling.backend.internal.InternalWriteConverterCtx
-import ai.h2o.sparkling.utils.RestApiUtils
 import org.apache.spark.TaskContext
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, _}

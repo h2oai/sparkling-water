@@ -16,9 +16,9 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
-import ai.h2o.sparkling.utils.RestApiUtils
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3

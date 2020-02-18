@@ -15,19 +15,8 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends
+package ai.h2o.sparkling.backend.external
 
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
-import org.apache.spark.h2o.utils.NodeDesc
-
-trait SparklingBackend {
-
-  def init(conf: H2OConf): Array[NodeDesc]
-
-  def backendUIInfo: Seq[(String, String)]
-
-  def epilog: String
-
-  def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent
+class H2OClusterNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause) {
+  def this(msg: String) = this(msg, null)
 }

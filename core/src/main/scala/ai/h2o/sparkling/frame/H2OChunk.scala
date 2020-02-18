@@ -19,8 +19,9 @@ package ai.h2o.sparkling.frame
 
 import java.io.{InputStream, OutputStream}
 
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.utils.{Base64Encoding, RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 
@@ -52,7 +53,7 @@ object H2OChunk extends RestCommunication {
 
   def putChunk(
                 node: NodeDesc,
-                conf : H2OConf,
+                conf: H2OConf,
                 frameName: String,
                 numRows: Int,
                 chunkId: Int,

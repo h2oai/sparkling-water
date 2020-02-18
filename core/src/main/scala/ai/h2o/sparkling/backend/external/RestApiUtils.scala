@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.utils
+package ai.h2o.sparkling.backend.external
 
 import java.net.URI
 

@@ -16,10 +16,10 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
-import ai.h2o.sparkling.utils.RestApiUtils
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi

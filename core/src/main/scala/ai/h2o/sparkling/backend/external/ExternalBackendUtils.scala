@@ -15,16 +15,16 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends.external
+package ai.h2o.sparkling.backend.external
 
+import ai.h2o.sparkling.backend.shared.SharedBackendUtils
 import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.backends.SharedBackendUtils
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.RestAPIManager
 import water.{H2O, H2OStarter, Paxos}
 
-private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
+private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
 
   def prepareExpectedTypes(classes: Array[Class[_]]): Array[Byte] = {
     classes.map { clazz =>
@@ -57,7 +57,7 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
   }
 
 
-  protected[backends] def startH2OClient(hc: H2OContext, nodes: Array[NodeDesc]): Unit = {
+  protected[backend] def startH2OClient(hc: H2OContext, nodes: Array[NodeDesc]): Unit = {
     val conf = hc.getConf
     val args = getH2OClientArgs(conf).toArray
     val launcherArgs = toH2OArgs(args, nodes)
@@ -79,7 +79,7 @@ private[backends] trait ExternalBackendUtils extends SharedBackendUtils {
     H2O.startServingRestApi()
   }
 
-  protected[backends] def launchShellCommand(cmdToLaunch: Seq[String]): Int = {
+  protected[backend] def launchShellCommand(cmdToLaunch: Seq[String]): Int = {
     import scala.sys.process._
     val processOut = new StringBuffer()
     val processErr = new StringBuffer()
