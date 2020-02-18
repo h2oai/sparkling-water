@@ -2,9 +2,8 @@ package ai.h2o.sparkling
 
 import java.io.File
 
-import org.apache.spark.h2o.backends.SharedBackendConf
-import org.apache.spark.h2o.backends.SharedBackendConf._
-import org.apache.spark.h2o.backends.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.shared.SharedBackendConf
 import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
 import org.apache.spark.expose.Logging
 import org.apache.spark.{SparkConf, SparkContext}
@@ -25,7 +24,7 @@ trait ScriptsTestHelper extends FunSuite with Logging with BeforeAndAfterAll {
     fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
 
   override protected def beforeAll(): Unit = {
-    sparkConf.set(PROP_CLIENT_IP._1, sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
+    sparkConf.set(SharedBackendConf.PROP_CLIENT_IP._1, sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
 
     sparkConf.set(SharedBackendConf.PROP_CLIENT_IP._1,
       sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
