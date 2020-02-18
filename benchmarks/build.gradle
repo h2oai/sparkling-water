@@ -5,16 +5,11 @@ apply from: "$rootDir/gradle/utils.gradle"
 dependencies {
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core")) {
-        exclude group: "javax.servlet", module: "servlet-api"
-    }
+    compile project(":sparkling-water-core")
 
     // Spark libraries
-    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
 
 task cleanTerraform(type: Delete) {
