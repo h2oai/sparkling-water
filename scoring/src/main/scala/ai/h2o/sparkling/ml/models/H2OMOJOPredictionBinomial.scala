@@ -80,8 +80,8 @@ trait H2OMOJOPredictionBinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
-      val contributionsField = StructField("contributions", ArrayType(FloatType))
+      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+      val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         val calibratedProbabilitiesField = StructField("calibratedProbabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
         labelField :: probabilitiesField :: contributionsField :: calibratedProbabilitiesField :: Nil
@@ -92,7 +92,7 @@ trait H2OMOJOPredictionBinomial {
       labelField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractBinomialPredictionColContent(): Column = {

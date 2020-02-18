@@ -313,7 +313,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
-      "airlines_boolean.mojo")
+      "airlines_boolean.mojo",
+      mojoSettings)
     val data = Seq(
       Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
       Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
