@@ -43,7 +43,7 @@ node("docker") {
     sparkVersions = versionLine.split("=")[1].split(" ")
 
     if (isPrJob()) {
-        // test PRs only in first and last supported Spark
+        // test PRs only on first and last supported Spark
         sparkVersions = [sparkVersions.first(), sparkVersions.last()]
     }
 }
