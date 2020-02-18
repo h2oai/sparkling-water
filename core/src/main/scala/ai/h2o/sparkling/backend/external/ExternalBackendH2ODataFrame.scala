@@ -67,7 +67,7 @@ private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requ
       private val chnk = frame.chunks.find(_.index == split.index).head
       override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
-    }
+    }.toList.toIterator
   }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {

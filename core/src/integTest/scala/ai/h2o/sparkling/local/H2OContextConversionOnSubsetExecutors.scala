@@ -36,7 +36,6 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
-    assert(spark.sparkContext.statusTracker.getExecutorInfos.length == 4) // 4 = 3 executors + 1 driver
     val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
     val h2oFrame = hc.asH2OFrame(rdd)
 
@@ -53,7 +52,6 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite
 
   test("asDataFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
-    assert(spark.sparkContext.statusTracker.getExecutorInfos.length == 4)
     val originalRdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
     val hf = hc.asH2OFrame(originalRdd)
 
@@ -65,7 +63,6 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite
   test("asRDD conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
     import spark.implicits._
-    assert(spark.sparkContext.statusTracker.getExecutorInfos.length == 4)
     val originalRdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
     val hf = hc.asH2OFrame(originalRdd)
 
