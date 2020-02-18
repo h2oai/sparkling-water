@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.rdd.h2o
+package ai.h2o.sparkling.backend.internal
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
 
-class H2OAwareRDD[U: ClassTag](nodes: Seq[String], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
+private[internal] class H2OAwareRDD[U: ClassTag](nodes: Seq[String], prev: RDD[U]) extends RDD[U](prev: RDD[U]) {
 
   override def getPreferredLocations(split: Partition): Seq[String] = nodes
 

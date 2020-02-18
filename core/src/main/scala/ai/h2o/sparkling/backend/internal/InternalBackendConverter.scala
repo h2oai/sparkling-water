@@ -20,7 +20,6 @@ package ai.h2o.sparkling.backend.internal
 import ai.h2o.sparkling.backend.shared.Converter
 import ai.h2o.sparkling.backend.shared.Converter.{ConversionFunction, SparkJob}
 import org.apache.spark.h2o.{H2OContext, _}
-import org.apache.spark.rdd.h2o.H2OAwareRDD
 import water._
 import water.fvec.Chunk
 import water.fvec.FrameUtils.preparePartialFrame
