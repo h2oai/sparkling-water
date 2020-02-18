@@ -43,6 +43,7 @@ object SparkDataFrameConverter extends Logging {
    */
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
+    DKV.put(fr)
     // Relation referencing H2OFrame
     if (hc.getConf.runsInInternalClusterMode) {
       val relation = InternalBackendH2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)

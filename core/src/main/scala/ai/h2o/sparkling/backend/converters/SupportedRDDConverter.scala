@@ -21,6 +21,7 @@ import ai.h2o.sparkling.backend.external.ExternalBackendH2ORDD
 import ai.h2o.sparkling.backend.internal.InternalBackendH2ORDD
 import ai.h2o.sparkling.backend.shared.Converter
 import org.apache.spark.h2o._
+import water.DKV
 import water.fvec.Frame
 
 import scala.language.implicitConversions
@@ -43,12 +44,14 @@ object SupportedRDDConverter {
   }
 
   /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): RDD[A] =
+  def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): RDD[A] = {
+    DKV.put(fr)
     if (hc.getConf.runsInInternalClusterMode) {
       new InternalBackendH2ORDD[A, T](fr)(hc)
     } else {
       toRDD(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString))
     }
+  }
 
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame): RDD[A] = {
