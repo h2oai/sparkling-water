@@ -36,10 +36,10 @@ private[backend] trait H2ODataFrameBase extends H2OSparkEntity {
 
   abstract class H2ODataFrameIterator extends H2OChunkIterator[InternalRow] {
 
-    private val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(types(i))))
+    private lazy val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = selectedColumnIndices map (i => (i, bySparkType(types(i))))
 
     /*a sequence of value providers, per column*/
-    private val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)
+    private lazy val columnValueProviders: Array[() => Option[Any]] = converterCtx.columnValueProviders(columnIndicesWithTypes)
 
     def readOptionalData: Seq[Option[Any]] = columnValueProviders map (_ ())
 
