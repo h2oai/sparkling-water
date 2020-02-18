@@ -17,41 +17,25 @@
 
 package ai.h2o.sparkling.backend.shared
 
-import ai.h2o.sparkling.frame.H2OChunk
 import org.apache.spark.Partition
-import org.apache.spark.h2o.H2OConf
 
 /**
  * Contains functions that are shared between all H2O DataFrames and RDDs.
  */
 private[backend] trait H2OSparkEntity {
-
-  /** Is the external backend in use */
-  val isExternalBackend: Boolean
-
-  /** Timestamp of the H2O Driver node */
-  val driverTimeStamp: Short
-
   /** Cache frame key to get H2OFrame from the K/V store */
   def frameKeyName: String
-
-  /** Number of chunks per a vector */
-  def numChunks: Int
-
-  /** Chunk locations helps us to determine the node which really has the data we needs. */
-  def chksLocation: Option[Array[H2OChunk]] = None
 
   /** Selected column indices */
   val selectedColumnIndices: Array[Int]
 
-  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
-   * contains types in a format same for H2ODataFrame and H2ORDD */
-  val expectedTypes: Option[Array[Byte]]
+  /** Number of chunks per a vector */
+  def numChunks: Int
 
   protected def getPartitions: Array[Partition] = {
     val res = new Array[Partition](numChunks)
     for (i <- 0 until numChunks) res(i) = new Partition {
-      val index = i
+      val index: Int = i
     }
     res
   }
@@ -59,21 +43,7 @@ private[backend] trait H2OSparkEntity {
   /** Base implementation for iterator over rows stored in chunks for given partition. */
   trait H2OChunkIterator[+A] extends Iterator[A] {
 
-    val conf: H2OConf
-    /* Key of pointing to underlying dataframe */
-    val keyName: String
-    /* Partition index */
-    val partIndex: Int
-
-    /* Converter context */
-    lazy val converterCtx: ReadConverterCtx =
-      ReadConverterCtxUtils.create(
-        keyName,
-        partIndex,
-        // we need to send list of all expected types, not only the list filtered for expected columns
-        // because on the h2o side we get the expected type using index from selectedColumnIndices array
-        chksLocation, expectedTypes, selectedColumnIndices, conf
-      )
+    val converterCtx: Reader
 
     override def hasNext: Boolean = converterCtx.hasNext
   }

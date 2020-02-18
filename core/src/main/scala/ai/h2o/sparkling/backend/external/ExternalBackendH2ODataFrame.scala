@@ -17,12 +17,15 @@
 
 package ai.h2o.sparkling.backend.external
 
-import ai.h2o.sparkling.backend.shared.H2ODataFrameBase
+import ai.h2o.sparkling.backend.shared.{H2ODataFrameBase, Reader}
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ReflectionUtils
 import org.apache.spark.h2o.utils.SupportedTypes.{SupportedType, VecType}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
+import org.apache.spark.{Partition, TaskContext}
 
 /**
  * H2O H2OFrame wrapper providing RDD[Row]=DataFrame API.
@@ -33,10 +36,11 @@ import org.apache.spark.sql.types.DataType
  */
 private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requiredColumns: Array[String])
                                                   (@transient val hc: H2OContext)
-  extends H2ODataFrameBase(hc.sparkContext, hc.getConf) with ExternalBackendSparkEntity {
+  extends RDD[InternalRow](hc.sparkContext, Nil) with H2ODataFrameBase with ExternalBackendSparkEntity {
 
-  def this(frame: H2OFrame)
-          (@transient hc: H2OContext) = this(frame, null)(hc)
+  private val h2oConf = hc.getConf
+
+  def this(frame: H2OFrame)(@transient hc: H2OContext) = this(frame, null)(hc)
 
   private val colNames = frame.columns.map(_.name)
 
@@ -50,7 +54,21 @@ private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requ
     }
   }
 
-  override val expectedTypes: Option[Array[VecType]] = resolveExpectedTypes()
+  override val expectedTypes: Option[Array[VecType]] = {
+    // prepare expected type selected columns in the same order as are selected columns
+    val javaClasses = selectedColumnIndices.map(indexToSupportedType(_).javaClass)
+    Option(ExternalH2OBackend.prepareExpectedTypes(javaClasses))
+  }
+
+  override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
+    // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
+    // to h2o opened indefinitely(spark works in a lazy way)
+    new H2ODataFrameIterator {
+      private val chnk = frame.chunks.find(_.index == split.index).head
+      override val converterCtx: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
+        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
+    }
+  }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
     val column = frame.columns(index)

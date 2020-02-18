@@ -19,10 +19,8 @@ package ai.h2o.sparkling.local
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.DoubleHolder
-import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.rdd.RDD
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.scalatest.FunSuite
-import water.fvec.{H2OFrame, Vec}
 
 /**
   * Test High Concurrency during conversion master
@@ -45,7 +43,7 @@ class H2OFrameToDataFrameHA extends FunSuite with SharedH2OTestContext {
 
     val h2oFrame = hc.asH2OFrame(rdd)
 
-    assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+    TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
       val value = vec.at(rowIdx) // value stored at rowIdx-th
       // Using == since int should be mapped strictly to doubles
@@ -55,29 +53,5 @@ class H2OFrameToDataFrameHA extends FunSuite with SharedH2OTestContext {
     // Clean up
     h2oFrame.delete()
   }
-
-  private type RowValueAssert = (Long, Vec) => Unit
-
-  private def assertBasicInvariants[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertHolderProperties(df)
-    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    // Check numbering
-    val vec = df.vec(0)
-    var rowIdx = 0
-    while (rowIdx < df.numRows()) {
-      assert(!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
-      rowAssert(rowIdx, vec)
-      rowIdx += 1
-    }
-  }
-
-
-  private def assertHolderProperties(df: H2OFrame): Unit = {
-    assert(df.numCols() == 1, "H2OFrame should contain single column")
-    assert(df.names().length == 1, "H2OFrame column names should have single value")
-    assert(df.names()(0).equals("result"),
-      "H2OFrame column name should be 'result' since Holder object was used to define RDD")
-  }
-
 }
 

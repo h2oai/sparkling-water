@@ -17,10 +17,12 @@
 
 package ai.h2o.sparkling.backend.external
 
-import ai.h2o.sparkling.backend.shared.H2ORDDBase
+import ai.h2o.sparkling.backend.shared.{H2ORDDBase, Reader}
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ProductType
+import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, TaskContext}
 
 import scala.annotation.meta.{field, param}
 import scala.language.postfixOps
@@ -38,15 +40,31 @@ import scala.reflect.runtime.universe._
  */
 private[backend] class ExternalBackendH2ORDD[A <: Product : TypeTag : ClassTag] private(val frame: H2OFrame, val productType: ProductType)
                                                                                        (@(transient@param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with ExternalBackendSparkEntity {
+  extends RDD[A](hc.sparkContext, Nil) with H2ORDDBase[A] with ExternalBackendSparkEntity {
+
+  override val expectedTypes: Option[Array[Byte]] = Option(ExternalH2OBackend.prepareExpectedTypes(productType.memberClasses))
+
+  private val h2oConf = hc.getConf
 
   // Get product type before building an RDD
   def this(@transient frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
-  protected override val colNames = {
+  override def compute(split: Partition, context: TaskContext): Iterator[A] = {
+    // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
+    // to h2o opened indefinitely(spark works in a lazy way)
+    new H2ORDDIterator {
+      private val chnk = frame.chunks.find(_.index == split.index).head
+      override val converterCtx: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
+        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
+    }.toList.toIterator
+  }
+
+  protected override val colNames: Array[String] = {
     val names = frame.columns.map(_.name)
     checkColumnNames(names)
     names
   }
+
+  override protected val jc: Class[_] = implicitly[ClassTag[A]].runtimeClass
 }

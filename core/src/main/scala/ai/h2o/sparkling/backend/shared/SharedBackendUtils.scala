@@ -50,7 +50,7 @@ trait SharedBackendUtils extends Logging with Serializable {
    *
    * @param conf H2O Configuration to check
    * @return checked and updated configuration
-   **/
+   * */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
     if (conf.h2oClientLogDir.isEmpty) {

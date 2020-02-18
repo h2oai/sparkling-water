@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.backend.internal
 
-import ai.h2o.sparkling.backend.shared.H2ORDDBase
+import ai.h2o.sparkling.backend.shared.{H2ORDDBase, Reader}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ProductType
-import water.H2O
+import org.apache.spark.{Partition, TaskContext}
 import water.fvec.Frame
 import water.support.H2OFrameSupport
 
@@ -42,18 +42,22 @@ import scala.reflect.runtime.universe._
 private[backend] class InternalBackendH2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@(transient@param @field) val frame: T,
                                                                                                     val productType: ProductType)
                                                                                                    (@(transient@param @field) hc: H2OContext)
-  extends H2ORDDBase[A](hc.sparkContext, hc.getConf) with InternalBackendSparkEntity[T] {
-
-  override val driverTimeStamp = H2O.SELF.getTimestamp()
+  extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2ORDDBase[A] with InternalBackendSparkEntity[T] {
 
   // Get product type before building an RDD
   def this(@transient fr: T)
           (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
+  override def compute(split: Partition, context: TaskContext): Iterator[A] = new H2ORDDIterator() {
+    override val converterCtx: Reader = new InternalBackendReader(frameKeyName, split.index)
+  }
+
   H2OFrameSupport.lockAndUpdate(frame)
-  protected override val colNames = {
+  protected override val colNames: Array[String] = {
     val names = frame.names()
     checkColumnNames(names)
     names
   }
+
+  override protected val jc: Class[_] = implicitly[ClassTag[A]].runtimeClass
 }

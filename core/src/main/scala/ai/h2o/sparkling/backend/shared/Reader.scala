@@ -30,7 +30,7 @@ import scala.language.postfixOps
  * Read Converter Context is a class which holds the state of connection/chunks and allows us to read/download data from those chunks
  * via unified API
  */
-private[backend] trait ReadConverterCtx {
+private[backend] trait Reader {
 
   /** Type from which we query the data */
   type DataSource
@@ -141,5 +141,4 @@ private[backend] trait ReadConverterCtx {
   lazy val readerMapByName: Map[NameOfType, Reader] = (OptionReaders ++ SimpleReaders) map {
     case (supportedType, reader) => supportedType.name -> reader
   } toMap
-
 }

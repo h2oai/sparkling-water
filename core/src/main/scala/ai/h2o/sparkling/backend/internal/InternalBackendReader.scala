@@ -17,14 +17,14 @@
 
 package ai.h2o.sparkling.backend.internal
 
-import ai.h2o.sparkling.backend.shared.ReadConverterCtx
+import ai.h2o.sparkling.backend.shared.Reader
 import water.fvec.{Chunk, Frame, Vec}
 import water.parser.BufferedString
 import water.{DKV, Key}
 
 import scala.language.postfixOps
 
-class InternalReadConverterCtx(override val keyName: String, override val chunkIdx: Int) extends ReadConverterCtx {
+class InternalBackendReader(override val keyName: String, override val chunkIdx: Int) extends Reader {
 
   override type DataSource = Chunk
 

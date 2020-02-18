@@ -50,8 +50,7 @@ object InternalBackendConverter extends Converter {
   def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                      maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
     initFrame(keyName, colNames)
-    val prefs = hc.getH2ONodes().map(nodeDesc => s"executor_${nodeDesc.hostname}_${nodeDesc.nodeId}")
-    val rdd = new H2OAwareRDD(prefs, rddInput)
+    val rdd = new H2OAwareRDD(hc.getH2ONodes(), rddInput)
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
     val operation: SparkJob[T] = func(keyName, expectedTypes, None, sparse, nonEmptyPartitions, partitionSizes)

@@ -27,15 +27,16 @@ private[external] trait ExternalBackendSparkEntity extends H2OSparkEntity {
   /** Underlying H2O Frame */
   val frame: H2OFrame
 
-  /** Timestamp of the H2O Driver node */
-  override val driverTimeStamp: Short = -1 // Setting timestamp to -1 since there is no H2O client running
-
   /** Cache frame key to get H2OFrame from the H2O backend */
   override val frameKeyName: String = frame.frameId
 
   /** Number of chunks per a vector */
   override val numChunks: Int = frame.chunks.length
 
+  /** Create new types list which describes expected types in a way external H2O backend can use it. This list
+   * contains types in a format same for H2ODataFrame and H2ORDD */
+  val expectedTypes: Option[Array[Byte]]
+
   /** Chunk locations helps us to determine the node which really has the data we needs. */
-  override val chksLocation: Option[Array[H2OChunk]] = Some(frame.chunks)
+  val chksLocation: Option[Array[H2OChunk]] = Some(frame.chunks)
 }

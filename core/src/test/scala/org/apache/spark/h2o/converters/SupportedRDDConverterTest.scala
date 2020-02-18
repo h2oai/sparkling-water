@@ -30,10 +30,10 @@ import org.apache.spark.rdd.RDD
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
-import water.fvec.{H2OFrame, Vec}
+import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
-
+import org.apache.spark.h2o.utils.TestFrameUtils._
 /**
   * Testing schema for rdd  to h2o frame transformations.
   */
@@ -600,40 +600,6 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     }
     val rdd = hc.asRDD[StringHolder](hf)
     assert(rdd.count() == hf.numRows(), "Number of row should match")
-  }
-  private type RowValueAssert = (Long, Vec) => Unit
-
-  private def assertBasicInvariants[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertHolderProperties(df)
-    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    // Check numbering
-    val vec = df.vec(0)
-    var rowIdx = 0
-    while (rowIdx < df.numRows()) {
-      assert(!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
-      rowAssert(rowIdx, vec)
-      rowIdx += 1
-    }
-  }
-
-  private def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertHolderProperties(df)
-    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    // Check numbering
-
-    val vec = df.vec(0)
-    var rowIdx = 0
-    while (rowIdx < df.numRows()) {
-      rowAssert(rowIdx, vec)
-      rowIdx += 1
-    }
-  }
-
-  private def assertHolderProperties(df: H2OFrame): Unit = {
-    assert(df.numCols() == 1, "H2OFrame should contain single column")
-    assert(df.names().length == 1, "H2OFrame column names should have single value")
-    assert(df.names()(0).equals("result"),
-      "H2OFrame column name should be 'result' since Holder object was used to define RDD")
   }
 
   def assertRDDH2OFrameInvariants[T](inputRDD: RDD[T], df: H2OFrame): Unit = {
