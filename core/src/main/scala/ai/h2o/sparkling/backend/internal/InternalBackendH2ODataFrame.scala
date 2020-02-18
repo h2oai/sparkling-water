@@ -38,7 +38,7 @@ import scala.language.postfixOps
 private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
                                                                           val requiredColumns: Array[String])
                                                                          (@transient val hc: H2OContext)
-  extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2ODataFrameBase with InternalBackendSparkEntity[T] {
+  extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes()) with H2ODataFrameBase with InternalBackendSparkEntity[T] {
 
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)

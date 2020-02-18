@@ -42,7 +42,7 @@ import scala.reflect.runtime.universe._
 private[backend] class InternalBackendH2ORDD[A <: Product : TypeTag : ClassTag, T <: Frame] private(@(transient@param @field) val frame: T,
                                                                                                     val productType: ProductType)
                                                                                                    (@(transient@param @field) hc: H2OContext)
-  extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes(), hc.getConf) with H2ORDDBase[A] with InternalBackendSparkEntity[T] {
+  extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes()) with H2ORDDBase[A] with InternalBackendSparkEntity[T] {
 
   // Get product type before building an RDD
   def this(@transient fr: T)
