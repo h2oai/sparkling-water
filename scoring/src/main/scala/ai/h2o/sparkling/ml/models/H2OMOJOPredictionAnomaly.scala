@@ -40,7 +40,7 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   private val predictionColType = DoubleType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getAnomalyPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

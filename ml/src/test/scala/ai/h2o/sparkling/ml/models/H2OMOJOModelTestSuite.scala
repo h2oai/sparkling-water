@@ -337,27 +337,17 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
     val outputSchema = mojo.transform(df).schema
     val transformedSchema = mojo.transformSchema(df.schema)
-
-    assert(transformedSchema === outputSchema)
+    mojo.transform(df).printSchema()
+    transformedSchema shouldEqual outputSchema
   }
 
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are disabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = false)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = true)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = false)
+  test("Transform and transformSchema methods are aligned - detailedPredictionCol is disabled") {
+    val settings = H2OMOJOSettings(withDetailedPredictionCol = false)
     testTransformAndTransformSchemaAreAligned(settings)
   }
 
   test("Transform and transformSchema methods are aligned - detailedPredictionCol is enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = true)
+    val settings = H2OMOJOSettings(withDetailedPredictionCol = true)
     testTransformAndTransformSchemaAreAligned(settings)
   }
 }

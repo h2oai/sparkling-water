@@ -42,7 +42,7 @@ trait H2OMOJOPredictionRegression {
   }
 
   private val predictionColType = DoubleType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getRegressionPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

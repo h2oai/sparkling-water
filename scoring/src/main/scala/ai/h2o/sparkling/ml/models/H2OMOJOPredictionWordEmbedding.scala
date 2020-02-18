@@ -35,7 +35,7 @@ trait H2OMOJOPredictionWordEmbedding {
   }
 
   private val predictionColType = DataTypes.createMapType(StringType, ArrayType(FloatType))
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

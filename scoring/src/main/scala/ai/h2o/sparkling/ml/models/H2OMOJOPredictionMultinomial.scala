@@ -43,7 +43,7 @@ trait H2OMOJOPredictionMultinomial {
   }
 
   private val predictionColType = StringType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getMultinomialPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

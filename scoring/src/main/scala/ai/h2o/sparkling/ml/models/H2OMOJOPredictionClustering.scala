@@ -40,7 +40,7 @@ trait H2OMOJOPredictionClustering {
   }
 
   private val predictionColType = IntegerType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getClusteringPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))

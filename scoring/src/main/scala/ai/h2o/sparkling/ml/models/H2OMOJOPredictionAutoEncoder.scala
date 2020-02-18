@@ -41,7 +41,7 @@ trait H2OMOJOPredictionAutoEncoder {
   }
 
   private val predictionColType = ArrayType(DoubleType)
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getAutoEncoderPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
