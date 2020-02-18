@@ -113,9 +113,9 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
 
   aws s3 cp ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/benchmarks.jar
 
-  #if ${var.benchmarks_run_yarn_internal}; then
-  #  runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
-  #fi
+  if ${var.benchmarks_run_yarn_internal}; then
+    runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
+  fi
   if ${var.benchmarks_run_yarn_external}; then
     aws s3 cp ${format("s3://h2o-release/h2o/rel-%s/%s/h2o-%s-hdp2.6.zip", var.h2o_version_name, var.h2o_build, var.h2o_version)} /home/hadoop/h2o.zip
     unzip -q /home/hadoop/h2o.zip -d /home/hadoop
