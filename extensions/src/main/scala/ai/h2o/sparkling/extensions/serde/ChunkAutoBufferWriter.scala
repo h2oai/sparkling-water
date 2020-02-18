@@ -55,7 +55,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
               if (chunk.vec.isCategorical) str = chunk.vec().domain()(chunk.at8(rowIdx).toInt)
               else if (chunk.vec.isString) str = chunk.atStr(valStr, rowIdx).toString
               else if (chunk.vec.isUUID) str = new UUID(chunk.at16h(rowIdx), chunk.at16l(rowIdx)).toString
-              else assert(false, "Can never be here")
+              else throw new RuntimeException("Unreachable code!")
               writeString(str)
           }
         }

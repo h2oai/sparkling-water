@@ -19,10 +19,11 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import ai.h2o.sparkling.backend.external.ExternalBackendConverter
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
 import ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.backend.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
-import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, SharedBackendConf, SparklingBackend, WriteConverterCtxUtils}
+import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, Converter, SharedBackendConf, SparklingBackend}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
@@ -209,7 +210,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", {
-      val converter = WriteConverterCtxUtils.getConverter(conf)
+      val converter = Converter.getConverter(conf)
       val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, converter)
       new H2OFrame(DKV.getGet[Frame](key))
     })
@@ -529,11 +530,11 @@ object H2OContext extends Logging {
     }
 
     override def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
-      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, WriteConverterCtxUtils.ExternalBackendConverter)
+      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, ExternalBackendConverter)
     }
 
     override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
-      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, WriteConverterCtxUtils.ExternalBackendConverter)
+      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, ExternalBackendConverter)
     }
 
     override protected def getFlowEndpoint(): String = s"$flowIp:$flowPort${conf.contextPath.getOrElse("")}"
