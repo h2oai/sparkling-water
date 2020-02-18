@@ -49,11 +49,18 @@ resource "aws_s3_bucket_policy" "read_objects" {
 POLICY
 }
 
+resource "aws_s3_bucket_object" "assembly_jar" {
+  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
+  key = "assembly.jar"
+  acl = "private"
+  source = "${var.sw_package_file}"
+}
+
 resource "aws_s3_bucket_object" "benchmarks_jar" {
   bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
   key = "benchmarks.jar"
   acl = "private"
-  source = "${var.sw_package_file}"
+  source = "${var.sw_benchmarks_file}"
 }
 
 resource "aws_s3_bucket_object" "set_automatic_shutdown" {
@@ -86,6 +93,7 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
   function runBenchmarks {
     spark-submit \
       --class ai.h2o.sparkling.benchmarks.Runner \
+      --jars ${format("s3://%s/assembly.jar", aws_s3_bucket.deployment_bucket.bucket)} \
       --master "$1" \
       --driver-memory "$3" \
       --executor-memory "$4" \
@@ -105,11 +113,11 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
 
   aws s3 cp ${format("s3://%s/benchmarks.jar", aws_s3_bucket.deployment_bucket.bucket)} /home/hadoop/benchmarks.jar
 
-  if ${var.benchmarks_run_yarn_internal}; then
-    runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
-  fi
+  #if ${var.benchmarks_run_yarn_internal}; then
+  #  runBenchmarks "yarn" "internal" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb}G"
+  #fi
   if ${var.benchmarks_run_yarn_external}; then
-    aws s3 cp ${format("s3://h2o-release/h2o/%s/%s/h2o-%s-hdp2.6.zip", var.h2o_version_name, var.h2o_build, var.h2o_version)} /home/hadoop/h2o.zip --source-region us-east-1
+    aws s3 cp ${format("s3://h2o-release/h2o/rel-%s/%s/h2o-%s-hdp2.6.zip", var.h2o_version_name, var.h2o_build, var.h2o_version)} /home/hadoop/h2o.zip
     unzip -q /home/hadoop/h2o.zip -d /home/hadoop
     export H2O_DRIVER_JAR="/home/hadoop/h2o-${var.h2o_version}-hdp2.6/h2odriver.jar"
     runBenchmarks "yarn" "external" "${var.benchmarks_driver_memory_gb}G" "${var.benchmarks_executor_memory_gb/2}G"
@@ -131,6 +139,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   log_uri = "s3://${aws_s3_bucket.deployment_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
   depends_on = [
+    aws_s3_bucket_object.assembly_jar,
     aws_s3_bucket_object.benchmarks_jar,
     aws_s3_bucket_object.run_benchmarks_script,
     aws_s3_bucket_object.set_automatic_shutdown

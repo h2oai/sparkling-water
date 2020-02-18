@@ -27,6 +27,9 @@ variable "aws_instance_type" {
 variable "sw_package_file" {
   default = "SUBST_PACKAGE_FILE"
 }
+variable "sw_benchmarks_file" {
+  default = "SUBST_BENCHMARKS_FILE"
+}
 variable "h2o_version" {
   default = "SUBST_H2O_VERSION"
 }

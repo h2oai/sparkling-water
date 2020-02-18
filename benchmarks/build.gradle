@@ -1,7 +1,5 @@
 description = "Sparkling Water Benchmarks"
 
-apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
@@ -17,20 +15,6 @@ dependencies {
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-}
-
-shadowJar {
-    configurations = [project.configurations.shadowRuntime]
-
-    mergeServiceFiles()
-
-    relocate 'javassist', 'ai.h2o.javassist'
-    relocate 'com.google.common', 'ai.h2o.com.google.common'
-    relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
-    relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
-
-    from "$project.buildDir/resources/main" include '**/*'
-    exclude 'www/flow/packs/test-*/**'
 }
 
 task cleanTerraform(type: Delete) {
@@ -63,7 +47,8 @@ task substituteTerraform(dependsOn: copyTerraform) {
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll("SUBST_PACKAGE_FILE", "${project.rootDir}/assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar")
+                .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
                 .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
                 .replaceAll("SUBST_H2O_VERSION", h2oVersion)
                 .replaceAll("SUBST_H2O_BUILD", h2oBuild)
@@ -80,7 +65,7 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -97,7 +82,7 @@ task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
     }
 }
 
-task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -122,7 +107,7 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteT
     }
 }
 
-task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
