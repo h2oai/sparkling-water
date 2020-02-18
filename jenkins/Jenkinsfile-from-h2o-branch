@@ -41,6 +41,12 @@ node("docker") {
     def versionLine = readFile("gradle.properties")
             .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
     sparkVersions = versionLine.split("=")[1].split(" ")
+
+    if (isPrJob()) {
+        // test PRs only in first and last supported Spark
+        sparkVersions = [sparkVersions.first(), sparkVersions.last()]
+        throw new RuntimeException("Running on $sparkVersions")
+    }
 }
 
 
