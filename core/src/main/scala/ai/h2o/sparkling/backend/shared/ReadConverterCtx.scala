@@ -95,7 +95,6 @@ private[backend] trait ReadConverterCtx {
 
   protected def string(source: DataSource): String
 
-  // TODO(vlad): check if instead of stringification, we could use bytes
   protected def utfString(source: DataSource) = UTF8String.fromString(string(source))
 
   protected def timestamp(source: DataSource): Long = longAt(source) * 1000

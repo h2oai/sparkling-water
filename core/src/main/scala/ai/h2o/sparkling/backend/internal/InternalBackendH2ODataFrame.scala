@@ -48,7 +48,6 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
   private val colNames = frame.names()
   protected override val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
 
-  // TODO(vlad): take care of the cases when names are missing in colNames - an exception?
   override val selectedColumnIndices = (if (requiredColumns == null) {
     colNames.indices
   } else {
