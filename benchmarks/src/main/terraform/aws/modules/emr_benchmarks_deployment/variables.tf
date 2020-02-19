@@ -27,8 +27,17 @@ variable "aws_instance_type" {
 variable "sw_package_file" {
   default = "SUBST_PACKAGE_FILE"
 }
-variable "h2o_jar_file" {
-  default = "SUBST_H2O_JAR_FILE"
+variable "sw_benchmarks_file" {
+  default = "SUBST_BENCHMARKS_FILE"
+}
+variable "h2o_version" {
+  default = "SUBST_H2O_VERSION"
+}
+variable "h2o_version_name" {
+  default = "SUBST_H2O_VERSION_NAME"
+}
+variable "h2o_build" {
+  default = "SUBST_H2O_BUILD"
 }
 variable "emr_managed_master_security_group_id" {}
 variable "emr_managed_slave_security_group_id" {}

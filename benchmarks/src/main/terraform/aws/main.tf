@@ -48,4 +48,10 @@ module "emr_benchmarks_deployment" {
   benchmarks_run_yarn_internal = "${var.benchmarks_run_yarn_internal}"
   benchmarks_run_yarn_external = "${var.benchmarks_run_yarn_external}"
   benchmarks_run_local_internal = "${var.benchmarks_run_local_internal}"
+
+  sw_package_file = "${var.sw_package_file}"
+  sw_benchmarks_file = "${var.sw_benchmarks_file}"
+  h2o_version_name = "${var.h2o_version_name}"
+  h2o_version = "${var.h2o_version}"
+  h2o_build = "${var.h2o_build}"
 }

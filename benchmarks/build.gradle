@@ -1,65 +1,15 @@
 description = "Sparkling Water Benchmarks"
 
-apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
     // Sparkling Water libraries
     compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core")) {
-        exclude group: "javax.servlet", module: "servlet-api"
-    }
+    compile project(":sparkling-water-core")
 
     // Spark libraries
-    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
     compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-}
-
-shadowJar {
-    configurations = [project.configurations.shadowRuntime]
-
-    mergeServiceFiles()
-
-    relocate 'javassist', 'ai.h2o.javassist'
-    relocate 'com.google.common', 'ai.h2o.com.google.common'
-    relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
-    relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
-
-    from "$project.buildDir/resources/main" include '**/*'
-    exclude 'www/flow/packs/test-*/**'
-}
-
-task buildH2OExtendedJar() {
-    doLast {
-        def outputStream = new ByteArrayOutputStream()
-        exec {
-            workingDir(project.parent.rootDir)
-            commandLine './gradlew', '-PdoExtend', 'extendJar', '-PdownloadH2O=hdp2.6'
-            standardOutput = outputStream
-        }
-        def h2oExtendedJar = outputStream.toString().readLines().find{ it.contains("extended") && it.endsWith('jar') }
-        copy {
-            from h2oExtendedJar
-            into "${project.buildDir}/libs/"
-            rename { _ -> "h2o-extended.jar" }
-        }
-        buildH2OExtendedJar.ext.fileName = h2oExtendedJar
-    }
-}
-
-task buildH2OExtendedJarWithBenchmarks(type: Jar, dependsOn: buildH2OExtendedJar) {
-    manifest{
-        attributes 'Main-Class': 'water.hadoop.h2odriver'
-    }
-    version = ''
-    archiveBaseName = 'h2o-extended-with-benchmarks'
-    zip64 true
-    from "$buildDir/classes/scala/main/"
-    from zipTree("$buildDir/libs/h2o-extended.jar")
 }
 
 task cleanTerraform(type: Delete) {
@@ -82,7 +32,7 @@ task copyTerraform(dependsOn: cleanTerraform) {
     }
 }
 
-task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerraform]) {
+task substituteTerraform(dependsOn: copyTerraform) {
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = [
@@ -92,8 +42,11 @@ task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerr
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
-                .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                .replaceAll("SUBST_PACKAGE_FILE", "${project.rootDir}/assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar")
+                .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
+                .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
+                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+                .replaceAll("SUBST_H2O_BUILD", h2oBuild)
                 .replaceAll("SUBST_SW_VERSION", version.toString())
                 .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
                 .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
@@ -107,7 +60,7 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -124,7 +77,7 @@ task runBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
     }
 }
 
-task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -149,7 +102,7 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [shadowJar, substituteT
     }
 }
 
-task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [shadowJar, substituteTerraform, cleanOutput]) {
+task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
