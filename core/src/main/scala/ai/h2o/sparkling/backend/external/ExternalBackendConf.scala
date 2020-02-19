@@ -21,8 +21,6 @@ import ai.h2o.sparkling.backend.shared.SharedBackendConf
 import org.apache.spark.h2o.H2OConf
 import collection.JavaConverters._
 
-import scala.collection.JavaConverters._
-
 /**
  * External backend configuration
  */
