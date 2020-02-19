@@ -32,7 +32,7 @@ class InternalBackendReader(override val keyName: String, override val chunkIdx:
   private lazy val fr: Frame = underlyingFrame
 
   /** Chunks for this partition */
-  private lazy val chks: Array[Chunk] = water.fvec.FrameUtils.getChunks(fr, chunkIdx)
+  private lazy val chks: Array[Chunk] = getChunks(fr, chunkIdx)
 
   /** Number of rows in this partition */
   lazy val numRows: Int = chks(0)._len
@@ -81,4 +81,10 @@ class InternalBackendReader(override val keyName: String, override val chunkIdx:
     assert(assertion = false, s"Should never be here, type is $t")
     _: Chunk => null
   })
+
+  private def getChunks(fr: Frame, cidx: Int): Array[Chunk] = {
+    val vecs = fr.vecs()
+    val chks = vecs.indices.map(idx => vecs(idx).chunkForChunkIdx(cidx))
+    chks.toArray
+  }
 }

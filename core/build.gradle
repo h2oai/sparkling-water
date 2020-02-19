@@ -75,8 +75,6 @@ dependencies {
         exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
         exclude group: 'ai.h2o', module: 'h2o-core'
     }
-    // H2O Scala API
-    compile "ai.h2o:h2o-scala_${scalaBaseVersion}:${h2oVersion}"
     // H2O HDFS Persistent layer
     compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
         // Cannot use here: transitive = false since Gradle is producing wrong POM file

@@ -29,7 +29,6 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.Matchers
 import water.fvec._
 import water.parser.BufferedString
-import water.{DKV, Key}
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -45,23 +44,17 @@ object TestFrameUtils extends Matchers {
 
   def makeH2OFrame2[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
                                  data: Array[Array[Array[T]]], h2oTypes: Array[Byte], colDomains: Array[Array[String]] = null): H2OFrame = {
-    var f: Frame = new Frame(Key.make[Frame](fname))
-    FrameUtils.preparePartialFrame(f, colNames)
-    f.update()
+    ChunkUtils.initFrame(fname, colNames)
 
     for (i <- chunkLayout.indices) {
       buildChunks(fname, data(i), i, h2oTypes)
     }
 
-    f = DKV.get(fname).get()
-
-    FrameUtils.finalizePartialFrame(f, chunkLayout, colDomains, h2oTypes)
-
-    new H2OFrame(f)
+    new H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, h2oTypes, colDomains))
   }
 
   def buildChunks[T: ClassTag](fname: String, data: Array[Array[T]], cidx: Integer, h2oType: Array[Byte]): Array[_ <: Chunk] = {
-    val nchunks: Array[NewChunk] = FrameUtils.createNewChunks(fname, h2oType, cidx)
+    val nchunks: Array[NewChunk] = ChunkUtils.createNewChunks(fname, h2oType, cidx)
 
     data.foreach { values =>
       values.indices.foreach { idx =>
@@ -81,7 +74,7 @@ object TestFrameUtils extends Matchers {
         }
       }
     }
-    FrameUtils.closeNewChunks(nchunks)
+    ChunkUtils.closeNewChunks(nchunks)
     nchunks
   }
 
