@@ -18,8 +18,8 @@ sourceSets {
 }
 
 configurations {
-    integTestCompile.extendsFrom testCompile
-    integTestRuntime.extendsFrom testRuntime
+    integTestImplementation.extendsFrom testImplementation
+    integTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 
@@ -80,8 +80,8 @@ task integTest(type: Test) {
 task integTestJar(type: Jar, dependsOn: integTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with integration test classes."
-    baseName = "${project.name}_${scalaBaseVersion}"
-    appendix = 'itest'
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+    archiveAppendix = 'itest'
     from sourceSets.integTest.output
 }
 

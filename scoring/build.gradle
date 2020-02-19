@@ -7,11 +7,11 @@ dependencies {
     compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
     compileOnly project(":sparkling-water-macros")
 
-    compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-    compile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    compile "ai.h2o:h2o-genmodel:${h2oVersion}"
-    compile "ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}"
-    compile project(":sparkling-water-utils")
+    api "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    api "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+    api "ai.h2o:h2o-genmodel:${h2oVersion}"
+    api "ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}"
+    api project(":sparkling-water-utils")
 }
 
 defineStandardPublication().call()

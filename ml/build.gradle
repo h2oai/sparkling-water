@@ -5,45 +5,57 @@ apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
     // Sparkling Water Core
-    compile(project(":sparkling-water-core")) {
+    api(project(":sparkling-water-core")) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
-    
-    compile project(":sparkling-water-scoring")
+
+    api project(":sparkling-water-scoring")
     // MLLIb pipelines
     compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    testCompile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    testImplementation "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
     // Dependency for Target Encoder
-    compile "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
-    testCompile "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
+    api "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
+    testImplementation "ai.h2o:h2o-ext-target-encoder:${h2oVersion}"
 
     // And Scala library
-    compile "org.scala-lang:scala-library:${scalaVersion}"
+    api "org.scala-lang:scala-library:${scalaVersion}"
 
-    testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    testImplementation "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 
 
-    compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-    compile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    
-    testCompile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-    testCompile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    
+    api "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    api "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+
+    testImplementation "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
+    testImplementation "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
+
     // And use scalatest for Scala testing
-    testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    testCompile "junit:junit:4.11"
-    testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+    testImplementation "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
+    testImplementation "junit:junit:4.11"
+    testImplementation project(path: ':sparkling-water-core', configuration: 'testArchives')
 
     // to reuse some utils test classes defined in the core
-    testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
+    testImplementation project(path: ':sparkling-water-core', configuration: 'testArchives')
 
     // For test purposes, force newer client as the tests are modifying classpath and we get errors which
     // we do not get during normal production usage
-    testCompile('org.apache.hadoop:hadoop-mapreduce-client-core:2.7.2') { force = true }
-    testCompile('org.apache.hadoop:hadoop-common:2.7.2') { force = true }
+    testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') {
+        version {
+            strictly '2.7.2'
+        }
+    }
+    testImplementation('org.apache.hadoop:hadoop-common:2.7.2') {
+        version {
+            strictly '2.7.2'
+        }
+    }
     // required for org.apache.hadoop.util.StopWatch
-    testCompile('commons-io:commons-io:2.4') { force = true }
+    testImplementation('commons-io:commons-io:2.4') {
+        version {
+            strictly '2.4'
+        }
+    }
     // required for org.apache.commons.io.Charsets that is used internally
 
     compileOnly project(":sparkling-water-macros")

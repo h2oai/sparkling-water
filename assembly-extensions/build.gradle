@@ -1,12 +1,13 @@
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java-library'
 
 description = "Sparkling Water Extensions Assembly"
 
 dependencies {
-    compile("org.scala-lang:scala-library:${scalaVersion}")
-    compile(project(":sparkling-water-extensions"))
-    compile(project(":sparkling-water-utils")) { transitive = false }
+    api("org.scala-lang:scala-library:${scalaVersion}")
+    api(project(":sparkling-water-extensions"))
+    api(project(":sparkling-water-utils")) { transitive = false }
 }
 
 jar {
@@ -20,7 +21,7 @@ shadowJar {
 }
 
 artifacts {
-    compile shadowJar
+    api shadowJar
 }
 
 task embeddedAssemblyJar(type: Copy, dependsOn: shadowJar) {

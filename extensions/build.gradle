@@ -2,10 +2,10 @@ description = "Sparkling Water Extensions"
 
 dependencies {
     // Sparkling Water Projects
-    compile project(':sparkling-water-utils')
+    api project(':sparkling-water-utils')
 
     // Scala libraries
-    compile "org.scala-lang:scala-library:${scalaVersion}"
+    api "org.scala-lang:scala-library:${scalaVersion}"
 
     // H2O dependencies
     compileOnly "ai.h2o:h2o-core:${h2oVersion}"

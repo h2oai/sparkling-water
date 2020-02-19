@@ -9,20 +9,20 @@ distTar.enabled = false
 
 dependencies {
   // Sparkling Water Core
-  compile(project(":sparkling-water-core")) {
+  api(project(":sparkling-water-core")) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   // Spark Core
-  compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+  api "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
   // Spark SQL
-  compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+  api "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
   // Spark MLLib
-  compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // Spark Streaming
-  compile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+  api "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
   // Add Scala library
-  compile "org.scala-lang:scala-library:${scalaVersion}"
+  api "org.scala-lang:scala-library:${scalaVersion}"
 }
 

@@ -17,7 +17,6 @@ buildscript {
         classpath "com.bmuschko:gradle-docker-plugin:3.6.1"
         classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
         classpath 'net.researchgate:gradle-release:2.6.0'
-        classpath 'com.netflix.nebula:gradle-lint-plugin:10.4.2'
         classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.2.3'
         classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
         classpath 'com.github.jk1:gradle-license-report:1.7'
@@ -129,9 +128,6 @@ configure(allprojects) { project ->
     apply plugin: 'idea'
     apply plugin: 'eclipse'
     apply from: "$rootDir/gradle/artifacts.gradle"
-    apply plugin: 'nebula.lint'
-    gradleLint.rules = ['all-dependency']
-    gradleLint.alwaysRun = false // Run linter manually
     // Version of main components
     ext {
         scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
@@ -175,7 +171,7 @@ configure(subprojects) { project ->
 
         // Snapshot repository of H2O builds
         maven {
-            url "http://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
+            url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
         }
         
         if (sparkVersion.endsWith("-SNAPSHOT")) {

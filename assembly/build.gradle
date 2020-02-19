@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply plugin: 'com.github.jk1.dependency-license-report'
+apply plugin: 'java-library'
 
 import com.github.jk1.license.filter.*
 
@@ -10,16 +11,16 @@ description = "Sparkling Water Assembly"
 
 dependencies {
     // Sparkling Water libraries
-    compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core"))
-    compile(project(":sparkling-water-extensions"))
+    api project(":sparkling-water-ml")
+    api project(":sparkling-water-repl")
+    api project(":sparkling-water-core")
+    api project(":sparkling-water-extensions")
 
     // Spark libraries
-    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    api "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+    api "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+    api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+    api "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
 
 jar {
@@ -49,7 +50,7 @@ licenseReport {
 }
 
 artifacts {
-    compile shadowJar
+    api shadowJar
 }
 
 shadowJar.dependsOn generateLicenseReport

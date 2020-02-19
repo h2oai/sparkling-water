@@ -185,7 +185,7 @@ copyFilesForZipDistribution.dependsOn(distTaskDependencies)
 
 task zipDistribution(type: Zip, dependsOn: copyFilesForZipDistribution) {
     from "$buildDir/zip"
-    archiveFileName = "sparkling-water-${version}.zip"
+    archiveFileName = "sparkling-water-${archiveVersion}.zip"
     destinationDirectory = file("$buildDir/dist")
 }
 
