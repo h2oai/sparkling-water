@@ -32,6 +32,7 @@ task createDockerfile(type: Dockerfile) {
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
+    user("jenkins")
     getAllFullSparkVersions().each { version ->
         runCommand """\\
                     cd /home/jenkins && \\
@@ -45,7 +46,6 @@ task createDockerfile(type: Dockerfile) {
         def second = version.split("\\.")[1]
         environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
     }
-    user("jenkins")
     runCommand """\\
                 cd /home/jenkins && \\
                 git clone https://github.com/h2oai/sparkling-water.git && \\
@@ -86,7 +86,6 @@ task createDockerfile(type: Dockerfile) {
                 """
 
     runCommand "sudo chown -R jenkins:jenkins /home/jenkins/miniconda/pkgs"
-
     environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
     runCommand "pip install awscli --upgrade --user"
 }
