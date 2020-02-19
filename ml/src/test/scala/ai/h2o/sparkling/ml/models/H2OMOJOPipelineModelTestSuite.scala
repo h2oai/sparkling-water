@@ -284,23 +284,13 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     assert(transformedSchema === outputSchema)
   }
 
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are disabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = false)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns and detailedPredictionCol are enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = true)
+  test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is disabled") {
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = false)
     testTransformAndTransformSchemaAreAligned(settings)
   }
 
   test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = true, withDetailedPredictionCol = false)
-    testTransformAndTransformSchemaAreAligned(settings)
-  }
-
-  test("Transform and transformSchema methods are aligned - detailedPredictionCol is enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = false, withDetailedPredictionCol = true)
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true)
     testTransformAndTransformSchemaAreAligned(settings)
   }
 }

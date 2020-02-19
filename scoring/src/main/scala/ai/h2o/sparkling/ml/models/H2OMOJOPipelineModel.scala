@@ -24,7 +24,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions.{col, struct, udf}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.mutable
@@ -132,6 +132,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val frameWithPredictions = applyPredictionUdf(dataset, modelUdf)
+    val predictionCols = $(outputCols).indices.map { idx =>
+      selectFromArray(idx)(frameWithPredictions.col(s"${getPredictionCol()}.preds"))
+    }
 
     val fr = if (getNamedMojoOutputColumns()) {
 
@@ -150,9 +153,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = $(outputCols).indices.map { idx =>
-        selectFromArray(idx)(frameWithPredictions.col(s"${getPredictionCol()}.preds"))
-      }
 
       val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) { case (df, idx) =>
         df.withColumn(tempColNames(idx), predictionCols(idx))
@@ -167,14 +167,18 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
       frameWithoutTempCols
     } else {
-      frameWithPredictions
+      frameWithPredictions.withColumn("prediction", struct(array(predictionCols: _*) as "preds"))
     }
     fr
   }
 
   override protected def getPredictionColSchema(): Seq[StructField] = {
-    val fields = StructField("original", ArrayType(DoubleType)) :: Nil
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
+    val predictionType = if (getNamedMojoOutputColumns()) {
+      StructType($(outputCols).map(oc => StructField(oc, DoubleType, nullable = false)))
+    } else {
+      StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = false) :: Nil)
+    }
+    Seq(StructField(getPredictionCol(), predictionType, nullable = false))
   }
 
   def selectPredictionUDF(column: String): Column = {
