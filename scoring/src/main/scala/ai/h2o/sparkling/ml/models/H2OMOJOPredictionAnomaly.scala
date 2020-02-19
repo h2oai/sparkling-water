@@ -47,14 +47,14 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
-    val scoreField = StructField("score", predictionColType, nullable = predictionColNullable)
+    val scoreField = StructField("score", predictionColType, nullable = false)
     val fields = if (getWithDetailedPredictionCol()) {
-      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = predictionColNullable)
+      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
       scoreField :: normalizedScoreField :: Nil
     } else {
       scoreField :: Nil
     }
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
 
   }
 
