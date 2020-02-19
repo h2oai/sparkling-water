@@ -51,13 +51,13 @@ trait H2OMOJOPredictionRegression {
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
     val valueField = StructField("value", DoubleType, nullable = false)
     val fields = if (getWithDetailedPredictionCol()) {
-      val contributionsField = StructField("contributions", ArrayType(FloatType))
+      val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
       valueField :: contributionsField :: Nil
     } else {
       valueField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractRegressionPredictionColContent(): Column = {

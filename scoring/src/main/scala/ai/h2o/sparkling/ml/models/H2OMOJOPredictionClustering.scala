@@ -49,12 +49,12 @@ trait H2OMOJOPredictionClustering {
   def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
     val fields = if (getWithDetailedPredictionCol()) {
-      val distancesField = StructField("distances", ArrayType(DoubleType))
+      val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
       clusterField :: distancesField :: Nil
     } else {
       clusterField :: Nil
     }
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractClusteringPredictionColContent(): Column = {
