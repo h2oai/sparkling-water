@@ -65,14 +65,16 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
 
     H2OStarter.start(launcherArgs, false)
 
-    val expectedSize = conf.clusterSize.get.toInt
-    val discoveredSize = waitForCloudSize(expectedSize, conf.cloudTimeout)
-    if (discoveredSize < expectedSize) {
-      if (conf.isAutoClusterStartUsed) {
-        logError(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
-        hc.stop(stopSparkContext = true)
+    if (conf.isAutoClusterStartUsed) {
+      val expectedSize = conf.clusterSize.get.toInt
+      val discoveredSize = waitForCloudSize(expectedSize, conf.cloudTimeout)
+      if (discoveredSize < expectedSize) {
+        if (conf.isAutoClusterStartUsed) {
+          logError(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+          hc.stop(stopSparkContext = true)
+        }
+        throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
       }
-      throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
     }
 
     RestAPIManager(hc).registerAll()
