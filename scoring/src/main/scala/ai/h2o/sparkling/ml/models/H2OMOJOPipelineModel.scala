@@ -132,9 +132,6 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val frameWithPredictions = applyPredictionUdf(dataset, modelUdf)
-    val predictionCols = $(outputCols).indices.map { idx =>
-      selectFromArray(idx)(frameWithPredictions.col(s"${getPredictionCol()}.preds"))
-    }
 
     val fr = if (getNamedMojoOutputColumns()) {
 
@@ -153,6 +150,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
       // Transform the resulted Array of predictions into own but temporary columns
       // Temporary columns are created as we can't create the columns directly as nested ones
+      val predictionCols = $(outputCols).indices.map { idx =>
+        selectFromArray(idx)(frameWithPredictions.col(s"${getPredictionCol()}.preds"))
+      }
 
       val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) { case (df, idx) =>
         df.withColumn(tempColNames(idx), predictionCols(idx))
@@ -160,14 +160,16 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias($(outputCols)(idx)) }
-      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), struct(nestedPredictionCols: _*))
+      val resultCol = struct(nestedPredictionCols: _*)
+      val nullableResultCol = when(resultCol.isNull, null).otherwise(resultCol) // To enforce nullability
+      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), nullableResultCol)
 
       // Remove the temporary columns at the top level and return
       val frameWithoutTempCols = frameWithNestedPredictions.drop(tempColNames: _*)
 
       frameWithoutTempCols
     } else {
-      frameWithPredictions.withColumn("prediction", struct(array(predictionCols: _*) as "preds"))
+      frameWithPredictions
     }
     fr
   }
@@ -176,9 +178,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     val predictionType = if (getNamedMojoOutputColumns()) {
       StructType($(outputCols).map(oc => StructField(oc, DoubleType, nullable = false)))
     } else {
-      StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = false) :: Nil)
+      StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
-    Seq(StructField(getPredictionCol(), predictionType, nullable = false))
+    Seq(StructField(getPredictionCol(), predictionType, nullable = true))
   }
 
   def selectPredictionUDF(column: String): Column = {
