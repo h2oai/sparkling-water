@@ -176,7 +176,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 
   override protected def getPredictionColSchema(): Seq[StructField] = {
     val predictionType = if (getNamedMojoOutputColumns()) {
-      StructType($(outputCols).map(oc => StructField(oc, DoubleType, nullable = false)))
+      StructType($(outputCols).map(oc => StructField(oc, DoubleType, nullable = true)))
     } else {
       StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
