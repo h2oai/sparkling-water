@@ -21,8 +21,7 @@ import ai.h2o.sparkling.backend.shared.Converter
 import ai.h2o.sparkling.backend.shared.Converter.{ConversionFunction, SparkJob}
 import org.apache.spark.h2o.{H2OContext, _}
 import water._
-import water.fvec.Chunk
-import water.fvec.FrameUtils.preparePartialFrame
+import water.fvec.{Chunk, ChunkUtils, Frame}
 import water.util.Log
 
 import scala.collection.mutable
@@ -49,7 +48,7 @@ object InternalBackendConverter extends Converter {
    */
   def convert[T: ClassTag : TypeTag](hc: H2OContext, rddInput: RDD[T], keyName: String, colNames: Array[String], expectedTypes: Array[Byte],
                                      maxVecSizes: Array[Int], sparse: Array[Boolean], func: ConversionFunction[T]): String = {
-    initFrame(keyName, colNames)
+    ChunkUtils.initFrame(keyName, colNames)
     val rdd = new H2OAwareRDD(hc.getH2ONodes(), rddInput)
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
@@ -63,16 +62,9 @@ object InternalBackendConverter extends Converter {
   }
 
   private def finalizeFrame(key: String, rowsPerChunk: Array[Long], colTypes: Array[Byte]): Unit = {
-    val fr = DKV.getGet[Frame](key)
-    water.fvec.FrameUtils.finalizePartialFrame(fr, rowsPerChunk, null, colTypes)
+    val fr = ChunkUtils.finalizeFrame(key, rowsPerChunk, colTypes, null)
     logChunkLocations(fr)
     validateFrame(fr)
-  }
-
-  private def initFrame(key: String, columns: Array[String]): Unit = {
-    val fr = new water.fvec.Frame(Key.make[Frame](key))
-    preparePartialFrame(fr, columns)
-    fr.update()
   }
 
   private def logChunkLocations(fr: Frame): Unit = {
