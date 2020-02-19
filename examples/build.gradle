@@ -28,7 +28,7 @@ configurations {
 dependencies {
 
     sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-    api project(path: ':sparkling-water-assembly', configuration: 'shadow')
+    api project(':sparkling-water-ml')
 
     // H2O HDFS Persistent layer
     api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
