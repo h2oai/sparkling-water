@@ -21,7 +21,7 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.sparkling.backend.shared.Writer
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
-import water.fvec.{ChunkUtils, H2OFrameUtils}
+import water.fvec.ChunkUtils
 
 private[sparkling] class InternalBackendWriter(frameName: String,
                                                numRows: Int,
@@ -29,7 +29,7 @@ private[sparkling] class InternalBackendWriter(frameName: String,
                                                chunkId: Int,
                                                sparse: Array[Boolean],
                                                vecStartSize: Map[Int, Int]) extends Writer {
-  private val chunks = H2OFrameUtils.createNewChunks(frameName, expectedTypes, chunkId, sparse)
+  private val chunks = ChunkUtils.createNewChunks(frameName, expectedTypes, chunkId, sparse)
   private val sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
   private val sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
 
