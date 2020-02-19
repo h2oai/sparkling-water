@@ -45,7 +45,11 @@ class H2OFrame private(frameKey: Key[Frame], names: Array[String], vecs: Array[V
    * @param fr Java frame
    * @return new H2O frame with parsed data
    */
-  def this(fr: Frame) = this(if (fr._key != null) fr._key else Key.make("dframe" + Key.rand()).asInstanceOf[Key[Frame]], fr._names, fr.vecs())
+  def this(fr: Frame) = this(
+    if (fr._key != null) fr._key else Key.make("dframe" + Key.rand()).asInstanceOf[Key[Frame]],
+    fr._names,
+    fr.vecs()
+  )
 
   /**
    * Create a new H2OFrame based on existing Java Frame referenced by its key.
