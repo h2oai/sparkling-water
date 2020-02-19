@@ -99,7 +99,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
     val detailedPredictionColField = StructField("detailed_prediction", StructType(Seq(labelField, probabilitiesField)), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 
