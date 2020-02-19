@@ -24,17 +24,20 @@ import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
+import collection.JavaConverters._
+import scala.collection.mutable
+
 trait H2OMOJOPredictionWordEmbedding {
   self: H2OMOJOModel =>
 
   def getWordEmbeddingPredictionUDF(): UserDefinedFunction = {
     udf[Base, Row] { r: Row =>
       val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictWord2Vec(RowConverter.toH2ORowData(r))
-      Base(pred.wordEmbeddings)
+      Base(pred.wordEmbeddings.asScala)
     }
   }
 
-  private val predictionColType = DataTypes.createMapType(StringType, ArrayType(FloatType))
+  private val predictionColType = DataTypes.createMapType(StringType, ArrayType(FloatType, containsNull = false))
   private val predictionColNullable = true
 
   def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {
@@ -44,7 +47,7 @@ trait H2OMOJOPredictionWordEmbedding {
   def getWordEmbeddingDetailedPredictionColSchema(): Seq[StructField] = {
     val fields = StructField("wordEmbeddings", predictionColType, nullable = predictionColNullable) :: Nil
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractWordEmbeddingPredictionColContent(): Column = {
@@ -55,6 +58,6 @@ trait H2OMOJOPredictionWordEmbedding {
 
 object H2OMOJOPredictionWordEmbedding {
 
-  case class Base(wordEmbeddings: util.HashMap[String, Array[Float]])
+  case class Base(wordEmbeddings: mutable.Map[String, Array[Float]])
 
 }

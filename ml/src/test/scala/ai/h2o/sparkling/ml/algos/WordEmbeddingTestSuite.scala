@@ -22,28 +22,33 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
-class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext with TransformSchemaTestSuite {
+class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestContext with TransformSchemaTestSuite {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
+  import spark.implicits._
+
   override protected lazy val dataset: DataFrame = {
-    spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    Seq("Lorem ipsum dolor sit amet, consectetuer adipiscing elit",
+      "Curabitur vitae diam non enim vestibulum interdum",
+      "Fusce suscipit libero eget elit",
+      "Nunc auctor").toDF("text")
   }
 
-  override protected def mojoName: String = "isolation_forest_prostate.mojo"
+  override protected def mojoName: String = "word2vec.mojo"
+
+  private def predictionColType = {
+    MapType(StringType, ArrayType(FloatType, containsNull = false), valueContainsNull = true)
+  }
 
   override protected def expectedDetailedPredictionCol: StructField = {
-    val scoreField = StructField("score", DoubleType, nullable = false)
-    val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
-    StructField("detailed_prediction", StructType(scoreField :: normalizedScoreField :: Nil), nullable = true)
+    val wordEmbeddingsField = StructField("wordEmbeddings", predictionColType, nullable = true)
+    StructField("detailed_prediction", StructType(wordEmbeddingsField :: Nil), nullable = true)
   }
 
   override protected def expectedPredictionCol: StructField = {
-    StructField("prediction", DoubleType, nullable = true)
+    val predictionColType = MapType(StringType, ArrayType(FloatType, containsNull = false), valueContainsNull = true)
+    StructField("prediction", predictionColType, nullable = true)
   }
 }

@@ -41,7 +41,7 @@ trait H2OMOJOPredictionDimReduction {
   def getDimReductionDetailedPredictionColSchema(): Seq[StructField] = {
     val fields = StructField("dimensions", predictionColType, nullable = predictionColNullable) :: Nil
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractDimReductionSimplePredictionColContent(): Column = {
