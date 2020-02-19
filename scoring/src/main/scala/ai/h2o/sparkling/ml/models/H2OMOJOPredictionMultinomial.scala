@@ -53,13 +53,13 @@ trait H2OMOJOPredictionMultinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
+      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       labelField :: probabilitiesField :: Nil
     } else {
       labelField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractMultinomialPredictionColContent(): Column = {

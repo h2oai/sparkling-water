@@ -87,7 +87,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
     assert(schema == expectedSchema)
