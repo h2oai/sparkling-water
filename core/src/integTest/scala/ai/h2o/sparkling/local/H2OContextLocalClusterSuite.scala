@@ -17,32 +17,28 @@
 package ai.h2o.sparkling.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 /**
  * Testing creation of H2O cloud in distributed environment.
  */
 @RunWith(classOf[JUnitRunner])
-class H2OContextLocalClusterSuite extends FunSuite
-  with Matchers with BeforeAndAfter with SparkTestContext {
+class H2OContextLocalClusterSuite extends FunSuite with SharedH2OTestContext {
 
-  val swassembly = sys.props.getOrElse("sparkling.assembly.jar",
+  private val swassembly = sys.props.getOrElse("sparkling.assembly.jar",
     fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
+
+  override def createSparkContext: SparkContext = new SparkContext("local", "test-local-cluster", defaultSparkConf.setJars(swassembly :: Nil))
+
 
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
-    val conf = defaultSparkConf.setJars(swassembly :: Nil)
-    sc = new SparkContext("local", "test-local-cluster", conf)
-
     val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
-
-    hc.stop()
-    // Does not reset
-    resetSparkContext()
   }
+
 }
