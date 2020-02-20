@@ -24,7 +24,7 @@ import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions.{col, struct, udf}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.mutable
@@ -155,12 +155,14 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       }
 
       val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) { case (df, idx) =>
-        df.withColumn(tempColNames(idx), predictionCols(idx))
+        df.withColumn(tempColNames(idx), enforceNullability(predictionCols(idx)))
       }
 
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias($(outputCols)(idx)) }
-      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), struct(nestedPredictionCols: _*))
+      val resultCol = struct(nestedPredictionCols: _*)
+      val nullableResultCol =  enforceNullability(resultCol)
+      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), nullableResultCol)
 
       // Remove the temporary columns at the top level and return
       val frameWithoutTempCols = frameWithNestedPredictions.drop(tempColNames: _*)
@@ -172,9 +174,17 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     fr
   }
 
+  private def enforceNullability(column: Column): Column = {
+    when(column.isNull, null).otherwise(column)
+  }
+
   override protected def getPredictionColSchema(): Seq[StructField] = {
-    val fields = StructField("original", ArrayType(DoubleType)) :: Nil
-    Seq(StructField(getPredictionCol(), StructType(fields), nullable = false))
+    val predictionType = if (getNamedMojoOutputColumns()) {
+      StructType($(outputCols).map(oc => StructField(oc, DoubleType, nullable = true)))
+    } else {
+      StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
+    }
+    Seq(StructField(getPredictionCol(), predictionType, nullable = true))
   }
 
   def selectPredictionUDF(column: String): Column = {

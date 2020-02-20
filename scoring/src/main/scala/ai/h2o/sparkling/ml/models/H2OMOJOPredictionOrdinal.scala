@@ -42,7 +42,7 @@ trait H2OMOJOPredictionOrdinal {
   }
 
   private val predictionColType = StringType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getOrdinalPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
@@ -54,13 +54,13 @@ trait H2OMOJOPredictionOrdinal {
     val fields = if (getWithDetailedPredictionCol()) {
       logWarning("From next major release 3.28.1.1, the type of field 'probabilities' in the detailed prediction " +
         "column has changed from array of probabilities to a map from label to predicted probability.")
-      val probabilitiesField = StructField("probabilities", ArrayType(DoubleType))
+      val probabilitiesField = StructField("probabilities", ArrayType(DoubleType, containsNull = false), nullable = true)
       labelField :: probabilitiesField :: Nil
     } else {
       labelField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
   def extractOrdinalPredictionColContent(): Column = {

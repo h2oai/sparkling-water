@@ -81,15 +81,18 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", IntegerType, nullable = false)
+    val predictionColField = StructField("prediction", IntegerType, nullable = true)
 
-    val clusterField = StructField("cluster", IntegerType, nullable = false)
-    val distancesField = StructField("distances", ArrayType(DoubleType))
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(clusterField :: distancesField :: Nil), nullable = false)
+    val clusterField = StructField("cluster", IntegerType, nullable = true)
+    val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(clusterField :: distancesField :: Nil), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema without detailed prediction col") {
@@ -102,10 +105,13 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", IntegerType, nullable = false)
+    val predictionColField = StructField("prediction", IntegerType, nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 }

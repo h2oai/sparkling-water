@@ -39,6 +39,6 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]] extends SparkModel[T]
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
     val detailedPredictionColSchema = if (getWithDetailedPredictionCol()) getDetailedPredictionColSchema() else Nil
-    StructType(schema.fields ++ getPredictionColSchema() ++ detailedPredictionColSchema)
+    StructType(schema.fields ++ detailedPredictionColSchema ++ getPredictionColSchema())
   }
 }
