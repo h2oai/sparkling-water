@@ -45,12 +45,14 @@ dependencies {
     integTestImplementation("junit:junit:4.11")
     integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
     integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-
     integTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-    scriptsTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-    
-    // Put Spark Assembly on runtime path
     integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
+
+    scriptsTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    scriptsTestImplementation("junit:junit:4.11")
+    scriptsTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+    scriptsTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    scriptsTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
     scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
 }
 
