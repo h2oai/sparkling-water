@@ -155,13 +155,13 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       }
 
       val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) { case (df, idx) =>
-        df.withColumn(tempColNames(idx), predictionCols(idx))
+        df.withColumn(tempColNames(idx), enforceNullability(predictionCols(idx)))
       }
 
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias($(outputCols)(idx)) }
       val resultCol = struct(nestedPredictionCols: _*)
-      val nullableResultCol = when(resultCol.isNull, null).otherwise(resultCol) // To enforce nullability
+      val nullableResultCol =  enforceNullability(resultCol)
       val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), nullableResultCol)
 
       // Remove the temporary columns at the top level and return
@@ -172,6 +172,10 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       frameWithPredictions
     }
     fr
+  }
+
+  private def enforceNullability(column: Column): Column = {
+    when(column.isNull, null).otherwise(column)
   }
 
   override protected def getPredictionColSchema(): Seq[StructField] = {
