@@ -13,8 +13,8 @@ sourceSets {
 }
 
 configurations {
-    scriptsTestCompile.extendsFrom testCompile
-    scriptsTestRuntime.extendsFrom testRuntime
+    scriptsTestImplementation.extendsFrom testImplementation
+    scriptsTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 
@@ -35,8 +35,8 @@ task scriptsTest(type: Test) {
 task scriptsTestJar(type: Jar, dependsOn: scriptsTestClasses) {
     group = "Build"
     description = "Assembles a jar archive with scripts test classes."
-    baseName = "${project.name}_${scalaBaseVersion}"
-    appendix = 'scriptsTest'
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+    archiveAppendix = 'scriptsTest'
     from sourceSets.scriptsTest.output
 }
 

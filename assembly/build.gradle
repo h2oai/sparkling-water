@@ -1,25 +1,21 @@
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply plugin: 'com.github.jk1.dependency-license-report'
+apply plugin: 'java-library'
+apply from: "$rootDir/gradle/shadowApi.gradle"
 
 import com.github.jk1.license.filter.*
 
 description = "Sparkling Water Assembly"
 
 dependencies {
-    // Sparkling Water libraries
-    compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core"))
-    compile(project(":sparkling-water-extension-stack-trace"))
-
-    // Spark libraries
-    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    api(project(":sparkling-water-ml"))
+    api(project(":sparkling-water-repl"))
+    api(project(":sparkling-water-core"))
+    api(project(":sparkling-water-extension-stack-trace"))
 }
+
+
 
 jar {
     enabled = false // we do not need to generate jar file in this case
@@ -27,8 +23,7 @@ jar {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowRuntime]
-
+    configurations = [project.configurations.shadowApi]
     mergeServiceFiles()
 
     relocate 'javassist', 'ai.h2o.javassist'
@@ -48,7 +43,7 @@ licenseReport {
 }
 
 artifacts {
-    compile shadowJar
+    api shadowJar
 }
 
 shadowJar.dependsOn generateLicenseReport

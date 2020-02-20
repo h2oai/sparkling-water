@@ -3,15 +3,17 @@ description = "Sparkling Water MOJO scoring package"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
-    compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compileOnly project(":sparkling-water-macros")
+    api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
+    api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
+    api("ai.h2o:h2o-genmodel:${h2oVersion}")
+    api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
+    api(project(":sparkling-water-utils"))
 
-    compile "ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}"
-    compile "ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}"
-    compile "ai.h2o:h2o-genmodel:${h2oVersion}"
-    compile "ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}"
-    compile project(":sparkling-water-utils")
+    compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    compileOnly(project(":sparkling-water-macros"))
+    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+
 }
 
 defineStandardPublication().call()

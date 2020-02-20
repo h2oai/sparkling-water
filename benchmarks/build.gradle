@@ -1,26 +1,20 @@
 description = "Sparkling Water Benchmarks"
 
 apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
+apply from: "$rootDir/gradle/shadowApi.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
+apply plugin: 'java-library'
 
 dependencies {
-    // Sparkling Water libraries
-    compile project(":sparkling-water-ml")
-    compile project(":sparkling-water-repl")
-    compile(project(":sparkling-water-core")) {
+    api(project(":sparkling-water-ml"))
+    api(project(":sparkling-water-repl"))
+    api(project(":sparkling-water-core")) {
         exclude group: "javax.servlet", module: "servlet-api"
     }
-
-    // Spark libraries
-    compile "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    compile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowRuntime]
+    configurations = [project.configurations.shadowApi]
 
     mergeServiceFiles()
 
@@ -55,7 +49,7 @@ task buildH2OExtendedJarWithBenchmarks(type: Jar, dependsOn: buildH2OExtendedJar
     manifest{
         attributes 'Main-Class': 'water.hadoop.h2odriver'
     }
-    version = ''
+    archiveVersion = ''
     archiveBaseName = 'h2o-extended-with-benchmarks'
     zip64 true
     from "$buildDir/classes/scala/main/"
@@ -86,18 +80,18 @@ task substituteTerraform(dependsOn: [buildH2OExtendedJarWithBenchmarks, copyTerr
     doLast {
         def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
         def tfScripts = [
-            "${tfBaseDir}/variables.tf",
-            "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
-            "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"]
+                "${tfBaseDir}/variables.tf",
+                "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
+                "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
-                .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
-                .replaceAll("SUBST_SW_VERSION", version.toString())
-                .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
-                .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-            
+                    .replaceAll("SUBST_H2O_JAR_FILE", "$buildDir/libs/h2o-extended-with-benchmarks.jar")
+                    .replaceAll("SUBST_PACKAGE_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-$version-all.jar")
+                    .replaceAll("SUBST_SW_VERSION", version.toString())
+                    .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+                    .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+
             file(path).write(contents, 'UTF-8')
         }
     }

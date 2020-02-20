@@ -1,11 +1,10 @@
 //
-// Contains runtime configuration for Sparkling Water fat jars. This configuration transitively removes dependencies provided by
+// Contains runtime configuration for Sparkling Water fat jar. This configuration transitively removes dependencies provided by
 // Apache Spark or the Hadoop ecosystem.
 //
-
 configurations {
-    shadowRuntime {
-        extendsFrom runtime
+    shadowApi {
+        extendsFrom api
         exclude group: 'org.apache.spark'
         exclude group: 'org.apache.hadoop'
         exclude group: 'org.scala-lang'

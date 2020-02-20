@@ -9,8 +9,8 @@ sourceSets {
 }
 
 configurations {
-    benchCompile.extendsFrom testCompile
-    benchRuntime.extendsFrom testRuntime
+    benchImplementation.extendsFrom testImplementation
+    benchRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 
@@ -46,8 +46,8 @@ task bench(type: Test) {
 task benchJar(type: Jar, dependsOn: benchClasses) {
     group = "Build"
     description = "Assembles a jar archive with benchmark classes."
-    baseName = "${project.name}_${scalaBaseVersion}"
-    appendix = 'bench'
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+    archiveAppendix = 'bench'
     from sourceSets.bench.output
 }
 

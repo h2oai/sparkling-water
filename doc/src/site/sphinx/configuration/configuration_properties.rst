@@ -376,6 +376,5 @@ External backend configuration properties
 |                                                       |                | YARN.                               |
 +-------------------------------------------------------+----------------+-------------------------------------+
 
---------------
 
 .. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``

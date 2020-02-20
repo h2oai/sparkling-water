@@ -266,7 +266,7 @@ else:
     archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
 
     from pkgDir
-    destinationDir distDir
+    destinationDirectory = distDir
 }
 
 configurations {

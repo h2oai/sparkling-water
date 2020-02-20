@@ -11,13 +11,12 @@ sourceSets {
 }
 
 dependencies {
-    // Spark REPL
-    compileOnly "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-    testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    compileOnly("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
 
-    testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    testCompile "junit:junit:4.11"
-    testCompile(project(":sparkling-water-extension-stack-trace"))
+    testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    testImplementation("junit:junit:4.11")
+    testImplementation(project(":sparkling-water-extension-stack-trace"))
 }
 
 defineStandardPublication().call()
