@@ -1,12 +1,12 @@
 description = "Sparkling Water Scala macros"
 
 dependencies {
-    api "org.scala-lang:scala-library:${scalaVersion}"
-    api "org.scala-lang:scala-compiler:${scalaVersion}"
-    api "org.scala-lang:scala-reflect:${scalaVersion}"
+    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+    compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+    compileOnly("org.scala-lang:scala-reflect:${scalaVersion}")
 
-    testImplementation "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    testImplementation "junit:junit:4.11"
-    testImplementation "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    testImplementation project(":sparkling-water-core")
+    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    testImplementation("junit:junit:4.11")
+    testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+    testImplementation(project(":sparkling-water-core"))
 }

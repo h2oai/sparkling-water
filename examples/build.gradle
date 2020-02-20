@@ -26,11 +26,9 @@ configurations {
 }
 
 dependencies {
+    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
 
-    sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-    api project(':sparkling-water-ml')
-
-    // H2O HDFS Persistent layer
+    api(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
     api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
         // Cannot use here: transitive = false since Gradle is producing wrong POM file
         // Hence the exclusions are listed manually
@@ -39,35 +37,23 @@ dependencies {
         exclude(group: "org.apache.hadoop", module: "hadoop-aws")
     }
 
+    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+    compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
+    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
-    // And Scala library
-    api "org.scala-lang:scala-library:${scalaVersion}"
+    testImplementation("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
+    testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    testImplementation("junit:junit:4.11")
+    testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 
-    // Add streaming
-    compileOnly "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-    testImplementation "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-
-    testImplementation "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
-    // And use scalatest for Scala testing
-    testImplementation "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    testImplementation "junit:junit:4.11"
-    // to reuse some utils test classes defined in the core
-    testImplementation project(path: ':sparkling-water-core', configuration: 'testArchives')
-
-    // Integration tests requirements
-    integTestImplementation "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    integTestImplementation "junit:junit:4.11"
-    // to reuse some utils test classes defined in the core
-    integTestImplementation project(path: ':sparkling-water-core', configuration: 'testArchives')
-
-    // To enable Idea compiler even for integTestCode which use mllib
-    api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-
+    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    integTestImplementation("junit:junit:4.11")
+    integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+    
     // Put Spark Assembly on runtime path
-    integTestRuntimeOnly fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
-    scriptsTestRuntimeOnly fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
-
+    integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
+    scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
 }
 
 integTest {

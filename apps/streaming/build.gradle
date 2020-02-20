@@ -13,16 +13,16 @@ dependencies {
     exclude group: "javax.servlet", module: "servlet-api"
   }
   // Spark Core
-  api "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
   // Spark SQL
-  api "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
   // Spark MLLib
-  api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
 
   // Spark Streaming
-  api "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
+  compileOnly "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
 
   // Add Scala library
-  api "org.scala-lang:scala-library:${scalaVersion}"
+  compileOnly "org.scala-lang:scala-library:${scalaVersion}"
 }
 

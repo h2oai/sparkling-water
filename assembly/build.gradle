@@ -10,17 +10,10 @@ description = "Sparkling Water Assembly"
 
 
 dependencies {
-    // Sparkling Water libraries
-    api project(":sparkling-water-ml")
-    api project(":sparkling-water-repl")
-    api project(":sparkling-water-core")
-    api project(":sparkling-water-extensions")
-
-    // Spark libraries
-    api "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-    api "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-    api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-    api "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+    api(project(":sparkling-water-ml"))
+    api(project(":sparkling-water-repl"))
+    api(project(":sparkling-water-core"))
+    api(project(":sparkling-water-extensions"))
 }
 
 jar {
@@ -29,8 +22,6 @@ jar {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowRuntime]
-
     mergeServiceFiles()
 
     relocate 'javassist', 'ai.h2o.javassist'

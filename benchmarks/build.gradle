@@ -3,14 +3,15 @@ description = "Sparkling Water Benchmarks"
 apply from: "$rootDir/gradle/utils.gradle"
 apply plugin: 'java-library'
 
-dependencies {
-    // Sparkling Water libraries
-    api project(":sparkling-water-ml")
-    api project(":sparkling-water-core")
+configurations {
+    sparklingWaterAssemblyJar
+}
 
-    // Spark libraries
-    api "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-    api "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
+dependencies {
+    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
+
+    api(project(":sparkling-water-ml"))
+    api(project(":sparkling-water-core"))
 }
 
 task cleanTerraform(type: Delete) {
@@ -43,7 +44,7 @@ task substituteTerraform(dependsOn: copyTerraform) {
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_PACKAGE_FILE", "${project.rootDir}/assembly/build/libs/sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar")
+                .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
                 .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
                 .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
                 .replaceAll("SUBST_H2O_VERSION", h2oVersion)

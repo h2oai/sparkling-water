@@ -3,7 +3,7 @@ description = 'Sparkling Water Spark Package'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
-    api project(path: ':sparkling-water-assembly', configuration: 'shadow')
+    api(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
 }
 
 jar {

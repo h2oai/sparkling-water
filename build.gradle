@@ -15,7 +15,7 @@ buildscript {
     dependencies {
         classpath 'org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.11:1.0.1'
         classpath "com.bmuschko:gradle-docker-plugin:3.6.1"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
         classpath 'net.researchgate:gradle-release:2.6.0'
         classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.2.3'
         classpath 'ru.vyarus:gradle-use-python-plugin:1.2.0'
