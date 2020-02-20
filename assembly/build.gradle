@@ -1,6 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply from: "$rootDir/gradle/shadowRuntime.gradle"
 apply plugin: 'com.github.jk1.dependency-license-report'
 apply plugin: 'java-library'
 
@@ -16,12 +15,44 @@ dependencies {
     api(project(":sparkling-water-extensions"))
 }
 
+//
+// Contains runtime configuration for Sparkling Water fat jar. This configuration transitively removes dependencies provided by
+// Apache Spark or the Hadoop ecosystem.
+//
+configurations {
+    shadowApi {
+        extendsFrom api
+        exclude group: 'org.apache.spark'
+        exclude group: 'org.apache.hadoop'
+        exclude group: 'org.scala-lang'
+        exclude group: "javax.servlet", module: "servlet-api"
+        exclude group: 'org.apache.commons', module: 'commons-math3' // a dependency of org.apache.spark:spark-core_2.11
+        exclude group: 'org.codehaus.jackson', module: 'jackson-core-asl'
+        // a dependency of org.apache.spark:spark-core_2.11
+        exclude group: 'commons-codec', module: 'commons-codec' // a dependency of org.apache.spark:spark-sql_2.11
+        exclude group: 'commons-lang', module: 'commons-lang' // a dependency of org.apache.spark:spark-core_2.11
+        exclude group: 'commons-io', module: 'commons-io' // a dependency of org.apache.spark:spark-core_2.11
+        exclude group: 'commons-logging', module: 'commons-logging' // a dependency of org.apache.hadoop:hadoop-auth
+        exclude group: 'log4j', module: 'log4j' // a dependency of org.apache.hadoop:hadoop-auth
+        exclude group: 'com.google.protobuf' // a dependency of org.apache.hadoop:hadoop-common
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        // a dependency of org.apache.spark:spark-sql_2.11
+        exclude group: 'org.apache.httpcomponents' // a dependency of org.apache.hadoop:hadoop-auth
+        exclude group: 'com.github.rwl', module: 'jtransforms' // a dependency of org.apache.spark:spark-mllib
+        exclude group: 'com.google.code.findbugs', module: 'jsr305' // a dependency of org.apache.hadoop:hadoop-common
+        exclude group: 'javax.xml.bind', module: 'jaxb-api' // a dependency of org.apache.hadoop:hadoop-yarn-common
+        exclude group: 'net.sourceforge.f2j', module: 'arpack_combined_all'
+        // a dependency of org.apache.spark:spark-graphx_2.11
+    }
+}
+
 jar {
     enabled = false // we do not need to generate jar file in this case
     archiveBaseName = "${jar.archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 shadowJar {
+    configurations = [project.configurations.shadowApi]
     mergeServiceFiles()
 
     relocate 'javassist', 'ai.h2o.javassist'
