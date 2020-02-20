@@ -40,6 +40,7 @@ dependencies {
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
     compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
     compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
 
     testImplementation("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
     testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
@@ -65,7 +66,7 @@ integTest {
 
     // Pass list of jars required for testing
     systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
-    systemProperty "sparkling.itest.jar", "${integTestJar.archiveFile}"
+    systemProperty "sparkling.itest.jar", "${integTestJar.getArchiveFile().get().asFile.toString()}"
     systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
