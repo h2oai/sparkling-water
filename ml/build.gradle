@@ -22,7 +22,6 @@ dependencies {
     testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
     testImplementation("junit:junit:4.11")
     testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
-    testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
     // For test purposes, force newer client as the tests are modifying classpath and we get errors which
     // we do not get during normal production usage
     testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
