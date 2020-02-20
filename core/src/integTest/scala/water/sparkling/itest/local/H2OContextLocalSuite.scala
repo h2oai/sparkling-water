@@ -17,11 +17,10 @@
 package water.sparkling.itest.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SparkTestContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 import water.util.IcedInt
 import water.{DKV, Iced, Key}
 
@@ -29,14 +28,11 @@ import water.{DKV, Iced, Key}
  * Testing creation of H2O cloud in distributed environment.
  */
 @RunWith(classOf[JUnitRunner])
-class H2OContextLocalSuite extends FunSuite
-  with Matchers with BeforeAndAfter with SparkTestContext {
+class H2OContextLocalSuite extends FunSuite with SharedH2OTestContext {
+
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", defaultSparkConf)
 
   test("verify H2O cloud building on local JVM") {
-    sc = new SparkContext("local[*]", "test-local", defaultSparkConf)
-
-    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
-
     // Number of nodes should be on
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 members")
     // Make sure that H2O is running
@@ -45,9 +41,6 @@ class H2OContextLocalSuite extends FunSuite
     val icedInt: Iced[IcedInt] = new IcedInt(43).asInstanceOf[Iced[IcedInt]]
     DKV.put(Key.make(), icedInt)
     assert(water.H2O.store_size() == 1)
-
-    hc.stop()
-    // Reset this context
-    resetSparkContext()
   }
+
 }

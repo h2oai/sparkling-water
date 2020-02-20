@@ -21,11 +21,11 @@ import org.apache.spark.h2o.DoubleHolder
 import org.apache.spark.h2o.backends.internal.InternalBackendConf
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
-class H2OContextConversionOnSubsetExecutors extends FunSuite
-  with Matchers with BeforeAndAfter with SharedH2OTestContext {
+@RunWith(classOf[JUnitRunner])
+class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext(
     "local-cluster[3,1,1024]",
@@ -68,5 +68,4 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite
 
     TestFrameUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedRdd.toDF())
   }
-
 }
