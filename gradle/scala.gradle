@@ -93,9 +93,19 @@ test {
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
-task resolveTestRuntimeDependencies {
+def configurationsToResolve = [
+        "runtimeClasspath",
+        "compileClasspath",
+        "testCompileClasspath",
+        "testRuntimeClasspath",
+        "integTestCompileClasspath",
+        "integTestRuntimeClasspath",
+        "scriptsTestCompileClasspath",
+        "scriptsTestRuntimeClasspath"]
+
+task resolveDependencies {
     doLast {
-        project.configurations.testRuntime.resolve()
+        project.configurations.findAll({ Configuration c -> configurationsToResolve.contains(c.name) }).each({ c -> c.resolve() })
     }
 }
 
