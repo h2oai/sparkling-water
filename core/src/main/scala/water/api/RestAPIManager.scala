@@ -30,9 +30,9 @@ private[api] class RestAPIManager(hc: H2OContext) {
     // Register first the core
     register(CoreRestAPI, dummyRestApiContext)
     // Then additional APIs
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
     loader.reload()
-    loader.foreach(api => register(api, dummyRestApiContext))
+    loader.asScala.foreach(api => register(api, dummyRestApiContext))
   }
 
   def register(api: RestApi, context: RestApiContext): Unit = {

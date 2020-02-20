@@ -27,7 +27,6 @@ class StackTraceCollector extends AbstractH2OExtension {
   private var interval = -1 // -1 means disabled
 
   override def getExtensionName = "StackTraceCollector"
-
   override def printHelp(): Unit = {
     System.out.println(
       "\nStack trace collector extension:\n" +
@@ -61,16 +60,15 @@ class StackTraceCollector extends AbstractH2OExtension {
 
   private class StackTraceCollectorThread extends Thread("StackTraceCollectorThread") {
     setDaemon(true)
-
+    import scala.collection.JavaConverters._
     override def run(): Unit = {
       while (true) {
         try {
           Log.info("Taking stacktrace at time: " + new Date)
-          val allStackTraces = Thread.getAllStackTraces
-          import scala.collection.JavaConversions._
-          for (e <- allStackTraces.entrySet) {
-            Log.info("Taking stacktrace for thread: " + e.getKey)
-            for (st <- e.getValue) {
+          val allStackTraces = Thread.getAllStackTraces.asScala
+          for (e <- allStackTraces) {
+            Log.info("Taking stacktrace for thread: " + e._1)
+            for (st <- e._2) {
               Log.info("\t" + st.toString)
             }
           }

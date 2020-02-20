@@ -28,6 +28,7 @@ import org.apache.spark.expose.Logging
 
 import scala.Predef.{println => _}
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
@@ -39,7 +40,7 @@ import scala.tools.nsc.interpreter.{Results => IR, _}
  * @param sessionId    session ID for interpreter
  */
 private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends Logging {
-
+  private val valuesExtractor = new ValuesExtractor
   private val ContinueString = "     | "
   private val consoleStream = new IntpConsoleStream()
   protected val responseWriter = new IntpResponseWriter()
@@ -55,8 +56,11 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     }
   }
 
-  def valueOfTerm(term: String): Option[Any] = {
-    intp.valueOfTerm(term)
+  def extractValue(term: String): Option[Any] = {
+    intp.beSilentDuring {
+      intp.interpret(s"""_valuesExtractor.values.put("$term", $term)""")
+    }
+    valuesExtractor.values.get(term)
   }
 
   /**
@@ -76,6 +80,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   def consoleOutput: String = {
     consoleStream.content
   }
+  def valueOfTerm(term: String): Option[Any] = { intp.valueOfTerm(term) }
 
   /**
    * Run scala code in a string
@@ -107,7 +112,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
         intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
         intp.bind("spark", "org.apache.spark.sql.SparkSession", spark, List("@transient"))
         intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", spark.sqlContext, List("@transient", "implicit"))
-
+        intp.bind("_valuesExtractor", "ai.h2o.sparkling.repl.ValuesExtractor", valuesExtractor, List("@transient"))
         command(
           """
             @transient val h2oContext = {
@@ -171,7 +176,8 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   private def exceptionOccurred(): Boolean = {
-    valueOfTerm("lastException").isDefined && valueOfTerm("lastException").get != null
+      val lastException = extractValue("lastException")
+      lastException.isDefined && lastException.get != null
   }
 
   private def setSuccess() = {
@@ -305,4 +311,15 @@ object BaseH2OInterpreter {
     finally Thread.currentThread().setContextClassLoader(classloader)
   }
 
+}
+
+/**
+ * Due to a bug in the scala interpreter under scala 2.11 (SI-8935) (Fixed in Scala 2.12) with IMain.valueOfTerm
+ * returning None we can hack around it by
+ * binding an instance of valuesExtractor into iMain and interpret the "_valuesExtractor.values.put(termName, termValue)".
+ * This makes it possible to extract value in IMain in cross-Scala way even though non necessary in Scala 2.12
+ *
+ */
+class ValuesExtractor {
+  val values = mutable.Map.empty[String, Any]
 }

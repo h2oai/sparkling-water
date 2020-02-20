@@ -85,7 +85,8 @@ ext {
     ]
 
     defaultScalaBaseVersion = '2.11'
-    supportedScalaBaseVersions = ['2.11': '2.11.12']
+    supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
+    scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
 }
 
 def versionSpecificProps = new Properties()
@@ -133,7 +134,7 @@ configure(allprojects) { project ->
     ext {
         scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
         scalaVersion = supportedScalaBaseVersions[scalaBaseVersion]
-
+        scalaTestVersion = scalaTestVersions[scalaBaseVersion]
         // h2oBuild property is defined in gradle.properties
         h2oVersion = "$h2oMajorVersion.$h2oBuild"
         sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
