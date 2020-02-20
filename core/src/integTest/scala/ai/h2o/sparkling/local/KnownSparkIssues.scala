@@ -23,8 +23,8 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
-  * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
-  */
+ * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
+ */
 @RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
 

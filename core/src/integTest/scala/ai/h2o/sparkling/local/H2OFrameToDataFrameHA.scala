@@ -25,9 +25,9 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
-  * Test High Concurrency during conversion master
-  * is set to local-cluster in this test suite.
-  */
+ * Test High Concurrency during conversion master
+ * is set to local-cluster in this test suite.
+ */
 @RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameHA extends FunSuite with SharedH2OTestContext {
 

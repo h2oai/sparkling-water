@@ -32,7 +32,7 @@ class H2OContextLocalClusterSuite extends FunSuite with SharedH2OTestContext {
   private val swassembly = sys.props.getOrElse("sparkling.assembly.jar",
     fail("The variable 'sparkling.assembly.jar' is not set! It should point to assembly jar file."))
 
-  override def createSparkContext: SparkContext =  new SparkContext("local", "test-local-cluster", defaultSparkConf.setJars(swassembly :: Nil))
+  override def createSparkContext: SparkContext = new SparkContext("local", "test-local-cluster", defaultSparkConf.setJars(swassembly :: Nil))
 
 
   test("verify H2O cloud building on local cluster") {

@@ -24,9 +24,9 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
-  * Test conversion from H2O Frame to Spark Data Frame in a distributed environment. That is why the master
-  * is set to local-cluster in this test suite.
-  */
+ * Test conversion from H2O Frame to Spark Data Frame in a distributed environment. That is why the master
+ * is set to local-cluster in this test suite.
+ */
 @RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext {
 
