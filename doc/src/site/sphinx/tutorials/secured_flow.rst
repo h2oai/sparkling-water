@@ -39,7 +39,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
+            val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password")
             val hc = H2OContext.getOrCreate(spark, conf)
 
 

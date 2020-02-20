@@ -1,4 +1,5 @@
 apply plugin: 'scala'
+apply plugin: 'java-library'
 apply from: "$rootDir/gradle/utils.gradle"
 
 // Monkey patch the scala compile options to make Idea happy
@@ -40,32 +41,32 @@ java {
 project.archivesBaseName = "${project.name}_${scalaBaseVersion}"
 
 project.tasks.withType(AbstractArchiveTask) { AbstractArchiveTask task ->
-    task.baseName = "${project.name}_${scalaBaseVersion}"
+    task.archiveBaseName = "${project.name}_${scalaBaseVersion}"
 }
 
 // Create jar
 task testJar(type: Jar, dependsOn: testClasses) {
     group = "Build"
     description = "Assembles a jar archive with test classes."
-    baseName = "${project.name}_${scalaBaseVersion}"
-    appendix = 'test'
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+    archiveAppendix = 'test'
     from sourceSets.test.output
 }
 
 // Sources Jar generation
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 // Javadoc Jar generation
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 task scaladocJar(type: Jar, dependsOn: scaladoc) {
-    classifier = 'scaladoc'
+    archiveClassifier = 'scaladoc'
     from scaladoc
 }
 

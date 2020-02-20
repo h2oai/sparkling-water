@@ -48,16 +48,16 @@ task substitute() {
 
 task docJar(type: Jar) {
     from "${buildDir}"
-    classifier = "site"
+    archiveClassifier = "site"
     include "site/**"
-    baseName = "${project.name}_${scalaBaseVersion}"
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
 }
 
 task sourcesDocJar(type: Jar) {
-    classifier = "site-sources"
+    archiveClassifier = "site-sources"
     from "${projectDir}"
     include "src/**"
-    baseName = "${project.name}_${scalaBaseVersion}"
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
 
 
     from "${projectDir}"

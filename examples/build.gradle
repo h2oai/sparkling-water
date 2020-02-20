@@ -26,12 +26,10 @@ configurations {
 }
 
 dependencies {
+    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
 
-    sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-    compile project(path: ':sparkling-water-assembly', configuration: 'shadow')
-
-    // H2O HDFS Persistent layer
-    compile("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
+    api(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
+    api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
         // Cannot use here: transitive = false since Gradle is producing wrong POM file
         // Hence the exclusions are listed manually
         exclude(group: "org.apache.hadoop", module: "hadoop-client")
@@ -39,35 +37,23 @@ dependencies {
         exclude(group: "org.apache.hadoop", module: "hadoop-aws")
     }
 
+    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+    compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
+    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
-    // And Scala library
-    compile "org.scala-lang:scala-library:${scalaVersion}"
+    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    integTestImplementation("junit:junit:4.11")
+    integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+    integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    integTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+    integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
 
-    // Add streaming
-    compileOnly "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-    testCompile "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-
-    testCompile "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
-
-    // And use scalatest for Scala testing
-    testCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    testCompile "junit:junit:4.11"
-    // to reuse some utils test classes defined in the core
-    testCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-
-    // Integration tests requirements
-    integTestCompile "org.scalatest:scalatest_${scalaBaseVersion}:2.2.1"
-    integTestCompile "junit:junit:4.11"
-    // to reuse some utils test classes defined in the core
-    integTestCompile project(path: ':sparkling-water-core', configuration: 'testArchives')
-
-    // To enable Idea compiler even for integTestCode which use mllib
-    compile "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-
-    // Put Spark Assembly on runtime path
-    integTestRuntime fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
-    scriptsTestRuntime fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar')
-
+    scriptsTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    scriptsTestImplementation("junit:junit:4.11")
+    scriptsTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+    scriptsTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    scriptsTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+    scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
 }
 
 integTest {
@@ -78,7 +64,7 @@ integTest {
 
     // Pass list of jars required for testing
     systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
-    systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
+    systemProperty "sparkling.itest.jar", "${integTestJar.getArchiveFile().get().asFile.toString()}"
     systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"

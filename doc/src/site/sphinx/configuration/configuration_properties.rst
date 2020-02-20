@@ -368,6 +368,5 @@ External backend configuration properties
 |                                                       |                | each H2O node.                      |
 +-------------------------------------------------------+----------------+-------------------------------------+
 
---------------
 
 .. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
