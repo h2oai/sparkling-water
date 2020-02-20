@@ -8,21 +8,14 @@ distZip.enabled = false
 distTar.enabled = false
 
 dependencies {
-  // Sparkling Water Core
   api(project(":sparkling-water-core")) {
     exclude group: "javax.servlet", module: "servlet-api"
   }
-  // Spark Core
+
   compileOnly "org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}"
-  // Spark SQL
   compileOnly "org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}"
-  // Spark MLLib
   compileOnly "org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}"
-
-  // Spark Streaming
   compileOnly "org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}"
-
-  // Add Scala library
   compileOnly "org.scala-lang:scala-library:${scalaVersion}"
 }
 

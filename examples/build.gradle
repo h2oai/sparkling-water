@@ -50,7 +50,7 @@ dependencies {
     integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
     integTestImplementation("junit:junit:4.11")
     integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
-    
+
     // Put Spark Assembly on runtime path
     integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
     scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
