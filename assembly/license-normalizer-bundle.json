@@ -1,6 +1,6 @@
 {
   "bundles" : [
-    { "bundleName" : "apache2.0", "licenseName" : "Apache License, Version 2.0", "licenseUrl" : "http://www.apache.org/licenses/LICENSE-2.0" },
+    { "bundleName" : "apache2", "licenseName" : "Apache License, Version 2.0", "licenseUrl" : "http://www.apache.org/licenses/LICENSE-2.0" },
     { "bundleName" : "MIT", "licenseName" : "The MIT License", "licenseUrl" : "https://opensource.org/licenses/MIT"},
     { "bundleName" : "apache1.1", "licenseName": "Apache Software License, version 1.1", "licenseUrl": "https://www.apache.org/licenses/LICENSE-1.1"},
     { "bundleName" : "3clauseBSD", "licenseName": "The 3-Clause BSD License", "licenseUrl": "https://opensource.org/licenses/BSD-3-Clause"},

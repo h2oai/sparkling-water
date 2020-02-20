@@ -29,7 +29,7 @@ private[sparkling] class InternalBackendWriter(frameName: String,
                                                chunkId: Int,
                                                sparse: Array[Boolean],
                                                vecStartSize: Map[Int, Int]) extends Writer {
-  private val chunks = ChunkUtils.createNewChunks(frameName, expectedTypes, chunkId)
+  private val chunks = ChunkUtils.createNewChunks(frameName, expectedTypes, chunkId, sparse)
   private val sparseVectorPts = collection.mutable.Map(vecStartSize.mapValues(size => new Array[Int](size)).toSeq: _*)
   private val sparseVectorInUse = collection.mutable.Map(vecStartSize.mapValues(_ => false).toSeq: _*)
 
