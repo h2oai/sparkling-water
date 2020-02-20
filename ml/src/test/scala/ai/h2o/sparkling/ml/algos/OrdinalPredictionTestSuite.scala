@@ -78,13 +78,15 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val model = algorithm.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = false)
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val predictionColField = StructField("prediction", StringType, nullable = true)
 
+    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 
     assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema with details returns expected result") {
@@ -92,15 +94,17 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val model = algorithm.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val labelField = StructField("label", StringType, nullable = false)
-    val predictionColField = StructField("prediction", StringType, nullable = false)
-    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(Seq(labelField, probabilitiesField)), nullable = false)
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val labelField = StructField("label", StringType, nullable = true)
+    val predictionColField = StructField("prediction", StringType, nullable = true)
+    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(Seq(labelField, probabilitiesField)), nullable = true)
 
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 
     assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 }

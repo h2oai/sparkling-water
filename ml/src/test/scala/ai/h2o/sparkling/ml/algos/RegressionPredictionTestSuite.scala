@@ -82,13 +82,16 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val datasetFields = dataset.schema.fields
     val valueField = StructField("value", DoubleType, nullable = false)
-    val predictionColField = StructField("prediction", DoubleType, nullable = false)
-    val contributionsField = StructField("contributions", ArrayType(FloatType))
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = false)
+    val predictionColField = StructField("prediction", DoubleType, nullable = true)
+    val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema without detailed prediction col") {
@@ -100,10 +103,13 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", DoubleType, nullable = false)
+    val predictionColField = StructField("prediction", DoubleType, nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 }

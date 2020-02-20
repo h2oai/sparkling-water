@@ -40,21 +40,21 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   private val predictionColType = DoubleType
-  private val predictionColNullable = false
+  private val predictionColNullable = true
 
   def getAnomalyPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
-    val scoreField = StructField("score", predictionColType, nullable = predictionColNullable)
+    val scoreField = StructField("score", predictionColType, nullable = false)
     val fields = if (getWithDetailedPredictionCol()) {
-      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = predictionColNullable)
+      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
       scoreField :: normalizedScoreField :: Nil
     } else {
       scoreField :: Nil
     }
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = false))
+    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
 
   }
 

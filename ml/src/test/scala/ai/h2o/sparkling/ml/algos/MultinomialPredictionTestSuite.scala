@@ -82,14 +82,16 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val labelField = StructField("label", StringType, nullable = false)
-    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
-    val predictionColField = StructField("prediction", StringType, nullable = false)
-    val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = false)
+    val labelField = StructField("label", StringType, nullable = true)
+    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val predictionColField = StructField("prediction", StringType, nullable = true)
+    val detailedPredictionColField = StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema without detailed prediction col") {
@@ -102,10 +104,13 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = false)
+    val predictionColField = StructField("prediction", StringType, nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 }

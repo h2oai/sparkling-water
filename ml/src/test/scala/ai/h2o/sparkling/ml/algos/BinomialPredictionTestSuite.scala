@@ -88,16 +88,19 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val labelField = StructField("label", StringType, nullable = false)
-    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
-    val predictionColField = StructField("prediction", StringType, nullable = false)
-    val contributionsField = StructField("contributions", ArrayType(FloatType))
+    val labelField = StructField("label", StringType, nullable = true)
+    val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val predictionColField = StructField("prediction", StringType, nullable = true)
+    val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
     val detailedPredictionColField = StructField("detailed_prediction", StructType(
-      labelField :: probabilitiesField :: contributionsField :: Nil), nullable = false)
+      labelField :: probabilitiesField :: contributionsField :: Nil), nullable = true)
 
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: detailedPredictionColField :: Nil))
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema without detailed prediction col") {
@@ -110,10 +113,13 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = false)
+    val predictionColField = StructField("prediction", StringType, nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
+
     assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 }

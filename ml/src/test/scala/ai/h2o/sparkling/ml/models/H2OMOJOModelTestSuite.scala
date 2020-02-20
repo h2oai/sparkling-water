@@ -309,5 +309,4 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       "deep_learning_prostate.mojo")
     (prostateDataFrame, mojo)
   }
-
 }
