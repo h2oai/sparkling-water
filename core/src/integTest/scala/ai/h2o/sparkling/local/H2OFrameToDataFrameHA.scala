@@ -20,12 +20,15 @@ package ai.h2o.sparkling.local
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.DoubleHolder
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 /**
   * Test High Concurrency during conversion master
   * is set to local-cluster in this test suite.
   */
+@RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameHA extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getName, conf = defaultSparkConf)

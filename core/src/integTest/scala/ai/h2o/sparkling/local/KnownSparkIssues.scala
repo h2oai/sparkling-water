@@ -18,11 +18,14 @@ package ai.h2o.sparkling.local
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 /**
   * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
   */
+@RunWith(classOf[JUnitRunner])
 class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode

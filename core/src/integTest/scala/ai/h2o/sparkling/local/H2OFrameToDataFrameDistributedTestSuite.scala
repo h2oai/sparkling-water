@@ -19,12 +19,15 @@ package ai.h2o.sparkling.local
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 /**
   * Test conversion from H2O Frame to Spark Data Frame in a distributed environment. That is why the master
   * is set to local-cluster in this test suite.
   */
+@RunWith(classOf[JUnitRunner])
 class H2OFrameToDataFrameDistributedTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getName, conf = defaultSparkConf)

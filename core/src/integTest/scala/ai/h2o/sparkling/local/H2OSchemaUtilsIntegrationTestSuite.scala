@@ -19,9 +19,9 @@ package ai.h2o.sparkling.local
 
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.utils.schemas.ComplexSchema
-import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
+import org.apache.spark.SparkContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
-import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -29,14 +29,12 @@ import org.scalatest.{FunSuite, Matchers}
 import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class H2OSchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with SparkTestContext {
-  val conf = new SparkConf()
-    .set("spark.driver.extraClassPath", sys.props("java.class.path"))
-    .set("spark.executor.extraClassPath", sys.props("java.class.path"))
+class H2OSchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+  private val conf = defaultSparkConf
     .set("spark.executor.memory", "1g")
     .set("spark.driver.memory", "2g")
 
-  sc = new SparkContext("local-cluster[2,1,1024]", this.getClass.getSimpleName, conf)
+  override def createSparkContext: SparkContext =  new SparkContext("local-cluster[2,1,1024]", this.getClass.getSimpleName, conf)
 
   test("flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
