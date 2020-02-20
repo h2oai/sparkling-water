@@ -46,7 +46,7 @@ task createDockerfile(type: Dockerfile) {
         def second = version.split("\\.")[1]
         environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
     }
-/*    runCommand """\\
+    runCommand """\\
                 cd /home/jenkins && \\
                 git clone https://github.com/h2oai/sparkling-water.git && \\
                 cd sparkling-water && \\
@@ -61,7 +61,7 @@ task createDockerfile(type: Dockerfile) {
                     ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin
                     """
     }
-    runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"*/
+    runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
     user("root")
 
     runCommand """\\
