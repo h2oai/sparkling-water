@@ -12,6 +12,8 @@ dependencies {
     compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
     compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
     compileOnly(project(":sparkling-water-macros"))
+    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+
 }
 
 defineStandardPublication().call()

@@ -39,7 +39,6 @@ dependencies {
 
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
     compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
     testImplementation("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
     testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
@@ -50,6 +49,7 @@ dependencies {
     integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
     integTestImplementation("junit:junit:4.11")
     integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+    integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
     // Put Spark Assembly on runtime path
     integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
