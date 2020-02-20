@@ -145,8 +145,8 @@ there is no need to start ``H2OContext``.
 
             import ai.h2o.sparkling.ml.models._
 
-            val path = '/path/to/mojo.zip'
-            val settings = H2OMOJOSettings(withDetailedPredictionCol=true)
+            val path = "/path/to/mojo.zip"
+            val settings = H2OMOJOSettings(withDetailedPredictionCol = true)
             val model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions
