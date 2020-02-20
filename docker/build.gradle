@@ -17,7 +17,7 @@ ext {
 task createDockerfile(type: Dockerfile) {
     destFile = docker_file
     from 'ubuntu:trusty'
-    
+
     // Install Java 7
     runCommand """\\
                 |   apt-get -q -y update && \\
