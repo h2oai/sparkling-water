@@ -126,7 +126,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
     // Get LeaderBoard
-    val twoDimtable = aml.leaderboard().toTwoDimTable()
+    val twoDimtable = aml.leaderboard().toTwoDimTable(getLeaderboardExtraColumns(): _*)
     val colNames = twoDimtable.getColHeaders
     val data = aml.leaderboard().toTwoDimTable().getCellValues.map(_.map(_.toString))
     val rows = data.map {
@@ -168,6 +168,12 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   private val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
   private val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
   private val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
+  private val leaderboardExtraColumns = new StringArrayParam(this, "leaderboardExtraColumns",
+    """The list of extra columns appended to the leader board. The possible values are:
+      |   - 'ALL': adds all columns below.
+      |   - 'training_time_ms': column providing the training time of each model in milliseconds (doesn't include the training of cross validation models).
+      |   - 'predict_time_per_row_ms`: column providing the average prediction time by the model for a single row.""".stripMargin
+  )
 
   //
   // Default values
@@ -187,7 +193,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
     maxAfterBalanceSize -> 5.0f,
     keepCrossValidationPredictions -> false,
     keepCrossValidationModels -> false,
-    maxModels -> 0
+    maxModels -> 0,
+    leaderboardExtraColumns -> Array.empty[String]
   )
 
   //
@@ -222,6 +229,8 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   def getKeepCrossValidationModels(): Boolean = $(keepCrossValidationModels)
 
   def getMaxModels(): Int = $(maxModels)
+
+  def getLeaderboardExtraColumns(): Array[String] = $(leaderboardExtraColumns)
 
   //
   // Setters
@@ -267,4 +276,10 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   def setKeepCrossValidationModels(value: Boolean): this.type = set(keepCrossValidationModels, value)
 
   def setMaxModels(value: Int): this.type = set(maxModels, value)
+
+  def setLeaderboardExtraColumns(extraColumns: Array[String]): this.type = set(leaderboardExtraColumns, extraColumns)
+
+  def setLeaderboardExtraColumns(extraColumns: String*): this.type = setLeaderboardExtraColumns(extraColumns.toArray)
+
+  def setLeaderboardExtraColumn(extraColumn: String): this.type = setLeaderboardExtraColumns(Array(extraColumn))
 }
