@@ -82,7 +82,7 @@ trait InternalBackendConf extends SharedBackendConf {
         |  nthreads             : ${nthreads}
         |  drddMulFactor        : $drddMulFactor""".stripMargin
 
-  private[backend] override def getFileProperties: Seq[(String, _)] = super.getFileProperties :+ PROP_HDFS_CONF
+  private[backends] override def getFileProperties: Seq[(String, _)] = super.getFileProperties :+ PROP_HDFS_CONF
 }
 
 object InternalBackendConf {
