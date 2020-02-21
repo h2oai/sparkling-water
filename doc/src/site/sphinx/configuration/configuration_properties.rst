@@ -224,13 +224,6 @@ Configuration properties independent of selected backend
 |                                                    |                | corresponding parameters in Sparkling  |
 |                                                    |                | Water.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
-| ``spark.ext.h2o.hdfs_conf``            | ``sc.hadoopConfiguration`` | Either a string with the Path to a file|
-|                                                    |                | with Hadoop HDFS configuration or the  |
-|                                                    |                | org.apache.hadoop.conf.Configuration   |
-|                                                    |                | object. Useful for HDFS credentials    |
-|                                                    |                | settings and other HDFS-related        |
-|                                                    |                | configurations.                        |
-+----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 
@@ -268,6 +261,13 @@ Internal backend configuration properties
 | ``spark.ext.h2o.node.enable.web``                  | ``false``      | Enable or disable web on H2O worker    |
 |                                                    |                | nodes. It is disabled by default for   |
 |                                                    |                | security reasons.                      |
++----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.hdfs_conf``            | ``sc.hadoopConfiguration`` | Either a string with the Path to a file|
+|                                                    |                | with Hadoop HDFS configuration or the  |
+|                                                    |                | org.apache.hadoop.conf.Configuration   |
+|                                                    |                | object. Useful for HDFS credentials    |
+|                                                    |                | settings and other HDFS-related        |
+|                                                    |                | configurations.                        |
 +----------------------------------------------------+----------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                        |
 +----------------------------------------------------+----------------+----------------------------------------+

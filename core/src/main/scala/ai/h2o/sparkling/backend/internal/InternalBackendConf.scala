@@ -17,7 +17,13 @@
 
 package ai.h2o.sparkling.backend.internal
 
+import java.io.{File, FileWriter}
+
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import org.apache.hadoop.conf.Configuration
+import org.apache.spark.SparkEnv
+import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 
 /**
@@ -43,6 +49,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def nodeIcedDir: Option[String] = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
+  def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
+
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
 
@@ -60,6 +68,18 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def setNodeIcedDir(dir: String): H2OConf = set(PROP_NODE_ICED_DIR._1, dir)
 
+  def setHdfsConf(path: String): H2OConf = set(PROP_HDFS_CONF._1, path)
+
+  def setHdfsConf(conf: Configuration): H2OConf = {
+    val sparkTmpDir = new File(Utils.getLocalDir(SparkEnv.get.conf))
+    val hdfsConfigTempFile = File.createTempFile("hdfs_conf", ".xml", sparkTmpDir)
+    hdfsConfigTempFile.deleteOnExit()
+    withResource(new FileWriter(hdfsConfigTempFile)) { fileWriter =>
+      conf.writeXml(fileWriter)
+    }
+    set(PROP_HDFS_CONF._1, hdfsConfigTempFile.getAbsolutePath)
+  }
+
   def internalConfString: String =
     s"""Sparkling Water configuration:
        |  backend cluster mode : $backendClusterMode
@@ -73,6 +93,7 @@ trait InternalBackendConf extends SharedBackendConf {
        |  nthreads             : $nthreads
        |  drddMulFactor        : $drddMulFactor""".stripMargin
 
+  private[backend] override def getFileProperties: Seq[(String, _)] = super.getFileProperties :+ PROP_HDFS_CONF
 }
 
 object InternalBackendConf {
@@ -99,4 +120,7 @@ object InternalBackendConf {
 
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR: (String, None.type) = ("spark.ext.h2o.node.iced.dir", None)
+
+  /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
+  val PROP_HDFS_CONF: (String, None.type) = ("spark.ext.h2o.hdfs_conf", None)
 }

@@ -74,6 +74,9 @@ class InternalBackendConf(SharedBackendConfUtils):
     def nodeIcedDir(self):
         return self._get_option(self._jconf.nodeIcedDir())
 
+    def hdfsConf(self):
+        return self._get_option(self._jconf.hdfsConf())
+
     #
     # Setters
     #
@@ -140,4 +143,8 @@ class InternalBackendConf(SharedBackendConfUtils):
 
     def setNodeIcedDir(self, dir):
         self._jconf.setNodeIcedDir(dir)
+        return self
+
+    def setHdfsConf(self, hdfsConf):
+        self._jconf.setHdfsConf(hdfsConf)
         return self
