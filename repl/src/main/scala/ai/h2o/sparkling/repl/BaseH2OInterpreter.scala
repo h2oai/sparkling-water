@@ -22,9 +22,9 @@
 
 package ai.h2o.sparkling.repl
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.expose.Logging
-import org.apache.spark.sql.SparkSession
 
 import scala.Predef.{println => _}
 import scala.annotation.tailrec
@@ -101,7 +101,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   private def initializeInterpreter(): Unit = {
     settings = createSettings()
     intp = createInterpreter()
-    val spark = SparkSession.builder().getOrCreate()
+    val spark = SparkSessionUtils.active
     addThunk(
       intp.beQuietDuring {
         intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))

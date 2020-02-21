@@ -15,22 +15,15 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml.models
+package ai.h2o.sparkling.utils
 
-import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.sql.SparkSession
 
-private[models] trait HasMojoData {
-
-  // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSessionUtils.active.sparkContext.broadcast(this.mojoData)
-    this
+/**
+ * Internal utilities methods for Spark Session
+ */
+object SparkSessionUtils {
+  def active: SparkSession = {
+    SparkSession.builder().getOrCreate()
   }
-
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
 }

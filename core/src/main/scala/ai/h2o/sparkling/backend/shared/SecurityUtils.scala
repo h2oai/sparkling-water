@@ -25,7 +25,8 @@ import water.network.{SecurityUtils => H2OSecurityUtils}
 
 private[backend] object SecurityUtils {
 
-  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = {
+  def enableSSL(conf: H2OConf): Unit = {
+    val spark = SparkSession.active
     val sslPair = generateSSLPair()
     val config = generateSSLConfig(sslPair)
     conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
@@ -35,7 +36,7 @@ private[backend] object SecurityUtils {
     }
   }
 
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
+  def enableFlowSSL(conf: H2OConf): H2OConf = {
     val sslPair = generateSSLPair("h2o-internal-auto-flow-ssl")
     conf.setJks(sslPair.jks.getLocation)
     conf.setJksPass(sslPair.jks.pass)

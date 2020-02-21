@@ -16,6 +16,7 @@
 */
 package water.api.H2OFrames
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import water.api.{Handler, HandlerFactory, RestApiContext}
@@ -47,7 +48,7 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString
     }
     dataFrame.createOrReplaceTempView(s.dataframe_id.toLowerCase)
-    h2oContext.sparkSession.sqlContext.cacheTable(s.dataframe_id)
+    SparkSessionUtils.active.sqlContext.cacheTable(s.dataframe_id)
     s
   }
 }

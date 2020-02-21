@@ -16,6 +16,7 @@
 */
 package water.api.RDDs
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -72,7 +73,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
             val schema = ScalaReflection.schemaFor(v._2)
             StructField(v._1, schema.dataType, schema.nullable)
             }
-          val df = h2oContext.sparkSession.createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
+          val df = SparkSessionUtils.active.createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
           h2oContext.asH2OFrame(df, name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
