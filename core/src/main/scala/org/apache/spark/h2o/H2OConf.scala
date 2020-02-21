@@ -33,12 +33,14 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   H2OConf.checkDeprecatedOptions(sparkConf)
 
+  def this() = this(SparkSession.active.sparkContext.conf)
+
   /** Support for creating H2OConf in Java environments */
-  def this(jsc: JavaSparkContext) = this(jsc.sc.getConf)
+  def this(jsc: JavaSparkContext) = this()
 
-  def this(sc: SparkContext) = this(sc.getConf)
+  def this(sc: SparkContext) = this()
 
-  def this(sparkSession: SparkSession) = this(sparkSession.sparkContext.getConf)
+  def this(sparkSession: SparkSession) = this()
 
   // Precondition
   require(sparkConf != null, "Spark conf was null")
@@ -120,7 +122,6 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 }
 
 object H2OConf extends Logging {
-
   private val deprecatedOptions = Map[String, String]()
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {

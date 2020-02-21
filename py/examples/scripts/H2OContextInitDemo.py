@@ -5,4 +5,4 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("App name").getOrCreate()
 
 # Initiate H2OContext
-hc = H2OContext.getOrCreate(spark)
+hc = H2OContext.getOrCreate()

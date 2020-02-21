@@ -40,7 +40,7 @@ object ProstateDemo extends SparkContextSupport {
     addFiles(sc, TestUtils.locate("smalldata/prostate/prostate.csv"))
 
     // Run H2O cluster inside Spark cluster
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext.implicits._
 
     // We do not need to wait for H2O cloud since it will be launched by backend

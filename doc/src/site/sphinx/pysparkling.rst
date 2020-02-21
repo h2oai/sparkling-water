@@ -124,7 +124,7 @@ For running on YARN and other supported platforms please see :ref:`supported_pla
 
       from pysparkling import *
       import h2o
-      hc = H2OContext.getOrCreate(spark)
+      hc = H2OContext.getOrCreate()
 
 
 Run IPython Notebook with PySparkling

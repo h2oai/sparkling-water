@@ -15,7 +15,7 @@ def testSSL(spark):
     conf = createH2OConf(spark)
     conf.setInternalSecureConnectionsEnabled()
 
-    context = H2OContext.getOrCreate(spark, conf)
+    context = H2OContext.getOrCreate(conf)
     path = context.download_h2o_logs("build", "LOG")
 
     with open(path, 'r') as f:
@@ -34,7 +34,7 @@ def testAuth(spark):
     conf.setLoginConf("build/login.conf")
     conf.setUserName("user")
     conf.setPassword("pass")
-    context = H2OContext.getOrCreate(spark, conf)
+    context = H2OContext.getOrCreate(conf)
     path = context.download_h2o_logs("build", "LOG")
 
     with open(path, 'r') as f:
@@ -54,10 +54,10 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     conf.setLoginConf("build/login.conf")
 
     with pytest.raises(Exception):
-        H2OContext.getOrCreate(spark, conf)
+        H2OContext.getOrCreate(conf)
     # No app should be running
     assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     conf.setUserName("user")
     conf.setPassword("pass")
-    context = H2OContext.getOrCreate(spark, conf)
+    context = H2OContext.getOrCreate(conf)
     context.stop()

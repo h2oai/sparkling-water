@@ -29,7 +29,7 @@ from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 @pytest.fixture(scope="module")
 def hc(spark):
     conf = createH2OConf(spark)
-    hc =  H2OContext.getOrCreate(spark, conf)
+    hc =  H2OContext.getOrCreate(conf)
     yield hc
     hc.stop()
 

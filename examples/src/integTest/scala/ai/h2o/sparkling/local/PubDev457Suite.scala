@@ -38,7 +38,7 @@ object PubDev457Test extends SparkContextSupport with IntegTestStopper{
   def main(args: Array[String]): Unit = exitOnException{
     val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext.implicits._
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._

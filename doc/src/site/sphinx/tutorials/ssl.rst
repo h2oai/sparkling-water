@@ -32,7 +32,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setInternalSecureConnectionsEnabled()
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -41,7 +41,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
             from pysparkling import *
             conf = H2OConf(spark).setInternalSecureConnectionsEnabled()
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: R
         :title: R
@@ -51,7 +51,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
             library(rsparkling)
             sc <- spark_connect(master = "local")
             conf = H2OConf(spark)$setInternalSecureConnectionsEnabled()
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
 This method generates all files and distributes them via YARN or Spark methods to all worker nodes. This
 communication is secure in the case of configured YARN/Spark security.
@@ -77,7 +77,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setSslConf("/path/to/ssl/configuration")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -86,7 +86,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
             from pysparkling import *
             conf = H2OConf(spark).setSslConf("/path/to/ssl/configuration")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: R
         :title: R
@@ -96,7 +96,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
             library(rsparkling)
             sc <- spark_connect(master = "local")
             conf = H2OConf(spark)$setSslConf("/path/to/ssl/configuration")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
 Format of the security configuration is explained at
 `H2O-3 documentation <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/security.html#ssl-internode-security>`__.

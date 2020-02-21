@@ -15,7 +15,7 @@ spark_install(version = "2.4.5")
 sc <- spark_connect(master = "local", version = "2.4.5")
 
 # Start H2OContext
-hc <- H2OContext.getOrCreate(sc)
+hc <- H2OContext.getOrCreate()
 
 # Open H2O Flow web UI:
 hc$openFlow()

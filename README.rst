@@ -107,7 +107,7 @@ The Sparkling Shell supports creation of an |H2O| cloud and execution of |H2O| a
    .. code:: scala
 
       import org.apache.spark.h2o._
-      val hc = H2OContext.getOrCreate(spark)
+      val hc = H2OContext.getOrCreate()
 
    ``H2OContext`` starts H2O services on top of Spark cluster and provides primitives for transformations between |H2O| and Spark data structures.
 

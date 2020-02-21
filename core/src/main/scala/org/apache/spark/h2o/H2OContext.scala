@@ -59,11 +59,11 @@ import scala.util.control.NoStackTrace
 /**
  * Create new H2OContext based on provided H2O configuration
  *
- * @param sparkSession Spark Session
  * @param conf         H2O configuration
  */
-abstract class H2OContext private(val sparkSession: SparkSession, private val conf: H2OConf) extends Logging with H2OContextUtils {
+abstract class H2OContext private(private val conf: H2OConf) extends Logging with H2OContextUtils {
   self =>
+  val sparkSession = SparkSessionUtils.active
   val sparkContext = sparkSession.sparkContext
   private val backendHeartbeatThread = new Thread {
     override def run(): Unit = {
@@ -419,7 +419,7 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
 object H2OContext extends Logging {
 
-  private class H2OContextClientBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) {
+  private class H2OContextClientBased(conf: H2OConf) extends H2OContext(conf) {
 
     /** Runtime list of active H2O nodes */
     protected var h2oNodes: Array[NodeDesc] = _
@@ -472,7 +472,7 @@ object H2OContext extends Logging {
     override protected def getFlowEndpoint(): String = s"${getH2OEndpointIp()}:${getH2OEndpointPort()}${conf.contextPath.getOrElse("")}"
   }
 
-  private class H2OContextRestAPIBased(spark: SparkSession, conf: H2OConf) extends H2OContext(spark, conf) with
+  private class H2OContextRestAPIBased(conf: H2OConf) extends H2OContext(conf) with
     external.H2OContextUtils {
     private var flowIp: String = _
     private var flowPort: Int = _
@@ -586,11 +586,10 @@ object H2OContext extends Logging {
   /**
    * Get existing or create new H2OContext based on provided H2O configuration
    *
-   * @param sparkSession Spark Session
    * @param conf         H2O configuration
    * @return H2O Context
    */
-  def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = synchronized {
+  def getOrCreate(conf: H2OConf): H2OContext = synchronized {
     val checkedConf = checkAndUpdateConf(conf)
     val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
@@ -600,16 +599,16 @@ object H2OContext extends Logging {
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed
         if (startedManually && connectingToNewCluster(existingContext, checkedConf)) {
-          instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, checkedConf).init())
+          instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
           logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
       } else {
-        instantiatedContext.set(new H2OContextRestAPIBased(sparkSession, checkedConf).init())
+        instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
       }
     } else {
       if (instantiatedContext.get() == null)
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
-          instantiatedContext.set(new H2OContextClientBased(sparkSession, checkedConf).init())
+          instantiatedContext.set(new H2OContextClientBased(checkedConf).init())
         } else {
           throw new IllegalArgumentException(
             """
@@ -622,31 +621,17 @@ object H2OContext extends Logging {
     instantiatedContext.get()
   }
 
-  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = {
-    logWarning("Method H2OContext.getOrCreate with an argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred.")
-    getOrCreate(SparkSession.builder().sparkContext(sc).getOrCreate(), conf)
+  def getOrCreate(): H2OContext = {
+    getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
 
-  /**
-   * Get existing or create new H2OContext based on provided H2O configuration. It searches the configuration
-   * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
-   * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
-   *
-   * @param sparkSession Spark Session
-   * @return H2O Context
-   */
-  def getOrCreate(sparkSession: SparkSession): H2OContext = {
-    getOrCreate(sparkSession, Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf(sparkSession)))
-  }
+  def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = getOrCreate(conf)
 
-  def getOrCreate(sc: SparkContext): H2OContext = {
-    logWarning("Method H2OContext.getOrCreate with an argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred.")
-    val spark = SparkSession.builder().sparkContext(sc).getOrCreate()
-    getOrCreate(spark)
-  }
+  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = getOrCreate(conf)
 
+  def getOrCreate(sparkSession: SparkSession): H2OContext = getOrCreate()
+
+  def getOrCreate(sc: SparkContext): H2OContext = getOrCreate()
 }
 
 class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace

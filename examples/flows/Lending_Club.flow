@@ -71,7 +71,7 @@
     },
     {
       "type": "sca",
-      "input": "val h2oContext = H2OContext.getOrCreate(sc)\n\nval loanDataDF = h2oContext.asDataFrame(loanDataHF)\nloanDataDF.printSchema"
+      "input": "val h2oContext = H2OContext.getOrCreate()\n\nval loanDataDF = h2oContext.asDataFrame(loanDataHF)\nloanDataDF.printSchema"
     },
     {
       "type": "md",

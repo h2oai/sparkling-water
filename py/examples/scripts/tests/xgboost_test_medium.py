@@ -19,7 +19,7 @@ def _locate(filename):
         return "/home/0xdiag/bigdata/laptop/milsongs/" + filename
 
 
-hc = H2OContext.getOrCreate(spark)
+hc = H2OContext.getOrCreate()
 
 training_frame = h2o.import_file(_locate("milsongs-train.csv.gz"))
 test_frame = h2o.import_file(_locate("milsongs-test.csv.gz"))

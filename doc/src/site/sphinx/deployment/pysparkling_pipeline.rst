@@ -11,7 +11,7 @@ Let's first create and export the model as:
     from pysparkling import *
     from pysparkling.ml import *
 
-    hc = H2OContext.getOrCreate(spark)
+    hc = H2OContext.getOrCreate()
 
     # Helper method to locate the data file
     def locate(file_name):

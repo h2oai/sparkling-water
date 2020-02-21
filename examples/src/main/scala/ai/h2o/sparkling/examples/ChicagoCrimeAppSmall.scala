@@ -29,7 +29,7 @@ object ChicagoCrimeAppSmall {
     // Prepare environment
     val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
-    val hc = H2OContext.getOrCreate(spark)
+    val hc = H2OContext.getOrCreate()
 
     val app = new ChicagoCrimeApp(
       weatherFile = TestUtils.locate("smalldata/chicago/chicagoAllWeather.csv"),

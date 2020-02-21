@@ -48,7 +48,7 @@ And later, you can create ``H2OContext`` as:
 
     import org.apache.spark.h2o._
     conf = new H2OConf(spark).setUserName("username").setPassword("password")
-    val hc = H2OContext.getOrCreate(spark, conf)
+    val hc = H2OContext.getOrCreate(conf)
 
 Or, you can also use setters available on ``H2OConf`` as:
 
@@ -56,7 +56,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 
     import org.apache.spark.h2o._
     val conf = new H2OConf(spark).setLoginConf("ldap.conf").setLdapLoginEnabled().setUserName("username").setPassword("password")
-    val hc = H2OContext.getOrCreate(spark, conf)
+    val hc = H2OContext.getOrCreate(conf)
 
 Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
 property `spark.ext.h2o.user.name` or via the method `setUserName`.
@@ -79,7 +79,7 @@ And later, you can create ``H2OContext`` as:
 
     from pysparkling import *
     conf = H2OConf(spark).setUserName("username").setPassword("password")
-    hc = H2OContext.getOrCreate(spark, conf)
+    hc = H2OContext.getOrCreate(conf)
 
 
 Or, you can also use setters available on ``H2OConf`` as:
@@ -88,7 +88,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 
     from pysparkling import *
     conf = H2OConf(spark).setLoginConf("ldap.conf").setLdapLoginEnabled().setUserName("username").setPassword("password")
-    hc = H2OContext.getOrCreate(spark, conf)
+    hc = H2OContext.getOrCreate(conf)
 
 You can see that in the case of PySparkling, you need to also specify the username and password as part of the ``H2OContext`` call. This is required because you want to have the Python client authenticated as well.
 

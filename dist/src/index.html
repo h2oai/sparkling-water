@@ -451,7 +451,7 @@
             <p>4. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br />
-              val h2oContext = H2OContext.getOrCreate(spark) <br />
+              val h2oContext = H2OContext.getOrCreate() <br />
               import h2oContext._ <br />
             </p>
             <p>5. Follow <a id="clitutorial" href="https://github.com/0xdata/sparkling-water/tree/master/examples#step-by-step-through-weather-data-example">this demo</a>, which imports airlines and weather data and runs predictions on delays.<br /></p>
@@ -496,7 +496,7 @@
             <p>5. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
               import org.apache.spark.h2o._ <br />
-              val h2oContext = H2OContext.getOrCreate(spark) <br />
+              val h2oContext = H2OContext.getOrCreate() <br />
               import h2oContext._ <br />
             </p>
           </div>
@@ -537,7 +537,7 @@
             <p>4. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br />
-              val h2oContext = H2OContext.getOrCreate(spark) <br />
+              val h2oContext = H2OContext.getOrCreate() <br />
               import h2oContext._ <br />
             </p>
           </div>
@@ -579,14 +579,14 @@
             <p class="terminal">
               import org.apache.spark.h2o._<br/>
               val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
-              val hc = H2OContext.getOrCreate(spark, conf)<br/>
+              val hc = H2OContext.getOrCreate(conf)<br/>
             </p>
 
             <p>Python</p>
             <p class="terminal">
               from pysparkling import *<br/>
               conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
-              hc = H2OContext.getOrCreate(spark, conf)<br/>
+              hc = H2OContext.getOrCreate(conf)<br/>
             </p>
 
 
@@ -684,7 +684,7 @@
 
             <p>8. Now, H2OContext is available and we can use any H2O features available in R.</p>
             <p class="terminal">
-              hc <- H2OContext.getOrCreate(sc)
+              hc <- H2OContext.getOrCreate()
             </p>
 
 
@@ -723,7 +723,7 @@
             <p>4. In your PySparkling application, create H2OContext.</p>
             <p class="terminal">
               from pysparkling import *<br/>
-              hc = H2OContext.getOrCreate(spark)<br/>
+              hc = H2OContext.getOrCreate()<br/>
             </p>
 
             <h2>PySparkling installed from PyPi repository</h2>
@@ -744,7 +744,7 @@
             <p>3. Start H2OContext.</p>
             <p class="terminal">
               from pysparkling import *<br/>
-              hc = H2OContext.getOrCreate(spark)<br/>
+              hc = H2OContext.getOrCreate()<br/>
             </p>
             <h2>H2O Python Client</h2>
             <p>Once you have H2OContext available, any API calls available in the H2O Python client can be used. For more information about the Python client, please visit <a href="https://h2o-release.s3.amazonaws.com/h2o/SUBST_H2O_BRANCH_NAME/SUBST_H2O_BUILD/index.html#Python">H2O-Python page</a>.</p>
@@ -776,7 +776,7 @@
             <p>3. Create an H<sub>2</sub>O cloud inside the Spark cluster:</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br />
-              val h2oContext = H2OContext.getOrCreate(spark) <br />
+              val h2oContext = H2OContext.getOrCreate() <br />
               import h2oContext._ <br />
             </p>
 

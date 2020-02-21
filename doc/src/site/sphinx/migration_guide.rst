@@ -14,12 +14,12 @@ Removal of Deprecated Methods and Classes
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
 
 - On RSparkling, the method ``h2o_context`` is removed. To create H2OContext, please call
-  ``hc <- H2OContext.getOrCreate(sc)``. Also the methods ``h2o_flow``, ``as_h2o_frame`` and ``as_spark_dataframe`` are
-  removed. Please use the methods available on the ``H2OContext`` instance created via ``hc <- H2OContext.getOrCreate(sc)``.
+  ``hc <- H2OContext.getOrCreate()``. Also the methods ``h2o_flow``, ``as_h2o_frame`` and ``as_spark_dataframe`` are
+  removed. Please use the methods available on the ``H2OContext`` instance created via ``hc <- H2OContext.getOrCreate()``.
   Instead of ``h2o_flow``, use ``hc$openFlow``, instead of ``as_h2o_frame``, use ``asH2OFrame`` and instead of
   ``as_spark_dataframe`` use ``asSparkFrame``.
 
-  Also the ``H2OContext.getOrCreate(sc)`` does not have ``username`` and ``password`` arguments anymore.
+  Also the ``H2OContext.getOrCreate()`` does not have ``username`` and ``password`` arguments anymore.
   The correct way how to pass authentication details to ``H2OContext`` is via ``H2OConf`` class, such as:
 
   .. code-block:: r

@@ -21,7 +21,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 
             import org.apache.spark.h2o._
             import java.net.URI
-            val hc = H2OContext.getOrCreate(spark)
+            val hc = H2OContext.getOrCreate()
 
         Parse the data using H2O and convert them to Spark Frame
 
@@ -66,7 +66,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
         .. code:: python
 
             from pysparkling import *
-            hc = H2OContext.getOrCreate(spark)
+            hc = H2OContext.getOrCreate()
 
         Parse the data using H2O and convert them to Spark Frame
 

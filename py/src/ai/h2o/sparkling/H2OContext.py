@@ -20,11 +20,11 @@ import sys
 import warnings
 from h2o.frame import H2OFrame
 from h2o.utils.typechecks import assert_is_type, Enum
-from pyspark.context import SparkContext
+from pyspark.ml.util import _jvm
 from pyspark.rdd import RDD
-from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import *
+from pyspark.sql import SparkSession
 
 from ai.h2o.sparkling.FrameConversions import FrameConversions as fc
 from ai.h2o.sparkling.Initializer import Initializer
@@ -56,24 +56,15 @@ def _get_first(rdd):
 
 class H2OContext(object):
 
-    def __init__(self, spark_session):
+    def __init__(self):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
          To start H2OContext use one of the getOrCreate methods. This constructor is internally used in those methods
         """
         try:
-            self.__do_init(spark_session)
             Initializer.load_sparkling_jar()
         except:
             raise
-
-    def __do_init(self, spark_session):
-        self._spark_session = spark_session
-        self._sc = self._spark_session._sc
-        self._sql_context = self._spark_session._wrapped
-        self._jsql_context = self._spark_session._jwrapped
-        self._jspark_session = self._spark_session._jsparkSession
-        self._jvm = self._spark_session._jvm
 
     def __h2o_connect(h2o_context, **kwargs):
         if "https" in kwargs:
@@ -94,7 +85,7 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark, conf=None, verbose=True, **kwargs):
+    def getOrCreate(spark=None, conf=None, verbose=True, **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -108,6 +99,7 @@ class H2OContext(object):
         :return:  instance of H2OContext
         """
 
+
         # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
         # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not
         # desirable
@@ -116,17 +108,11 @@ class H2OContext(object):
             jvm = activeSession.sparkContext._jvm
             jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
 
-        # Get spark session
-        spark_session = spark
-        if isinstance(spark, SparkContext):
-            warnings.warn("Method H2OContext.getOrCreate with argument of type SparkContext is deprecated and " +
-                          "parameter of type SparkSession is preferred.")
-            spark_session = SparkSession.builder.getOrCreate()
         # Get H2OConf
         if conf is not None:
             selected_conf = conf
         else:
-            selected_conf = H2OConf(spark_session)
+            selected_conf = H2OConf()
         if "auth" in kwargs:
             warnings.warn("Providing authentication via auth field on H2OContext is deprecated. "
                           "Please use setUserName and setPassword setters on H2OConf object.")
@@ -134,13 +120,10 @@ class H2OContext(object):
             selected_conf.setPassword(kwargs["auth"][1])
             del kwargs["auth"]
 
-        h2o_context = H2OContext(spark_session)
-
-        jvm = h2o_context._jvm  # JVM
-        jspark_session = h2o_context._jspark_session  # Java Spark Session
+        h2o_context = H2OContext()
 
         # Create backing Java H2OContext
-        jhc = jvm.org.apache.spark.h2o.JavaH2OContext.getOrCreate(jspark_session, selected_conf._jconf)
+        jhc = _jvm().org.apache.spark.h2o.JavaH2OContext.getOrCreate(selected_conf._jconf)
         h2o_context._jhc = jhc
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
@@ -196,8 +179,8 @@ class H2OContext(object):
         if self.__isClientConnected() and not self.__isStopped():
             return self._jhc.toString()
         else:
-            return "H2OContext has been stopped or hasn't been created. Call H2OContext.getOrCreate(spark) or " \
-                   "H2OContext.getOrCreate(spark, conf) to create a new one."
+            return "H2OContext has been stopped or hasn't been created. Call H2OContext.getOrCreate() or " \
+                   "H2OContext.getOrCreate(conf) to create a new one."
 
     def __repr__(self):
         self.show()
@@ -275,9 +258,9 @@ class H2OContext(object):
                 elif isinstance(first, bool):
                     return fc._as_h2o_frame_from_RDD_Bool(self, sparkFrame, h2oFrameName, fullCols)
                 elif (isinstance(sparkFrame.min(), int) and isinstance(sparkFrame.max(), int)) or (isinstance(sparkFrame.min(), long) and isinstance(sparkFrame.max(), long)):
-                    if sparkFrame.min() >= self._jvm.Integer.MIN_VALUE and sparkFrame.max() <= self._jvm.Integer.MAX_VALUE:
+                    if sparkFrame.min() >= _jvm().Integer.MIN_VALUE and sparkFrame.max() <= _jvm().Integer.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Int(self, sparkFrame, h2oFrameName, fullCols)
-                    elif sparkFrame.min() >= self._jvm.Long.MIN_VALUE and sparkFrame.max() <= self._jvm.Long.MAX_VALUE:
+                    elif sparkFrame.min() >= _jvm().Long.MIN_VALUE and sparkFrame.max() <= _jvm().Long.MAX_VALUE:
                         return fc._as_h2o_frame_from_RDD_Long(self, sparkFrame, h2oFrameName, fullCols)
                     else:
                         raise ValueError('Numbers in RDD Too Big')

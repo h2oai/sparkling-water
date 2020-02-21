@@ -18,7 +18,7 @@ import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 import ai.h2o.sparkling.examples._
 
 // Start H2O services
-val hc = H2OContext.getOrCreate(spark)
+val hc = H2OContext.getOrCreate()
 
 def locateData(name: String): URI = {
   val abs = new File("/home/0xdiag/bigdata/laptop/citibike-nyc/" + name)

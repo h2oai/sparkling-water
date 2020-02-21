@@ -36,9 +36,9 @@ object SparklingWaterWithHiveDriver {
         .set("spark.ext.h2o.repl.enabled", "true"))
 
     // Create SparkContext to execute application on Spark cluster
-    val spark = SparkSessionUtils.createSparkSession(conf, forceHive = true)
+    SparkSessionUtils.createSparkSession(conf, forceHive = true)
     // Start H2O cluster only
-    val hc = H2OContext.getOrCreate(spark.sparkContext)
+    val hc = H2OContext.getOrCreate()
 
     println(hc)
 

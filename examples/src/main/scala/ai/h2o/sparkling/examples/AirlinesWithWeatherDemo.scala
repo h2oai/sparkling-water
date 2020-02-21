@@ -35,7 +35,7 @@ object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupp
     val sc = sparkContext(conf)
     import spark.implicits._ // import implicit conversions
 
-    @transient val h2oContext = H2OContext.getOrCreate(sc)
+    @transient val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
     import h2oContext.implicits._
     // Setup environment

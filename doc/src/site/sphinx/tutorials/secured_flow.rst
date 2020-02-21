@@ -32,7 +32,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val hc = H2OContext.getOrCreate(spark)
+            val hc = H2OContext.getOrCreate()
 
         You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
 
@@ -40,7 +40,7 @@ In order to use https correctly, the following two options need to be specified:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
 
     .. tab-container:: Python
@@ -57,7 +57,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: python
 
             from pysparkling import *
-            hc = H2OContext.getOrCreate(spark)
+            hc = H2OContext.getOrCreate()
 
         You can also start PySparkling shell without the configuration
         and specify it using the setters on ``H2OConf`` as:
@@ -66,7 +66,7 @@ In order to use https correctly, the following two options need to be specified:
 
             from pysparkling import *
             conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
         In case your certificates are self-signed, the connection of the
         Python client to the backend cluster will fail due to the security
@@ -77,7 +77,7 @@ In order to use https correctly, the following two options need to be specified:
 
             from pysparkling import *
             conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
-            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            hc = H2OContext.getOrCreate(onf, verify_ssl_certificates=False)
 
 
 
@@ -105,7 +105,7 @@ certificates are created.
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val hc = H2OContext.getOrCreate(spark)
+            val hc = H2OContext.getOrCreate()
 
         You can also start Sparkling shell without the configuration
         and specify it using the setters on ``H2OConf`` as:
@@ -114,7 +114,7 @@ certificates are created.
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setAutoFlowSslEnabled()
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
 
     .. tab-container:: Python
@@ -131,7 +131,7 @@ certificates are created.
         .. code:: python
 
             from pysparkling import *
-            hc = H2OContext.getOrCreate(spark, verify_ssl_certificates=False)
+            hc = H2OContext.getOrCreate(verify_ssl_certificates=False)
 
         You can also start PySparkling shell without the configuration
         and specify it using the setters on ``H2OConf`` as:
@@ -140,4 +140,4 @@ certificates are created.
 
             from pysparkling import *
             conf = H2OConf(spark).setAutoFlowSslEnabled()
-            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            hc = H2OContext.getOrCreate(conf, verify_ssl_certificates=False)

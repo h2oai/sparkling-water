@@ -40,7 +40,7 @@ object CraigslistJobTitlesStreamingOnlyApp extends SparkContextSupport with Mode
     val ssc = new StreamingContext(sc, Seconds(10))
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
 
     try {

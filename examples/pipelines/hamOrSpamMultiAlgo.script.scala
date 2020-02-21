@@ -40,7 +40,7 @@ def load(dataFile: String): DataFrame = {
 }
 
 import org.apache.spark.h2o._
-val h2oContext = H2OContext.getOrCreate(spark)
+val h2oContext = H2OContext.getOrCreate()
 
 /**
   * Define the pipeline stages

@@ -25,7 +25,7 @@ The use of the Sparkling Water package is directly driven by the Sparkling Water
 
     %spark
     import org.apache.spark.h2o._
-    val hc = H2OContext.getOrCreate(spark)
+    val hc = H2OContext.getOrCreate()
 
 Creating an ``H2OFrame`` from a Spark ``DataFrame``:
 

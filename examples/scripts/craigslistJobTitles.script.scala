@@ -122,7 +122,7 @@ val title_vectors = words.map(x => new DenseVector(
 // Create H2OFrame
 import org.apache.spark.mllib
 import org.apache.spark.h2o._
-val hc = H2OContext.getOrCreate(sc)
+val hc = H2OContext.getOrCreate()
 
 val resultDF: DataFrame = XXXlabels.zip(title_vectors).map(v => (v._1, v._2)).toDF("target", "fv")
 

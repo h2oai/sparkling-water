@@ -228,6 +228,13 @@ public class JavaH2OContext {
         return hc.asH2OFrameKeyString(df, Option.apply(frameName));
     }
 
+    public static JavaH2OContext getOrCreate() {
+        return new JavaH2OContext(H2OContext.getOrCreate());
+    }
+
+    public static JavaH2OContext getOrCreate(H2OConf conf) {
+        return new JavaH2OContext(H2OContext.getOrCreate(conf));
+    }
     /**
      * Get existing or create new JavaH2OContext based on provided H2O configuration. It searches the configuration
      * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
@@ -237,8 +244,7 @@ public class JavaH2OContext {
      * @return Java H2O Context
      */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc) {
-        H2OConf conf = new H2OConf(jsc.sc());
-        return getOrCreate(jsc, conf);
+        return getOrCreate();
     }
 
     /**
@@ -249,7 +255,7 @@ public class JavaH2OContext {
      * @return Java H2O Context
      */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf) {
-        return new JavaH2OContext(H2OContext.getOrCreate(jsc.sc(), conf));
+        return getOrCreate(conf);
     }
 
     /**
@@ -261,7 +267,7 @@ public class JavaH2OContext {
      * @return Java H2O Context
      */
     public static JavaH2OContext getOrCreate(SparkSession sparkSession) {
-        return new JavaH2OContext(H2OContext.getOrCreate(sparkSession));
+        return getOrCreate();
     }
 
     /**
@@ -272,7 +278,7 @@ public class JavaH2OContext {
      * @return Java H2O Context
      */
     public static JavaH2OContext getOrCreate(SparkSession sparkSession, H2OConf conf) {
-        return new JavaH2OContext(H2OContext.getOrCreate(sparkSession, conf));
+        return getOrCreate(conf);
     }
 
 

@@ -32,7 +32,7 @@ object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with 
     val conf: SparkConf = configure("Amazon Fine Food Review Sentiment Analysis")
     val sc = sparkContext(conf)
 
-    @transient val hc = H2OContext.getOrCreate(sc)
+    @transient val hc = H2OContext.getOrCreate()
 
     val reviews = new H2OFrame(new java.io.File("/Users/michal/Tmp/amazon-fine-foods/Reviews.csv"))
 

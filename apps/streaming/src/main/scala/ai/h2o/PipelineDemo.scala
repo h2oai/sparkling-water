@@ -35,7 +35,7 @@ object PipelineDemo extends SparkContextSupport {
     val sparkConf = configure("PipelineDemo")
     // Create the context
     val ssc = new StreamingContext(sparkConf, Seconds(1))
-    val hc = H2OContext.getOrCreate(ssc.sparkContext)
+    val hc = H2OContext.getOrCreate()
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // this is used to implicitly convert an RDD to a DataFrame.
     import sqlContext.implicits._

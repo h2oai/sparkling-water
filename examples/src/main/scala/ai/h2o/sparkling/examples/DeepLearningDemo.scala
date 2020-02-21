@@ -34,7 +34,7 @@ object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
     val sc = sparkContext(conf)
 
     // Run H2O cluster inside Spark cluster
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
     import h2oContext.implicits._
 
