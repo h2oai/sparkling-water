@@ -22,6 +22,7 @@ import java.util
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.grid.GridSearch.SimpleParametersBuilderFactory
@@ -37,7 +38,7 @@ import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.{Dataset, Row}
 import water.{DKV, Key}
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 import water.util.PojoUtils
@@ -51,8 +52,6 @@ import scala.collection.mutable
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams {
-
-  private lazy val hc = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
 
   def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 
@@ -313,7 +312,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val paramNames = hyperParamNames.map(StructField(_, StringType, nullable = false)).toList
     val schema = StructType(List(StructField("Mojo Model ID", StringType, nullable = false)) ++ paramNames)
-    val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
+    val spark = SparkSessionUtils.active
+    val fr = spark.createDataFrame(spark.sparkContext.parallelize(rows), schema)
     fr
   }
 
@@ -332,7 +332,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val metricNames = extractMetrics(grid.getModels()(0)).
       map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
     val schema = StructType(List(StructField("Model ID", StringType, nullable = false)) ++ metricNames)
-    val fr = hc.sparkSession.createDataFrame(hc.sparkContext.parallelize(rows), schema)
+    val spark = SparkSessionUtils.active
+    val fr = spark.createDataFrame(spark.sparkContext.parallelize(rows), schema)
     fr
   }
 

@@ -19,12 +19,12 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
-import org.apache.spark.sql.SparkSession
 import water.DKV
 
 /**
@@ -134,7 +134,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
       if (userPoints == null) {
         null
       } else {
-        val spark = SparkSession.builder().getOrCreate()
+        val spark = SparkSessionUtils.active
         import spark.implicits._
         val df = spark.sparkContext.parallelize(userPoints).toDF()
         H2OContext.getOrCreate(spark).asH2OFrame(df).key

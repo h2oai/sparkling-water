@@ -24,6 +24,7 @@ import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConv
 import ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.backend.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
 import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, Converter, SharedBackendConf, SparklingBackend}
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
@@ -183,8 +184,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
     // Initial update
     val swHeartBeatEvent = getSparklingWaterHeartBeatEvent()
-    sparkSession.sparkContext.listenerBus.post(swHeartBeatEvent)
-    sparkSession.sparkContext.listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
+    SparkSessionUtils.active.sparkContext.listenerBus.post(swHeartBeatEvent)
+    val listenerBus = SparkSessionUtils.active.sparkContext.listenerBus
+    listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
 
 

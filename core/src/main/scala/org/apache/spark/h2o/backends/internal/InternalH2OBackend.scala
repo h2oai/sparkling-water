@@ -18,13 +18,13 @@
 package org.apache.spark.h2o.backends.internal
 
 import ai.h2o.sparkling.backend.shared.SparklingBackend
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
@@ -69,7 +69,7 @@ object InternalH2OBackend extends InternalBackendUtils {
 
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
 
-    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !SparkSession.builder().getOrCreate().sparkContext.isLocal) {
+    if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !SparkSessionUtils.active.sparkContext.isLocal) {
       logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
         "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
       // Setup the property but at this point it does not make good sense
@@ -85,7 +85,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     }
 
     checkUnsupportedSparkOptions(InternalH2OBackend.UNSUPPORTED_SPARK_OPTIONS, conf)
-    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
+    distributeFiles(conf, SparkSessionUtils.active.sparkContext)
 
     conf
   }
@@ -154,7 +154,7 @@ object InternalH2OBackend extends InternalBackendUtils {
   private def tearDownEndpoints(endpoints: Array[RpcEndpointRef]): Unit = endpoints.foreach(_.send(StopEndpointMsg))
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
-    val endpoints = new SpreadRDDBuilder(hc, guessTotalExecutorSize(hc.sparkContext)).build()
+    val endpoints = new SpreadRDDBuilder(hc, guessTotalExecutorSize(SparkSessionUtils.active.sparkContext)).build()
     val endpointsFinal = if (hc.getConf.numH2OWorkers.isDefined) {
       endpoints.take(hc.getConf.numH2OWorkers.get)
     } else {

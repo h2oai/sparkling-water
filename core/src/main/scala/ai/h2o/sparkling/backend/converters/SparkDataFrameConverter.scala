@@ -29,6 +29,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{mllib, _}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
+import ai.h2o.sparkling.utils.SparkSessionUtils
 
 object SparkDataFrameConverter extends Logging {
 
@@ -45,8 +46,9 @@ object SparkDataFrameConverter extends Logging {
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
     if (hc.getConf.runsInInternalClusterMode) {
-      val relation = InternalBackendH2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
-      hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+      val spark = SparkSessionUtils.active
+      val relation = InternalBackendH2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
+      spark.baseRelationToDataFrame(relation)
     } else {
       DKV.put(fr)
       toDataFrame(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString), copyMetadata)
@@ -64,8 +66,9 @@ object SparkDataFrameConverter extends Logging {
 
   def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = ExternalBackendH2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
-    hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+    val spark = SparkSessionUtils.active
+    val relation = ExternalBackendH2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
+    spark.baseRelationToDataFrame(relation)
   }
 
   /** Transform Spark's DataFrame into H2O Frame */

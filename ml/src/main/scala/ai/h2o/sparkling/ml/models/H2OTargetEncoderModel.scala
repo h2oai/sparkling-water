@@ -17,16 +17,16 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.targetencoding.{BlendingParams, TargetEncoder, TargetEncoderModel}
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.targetencoding.{BlendingParams, TargetEncoder, TargetEncoderModel}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import water.DKV
+import org.apache.spark.sql.{DataFrame, Dataset}
 import water.support.ModelSerializationSupport
 
 class H2OTargetEncoderModel(
@@ -52,7 +52,7 @@ class H2OTargetEncoderModel(
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
+    val h2oContext = H2OContext.getOrCreate(SparkSessionUtils.active)
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)

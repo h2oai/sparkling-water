@@ -20,11 +20,12 @@ package ai.h2o.sparkling.ml.features
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import ai.h2o.targetencoding._
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.Dataset
 
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
@@ -35,7 +36,7 @@ class H2OTargetEncoder(override val uid: String)
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
-    val h2oContext = H2OContext.getOrCreate(SparkSession.builder().getOrCreate())
+    val h2oContext = H2OContext.getOrCreate(SparkSessionUtils.active)
     val input = h2oContext.asH2OFrame(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten

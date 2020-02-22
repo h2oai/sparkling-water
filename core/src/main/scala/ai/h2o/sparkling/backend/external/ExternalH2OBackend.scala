@@ -22,12 +22,12 @@ import java.util.Properties
 
 import ai.h2o.sparkling.backend.shared.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.schemas3.{CloudLockV3, PingV3}
 import water.init.NetworkUtils
@@ -325,7 +325,7 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       }
 
       if (conf.cloudName.isEmpty) {
-        conf.setCloudName(H2O_JOB_NAME.format(SparkSession.builder().getOrCreate().sparkContext.applicationId))
+        conf.setCloudName(H2O_JOB_NAME.format(SparkSessionUtils.active.sparkContext.applicationId))
       }
 
       if (conf.clusterInfoFile.isEmpty) {
@@ -373,7 +373,7 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
       }
     }
-    distributeFiles(conf, SparkSession.builder().getOrCreate().sparkContext)
+    distributeFiles(conf, SparkSessionUtils.active.sparkContext)
     conf
   }
 

@@ -19,10 +19,10 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.InputStream
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.SparkSession
 
 trait H2OMOJOLoader[T] {
 
@@ -30,7 +30,7 @@ trait H2OMOJOLoader[T] {
 
   def createFromMojo(path: String, settings: H2OMOJOSettings): T = {
     val inputPath = new Path(path)
-    val fs = inputPath.getFileSystem(SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration)
+    val fs = inputPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
     val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     val is = fs.open(qualifiedInputPath)
 

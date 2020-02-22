@@ -17,15 +17,16 @@
 
 package ai.h2o.sparkling.backend.shared
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.sql.SparkSession
 import water.network.SecurityUtils.SSLCredentials
 import water.network.{SecurityUtils => H2OSecurityUtils}
 
 private[backend] object SecurityUtils {
 
-  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = {
+  def enableSSL(conf: H2OConf): Unit = {
+    val spark = SparkSessionUtils.active
     val sslPair = generateSSLPair()
     val config = generateSSLConfig(sslPair)
     conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
@@ -35,7 +36,7 @@ private[backend] object SecurityUtils {
     }
   }
 
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
+  def enableFlowSSL(conf: H2OConf): H2OConf = {
     val sslPair = generateSSLPair("h2o-internal-auto-flow-ssl")
     conf.setJks(sslPair.jks.getLocation)
     conf.setJksPass(sslPair.jks.pass)
