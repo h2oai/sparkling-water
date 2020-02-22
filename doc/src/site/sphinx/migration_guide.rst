@@ -232,6 +232,10 @@ From 3.28.0 to 3.28.1
   ``externalCommunicationBlockSize`` and``setExternalCommunicationBlockSize`` have been removed as they are no longer
   needed.
 
+- Method ``Security.enableSSL`` in Scala API has been removed. Please use
+  ``setInternalSecureConnectionsEnabled`` on H2OConf to secure your cluster. This setter is
+  available on Scala, Python and R clients.
+
 From 3.26 To 3.28.0
 -------------------
 
