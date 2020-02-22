@@ -21,7 +21,7 @@ import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
 import water.network.SecurityUtils.SSLCredentials
-import water.network.{H2OSecurityUtilsBridge, SecurityUtils => H2OSecurityUtils}
+import water.network.{SecurityUtils => H2OSecurityUtils}
 
 private[backend] object SecurityUtils {
 
@@ -51,6 +51,6 @@ private[backend] object SecurityUtils {
     val nanoTime = System.nanoTime
     val temp = Utils.createTempDir(s"h2o-internal-jks-$nanoTime")
     val name = s"$namePrefix-$nanoTime.jks"
-    H2OSecurityUtilsBridge.generateSSLPair(H2OSecurityUtils.passwordGenerator(16), name, temp.toPath.toAbsolutePath.toString)
+    H2OSecurityUtils.generateSSLPair(H2OSecurityUtils.passwordGenerator(16), name, temp.toPath.toAbsolutePath.toString)
   }
 }
