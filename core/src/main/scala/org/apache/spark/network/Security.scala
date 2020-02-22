@@ -25,7 +25,14 @@ import water.network.SparklingWaterSecurityUtils
 
 object Security extends Logging {
 
+  private def enableSSLDeprecationWarning(): Unit = {
+    logWarning("Method enableSSL is deprecated and will be removed in the major release 3.28.1. To enable SSL communication," +
+      " please call setInternalSecureConnectionsEnabled() on your H2OConf object and create H2OContext as H2OContext.getOrCreate(spark, conf)")
+  }
+
+  @Deprecated
   def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
+    enableSSLDeprecationWarning()
     val sslPair = SparklingWaterSecurityUtils.generateSSLPair()
     val config = SparklingWaterSecurityUtils.generateSSLConfig(sslPair)
     conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
@@ -35,9 +42,17 @@ object Security extends Logging {
     }
   }
 
-  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = enableSSL(spark, conf.sparkConf)
+  @Deprecated
+  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = {
+    enableSSLDeprecationWarning()
+    enableSSL(spark, conf.sparkConf)
+  }
 
-  def enableSSL(spark: SparkSession): Unit = enableSSL(spark, spark.sparkContext.conf)
+  @Deprecated
+  def enableSSL(spark: SparkSession): Unit = {
+    enableSSLDeprecationWarning()
+    enableSSL(spark, spark.sparkContext.conf)
+  }
 
   def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
     val sslPair = SparklingWaterSecurityUtils.generateSSLPair(namePrefix = "h2o-internal-auto-flow-ssl")
@@ -45,21 +60,20 @@ object Security extends Logging {
     conf.setJksPass(sslPair.jks.pass)
   }
 
+  @Deprecated
   def enableSSL(sc: SparkContext, conf: SparkConf): Unit = {
-    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred.")
-      enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf)
+    enableSSLDeprecationWarning()
+    enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf)
   }
 
   def enableSSL(sc: SparkContext): Unit = {
-    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred.")
+    enableSSLDeprecationWarning()
     enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), sc.conf)
   }
 
+  @Deprecated
   def enableSSL(sc: SparkContext, conf: H2OConf): Unit = {
-    logWarning("Method Security.enableSSL with an argument of type SparkContext is deprecated and " +
-      "parameter of type SparkSession is preferred.")
+    enableSSLDeprecationWarning()
     enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf.sparkConf)
   }
 
