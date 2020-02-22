@@ -106,7 +106,7 @@ class H2ODataFrame[T <: water.fvec.Frame](@transient val frame: T,
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  override lazy val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   H2OFrameSupport.lockAndUpdate(frame)

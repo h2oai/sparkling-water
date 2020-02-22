@@ -233,7 +233,7 @@ class H2ORDD[A <: Product: TypeTag: ClassTag, T <: Frame] private(@(transient @p
                                                                  (@(transient @param @field) hc: H2OContext)
   extends H2ORDDBase[A](hc) with H2OClientBasedSparkEntity[T] {
 
-  override val isExternalBackend = hc.getConf.runsInExternalClusterMode
+  override lazy val isExternalBackend = hc.getConf.runsInExternalClusterMode
   override val driverTimeStamp = H2O.SELF.getTimestamp()
 
   // Get product type before building an RDD
