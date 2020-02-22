@@ -14,19 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.network
 
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.internal.Logging
-import org.apache.spark.sql.SparkSession
-import water.network.SparklingWaterSecurityUtils
+package water.network
 
-object Security extends Logging {
-
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
-    val sslPair = SparklingWaterSecurityUtils.generateSSLPair(namePrefix = "h2o-internal-auto-flow-ssl")
-    conf.setJks(sslPair.jks.getLocation)
-    conf.setJksPass(sslPair.jks.pass)
+/**
+ * Expose package private methods on H2O Security Utils
+ */
+object H2OSecurityUtilsBridge {
+  def generateSSLPair(password: String, name: String, path: String): SecurityUtils.SSLCredentials = {
+    SecurityUtils.generateSSLPair(password, name, path)
   }
-
 }

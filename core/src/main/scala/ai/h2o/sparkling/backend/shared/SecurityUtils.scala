@@ -17,15 +17,17 @@
 
 package ai.h2o.sparkling.backend.shared
 
+import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
-import water.network.SparklingWaterSecurityUtils
+import water.network.SecurityUtils.SSLCredentials
+import water.network.{H2OSecurityUtilsBridge, SecurityUtils => H2OSecurityUtils}
 
 private[backend] object SecurityUtils {
 
   def enableSSL(spark: SparkSession, conf: H2OConf): Unit = {
-    val sslPair = SparklingWaterSecurityUtils.generateSSLPair()
-    val config = SparklingWaterSecurityUtils.generateSSLConfig(sslPair)
+    val sslPair = generateSSLPair()
+    val config = generateSSLConfig(sslPair)
     conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
     spark.sparkContext.addFile(sslPair.jks.getLocation)
     if (sslPair.jks.getLocation != sslPair.jts.getLocation) {
@@ -33,4 +35,22 @@ private[backend] object SecurityUtils {
     }
   }
 
+  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
+    val sslPair = generateSSLPair("h2o-internal-auto-flow-ssl")
+    conf.setJks(sslPair.jks.getLocation)
+    conf.setJksPass(sslPair.jks.pass)
+  }
+
+  private def generateSSLPair(): SSLCredentials = generateSSLPair(namePrefix = "h2o-internal")
+
+  private def generateSSLConfig(credentials: SSLCredentials): String = {
+    H2OSecurityUtils.generateSSLConfig(credentials)
+  }
+
+  private def generateSSLPair(namePrefix: String): SSLCredentials = {
+    val nanoTime = System.nanoTime
+    val temp = Utils.createTempDir(s"h2o-internal-jks-$nanoTime")
+    val name = s"$namePrefix-$nanoTime.jks"
+    H2OSecurityUtilsBridge.generateSSLPair(H2OSecurityUtils.passwordGenerator(16), name, temp.toPath.toAbsolutePath.toString)
+  }
 }
