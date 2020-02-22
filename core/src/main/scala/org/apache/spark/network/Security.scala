@@ -16,6 +16,7 @@
 */
 package org.apache.spark.network
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.backends.SharedBackendConf
 import org.apache.spark.internal.Logging
@@ -32,7 +33,7 @@ object Security extends Logging {
 
   @Deprecated
   def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
-    val currentSession = SparkSession.active
+    val currentSession = SparkSessionUtils.active
     enableSSLDeprecationWarning()
     val sslPair = SparklingWaterSecurityUtils.generateSSLPair()
     val config = SparklingWaterSecurityUtils.generateSSLConfig(sslPair)
