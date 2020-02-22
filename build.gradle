@@ -43,7 +43,8 @@ ext {
             project(':sparkling-water-package'),
             project(":sparkling-water-doc"),
             project(':sparkling-water-utils'),
-            project(':sparkling-water-scoring')
+            project(':sparkling-water-scoring'),
+            project(':sparkling-water-extensions')
     ]
     // Projects with integration tests
     integTestProjects = [

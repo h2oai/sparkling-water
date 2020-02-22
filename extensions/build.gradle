@@ -7,3 +7,5 @@ dependencies {
     compileOnly("ai.h2o:h2o-core:${h2oVersion}")
     compileOnly("javax.servlet:servlet-api:2.5")
 }
+
+defineStandardPublication().call()

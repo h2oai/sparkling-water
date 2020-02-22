@@ -131,6 +131,7 @@ def distTaskDependencies = [
         ":sparkling-water-examples:publish",
         ":sparkling-water-package:publish",
         ":sparkling-water-scoring:publish",
+        ":sparkling-water-extensions:publish",
         ":sparkling-water-utils:publish",
         ":sparkling-water-kubernetes:buildDockerfiles"
 ]
