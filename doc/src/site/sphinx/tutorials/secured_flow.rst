@@ -77,7 +77,7 @@ In order to use https correctly, the following two options need to be specified:
 
             from pysparkling import *
             conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
-            hc = H2OContext.getOrCreate(onf, verify_ssl_certificates=False)
+            hc = H2OContext.getOrCreate(conf, verify_ssl_certificates=False)
 
 
 
