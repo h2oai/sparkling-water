@@ -14,19 +14,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.network
+
+package ai.h2o.sparkling.backend.shared
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import water.network.SparklingWaterSecurityUtils
 
-object Security extends Logging {
+private[backend] object SecurityUtils {
 
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
-    val sslPair = SparklingWaterSecurityUtils.generateSSLPair(namePrefix = "h2o-internal-auto-flow-ssl")
-    conf.setJks(sslPair.jks.getLocation)
-    conf.setJksPass(sslPair.jks.pass)
+  def enableSSL(spark: SparkSession, conf: H2OConf): Unit = {
+    val sslPair = SparklingWaterSecurityUtils.generateSSLPair()
+    val config = SparklingWaterSecurityUtils.generateSSLConfig(sslPair)
+    conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
+    spark.sparkContext.addFile(sslPair.jks.getLocation)
+    if (sslPair.jks.getLocation != sslPair.jts.getLocation) {
+      spark.sparkContext.addFile(sslPair.jts.getLocation)
+    }
   }
 
 }
