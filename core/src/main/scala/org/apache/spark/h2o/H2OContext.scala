@@ -19,6 +19,8 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._
 import org.apache.spark.h2o.backends.external._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
@@ -181,8 +183,9 @@ abstract class H2OContext private(val sparkSession: SparkSession, private val co
 
     // Initial update
     val swHeartBeatEvent = getSparklingWaterHeartBeatEvent()
-    sparkSession.sparkContext.listenerBus.post(swHeartBeatEvent)
-    sparkSession.sparkContext.listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
+    SparkSessionUtils.active.sparkContext.listenerBus.post(swHeartBeatEvent)
+    val listenerBus = SparkSessionUtils.active.sparkContext.listenerBus
+    listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
 
 

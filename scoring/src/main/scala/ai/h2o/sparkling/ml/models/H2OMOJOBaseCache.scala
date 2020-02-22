@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
 
@@ -29,7 +29,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
   private val lastAccessMap = mutable.Map.empty[String, Long]
 
   private lazy val cleanupRetryTimeout = {
-    val sparkConf = SparkSession.builder().getOrCreate().sparkContext.getConf
+    val sparkConf = SparkSessionUtils.active.sparkContext.getConf
     sparkConf.getInt("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
   }
 

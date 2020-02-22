@@ -21,6 +21,7 @@ import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -41,7 +42,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   // Override default values
   setDefault(nfolds, 5)
 
-  private lazy val spark = SparkSession.builder().getOrCreate()
+  private lazy val spark = SparkSessionUtils.active
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 

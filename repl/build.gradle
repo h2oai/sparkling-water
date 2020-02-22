@@ -11,6 +11,7 @@ sourceSets {
 }
 
 dependencies {
+    api(project(":sparkling-water-utils"))
     compileOnly("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
 
     testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")

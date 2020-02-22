@@ -32,13 +32,14 @@ object Security extends Logging {
 
   @Deprecated
   def enableSSL(spark: SparkSession, conf: SparkConf): Unit = {
+    val currentSession = SparkSession.active
     enableSSLDeprecationWarning()
     val sslPair = SparklingWaterSecurityUtils.generateSSLPair()
     val config = SparklingWaterSecurityUtils.generateSSLConfig(sslPair)
     conf.set(SharedBackendConf.PROP_SSL_CONF._1, config)
-    spark.sparkContext.addFile(sslPair.jks.getLocation)
+    currentSession.sparkContext.addFile(sslPair.jks.getLocation)
     if (sslPair.jks.getLocation != sslPair.jts.getLocation) {
-      spark.sparkContext.addFile(sslPair.jts.getLocation)
+      currentSession.sparkContext.addFile(sslPair.jts.getLocation)
     }
   }
 
@@ -54,7 +55,7 @@ object Security extends Logging {
     enableSSL(spark, spark.sparkContext.conf)
   }
 
-  def enableFlowSSL(spark: SparkSession, conf: H2OConf): H2OConf = {
+  def enableFlowSSL(conf: H2OConf): H2OConf = {
     val sslPair = SparklingWaterSecurityUtils.generateSSLPair(namePrefix = "h2o-internal-auto-flow-ssl")
     conf.setJks(sslPair.jks.getLocation)
     conf.setJksPass(sslPair.jks.pass)
@@ -76,6 +77,5 @@ object Security extends Logging {
     enableSSLDeprecationWarning()
     enableSSL(SparkSession.builder().sparkContext(sc).getOrCreate(), conf.sparkConf)
   }
-
-
+  
 }

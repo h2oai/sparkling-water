@@ -17,7 +17,8 @@
 
 package org.apache.spark.h2o.converters
 
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.backends.external.{ExternalH2OBackend, ExternalWriteConverterCtx}
 import org.apache.spark.h2o.converters.WriteConverterCtxUtils.UploadPlan
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -25,9 +26,8 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
 import org.apache.spark.sql.{DataFrame, H2OFrameRelation, H2ORESTFrameRelation, Row}
 import org.apache.spark.{mllib, _}
-import water.{DKV, Key}
 import water.fvec.{Frame, H2OFrame}
-
+import water.{DKV, Key}
 
 private[h2o] object SparkDataFrameConverter extends Logging {
 
@@ -43,8 +43,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2OFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
-    hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+    val spark = SparkSessionUtils.active
+    val relation = H2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
+    spark.baseRelationToDataFrame(relation)
   }
 
   /**
@@ -59,8 +60,9 @@ private[h2o] object SparkDataFrameConverter extends Logging {
 
   def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
     // Relation referencing H2OFrame
-    val relation = H2ORESTFrameRelation(fr, copyMetadata)(hc.sparkSession.sqlContext)
-    hc.sparkSession.sqlContext.baseRelationToDataFrame(relation)
+    val spark = SparkSessionUtils.active
+    val relation = H2ORESTFrameRelation(fr, copyMetadata)(spark.sqlContext)
+    spark.baseRelationToDataFrame(relation)
   }
 
   /** Transform Spark's DataFrame into H2O Frame */
