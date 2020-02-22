@@ -30,9 +30,18 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
   },
 
   userName = function() { getOption(invoke(jconf, "userName")) },
+  setUserName = function(value) { invoke(jconf, "setUserName", value); .self },
+
   password = function() { getOption(invoke(jconf, "password")) },
-  setUserName = function(value) { invoke(jconf, "setUserName", value) },
-  setPassword = function(value) { invoke(jconf, "setPassword", value) },
+  setPassword = function(value) { invoke(jconf, "setPassword", value); .self },
+
   externalHadoopExecutable = function() {invoke(jconf, "externalHadoopExecutable")},
-  setExternalHadoopExecutable = function(value) {invoke(jconf, "setExternalHadoopExecutable", value)}
+  setExternalHadoopExecutable = function(value) {invoke(jconf, "setExternalHadoopExecutable", value); .self },
+
+  isInternalSecureConnectionsEnabled = function() { invoke(jconf, "isInternalSecureConnectionsEnabled") },
+  setInternalSecureConnectionsEnabled = function() { invoke(jconf, "setInternalSecureConnectionsEnabled"); .self },
+  setInternalSecureConnectionsDisabled = function() { invoke(jconf, "setInternalSecureConnectionsDisabled"); .self },
+
+  sslConf = function() { getOption(invoke(jconf, "sslConf")) },
+  setSslConf = function(value) {invoke(jconf, "setSslConf", value); .self }
 ))
