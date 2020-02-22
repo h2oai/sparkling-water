@@ -20,6 +20,7 @@ package org.apache.spark.h2o
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import ai.h2o.sparkling.repl.H2OInterpreter
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
@@ -33,7 +34,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   H2OConf.checkDeprecatedOptions(sparkConf)
 
-  def this() = this(SparkSession.active.sparkContext.conf)
+  def this() = this(SparkSessionUtils.active.sparkContext.conf)
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this()
