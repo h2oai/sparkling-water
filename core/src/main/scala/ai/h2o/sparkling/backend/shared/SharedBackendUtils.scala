@@ -63,7 +63,7 @@ trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.isInternalSecureConnectionsEnabled && conf.sslConf.isEmpty) {
-      Security.enableSSL(SparkSession.builder().getOrCreate(), conf)
+      SecurityUtils.enableSSL(SparkSession.builder().getOrCreate(), conf)
     }
 
     if (conf.autoFlowSsl) {
