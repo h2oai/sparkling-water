@@ -55,7 +55,7 @@ At this point, you should have available a PySpark interactive terminal where yo
 	settings = H2OMOJOSettings(namedMojoOutputColumns = True)
 
 	# Load the pipeline. 'settings' is an optional argument. If it's not specified, the default values are used.
-	mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo", settings)
+	mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
 
 .. code:: python
 
@@ -103,7 +103,7 @@ At this point, you should have available a Sparkling Water interactive terminal 
 	val settings = H2OMOJOSettings(namedMojoOutputColumns = true)
 
 	// Load the pipeline. 'settings' is an optional argument. If it's not specified, the default values are used.
-	val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline.mojo", settings)
+	val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
 
 .. code:: scala
 
