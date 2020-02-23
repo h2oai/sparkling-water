@@ -38,7 +38,7 @@ object Runner {
     .config(createSparkConf())
     .getOrCreate()
 
-  val hc = H2OContext.getOrCreate(spark)
+  val hc = H2OContext.getOrCreate()
 
   def createSparkConf(): SparkConf = {
     val conf = new SparkConf()

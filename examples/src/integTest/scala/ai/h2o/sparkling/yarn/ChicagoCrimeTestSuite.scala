@@ -54,7 +54,7 @@ object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
   def main(args: Array[String]): Unit = exitOnException {
     val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
-    val hc = H2OContext.getOrCreate(spark)
+    val hc = H2OContext.getOrCreate()
 
     val app = new ChicagoCrimeApp(
       weatherFile = "hdfs://mr-0xd6.0xdata.loc/datasets/chicagoAllWeather.csv",

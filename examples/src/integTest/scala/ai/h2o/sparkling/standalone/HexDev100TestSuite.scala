@@ -37,7 +37,7 @@ object HexDev100Test extends IntegTestStopper{
   def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev100Test")
     val sc = new SparkContext(conf)
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
     import h2oContext.implicits._
 

@@ -35,7 +35,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
     // Create SparkContext to execute application on Spark cluster
     val sc = sparkContext(conf)
 
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
     import h2oContext.implicits._
 

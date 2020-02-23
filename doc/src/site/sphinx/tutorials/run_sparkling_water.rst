@@ -13,7 +13,7 @@ Sparkling Water (H2O on Spark) can be initiated using the following call:
 
 .. code:: scala
 
-    val hc = H2OContext.getOrCreate(spark)
+    val hc = H2OContext.getOrCreate()
 
 The semantic of the call depends on the configured Sparkling Water backend. For more information about the backends, please see :ref:`backend`.
 

@@ -42,7 +42,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     .. code:: scala
 
         import org.apache.spark.h2o._
-        val hc = H2OContext.getOrCreate(spark)
+        val hc = H2OContext.getOrCreate()
 
 6.  And voila, we should have ``H2OContext`` running
 

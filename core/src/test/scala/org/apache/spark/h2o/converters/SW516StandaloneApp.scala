@@ -39,7 +39,7 @@ object SWApp {
       .getOrCreate()
     
     val h2oConf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
-    val hc = H2OContext.getOrCreate(spark, h2oConf)
+    val hc = H2OContext.getOrCreate(h2oConf)
 
     val values = (0 until valuesCnt).map(x =>
      Data(

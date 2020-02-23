@@ -26,7 +26,7 @@ implicit val sqlContext = spark.sqlContext
 import sqlContext.implicits._
 
 // Start H2O services
-val h2oContext = H2OContext.getOrCreate(sc)
+val h2oContext = H2OContext.getOrCreate()
 import h2oContext._
 import h2oContext.implicits._
 

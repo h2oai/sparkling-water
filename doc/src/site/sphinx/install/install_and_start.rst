@@ -36,7 +36,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
 
 5. Begin using Sparkling Water by following `this demo <https://github.com/h2oai/sparkling-water/tree/master/examples#step-by-step-weather-data-example>`__, which imports airlines and weather data and runs predictions on delays.
@@ -81,7 +81,7 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
 
@@ -119,7 +119,7 @@ This section describes how to launch H2O on a standalone Spark cluster.
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
 
@@ -157,7 +157,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 
     import org.apache.spark.h2o._
     val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
-    val hc = H2OContext.getOrCreate(spark, conf)
+    val hc = H2OContext.getOrCreate(conf)
 
 **Python**
 
@@ -165,7 +165,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 
     from pysparkling import *
     conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
-    hc = H2OContext.getOrCreate(spark, conf)
+    hc = H2OContext.getOrCreate(conf)
 
 **Note**: The following is a list of supported Hadoop distributions: SUBST_H2O_DRIVERS_LIST
 
@@ -209,5 +209,5 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
 .. code:: scala
 
    import org.apache.spark.h2o._
-   val h2oContext = H2OContext.getOrCreate(spark)
+   val h2oContext = H2OContext.getOrCreate()
    import h2oContext._ 

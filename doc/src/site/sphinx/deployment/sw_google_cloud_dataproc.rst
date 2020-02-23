@@ -139,7 +139,7 @@ Below is a sample script for running a Sparkling Water job. Edit the arguments t
 	from pysparkling import *
 
 	spark = SparkSession.builder.appName("SparklingWaterApp").getOrCreate()
-	hc = H2OContext.getOrCreate(spark)
+	hc = H2OContext.getOrCreate()
 
 	bucket = "h2o-bq-large-dataset"
 	train_path = "demos/cc_train.csv"

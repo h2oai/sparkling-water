@@ -19,11 +19,11 @@
     },
     {
       "type": "md",
-      "input": "### Publish bubbles as H2O frame\n\n - get `H2OContext` via `H2OContext.getOrCreate(sc)`\n - publish generated Spark DataFrame `df` via calling `hc.asH2OFrame`"
+      "input": "### Publish bubbles as H2O frame\n\n - get `H2OContext` via `H2OContext.getOrCreate()`\n - publish generated Spark DataFrame `df` via calling `hc.asH2OFrame`"
     },
     {
       "type": "sca",
-      "input": "// Get H2OContext\nval hc = H2OContext.getOrCreate(sc)\n// Publish Spark DataFrame as H2OFrame\nval bubbles = hc.asH2OFrame(df, \"bubbles\")\n// Print bubbles\nprintln(bubbles)"
+      "input": "// Get H2OContext\nval hc = H2OContext.getOrCreate()\n// Publish Spark DataFrame as H2OFrame\nval bubbles = hc.asH2OFrame(df, \"bubbles\")\n// Print bubbles\nprintln(bubbles)"
     },
     {
       "type": "md",
@@ -131,7 +131,7 @@
     },
     {
       "type": "sca",
-      "input": "val hc = H2OContext.getOrCreate(sc)\nval prediction = new H2OFrame(\"prediction\")\nval predictionDF = hc.asDataFrame(prediction)\npredictionDF.printSchema()"
+      "input": "val hc = H2OContext.getOrCreate()\nval prediction = new H2OFrame(\"prediction\")\nval predictionDF = hc.asDataFrame(prediction)\npredictionDF.printSchema()"
     },
     {
       "type": "md",

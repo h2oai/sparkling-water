@@ -30,7 +30,7 @@ Explicitly specify internal backend on ``H2OConf``:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setInternalClusterMode()
-            val hc = H2OContext.getOrCreate(spark, conf
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -40,7 +40,7 @@ Explicitly specify internal backend on ``H2OConf``:
 
             from pysparkling import *
             conf = H2OConf(spark).setInternalClusterMode()
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
 
 If ``spark.ext.h2o.backend.cluster.mode`` property was set to ``internal`` either on the command
@@ -55,7 +55,7 @@ line or on the ``SparkConf`` class,  we can call just the following as ``H2OCont
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val hc = H2OContext.getOrCreate(spark)
+            val hc = H2OContext.getOrCreate()
 
     .. tab-container:: Python
         :title: Python
@@ -64,7 +64,7 @@ line or on the ``SparkConf`` class,  we can call just the following as ``H2OCont
          .. code:: python
 
             from pysparkling import *
-            hc = H2OContext.getOrCreate(spark)
+            hc = H2OContext.getOrCreate()
 
 
 We can however also explicitly pass the ``H2OConf``:
@@ -78,7 +78,7 @@ We can however also explicitly pass the ``H2OConf``:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark)
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -88,7 +88,7 @@ We can however also explicitly pass the ``H2OConf``:
 
             from pysparkling import *
             conf = H2OConf(spark)
-            hc = H2OContext.getOrCreate(spark)
+            hc = H2OContext.getOrCreate()
 
 
 .. _external-backend:
@@ -141,7 +141,7 @@ To start an H2O cluster and connect to it, run:
                         .setClusterSize(1) // Number of H2O worker nodes to start
                         .setMapperXmx("2G") // Memory per single H2O worker node
                         .setYARNQueue("abc")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
         In case we stored the path of the driver H2O jar to environmental variable ``H2O_DRIVER_JAR``, we don't
         have to specify ``setH2ODriverPath`` as Sparkling Water will read the path from the environmental variable.
@@ -159,7 +159,7 @@ To start an H2O cluster and connect to it, run:
                     .setClusterSize(1) # Number of H2O worker nodes to start
                     .setMapperXmx("2G") # Memory per single H2O worker node
                     .setYARNQueue("abc")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
         In case we stored the path of the driver H2O jar to environmental variable ``H2O_DRIVER_JAR``, we don't
         have to specify ``setH2ODriverPath`` as Sparkling Water will read the path from the environmental variable.
@@ -213,7 +213,7 @@ To connect to this external cluster, run the following commands:
                         .setH2OCluster("representant_ip", representant_port)
                         .setClusterSize(3)
                         .setCloudName("test")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -228,7 +228,7 @@ To connect to this external cluster, run the following commands:
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
                     .setCloudName("test")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
 Water should connect.
@@ -280,7 +280,7 @@ To connect to this external cluster, run the following commands:
                         .setH2OCluster("representant_ip", representant_port)
                         .setClusterSize(3)
                         .setCloudName("test")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
         :title: Python
@@ -295,7 +295,7 @@ To connect to this external cluster, run the following commands:
                     .setH2OCluster("representant_ip", representant_port)
                     .setClusterSize(3)
                     .setCloudName("test")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
 Water should connect.
@@ -336,7 +336,7 @@ We can force the client to use the correct network or address using the followin
                         .setClientNetworkMask("192.168.0.0/24")
                         .setClusterSize(2)
                         .setCloudName("test")
-            val hc = H2OContext.getOrCreate(spark, conf)
+            val hc = H2OContext.getOrCreate(conf)
 
         Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
         ``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
@@ -356,7 +356,7 @@ We can force the client to use the correct network or address using the followin
                     .setClientNetworkMask("192.168.0.0/24")
                     .setClusterSize(2)
                     .setCloudName("test")
-            hc = H2OContext.getOrCreate(spark, conf)
+            hc = H2OContext.getOrCreate(conf)
 
         Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
         ``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in

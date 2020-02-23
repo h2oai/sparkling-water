@@ -3,7 +3,7 @@
 #' @param sc Object of type \code{spark_connection} or \code{spark_jobj}.
 #' @export
 h2o_context <- function(sc, conf = NULL, username = NA_character_, password = NA_character_) {
-  print("Method h2o_context is deprecated and will be deleted in major release 3.30. Create instance of H2OContext as hc <- H2OContext.getOrCreate(sc).")
+  print("Method h2o_context is deprecated and will be deleted in major release 3.30. Create instance of H2OContext as hc <- H2OContext.getOrCreate().")
   if (is.null(conf)) {
     conf <- H2OConf(sc)
   }
@@ -17,7 +17,7 @@ h2o_context <- function(sc, conf = NULL, username = NA_character_, password = NA
     conf$setPassword(password)
   }
 
-  H2OContext.getOrCreate(sc, conf)$jhc
+  H2OContext.getOrCreate(conf)$jhc
 }
 
 #' Open the H2O Flow UI in a browser
@@ -25,8 +25,8 @@ h2o_context <- function(sc, conf = NULL, username = NA_character_, password = NA
 #' @param sc Object of type \code{spark_connection}.
 #' @export
 h2o_flow <- function(sc) {
-  print("Method h2o_flow is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$openFlow().")
-  H2OContext.getOrCreate(sc)$openFlow()
+  print("Method h2o_flow is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate() and then call hc$openFlow().")
+  H2OContext.getOrCreate()$openFlow()
 }
 
 #' Convert a Spark DataFrame to an H2O Frame
@@ -36,8 +36,8 @@ h2o_flow <- function(sc) {
 #' @param name The name of the H2OFrame.
 #' @export
 as_h2o_frame <- function(sc, frame, name=NULL) {
-  print("Method as_h2o_frame is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$asH2OFrame().")
-  H2OContext.getOrCreate(sc)$asH2OFrame(frame, name)
+  print("Method as_h2o_frame is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate() and then call hc$asH2OFrame().")
+  H2OContext.getOrCreate()$asH2OFrame(frame, name)
 }
 
 #' Convert an H2O Frame to a Spark DataFrame
@@ -47,6 +47,6 @@ as_h2o_frame <- function(sc, frame, name=NULL) {
 #' @param name The name to assign the data frame in Spark.
 #' @export
 as_spark_dataframe <- function(sc, frame, name = paste(deparse(substitute(sc)), collapse="")) {
-  print("Method as_spark_dataframe is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate(sc) and then call hc$asSparkFrame().")
-  H2OContext.getOrCreate(sc)$asSparkFrame(frame)
+  print("Method as_spark_dataframe is deprecated and will be deleted in major release 3.30. First create instance of H2OContext as hc <- H2OContext.getOrCreate() and then call hc$asSparkFrame().")
+  H2OContext.getOrCreate()$asSparkFrame(frame)
 }

@@ -30,7 +30,7 @@ def spark(spark_conf):
 
 @pytest.fixture(scope="module")
 def hc(spark):
-    return H2OContext.getOrCreate(spark, H2OConf(spark).setClusterSize(1))
+    return H2OContext.getOrCreate(H2OConf().setClusterSize(1))
 
 
 @pytest.fixture(scope="module")

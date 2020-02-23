@@ -86,7 +86,7 @@ def _locate(file_name):
 
 spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services
-h2oContext = H2OContext.getOrCreate(spark)
+h2oContext = H2OContext.getOrCreate()
 # Define file names
 chicagoAllWeather = "chicagoAllWeather.csv"
 chicagoCensus = "chicagoCensus.csv"

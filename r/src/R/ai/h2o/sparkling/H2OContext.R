@@ -34,12 +34,13 @@ setClientConnected <- function(jhc) {
 }
 
 #' @export H2OContext.getOrCreate
-H2OContext.getOrCreate <- function(sc, conf = NULL) {
+H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
+  sc <- spark_connection_find()[[1]]
   if (is.null(conf)) {
-    conf <- H2OConf(sc)
+    conf <- H2OConf()
   }
 
-  jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", spark_context(sc), conf$jconf)
+  jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", conf$jconf)
   hc <- H2OContext(jhc)
   returnedConf <- invoke(jhc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash

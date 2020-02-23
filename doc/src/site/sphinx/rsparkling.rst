@@ -164,7 +164,7 @@ To create H2OContext, call:
 
 .. code:: r
 
-   hc <- H2OContext.getOrCreate(sc)
+   hc <- H2OContext.getOrCreate()
 
 Open H2O Flow
 ~~~~~~~~~~~~~

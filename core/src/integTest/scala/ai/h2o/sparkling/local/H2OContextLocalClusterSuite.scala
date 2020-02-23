@@ -37,7 +37,7 @@ class H2OContextLocalClusterSuite extends FunSuite with SharedH2OTestContext {
 
   test("verify H2O cloud building on local cluster") {
     // For distributed testing we need to pass around jar containing all implementation classes plus test classes
-    val hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
+    val hc = H2OContext.getOrCreate(new H2OConf(spark).setClusterSize(1))
     assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
   }
 

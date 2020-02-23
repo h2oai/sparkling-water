@@ -194,7 +194,7 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
     val sc = new SparkContext(configure("CraigslistJobTitlesApp"))
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // Start H2O services
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
 
     val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv"))(sc, sqlContext, h2oContext)
     try {

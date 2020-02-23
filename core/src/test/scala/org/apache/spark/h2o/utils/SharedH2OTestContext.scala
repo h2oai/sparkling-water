@@ -37,7 +37,7 @@ trait SharedH2OTestContext extends SparkTestContext {
   override def beforeAll() {
     super.beforeAll()
     sc = createSparkContext
-    hc = H2OContext.getOrCreate(sc, new H2OConf(spark).setClusterSize(1))
+    hc = H2OContext.getOrCreate(new H2OConf(spark).setClusterSize(1))
   }
 
   override def afterAll() {

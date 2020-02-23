@@ -38,7 +38,7 @@ Make sure ``H2OContext`` is available:
 .. code:: scala
 
     import org.apache.spark.h2o._
-    implicit val h2oContext = H2OContext.getOrCreate(spark)
+    implicit val h2oContext = H2OContext.getOrCreate()
 
 
 Define the Pipeline Stages

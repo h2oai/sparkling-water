@@ -30,7 +30,7 @@ from tests import unit_test_utils
 @pytest.fixture(scope="module")
 def hc(spark):
     conf = createH2OConf(spark)
-    hc =  H2OContext.getOrCreate(spark, conf)
+    hc =  H2OContext.getOrCreate(conf)
     yield hc
     hc.stop()
 

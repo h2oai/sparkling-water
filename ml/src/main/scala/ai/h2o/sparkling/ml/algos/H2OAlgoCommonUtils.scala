@@ -20,7 +20,6 @@ import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.SchemaUtils
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.Dataset
@@ -46,7 +45,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     }
 
     val cols = (getFeaturesCols() ++ excludedCols).map(col)
-    val h2oContext = H2OContext.getOrCreate(SparkSessionUtils.active)
+    val h2oContext = H2OContext.getOrCreate()
     val h2oFrameKey = h2oContext.asH2OFrameKeyString(dataset.select(cols: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions

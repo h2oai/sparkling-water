@@ -95,7 +95,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
       .setFlowExtraHttpHeaders(extraHttpHeaders)
       .setH2ONodeWebEnabled()
       .setClusterSize(1)
-    hc = H2OContext.getOrCreate(spark, h2oConf)
+    hc = H2OContext.getOrCreate(h2oConf)
 
     val url = new URL(urlProvider(hc))
     val connection = url.openConnection().asInstanceOf[HttpURLConnection]
@@ -138,7 +138,7 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
     file.deleteOnExit()
 
     val h2oConf = propertySetter(new H2OConf(spark).setClusterSize(1), filePath)
-    hc = H2OContext.getOrCreate(spark, h2oConf)
+    hc = H2OContext.getOrCreate(h2oConf)
 
     Thread.sleep(5000)
 

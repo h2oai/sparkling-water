@@ -24,7 +24,7 @@ import java.io.File
 import org.apache.spark.sql.Row
 
 // Start H2O services
-val hc = H2OContext.getOrCreate(spark)
+val hc = H2OContext.getOrCreate()
 
 //
 // H2O Data loader using H2O API

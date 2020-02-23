@@ -20,7 +20,7 @@ Testing Environments
 Testing Scenarios
 ~~~~~~~~~~~~~~~~~
 
-1. Initialize H2O on top of Spark by running ``H2OContext.getOrCreate(spark)`` and verifying that H2O was properly initialized.
+1. Initialize H2O on top of Spark by running ``H2OContext.getOrCreate()`` and verifying that H2O was properly initialized.
 2. Load data with help from the H2O API from various data sources:
 
  -  local disk
@@ -53,7 +53,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext.implicits._
 
 2. Load data:
@@ -65,7 +65,7 @@ The following code reflects the use cases listed above. The code is executed in 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
         import org.apache.spark.h2o._
-        val h2oContext = H2OContext.getOrCreate(spark)
+        val h2oContext = H2OContext.getOrCreate()
 
         import java.io.File
         val df: H2OFrame = new H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.zip"))
@@ -80,7 +80,7 @@ The following code reflects the use cases listed above. The code is executed in 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
         import org.apache.spark.h2o._
-        val h2oContext = H2OContext.getOrCreate(spark)
+        val h2oContext = H2OContext.getOrCreate()
 
         val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
         val uri = new java.net.URI(path)
@@ -93,7 +93,7 @@ The following code reflects the use cases listed above. The code is executed in 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
         import org.apache.spark.h2o._
-        val h2oContext = H2OContext.getOrCreate(spark)
+        val h2oContext = H2OContext.getOrCreate()
 
         val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
         val uri = new java.net.URI(path)
@@ -108,7 +108,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
     val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
@@ -120,7 +120,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
 
     import spark.implicits._
     val df = spark.sparkContext.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v))).toDF
@@ -133,7 +133,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
 
     val rdd = spark.sparkContext.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
     val hf: H2OFrame = h2oContext.asH2OFrame(rdd)
@@ -146,7 +146,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
 
     import spark.implicits._
     val df = spark.sparkContext.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v))).toDF
@@ -160,7 +160,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import h2oContext.implicits._
     import org.apache.spark.examples.h2o._
 
@@ -183,7 +183,7 @@ The following code reflects the use cases listed above. The code is executed in 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
     import org.apache.spark.h2o._
-    val h2oContext = H2OContext.getOrCreate(spark)
+    val h2oContext = H2OContext.getOrCreate()
     import org.apache.spark.examples.h2o._
 
     import java.io.File

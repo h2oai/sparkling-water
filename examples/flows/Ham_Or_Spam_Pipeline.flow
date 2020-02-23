@@ -27,7 +27,7 @@
     },
     {
       "type": "sca",
-      "input": "// Create SQL support\nimplicit val sqlContext = SQLContext.getOrCreate(sc)\n// Start H2O services\nimport org.apache.spark.h2o._\nimplicit val h2oContext = H2OContext.getOrCreate(sc)"
+      "input": "// Create SQL support\nimplicit val sqlContext = SQLContext.getOrCreate(sc)\n// Start H2O services\nimport org.apache.spark.h2o._\nimplicit val h2oContext = H2OContext.getOrCreate()"
     },
     {
       "type": "sca",

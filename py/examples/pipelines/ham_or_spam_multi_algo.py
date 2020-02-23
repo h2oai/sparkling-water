@@ -17,7 +17,7 @@ else:
 # Initiate SparkSession
 spark = SparkSession.builder.appName("App name").getOrCreate()
 
-hc = H2OContext.getOrCreate(spark)
+hc = H2OContext.getOrCreate()
 
 # This is just helper function returning path to data-files
 def _locate(file_name):

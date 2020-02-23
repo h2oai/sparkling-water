@@ -43,7 +43,7 @@
     },
     {
       "type": "sca",
-      "input": "// First get a reference to the existing H2O context\n@transient val hc = H2OContext.getOrCreate(sc)\n\n// Publish the H2O frame as Spark DataFrame\nval df = hc.asDataFrame(reviews)\n// And print its schema\ndf.printSchema()"
+      "input": "// First get a reference to the existing H2O context\n@transient val hc = H2OContext.getOrCreate()\n\n// Publish the H2O frame as Spark DataFrame\nval df = hc.asDataFrame(reviews)\n// And print its schema\ndf.printSchema()"
     },
     {
       "type": "md",

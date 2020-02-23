@@ -88,7 +88,7 @@ import sqlContext.implicits._
 
 // Start H2O services
 import org.apache.spark.h2o._
-implicit val h2oContext = H2OContext.getOrCreate(sc)
+implicit val h2oContext = H2OContext.getOrCreate()
 
 
 // Data load

@@ -58,7 +58,7 @@ The new approach is the base for supporting dynamic allocation, but already has 
 
   .. code:: python
 
-    H2OContext.getOrCreate(spark, H2OConf(spark).setH2OCluster(new_ip, new_port))
+    H2OContext.getOrCreate(H2OConf(spark).setH2OCluster(new_ip, new_port))
 
 - H2O clusters can now be safely stopped without affecting the Spark driver
 

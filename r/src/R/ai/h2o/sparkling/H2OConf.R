@@ -25,8 +25,9 @@ getOption <- function(option) {
 
 #' @export H2OConf
 H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
-  initialize = function(spark) {
-    .self$jconf <- invoke_new(spark, "org.apache.spark.h2o.H2OConf", spark_context(spark))
+  initialize = function(spark = NULL) {
+    sc <- spark_connection_find()[[1]]
+    .self$jconf <- invoke_new(sc, "org.apache.spark.h2o.H2OConf")
   },
 
   userName = function() { getOption(invoke(jconf, "userName")) },

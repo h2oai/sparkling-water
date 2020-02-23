@@ -34,7 +34,7 @@ object HexDev64Test extends IntegTestStopper{
   def main(args: Array[String]): Unit = exitOnException{
     val conf = new SparkConf().setAppName("HexDev64Test")
     val sc = new SparkContext(conf)
-    val h2oContext = H2OContext.getOrCreate(sc)
+    val h2oContext = H2OContext.getOrCreate()
 
     import h2oContext._
     // Import all year airlines into H2O
