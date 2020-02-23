@@ -27,9 +27,9 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
-  * Configuration holder which is representing
-  * properties passed from user to Sparkling Water.
-  */
+ * Configuration holder which is representing
+ * properties passed from user to Sparkling Water.
+ */
 class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf with Serializable {
 
   H2OConf.checkDeprecatedOptions(sparkConf)
@@ -123,6 +123,10 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 }
 
 object H2OConf extends Logging {
+  def apply(): H2OConf = new H2OConf()
+
+  def apply(sparkConf: SparkConf): H2OConf = new H2OConf(sparkConf)
+
   private val deprecatedOptions = Map[String, String]()
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
