@@ -25,6 +25,7 @@ from pyspark.rdd import RDD
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import *
 from pyspark.sql import SparkSession
+from pyspark.context import SparkContext
 
 from ai.h2o.sparkling.FrameConversions import FrameConversions as fc
 from ai.h2o.sparkling.Initializer import Initializer
@@ -85,20 +86,18 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark=None, conf=None, verbose=True, **kwargs):
+    def getOrCreate(sparkOrConf=None, conf=None, verbose=True, **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
         If the values are not found the default values are used in most of the cases. The default cluster mode
         is internal, ie. spark.ext.h2o.external.cluster.mode=false
 
-        :param spark: Spark Context or Spark Session
         :param conf: H2O configuration as instance of H2OConf
         :param verbose; True if verbose H2O output
         :param kwargs:  additional parameters which are passed to h2o_connect_hook
         :return:  instance of H2OContext
         """
-
 
         # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
         # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not
@@ -108,8 +107,9 @@ class H2OContext(object):
             jvm = activeSession.sparkContext._jvm
             jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
 
-        # Get H2OConf
-        if conf is not None:
+        if isinstance(sparkOrConf, H2OConf) and sparkOrConf is not None:
+            selected_conf = sparkOrConf
+        elif conf is not None:
             selected_conf = conf
         else:
             selected_conf = H2OConf()
