@@ -17,11 +17,14 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.net.{InetAddress, NetworkInterface}
+
 import ai.h2o.sparkling.backend.shared.SharedBackendUtils
 import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.RestAPIManager
+import water.init.{HostnameGuesser, NetworkBridge}
 import water.{H2O, H2OStarter, Paxos}
 
 private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
@@ -69,8 +72,8 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
       val expectedSize = conf.clusterSize.get.toInt
       val discoveredSize = waitForCloudSize(expectedSize, conf.cloudTimeout)
       if (discoveredSize < expectedSize) {
-          logError(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
-          hc.stop(stopSparkContext = true)
+        logError(s"Exiting! External H2O cluster was of size $discoveredSize but expected was $expectedSize!!")
+        hc.stop(stopSparkContext = true)
         throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize);
       }
     }
@@ -97,6 +100,22 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
     logInfo(processOut.toString)
     logError(processErr.toString)
     proc
+  }
+
+  protected[backend] def identifyClientIp(remoteAddress: String): Option[String] = {
+    val interfaces = NetworkInterface.getNetworkInterfaces
+    while (interfaces.hasMoreElements) {
+      val interface = interfaces.nextElement()
+      import scala.collection.JavaConverters._
+      interface.getInterfaceAddresses.asScala.foreach { address =>
+        val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
+        val cidr = HostnameGuesser.CIDRBlock.parse(ip)
+        if (cidr != null && NetworkBridge.isInetAddressOnNetwork(cidr, InetAddress.getByName(remoteAddress))) {
+          return Some(address.getAddress.getHostAddress)
+        }
+      }
+    }
+    None
   }
 
   private def waitForCloudSize(expectedSize: Int, timeoutInMilliseconds: Long): Int = {

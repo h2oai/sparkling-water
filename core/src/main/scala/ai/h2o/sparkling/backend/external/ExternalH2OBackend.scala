@@ -30,7 +30,6 @@ import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.schemas3.{CloudLockV3, PingV3}
-import water.init.NetworkUtils
 import water.util.PrettyPrint
 
 import scala.io.Source
@@ -46,12 +45,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchExternalH2OOnYarn(conf)
       conf.setH2OCluster(ipPort)
-      val clientIp = NetworkUtils.indentifyClientIp(ipPort.split(":")(0))
+      val clientIp = ExternalH2OBackend.identifyClientIp(ipPort.split(":")(0))
       if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
         conf.setClientIp(clientIp.get)
       }
     } else {
-      val clientIp = NetworkUtils.indentifyClientIp(conf.h2oClusterHost.get)
+      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
       if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
         conf.setClientIp(clientIp.get)
       }

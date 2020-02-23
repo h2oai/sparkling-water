@@ -16,24 +16,11 @@
 */
 package water.init
 
-import java.net.{InetAddress, NetworkInterface}
+import java.net.InetAddress
 
-object NetworkUtils {
+object NetworkBridge {
 
-  def indentifyClientIp(remoteAddress: String): Option[String] = {
-    val interfaces = NetworkInterface.getNetworkInterfaces
-    while (interfaces.hasMoreElements) {
-      val interface = interfaces.nextElement()
-      import scala.collection.JavaConverters._
-      interface.getInterfaceAddresses.asScala.foreach { address =>
-        val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
-        val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
-          return Some(address.getAddress.getHostAddress)
-      }
-      }
-    }
-    None
+  def isInetAddressOnNetwork(cidr: HostnameGuesser.CIDRBlock, remoteAddress: InetAddress): Boolean = {
+    cidr.isInetAddressOnNetwork(remoteAddress)
   }
-
 }
