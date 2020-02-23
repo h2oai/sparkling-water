@@ -34,7 +34,7 @@ class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf
 
   H2OConf.checkDeprecatedOptions(sparkConf)
 
-  def this() = this(SparkSessionUtils.active.sparkContext.conf)
+  def this() = this(SparkSessionUtils.active.sparkContext.getConf)
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this()
