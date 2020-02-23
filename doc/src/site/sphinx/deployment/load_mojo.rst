@@ -17,7 +17,7 @@ the mojo from a current working directory.
         .. code:: scala
 
             import ai.h2o.sparkling.ml.models._
-            val model = H2OMOJOModel.createFromMojo("prostate.mojo")
+            val model = H2OMOJOModel.createFromMojo("prostate_mojo.zip")
 
     .. tab-container:: Python
         :title: Python
@@ -25,7 +25,7 @@ the mojo from a current working directory.
         .. code:: python
 
             from pysparkling.ml import *
-            model = H2OMOJOModel.createFromMojo("prostate.mojo")
+            model = H2OMOJOModel.createFromMojo("prostate_mojo.zip")
 
     .. tab-container:: R
         :title: R
@@ -34,7 +34,7 @@ the mojo from a current working directory.
 
             library(rsparkling)
             sc <- spark_connect(master = "local")
-            model <- H2OMOJOModel.createFromMojo("prostate.mojo")
+            model <- H2OMOJOModel.createFromMojo("prostate_mojo.zip")
 
 
 Absolute local path can also be used. To create a MOJO model from a locally available MOJO, call:
@@ -47,7 +47,7 @@ Absolute local path can also be used. To create a MOJO model from a locally avai
         .. code:: scala
 
             import ai.h2o.sparkling.ml.models._
-            val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
+            val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
 
     .. tab-container:: Python
         :title: Python
@@ -55,7 +55,7 @@ Absolute local path can also be used. To create a MOJO model from a locally avai
         .. code:: python
 
             from pysparkling.ml import *
-            model = H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
+            model = H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
 
     .. tab-container:: R
         :title: R
@@ -64,7 +64,7 @@ Absolute local path can also be used. To create a MOJO model from a locally avai
 
             library(rsparkling)
             sc <- spark_connect(master = "local")
-            model <- H2OMOJOModel.createFromMojo("/Users/peter/prostate.mojo")
+            model <- H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
 
 
 
@@ -79,7 +79,7 @@ Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO st
         .. code:: scala
 
             import ai.h2o.sparkling.ml.models._
-            val model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+            val model = H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
 
     .. tab-container:: Python
         :title: Python
@@ -87,7 +87,7 @@ Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO st
         .. code:: python
 
             from pysparkling.ml import *
-            model = H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+            model = H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
 
     .. tab-container:: R
         :title: R
@@ -96,11 +96,11 @@ Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO st
 
             library(rsparkling)
             sc <- spark_connect(master = "local")
-            model <- H2OMOJOModel.createFromMojo("/user/peter/prostate.mojo")
+            model <- H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
 
 
 
-The call loads the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate.mojo``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
+The call loads the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate_mojo.zip``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
 
 
 You can also manually specify the type of data source you need to use, in that case, you need to provide the schema:
@@ -115,9 +115,9 @@ You can also manually specify the type of data source you need to use, in that c
 
             import ai.h2o.sparkling.ml.models._
             // HDFS
-            val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
             // Local file
-            val modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+            val modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
 
     .. tab-container:: Python
         :title: Python
@@ -126,9 +126,9 @@ You can also manually specify the type of data source you need to use, in that c
 
             from pysparkling.ml import *
             # HDFS
-            modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
             # Local file
-            modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+            modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
 
 
     .. tab-container:: R
@@ -139,9 +139,9 @@ You can also manually specify the type of data source you need to use, in that c
             library(rsparkling)
             sc <- spark_connect(master = "local")
              # HDFS
-            modelHDFS <- H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate.mojo")
+            modelHDFS <- H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
             # Local file
-            modelLocal <- H2OMOJOModel.createFromMojo("file:///Users/peter/prostate.mojo")
+            modelLocal <- H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
 
 
 The loaded model is an immutable instance, so it's not possible to change the configuration of the model during its existence.
@@ -157,7 +157,7 @@ On the other hand, the model can be configured during its creation via ``H2OMOJO
 
             import ai.h2o.sparkling.ml.models._
             val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
-            val model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+            val model = H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
 
     .. tab-container:: Python
         :title: Python
@@ -166,7 +166,7 @@ On the other hand, the model can be configured during its creation via ``H2OMOJO
 
             from pysparkling.ml import *
             settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
-            model = H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+            model = H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
 
     .. tab-container:: R
         :title: R
@@ -176,7 +176,7 @@ On the other hand, the model can be configured during its creation via ``H2OMOJO
             library(rsparkling)
             sc <- spark_connect(master = "local")
             settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, convertInvalidNumbersToNa = TRUE)
-            model <- H2OMOJOModel.createFromMojo("prostate.mojo", settings)
+            model <- H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
 
 
 To score the dataset using the loaded mojo, call:
@@ -220,5 +220,5 @@ call the ``createFromMojo`` method on the specific MOJO model type.
 .. code:: scala
 
     import ai.h2o.sparkling.ml.models._
-    val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate.mojo")
+    val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
     println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
