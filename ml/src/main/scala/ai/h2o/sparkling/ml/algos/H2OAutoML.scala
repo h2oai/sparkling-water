@@ -35,6 +35,7 @@ import water.DKV
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.util.control.NoStackTrace
+import collection.JavaConverters._
 
 /**
   * H2O AutoML algorithm exposed via Spark ML pipelines.
@@ -139,8 +140,14 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spark.createDataFrame(rdd, schema)
   }
 
-  def getLeaderboard(extraColumns: String*): DataFrame = amlOption match {
-    case Some(aml) => leaderboardAsSparkFrame(aml, extraColumns.toArray)
+  def getLeaderboard(extraColumns: String*): DataFrame = getLeaderboard(extraColumns.toArray)
+
+  def getLeaderboard(extraColumns: java.util.ArrayList[String]) : DataFrame = {
+    getLeaderboard(extraColumns.asScala.toArray)
+  }
+
+  def getLeaderboard(extraColumns: Array[String]): DataFrame = amlOption match {
+    case Some(aml) => leaderboardAsSparkFrame(aml, extraColumns)
     case None => throw new RuntimeException("The 'fit' method must be called at first!")
   }
 

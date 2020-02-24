@@ -68,29 +68,27 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             model.transform(testingDF).show(false)
 
-        If you are curious to see information about other models created during the AutoML training process, you can get the leaderboard represented by Spark DataFrame.
+        If you are curious to see information about other models created during the AutoML training process, you can get a model leaderboard represented by Spark DataFrame.
 
         .. code:: scala
 
-            val leaderboard = automl.leaderboard.get
+            val leaderboard = automl.getLeaderboard()
             leaderboard.show(false)
 
         By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
-        If you want to see more information about models, you can add extra columns to the leaderboard by calling
-        the ``setLeaderboardExtraColumns`` method on the ``H2OAutoML`` instance.
+        If you want to see more information about models, you can add extra columns to the leaderboard by passing column names
+        to the ``getLeaderboard()`` method.
 
         .. code:: scala
 
-            automl.setLeaderboardExtraColumns("training_time_ms", "predict_time_per_row_ms")
-            val leaderboard = automl.leaderboard.get
+            val leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(false)
 
         Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
 
         .. code:: scala
 
-            automl.setLeaderboardExtraColumns("ALL")
-            val leaderboard = automl.leaderboard.get
+            val leaderboard = automl.getLeaderboard("ALL")
             leaderboard.show(false)
 
 
@@ -155,29 +153,27 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             model.transform(testingDF).show(truncate = False)
 
-        If you are curious to see information about other models created during the AutoML training process, you can get the leaderboard represented by Spark DataFrame.
+        If you are curious to see information about other models created during the AutoML training process, you can get a model leaderboard represented by Spark DataFrame.
 
         .. code:: python
 
-            leaderboard = automl.leaderboard()
+            leaderboard = automl.getLeaderboard()
             leaderboard.show(truncate = False)
 
         By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
-        If you want to see more information about models, you can add extra columns to the leaderboard by calling
-        the ``setLeaderboardExtraColumns`` method on the ``H2OAutoML`` instance.
+        If you want to see more information about models, you can add extra columns to the leaderboard by passing column names
+        to the ``getLeaderboard()`` method.
 
         .. code:: scala
 
-            automl.setLeaderboardExtraColumns("training_time_ms", "predict_time_per_row_ms")
-            val leaderboard = automl.leaderboard.get
+            leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(truncate = False)
 
         Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
 
         .. code:: scala
 
-            automl.setLeaderboardExtraColumns("ALL")
-            val leaderboard = automl.leaderboard.get
+            leaderboard = automl.getLeaderboard("ALL")
             leaderboard.show(truncate = False)
 
 

@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+import warnings
+
 from pyspark.sql import SparkSession
 from pyspark import keyword_only
 from pyspark.sql.dataframe import DataFrame
@@ -69,9 +71,16 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
         self._set(**kwargs)
 
     def leaderboard(self):
+        warnings.warn("The 'leaderboard' method is deprecated and will be removed in the SW version 3.30. "
+                      "Use the 'getLeaderboard' method instead!")
         leaderboard_java = self._java_obj.leaderboard()
         if leaderboard_java.isDefined():
-            activeSession = SparkSession._instantiatedSession
-            return DataFrame(leaderboard_java.get(), activeSession)
+            return DataFrame(leaderboard_java.get(), SparkSession._instantiatedSession._wrapped)
         else:
             return None
+
+    def getLeaderboard(self, *extraColumns):
+        if len(extraColumns) == 1 and isinstance(extraColumns[0], (list, set)):
+            extraColumns = extraColumns[0]
+        leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
+        return DataFrame(leaderboard_java, SparkSession._instantiatedSession._wrapped)
