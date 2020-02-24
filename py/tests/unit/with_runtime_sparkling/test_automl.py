@@ -16,11 +16,17 @@
 #
 
 """
-Unit tests for PySparkling H2OKMeans
+Unit tests for PySparkling H2OAutoML
 """
+import pytest
+
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pyspark.sql.functions import col
 
+from pysparkling.ml import H2OAutoML
+
+from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
@@ -30,3 +36,34 @@ def testParamsPassedByConstructor():
 
 def testParamsPassedBySetters():
     assertParamsViaSetters("H2OAutoML")
+
+
+@pytest.fixture(scope="module")
+def dataset(spark):
+    return spark \
+        .read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True, inferSchema=True) \
+        .withColumn("CAPSULE", col("CAPSULE").cast("string"))
+
+
+def getAlgorithmForGetLeaderboardTesting():
+    automl = H2OAutoML(labelCol="CAPSULE", ignoredCols=["ID"])
+    automl.setExcludeAlgos(["GLM"])
+    automl.setMaxModels(5)
+    automl.setSortMetric("AUC")
+    return automl
+
+
+def testGetLeaderboardWithListAsArgument(dataset):
+    automl = getAlgorithmForGetLeaderboardTesting()
+    automl.fit(dataset)
+    extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
+    assert automl.getLeaderboard(extraColumns).columns == automl.getLeaderboard().columns + extraColumns
+
+
+def testGetLeaderboardWithVariableArgumens(dataset):
+    automl = getAlgorithmForGetLeaderboardTesting()
+    automl.fit(dataset)
+    extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
+    result = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms").columns
+    expected = automl.getLeaderboard().columns + extraColumns
+    assert result == expected
