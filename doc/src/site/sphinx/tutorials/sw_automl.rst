@@ -46,7 +46,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: scala
 
-            automl.setExcludeAlgos(Array(ai.h2o.automl.Algo.GLM))
+            automl.setExcludeAlgos(Array("GLM"))
             automl.setMaxModels(10)
 
         Train the AutoML model. The training phase returns the best model according to the sortMetric. If it's not specified, the sortMetric is chosen automatically.
@@ -56,7 +56,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             val model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        You can also get raw model details by calling the ``getModelDetails()`` method available on the model as:
 
         .. code:: scala
 
@@ -67,6 +67,30 @@ The following sections describe how to train an AutoML model in Sparkling Water 
         .. code:: scala
 
             model.transform(testingDF).show(false)
+
+        If you are curious to see information about other models created during the AutoML training process, you can get
+        a model leaderboard represented by Spark DataFrame.
+
+        .. code:: scala
+
+            val leaderboard = automl.getLeaderboard()
+            leaderboard.show(false)
+
+        By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
+        If you want to see more information about models, you can add extra columns to the leaderboard by passing column names
+        to the ``getLeaderboard()`` method.
+
+        .. code:: scala
+
+            val leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
+            leaderboard.show(false)
+
+        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+
+        .. code:: scala
+
+            val leaderboard = automl.getLeaderboard("ALL")
+            leaderboard.show(false)
 
 
     .. tab-container:: Python
@@ -118,7 +142,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        You can also get raw model details by calling the ``getModelDetails()`` method available on the model as:
 
         .. code:: python
 
@@ -130,6 +154,29 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             model.transform(testingDF).show(truncate = False)
 
+        If you are curious to see information about other models created during the AutoML training process, you can get
+        a model leaderboard represented by Spark DataFrame.
+
+        .. code:: python
+
+            leaderboard = automl.getLeaderboard()
+            leaderboard.show(truncate = False)
+
+        By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
+        If you want to see more information about models, you can add extra columns to the leaderboard by passing column names
+        to the ``getLeaderboard()`` method.
+
+        .. code:: scala
+
+            leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
+            leaderboard.show(truncate = False)
+
+        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+
+        .. code:: scala
+
+            leaderboard = automl.getLeaderboard("ALL")
+            leaderboard.show(truncate = False)
 
 
 Enabling XGBoost Models when Running Sparkling Water in a Distributed Environment (YARN)

@@ -18,15 +18,24 @@
 package ai.h2o.sparkling.ml.algos
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+
+  import spark.implicits._
+
+  private lazy val dataset = spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .withColumn("CAPSULE", 'CAPSULE cast "string")
 
   test("Setting sort metric") {
     val algo = new H2OAutoML()
@@ -37,4 +46,35 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     assert(algo.getSortMetric() == "AUTO")
   }
 
+  private def getAlgorithmForLeaderboardTesting(): H2OAutoML = {
+    new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setSortMetric("AUC")
+      .setMaxModels(5)
+  }
+
+  test("getLeaderboard without arguments returns the same result as leaderboard") {
+    val algo = getAlgorithmForLeaderboardTesting()
+    algo.fit(dataset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(algo.leaderboard.get, algo.getLeaderboard())
+  }
+
+  test("Parameters of getLeaderboard add extra columns to the leaderboard") {
+    val algo = getAlgorithmForLeaderboardTesting()
+    algo.fit(dataset)
+
+    val extraColumns = Seq("training_time_ms", "predict_time_per_row_ms")
+
+    algo.getLeaderboard(extraColumns: _*).columns shouldEqual algo.getLeaderboard().columns ++ extraColumns
+  }
+
+  test("ALL as getLeaderboard adds extra columns to the leaderboard") {
+    val algo = getAlgorithmForLeaderboardTesting()
+    algo.fit(dataset)
+
+    algo.getLeaderboard("ALL").columns.length should be > algo.getLeaderboard().columns.length
+  }
 }

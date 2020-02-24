@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -34,6 +35,7 @@ import water.DKV
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
 import scala.util.control.NoStackTrace
+import collection.JavaConverters._
 
 /**
   * H2O AutoML algorithm exposed via Spark ML pipelines.
@@ -48,11 +50,14 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
-  var leaderboard: Option[DataFrame] = None
+  private var amlOption: Option[AutoML] = None
+
+  @DeprecatedMethod("getLeaderboard", "3.30")
+  def leaderboard: Option[DataFrame] = amlOption.map(leaderboardAsSparkFrame(_, Array.empty[String]))
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec
-
+    amlOption = None
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
     spec.input_spec.training_frame = DKV.getGet[Frame](trainKey)._key
     spec.input_spec.validation_frame = validKey.map(DKV.getGet[Frame](_)._key).orNull
@@ -89,13 +94,11 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
     // Block until AutoML finishes
     aml.get()
-
-    leaderboard = leaderboardAsSparkFrame(aml)
+    amlOption = Some(aml)
     if (aml.leader() == null) {
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
-
     val binaryModel = aml.leader()
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
@@ -124,17 +127,28 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     getIncludeAlgos().diff(bothIncludedExcluded).map(Algo.valueOf)
   }
 
-  private def leaderboardAsSparkFrame(aml: AutoML): Option[DataFrame] = {
+  private def leaderboardAsSparkFrame(aml: AutoML, extraColumns: Array[String]): DataFrame = {
     // Get LeaderBoard
-    val twoDimtable = aml.leaderboard().toTwoDimTable()
-    val colNames = twoDimtable.getColHeaders
-    val data = aml.leaderboard().toTwoDimTable().getCellValues.map(_.map(_.toString))
+    val twoDimTable = aml.leaderboard().toTwoDimTable(extraColumns: _*)
+    val colNames = twoDimTable.getColHeaders
+    val data = twoDimTable.getCellValues.map(_.map(_.toString))
     val rows = data.map {
       Row.fromSeq(_)
     }
     val schema = StructType(colNames.map { name => StructField(name, StringType) })
     val rdd = spark.sparkContext.parallelize(rows)
-    Some(spark.createDataFrame(rdd, schema))
+    spark.createDataFrame(rdd, schema)
+  }
+
+  def getLeaderboard(extraColumns: String*): DataFrame = getLeaderboard(extraColumns.toArray)
+
+  def getLeaderboard(extraColumns: java.util.ArrayList[String]) : DataFrame = {
+    getLeaderboard(extraColumns.asScala.toArray)
+  }
+
+  def getLeaderboard(extraColumns: Array[String]): DataFrame = amlOption match {
+    case Some(aml) => leaderboardAsSparkFrame(aml, extraColumns)
+    case None => throw new RuntimeException("The 'fit' method must be called at first!")
   }
 
   @DeveloperApi
