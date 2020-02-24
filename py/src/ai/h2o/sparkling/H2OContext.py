@@ -66,22 +66,19 @@ class H2OContext(object):
         except:
             raise
 
-    def __h2o_connect(h2o_context, **kwargs):
-        if "https" in kwargs:
-            warnings.warn("https argument is automatically set up and the specified value will be ignored.")
+    def __h2o_connect(h2o_context):
         schema = h2o_context._jhc.h2oContext().getConf().getScheme()
-        kwargs["https"] = False
-
         conf = h2o_context._conf
+
+        kwargs = {}
+        kwargs["https"] = schema == "https"
+        kwargs["verify_ssl_certificates"] = conf.verifySslCertificates()
         if conf.userName() and conf.password():
             kwargs["auth"] = (conf.userName(), conf.password())
-        if schema == "https":
-            kwargs["https"] = True
-        if h2o_context._conf.contextPath() is not None:
-            url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port, h2o_context._conf.contextPath())
-            return h2o.connect(url=url, **kwargs)
-        else:
-            return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
+        url = "{}://{}:{}".format(schema, h2o_context._client_ip, h2o_context._client_port)
+        if conf.contextPath() is not None:
+            url = "{}/{}".format(url, conf.contextPath())
+        return h2o.connect(url=url, **kwargs)
 
 
     @staticmethod
@@ -134,7 +131,7 @@ class H2OContext(object):
 
         # Create H2O REST API client
         if not h2o_context.__isClientConnected():
-            h2o_context.__h2o_connect(**kwargs)
+            h2o_context.__h2o_connect()
 
         h2o_context.__setClientConnected()
 

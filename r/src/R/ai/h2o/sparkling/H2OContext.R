@@ -59,12 +59,14 @@ H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
   contextPath <- substring(contextPathWithSlash, 2, nchar(contextPathWithSlash))
   ip <- invoke(jhc, "h2oLocalClientIp")
   port <- invoke(jhc, "h2oLocalClientPort")
+  schema <- invoke(returnedConf, "getScheme")
+  insecure <- conf$verifySslCertificates() == FALSE
+  https <- schema == "https"
   if (!isClientConnected(jhc)) {
     if (contextPath == "") {
-      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, startH2O = F, username = conf$userName(), password = conf$password())))
-    } else {
-      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())))
+        contextPath <- NA_character_
     }
+    h2o.init(strict_version_check = FALSE, https=https, insecure=insecure, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())
     setClientConnected(jhc)
   }
   hc
