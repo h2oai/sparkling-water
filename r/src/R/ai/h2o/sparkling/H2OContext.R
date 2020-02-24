@@ -35,10 +35,15 @@ setClientConnected <- function(jhc) {
 
 #' @export H2OContext.getOrCreate
 H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
-  sc <- spark_connection_find()[[1]]
-  if (is.null(conf)) {
+  if (!is.null(sc) && typeof(sc) == "S4") {
+    # it means user is passing conf as first argument
+    conf <- sc
+  } else if (is.null(conf)) {
     conf <- H2OConf()
   }
+
+  sc <- spark_connection_find()[[1]]
+
 
   jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", conf$jconf)
   hc <- H2OContext(jhc)

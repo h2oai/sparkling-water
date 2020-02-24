@@ -108,7 +108,7 @@ class H2OContext(object):
             jvm = activeSession.sparkContext._jvm
             jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
 
-        if isinstance(spark, H2OConf) and spark is not None:
+        if spark is not None and isinstance(spark, H2OConf):
             selected_conf = spark
         elif conf is not None:
             selected_conf = conf
