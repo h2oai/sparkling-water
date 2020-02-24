@@ -228,59 +228,40 @@ public class JavaH2OContext {
         return hc.asH2OFrameKeyString(df, Option.apply(frameName));
     }
 
+    /**
+     * Get existing or create new H2OContext
+     *
+     * @return H2O Context
+     */
     public static JavaH2OContext getOrCreate() {
         return new JavaH2OContext(H2OContext.getOrCreate());
     }
 
+    /**
+     * Get existing or create new H2OContext
+     *
+     * @param conf H2O configuration
+     * @return H2O Context
+     */
     public static JavaH2OContext getOrCreate(H2OConf conf) {
         return new JavaH2OContext(H2OContext.getOrCreate(conf));
     }
-    /**
-     * Get existing or create new JavaH2OContext based on provided H2O configuration. It searches the configuration
-     * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
-     * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
-     *
-     * @param jsc Java Spark Context
-     * @return Java H2O Context
-     */
+
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc) {
         return getOrCreate();
     }
 
-    /**
-     * Get existing or create new JavaH2OContext based on provided H2O configuration
-     *
-     * @param jsc  Java Spark Context
-     * @param conf H2O configuration
-     * @return Java H2O Context
-     */
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf) {
         return getOrCreate(conf);
     }
 
-    /**
-     * Get existing or create new JavaH2OContext based on provided H2O configuration. It searches the configuration
-     * properties passed to Sparkling Water and based on them starts H2O Context. If the values are not found, the default
-     * values are used in most of the cases. The default cluster mode is internal, ie. spark.ext.h2o.external.cluster.mode=false
-     *
-     * @param sparkSession SparkSession
-     * @return Java H2O Context
-     */
     public static JavaH2OContext getOrCreate(SparkSession sparkSession) {
         return getOrCreate();
     }
 
-    /**
-     * Get existing or create new JavaH2OContext based on provided H2O configuration
-     *
-     * @param sparkSession SparkSession
-     * @param conf         H2O configuration
-     * @return Java H2O Context
-     */
     public static JavaH2OContext getOrCreate(SparkSession sparkSession, H2OConf conf) {
         return getOrCreate(conf);
     }
-
 
     public String toString() {
         return hc.toString();

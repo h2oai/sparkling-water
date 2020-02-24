@@ -584,9 +584,9 @@ object H2OContext extends Logging {
   }
 
   /**
-   * Get existing or create new H2OContext based on provided H2O configuration
+   * Get existing or create new H2OContext
    *
-   * @param conf         H2O configuration
+   * @param conf H2O configuration
    * @return H2O Context
    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
@@ -621,6 +621,11 @@ object H2OContext extends Logging {
     instantiatedContext.get()
   }
 
+  /**
+   * Get existing or create new H2OContext
+   *
+   * @return H2O Context
+   */
   def getOrCreate(): H2OContext = {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
