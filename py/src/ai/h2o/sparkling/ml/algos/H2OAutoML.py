@@ -75,7 +75,7 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
                       "Use the 'getLeaderboard' method instead!")
         leaderboard_java = self._java_obj.leaderboard()
         if leaderboard_java.isDefined():
-            return DataFrame(leaderboard_java.get(), SparkSession._instantiatedSession._wrapped)
+            return DataFrame(leaderboard_java.get(), SparkSession.builder.getOrCreate()._wrapped)
         else:
             return None
 
@@ -83,4 +83,4 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
         if len(extraColumns) == 1 and isinstance(extraColumns[0], list):
             extraColumns = extraColumns[0]
         leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
-        return DataFrame(leaderboard_java, SparkSession._instantiatedSession._wrapped)
+        return DataFrame(leaderboard_java, SparkSession.builder.getOrCreate()._wrapped)
