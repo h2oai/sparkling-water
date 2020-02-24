@@ -27,7 +27,7 @@ getOption <- function(option) {
 H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
   initialize = function(spark = NULL) {
     if (!is.null(spark)) {
-      print("Constructor H2OConf(spark) with spark argument is deprecated. Please use just H2OConf(). The argument will be removed in release 3.32.")
+      print("Constructor H2OConf(spark) with the spark argument is deprecated. Please use just H2OConf(). The argument will be removed in release 3.32.")
     }
     sc <- spark_connection_find()[[1]]
     .self$jconf <- invoke_new(sc, "org.apache.spark.h2o.H2OConf")

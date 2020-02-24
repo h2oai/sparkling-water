@@ -62,7 +62,7 @@ object DeprecatedMethodMacro {
         case q"${Modifiers(f, p, a)} def $methodName[..$tpes](...$args): $returnType = { ..$body }" :: Nil => {
 
           val daMessage = if (replacement.isEmpty) "" else s"Use '$replacement' instead!"
-          val removalMessage = if (version.isEmpty) "" else s"This method will be removed in release $version."
+          val removalMessage = if (version.isEmpty) "" else s"This method will be removed in the release $version."
           val da = q"""new deprecated($daMessage, "")"""
           val warnMessage = s"The method '$methodName' is deprecated. $daMessage $removalMessage"
 

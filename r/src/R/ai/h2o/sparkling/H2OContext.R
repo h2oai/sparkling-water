@@ -37,7 +37,7 @@ setClientConnected <- function(jhc) {
 H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
 
   if (!is.null(sc) && typeof(sc) == "list") {
-    print("Method getOrCreate with sc argument is deprecated. Please use either just getOrCreate() or if you need
+    print("Method getOrCreate with the sc argument is deprecated. Please use either just getOrCreate() or if you need
       to pass extra H2OConf, use getOrCreate(conf). The sc argument will be removed in release 3.32.")
   }
 

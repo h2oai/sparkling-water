@@ -34,7 +34,7 @@ class H2OConf private(val sparkConf: SparkConf, deprecatedClassName: String) ext
   with InternalBackendConf with ExternalBackendConf with Serializable {
 
   private def deprecationWarning(oldParams: String): Unit = {
-    logWarning(s"The constructor 'new H2OConf($oldParams)' is deprecated." +
+    logWarning(s"The constructor 'new H2OConf($oldParams)' is deprecated. " +
       s"Use 'new H2OConf()' instead! This method will be removed in release 3.32.")
   }
 
