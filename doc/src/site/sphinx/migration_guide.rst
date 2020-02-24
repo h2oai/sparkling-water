@@ -198,6 +198,8 @@ Removal of Deprecated Methods and Classes
        - ``set_client_check_retry_timeout`` -> ``setClientCheckRetryTimeout``
        - ``set_client_extra_properties`` -> ``setClientExtraProperties``
 
+- In ``H2OAutoML`` Python and Scala API, the member ``leaderboard()``/``leaderboard`` is replaced by the method ``getLeaderboard()``.
+
 From 3.28.0 to 3.28.1
 ---------------------
 
