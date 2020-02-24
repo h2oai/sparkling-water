@@ -5,7 +5,7 @@
 h2o_context <- function(sc, conf = NULL, username = NA_character_, password = NA_character_) {
   print("Method h2o_context is deprecated and will be deleted in major release 3.30. Create instance of H2OContext as hc <- H2OContext.getOrCreate().")
   if (is.null(conf)) {
-    conf <- H2OConf(sc)
+    conf <- H2OConf()
   }
   if (!is.na(username)) {
     print("Providing username via username parameter on H2OContext is deprecated. Please use setUserName H2OConf object.")

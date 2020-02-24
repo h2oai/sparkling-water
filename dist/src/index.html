@@ -578,14 +578,14 @@
             <p>Scala</p>
             <p class="terminal">
               import org.apache.spark.h2o._<br/>
-              val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
+              val conf = new H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
               val hc = H2OContext.getOrCreate(conf)<br/>
             </p>
 
             <p>Python</p>
             <p class="terminal">
               from pysparkling import *<br/>
-              conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
+              conf = H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName("test")<br/>
               hc = H2OContext.getOrCreate(conf)<br/>
             </p>
 

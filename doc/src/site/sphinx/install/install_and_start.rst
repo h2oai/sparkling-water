@@ -156,7 +156,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
+    val conf = new H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName("test")
     val hc = H2OContext.getOrCreate(conf)
 
 **Python**
@@ -164,7 +164,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName("test")
+    conf = H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName("test")
     hc = H2OContext.getOrCreate(conf)
 
 **Note**: The following is a list of supported Hadoop distributions: SUBST_H2O_DRIVERS_LIST

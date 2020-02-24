@@ -19,8 +19,8 @@ from pysparkling.conf import H2OConf
 import subprocess
 
 
-def createH2OConf(spark):
-    conf = H2OConf(spark)
+def createH2OConf():
+    conf = H2OConf()
     conf.setClusterSize(1)
     conf.set("spark.ext.h2o.rest.api.based.client", "true")
     conf.useAutoClusterStart()

@@ -47,8 +47,8 @@ def testZombieExternalH2OCluster():
 
 
 def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatically(spark):
-    context1 = H2OContext.getOrCreate(createH2OConf(spark))
-    context2 = H2OContext.getOrCreate(createH2OConf(spark))
+    context1 = H2OContext.getOrCreate(createH2OConf())
+    context2 = H2OContext.getOrCreate(createH2OConf())
 
     getNodes = lambda context: context._jhc.h2oContext().getH2ONodes()
     toIpPort = lambda node: node.ipPort()
@@ -62,7 +62,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
 
 def testDownloadLogsAsLOG(spark):
-    hc = H2OContext.getOrCreate(createH2OConf(spark))
+    hc = H2OContext.getOrCreate(createH2OConf())
     path = hc.download_h2o_logs("build", "LOG")
     clusterName = hc._conf.cloudName()
 
@@ -73,7 +73,7 @@ def testDownloadLogsAsLOG(spark):
 
 
 def testDownloadLogsAsZIP(spark):
-    hc = H2OContext.getOrCreate(createH2OConf(spark))
+    hc = H2OContext.getOrCreate(createH2OConf())
     path = hc.download_h2o_logs("build", "ZIP")
     import zipfile
     archive = zipfile.ZipFile(path, 'r')
@@ -90,12 +90,12 @@ def testStopAndStartAgain(spark):
     def yarnLogs(appId):
         return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 
-    context1 = H2OContext.getOrCreate(createH2OConf(spark))
+    context1 = H2OContext.getOrCreate(createH2OConf())
     yarnAppId1 = str(context1._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 in listYarnApps()
     context1.stop()
     assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
-    context2 = H2OContext.getOrCreate(createH2OConf(spark))
+    context2 = H2OContext.getOrCreate(createH2OConf())
     yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
     assert yarnAppId1 not in listYarnApps()
     assert "Orderly shutdown:  Shutting down now." in yarnLogs(yarnAppId1)
@@ -104,9 +104,9 @@ def testStopAndStartAgain(spark):
 
 
 def testConversionWorksAfterNewlyStartedContext(spark):
-    context1 = H2OContext.getOrCreate(createH2OConf(spark))
+    context1 = H2OContext.getOrCreate(createH2OConf())
     context1.stop()
-    context2 = H2OContext.getOrCreate(createH2OConf(spark))
+    context2 = H2OContext.getOrCreate(createH2OConf())
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
     h2o_frame = context2.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5

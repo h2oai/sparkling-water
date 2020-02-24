@@ -12,7 +12,7 @@ from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
 from tests.unit_test_utils import *
 
 def testSSL(spark):
-    conf = createH2OConf(spark)
+    conf = createH2OConf()
     conf.setInternalSecureConnectionsEnabled()
 
     context = H2OContext.getOrCreate(conf)
@@ -29,7 +29,7 @@ def testAuth(spark):
     with open('build/login.conf', 'w') as f:
         f.write('user:pass')
 
-    conf = createH2OConf(spark)
+    conf = createH2OConf()
     conf.setHashLoginEnabled()
     conf.setLoginConf("build/login.conf")
     conf.setUserName("user")
@@ -47,7 +47,7 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     with open('build/login.conf', 'w') as f:
         f.write('user:pass')
 
-    conf = createH2OConf(spark)
+    conf = createH2OConf()
     conf.setHashLoginEnabled()
     conf.setCloudName("test-cluster")
     conf.setClusterConfigFile("notify_file.txt")

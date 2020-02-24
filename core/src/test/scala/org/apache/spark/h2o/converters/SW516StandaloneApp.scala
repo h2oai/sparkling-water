@@ -35,10 +35,9 @@ object SWApp {
     val spark = SparkSession.builder()
       .appName("SW516")
       .master("local[*]")
-      .config("spark.ext.h2o.external.read.confirmation.timeout", 240)
       .getOrCreate()
     
-    val h2oConf = new H2OConf(spark).setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
+    val h2oConf = new H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
     val hc = H2OContext.getOrCreate(h2oConf)
 
     val values = (0 until valuesCnt).map(x =>

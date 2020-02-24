@@ -41,7 +41,7 @@ And later, you can create ``H2OContext`` as:
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setUserName("username").setPassword("password")
+    val conf = new H2OConf().setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(conf)
 
 
@@ -50,7 +50,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: scala
 
     import org.apache.spark.h2o._
-    val conf = new H2OConf(spark).setLoginConf("kerberos.conf").setKerberosLoginEnabled().setUserName("username").setPassword("password")
+    val conf = new H2OConf().setLoginConf("kerberos.conf").setKerberosLoginEnabled().setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(conf)
 
 Later when accessing Flow, you will be asked for the username and password of the user you specified in the configuration
@@ -73,7 +73,7 @@ And later, you can create ``H2OContext`` as:
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).setUserName("username").setPassword("password")
+    conf = H2OConf().setUserName("username").setPassword("password")
     hc = H2OContext.getOrCreate(conf)
 
 
@@ -82,7 +82,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 .. code:: python
 
     from pysparkling import *
-    conf = H2OConf(spark).setLoginConf("kerberos.conf").setKerberosLoginEnabled().setUserName("username").setPassword("password")
+    conf = H2OConf().setLoginConf("kerberos.conf").setKerberosLoginEnabled().setUserName("username").setPassword("password")
     hc = H2OContext.getOrCreate(conf)
 
 You can see that in the case of PySparkling, you need to also specify the username and password as part of the ``H2OContext`` call.

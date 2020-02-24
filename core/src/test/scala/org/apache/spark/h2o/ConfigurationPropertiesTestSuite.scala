@@ -87,7 +87,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
 
   def testExtraHTTPHeadersArePropagated(master: String, urlProvider: H2OContext => String): Unit = {
     val spark = createSparkSession(master)
-    val h2oConf = new H2OConf(spark)
+    val h2oConf = new H2OConf()
     val extraHttpHeaders = Map(
       "X-MyCustomHeaderA" -> "A",
       "X-MyCustomHeaderB" -> "B")
@@ -137,7 +137,7 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
     val file = filePath.toFile
     file.deleteOnExit()
 
-    val h2oConf = propertySetter(new H2OConf(spark).setClusterSize(1), filePath)
+    val h2oConf = propertySetter(new H2OConf().setClusterSize(1), filePath)
     hc = H2OContext.getOrCreate(h2oConf)
 
     Thread.sleep(5000)

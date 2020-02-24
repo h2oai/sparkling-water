@@ -47,14 +47,14 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext {
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
 
-    val spark = SparkSession.builder()
+    SparkSession.builder()
       .master("local")
       .appName(this.getClass.getName)
       .config(sparkConf)
       .getOrCreate()
 
 
-    val conf = new H2OConf(spark).setClusterSize(1)
+    val conf = new H2OConf().setClusterSize(1)
 
     // Test passed values
     assert(conf.numH2OWorkers == Some(42))

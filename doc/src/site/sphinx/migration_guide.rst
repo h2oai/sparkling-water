@@ -24,10 +24,10 @@ Removal of Deprecated Methods and Classes
 
   .. code-block:: r
 
-    conf <- H2OConf(sc)
+    conf <- H2OConf()
     conf$setUserName(username)
     conf$setPassword(password)
-    hc <- H2OContext(sc, conf)
+    hc <- H2OContext.getOrCreate(conf)
 
   The Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` correspond to these setters and can be
   also used directly.
