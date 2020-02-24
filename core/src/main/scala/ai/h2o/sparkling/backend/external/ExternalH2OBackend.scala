@@ -105,8 +105,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
            |
            |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
            |   to increase the timeout for starting the external cluster as:
-           |   Python: H2OConf(sc).set_cluster_start_timeout(timeout)....
-           |   Scala:  new H2OConf(sc).setClusterStartTimeout(timeout)....
+           |
+           |   H2OContext.getOrCrete(H2OConf().setClusterStartTimeout(timeout))
            |
            |2) The file could not be created because of missing write rights.""".stripMargin
       )

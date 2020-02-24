@@ -39,7 +39,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark).setJks("/path/to/keystore").setJksPass("password")
+            val conf = new H2OConf().setJks("/path/to/keystore").setJksPass("password")
             val hc = H2OContext.getOrCreate(conf)
 
 
@@ -65,7 +65,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
+            conf = H2OConf().setJks("/path/to/keystore").setJksPass("password)
             hc = H2OContext.getOrCreate(conf)
 
         In case your certificates are self-signed, the connection of the
@@ -76,7 +76,7 @@ In order to use https correctly, the following two options need to be specified:
         .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
+            conf = H2OConf().setJks("/path/to/keystore").setJksPass("password)
             hc = H2OContext.getOrCreate(conf, verify_ssl_certificates=False)
 
 
@@ -113,7 +113,7 @@ certificates are created.
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark).setAutoFlowSslEnabled()
+            val conf = new H2OConf().setAutoFlowSslEnabled()
             val hc = H2OContext.getOrCreate(conf)
 
 
@@ -139,5 +139,5 @@ certificates are created.
         .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).setAutoFlowSslEnabled()
+            conf = H2OConf().setAutoFlowSslEnabled()
             hc = H2OContext.getOrCreate(conf, verify_ssl_certificates=False)

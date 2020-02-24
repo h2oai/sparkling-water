@@ -29,7 +29,7 @@ Explicitly specify internal backend on ``H2OConf``:
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark).setInternalClusterMode()
+            val conf = new H2OConf().setInternalClusterMode()
             val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
@@ -39,7 +39,7 @@ Explicitly specify internal backend on ``H2OConf``:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).setInternalClusterMode()
+            conf = H2OConf().setInternalClusterMode()
             hc = H2OContext.getOrCreate(conf)
 
 
@@ -77,7 +77,7 @@ We can however also explicitly pass the ``H2OConf``:
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
+            val conf = new H2OConf()
             val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
@@ -87,8 +87,8 @@ We can however also explicitly pass the ``H2OConf``:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark)
-            hc = H2OContext.getOrCreate()
+            conf = H2OConf()
+            hc = H2OContext.getOrCreate(conf)
 
 
 .. _external-backend:
@@ -134,7 +134,7 @@ To start an H2O cluster and connect to it, run:
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
+            val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useAutoClusterStart()
                         .setH2ODriverPath("path_to_h2o_driver")
@@ -152,7 +152,7 @@ To start an H2O cluster and connect to it, run:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark)
+            conf = H2OConf()
                     .setExternalClusterMode()
                     .useAutoClusterStart()
                     .setH2ODriverPath("path_to_h2o_driver")
@@ -207,7 +207,7 @@ To connect to this external cluster, run the following commands:
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
+            val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useManualClusterStart()
                         .setH2OCluster("representant_ip", representant_port)
@@ -222,7 +222,7 @@ To connect to this external cluster, run the following commands:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark)
+            conf = H2OConf()
                     .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
@@ -274,7 +274,7 @@ To connect to this external cluster, run the following commands:
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
+            val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useManualClusterStart()
                         .setH2OCluster("representant_ip", representant_port)
@@ -289,7 +289,7 @@ To connect to this external cluster, run the following commands:
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark)
+            conf = H2OConf()
                     .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
@@ -329,7 +329,7 @@ We can force the client to use the correct network or address using the followin
          .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark)
+            val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useManualClusterStart()
                         .setH2OCluster("representant_ip", representant_port)
@@ -349,7 +349,7 @@ We can force the client to use the correct network or address using the followin
          .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark)
+            conf = H2OConf()
                     .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)

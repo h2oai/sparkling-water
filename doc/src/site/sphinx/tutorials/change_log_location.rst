@@ -20,14 +20,14 @@ In Scala:
 
 .. code:: scala
 
-    val conf = new H2OConf(spark).setH2OClientLogDir("log_location")
+    val conf = new H2OConf().setH2OClientLogDir("log_location")
     val hc = H2OContext.getOrCreate(conf)
 
 In Python:
 
 .. code:: python
 
-    conf = H2OConf(spark).setH2OClientLogDir("log_location")
+    conf = H2OConf().setH2OClientLogDir("log_location")
     hc = H2OContext.getOrCreate(conf)
 
 Worker Nodes
@@ -61,12 +61,12 @@ In Scala:
 
 .. code:: scala
 
-    val conf = new H2OConf(spark).setH2ONodeLogDir("log_location")
+    val conf = new H2OConf().setH2ONodeLogDir("log_location")
     val hc = H2OContext.getOrCreate(conf)
 
 In Python:
 
 .. code:: python
 
-    conf = H2OConf(spark).setH2ONodeLogDir("log_location")
+    conf = H2OConf().setH2ONodeLogDir("log_location")
     hc = H2OContext.getOrCreate(conf)
