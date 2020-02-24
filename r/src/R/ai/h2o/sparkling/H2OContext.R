@@ -61,10 +61,9 @@ H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
   port <- invoke(jhc, "h2oLocalClientPort")
   if (!isClientConnected(jhc)) {
     if (contextPath == "") {
-      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, startH2O = F, username = conf$userName(), password = conf$password())))
-    } else {
-      invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())))
+        contextPath <- NA_character_
     }
+    invisible(capture.output(h2o.init(strict_version_check = FALSE, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())))
     setClientConnected(jhc)
   }
   hc

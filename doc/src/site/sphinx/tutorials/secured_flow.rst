@@ -83,7 +83,7 @@ In order to use https correctly, the following two options need to be specified:
 
 In case your certificates are self-signed, the connection to the H2O cluster will fail due to the security
 limitations. In this case, you can skip the certificates verification
-by calling ``setVerifySslCertificates`` ``H2OConf`` as:
+by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
 
 .. content-tabs::
 
@@ -176,17 +176,6 @@ certificates are created.
         :title: R
 
         To enable https in RSparkling using this mode, run in your RStudio:
-
-
-        and when you have the shell running, start ``H2OContext`` as:
-
-        .. code:: r
-
-            from pysparkling import *
-            hc = H2OContext.getOrCreate()
-
-        You can also start PySparkling shell without the configuration
-        and specify it using the setters on ``H2OConf`` as:
 
         .. code:: r
 
