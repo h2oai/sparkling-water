@@ -80,7 +80,7 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
             return None
 
     def getLeaderboard(self, *extraColumns):
-        if len(extraColumns) == 1 and isinstance(extraColumns[0], (list, set)):
+        if len(extraColumns) == 1 and isinstance(extraColumns[0], list):
             extraColumns = extraColumns[0]
         leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
         return DataFrame(leaderboard_java, SparkSession._instantiatedSession._wrapped)
