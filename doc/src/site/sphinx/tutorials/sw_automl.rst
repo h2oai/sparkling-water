@@ -56,7 +56,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             val model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        You can also get raw model details by calling the ``getModelDetails()`` method available on the model as:
 
         .. code:: scala
 
@@ -76,9 +76,10 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             leaderboard.show(false)
 
         By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
-        If you want to see more information about models, you can add extra columns to the leaderboard by ``setLeaderboardExtraColumns`` on ``H2OAutoML``.
+        If you want to see more information about models, you can add extra columns to the leaderboard by calling
+        the ``setLeaderboardExtraColumns`` method on the ``H2OAutoML`` instance.
 
-            .. code:: scala
+        .. code:: scala
 
             automl.setLeaderboardExtraColumns("training_time_ms", "predict_time_per_row_ms")
             val leaderboard = automl.leaderboard.get
@@ -86,7 +87,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
 
-            .. code:: scala
+        .. code:: scala
 
             automl.setLeaderboardExtraColumns("ALL")
             val leaderboard = automl.leaderboard.get
@@ -142,7 +143,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setSortMetric("AUC")
             model = automl.fit(trainingDF)
 
-        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+        You can also get raw model details by calling the ``getModelDetails()`` method available on the model as:
 
         .. code:: python
 
@@ -162,9 +163,10 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             leaderboard.show(truncate = False)
 
         By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
-        If you want to see more information about models, you can add extra columns to the leaderboard by ``setLeaderboardExtraColumns`` on ``H2OAutoML``.
+        If you want to see more information about models, you can add extra columns to the leaderboard by calling
+        the ``setLeaderboardExtraColumns`` method on the ``H2OAutoML`` instance.
 
-            .. code:: scala
+        .. code:: scala
 
             automl.setLeaderboardExtraColumns("training_time_ms", "predict_time_per_row_ms")
             val leaderboard = automl.leaderboard.get
@@ -172,7 +174,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
 
-            .. code:: scala
+        .. code:: scala
 
             automl.setLeaderboardExtraColumns("ALL")
             val leaderboard = automl.leaderboard.get

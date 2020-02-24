@@ -18,15 +18,21 @@
 package ai.h2o.sparkling.ml.algos
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+
+  private lazy val dataset = spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("Setting sort metric") {
     val algo = new H2OAutoML()
@@ -37,4 +43,38 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     assert(algo.getSortMetric() == "AUTO")
   }
 
+  test("getLeaderboard without arguments returns the same result as leaderboard") {
+    val automl = new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setSortMetric("AUC")
+    automl.fit(dataset)
+
+    TestFrameUtils.assertDataFramesAreIdentical(automl.leaderboard.get, automl.getLeaderboard())
+  }
+
+  test("Parameters of getLeaderboard add extra columns to the leaderboard") {
+    val automl = new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setSortMetric("AUC")
+    automl.fit(dataset)
+
+    val extraColumns = Seq("training_time_ms", "predict_time_per_row_ms")
+
+    automl.getLeaderboard(extraColumns: _*).columns shouldEqual automl.getLeaderboard().columns ++ extraColumns
+  }
+
+  test("ALL as getLeaderboard adds extra columns to the leaderboard") {
+    val automl = new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setSortMetric("AUC")
+    automl.fit(dataset)
+
+    automl.getLeaderboard("ALL").columns.length should be > automl.getLeaderboard().columns.length
+  }
 }

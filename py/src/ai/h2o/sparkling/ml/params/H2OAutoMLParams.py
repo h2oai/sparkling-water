@@ -178,9 +178,6 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
     def getMaxModels(self):
         return self.getOrDefault(self.maxModels)
 
-    def getLeaderboardExtraColumns(self):
-        return self.getOrDefault(self.leaderboardExtraColumns)
-
     ##
     # Setters
     ##
@@ -231,6 +228,3 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
 
     def setMaxModels(self, value):
         return self._set(maxModels=value)
-
-    def setLeaderboardExtraColumns(self, value):
-        return self._set(leaderboardExtraColumns=value)
