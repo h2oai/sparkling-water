@@ -71,7 +71,7 @@ class H2OContext(object):
         conf = h2o_context._conf
 
         kwargs = {}
-        kwargs["https"] = True if schema == "https" else False
+        kwargs["https"] = schema == "https"
         kwargs["verify_ssl_certificates"] = conf.verifySslCertificates()
         if conf.userName() and conf.password():
             kwargs["auth"] = (conf.userName(), conf.password())

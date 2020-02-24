@@ -56,5 +56,9 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
   setJks = function(value) {invoke(jconf, "setJks", value); .self },
 
   jksPass = function() { getOption(invoke(jconf, "jksPass")) },
-  setJksPass = function(value) {invoke(jconf, "setJksPass", value); .self }
+  setJksPass = function(value) {invoke(jconf, "setJksPass", value); .self },
+
+  autoFlowSsl = function() { getOption(invoke(jconf, "autoFlowSsl")) },
+  setAutoFlowSslEnabled = function() {invoke(jconf, "setAutoFlowSslEnabled"); .self },
+  setAutoFlowSslDisabled = function() {invoke(jconf, "setAutoFlowSslDisabled"); .self }
 ))
