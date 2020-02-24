@@ -98,6 +98,9 @@ class H2OContext(object):
         :return:  instance of H2OContext
         """
 
+        if spark is not None and not isinstance(spark, H2OConf):
+            warnings.warn("Method getOrCreate with spark argument is deprecated. Please use either just getOrCreate() or if you need"
+                          "to pass extra H2OConf, use getOrCreate(conf). The spark argument will be removed in release 3.32.")
 
         # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
         # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not

@@ -22,11 +22,12 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox.Context
 
 /**
-  * The class represents an annotation specifying deprecated methods of Sparkling Water API
-  *
-  * @param replacement Name of a method replacing the deprecated method
-  */
-class DeprecatedMethod(replacement: String = "") extends StaticAnnotation {
+ * The class represents an annotation specifying deprecated methods of Sparkling Water API
+ *
+ * @param replacement Name of a method replacing the deprecated method
+ * @param version     Version when this method will be removed
+ */
+class DeprecatedMethod(replacement: String = "", version: String = "") extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro DeprecatedMethodMacro.impl
 }
 
@@ -46,10 +47,12 @@ object DeprecatedMethodMacro {
     import c.universe._
 
     // Extract the annotation parameter from its definition
-    val replacement: String = c.prefix.tree match {
-      case q"new DeprecatedMethod(replacement = $r)" => c.eval[String](c.Expr(r))
-      case q"new DeprecatedMethod($r)" => c.eval[String](c.Expr(r))
-      case q"new DeprecatedMethod()" => ""
+    val (replacement, version): (String, String) = c.prefix.tree match {
+      case q"new DeprecatedMethod(replacement = $r)" => (c.eval[String](c.Expr(r)), "")
+      case q"new DeprecatedMethod(version = $v)" => ("", c.eval[String](c.Expr(v)))
+      case q"new DeprecatedMethod($r)" => (c.eval[String](c.Expr(r)), "")
+      case q"new DeprecatedMethod($r, $v)" => (c.eval[String](c.Expr(r)), c.eval[String](c.Expr(v)))
+      case q"new DeprecatedMethod()" => ("", "")
       case _ => c.abort(c.enclosingPosition, "Unexpected annotation pattern for DeprecatedMethod!")
     }
 
@@ -59,8 +62,9 @@ object DeprecatedMethodMacro {
         case q"${Modifiers(f, p, a)} def $methodName[..$tpes](...$args): $returnType = { ..$body }" :: Nil => {
 
           val daMessage = if (replacement.isEmpty) "" else s"Use '$replacement' instead!"
+          val removalMessage = if (version.isEmpty) "" else s"This method will be removed in release $version."
           val da = q"""new deprecated($daMessage, "")"""
-          val warnMessage = s"The method '$methodName' is deprecated. $daMessage"
+          val warnMessage = s"The method '$methodName' is deprecated. $daMessage $removalMessage"
 
           q"""${Modifiers(f, p, da :: a)} def $methodName[..$tpes](...$args): $returnType =  {
             logWarning($warnMessage)

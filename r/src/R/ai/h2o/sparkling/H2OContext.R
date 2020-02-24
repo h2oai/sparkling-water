@@ -35,6 +35,12 @@ setClientConnected <- function(jhc) {
 
 #' @export H2OContext.getOrCreate
 H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
+
+  if (!is.null(sc) && typeof(sc) == "list") {
+    print("Method getOrCreate with sc argument is deprecated. Please use either just getOrCreate() or if you need
+      to pass extra H2OConf, use getOrCreate(conf). The sc argument will be removed in release 3.32.")
+  }
+
   if (!is.null(sc) && typeof(sc) == "S4") {
     # it means user is passing conf as first argument
     conf <- sc
