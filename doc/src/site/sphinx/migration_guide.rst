@@ -28,6 +28,9 @@ Removal of Deprecated Methods and Classes
   ``setUserName`` and ``setPassword`` ond the ``H2OConf`` or via
   the Spark options ``spark.ext.h2o.user.name`` and ``spark.ext.h2o.password`` directly.
 
+- On Pysparkling, passing ``verify_ssl_certificates`` parameter as H2OContext argument is removed in favor of
+  method ``setVerifySslCertificates`` on ``H2OConf`` or via the spark option ``spark.ext.h2o.verify_ssl_certificates``.
+
 - On RSparkling, the method ``h2o_context`` is removed. To create H2OContext, please call
   ``hc <- H2OContext.getOrCreate()``. Also the methods ``h2o_flow``, ``as_h2o_frame`` and ``as_spark_dataframe`` are
   removed. Please use the methods available on the ``H2OContext`` instance created via ``hc <- H2OContext.getOrCreate()``.
