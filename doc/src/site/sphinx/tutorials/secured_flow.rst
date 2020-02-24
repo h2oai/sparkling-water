@@ -192,5 +192,5 @@ certificates are created.
 
             library(rsparkling)
             sc <- spark_connect(master = "local")
-            conf <- H2OConf()$setAutoFlowSslEnabled()$setVerifySslCertificates(False)
+            conf <- H2OConf()$setAutoFlowSslEnabled()$setVerifySslCertificates(FALSE)
             hc <- H2OContext.getOrCreate(conf)
