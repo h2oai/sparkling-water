@@ -30,7 +30,7 @@ Explicitly specify internal backend on ``H2OConf``:
 
             import org.apache.spark.h2o._
             val conf = new H2OConf(spark).setInternalClusterMode()
-            val hc = H2OContext.getOrCreate(spark, conf
+            val hc = H2OContext.getOrCreate(spark, conf)
 
     .. tab-container:: Python
         :title: Python
@@ -88,7 +88,7 @@ We can however also explicitly pass the ``H2OConf``:
 
             from pysparkling import *
             conf = H2OConf(spark)
-            hc = H2OContext.getOrCreate(spark)
+            hc = H2OContext.getOrCreate(spark, conf)
 
 
 
