@@ -159,7 +159,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
         .. code:: python
 
             leaderboard = automl.leaderboard()
-            leaderboard.show(false)
+            leaderboard.show(truncate = False)
 
         By default, the leaderboard contains the model name (*model_id*) and various performance metrics like AUC, RMSE, etc.
         If you want to see more information about models, you can add extra columns to the leaderboard by ``setLeaderboardExtraColumns`` on ``H2OAutoML``.
@@ -168,7 +168,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             automl.setLeaderboardExtraColumns("training_time_ms", "predict_time_per_row_ms")
             val leaderboard = automl.leaderboard.get
-            leaderboard.show(false)
+            leaderboard.show(truncate = False)
 
         Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
 
@@ -176,7 +176,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             automl.setLeaderboardExtraColumns("ALL")
             val leaderboard = automl.leaderboard.get
-            leaderboard.show(false)
+            leaderboard.show(truncate = False)
 
 
 Enabling XGBoost Models when Running Sparkling Water in a Distributed Environment (YARN)

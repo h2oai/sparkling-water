@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+from pyspark.sql import SparkSession
 from pyspark import keyword_only
 from pyspark.sql.dataframe import DataFrame
 
@@ -71,6 +72,7 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
     def leaderboard(self):
         leaderboard_java = self._java_obj.leaderboard()
         if leaderboard_java.isDefined():
-            return DataFrame(leaderboard_java.get(), self._hc._sql_context)
+            activeSession = SparkSession._instantiatedSession
+            return DataFrame(leaderboard_java.get(), activeSession)
         else:
             return None
