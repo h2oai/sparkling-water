@@ -85,7 +85,7 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark=None, conf=None, verbose=True, **kwargs):
+    def getOrCreate(spark=None, conf=None, **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -94,7 +94,6 @@ class H2OContext(object):
 
         :param spark: Spark Context or Spark Session or H2OConf
         :param conf: H2O configuration as instance of H2OConf
-        :param verbose; True if verbose H2O output
         :param kwargs:  additional parameters which are passed to h2o_connect_hook
         :return:  instance of H2OContext
         """
@@ -132,12 +131,11 @@ class H2OContext(object):
 
         # Create H2O REST API client
         if not h2o_context.__isClientConnected():
-            h2o_context.__h2o_connect(verbose=verbose, **kwargs)
+            h2o_context.__h2o_connect(**kwargs)
 
         h2o_context.__setClientConnected()
 
-        if verbose:
-            print(h2o_context)
+        print(h2o_context)
 
         return h2o_context
 
