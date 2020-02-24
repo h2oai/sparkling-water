@@ -46,7 +46,7 @@ In order to use https correctly, the following two options need to be specified:
     .. tab-container:: Python
         :title: Python
 
-        To enable https in Pysparkling, you can start PySparkling as:
+        To enable https in PySparkling, you can start PySparkling as:
 
         .. code:: shell
 
@@ -68,18 +68,48 @@ In order to use https correctly, the following two options need to be specified:
             conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
             hc = H2OContext.getOrCreate(spark, conf)
 
-        In case your certificates are self-signed, the connection of the
-        Python client to the backend cluster will fail due to the security
-        limitations. In this case, you can skip the certificates verification
-        using ``verify_ssl_certificates=False`` and connect as:
+    .. tab-container:: R
+        :title: R
+
+        To enable https in RSparkling, run in RStudio:
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            conf <- H2OConf(sc)$setJks("/path/to/keystore")$setJksPass("password")
+            hc <- H2OContext.getOrCreate(sc, conf)
+
+
+In case your certificates are self-signed, the connection to the H2O cluster will fail due to the security
+limitations. In this case, you can skip the certificates verification
+by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: scala
+
+            val conf = new H2OConf(spark).setVerifySslCertificates(false)
+            val hc = H2OContext.getOrCreate(spark, conf)
+
+    .. tab-container:: Python
+        :title: Python
 
         .. code:: python
 
-            from pysparkling import *
-            conf = H2OConf(spark).setJks("/path/to/keystore").setJksPass("password)
-            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            conf = H2OConf(spark).setVerifySslCertificates(False)
+            hc = H2OContext.getOrCreate(spark, conf)
 
+    .. tab-container:: R
+        :title: R
 
+        .. code:: r
+
+            conf <- H2OConf(sc)$setVerifySslCertificates(FALSE)
+            hc <- H2OContext.getOrCreate(sc, conf)
 
 Generate the files automatically
 --------------------------------
@@ -98,7 +128,7 @@ certificates are created.
 
         .. code:: shell
 
-            bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true"
+            bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true" --conf "spark.ext.h2o.verify_ssl_certificates=false"
 
         and when you have the shell running, start ``H2OContext`` as:
 
@@ -113,25 +143,25 @@ certificates are created.
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = new H2OConf(spark).setAutoFlowSslEnabled()
+            val conf = new H2OConf(spark).setAutoFlowSslEnabled().setVerifySslCertificates(false)
             val hc = H2OContext.getOrCreate(spark, conf)
 
 
     .. tab-container:: Python
         :title: Python
 
-        To enable https in Pysparkling using this mode, you can start PySparkling as:
+        To enable https in PySparkling using this mode, you can start PySparkling as:
 
         .. code:: shell
 
-            bin/pysparkling --conf "spark.ext.h2o.auto.flow.ssl=true"
+            bin/pysparkling --conf "spark.ext.h2o.auto.flow.ssl=true"  --conf "spark.ext.h2o.verify_ssl_certificates=false"
 
         and when you have the shell running, start ``H2OContext`` as:
 
         .. code:: python
 
             from pysparkling import *
-            hc = H2OContext.getOrCreate(spark, verify_ssl_certificates=False)
+            hc = H2OContext.getOrCreate(spark)
 
         You can also start PySparkling shell without the configuration
         and specify it using the setters on ``H2OConf`` as:
@@ -139,5 +169,17 @@ certificates are created.
         .. code:: python
 
             from pysparkling import *
-            conf = H2OConf(spark).setAutoFlowSslEnabled()
-            hc = H2OContext.getOrCreate(spark, conf, verify_ssl_certificates=False)
+            conf = H2OConf(spark).setAutoFlowSslEnabled().setVerifySslCertificates(False)
+            hc = H2OContext.getOrCreate(spark, conf)
+
+    .. tab-container:: R
+        :title: R
+
+        To enable https in RSparkling using this mode, run in your RStudio:
+
+        .. code:: r
+
+            library(rsparkling)
+            sc <- spark_connect(master = "local")
+            conf <- H2OConf(sc)$setAutoFlowSslEnabled()$setVerifySslCertificates(FALSE)
+            hc <- H2OContext.getOrCreate(sc, conf)

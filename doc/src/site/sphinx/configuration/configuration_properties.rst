@@ -224,6 +224,9 @@ Configuration properties independent of selected backend
 |                                                    |                | corresponding parameters in Sparkling  |
 |                                                    |                | Water.                                 |
 +----------------------------------------------------+----------------+----------------------------------------+
+| ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | Whether certificates should be         |
+|                                                    |                | verified before using in H2O or not.   |
++----------------------------------------------------+----------------+----------------------------------------+
 
 --------------
 

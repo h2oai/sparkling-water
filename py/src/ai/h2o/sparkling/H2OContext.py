@@ -75,26 +75,23 @@ class H2OContext(object):
         self._jspark_session = self._spark_session._jsparkSession
         self._jvm = self._spark_session._jvm
 
-    def __h2o_connect(h2o_context, **kwargs):
-        if "https" in kwargs:
-            warnings.warn("https argument is automatically set up and the specified value will be ignored.")
+    def __h2o_connect(h2o_context):
         schema = h2o_context._jhc.h2oContext().getConf().getScheme()
-        kwargs["https"] = False
-
         conf = h2o_context._conf
+
+        kwargs = {}
+        kwargs["https"] = schema == "https"
+        kwargs["verify_ssl_certificates"] = conf.verifySslCertificates()
         if conf.userName() and conf.password():
             kwargs["auth"] = (conf.userName(), conf.password())
-        if schema == "https":
-            kwargs["https"] = True
-        if h2o_context._conf.contextPath() is not None:
-            url = "{}://{}:{}/{}".format(schema, h2o_context._client_ip, h2o_context._client_port, h2o_context._conf.contextPath())
-            return h2o.connect(url=url, **kwargs)
-        else:
-            return h2o.connect(ip=h2o_context._client_ip, port=h2o_context._client_port, **kwargs)
+        url = "{}://{}:{}".format(schema, h2o_context._client_ip, h2o_context._client_port)
+        if conf.contextPath() is not None:
+            url = "{}/{}".format(url, conf.contextPath())
+        return h2o.connect(url=url, **kwargs)
 
 
     @staticmethod
-    def getOrCreate(spark, conf=None, verbose=True, **kwargs):
+    def getOrCreate(spark, conf=None, **kwargs):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -103,7 +100,6 @@ class H2OContext(object):
 
         :param spark: Spark Context or Spark Session
         :param conf: H2O configuration as instance of H2OConf
-        :param verbose; True if verbose H2O output
         :param kwargs:  additional parameters which are passed to h2o_connect_hook
         :return:  instance of H2OContext
         """
@@ -148,7 +144,7 @@ class H2OContext(object):
 
         # Create H2O REST API client
         if not h2o_context.__isClientConnected():
-            h2o_context.__h2o_connect(verbose=verbose, **kwargs)
+            h2o_context.__h2o_connect()
 
         h2o_context.__setClientConnected()
 

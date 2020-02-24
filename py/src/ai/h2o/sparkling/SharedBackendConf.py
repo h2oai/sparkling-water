@@ -356,6 +356,9 @@ class SharedBackendConf(SharedBackendConfUtils):
     def clientCheckRetryTimeout(self):
         return self._jconf.clientCheckRetryTimeout()
 
+    def verifySslCertificates(self):
+        return self._jconf.verifySslCertificates()
+
     #
     # Setters
     #
@@ -838,4 +841,8 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setClientExtraProperties(self, extraProperties):
         self._jconf.setClientExtraProperties(extraProperties)
+        return self
+
+    def setVerifySslCertificates(self, verify):
+        self._jconf.setVerifySslCertificates(verify)
         return self

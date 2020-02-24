@@ -23,8 +23,8 @@ import org.apache.spark.h2o.H2OConf
 import scala.collection.JavaConverters._
 
 /**
-  * Shared configuration independent on used backend
-  */
+ * Shared configuration independent on used backend
+ */
 trait SharedBackendConf {
   self: H2OConf =>
 
@@ -88,6 +88,8 @@ trait SharedBackendConf {
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
   def clientCheckRetryTimeout = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
+
+  def verifySslCertificates: Boolean = sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
   /** Setters */
 
@@ -210,6 +212,7 @@ trait SharedBackendConf {
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
+  def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
   private[backends] def getFileProperties(): Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
@@ -220,11 +223,11 @@ object SharedBackendConf {
   val BACKEND_MODE_EXTERNAL = "external"
 
   /**
-    * This option can be set either to "internal" or "external"
-    * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
-    * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
-    * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
-    */
+   * This option can be set either to "internal" or "external"
+   * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
+   * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
+   * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
+   */
   val PROP_BACKEND_CLUSTER_MODE = ("spark.ext.h2o.backend.cluster.mode", BACKEND_MODE_INTERNAL)
 
   /** Configuration property - name of H2O cloud */
@@ -315,9 +318,9 @@ object SharedBackendConf {
   val PROP_NODE_PORT_BASE = ( "spark.ext.h2o.node.port.base", 54321)
 
   /**
-    * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
-    * it's evicted from executor's cache.
-    */
+   * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
+   * it's evicted from executor's cache.
+   */
   val PROP_MOJO_DESTROY_TIMEOUT = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
 
   /** Extra properties passed to H2O nodes during startup. */
@@ -348,7 +351,7 @@ object SharedBackendConf {
   val PROP_CLIENT_PORT_BASE = ("spark.ext.h2o.client.port.base", 54321)
 
   /** Exact client port to access web UI.
-    * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
+   * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
   val PROP_CLIENT_WEB_PORT = ("spark.ext.h2o.client.web.port", -1)
 
   /** Print detailed messages to client stdout */
@@ -361,24 +364,27 @@ object SharedBackendConf {
   val PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS = ("spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS", false)
 
   /** Enable or disable web on h2o client node. It is enabled by default. Disabling the web just
-    * on the client node just restricts everybody from accessing flow, the internal ports
-    * between client and rest of the cluster remain open
-    */
+   * on the client node just restricts everybody from accessing flow, the internal ports
+   * between client and rest of the cluster remain open
+   */
   val PROP_CLIENT_ENABLE_WEB = ("spark.ext.h2o.client.enable.web", true)
 
   /**
-    * Allows to override the base URL address of Flow UI, including the scheme, which is showed
-    * to the user.
-    */
+   * Allows to override the base URL address of Flow UI, including the scheme, which is showed
+   * to the user.
+   */
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE = ("spark.ext.h2o.client.flow.baseurl.override", None)
 
   /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-    * client (either H2O client or REST) is connected
-    */
+   * client (either H2O client or REST) is connected
+   */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT = ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
 
   val PROP_REST_API_BASED_CLIENT = ("spark.ext.h2o.rest.api.based.client", false)
 
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES = ("spark.ext.h2o.client.extra", None)
+
+  /** Whether certificates should be verified before using in H2O or not. */
+  val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
 }
