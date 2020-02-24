@@ -151,7 +151,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     case None => throw new RuntimeException("The 'fit' method must be called at first!")
   }
 
-
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     schema

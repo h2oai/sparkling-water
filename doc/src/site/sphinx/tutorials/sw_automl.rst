@@ -68,7 +68,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             model.transform(testingDF).show(false)
 
-        If you are curious to see information about other models created during the AutoML training process, you can get a model leaderboard represented by Spark DataFrame.
+        If you are curious to see information about other models created during the AutoML training process, you can get
+        a model leaderboard represented by Spark DataFrame.
 
         .. code:: scala
 
@@ -153,7 +154,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             model.transform(testingDF).show(truncate = False)
 
-        If you are curious to see information about other models created during the AutoML training process, you can get a model leaderboard represented by Spark DataFrame.
+        If you are curious to see information about other models created during the AutoML training process, you can get
+        a model leaderboard represented by Spark DataFrame.
 
         .. code:: python
 

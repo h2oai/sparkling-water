@@ -117,16 +117,6 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         "Max models to train in AutoML",
         H2OTypeConverters.toInt())
 
-    leaderboardExtraColumns = Param(
-        Params._dummy(),
-        "leaderboardExtraColumns",
-        """The list of extra columns appended to the leader board. The possible values are:
-            - 'ALL': adds all columns below.
-            - 'training_time_ms': column providing the training time of each model in milliseconds 
-                                  (doesn't include the training of cross validation models).
-            - 'predict_time_per_row_ms`: column providing the average prediction time by the model for a single row.""",
-        H2OTypeConverters.toListString())
-
     ##
     # Getters
     ##
