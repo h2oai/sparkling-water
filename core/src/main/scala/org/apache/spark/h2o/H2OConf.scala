@@ -30,18 +30,34 @@ import org.apache.spark.{SparkConf, SparkContext}
  * Configuration holder which is representing
  * properties passed from user to Sparkling Water.
  */
-class H2OConf(val sparkConf: SparkConf) extends Logging with InternalBackendConf with ExternalBackendConf with Serializable {
+class H2OConf private(val sparkConf: SparkConf, deprecatedClassName: String) extends Logging
+  with InternalBackendConf with ExternalBackendConf with Serializable {
 
+  private def deprecationWarning(oldParams: String): Unit = {
+    logWarning(s"The constructor 'new H2OConf($oldParams)' is deprecated. " +
+      s"Use 'new H2OConf()' instead! This method will be removed in release 3.32.")
+  }
+
+  deprecatedClassName match {
+    case "SparkSession" => deprecationWarning("sparkSession: SparkSession")
+    case "JavaSparkContext" => deprecationWarning("jsc: JavaSparkContext")
+    case "SparkContext" => deprecationWarning("sc: SparkContext")
+    case _ =>
+  }
   H2OConf.checkDeprecatedOptions(sparkConf)
 
-  def this() = this(SparkSessionUtils.active.sparkContext.getConf)
+  def this(sparkConf: SparkConf) = this(sparkConf, "")
+
+  def this() = this(SparkSessionUtils.active.sparkContext.getConf, "")
+
+  private def this(deprecatedClassName: String) = this(SparkSessionUtils.active.sparkContext.getConf, deprecatedClassName)
 
   /** Support for creating H2OConf in Java environments */
-  def this(jsc: JavaSparkContext) = this()
+  def this(jsc: JavaSparkContext) = this("JavaSparkContext")
 
-  def this(sc: SparkContext) = this()
+  def this(sc: SparkContext) = this("SparkContext")
 
-  def this(sparkSession: SparkSession) = this()
+  def this(sparkSession: SparkSession) = this("SparkSession")
 
   // Precondition
   require(sparkConf != null, "Spark conf was null")

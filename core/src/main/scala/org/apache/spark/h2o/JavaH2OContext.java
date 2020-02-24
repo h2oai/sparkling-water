@@ -247,20 +247,27 @@ public class JavaH2OContext {
         return new JavaH2OContext(H2OContext.getOrCreate(conf));
     }
 
+    private static JavaH2OContext deprecationWarn(JavaH2OContext jhc, String oldParams, String newParams) {
+        jhc.hc.log().warn("Method 'getOrCreate(" + oldParams + ")' is deprecated and will be removed in release 3.32. Use" +
+        "'getOrCreate(" + newParams + ")' instead!");
+        return jhc;
+    }
+
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc) {
-        return getOrCreate();
+        return deprecationWarn(getOrCreate(), "JavaSparkContext jsc", "");
     }
 
     public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf) {
-        return getOrCreate(conf);
+        return deprecationWarn(getOrCreate(), "JavaSparkContext jsc, H2OConf conf", "H2OConf conf");
     }
 
     public static JavaH2OContext getOrCreate(SparkSession sparkSession) {
-        return getOrCreate();
+        return deprecationWarn(getOrCreate(), "SparkSession sparkSession", "");
     }
 
     public static JavaH2OContext getOrCreate(SparkSession sparkSession, H2OConf conf) {
-        return getOrCreate(conf);
+        return deprecationWarn(getOrCreate(), "SparkSession sparkSession, H2OConf conf", "H2OConf conf");
+
     }
 
     public String toString() {

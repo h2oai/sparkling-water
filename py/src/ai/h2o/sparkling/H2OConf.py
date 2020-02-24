@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import warnings
 from ai.h2o.sparkling.ExternalBackendConf import ExternalBackendConf
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.InternalBackendConf import InternalBackendConf
@@ -25,6 +26,10 @@ from pyspark.ml.util import _jvm
 class H2OConf(SharedBackendConf, InternalBackendConf, ExternalBackendConf):
     def __init__(self, spark=None):
         try:
+            if spark is not None:
+                warnings.warn(
+                    "Constructor H2OConf(spark) with spark argument is deprecated. Please use just H2OConf(). "
+                    "The argument will be removed in release 3.32.")
             Initializer.load_sparkling_jar()
             self._jconf = _jvm().org.apache.spark.h2o.H2OConf()
         except:

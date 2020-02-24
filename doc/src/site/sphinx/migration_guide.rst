@@ -3,6 +3,21 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.30 to 3.32
+-----------------
+
+- In PySparkling, the ``H2OConf`` no longer accepts any arguments. To create new ``H2OConf``, please just call ``conf = H2OConf()``.
+  Also the ``H2OContext.getOrCreate`` method no longer accepts the spark argument. You can start H2OContext as
+  ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``
+
+- In RSparkling, the ``H2OConf`` no longer accepts any arguments. To create new ``H2OConf``, please just call ``conf <- H2OConf()``.
+  Also the ``H2OContext.getOrCreate`` method no longer accepts the spark argument. You can start H2OContext as
+  ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``
+
+- In Scala, ``H2OConf`` can be created as ``new H2OConf()`` or ``new H2OConf(sparkConf)``. Other constructor variants have
+  been removed. Also, ``H2OContext`` can be created as ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``.
+  The other variants of this method have been removed.
+
 From 3.28.1 to 3.30
 -------------------
 
