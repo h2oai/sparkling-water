@@ -263,10 +263,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
     def getQuietMode(self):
         return self.getOrDefault(self.quietMode)
 
-    def getNEstimators(self):
-        Utils.methodDeprecationWarning("getNEstimators")
-        return 0
-
     def getMaxDepth(self):
         return self.getOrDefault(self.maxDepth)
 
@@ -386,10 +382,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setNtrees(self, value):
         return self._set(ntrees=value)
-
-    def setNEstimators(self, value):
-        Utils.methodDeprecationWarning("setNEstimators")
-        return self
 
     def setMaxDepth(self, value):
         return self._set(maxDepth=value)
