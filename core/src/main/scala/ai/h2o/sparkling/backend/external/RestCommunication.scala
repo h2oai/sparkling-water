@@ -191,12 +191,12 @@ trait RestCommunication extends Logging {
 
   private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
+    connection.setRequestProperty("Accept-Encoding", "gzip")
 
     if (params.nonEmpty && requestType == "POST") {
       val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
       connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
       connection.setRequestProperty("charset", "UTF-8")
-      connection.setRequestProperty("Accept-Encoding", "gzip")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
       connection.setDoOutput(true)
       withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
