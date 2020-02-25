@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -143,9 +142,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   //
   def getQuietMode(): Boolean = $(quietMode)
 
-  @DeprecatedMethod
-  def getNEstimators(): Int = 0
-
   def getMaxDepth(): Int = $(maxDepth)
 
   def getMinRows(): Double = $(minRows)
@@ -226,9 +222,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   def setQuietMode(value: Boolean): this.type = set(quietMode, value)
 
   def setNtrees(value: Int): this.type = set(ntrees, value)
-
-  @DeprecatedMethod
-  def setNEstimators(value: Int): this.type = this
 
   def setMaxDepth(value: Int): this.type = set(maxDepth, value)
 
