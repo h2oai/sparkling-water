@@ -61,13 +61,11 @@ private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requ
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
-    // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
-    // to h2o opened indefinitely(spark works in a lazy way)
     new H2ODataFrameIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
       override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
-    }.toList.toIterator
+    }
   }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {

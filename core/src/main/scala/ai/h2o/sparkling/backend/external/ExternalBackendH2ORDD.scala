@@ -51,13 +51,11 @@ private[backend] class ExternalBackendH2ORDD[A <: Product : TypeTag : ClassTag] 
           (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
-    // When user ask to read whatever number of rows, buffer them all, because we can't keep the connection
-    // to h2o opened indefinitely(spark works in a lazy way)
     new H2ORDDIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
       override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
-    }.toList.toIterator
+    }
   }
 
   protected override val colNames: Array[String] = {
