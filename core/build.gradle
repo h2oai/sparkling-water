@@ -88,13 +88,13 @@ dependencies {
     testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
     testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
     testImplementation(project(':sparkling-water-macros'))
-    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
     testImplementation("junit:junit:4.11")
 
-    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
     integTestImplementation("junit:junit:4.11")
 
-    benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
     benchImplementation("junit:junit:4.11")
 
     // Put Spark Assembly on runtime path

@@ -119,6 +119,7 @@ trait RestCommunication extends Logging {
       override def shouldSkipField(f: FieldAttributes): Boolean = {
         skippedFields.exists {
           case (clazz: Class[_], fieldName: String) => clazz == f.getDeclaringClass && fieldName == f.getName
+          case _ => false
         }
       }
 
