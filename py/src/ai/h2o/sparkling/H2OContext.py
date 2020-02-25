@@ -82,7 +82,7 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark=None, conf=None, **kwargs):
+    def getOrCreate(spark=None, conf=None):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
@@ -91,7 +91,6 @@ class H2OContext(object):
 
         :param spark: Spark Context or Spark Session or H2OConf
         :param conf: H2O configuration as instance of H2OConf
-        :param kwargs:  additional parameters which are passed to h2o_connect_hook
         :return:  instance of H2OContext
         """
 
@@ -113,13 +112,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-        if "auth" in kwargs:
-            warnings.warn("Providing authentication via auth field on H2OContext is deprecated. "
-                          "Please use setUserName and setPassword setters on H2OConf object.")
-            selected_conf.setUserName(kwargs["auth"][0])
-            selected_conf.setPassword(kwargs["auth"][1])
-            del kwargs["auth"]
-
+  
         h2o_context = H2OContext()
 
         # Create backing Java H2OContext
