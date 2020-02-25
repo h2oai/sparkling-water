@@ -18,7 +18,6 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -34,8 +33,8 @@ import org.apache.spark.sql.{Dataset, _}
 import water.DKV
 import water.support.{H2OFrameSupport, ModelSerializationSupport}
 
+import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
-import collection.JavaConverters._
 
 /**
   * H2O AutoML algorithm exposed via Spark ML pipelines.
@@ -51,9 +50,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
   private var amlOption: Option[AutoML] = None
-
-  @DeprecatedMethod("getLeaderboard", "3.30")
-  def leaderboard: Option[DataFrame] = amlOption.map(leaderboardAsSparkFrame(_, Array.empty[String]))
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val spec = new AutoMLBuildSpec

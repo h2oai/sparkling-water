@@ -55,13 +55,6 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
       .setMaxModels(5)
   }
 
-  test("getLeaderboard without arguments returns the same result as leaderboard") {
-    val algo = getAlgorithmForLeaderboardTesting()
-    algo.fit(dataset)
-
-    TestFrameUtils.assertDataFramesAreIdentical(algo.leaderboard.get, algo.getLeaderboard())
-  }
-
   test("Parameters of getLeaderboard add extra columns to the leaderboard") {
     val algo = getAlgorithmForLeaderboardTesting()
     algo.fit(dataset)
