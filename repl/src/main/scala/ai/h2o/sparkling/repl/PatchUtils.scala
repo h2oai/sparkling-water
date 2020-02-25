@@ -59,7 +59,7 @@ private[repl] object PatchUtils {
       try {
         f.set(obj, OUTER_SCOPE_REPL_REGEX)
       } catch {
-        case _: Throwable => // we have already patched once
+        case _: IllegalAccessError => // we have already patched once
       }
       true
     }
