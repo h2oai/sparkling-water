@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 
-import warnings
-
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 
 
