@@ -196,6 +196,7 @@ trait RestCommunication extends Logging {
       val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
       connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
       connection.setRequestProperty("charset", "UTF-8")
+      connection.setRequestProperty("Accept-Encoding", "gzip")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
       connection.setDoOutput(true)
       withResource(new DataOutputStream(connection.getOutputStream())) { writer =>
