@@ -211,10 +211,6 @@ class H2OContext(object):
             df._h2o_frame = h2oFrame
             return df
 
-    def as_spark_frame(self, h2o_frame, copy_metadata=True):
-        warnings.warn("Method 'as_spark_frame' is deprecated and will be removed in release 3.30. Please use method 'asSparkFrame' instead!")
-        return self.asSparkFrame(h2o_frame, copy_metadata)
-
     def asH2OFrame(self, sparkFrame, h2oFrameName=None, fullCols=-1):
         """
         Transforms given Spark RDD or DataFrame to H2OFrame.
@@ -262,7 +258,3 @@ class H2OContext(object):
                 return fc._as_h2o_frame_from_complex_type(self, sparkFrame, h2oFrameName, fullCols)
         else:
             raise ValueError('The asH2OFrame method expects Spark DataFrame or RDD as the input only!')
-
-    def as_h2o_frame(self, dataframe, framename=None, full_cols=-1):
-        warnings.warn("Method 'as_h2o_frame' is deprecated and will be removed in release 3.30. Please use method 'asH2OFrame' instead!")
-        return self.asH2OFrame(dataframe, framename, full_cols)
