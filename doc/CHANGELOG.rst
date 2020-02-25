@@ -1,6 +1,71 @@
 Change Log
 ==========
 
+v3.28.0.4-1 (2020-02-25)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.4-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.0.4-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.0.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.0.4-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-1896 <https://0xdata.atlassian.net/browse/SW-1896>`__ - Fix kubernetes documentation 
+   -  `SW-1901 <https://0xdata.atlassian.net/browse/SW-1901>`__ - Sequential grid search should be default
+   -  `SW-1902 <https://0xdata.atlassian.net/browse/SW-1902>`__ - Remove SPARK_LOG_DIR, SPARK_WORKER_DIR and SPARK_LOCAL_DIRS and use default Spark values
+   -  `SW-1923 <https://0xdata.atlassian.net/browse/SW-1923>`__ - Stacktrace extension needs to be daemon thread
+   -  `SW-1927 <https://0xdata.atlassian.net/browse/SW-1927>`__ - Fix path to docker-image-tool.sh in build-kubernetes-images.sh
+   -  `SW-1928 <https://0xdata.atlassian.net/browse/SW-1928>`__ - Improve kubernetes documentation
+   -  `SW-1929 <https://0xdata.atlassian.net/browse/SW-1929>`__ - Fix python kubernetes image
+   -  `SW-1933 <https://0xdata.atlassian.net/browse/SW-1933>`__ - Missing super.preProcessBeforeFit call in child class
+   -  `SW-1938 <https://0xdata.atlassian.net/browse/SW-1938>`__ - Fix nightly publishing after switching to mavenLocal build in our pipelines
+   -  `SW-1939 <https://0xdata.atlassian.net/browse/SW-1939>`__ - Test conversion in case  that H2O is running only on subset of executors
+   -  `SW-1951 <https://0xdata.atlassian.net/browse/SW-1951>`__ - Syntax warning due to comparison of literals using is
+   -  `SW-1961 <https://0xdata.atlassian.net/browse/SW-1961>`__ - Get transform and transformSchema method of mojo models aligned 
+   -  `SW-1963 <https://0xdata.atlassian.net/browse/SW-1963>`__ - Fix execution of tests using local-cluster
+   -  `SW-1966 <https://0xdata.atlassian.net/browse/SW-1966>`__ - Fix intermittent error coming from SparklyR in our tests
+   -  `SW-1969 <https://0xdata.atlassian.net/browse/SW-1969>`__ - Respect SparkSession of a current environment
+   -  `SW-1985 <https://0xdata.atlassian.net/browse/SW-1985>`__ - Reference mojo as prostate_mojo.zip instead of prostate.mojo in doc
+   -  `SW-1990 <https://0xdata.atlassian.net/browse/SW-1990>`__ - Use contextPath instead of context_path
+                
+-  New Feature
+        
+   -  `SW-1859 <https://0xdata.atlassian.net/browse/SW-1859>`__ - Expose H2O&#39;s Configuration Parameter &#39;-hdfs_config&#39; in Sparkling Water
+   -  `SW-1899 <https://0xdata.atlassian.net/browse/SW-1899>`__ - Fix intermittent bug in rest api client tests
+   -  `SW-1935 <https://0xdata.atlassian.net/browse/SW-1935>`__ - AutoML API: expose the new `get_leaderboard` function available in other clients (Py+R)
+                
+-  Task
+        
+   -  `SW-1752 <https://0xdata.atlassian.net/browse/SW-1752>`__ - Add test for preemption during as_h2o_frame on high concurrency Databricks cluster like scenario
+                
+-  Improvement
+        
+   -  `SW-1862 <https://0xdata.atlassian.net/browse/SW-1862>`__ - Update Mojo to latest version in Sparkling Water
+   -  `SW-1916 <https://0xdata.atlassian.net/browse/SW-1916>`__ - Make RSparkling examples up-to-date
+   -  `SW-1917 <https://0xdata.atlassian.net/browse/SW-1917>`__ - Mention in migration doc that assembly jar location in the distribution archive has changed
+   -  `SW-1920 <https://0xdata.atlassian.net/browse/SW-1920>`__ - Mention in migration doc that H2OSVM is removed from 3.28.1.1
+   -  `SW-1921 <https://0xdata.atlassian.net/browse/SW-1921>`__ - Move pipeline prediction test to package ai.h2o.sparkling.ml
+   -  `SW-1922 <https://0xdata.atlassian.net/browse/SW-1922>`__ - Expose quantile alpha on H2OGBM and H2ODeepLearning
+   -  `SW-1925 <https://0xdata.atlassian.net/browse/SW-1925>`__ - Warn user that the detailed prediction col format will change starting from the next major release for Binomial, Ordinal &amp; Multinomial prediction
+   -  `SW-1953 <https://0xdata.atlassian.net/browse/SW-1953>`__ - Deprecate block size configuration
+   -  `SW-1968 <https://0xdata.atlassian.net/browse/SW-1968>`__ - Upgrade to Gradle 6.2
+   -  `SW-1972 <https://0xdata.atlassian.net/browse/SW-1972>`__ - Re-enable tests using local-cluster
+   -  `SW-1973 <https://0xdata.atlassian.net/browse/SW-1973>`__ - Upgrade to new docker image 25
+   -  `SW-1978 <https://0xdata.atlassian.net/browse/SW-1978>`__ - Deprecate setEnableSSL
+   -  `SW-1986 <https://0xdata.atlassian.net/browse/SW-1986>`__ - Upgrade to H2O 3.28.0.4
+   -  `SW-1988 <https://0xdata.atlassian.net/browse/SW-1988>`__ - Deprecate passing arguments via kwargs method in getOrCreate in PySparkling
+                
+-  Engineering Story
+        
+   -  `SW-1910 <https://0xdata.atlassian.net/browse/SW-1910>`__ - Upgrade to Spark 2.4.5
+   -  `SW-1911 <https://0xdata.atlassian.net/browse/SW-1911>`__ - Upgrade to a Docker Image with Spark 2.4.5
+   -  `SW-1959 <https://0xdata.atlassian.net/browse/SW-1959>`__ - Remove Compiler Warning in HasQuantileAlpha.scala
+   -  `SW-1965 <https://0xdata.atlassian.net/browse/SW-1965>`__ - Test PRs only on Spark 2.1 and Spark 2.4
+   -  `SW-1974 <https://0xdata.atlassian.net/browse/SW-1974>`__ - Be able to prefetech all Sparkling Water dependencies without building SW
+   -  `SW-1975 <https://0xdata.atlassian.net/browse/SW-1975>`__ - Move spark.ext.h2o.hdfs_conf Property among Properties of Internal Backend
+                
+                            
 v3.28.0.3-1 (2020-02-06)
 ------------------------
 Downloads:
