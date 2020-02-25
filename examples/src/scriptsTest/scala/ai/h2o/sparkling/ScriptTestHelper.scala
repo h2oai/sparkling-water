@@ -77,7 +77,7 @@ trait ScriptsTestHelper extends FunSuite with Logging with BeforeAndAfterAll {
 
     inspections.termsAndValues.foreach {
       termName =>
-        testResult.addTermValue(termName, loop.valueOfTerm(termName).map(_.toString).getOrElse("None"))
+        testResult.addTermValue(termName, loop.extractValue(termName).map(_.toString).getOrElse("None"))
     }
 
     testResult

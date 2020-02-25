@@ -5,7 +5,7 @@ dependencies {
     compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
     compileOnly("org.scala-lang:scala-reflect:${scalaVersion}")
 
-    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:2.2.1")
+    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
     testImplementation("junit:junit:4.11")
     testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
     testImplementation(project(":sparkling-water-core"))

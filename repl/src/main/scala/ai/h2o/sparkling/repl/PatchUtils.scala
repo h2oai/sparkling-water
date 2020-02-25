@@ -56,7 +56,11 @@ private[repl] object PatchUtils {
     val patcher: Patcher = (obj: AnyRef, clz: Class[_]) => {
       val f = clz.getDeclaredField("REPLClass")
       f.setAccessible(true)
-      f.set(obj, OUTER_SCOPE_REPL_REGEX)
+      try {
+        f.set(obj, OUTER_SCOPE_REPL_REGEX)
+      } catch {
+        case _: IllegalArgumentException => // we have already patched once
+      }
       true
     }
 
