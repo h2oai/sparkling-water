@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.backend.shared
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 
 import scala.collection.JavaConverters._
@@ -167,9 +166,6 @@ trait SharedBackendConf {
   def setClusterTopologyListenerEnabled(): H2OConf = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, value = true)
 
   def setClusterTopologyListenerDisabled(): H2OConf = set(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, value = false)
-
-  @DeprecatedMethod("setSparkVersionCheckEnabled")
-  def setSparkVersionCheckEnable(): H2OConf = setSparkVersionCheckEnabled()
 
   def setSparkVersionCheckEnabled(): H2OConf = set(PROP_SPARK_VERSION_CHECK_ENABLED._1, value = true)
 
