@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import warnings
 from pyspark.ml.param import *
 
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
@@ -65,14 +64,6 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOPar
         "histogramType",
         "What type of histogram to use for finding optimal split points",
         H2OTypeConverters.toEnumString("hex.tree.SharedTreeModel$SharedTreeParameters$HistogramType"))
-
-    r2Stopping = Param(
-        Params._dummy(),
-        "r2Stopping",
-        "r2_stopping is no longer supported and will be ignored if set - please use stopping_rounds, "
-        "stopping_metric and stopping_tolerance instead. Previous version of H2O would stop making trees "
-        "when the R^2 metric equals or exceeds this",
-        H2OTypeConverters.toFloat())
 
     nbinsTopLevel = Param(
         Params._dummy(),
@@ -137,11 +128,6 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOPar
     def getHistogramType(self):
         return self.getOrDefault(self.histogramType)
 
-    def getR2Stopping(self):
-        warnings.warn("The method 'getR2Stopping' is deprecated. " +
-                      "Use 'getStoppingRounds', 'getStoppingMetric', 'getStoppingTolerance' instead!")
-        return self.getOrDefault(self.r2Stopping)
-
     def getNbinsTopLevel(self):
         return self.getOrDefault(self.nbinsTopLevel)
 
@@ -186,11 +172,6 @@ class H2OSharedTreeParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOPar
 
     def setHistogramType(self, value):
         return self._set(histogramType=value)
-
-    def setR2Stopping(self, value):
-        warnings.warn("The method 'setR2Stopping' is deprecated. " +
-                      "Use 'setStoppingRounds', 'setStoppingMetric', 'setStoppingTolerance' instead!")
-        return self._set(r2Stopping=value)
 
     def setNbinsTopLevel(self, value):
         return self._set(nbinsTopLevel=value)

@@ -39,7 +39,6 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  nbinsCats=1024,
                  minSplitImprovement=1e-5,
                  histogramType="AUTO",
-                 r2Stopping=Utils.javaDoubleMaxValue,
                  nbinsTopLevel=1 << 10,
                  buildTreeOneNode=False,
                  scoreTreeInterval=0,

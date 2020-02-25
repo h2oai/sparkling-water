@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.ScoreKeeper.StoppingMetric
 import hex.tree.SharedTreeModel.SharedTreeParameters
@@ -35,7 +34,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
   final val nbinsCats = intParam("nbinsCats")
   final val minSplitImprovement = doubleParam("minSplitImprovement")
   final val histogramType = stringParam("histogramType")
-  final val r2Stopping = doubleParam("r2Stopping")
   final val nbinsTopLevel = intParam("nbinsTopLevel")
   final val buildTreeOneNode = booleanParam("buildTreeOneNode")
   final val scoreTreeInterval = intParam("scoreTreeInterval")
@@ -55,7 +53,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
     nbinsCats -> parameters._nbins_cats,
     minSplitImprovement -> parameters._min_split_improvement,
     histogramType -> parameters._histogram_type.name(),
-    r2Stopping -> parameters._r2_stopping,
     nbinsTopLevel -> parameters._nbins_top_level,
     buildTreeOneNode -> parameters._build_tree_one_node,
     scoreTreeInterval -> parameters._score_tree_interval,
@@ -79,9 +76,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
   def getMinSplitImprovement() = $(minSplitImprovement)
 
   def getHistogramType() = $(histogramType)
-
-  @DeprecatedMethod("getStoppingRounds, getStoppingMetric, getStoppingTolerance")
-  def getR2Stopping() = $(r2Stopping)
 
   def getNbinsTopLevel() = $(nbinsTopLevel)
 
@@ -117,9 +111,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
     set(histogramType, validated)
   }
 
-  @DeprecatedMethod("setStoppingRounds, setStoppingMetric, setStoppingTolerance")
-  def setR2Stopping(value: Double): this.type = set(r2Stopping, value)
-
   def setNbinsTopLevel(value: Int): this.type = set(nbinsTopLevel, value)
 
   def setBuildTreeOneNode(value: Boolean): this.type = set(buildTreeOneNode, value)
@@ -143,7 +134,6 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
     parameters._nbins_cats = $(nbinsCats)
     parameters._min_split_improvement = $(minSplitImprovement)
     parameters._histogram_type = HistogramType.valueOf($(histogramType))
-    parameters._r2_stopping = $(r2Stopping)
     parameters._stopping_rounds = getStoppingRounds()
     parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
     parameters._stopping_tolerance = getStoppingTolerance()
