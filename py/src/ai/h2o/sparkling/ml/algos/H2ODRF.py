@@ -35,7 +35,6 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  nbinsCats=1024,
                  minSplitImprovement=1e-5,
                  histogramType="AUTO",
-                 r2Stopping=Utils.javaDoubleMaxValue,
                  nbinsTopLevel=1 << 10,
                  buildTreeOneNode=False,
                  scoreTreeInterval=0,
