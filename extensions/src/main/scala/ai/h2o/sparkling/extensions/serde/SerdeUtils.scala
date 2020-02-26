@@ -18,8 +18,9 @@
 package ai.h2o.sparkling.extensions.serde
 
 import water.fvec.Vec
+import ChunkSerdeConstants._
 
-object SerdeUtils extends ChunkSerdeConstants {
+object SerdeUtils {
   private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Byte] = {
     var vecCount = 0
     expectedTypes.flatMap {
