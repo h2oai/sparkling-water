@@ -21,7 +21,8 @@ import java.net.{InetAddress, NetworkInterface}
 
 import ai.h2o.sparkling.backend.shared.SharedBackendUtils
 import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.SparkEnv
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.h2o.utils.NodeDesc
 import water.api.RestAPIManager
 import water.init.{HostnameGuesser, NetworkBridge}
@@ -59,9 +60,8 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
     }
   }
 
-
-  protected[backend] def startH2OClient(hc: H2OContext, nodes: Array[NodeDesc]): Unit = {
-    val conf = hc.getConf
+  protected[backend] def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
+    setClientIp(conf)
     val args = getH2OClientArgs(conf).toArray
     val launcherArgs = toH2OArgs(args, nodes)
     logDebug(s"Arguments used for launching the H2O client node: ${launcherArgs.mkString(" ")}")
@@ -116,6 +116,24 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
       }
     }
     None
+  }
+
+  private def setClientIp(conf: H2OConf): Unit = {
+    if (conf.isAutoClusterStartUsed) {
+      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oCluster.get.split(":")(0))
+      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+        conf.setClientIp(clientIp.get)
+      }
+    } else {
+      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
+      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+        conf.setClientIp(clientIp.get)
+      }
+    }
+
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
+    }
   }
 
   private def waitForCloudSize(expectedSize: Int, timeoutInMilliseconds: Long): Int = {

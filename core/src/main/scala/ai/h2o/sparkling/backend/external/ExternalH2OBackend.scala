@@ -45,25 +45,12 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       logInfo("Starting the external H2O cluster on YARN.")
       val ipPort = launchExternalH2OOnYarn(conf)
       conf.setH2OCluster(ipPort)
-      val clientIp = ExternalH2OBackend.identifyClientIp(ipPort.split(":")(0))
-      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
-        conf.setClientIp(clientIp.get)
-      }
-    } else {
-      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
-      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
-        conf.setClientIp(clientIp.get)
-      }
-    }
-
-    if (conf.clientIp.isEmpty) {
-      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
     }
 
     logInfo("Connecting to external H2O cluster.")
     val nodes = getAndVerifyWorkerNodes(conf)
     if (!RestApiUtils.isRestAPIBased(hc)) {
-      ExternalH2OBackend.startH2OClient(hc, nodes)
+      ExternalH2OBackend.startH2OClient(hc, conf, nodes)
     }
     nodes
   }
