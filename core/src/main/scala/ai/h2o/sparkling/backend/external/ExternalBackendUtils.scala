@@ -102,7 +102,7 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
     proc
   }
 
-  protected[backend] def identifyClientIp(remoteAddress: String): Option[String] = {
+  private def identifyClientIp(remoteAddress: String): Option[String] = {
     val interfaces = NetworkInterface.getNetworkInterfaces
     while (interfaces.hasMoreElements) {
       val interface = interfaces.nextElement()
@@ -119,7 +119,7 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
   }
 
   private def setClientIp(conf: H2OConf): Unit = {
-    val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
+    val clientIp = identifyClientIp(conf.h2oClusterHost.get)
     if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
       conf.setClientIp(clientIp.get)
     }
