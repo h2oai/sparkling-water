@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.shared.Converter
 import ai.h2o.sparkling.backend.shared.Converter.{ConversionFunction, SparkJob, UploadPlan}
-import ai.h2o.sparkling.extensions.serde.Utils
+import ai.h2o.sparkling.extensions.serde.SerdeUtils
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.ExposeUtils
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -65,7 +65,7 @@ object ExternalBackendConverter extends Converter {
     // Add Vec headers per-Chunk, and finalize the H2O Frame
 
     // get the vector types from expected types
-    val types = Utils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
+    val types = SerdeUtils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     H2OFrame.finalizeFrame(conf, keyName, res, types)
     keyName
   }
