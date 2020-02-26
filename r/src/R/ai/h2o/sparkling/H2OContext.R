@@ -64,7 +64,7 @@ H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
   schema <- invoke(returnedConf, "getScheme")
   insecure <- conf$verifySslCertificates() == FALSE
   https <- schema == "https"
-  if (!isClientConnected(jhc) && !.rsparklingenv$isConnected) {
+  if (!isClientConnected(jhc) || !.rsparklingenv$isConnected) {
     if (contextPath == "") {
         contextPath <- NA_character_
     }
