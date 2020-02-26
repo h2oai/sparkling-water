@@ -18,7 +18,9 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.h2o.H2OConf
+
 import collection.JavaConverters._
 
 /**
@@ -78,6 +80,8 @@ trait ExternalBackendConf extends SharedBackendConf {
   def externalHadoopExecutable: String = sparkConf.get(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, PROP_EXTERNAL_HADOOP_EXECUTABLE._2)
 
   def externalExtraJars: Option[String] = sparkConf.getOption(PROP_EXTERNAL_EXTRA_JARS._1)
+
+  def externalCommunicationCompression: String = sparkConf.get(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, PROP_EXTERNAL_COMMUNICATION_COMPRESSION._2)
 
   private[backend] def isBackendVersionCheckDisabled = sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -155,6 +159,10 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setExternalExtraJars(paths: java.util.ArrayList[String]): H2OConf = setExternalExtraJars(paths.asScala)
 
   def setExternalExtraJars(paths: Seq[String]): H2OConf = setExternalExtraJars(paths.mkString(","))
+
+  def setExternalCommunicationCompression(compressionType: String): H2OConf = {
+    set(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, compressionType)
+  }
 
   def externalConfString: String =
     s"""Sparkling Water configuration:
@@ -246,4 +254,9 @@ object ExternalBackendConf {
 
   /** Comma-separated paths to jar files that will be placed onto classpath of each H2O node. */
   val PROP_EXTERNAL_EXTRA_JARS: (String, None.type) = ("spark.ext.h2o.external.extra.jars", None)
+
+  /** The type of compression used for data transfer between Spark and H2O nodes */
+  val PROP_EXTERNAL_COMMUNICATION_COMPRESSION: (String, String) = {
+    ("spark.ext.h2o.external.communication.compression", Compression.defaultCompression)
+  }
 }

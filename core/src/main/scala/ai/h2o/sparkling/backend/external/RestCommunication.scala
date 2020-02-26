@@ -80,11 +80,11 @@ trait RestCommunication extends Logging {
    * @param params   Query parameters
    * @return HttpUrlConnection facilitating the insertion and holding the outputStream
    */
-  protected def insert(
+  protected def insertWithoutCheckingResult(
                         endpoint: URI,
                         suffix: String,
                         conf: H2OConf,
-                        params: Map[String, Any] = Map.empty): OutputStream = {
+                        params: Map[String, Any] = Map.empty): HttpURLConnection = {
     val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
@@ -93,11 +93,28 @@ trait RestCommunication extends Logging {
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
       setHeaders(connection, conf, requestMethod, params)
-      val outputStream = connection.getOutputStream()
-      new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
+      connection
     } catch {
       case e: Exception => throwRestApiNotReachableException(url, e)
     }
+  }
+
+  /**
+    *
+    * @param endpoint An address of H2O node with exposed REST endpoint
+    * @param suffix   REST relative path representing a specific call
+    * @param conf     H2O conf object
+    * @param params   Query parameters
+    * @return outputStream checking the HTTP result on close()
+    */
+  protected def insert(
+                       endpoint: URI,
+                       suffix: String,
+                       conf: H2OConf,
+                       params: Map[String, Any] = Map.empty): OutputStream = {
+    val connection = insertWithoutCheckingResult(endpoint, suffix, conf, params)
+    val outputStream = connection.getOutputStream()
+    new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
   }
 
   def request[ResultType: ClassTag](
