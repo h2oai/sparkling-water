@@ -16,7 +16,7 @@ def testSSL(spark):
     conf.setInternalSecureConnectionsEnabled()
 
     context = H2OContext.getOrCreate(conf)
-    path = context.download_h2o_logs("build", "LOG")
+    path = context.downloadH2OLogs("build", "LOG")
 
     with open(path, 'r') as f:
         originalLines = f.readlines()
@@ -35,7 +35,7 @@ def testAuth(spark):
     conf.setUserName("user")
     conf.setPassword("pass")
     context = H2OContext.getOrCreate(conf)
-    path = context.download_h2o_logs("build", "LOG")
+    path = context.downloadH2OLogs("build", "LOG")
 
     with open(path, 'r') as f:
         originalLines = f.readlines()

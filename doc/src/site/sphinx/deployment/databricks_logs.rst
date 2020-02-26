@@ -15,7 +15,7 @@ or in Python:
 
 .. code:: Python
 
-    hc.download_h2o_logs("/tmp/logs.zip")
+    hc.downloadH2OLogs("/tmp/logs.zip")
     dbutils.fs.cp("file:/tmp/logs.zip", "/FileStore/logs.zip")
 
 The first method in both languages downloads the log files to the Databricks filesystem. In order to make it available for download from Databricks, we need to move the obtained logs from the Databricks filesystem to the ``FileStore``, which is where the files can be downloaded using a web browser.
