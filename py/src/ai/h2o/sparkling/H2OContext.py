@@ -163,11 +163,6 @@ class H2OContext(object):
         if self._conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false":
             sys.exit()
 
-    def download_h2o_logs(self, destination, container = "ZIP"):
-        warnings.warn("Method 'download_h2o_logs' is deprecated and will be removed in release 3.30. Please"
-                      " use 'downloadH2OLogs' instead.")
-        return self.downloadH2OLogs(destination, container)
-
     def downloadH2OLogs(self,  destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
         return self._jhc.h2oContext().downloadH2OLogs(destination, container)
