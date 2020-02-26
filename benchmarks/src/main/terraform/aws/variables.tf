@@ -22,6 +22,12 @@ variable "aws_emr_timeout" {
 variable "aws_core_instance_count" {
   default = "2"
 }
+variable "aws_vpc_id" {
+  default = "vpc-0c5a21789f6cdb444"
+}
+variable "aws_subnet_id" {
+  default = "subnet-00c06f6e961ee3fbd"
+}
 variable "aws_instance_type" {
   default = "m5.2xlarge"
 }
