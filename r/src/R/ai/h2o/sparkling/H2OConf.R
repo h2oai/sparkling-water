@@ -33,6 +33,8 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
     .self$jconf <- invoke_new(sc, "org.apache.spark.h2o.H2OConf")
   },
 
+  set = function(option, value) {invoke(jconf, "set", option, value); .self },
+
   userName = function() { getOption(invoke(jconf, "userName")) },
   setUserName = function(value) { invoke(jconf, "setUserName", value); .self },
 
@@ -60,5 +62,11 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
 
   autoFlowSsl = function() { getOption(invoke(jconf, "autoFlowSsl")) },
   setAutoFlowSslEnabled = function() {invoke(jconf, "setAutoFlowSslEnabled"); .self },
-  setAutoFlowSslDisabled = function() {invoke(jconf, "setAutoFlowSslDisabled"); .self }
+  setAutoFlowSslDisabled = function() {invoke(jconf, "setAutoFlowSslDisabled"); .self },
+
+  backendClusterMode = function() { invoke(jconf, "backendClusterMode") },
+  runsInExternalClusterMode = function() {invoke(jconf, "runsInExternalClusterMode") },
+  runsInInternalClusterMode = function() {invoke(jconf, "runsInInternalClusterMode") },
+  setInternalClusterMode = function() {invoke(jconf, "setInternalClusterMode"); .self },
+  setExternalClusterMode = function() {invoke(jconf, "setExternalClusterMode"); .self }
 ))
