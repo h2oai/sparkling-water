@@ -29,7 +29,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   private var isLastNAVar: Boolean = false
 
   def readChunk(frameName: String, numRows: Int, chunkId: Int, expectedTypes: Array[Byte], maxVecSizes: Array[Int]): Unit = {
-    val vecTypes = expectedTypesToVecTypes(expectedTypes, maxVecSizes)
+    val vecTypes = Utils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
     val startPositions = getStartPositions(elementSizes)
     val chunks = ChunkUtils.createNewChunks(frameName, vecTypes, chunkId)
@@ -85,7 +85,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     }
   }
 
-  private def   addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
+  private def  addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
     val values = buffer.getA8d
     if (values == null) throw new RuntimeException("Values of dense Vector can't be null!")
     // fill values
@@ -132,20 +132,6 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
            EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_TIMESTAMP => 1
       case EXPECTED_VECTOR =>
         val result = vecElemSizes(vecCount)
-        vecCount += 1
-        result
-    }
-  }
-
-  private def expectedTypesToVecTypes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Byte] = {
-    var vecCount = 0
-    expectedTypes.flatMap {
-      case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-           EXPECTED_FLOAT | EXPECTED_DOUBLE => Array(Vec.T_NUM)
-      case EXPECTED_STRING => Array(Vec.T_STR)
-      case EXPECTED_TIMESTAMP => Array(Vec.T_TIME)
-      case EXPECTED_VECTOR =>
-        val result = Array.fill(vecElemSizes(vecCount))(Vec.T_NUM)
         vecCount += 1
         result
     }
