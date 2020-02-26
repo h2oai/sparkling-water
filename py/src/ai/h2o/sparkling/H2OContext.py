@@ -120,7 +120,11 @@ class H2OContext(object):
             selected_conf.setUserName(kwargs["auth"][0])
             selected_conf.setPassword(kwargs["auth"][1])
             del kwargs["auth"]
-
+        if "verify_ssl_certificate" in kwargs:
+            warnings.warn("Passing verify_ssl_certificate on H2OContext is deprecated. "
+                          "Please use setVerifySslCertificates on H2OConf object.")
+            selected_conf.setVerifySslCertificates(kwargs["verify_ssl_certificate"])
+            del kwargs["verify_ssl_certificate"]
         h2o_context = H2OContext()
 
         # Create backing Java H2OContext
