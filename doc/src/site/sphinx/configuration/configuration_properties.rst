@@ -14,7 +14,7 @@ Configuration properties independent of selected backend
 | **Generic parameters**                             |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.backend.cluster.mode``             | ``internal``   | ``setInternalClusterMode()``                    | This option can be set either to       |
-|                                                    |                +-------------------------------------------------+ ``internal`` or ``external``. When set |
+|                                                    |                |                                                 | ``internal`` or ``external``. When set |
 |                                                    |                | ``setExternalClusterMode()``                    | to ``external``, ``H2O Context`` is    |
 |                                                    |                |                                                 | created by connecting to existing H2O  |
 |                                                    |                |                                                 | cluster, otherwise H2O cluster located |
@@ -36,7 +36,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | |H2ONThreadsDefault|.                  |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.repl.enabled``                     | ``true``       | ``setReplEnabled()``                            | Decides whether H2O REPL is initiated  |
-|                                                    |                +-------------------------------------------------+ or not.                                |
+|                                                    |                |                                                 | or not.                                |
 |                                                    |                | ``setReplDisabled()``                           |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.scala.int.default.num``                | ``1``          | ``setDefaultNumReplSessions(Integer)``          | Number of parallel REPL sessions       |
@@ -44,17 +44,17 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | Water                                  |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.topology.change.listener.enabled`` | ``true``       | ``setClusterTopologyListenerEnabled()``         | Decides whether listener which kills   |
-|                                                    |                +-------------------------------------------------+ H2O cluster on the change of the       |
+|                                                    |                |                                                 | H2O cluster on the change of the       |
 |                                                    |                | ``setClusterTopologyListenerDisabled()``        | underlying cluster's topology is       |
 |                                                    |                |                                                 | enabled or not. This configuration     |
 |                                                    |                |                                                 | has effect only in non-local mode.     |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.spark.version.check.enabled``      | ``true``       | ``setSparkVersionCheckEnabled()``               | Enables check if run-time Spark        |
-|                                                    |                +-------------------------------------------------+ version matches build time Spark       |
+|                                                    |                |                                                 | version matches build time Spark       |
 |                                                    |                | ``setSparkVersionCheckDisabled()``              | version.                               |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.fail.on.unsupported.spark.param``  | ``true``       | ``setFailOnUnsupportedSparkParamEnabled()``     | If unsupported Spark parameter is      |
-|                                                    |                +-------------------------------------------------+ detected, then application is forced   |
+|                                                    |                |                                                 | detected, then application is forced   |
 |                                                    |                | ``setFailOnUnsupportedSparkParamDisabled()``    | to shutdown.                           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.jks``                              | ``None``       | ``setJks(String)``                              | Path to Java KeyStore file.            |
@@ -65,15 +65,15 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | secure H2O Flow.                       |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.hash.login``                       | ``false``      | ``setHashLoginEnabled()``                       | Enable hash login.                     |
-|                                                    |                +-------------------------------------------------+                                        |
+|                                                    |                |                                                 |                                        |
 |                                                    |                | ``setHashLoginDisabled()``                      |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.ldap.login``                       | ``false``      | ``setLdapLoginEnabled()``                       | Enable LDAP login.                     |
-|                                                    |                +-------------------------------------------------+                                        |
+|                                                    |                |                                                 |                                        |
 |                                                    |                | ``setLdapLoginDisabled()``                      |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.kerberos.login``                   | ``false``      | ``setKerberosLoginEnabled()``                   | Enable Kerberos login.                 |
-|                                                    |                +-------------------------------------------------+                                        |
+|                                                    |                |                                                 |                                        |
 |                                                    |                | ``setKerberosLoginDisabled()``                  |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.login.conf``                       | ``None``       | ``setLoginConf(String)``                        | Login configuration file.              |
@@ -90,15 +90,15 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | configuration.                         |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.auto.flow.ssl``                    | ``false``      | ``setAutoFlowSslEnabled()``                     | Automatically generate the required    |
-|                                                    |                +-------------------------------------------------+ key store and password to secure H2O   |
+|                                                    |                |                                                 | key store and password to secure H2O   |
 |                                                    |                | ``setAutoFlowSslDisabled()``                    | flow by SSL.                           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.node.log.level``                   | ``INFO``       | ``setH2ONodeLogLevel(String)``                  | H2O internal log level used for H2O    |
 |                                                    |                |                                                 | nodes except the client.               |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.node.log.dir``                     | |h2oLogDir|    | ``setH2ONodeLogDir(String)``                    | Location of H2O logs on H2O nodes      |
-|                                                    +----------------+                                                 | except on the client.                  |
-|                                                    | |yarnDir|      |                                                 |                                        |
+|                                                    |                |                                                 | except on the client.                  |
+|                                                    | or |yarnDir|   |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.backend.heartbeat.interval``       | ``10000ms``    | ``setBackendHeartbeatInterval(Integer)``        | Interval for getting heartbeat from    |
 |                                                    |                |                                                 | the H2O backend.                       |
@@ -119,7 +119,7 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.context.path``                     | ``None``       | ``setContextPath(String)``                      | Context path to expose H2O web server. |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.flow.scala.cell.async``            | ``false``      | ``setFlowScalaCellAsyncEnabled()``              | Decide whether the Scala cells in      |
-|                                                    |                +-------------------------------------------------+ H2O Flow will run synchronously or     |
+|                                                    |                |                                                 | H2O Flow will run synchronously or     |
 |                                                    |                | ``setFlowScalaCellAsyncDisabled()``             | Asynchronously. Default is             |
 |                                                    |                |                                                 | synchronously.                         |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
@@ -157,7 +157,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | the parameter from a command line.     |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.internal_secure_connections``      | ``false``      | ``setInternalSecureConnectionsEnabled()``       | Enables secure communications among    |
-|                                                    |                +-------------------------------------------------+ H2O nodes. The security is based on    |
+|                                                    |                |                                                 | H2O nodes. The security is based on    |
 |                                                    |                | ``setInternalSecureConnectionsDisabled()``      | automatically generated keystore       |
 |                                                    |                |                                                 | and truststore. This is equivalent for |
 |                                                    |                |                                                 | ``-internal_secure_conections`` option |
@@ -193,7 +193,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | ``spark.ext.h2o.port.base``.           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.verbose``                   | ``false``      | ``setClientVerboseEnabled()``                   | The client outputs verbose log output  |
-|                                                    |                +-------------------------------------------------+ directly into console. Enabling the    |
+|                                                    |                |                                                 | directly into console. Enabling the    |
 |                                                    |                | ``setClientVerboseDisabled()``                  | flag increases the client log level to |
 |                                                    |                |                                                 | ``INFO``.                              |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
@@ -203,11 +203,11 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | specified mask.                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``   | ``false``      | ``setIgnoreSparkPublicDNSEnabled()``            | Ignore SPARK_PUBLIC_DNS setting on     |
-|                                                    |                +-------------------------------------------------+ the H2O client. The option still       |
+|                                                    |                |                                                 | the H2O client. The option still       |
 |                                                    |                | ``setIgnoreSparkPublicDNSDisabled()``           | applies to the Spark application.      |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.enable.web``                | ``true``       | ``setClientWebEnabled()``                       | Enable or disable web on h2o client    |
-|                                                    |                +-------------------------------------------------+ node. It is enabled by default.        |
+|                                                    |                |                                                 | node. It is enabled by default.        |
 |                                                    |                | ``setClientWebDisabled()``                      | Disabling the web just on the client   |
 |                                                    |                |                                                 | node just restricts everybody from     |
 |                                                    |                |                                                 | accessing flow, the internal ports     |
@@ -267,7 +267,7 @@ Internal backend configuration properties
 |                                                    |                |                                                 | producing the same number of nodes.    |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.node.enable.web``                  | ``false``      | ``setH2ONodeWebEnabled()``                      | Enable or disable web on H2O worker    |
-|                                                    |                +-------------------------------------------------+ nodes. It is disabled by default for   |
+|                                                    |                |                                                 | nodes. It is disabled by default for   |
 |                                                    |                | ``setH2ONodeWebDisabled()``                     | security reasons.                      |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.hdfs_conf``                        | |hadoopConfig| | ``setHdfsConf(String)``                         | Either a string with the Path to a file|
@@ -314,7 +314,7 @@ External backend configuration properties
 |                                                       |                |                                                 | for storing temporary files.        |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.start.mode``                 | ``manual``     | ``useAutoClusterStart()``                       | If this option is set to ``auto``   |
-|                                                       |                +-------------------------------------------------+ then H2O external cluster is        |
+|                                                       |                |                                                 | then H2O external cluster is        |
 |                                                       |                | ``useManualClusterStart()``                     | automatically started using the     |
 |                                                       |                |                                                 | provided H2O driver JAR on YARN,    |
 |                                                       |                |                                                 | otherwise it is expected that the   |
@@ -328,7 +328,7 @@ External backend configuration properties
 |                                                       |                |                                                 | cluster is started.                 |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.kill.on.unhealthy``          | ``true``       | ``setKillOnUnhealthyClusterEnabled()``          | If true, the client will try to     |
-|                                                       |                +-------------------------------------------------+ kill the cluster and then itself in |
+|                                                       |                |                                                 | kill the cluster and then itself in |
 |                                                       |                | ``setKillOnUnhealthyClusterDisabled()``         | case some nodes in the cluster      |
 |                                                       |                |                                                 | report unhealthy status.            |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
@@ -343,7 +343,7 @@ External backend configuration properties
 |                                                       |                |                                                 | Default value means automatic       |
 |                                                       |                |                                                 | detection.                          |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.driver.port``                |  ``None``      | ``setExternalH2ODriverPort(Integer)``           | Port of mapper->driver callback     |
+| ``spark.ext.h2o.external.driver.port``                | ``None``       | ``setExternalH2ODriverPort(Integer)``           | Port of mapper->driver callback     |
 |                                                       |                |                                                 | interface. Default value means      |
 |                                                       |                |                                                 | automatic detection.                |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
@@ -369,7 +369,7 @@ External backend configuration properties
 |                                                       |                |                                                 | YARN.                               |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.extra.jars``                 | ``None``       | ``setExternalExtraJars(String)``                | Comma-separated paths to jars that  |
-|                                                       |                +-------------------------------------------------+ will be placed onto classpath of    |
+|                                                       |                |                                                 | will be placed onto classpath of    |
 |                                                       |                | ``setExternalExtraJars(String[])``              | each H2O node.                      |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
@@ -377,7 +377,7 @@ External backend configuration properties
 
 H2OConf getter can be derived from the corresponding setter. All getters are parameter-less. If the type of the property is Boolean, the getter is prefixed with
 ``is`` (E.g. ``setReplEnabled()`` -> ``isReplEnabled()``). Property getters of other types do not have any prefix and start with lowercase
-(E.g. ``setUserName(String)`` -> `userName` for Scala, `userName()` for Python).
+(E.g. ``setUserName(String)`` -> ``userName`` for Scala, ``userName()`` for Python).
 
 
 .. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
