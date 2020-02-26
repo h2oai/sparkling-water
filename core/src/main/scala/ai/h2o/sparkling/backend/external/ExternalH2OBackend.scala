@@ -38,13 +38,10 @@ import scala.io.Source
 class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
 
   var yarnAppId: Option[String] = None
-  private var externalIP: Option[String] = None
 
   override def init(conf: H2OConf): Array[NodeDesc] = {
     if (conf.isAutoClusterStartUsed) {
-      logInfo("Starting the external H2O cluster on YARN.")
-      val ipPort = launchExternalH2OOnYarn(conf)
-      conf.setH2OCluster(ipPort)
+      launchExternalH2OOnYarn(conf)
     }
 
     logInfo("Connecting to external H2O cluster.")
@@ -58,7 +55,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   override def backendUIInfo: Seq[(String, String)] = {
     Seq(
       ("External backend YARN AppID", yarnAppId),
-      ("External IP", externalIP)
+      ("External IP", hc.getConf.h2oClusterHost)
     ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
   }
 
@@ -78,7 +75,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
   }
 
-  private def launchExternalH2OOnYarn(conf: H2OConf): String = {
+  private def launchExternalH2OOnYarn(conf: H2OConf): Unit = {
+    logInfo("Starting the external H2O cluster on YARN.")
     val cmdToLaunch = getExternalH2ONodesArguments(conf)
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
@@ -102,14 +100,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines()
     val ipPort = clusterInfo.next()
     yarnAppId = Some(clusterInfo.next().replace("job", "application"))
-    externalIP = Some(ipPort)
     // we no longer need the notification file
     new File(conf.clusterInfoFile.get).delete()
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
     logInfo(s"Cluster ip and port obtained from cluster file: $ipPort")
 
     assert(proc == 0, s"Starting external H2O cluster failed with return value $proc.")
-    ipPort
+    conf.setH2OCluster(ipPort)
   }
 
   private def getExternalH2ONodesArguments(conf: H2OConf): Seq[String] = {
