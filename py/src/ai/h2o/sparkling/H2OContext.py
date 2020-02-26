@@ -56,7 +56,7 @@ def _get_first(rdd):
 
 class H2OContext(object):
 
-    isConnected = False
+    __isConnected = False
     def __init__(self):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -97,7 +97,7 @@ class H2OContext(object):
         """
 
         if spark is not None and not isinstance(spark, H2OConf):
-            warnings.warn("Method getOrCreate with spark argument is deprecated. Please use either just getOrCreate() or if you need"
+            warnings.warn("Method getOrCreate with spark argument is deprecated. Please use either just getOrCreate() or if you need "
                           "to pass extra H2OConf, use getOrCreate(conf). The spark argument will be removed in release 3.32.")
 
         # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
@@ -135,11 +135,11 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
 
         # Create H2O REST API client
-        if not h2o_context.__isClientConnected() or not H2OContext.isConnected:
+        if not h2o_context.__isClientConnected() or not H2OContext.__isConnected:
             h2o_context.__h2o_connect()
-            H2OContext.isConnected = True
-            print(h2o_context)
+            H2OContext.__isConnected = True
             h2o_context.__setClientConnected()
+            print(h2o_context)
 
         return h2o_context
 
