@@ -56,6 +56,7 @@ def _get_first(rdd):
 
 class H2OContext(object):
 
+    isConnected = False
     def __init__(self):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -130,12 +131,11 @@ class H2OContext(object):
         h2o_context._client_port = jhc.h2oLocalClientPort()
 
         # Create H2O REST API client
-        if not h2o_context.__isClientConnected():
+        if not h2o_context.__isClientConnected() or not H2OContext.isConnected:
             h2o_context.__h2o_connect()
-
-        h2o_context.__setClientConnected()
-
-        print(h2o_context)
+            H2OContext.isConnected = True
+            print(h2o_context)
+            h2o_context.__setClientConnected()
 
         return h2o_context
 

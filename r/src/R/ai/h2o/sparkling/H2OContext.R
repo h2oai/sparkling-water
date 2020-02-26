@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+.rsparklingenv <- new.env(parent = emptyenv())
+.rsparklingenv$isConnected <- FALSE
 
 getClientConnectedField <- function(jhc) {
   child <- sparklyr::invoke(jhc, "getClass")
@@ -62,12 +64,13 @@ H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
   schema <- invoke(returnedConf, "getScheme")
   insecure <- conf$verifySslCertificates() == FALSE
   https <- schema == "https"
-  if (!isClientConnected(jhc)) {
+  if (!isClientConnected(jhc) || !.rsparklingenv$isConnected) {
     if (contextPath == "") {
         contextPath <- NA_character_
     }
     h2o.init(strict_version_check = FALSE, https=https, insecure=insecure, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())
     setClientConnected(jhc)
+    .rsparklingenv$isConnected <- TRUE
   }
   hc
 }
