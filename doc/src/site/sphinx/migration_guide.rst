@@ -62,6 +62,8 @@ Removal of Deprecated Methods and Classes
 
 - Method ``download_h2o_logs`` on PySparkling ``H2OContext`` is removed in favor of the ``downloadH2OLogs`` method.
 
+- Method ``get_conf`` on PySparkling ``H2OContext`` is removed in favor of the ``getConf`` method.
+
 - On H2OConf Python API, the following methods have been renamed to be consistent with the Scala counterparts:
 
        - ``h2o_cluster`` -> ``h2oCluster``

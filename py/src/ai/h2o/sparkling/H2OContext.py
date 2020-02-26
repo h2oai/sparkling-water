@@ -182,6 +182,11 @@ class H2OContext(object):
         print(self)
 
     def get_conf(self):
+        warnings.warn("Method 'get_conf' is deprecated and will be removed in release 3.30. Please"
+                      " use 'getConf' instead.")
+        return self.getConf()
+
+    def getConf(self):
         return self._conf
 
     def asSparkFrame(self, h2oFrame, copyMetadata=True):
