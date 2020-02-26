@@ -55,7 +55,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   override def backendUIInfo: Seq[(String, String)] = {
     Seq(
       ("External backend YARN AppID", yarnAppId),
-      ("External IP", hc.getConf.h2oClusterHost)
+      ("External IP", hc.getConf.h2oCluster)
     ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
   }
 
