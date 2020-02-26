@@ -56,9 +56,6 @@ Removal of Deprecated Methods and Classes
 - In ``H2OXGBoost`` Scala And Python API, the methods ``getNEstimators`` and ``setNEstimators`` are removed. Please use ``getNtrees`` and
   ``setNtrees`` instead.
 
-- The default value of ``spark.ext.h2o.internal_secure_connections`` has changed to ``true`` which means that Sparkling Water
-  in internal backend and automatic mode of external backend is now running secured by default.
-
 - In Scala and Python API for tree-based algorithms, the method ``getR2Stopping`` is removed in favor of ``getStoppingRounds``,
   ``getStoppingMetric``, ``getStoppingTolerance`` methods and the method ``setR2Stopping`` is removed in favor of
   ``setStoppingRounds``, ``setStoppingMetric``, ``setStoppingTolerance`` methods.
