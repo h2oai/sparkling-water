@@ -119,16 +119,9 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
   }
 
   private def setClientIp(conf: H2OConf): Unit = {
-    if (conf.isAutoClusterStartUsed) {
-      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oCluster.get.split(":")(0))
-      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
-        conf.setClientIp(clientIp.get)
-      }
-    } else {
-      val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
-      if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
-        conf.setClientIp(clientIp.get)
-      }
+    val clientIp = ExternalH2OBackend.identifyClientIp(conf.h2oClusterHost.get)
+    if (clientIp.isDefined && conf.clientIp.isEmpty && conf.clientNetworkMask.isEmpty) {
+      conf.setClientIp(clientIp.get)
     }
 
     if (conf.clientIp.isEmpty) {
