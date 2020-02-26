@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
+import java.util.zip.{GZIPInputStream, GZIPOutputStream}
+
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.Base64Encoding
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
@@ -31,11 +33,11 @@ import water.server.ServletUtils
 final class ChunkServlet extends HttpServlet {
 
   private case class GETRequestParameters(
-      frameName: String,
-      numRows: Int,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      selectedColumnIndices: Array[Int]) {
+                                           frameName: String,
+                                           numRows: Int,
+                                           chunkId: Int,
+                                           expectedTypes: Array[Byte],
+                                           selectedColumnIndices: Array[Int]) {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
@@ -146,24 +148,26 @@ final class ChunkServlet extends HttpServlet {
       parameters.validate()
       response.setContentType("application/octet-stream")
       withResource(response.getOutputStream) { outputStream =>
-        withResource(new ChunkAutoBufferWriter(outputStream)) { writer =>
-          writer.writeChunk(
-            parameters.frameName,
-            parameters.numRows,
-            parameters.chunkId,
-            parameters.expectedTypes,
-            parameters.selectedColumnIndices)
+        withResource(new GZIPOutputStream(outputStream)) { compressed =>
+          withResource(new ChunkAutoBufferWriter(compressed)) { writer =>
+            writer.writeChunk(
+              parameters.frameName,
+              parameters.numRows,
+              parameters.chunkId,
+              parameters.expectedTypes,
+              parameters.selectedColumnIndices)
+          }
         }
       }
     }
   }
 
   private case class PUTRequestParameters(
-      frameName: String,
-      numRows: Int,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      maxVecSizes: Array[Int]) {
+                                           frameName: String,
+                                           numRows: Int,
+                                           chunkId: Int,
+                                           expectedTypes: Array[Byte],
+                                           maxVecSizes: Array[Int]) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
@@ -173,7 +177,7 @@ final class ChunkServlet extends HttpServlet {
 
     def validateMaxVecSizes(): Unit = {
       val numberOfVectorTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
-      if(numberOfVectorTypes != maxVecSizes.length) {
+      if (numberOfVectorTypes != maxVecSizes.length) {
         val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
           s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
         new RuntimeException(message)
@@ -211,17 +215,19 @@ final class ChunkServlet extends HttpServlet {
       val parameters = PUTRequestParameters.parse(request)
       parameters.validate()
       withResource(request.getInputStream) { inputStream =>
-        withResource(new ChunkAutoBufferReader(inputStream)) { reader =>
-          reader.readChunk(
-            parameters.frameName,
-            parameters.numRows,
-            parameters.chunkId,
-            parameters.expectedTypes,
-            parameters.maxVecSizes
-          )
+        withResource(new GZIPInputStream(inputStream)) { decompressed =>
+          withResource(new ChunkAutoBufferReader(decompressed)) { reader =>
+            reader.readChunk(
+              parameters.frameName,
+              parameters.numRows,
+              parameters.chunkId,
+              parameters.expectedTypes,
+              parameters.maxVecSizes
+            )
+          }
         }
+        ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
       }
-      ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
     }
   }
 }

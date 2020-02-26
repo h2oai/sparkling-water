@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.frame
 
 import java.io.{InputStream, OutputStream}
+import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
@@ -48,7 +49,7 @@ object H2OChunk extends RestCommunication {
       "selected_columns" -> selectedColumnsIndicesString)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+    new GZIPInputStream(readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters))
   }
 
   def putChunk(

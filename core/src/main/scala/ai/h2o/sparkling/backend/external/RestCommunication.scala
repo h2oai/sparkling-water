@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.external
 
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
+import java.util.zip.GZIPOutputStream
 
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
@@ -93,7 +94,7 @@ trait RestCommunication extends Logging {
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
       setHeaders(connection, conf, requestMethod, params)
-      val outputStream = connection.getOutputStream()
+      val outputStream = new GZIPOutputStream(connection.getOutputStream())
       new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
     } catch {
       case e: Exception => throwRestApiNotReachableException(url, e)
