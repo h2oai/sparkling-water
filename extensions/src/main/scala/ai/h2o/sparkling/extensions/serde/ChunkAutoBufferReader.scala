@@ -85,7 +85,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     }
   }
 
-  private def  addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
+  private def addDenseVectorToChunk(chunks: Array[NewChunk], maxVecSize: Int, startPosition: Int): Unit = {
     val values = buffer.getA8d
     if (values == null) throw new RuntimeException("Values of dense Vector can't be null!")
     // fill values
@@ -210,8 +210,8 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   }
 
   /**
-    * This method is used to check if the last received value was marked as NA by H2O backend
-    */
+   * This method is used to check if the last received value was marked as NA by H2O backend
+   */
   def isLastNA: Boolean = isLastNAVar
 
   override def close(): Unit = buffer.close()
