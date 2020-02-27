@@ -260,6 +260,10 @@ From 3.28.0 to 3.28.1
   ``setInternalSecureConnectionsEnabled`` on H2OConf to secure your cluster. This setter is
   available on Scala, Python and R clients.
 
+- For the users of the manual backend we have simplified the configuration and there is no need to specify a cluster
+  size anymore in advance. Sparkling Water automatically discovers the cluster size.
+  In particular ``spark.ext.h2o.external.cluster.size`` does not have any effect anymore.
+
 From 3.26 To 3.28.0
 -------------------
 
