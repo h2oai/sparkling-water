@@ -23,6 +23,7 @@ from pysparkling.context import H2OContext
 
 from tests.unit_test_utils import *
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+import pytest
 
 
 def testZombieExternalH2OCluster():
@@ -110,6 +111,6 @@ def testConversionWorksAfterNewlyStartedContext(spark):
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
     h2o_frame = context2.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
-    assert h2o_frame[1, 0] == 1.3333333333
+    assert pytest.approx(h2o_frame[1, 0]) == 1.3333333333
     asert_h2o_frame(h2o_frame, rdd)
     context2.stop()
