@@ -122,6 +122,12 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setColumnsToCategorical("class")
       .setLabelCol("class")
     val model = algo.fit(dataset)
-    assert(model.getDomainValuesForCol("class").toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
+
+    val domainValues = model.getDomainValues()
+    assert(domainValues("class").toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
+    assert(domainValues("sepal_len") == null)
+    assert(domainValues("sepal_wid") == null)
+    assert(domainValues("petal_len") == null)
+    assert(domainValues("petal_wid") == null)
   }
 }

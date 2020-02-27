@@ -39,9 +39,6 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
   },
   getDomainValues = function() {
     invoke(.self$jmojo, "getDomainValues")
-  },
-  getDomainValuesForCol = function(col) {
-    invoke(.self$jmojo, "getDomainValuesForCol", col)
   }
 ))
 

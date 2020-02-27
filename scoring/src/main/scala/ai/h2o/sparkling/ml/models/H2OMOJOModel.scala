@@ -46,19 +46,10 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
 
   def getModelDetails(): String = $(modelDetails)
 
-  def getDomainValues(): Array[Array[String]] = {
-    val a = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-    a.m.getDomainValues()
-  }
-
-  def getDomainValuesForCol(columnIdx: Int): Array[String] = {
-    val a = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-    a.m.getDomainValues(columnIdx)
-  }
-
-  def getDomainValuesForCol(columnName: String): Array[String] = {
-    val a = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
-    a.m.getDomainValues(columnName)
+  def getDomainValues(): Map[String, Array[String]] = {
+    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    val columns = mojoBackend.m.getNames
+    columns.map( col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
 
   def setSpecificParams(mojoModel: MojoModel): H2OMOJOModel = this
