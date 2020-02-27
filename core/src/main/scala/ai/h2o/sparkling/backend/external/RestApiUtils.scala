@@ -27,7 +27,11 @@ import water.api.schemas3._
 trait RestApiUtils extends RestCommunication {
 
   def isRestAPIBased(hc: Option[H2OContext] = None): Boolean = {
-    hc.getOrElse(H2OContext.ensure()).getConf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
+    isRestAPIBased(hc.getOrElse(H2OContext.ensure()).getConf)
+  }
+
+  def isRestAPIBased(conf: H2OConf): Boolean = {
+    conf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
   }
 
   def isRestAPIBased(hc: H2OContext): Boolean = isRestAPIBased(Some(hc))

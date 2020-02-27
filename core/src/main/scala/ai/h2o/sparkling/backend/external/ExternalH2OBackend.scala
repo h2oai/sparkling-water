@@ -129,7 +129,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-baseport", conf.nodeBasePort)
       .add("-timeout", conf.clusterStartTimeout)
       .add("-disown")
-      .add("-sw_ext_backend")
+      .add("-sw_ext_backend", !RestApiUtils.isRestAPIBased(hc))
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
       .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !RestApiUtils.isRestAPIBased(hc))
       .add("-run_as_user", conf.runAsUser)
