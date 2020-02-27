@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.shared
 
 import java.io.File
 
+import ai.h2o.sparkling.backend.external.RestApiUtils
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -150,7 +151,7 @@ trait SharedBackendUtils extends Logging with Serializable {
    */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-allow_clients")
+      .add("-allow_clients", !RestApiUtils.isRestAPIBased(conf))
       .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)
