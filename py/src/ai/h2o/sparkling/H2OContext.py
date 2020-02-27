@@ -25,34 +25,10 @@ from pyspark.rdd import RDD
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import *
 from pyspark.sql import SparkSession
-
-from ai.h2o.sparkling.FrameConversions import FrameConversions as fc
+from pyspark.sql.types import StringType, BooleanType, IntegerType, LongType, FloatType
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.H2OConf import H2OConf
-
-def _is_of_simple_type(rdd):
-    if not isinstance(rdd, RDD):
-        raise ValueError('rdd is not of type pyspark.rdd.RDD')
-
-    # Python 3.6 does not contain type long
-    # this code ensures we are compatible with both, python 2.7 and python 3.6
-    if sys.version_info > (3,):
-        type_checks = (str, int, bool, float)
-    else:
-        type_checks = (str, int, bool, long, float)
-
-    if not rdd.isEmpty() and isinstance(rdd.first(), type_checks):
-        return True
-    else:
-        return False
-
-
-def _get_first(rdd):
-    if rdd.isEmpty():
-        raise ValueError('rdd is empty')
-
-    return rdd.first()
-
+import numbers
 
 class H2OContext(object):
 
@@ -68,7 +44,7 @@ class H2OContext(object):
             raise
 
     def __h2o_connect(h2o_context):
-        schema = h2o_context._jhc.h2oContext().getConf().getScheme()
+        schema = h2o_context._jhc.getConf().getScheme()
         conf = h2o_context._conf
 
         kwargs = {}
@@ -116,8 +92,10 @@ class H2OContext(object):
   
         h2o_context = H2OContext()
 
-        # Create backing Java H2OContext
-        jhc = _jvm().org.apache.spark.h2o.JavaH2OContext.getOrCreate(selected_conf._jconf)
+        # Create backing H2OContext
+        package = getattr(_jvm().org.apache.spark.h2o, "H2OContext$")
+        module = package.__getattr__("MODULE$")
+        jhc = module.getOrCreate(selected_conf._jconf)
         h2o_context._jhc = jhc
         h2o_context._conf = selected_conf
         h2o_context._client_ip = jhc.h2oLocalClientIp()
@@ -133,31 +111,27 @@ class H2OContext(object):
         return h2o_context
 
     def __isStopped(self):
-        hc = self._jhc.h2oContext()
+        hc = self._jhc
         field = hc.getClass().getSuperclass().getDeclaredField("stopped")
         field.setAccessible(True)
         return field.get(hc)
 
     def __isClientConnected(self):
-        hc = self._jhc.h2oContext()
         field = self.__getClientConnectedField()
-        return field.get(hc)
+        return field.get(self._jhc)
 
     def __setClientConnected(self):
-        hc = self._jhc.h2oContext()
         field = self.__getClientConnectedField()
-        field.set(hc, True)
+        field.set(self._jhc, True)
 
     def __getClientConnectedField(self):
-        hc = self._jhc.h2oContext()
-        field = hc.getClass().getSuperclass().getDeclaredField("clientConnected")
+        field = self._jhc.getClass().getSuperclass().getDeclaredField("clientConnected")
         field.setAccessible(True)
         return field
 
     def stop(self):
         h2o.connection().close()
-        hc = self._jhc.h2oContext()
-        scalaStopMethod = getattr(hc, "org$apache$spark$h2o$H2OContext$$stop")
+        scalaStopMethod = getattr(self._jhc, "org$apache$spark$h2o$H2OContext$$stop")
         scalaStopMethod(False, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
 
         if self._conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false":
@@ -165,7 +139,7 @@ class H2OContext(object):
 
     def downloadH2OLogs(self,  destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
-        return self._jhc.h2oContext().downloadH2OLogs(destination, container)
+        return self._jhc.downloadH2OLogs(destination, container)
 
     def __str__(self):
         if self.__isClientConnected() and not self.__isStopped():
@@ -213,48 +187,55 @@ class H2OContext(object):
 
     def asH2OFrame(self, sparkFrame, h2oFrameName=None, fullCols=-1):
         """
-        Transforms given Spark RDD or DataFrame to H2OFrame.
+            Transforms given Spark RDD or DataFrame to H2OFrame.
 
-        Parameters
-        ----------
-          sparkFrame : Spark RDD or DataFrame
-          h2oFrameName : Optional name for resulting H2OFrame
-          fullCols : number of first n columns which are sent to the client together with the data
+            Parameters
+            ----------
+              sparkFrame : Spark RDD or DataFrame
+              h2oFrameName : Optional name for resulting H2OFrame
+              fullCols : number of first n columns which are sent to the client together with the data
 
-        Returns
-        -------
-          H2OFrame which contains data of original input Spark data structure
-        """
-        if isinstance(sparkFrame, DataFrame):
-            return fc._as_h2o_frame_from_dataframe(self, sparkFrame, h2oFrameName, fullCols)
-        elif isinstance(sparkFrame, RDD) and sparkFrame.isEmpty():
-            schema = StructType([])
-            empty = self._spark_session.createDataFrame(self._spark_session.sparkContext.emptyRDD(), schema)
-            return fc._as_h2o_frame_from_dataframe(self, empty, h2oFrameName, fullCols)
-        elif isinstance(sparkFrame, RDD):
-            # First check if the type T in RDD[T] is one of the python "primitive" types
-            # String, Boolean, Int and Double (Python Long is converted to java.lang.BigInteger)
-            if _is_of_simple_type(sparkFrame):
-                first = _get_first(sparkFrame)
-                # Make this code compatible with python 3.6 and python 2.7
-                global long
-                if sys.version_info > (3,):
-                    long = int
+            Returns
+            -------
+              H2OFrame which contains data of original input Spark data structure
+            """
+        assert_is_type(sparkFrame, DataFrame, RDD)
 
-                if isinstance(first, str):
-                    return fc._as_h2o_frame_from_RDD_String(self, sparkFrame, h2oFrameName, fullCols)
-                elif isinstance(first, bool):
-                    return fc._as_h2o_frame_from_RDD_Bool(self, sparkFrame, h2oFrameName, fullCols)
-                elif (isinstance(sparkFrame.min(), int) and isinstance(sparkFrame.max(), int)) or (isinstance(sparkFrame.min(), long) and isinstance(sparkFrame.max(), long)):
-                    if sparkFrame.min() >= _jvm().Integer.MIN_VALUE and sparkFrame.max() <= _jvm().Integer.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Int(self, sparkFrame, h2oFrameName, fullCols)
-                    elif sparkFrame.min() >= _jvm().Long.MIN_VALUE and sparkFrame.max() <= _jvm().Long.MAX_VALUE:
-                        return fc._as_h2o_frame_from_RDD_Long(self, sparkFrame, h2oFrameName, fullCols)
-                    else:
-                        raise ValueError('Numbers in RDD Too Big')
-                elif isinstance(first, float):
-                    return fc._as_h2o_frame_from_RDD_Float(self, sparkFrame, h2oFrameName, fullCols)
-            else:
-                return fc._as_h2o_frame_from_complex_type(self, sparkFrame, h2oFrameName, fullCols)
+        df = H2OContext.__prepareSparkDataForConversion(sparkFrame)
+        if h2oFrameName is None:
+            key = self._jhc.asH2OFrameKeyString(df._jdf)
         else:
-            raise ValueError('The asH2OFrame method expects Spark DataFrame or RDD as the input only!')
+            key = self._jhc.asH2OFrameKeyString(df._jdf, h2oFrameName)
+        return H2OFrame.get_frame(key, full_cols=fullCols, light=True)
+
+    @staticmethod
+    def __prepareSparkDataForConversion(sparkData):
+        if isinstance(sparkData, DataFrame):
+            return sparkData
+        elif sparkData.isEmpty():
+            return sparkData.toDF()
+        else:
+            session = SparkSession.builder.getOrCreate()
+            first = sparkData.first()
+            if isinstance(first, (str, bool, numbers.Integral, float)):
+                if isinstance(first, str):
+                    return session.createDataFrame(sparkData, StringType())
+                elif isinstance(first, bool):
+                    return session.createDataFrame(sparkData, BooleanType())
+                elif (isinstance(sparkData.min(), numbers.Integral) and isinstance(sparkData.max(), numbers.Integral)):
+                    if sparkData.min() >= _jvm().Integer.MIN_VALUE and sparkData.max() <= _jvm().Integer.MAX_VALUE:
+                        return session.createDataFrame(sparkData, IntegerType())
+                    elif sparkData.min() >= _jvm().Long.MIN_VALUE and sparkData.max() <= _jvm().Long.MAX_VALUE:
+                        return session.createDataFrame(sparkData, LongType())
+                    else:
+                        warnings.warn(
+                            "Maximal or minimal number in RDD is too big to convert to Java. Treating numbers as strings.")
+                        return session.createDataFrame(sparkData, StringType())
+                elif isinstance(first, float):
+                    ## Spark would fail when creating data frame if there is int type in RDD[Float]
+                    ## Convert explicitly all to float
+                    return session.createDataFrame(sparkData.map(lambda x: float(x)), FloatType())
+                else:
+                    raise ValueError('Unreachable code')
+            else:
+                return session.createDataFrame(sparkData)
