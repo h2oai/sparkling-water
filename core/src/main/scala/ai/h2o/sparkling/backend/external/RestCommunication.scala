@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.external
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
+import ai.h2o.sparkling.frame.H2OChunk.checkResponseCode
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
@@ -80,11 +81,12 @@ trait RestCommunication extends Logging {
    * @param params   Query parameters
    * @return HttpUrlConnection facilitating the insertion and holding the outputStream
    */
-  protected def insertWithoutCheckingResult(
+  protected def insert(
                         endpoint: URI,
                         suffix: String,
                         conf: H2OConf,
-                        params: Map[String, Any] = Map.empty): HttpURLConnection = {
+                        streamWrapper: OutputStream => OutputStream = identity,
+                        params: Map[String, Any] = Map.empty): OutputStream = {
     val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
@@ -93,29 +95,15 @@ trait RestCommunication extends Logging {
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
       setHeaders(connection, conf, requestMethod, params)
-      connection
+      val outputStream = connection.getOutputStream()
+      val wrappedStream = streamWrapper(outputStream)
+      new FinalizingOutputStream(wrappedStream, () => checkResponseCode(connection))
     } catch {
       case e: Exception => throwRestApiNotReachableException(url, e)
     }
   }
 
-  /**
-    *
-    * @param endpoint An address of H2O node with exposed REST endpoint
-    * @param suffix   REST relative path representing a specific call
-    * @param conf     H2O conf object
-    * @param params   Query parameters
-    * @return outputStream checking the HTTP result on close()
-    */
-  protected def insert(
-                       endpoint: URI,
-                       suffix: String,
-                       conf: H2OConf,
-                       params: Map[String, Any] = Map.empty): OutputStream = {
-    val connection = insertWithoutCheckingResult(endpoint, suffix, conf, params)
-    val outputStream = connection.getOutputStream()
-    new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
-  }
+
 
   def request[ResultType: ClassTag](
                                      endpoint: URI,

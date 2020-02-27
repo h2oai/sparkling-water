@@ -21,7 +21,7 @@ import java.io.{InputStream, OutputStream}
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.utils.{Base64Encoding, Compression, FinalizingOutputStream}
+import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 
@@ -73,9 +73,8 @@ object H2OChunk extends RestCommunication {
       "compression" -> conf.externalCommunicationCompression)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    val connection = insertWithoutCheckingResult(endpoint, Paths.CHUNK, conf, parameters)
-    val outputStream = connection.getOutputStream()
-    val compressedStream = Compression.compress(conf.externalCommunicationCompression, outputStream)
-    new FinalizingOutputStream(compressedStream, () => checkResponseCode(connection))
+    val addCompression =
+      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
+    insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
   }
 }

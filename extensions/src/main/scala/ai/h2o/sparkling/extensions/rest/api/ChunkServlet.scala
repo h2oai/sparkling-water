@@ -35,7 +35,8 @@ final class ChunkServlet extends HttpServlet {
       numRows: Int,
       chunkId: Int,
       expectedTypes: Array[Byte],
-      selectedColumnIndices: Array[Int]) {
+      selectedColumnIndices: Array[Int],
+      compression: String) {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
