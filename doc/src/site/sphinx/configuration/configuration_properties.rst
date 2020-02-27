@@ -372,6 +372,11 @@ External backend configuration properties
 |                                                       |                |                                                 | will be placed onto classpath of    |
 |                                                       |                | ``setExternalExtraJars(String[])``              | each H2O node.                      |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.communication.compression``  | ``SNAPPY``     | ``setExternalCommunicationCompression(String)`` | The type of compression used for    |
+|                                                       |                |                                                 | data transfer between Spark and H2O |
+|                                                       |                |                                                 | node. Possible values are ``NONE``, |
+|                                                       |                |                                                 | ``DEFLATE``, ``GZIP``, ``SNAPPY``.  |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
