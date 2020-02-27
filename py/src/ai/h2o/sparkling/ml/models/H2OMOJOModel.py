@@ -43,6 +43,11 @@ class H2OMOJOModel(H2OMOJOModelBase):
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
 
+    def getDomainValues(self):
+        return self._java_obj.getDomainValues()
+
+    def getDomainValuesForCol(self, col):
+        return self._java_obj.getDomainValues(col)
 
 class H2OSupervisedMOJOModel(H2OMOJOModel):
 

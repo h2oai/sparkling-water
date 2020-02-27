@@ -205,6 +205,10 @@ To score the dataset using the loaded mojo, call:
             model$transform(dataset)
 
 
+To obtain domain values of the trained model, you can run ``getDomainValues()`` on the model. This call
+returns all domain values for all columns. To obtain domain values for specific column, please run
+``getDomainValuesForCol(col)``, where ``col`` can be either column name or index.
+
 In Scala, the ``createFromMojo`` method returns a mojo model instance casted as a base class ``H2OMOJOModel``. This class holds
 only properties that are shared accross all MOJO model types from the following type hierarchy:
 

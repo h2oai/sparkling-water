@@ -113,4 +113,15 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     assert(schema == expectedSchema)
     assert(schema == expectedSchemaByTransform)
   }
+
+  test("getDomainValues") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(dataset)
+    assert(model.getDomainValuesForCol("class").toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
+  }
 }
