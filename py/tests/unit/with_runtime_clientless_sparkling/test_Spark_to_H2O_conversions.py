@@ -24,6 +24,7 @@ from pyspark.ml.util import _jvm
 
 from pysparkling.context import H2OContext
 from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+from h2o.exceptions import H2OTypeError
 
 from tests import unit_test_utils
 
@@ -137,7 +138,7 @@ def testSparseDataConversion(spark, hc):
 
 
 def testUnknownTypeConversion(hc):
-    with pytest.raises(ValueError):
+    with pytest.raises(H2OTypeError):
         hc.asH2OFrame("unknown type")
 
 

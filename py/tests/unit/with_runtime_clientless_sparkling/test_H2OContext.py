@@ -50,7 +50,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
     context1 = H2OContext.getOrCreate(createH2OConf())
     context2 = H2OContext.getOrCreate(createH2OConf())
 
-    getNodes = lambda context: context._jhc.h2oContext().getH2ONodes()
+    getNodes = lambda context: context._jhc.getH2ONodes()
     toIpPort = lambda node: node.ipPort()
     nodesToString = lambda nodes: ', '.join(nodes)
 
@@ -91,12 +91,12 @@ def testStopAndStartAgain(spark):
         return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 
     context1 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId1 = str(context1._jhc.h2oContext().backend().yarnAppId().get())
+    yarnAppId1 = str(context1._jhc.backend().yarnAppId().get())
     assert yarnAppId1 in listYarnApps()
     context1.stop()
     assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
     context2 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId2 = str(context2._jhc.h2oContext().backend().yarnAppId().get())
+    yarnAppId2 = str(context2._jhc.backend().yarnAppId().get())
     assert yarnAppId1 not in listYarnApps()
     assert "Orderly shutdown:  Shutting down now." in yarnLogs(yarnAppId1)
     assert yarnAppId2 in listYarnApps()

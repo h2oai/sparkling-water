@@ -385,21 +385,6 @@ public class JavaH2OContext {
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaDouble(rdd.rdd()), Option.apply(frameName));
     }
 
-    /**
-     * Conversion from RDD[Double] to H2O's DataFrame
-     * This method is used by the python client since even though the rdd is of type double,
-     * some of the elements are actually integers. We need to convert all types to double in order to not break the
-     * backend
-     *
-     * @param rdd       rdd to convert
-     * @param frameName frame name
-     * @return A key sting of new H2O Frame
-     */
-    public String asH2OFrameFromPythonRDDDoubleKeyString(JavaRDD<Number> rdd, String frameName) {
-        JavaRDD<Double> casted = rdd.map(new RDDDoubleConversionFunc());
-        return asH2OFrameFromRDDDoubleKeyString(casted, frameName);
-    }
-
 
     /**
      * Conversion from RDD[Long] to H2O's DataFrame
@@ -410,21 +395,6 @@ public class JavaH2OContext {
      */
     public H2OFrame asH2OFrameFromRDDLong(JavaRDD<Long> rdd, String frameName) {
         return hc.asH2OFrame(SupportedRDD$.MODULE$.toH2OFrameFromRDDJavaLong(rdd.rdd()), Option.apply(frameName));
-    }
-
-    /**
-     * Conversion from RDD[Long] to H2O's DataFrame
-     * This method is used by the python client since even though the rdd is of type long,
-     * some of the elements are actually integers. We need to convert all types to long in order to not break the
-     * backend
-     *
-     * @param rdd       rdd to convert
-     * @param frameName frame name
-     * @return A key string of new H2O Frame
-     */
-    public String asH2OFrameFromPythonRDDLongKeyString(JavaRDD<Number> rdd, String frameName) {
-        JavaRDD<Long> casted = rdd.map(new RDDLongConversionFunc());
-        return asH2OFrameFromRDDLongKeyString(casted, frameName);
     }
 
     /**

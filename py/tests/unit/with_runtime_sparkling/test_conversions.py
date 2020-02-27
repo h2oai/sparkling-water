@@ -22,6 +22,7 @@ import time
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.ml.util import _jvm
+from h2o.exceptions import H2OTypeError
 
 from tests import generic_test_utils
 from tests import unit_test_utils
@@ -78,7 +79,8 @@ def testFloatRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
     h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
-    assert h2o_frame[1, 0] == 1.3333333333
+    assert pytest.approx(h2o_frame[1, 0]) == 1.3333333333
+    assert h2o_frame[2, 0] == 178
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 
@@ -86,7 +88,7 @@ def testDoubleRDDToH2OFrame(spark, hc):
     rdd = spark.sparkContext.parallelize([0.5, 1.3333333333, 178])
     h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
-    assert h2o_frame[1, 0] == 1.3333333333
+    assert pytest.approx(h2o_frame[1, 0]) == 1.3333333333
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 
@@ -116,9 +118,11 @@ def testNumericRDDtoH2OFrameWithValueTooBig(spark, hc):
     min = _jvm().Long.MIN_VALUE - 1
     max = _jvm().Long.MAX_VALUE + 1
     rdd = spark.sparkContext.parallelize([1, min, max])
-    with pytest.raises(ValueError):
-        hc.asH2OFrame(rdd)
-
+    h2o_frame = hc.asH2OFrame(rdd)
+    assert h2o_frame[0, 0] == str(1)
+    assert h2o_frame[1, 0] == str(min)
+    assert h2o_frame[2, 0] == str(max)
+    unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 # test transformation from h2o frame to data frame, when given h2o frame was created without calling asH2OFrame
 # on h2o context
@@ -184,7 +188,7 @@ def testSparseDataConversion(spark, hc):
 
 
 def testUnknownTypeConversion(hc):
-    with pytest.raises(ValueError):
+    with pytest.raises(H2OTypeError):
         hc.asH2OFrame("unknown type")
 
 
