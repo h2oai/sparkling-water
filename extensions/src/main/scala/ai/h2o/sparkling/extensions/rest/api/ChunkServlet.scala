@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import ai.h2o.sparkling.utils.ScalaUtils._
-import ai.h2o.sparkling.utils.Base64Encoding
+import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
@@ -40,22 +40,23 @@ final class ChunkServlet extends HttpServlet {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
-      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName' doesn't exist.")
+      if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName' doesn't exist.")
       validateChunkId(frame)
       validateSelectedColumns(frame)
       validateExpectedTypes(expectedTypes, frame)
       validateExpectedTypesAndSelectedColumnsCompatibility(frame)
+      Compression.validateCompressionType(compression)
     }
 
     def validateChunkId(frame: Frame): Unit = {
       if (chunkId < 0) {
-        throw new RuntimeException(s"chunk_id can't be negative. Current value: $chunkId")
+        throw new IllegalArgumentException(s"chunk_id can't be negative. Current value: $chunkId")
       }
       val numberOfChunks = frame.anyVec.nChunks
       if (chunkId >= numberOfChunks) {
         val message = s"chunk_id '$chunkId' is out of range." +
           s"The frame '$frameName' has $numberOfChunks chunks."
-        throw new RuntimeException(message)
+        throw new IllegalArgumentException(message)
       }
     }
 
@@ -64,13 +65,13 @@ final class ChunkServlet extends HttpServlet {
         if (selectedColumnIndices(i) < 0) {
           val message = s"Selected column index ('selected_columns') at position $i " +
             s"with the value '${selectedColumnIndices(i)}' is negative."
-          throw new RuntimeException(message)
+          throw new IllegalArgumentException(message)
         }
         if (selectedColumnIndices(i) >= frame.numCols) {
           val message = s"Selected column index ('selected_columns') at position $i " +
             s"with the value '${selectedColumnIndices(i)}' is out of range. " +
             s"Frame '$frameName' has ${frame.numCols} columns."
-          throw new RuntimeException(message)
+          throw new IllegalArgumentException(message)
         }
       }
     }
@@ -79,7 +80,7 @@ final class ChunkServlet extends HttpServlet {
       if (selectedColumnIndices.length != expectedTypes.length) {
         val message = s"The number of expected_types '${expectedTypes.length}' is not the same as " +
           s"the number of selected_columns '${selectedColumnIndices.length}'"
-        throw new RuntimeException(message)
+        throw new IllegalArgumentException(message)
       }
     }
   }
@@ -95,7 +96,8 @@ final class ChunkServlet extends HttpServlet {
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
       val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
-      GETRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices)
+      val compression = getParameterAsString(request, "compression")
+      GETRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices, compression)
     }
   }
 
@@ -106,7 +108,7 @@ final class ChunkServlet extends HttpServlet {
       if (expectedTypes(i) < lowerBound || expectedTypes(i) > upperBound) {
         val message = s"Expected Type ('expected_types') at position $i with " +
           s"the value '${expectedTypes(i)}' is invalid."
-        throw new RuntimeException(message)
+        throw new IllegalArgumentException(message)
       }
     }
   }
@@ -114,7 +116,7 @@ final class ChunkServlet extends HttpServlet {
   private def getParameterAsString(request: HttpServletRequest, parameterName: String): String = {
     val result = request.getParameter(parameterName)
     if (result == null) {
-      throw new RuntimeException(s"Cannot find value for the parameter '$parameterName'")
+      throw new IllegalArgumentException(s"Cannot find value for the parameter '$parameterName'")
     }
     result
   }
@@ -147,13 +149,15 @@ final class ChunkServlet extends HttpServlet {
       parameters.validate()
       response.setContentType("application/octet-stream")
       withResource(response.getOutputStream) { outputStream =>
-        withResource(new ChunkAutoBufferWriter(outputStream)) { writer =>
-          writer.writeChunk(
-            parameters.frameName,
-            parameters.numRows,
-            parameters.chunkId,
-            parameters.expectedTypes,
-            parameters.selectedColumnIndices)
+        withResource(Compression.compress(parameters.compression, outputStream)) { compressed =>
+          withResource(new ChunkAutoBufferWriter(compressed)) { writer =>
+            writer.writeChunk(
+              parameters.frameName,
+              parameters.numRows,
+              parameters.chunkId,
+              parameters.expectedTypes,
+              parameters.selectedColumnIndices)
+          }
         }
       }
     }
@@ -164,12 +168,14 @@ final class ChunkServlet extends HttpServlet {
       numRows: Int,
       chunkId: Int,
       expectedTypes: Array[Byte],
-      maxVecSizes: Array[Int]) {
+      maxVecSizes: Array[Int],
+      compression: String) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
-      if (frame == null) throw new RuntimeException(s"A frame with name '$frameName")
+      if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName")
       validateExpectedTypes(expectedTypes, frame)
       validateMaxVecSizes()
+      Compression.validateCompressionType(compression)
     }
 
     def validateMaxVecSizes(): Unit = {
@@ -177,7 +183,7 @@ final class ChunkServlet extends HttpServlet {
       if(numberOfVectorTypes != maxVecSizes.length) {
         val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
           s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
-        new RuntimeException(message)
+        new IllegalArgumentException(message)
       }
     }
   }
@@ -193,7 +199,8 @@ final class ChunkServlet extends HttpServlet {
       val expectedTypes = Base64Encoding.decode(expectedTypesString)
       val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
       val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
-      PUTRequestParameters(frameName, numRows, chunkId, expectedTypes, maxVecSizes)
+      val compression = getParameterAsString(request, "compression")
+      PUTRequestParameters(frameName, numRows, chunkId, expectedTypes, maxVecSizes, compression)
     }
   }
 
@@ -212,14 +219,15 @@ final class ChunkServlet extends HttpServlet {
       val parameters = PUTRequestParameters.parse(request)
       parameters.validate()
       withResource(request.getInputStream) { inputStream =>
-        withResource(new ChunkAutoBufferReader(inputStream)) { reader =>
-          reader.readChunk(
-            parameters.frameName,
-            parameters.numRows,
-            parameters.chunkId,
-            parameters.expectedTypes,
-            parameters.maxVecSizes
-          )
+        withResource(Compression.decompress(parameters.compression, inputStream)) { decompressed =>
+          withResource(new ChunkAutoBufferReader(decompressed)) { reader =>
+            reader.readChunk(
+              parameters.frameName,
+              parameters.numRows,
+              parameters.chunkId,
+              parameters.expectedTypes,
+              parameters.maxVecSizes)
+          }
         }
       }
       ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
