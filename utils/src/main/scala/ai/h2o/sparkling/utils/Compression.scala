@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.utils
 
 import java.io.{InputStream, OutputStream}
-import java.util.zip.{DeflaterInputStream, DeflaterOutputStream, GZIPInputStream, GZIPOutputStream}
+import java.util.zip.{DeflaterOutputStream, GZIPInputStream, GZIPOutputStream, InflaterInputStream}
 
 import org.xerial.snappy.{SnappyInputStream, SnappyOutputStream}
 
@@ -39,7 +39,7 @@ object Compression {
   def decompress(compressionType: String, inputStream: InputStream): InputStream = {
     validateCompressionType(compressionType) match {
       case "NONE" => inputStream
-      case "DEFLATE" => new DeflaterInputStream(inputStream)
+      case "DEFLATE" => new InflaterInputStream(inputStream)
       case "GZIP" => new GZIPInputStream(inputStream)
       case "SNAPPY" => new SnappyInputStream(inputStream)
     }
