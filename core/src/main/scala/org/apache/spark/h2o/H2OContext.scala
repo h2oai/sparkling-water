@@ -591,7 +591,6 @@ object H2OContext extends Logging {
    * @return H2O Context
    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
-    val checkedConf = checkAndUpdateConf(conf)
     val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
       SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
     val isExternalBackend = conf.runsInExternalClusterMode
@@ -599,16 +598,22 @@ object H2OContext extends Logging {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed
-        if (startedManually && connectingToNewCluster(existingContext, checkedConf)) {
+        if (conf.h2oCluster.isEmpty) {
+          throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+        }
+        if (startedManually && connectingToNewCluster(existingContext, conf)) {
+          val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
           logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
       } else {
+        val checkedConf = checkAndUpdateConf(conf)
         instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
       }
     } else {
       if (instantiatedContext.get() == null)
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
+          val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContextClientBased(checkedConf).init())
         } else {
           throw new IllegalArgumentException(
