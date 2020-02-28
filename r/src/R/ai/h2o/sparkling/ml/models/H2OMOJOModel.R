@@ -36,6 +36,9 @@ H2OMOJOModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSettings.d
 H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), methods = list(
   getModelDetails = function() {
     invoke(.self$jmojo, "getModelDetails")
+  },
+  getDomainValues = function() {
+    invoke(.self$jmojo, "getDomainValues")
   }
 ))
 

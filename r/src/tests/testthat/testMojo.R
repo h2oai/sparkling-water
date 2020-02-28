@@ -51,6 +51,21 @@ test_that("test MOJO predictions", {
   expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "prediction"))
 })
 
+test_that("test getDomainValues", {
+  sc <- spark_connect(master = "local[*]", config = config)
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  domainValues <- model$getDomainValues()
+  expect_true(is.null(domainValues[["DPROS"]]))
+  expect_true(is.null(domainValues[["DCAPS"]]))
+  expect_true(is.null(domainValues[["VOL"]]))
+  expect_true(is.null(domainValues[["AGE"]]))
+  expect_true(is.null(domainValues[["PSA"]]))
+  expect_equal(domainValues[["capsule"]][[1]], "0")
+  expect_equal(domainValues[["capsule"]][[2]], "1")
+  expect_true(is.null(domainValues[["RACE"]]))
+  expect_true(is.null(domainValues[["ID"]]))
+})
+
 
 test_that("test MOJO predictions on unseen categoricals", {
   sc <- spark_connect(master = "local[*]", config = config)
