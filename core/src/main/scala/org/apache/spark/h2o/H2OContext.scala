@@ -554,14 +554,6 @@ object H2OContext extends Logging {
 
   private val instantiatedContext = new AtomicReference[H2OContext]()
 
-  /**
-   * Tries to get existing H2O Context. If it is not there, ok.
-   * Note that this method has to be here because otherwise ScalaCodeHandlerSuite will fail in one of the tests.
-   * If you want to throw an exception when the context is missing, use ensure()
-   * If you want to create the context if it is not missing, use getOrCreate() (if you can).
-   *
-   * @return Option containing H2O Context or None
-   */
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
   def ensure(onError: => String = "H2OContext has to be running."): H2OContext =
