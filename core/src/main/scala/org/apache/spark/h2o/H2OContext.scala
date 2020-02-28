@@ -598,6 +598,9 @@ object H2OContext extends Logging {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed
+        if (conf.h2oCluster.isEmpty) {
+          throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+        }
         if (startedManually && connectingToNewCluster(existingContext, conf)) {
           val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
