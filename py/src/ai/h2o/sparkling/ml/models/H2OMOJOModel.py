@@ -21,6 +21,7 @@ from pyspark.ml.util import _jvm
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
 class H2OMOJOModel(H2OMOJOModelBase):
@@ -42,6 +43,9 @@ class H2OMOJOModel(H2OMOJOModelBase):
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
+
+    def getDomainValues(self):
+        return H2OTypeConverters.scalaMapToDictStringToArrayString(self._java_obj.getDomainValues())
 
 
 class H2OSupervisedMOJOModel(H2OMOJOModel):

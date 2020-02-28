@@ -282,3 +282,21 @@ class H2OTypeConverters(object):
                 raise TypeError("Invalid type.")
 
         return convert
+
+    @staticmethod
+    def scalaMapToDictStringToArrayString(value):
+        if value is None:
+            raise TypeError("None is not allowed.")
+        elif isinstance(value, JavaObject):
+            it = value.toIterator()
+            map = {}
+            while it.hasNext():
+                pair = it.next()
+                arr = pair._2()
+                if arr is None:
+                    map[pair._1()] = None
+                else:
+                    map[pair._1()] = [v for v in arr]
+            return map
+        else:
+            raise TypeError("Invalid type.")

@@ -59,6 +59,23 @@ def dataset(spark):
         .withColumn("Offset", log(col("Holders")))
 
 
+def testDomainColumns(prostateDataset):
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
+
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
+    model = gbm.fit(prostateDataset)
+    domainValues = model.getDomainValues()
+    assert domainValues["DPROS"] is None
+    assert domainValues["DCAPS"] is None
+    assert domainValues["VOL"] is None
+    assert domainValues["AGE"] is None
+    assert domainValues["PSA"] is None
+    assert domainValues["capsule"] == ["0", "1"]
+    assert domainValues["RACE"] is None
+    assert domainValues["ID"] is None
+
+
 @pytest.fixture(scope="module")
 def gbmModelWithOffset(dataset):
     gbm=H2OGBM(distribution="tweedie",
