@@ -19,10 +19,9 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
-import ai.h2o.sparkling.backend.external.ExternalBackendConverter
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
 import ai.h2o.sparkling.backend.external
-import ai.h2o.sparkling.backend.external.{ExternalH2OBackend, H2OClusterNotReachableException, ProxyStarter, RestApiException, RestApiUtils}
+import ai.h2o.sparkling.backend.external.{H2OContextUtils => _, _}
 import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, Converter, SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -598,14 +597,17 @@ object H2OContext extends Logging {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed
-        if (conf.h2oCluster.isEmpty) {
-          throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+        if (startedManually) {
+          if (conf.h2oCluster.isEmpty) {
+            throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+          }
+          if (connectingToNewCluster(existingContext, conf)) {
+            val checkedConf = checkAndUpdateConf(conf)
+            instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
+            logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
+          }
         }
-        if (startedManually && connectingToNewCluster(existingContext, conf)) {
-          val checkedConf = checkAndUpdateConf(conf)
-          instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
-          logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
-        }
+
       } else {
         val checkedConf = checkAndUpdateConf(conf)
         instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
