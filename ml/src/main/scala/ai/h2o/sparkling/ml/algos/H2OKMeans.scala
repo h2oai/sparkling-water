@@ -137,7 +137,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
         val spark = SparkSessionUtils.active
         import spark.implicits._
         val df = spark.sparkContext.parallelize(userPoints).toDF()
-        H2OContext.getOrCreate().asH2OFrame(df).key
+        H2OContext.ensure("H2OContext needs to be running in order to train Target Encoder model.").asH2OFrame(df).key
       }
     }
     parameters._estimate_k = getEstimateK()

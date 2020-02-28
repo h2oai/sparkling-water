@@ -51,7 +51,7 @@ class H2OTargetEncoderModel(
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val h2oContext = H2OContext.getOrCreate()
+    val h2oContext = H2OContext.ensure("H2OContext needs to be running in order to train Target Encoder model.")
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)

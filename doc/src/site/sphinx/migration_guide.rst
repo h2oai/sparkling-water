@@ -18,6 +18,11 @@ From 3.30 to 3.32
   been removed. Also, ``H2OContext`` can be created as ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``.
   The other variants of this method have been removed.
 
+- It is now require to explicitly call ``H2OContext.getOrCreate`` in Python or Scala before you run any of our
+  algorithm: ``H2OGBM``, ``H2ODeepLearning``, ``H2OXGBoost``, ``H2OKMeans``, ``H2OAutoML``, ``H2OGridSearch``,
+  ``H2ODRF`` and ``H2OGLM``. Before the context has been created silently for you.
+
+
 From 3.28.1 to 3.30
 -------------------
 

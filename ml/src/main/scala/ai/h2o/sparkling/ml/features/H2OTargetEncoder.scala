@@ -35,7 +35,7 @@ class H2OTargetEncoder(override val uid: String)
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
-    val h2oContext = H2OContext.getOrCreate()
+    val h2oContext = H2OContext.ensure("H2OContext needs to be running in order to train Target Encoder model.")
     val input = h2oContext.asH2OFrame(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
