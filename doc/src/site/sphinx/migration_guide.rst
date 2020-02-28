@@ -19,7 +19,7 @@ From 3.30 to 3.32
   The other variants of this method have been removed.
 
 - It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithm. Previously,
-  the algorithm would create the H2OContext on demand.
+  the algorithms would create the H2OContext on demand.
 
 From 3.28.1 to 3.30
 -------------------
