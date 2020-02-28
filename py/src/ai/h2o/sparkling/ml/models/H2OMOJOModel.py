@@ -23,6 +23,7 @@ from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
+
 class H2OMOJOModel(H2OMOJOModelBase):
 
     @staticmethod
