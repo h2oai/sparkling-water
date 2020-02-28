@@ -28,8 +28,8 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 import water.DKV
 
 /**
-  * H2O KMeans algorithm exposed via Spark ML pipelines.
-  */
+ * H2O KMeans algorithm exposed via Spark ML pipelines.
+ */
 class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
 
   override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
@@ -55,8 +55,8 @@ object H2OKMeans extends DefaultParamsReadable[H2OKMeans]
 
 
 /**
-  * Parameters for Spark's API exposing underlying H2O model.
-  */
+ * Parameters for Spark's API exposing underlying H2O model.
+ */
 trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   type H2O_SCHEMA = GLMParametersV3
@@ -137,7 +137,9 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
         val spark = SparkSessionUtils.active
         import spark.implicits._
         val df = spark.sparkContext.parallelize(userPoints).toDF()
-        H2OContext.ensure("H2OContext needs to be created in order to train the H2OKMeans model. Please create one as H2OContext.getOrCreate().").asH2OFrame(df).key
+        val hc = H2OContext.ensure("H2OContext needs to be created in order to train the H2OKMeans model. " +
+          "Please create one as H2OContext.getOrCreate().")
+        hc.asH2OFrame(df).key
       }
     }
     parameters._estimate_k = getEstimateK()
