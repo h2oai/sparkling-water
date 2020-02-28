@@ -18,7 +18,7 @@ From 3.30 to 3.32
   been removed. Also, ``H2OContext`` can be created as ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``.
   The other variants of this method have been removed.
 
-- It is now required to explicitly created ``H2OContext`` before you run any of our exposed algorithm. Previously,
+- It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithm. Previously,
   the algorithm would create the H2OContext on demand.
 
 From 3.28.1 to 3.30
