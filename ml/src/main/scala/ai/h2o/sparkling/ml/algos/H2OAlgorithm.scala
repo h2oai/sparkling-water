@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
-import ai.h2o.sparkling.model.H2OModel
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
@@ -47,28 +46,22 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     updateH2OParams()
 
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    parameters._train = DKV.getGet[Frame](trainKey)._key
+    parameters._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
+
+    val trainFrame = parameters._train.get()
+    preProcessBeforeFit(trainFrame._key.toString)
     if (!RestApiUtils.isRestAPIBased()) {
-      parameters._train = DKV.getGet[Frame](trainKey)._key
-      parameters._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
-    }
-    preProcessBeforeFit(trainKey)
-    if (!RestApiUtils.isRestAPIBased()) {
-      water.DKV.put(parameters._train.get())
+      water.DKV.put(trainFrame)
     }
 
     // Train
-    val hc = H2OContext.ensure()
-    val (mojoData, algoName) = if (RestApiUtils.isRestAPIBased()) {
-      val model = H2OModel.trainModel(hc.getConf, extractParamMap(), parameters, trainKey, validKey)
-      (H2OModel.downloadMOJOData(hc.getConf, model), model.algoName)
-    } else {
-      val binaryModel = trainModel(parameters)
-      (ModelSerializationSupport.getMojoData(binaryModel), binaryModel._parms.algoName())
-    }
+    val binaryModel: H2OBaseModel = trainModel(parameters)
+    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
-      Identifiable.randomUID(algoName),
+      Identifiable.randomUID(binaryModel._parms.algoName()),
       modelSettings,
       internalFeatureCols)
   }

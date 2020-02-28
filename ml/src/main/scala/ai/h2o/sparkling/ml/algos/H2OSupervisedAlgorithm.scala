@@ -51,7 +51,7 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
     if (parameters._distribution == DistributionFamily.bernoulli || parameters._distribution == DistributionFamily.multinomial) {
       if (RestApiUtils.isRestAPIBased()) {
         val trainFrame = H2OFrame(trainFrameKey)
-        if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType != H2OColumnType.`enum`) {
+        if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType == H2OColumnType.`enum`) {
           trainFrame.convertColumnsToCategorical(Array(getLabelCol()))
         }
       } else {

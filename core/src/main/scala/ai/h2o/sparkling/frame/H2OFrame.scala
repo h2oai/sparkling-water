@@ -53,15 +53,11 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
     val selectedIndices = columns.map { name =>
       indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
     }
-    if (selectedIndices.isEmpty) {
-      this
-    } else {
-      val params = Map(
-        "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, util.Arrays.toString(selectedIndices))
-      )
-      val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
-      H2OFrame(rapidsFrameV3.key.name)
-    }
+    val params = Map(
+      "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, util.Arrays.toString(selectedIndices))
+    )
+    val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+    H2OFrame(rapidsFrameV3.key.name)
   }
 
   def splitToTrainAndValidationFrames(splitRatio: Double): Array[H2OFrame] = {
