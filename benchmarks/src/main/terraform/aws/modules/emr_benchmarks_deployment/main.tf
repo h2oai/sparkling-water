@@ -23,7 +23,7 @@ resource "aws_s3_bucket" "deployment_bucket" {
   acl = "public-read"
   force_destroy = true
   tags = {
-    Name= "SparklingWaterBenchmarksDeploymentBucket"
+    Name= "SparklingWaterBenchmarksDeploymentBucket_${timestamp()}"
   }
 }
 
