@@ -53,14 +53,14 @@ def getAlgorithmForGetLeaderboardTesting():
     return automl
 
 
-def testGetLeaderboardWithListAsArgument(dataset):
+def testGetLeaderboardWithListAsArgument(hc, dataset):
     automl = getAlgorithmForGetLeaderboardTesting()
     automl.fit(dataset)
     extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
     assert automl.getLeaderboard(extraColumns).columns == automl.getLeaderboard().columns + extraColumns
 
 
-def testGetLeaderboardWithVariableArgumens(dataset):
+def testGetLeaderboardWithVariableArgumens(hc, dataset):
     automl = getAlgorithmForGetLeaderboardTesting()
     automl.fit(dataset)
     extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
