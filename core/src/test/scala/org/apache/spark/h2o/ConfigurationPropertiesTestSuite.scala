@@ -185,20 +185,25 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties exte
 abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
   extends ConfigurationPropertiesTestSuite {
 
-  test(s"Convert dataset from Spark to H2O and back with $compressionType") {
-    val spark = createSparkSession("local[*]")
-    val h2oConf = new H2OConf()
-    h2oConf.setExternalCommunicationCompression(compressionType)
-    hc = H2OContext.getOrCreate(h2oConf)
-    val dataset = spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+  val sparkSession = createSparkSession("local[*]")
 
-    val frame = hc.asH2OFrame(dataset)
-    val result = hc.asDataFrame(frame)
+  if (sc.getConf.get("spark.ext.h2o.backend.cluster.mode", "internal") == "external") {
+    test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
+      val h2oConf = new H2OConf()
+      h2oConf.setExternalCommunicationCompression(compressionType)
+      h2oConf.set("spark.ext.h2o.rest.api.based.client", "true")
+      h2oConf.setClusterSize(1)
+      hc = H2OContext.getOrCreate(h2oConf)
+      val dataset = spark.read
+        .option("header", "true")
+        .option("inferSchema", "true")
+        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-    TestFrameUtils.assertDataFramesAreIdentical(dataset, result)
+      val frameKey = hc.asH2OFrameKeyString(dataset)
+      val result = hc.asDataFrame(frameKey)
+
+      TestFrameUtils.assertDataFramesAreIdentical(dataset, result)
+    }
   }
 }
 
