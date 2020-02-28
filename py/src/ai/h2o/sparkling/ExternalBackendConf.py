@@ -165,6 +165,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalExtraJars(self):
         return self._get_option(self._jconf.externalExtraJars())
 
+    def externalCommunicationCompression(self):
+        return self._jconf.externalCommunicationCompression()
+
     #
     # Setters
     #
@@ -315,4 +318,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalExtraJars(self, paths):
         self._jconf.setExternalExtraJars(paths)
+        return self
+
+    def setExternalCommunicationCompression(self, compression):
+        self._jconf.setExternalCommunicationCompression(self, compression)
         return self

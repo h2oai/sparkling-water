@@ -7,6 +7,7 @@ dependencies {
     compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
     compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
     compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+    implementation("org.xerial.snappy:snappy-java:1.1.7")
 }
 
 defineStandardPublication().call()

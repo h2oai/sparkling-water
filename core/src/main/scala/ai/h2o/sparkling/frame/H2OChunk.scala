@@ -21,7 +21,7 @@ import java.io.{InputStream, OutputStream}
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
-import ai.h2o.sparkling.utils.Base64Encoding
+import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
 
@@ -45,10 +45,12 @@ object H2OChunk extends RestCommunication {
       "num_rows" -> numRows,
       "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
-      "selected_columns" -> selectedColumnsIndicesString)
+      "selected_columns" -> selectedColumnsIndicesString,
+      "compression" -> conf.externalCommunicationCompression)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+    val inputStream = readURLContent(endpoint, "GET", Paths.CHUNK, conf, parameters)
+    Compression.decompress(conf.externalCommunicationCompression, inputStream)
   }
 
   def putChunk(
@@ -67,9 +69,12 @@ object H2OChunk extends RestCommunication {
       "num_rows" -> numRows,
       "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
-      "maximum_vector_sizes" -> maxVecSizesString)
+      "maximum_vector_sizes" -> maxVecSizesString,
+      "compression" -> conf.externalCommunicationCompression)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    insert(endpoint, Paths.CHUNK, conf, parameters)
+    val addCompression =
+      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
+    insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
   }
 }

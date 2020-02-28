@@ -60,5 +60,9 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
 
   autoFlowSsl = function() { invoke(jconf, "autoFlowSsl") },
   setAutoFlowSslEnabled = function() {invoke(jconf, "setAutoFlowSslEnabled"); .self },
-  setAutoFlowSslDisabled = function() {invoke(jconf, "setAutoFlowSslDisabled"); .self }
+  setAutoFlowSslDisabled = function() {invoke(jconf, "setAutoFlowSslDisabled"); .self },
+
+  externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
+  setExternalCommunicationCompression = function() {invoke(jconf, "setExternalCommunicationCompression"); .self }
+
 ))
