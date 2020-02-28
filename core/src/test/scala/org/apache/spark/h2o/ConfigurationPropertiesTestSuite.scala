@@ -22,11 +22,12 @@ import java.nio.file.{Files, Path}
 import java.security.Permission
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import water.api.TestUtils
 
 import collection.JavaConverters._
 
@@ -180,3 +181,44 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties exte
     testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraNodeProperties)
   }
 }
+
+abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
+  extends ConfigurationPropertiesTestSuite {
+
+  val sparkSession = createSparkSession("local[*]")
+
+  if (sc.getConf.get("spark.ext.h2o.backend.cluster.mode", "internal") == "external") {
+    test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
+      val h2oConf = new H2OConf()
+      h2oConf.setExternalCommunicationCompression(compressionType)
+      h2oConf.set("spark.ext.h2o.rest.api.based.client", "true")
+      h2oConf.setClusterSize(1)
+      hc = H2OContext.getOrCreate(h2oConf)
+      val dataset = spark.read
+        .option("header", "true")
+        .option("inferSchema", "true")
+        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+
+      val frameKey = hc.asH2OFrameKeyString(dataset)
+      val result = hc.asDataFrame(frameKey)
+
+      TestFrameUtils.assertDataFramesAreIdentical(dataset, result)
+    }
+  }
+}
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_NONE
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("NONE")
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_SNAPPY
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("SNAPPY")
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_DEFLATE
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("DEFLATE")
+
+@RunWith(classOf[JUnitRunner])
+class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_GZIP
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("GZIP")

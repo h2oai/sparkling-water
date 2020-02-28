@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.external
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
+import ai.h2o.sparkling.frame.H2OChunk.checkResponseCode
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
@@ -84,6 +85,7 @@ trait RestCommunication extends Logging {
                         endpoint: URI,
                         suffix: String,
                         conf: H2OConf,
+                        streamWrapper: OutputStream => OutputStream = identity,
                         params: Map[String, Any] = Map.empty): OutputStream = {
     val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
     try {
@@ -94,11 +96,14 @@ trait RestCommunication extends Logging {
       connection.setChunkedStreamingMode(-1) // -1 to use default size
       setHeaders(connection, conf, requestMethod, params)
       val outputStream = connection.getOutputStream()
-      new FinalizingOutputStream(outputStream, () => checkResponseCode(connection))
+      val wrappedStream = streamWrapper(outputStream)
+      new FinalizingOutputStream(wrappedStream, () => checkResponseCode(connection))
     } catch {
       case e: Exception => throwRestApiNotReachableException(url, e)
     }
   }
+
+
 
   def request[ResultType: ClassTag](
                                      endpoint: URI,

@@ -68,5 +68,8 @@ H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"), methods = list(
   runsInExternalClusterMode = function() {invoke(jconf, "runsInExternalClusterMode") },
   runsInInternalClusterMode = function() {invoke(jconf, "runsInInternalClusterMode") },
   setInternalClusterMode = function() {invoke(jconf, "setInternalClusterMode"); .self },
-  setExternalClusterMode = function() {invoke(jconf, "setExternalClusterMode"); .self }
+  setExternalClusterMode = function() {invoke(jconf, "setExternalClusterMode"); .self },
+
+  externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
+  setExternalCommunicationCompression = function() {invoke(jconf, "setExternalCommunicationCompression"); .self }
 ))
