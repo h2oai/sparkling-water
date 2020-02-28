@@ -45,7 +45,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
     }
 
     val cols = (getFeaturesCols() ++ excludedCols).map(col)
-    val h2oContext = H2OContext.getOrCreate()
+    val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
     val h2oFrameKey = h2oContext.asH2OFrameKeyString(dataset.select(cols: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
