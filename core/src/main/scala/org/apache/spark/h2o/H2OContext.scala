@@ -598,8 +598,8 @@ object H2OContext extends Logging {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed
-        val checkedConf = checkAndUpdateConf(conf)
-        if (startedManually && connectingToNewCluster(existingContext, checkedConf)) {
+        if (startedManually && connectingToNewCluster(existingContext, conf)) {
+          val checkedConf = checkAndUpdateConf(conf)
           instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
           logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
         }
