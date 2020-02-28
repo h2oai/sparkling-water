@@ -31,8 +31,8 @@ private[backend] case class ExternalBackendH2OFrameRelation(frame: H2OFrame, cop
                                                            (@transient val sqlContext: SQLContext)
   extends BaseRelation with TableScan with PrunedScan /* with PrunedFilterScan */ {
 
-  lazy val h2oContext = H2OContext.get().getOrElse(throw new RuntimeException("H2OContext has to be started in order to do " +
-    "transformations between spark and h2o frames"))
+  lazy val h2oContext = H2OContext.ensure("H2OContext has to be started in order to do " +
+    "transformations between Spark and H2O frames.")
 
   // Get rid of annoying print
   override def toString: String = getClass.getSimpleName
