@@ -18,9 +18,6 @@ From 3.30 to 3.32
   been removed. Also, ``H2OContext`` can be created as ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``.
   The other variants of this method have been removed.
 
-- It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithms. Previously,
-  the algorithm would create the H2OContext on demand.
-
 From 3.28.1 to 3.30
 -------------------
 
@@ -66,6 +63,9 @@ Removal of Deprecated Methods and Classes
 - Method ``download_h2o_logs`` on PySparkling ``H2OContext`` is removed in favor of the ``downloadH2OLogs`` method.
 
 - Method ``get_conf`` on PySparkling ``H2OContext`` is removed in favor of the ``getConf`` method.
+
+- It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithms. Previously,
+  the algorithm would create the H2OContext on demand.
 
 - On H2OConf Python API, the following methods have been renamed to be consistent with the Scala counterparts:
 
