@@ -124,23 +124,39 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   def setK(value: Int): this.type = set(k, value)
 
+  override protected def updateH2OParamsREST(): Map[String, Any] = {
+    super.updateH2OParamsREST() ++
+      Map(
+        "max_iterations" -> getMaxIterations(),
+        "standardize" -> getStandardize(),
+        "init" -> getInit(),
+        "user_points" -> getUserPointAsH2OFrameKeyString(),
+        "estimate_k" -> getEstimateK(),
+        "k" -> getK()
+      )
+  }
+
+  private def getUserPointAsH2OFrameKeyString(): String = {
+    val userPoints = getUserPoints()
+    if (userPoints == null) {
+      null
+    } else {
+      val spark = SparkSessionUtils.active
+      import spark.implicits._
+      val df = spark.sparkContext.parallelize(userPoints).toDF()
+      val hc = H2OContext.ensure("H2OContext needs to be created in order to train the H2OKMeans model. " +
+        "Please create one as H2OContext.getOrCreate().")
+      hc.asH2OFrame(df).key.toString
+    }
+  }
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._max_iterations = getMaxIterations()
     parameters._standardize = getStandardize()
     parameters._init = KMeans.Initialization.valueOf(getInit())
     parameters._user_points = {
-      val userPoints = getUserPoints()
-      if (userPoints == null) {
-        null
-      } else {
-        val spark = SparkSessionUtils.active
-        import spark.implicits._
-        val df = spark.sparkContext.parallelize(userPoints).toDF()
-        val hc = H2OContext.ensure("H2OContext needs to be created in order to train the H2OKMeans model. " +
-          "Please create one as H2OContext.getOrCreate().")
-        hc.asH2OFrame(df).key
-      }
+    val key = getUserPointAsH2OFrameKeyString()
+      if (key == null) null else DKV.getGet[Frame](key)._key
     }
     parameters._estimate_k = getEstimateK()
     parameters._k = getK()

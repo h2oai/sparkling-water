@@ -92,6 +92,9 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
+  override protected def updateH2OParamsREST: Map[String, String] = {
+    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  }
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()

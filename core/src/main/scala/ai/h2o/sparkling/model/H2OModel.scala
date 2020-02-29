@@ -22,29 +22,26 @@ import java.io.File
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.utils.ScalaUtils._
-import com.google.common.base.CaseFormat
 import com.google.gson.{Gson, JsonElement}
 import hex.Model
-import hex.Model.Parameters
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.ml.param.ParamMap
-import water.util.PojoUtils
 
 import scala.collection.mutable
 
 case class H2OModel(key: String, algoName: String)
 
 object H2OModel extends RestCommunication {
-  def trainModel[P <: Model.Parameters](conf: H2OConf, sparkPrams: ParamMap, sparkToH2OParamsExceptions: Map[String, String],
-                                        h2oParams: P, trainKey: String, validKey: Option[String]): H2OModel = {
+  def trainModel[P <: Model.Parameters](conf: H2OConf,
+                                        algoName: String,
+                                        H2OParamNameToValueMap: Map[String, Any],
+                                        trainKey: String,
+                                        validKey: Option[String]): H2OModel = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-
-    val algoName = h2oParams.algoName().toLowerCase
-    val params = prepareFinalParams(sparkPrams, h2oParams, sparkToH2OParamsExceptions, trainKey, validKey)
-
-    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params)) { response =>
+    val params = mutable.Map("training_frame" -> trainKey) ++ convertParams(H2OParamNameToValueMap)
+    validKey.foreach { key => params += ("validation_frame" -> key) }
+    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params.toMap)) { response =>
       IOUtils.toString(response)
     }
 
@@ -66,30 +63,6 @@ object H2OModel extends RestCommunication {
     Files.readAllBytes(target.toPath)
   }
 
-  private def prepareFinalParams[P <: Model.Parameters](sparkParams: ParamMap, h2oParams: P,
-                                                        sparkToH2OParamsExceptions: Map[String, String],
-                                                        trainKey: String,
-                                                        validKey: Option[String]): Map[String, String] = {
-
-    val convertedParams = sparkParams.toSeq.map { paramPair =>
-      val name = sparkToH2OParamsExceptions.getOrElse(paramPair.param.name, paramPair.param.name)
-      val underscoredName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
-      (underscoredName, paramPair.value)
-    }.filter(pair => pair._2 != null && fieldExistsOnH2OParams(h2oParams, s"_${pair._1}"))
-      .map { pair =>
-        (pair._1, pair._2 match {
-          case map: java.util.AbstractMap[_, _] => stringifyMap(map)
-          case arr: Array[_] => stringifyArray(arr)
-          case simple => simple.toString
-        })
-      }
-
-    val parameters = mutable.Map(convertedParams: _*)
-    parameters += "training_frame" -> trainKey
-    validKey.foreach { key => parameters += ("validation_frame" -> key) }
-    parameters.toMap
-  }
-
   private def stringifyArray(arr: Array[_]): String = {
     arr.mkString("[", ",", "]")
   }
@@ -99,13 +72,14 @@ object H2OModel extends RestCommunication {
     stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
   }
 
-
-  private def fieldExistsOnH2OParams(obj: Parameters, fieldName: String): Boolean = {
-    try {
-      PojoUtils.getFieldEvenInherited(obj, fieldName)
-      true
-    } catch {
-      case _: Throwable => false
-    }
+  protected final def convertParams(params: Map[String, Any]): Map[String, String] = {
+    params.filter { case (_, value) => value != null }
+      .map { case (name, value) =>
+        (name, value match {
+          case map: java.util.AbstractMap[_, _] => stringifyMap(map)
+          case arr: Array[_] => stringifyArray(arr)
+          case simple => simple.toString
+        })
+      }
   }
 }

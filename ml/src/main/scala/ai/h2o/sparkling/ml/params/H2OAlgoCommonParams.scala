@@ -17,8 +17,11 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
+import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
+import org.apache.spark.ml.param.ParamMap
+import water.util.PojoUtils
 
 /**
   * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
@@ -75,11 +78,18 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
-  /** This map contains mapping from Sparkling Water param names to H2O ones.
-   * Almost all params can be derived automatically, but few are different */
-  protected def sparkParamsToH2OParamsExceptions = Map(
-    "foldCol" -> "fold_column",
-    "weightsCol" -> "weights_column")
+  protected def updateH2OParamsREST(): Map[String, Any] = {
+    Map(
+      "weights_column" -> getWeightCol(),
+      "nfolds" -> getNfolds(),
+      "fold_column" -> getFoldCol(),
+      "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
+      "keep_cross_validation_fold_assignment" -> getKeepCrossValidationFoldAssignment(),
+      "parallelize_cross_validation" -> getParallelizeCrossValidation(),
+      "seed" -> getSeed(),
+      "distribution" -> getDistribution()
+    )
+  }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {

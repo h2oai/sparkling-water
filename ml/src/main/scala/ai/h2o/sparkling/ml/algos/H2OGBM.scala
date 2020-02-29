@@ -93,6 +93,9 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
 
   def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
 
+  override protected def updateH2OParamsREST: Map[String, String] = {
+    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  }
 
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()

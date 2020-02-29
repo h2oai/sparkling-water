@@ -125,6 +125,29 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
 
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
 
+  override protected def updateH2OParamsREST: Map[String, Any] = {
+    super.updateH2OParamsREST ++
+      Map(
+        "ntrees" -> getNtrees(),
+        "max_depth" -> getMaxDepth(),
+        "min_rows" -> getMinRows(),
+        "nbins" -> getNbins(),
+        "nbins_cats" -> getNbinsCats(),
+        "min_split_improvement" -> getMinSplitImprovement(),
+        "histogram_type" -> getHistogramType(),
+        "stopping_rounds" -> getStoppingRounds(),
+        "stopping_metric" -> getStoppingMetric(),
+        "stopping_tolerance" -> getStoppingTolerance(),
+        "nbins_top_level" -> getNbinsTopLevel(),
+        "build_tree_one_node" -> getBuildTreeOneNode(),
+        "score_tree_interval" -> getScoreTreeInterval(),
+        "sample_rate" -> getSampleRate(),
+        "sample_rate_per_class" -> getSampleRatePerClass(),
+        "col_sample_rate_change_per_level" -> getColSampleRateChangePerLevel(),
+        "col_sample_rate_per_tree" -> getColSampleRatePerTree()
+      )
+  }
+
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._ntrees = $(ntrees)

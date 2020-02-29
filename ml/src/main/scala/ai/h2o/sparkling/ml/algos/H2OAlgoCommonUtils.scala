@@ -21,12 +21,13 @@ import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.functions.col
 import water.support.H2OFrameSupport
 import water.{DKV, Key}
 
 trait H2OAlgoCommonUtils extends H2OCommonParams {
+
 
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (String, Option[String], Array[String]) = {
     val excludedCols = getExcludedCols()

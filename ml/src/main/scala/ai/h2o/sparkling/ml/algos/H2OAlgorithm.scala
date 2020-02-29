@@ -44,7 +44,9 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     // Update H2O params based on provided configuration
-    updateH2OParams()
+    if (!RestApiUtils.isRestAPIBased()) {
+      updateH2OParams()
+    }
 
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
     if (!RestApiUtils.isRestAPIBased()) {
@@ -59,7 +61,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     // Train
     val hc = H2OContext.ensure()
     val (mojoData, algoName) = if (RestApiUtils.isRestAPIBased()) {
-      val model = H2OModel.trainModel(hc.getConf, extractParamMap(), sparkParamsToH2OParamsExceptions, parameters, trainKey, validKey)
+      val model = H2OModel.trainModel(hc.getConf, parameters.algoName().toLowerCase, updateH2OParamsREST(), trainKey, validKey)
       (H2OModel.downloadMOJOData(hc.getConf, model), model.algoName)
     } else {
       val binaryModel = trainModel(parameters)
