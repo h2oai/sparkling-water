@@ -77,12 +77,12 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
 
   private def getJarsForShell(conf: SparkConf): String = {
     val localJars = conf.getOption("spark.repl.local.jars")
-    localJars.map(_.split(",")).map(_.filter(_.nonEmpty)).toSeq.flatten
+    val jarPaths = localJars.getOrElse("").split(",")
+    jarPaths.map { path =>
       // Remove file:///, file:// or file:/ scheme if exists for each jar
-      .map { x => if (x.startsWith("file:")) new File(new URI(x)).getPath else x }
-      .mkString(File.pathSeparator)
+      if (path.startsWith("file:")) new File(new URI(path)).getPath else path
+    }.mkString(File.pathSeparator)
   }
-
 }
 
 object H2OInterpreter {
