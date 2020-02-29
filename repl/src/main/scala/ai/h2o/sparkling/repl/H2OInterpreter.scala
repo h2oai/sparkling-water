@@ -22,7 +22,10 @@
 
 package ai.h2o.sparkling.repl
 
-import org.apache.spark.SparkContext
+import java.io.File
+import java.net.URI
+
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
@@ -59,7 +62,7 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
     }
 
     val conf = sparkContext.getConf
-    val jars = SparkSpecificUtils.getJars(conf)
+    val jars = getJarsForShell(conf)
 
     val interpArguments = List(
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
@@ -70,6 +73,15 @@ class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2O
     settings.processArguments(interpArguments, processAll = true)
 
     settings
+  }
+
+  private def getJarsForShell(conf: SparkConf): String = {
+    val localJars = conf.getOption("spark.repl.local.jars")
+    val jarPaths = localJars.getOrElse("").split(",")
+    jarPaths.map { path =>
+      // Remove file:///, file:// or file:/ scheme if exists for each jar
+      if (path.startsWith("file:")) new File(new URI(path)).getPath else path
+    }.mkString(File.pathSeparator)
   }
 }
 

@@ -2,14 +2,6 @@ description = "Sparkling Water REPL"
 
 apply from: "$rootDir/gradle/utils.gradle"
 
-sourceSets {
-    main {
-        scala {
-            srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
-        }
-    }
-}
-
 dependencies {
     api(project(":sparkling-water-utils"))
 
