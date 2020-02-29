@@ -75,6 +75,12 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
+  /** This map contains mapping from Sparkling Water param names to H2O ones.
+   * Almost all params can be derived automatically, but few are different */
+  protected def sparkParamsToH2OParamsExceptions = Map(
+    "foldCol" -> "fold_column",
+    "weightsCol" -> "weights_column")
+
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
   protected def updateH2OParams(): Unit = {
     parameters._weights_column = getWeightCol()

@@ -59,7 +59,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     // Train
     val hc = H2OContext.ensure()
     val (mojoData, algoName) = if (RestApiUtils.isRestAPIBased()) {
-      val model = H2OModel.trainModel(hc.getConf, extractParamMap(), parameters, trainKey, validKey)
+      val model = H2OModel.trainModel(hc.getConf, extractParamMap(), sparkParamsToH2OParamsExceptions, parameters, trainKey, validKey)
       (H2OModel.downloadMOJOData(hc.getConf, model), model.algoName)
     } else {
       val binaryModel = trainModel(parameters)

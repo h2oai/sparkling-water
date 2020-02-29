@@ -21,31 +21,30 @@ import java.io.File
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.job.H2OJob
+import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.common.base.CaseFormat
 import com.google.gson.{Gson, JsonElement}
 import hex.Model
 import hex.Model.Parameters
+import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.ml.param.ParamMap
 import water.util.PojoUtils
 
-import scala.collection.convert.Wrappers.MapWrapper
 import scala.collection.mutable
-import org.apache.commons.io.IOUtils
-
-import ai.h2o.sparkling.utils.ScalaUtils._
 
 case class H2OModel(key: String, algoName: String)
 
 object H2OModel extends RestCommunication {
-  def trainModel[P <: Model.Parameters](conf: H2OConf, sparkPrams: ParamMap, h2oParams: P, trainKey: String, validKey: Option[String]): H2OModel = {
+  def trainModel[P <: Model.Parameters](conf: H2OConf, sparkPrams: ParamMap, sparkToH2OParamsExceptions: Map[String, String],
+                                        h2oParams: P, trainKey: String, validKey: Option[String]): H2OModel = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
 
     val algoName = h2oParams.algoName().toLowerCase
-    val params = prepareFinalParams(sparkPrams, h2oParams, trainKey, validKey)
+    val params = prepareFinalParams(sparkPrams, h2oParams, sparkToH2OParamsExceptions, trainKey, validKey)
 
-    def content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params)) { response =>
+    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params)) { response =>
       IOUtils.toString(response)
     }
 
@@ -67,11 +66,13 @@ object H2OModel extends RestCommunication {
     Files.readAllBytes(target.toPath)
   }
 
-  private def prepareFinalParams[P <: Model.Parameters](sparkParams: ParamMap, h2oParams: P, trainKey: String,
+  private def prepareFinalParams[P <: Model.Parameters](sparkParams: ParamMap, h2oParams: P,
+                                                        sparkToH2OParamsExceptions: Map[String, String],
+                                                        trainKey: String,
                                                         validKey: Option[String]): Map[String, String] = {
 
     val convertedParams = sparkParams.toSeq.map { paramPair =>
-      val name = sparkParamsToH2OParamsExceptions.getOrElse(paramPair.param.name, paramPair.param.name)
+      val name = sparkToH2OParamsExceptions.getOrElse(paramPair.param.name, paramPair.param.name)
       val underscoredName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name)
       (underscoredName, paramPair.value)
     }.filter(pair => pair._2 != null && fieldExistsOnH2OParams(h2oParams, s"_${pair._1}"))
@@ -98,13 +99,6 @@ object H2OModel extends RestCommunication {
     stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
   }
 
-  /** This map contains mapping from Sparkling Water param names to H2O ones.
-   * Almost all params can be derived automatically, but few are different */
-  private val sparkParamsToH2OParamsExceptions = Map(
-    "labelCol" -> "response_column",
-    "foldCol" -> "fold_column",
-    "offsetCol" -> "offset_column",
-    "weightsCol" -> "weights_column")
 
   private def fieldExistsOnH2OParams(obj: Parameters, fieldName: String): Boolean = {
     try {
