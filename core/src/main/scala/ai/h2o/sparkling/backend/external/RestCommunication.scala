@@ -237,9 +237,20 @@ trait RestCommunication extends Logging {
         s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
            |Please make sure you have passed valid credentials to the client.
            |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
-      case _ => throw new RestApiNotReachableException(
+      case _ => throw new RestApiCommunicationException(
         s"""External H2O node ${urlToString(url)} responded with
-           |status code: $statusCode - ${connection.getResponseMessage()}.""".stripMargin, null)
+           |Status code: $statusCode : ${connection.getResponseMessage()}
+           |Server error: ${getServerError(connection)}""".stripMargin)
+    }
+  }
+
+  private def getServerError(connection: HttpURLConnection): String = {
+    withResource(connection.getErrorStream) { errorStream =>
+      if (errorStream == null) {
+        "No error"
+      } else {
+        IOUtils.toString(errorStream)
+      }
     }
   }
 
@@ -271,3 +282,5 @@ abstract class RestApiException(msg: String, cause: Throwable) extends Exception
 final class RestApiNotReachableException(msg: String, cause: Throwable) extends RestApiException(msg, cause)
 
 final class RestApiUnauthorisedException(msg: String) extends RestApiException(msg)
+
+final class RestApiCommunicationException(msg: String) extends RestApiException(msg)

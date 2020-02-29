@@ -133,6 +133,7 @@ test.dependsOn testJar
 test {
     if (detectBackendClusterMode() == "internal") {
         exclude 'ai/h2o/sparkling/FrameRestApiTestSuite.class'
+        exclude 'ai/h2o/sparkling/backend/external/RestApiUtilsTestSuite.class'
     }
 }
 
