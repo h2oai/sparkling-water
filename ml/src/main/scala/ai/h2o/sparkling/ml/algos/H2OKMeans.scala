@@ -146,9 +146,10 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
       val df = spark.sparkContext.parallelize(userPoints).toDF()
       val hc = H2OContext.ensure("H2OContext needs to be created in order to train the H2OKMeans model. " +
         "Please create one as H2OContext.getOrCreate().")
-      hc.asH2OFrame(df).key.toString
+      hc.asH2OFrameKeyString(df)
     }
   }
+
   override def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._max_iterations = getMaxIterations()

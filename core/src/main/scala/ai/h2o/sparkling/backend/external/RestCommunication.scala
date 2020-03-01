@@ -162,38 +162,54 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  private def stringifySimpleParam(value: Any): String = {
+  private def stringifyPrimitiveParam(value: Any): String = {
     val charset = "UTF-8"
     value match {
-      case v: String => URLEncoder.encode(v, charset)
+      case v: Boolean => v.toString
       case v: Byte => v.toString
       case v: Int => v.toString
       case v: Long => v.toString
+      case v: Float => v.toString
       case v: Double => v.toString
-      case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
+      case v: String => URLEncoder.encode(v, charset)
+      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
+    }
+  }
+
+  private def isPrimitiveType(value: Any): Boolean = {
+    value match {
+      case _: Boolean => true
+      case _: Byte => true
+      case _: Int => true
+      case _: Long => true
+      case _: Float => true
+      case _: Double => true
+      case _: String => true
+      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
     }
   }
 
   private def stringifyArray(arr: Array[_]): String = {
-    arr.map(stringifySimpleParam).mkString("[", ",", "]")
+    arr.map(stringifyPrimitiveParam).mkString("[", ",", "]")
   }
 
-  private def stringifyMap(map: java.util.AbstractMap[_, _]): String = {
-    import scala.collection.JavaConversions._
+  private def stringifyMap(map: scala.collection.immutable.Map[_, _]): String = {
     stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
   }
 
-
   private def stringifyParams(params: Map[String, Any] = Map.empty): String = {
+    import scala.collection.JavaConversions._
     params.filter { case (_, value) => value != null }
       .map { case (name, value) =>
-      val encodedValue = value match {
-        case map: java.util.AbstractMap[_, _] => stringifyMap(map)
-        case arr: Array[_] => stringifyArray(arr)
-        case simple => simple.toString
-      }
-      s"$name=$encodedValue"
-    }.mkString("&")
+        val encodedValue = value match {
+          case map: java.util.AbstractMap[_, _] => stringifyMap(map.toMap)
+          case map: scala.collection.immutable.Map[_, _] => stringifyMap(map)
+          case arr: Array[_] => stringifyArray(arr)
+          case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
+          case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
+        }
+        s"$name=$encodedValue"
+      }.mkString("&")
   }
 
   private def resolveUrl(endpoint: URI, suffix: String): URL = {
