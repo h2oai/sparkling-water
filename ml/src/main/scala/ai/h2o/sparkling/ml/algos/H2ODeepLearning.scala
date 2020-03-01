@@ -92,8 +92,19 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
-  override protected def updateH2OParamsREST: Map[String, String] = {
-    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  override protected def updateH2OParamsREST(): Map[String, Any] = {
+    super.updateH2OParamsREST() ++
+      Map(
+        "epochs" -> getEpochs(),
+        "l1" -> getL1(),
+        "l2" -> getL2(),
+        "hidden" -> getHidden(),
+        "reproducible" -> getReproducible(),
+        "stopping_rounds" -> getStoppingRounds(),
+        "stopping_metric" -> getStoppingMetric(),
+        "stopping_tolerance" -> getStoppingTolerance(),
+        "quantile_alpha" -> getQuantileAlpha()
+      )
   }
 
   override def updateH2OParams(): Unit = {

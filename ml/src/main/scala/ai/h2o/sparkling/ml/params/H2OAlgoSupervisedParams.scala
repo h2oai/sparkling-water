@@ -26,10 +26,10 @@ trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
 
   override protected def updateH2OParamsREST(): Map[String, Any] = {
     super.updateH2OParamsREST() ++
-    Map(
-      "response_column" -> getLabelCol(),
-      "offset_column" -> getOffsetCol()
-    )
+      Map(
+        "response_column" -> getLabelCol(),
+        "offset_column" -> getOffsetCol()
+      )
   }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
