@@ -162,7 +162,7 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  private def decodeSimpleParam(value: Any): String = {
+  private def stringifySimpleParam(value: Any): String = {
     val charset = "UTF-8"
     value match {
       case v: String => URLEncoder.encode(v, charset)
@@ -175,7 +175,7 @@ trait RestCommunication extends Logging {
   }
 
   private def stringifyArray(arr: Array[_]): String = {
-    arr.mkString("[", ",", "]")
+    arr.map(stringifySimpleParam).mkString("[", ",", "]")
   }
 
   private def stringifyMap(map: java.util.AbstractMap[_, _]): String = {
