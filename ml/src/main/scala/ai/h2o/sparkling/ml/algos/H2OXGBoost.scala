@@ -301,8 +301,53 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     set(backend, validated)
   }
 
-  override protected def updateH2OParamsREST: Map[String, String] = {
-    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  override protected def updateH2OParamsREST: Map[String, Any] = {
+    super.updateH2OParamsREST() ++
+      Map(
+        "quiet_mode" -> getQuietMode(),
+        "ntrees" -> getNtrees(),
+        "max_depth" -> getMaxDepth(),
+        "min_rows" -> getMinRows(),
+        "min_child_weight" -> getMinChildWeight(),
+        "learn_rate" -> getLearnRate(),
+        "eta" -> getEta(),
+        "learn_rate_annealing" -> getLearnRateAnnealing(),
+        "sample_rate" -> getSampleRate(),
+        "subsample" -> getSubsample(),
+        "col_sample_rate" -> getColSampleRate(),
+        "colsample_bylevel" -> getColSampleByLevel(),
+        "col_sample_rate_per_tree" -> getColSampleRatePerTree(),
+        "colsample_bytree" -> getColSampleByTree(),
+        "max_abs_leafnode_pred" -> getMaxAbsLeafnodePred(),
+        "max_delta_step" -> getMaxDeltaStep(),
+        "score_tree_interval" -> getScoreTreeInterval(),
+        "initial_score_interval" -> getInitialScoreInterval(),
+        "score_interval" -> getScoreInterval(),
+        "min_split_improvement" -> getMinSplitImprovement(),
+        "gamma" -> getGamma(),
+        "nthread" -> getNthread(),
+        "max_bins" -> getMaxBins(),
+        "max_leaves" -> getMaxLeaves(),
+        "min_sum_hessian_in_leaf" -> getMinSumHessianInLeaf(),
+        "min_data_in_leaf" -> getMinDataInLeaf(),
+        "tree_method" -> getTreeMethod(),
+        "grow_policy" -> getGrowPolicy(),
+        "booster" -> getBooster(),
+        "dmatrix_type" -> getDmatrixType(),
+        "reg_lambda" -> getRegLambda(),
+        "reg_alpha" -> getRegAlpha(),
+        "sample_type" -> getSampleType(),
+        "normalize_type" -> getNormalizeType(),
+        "rate_drop" -> getRateDrop(),
+        "one_drop" -> getOneDrop(),
+        "skip_drop" -> getSkipDrop(),
+        "gpu_id" -> getGpuId(),
+        "backend" -> getBackend(),
+        "monotone_constraints" -> getMonotoneConstraints(),
+        "stopping_rounds" -> getStoppingRounds(),
+        "stopping_metric" -> getStoppingMetric(),
+        "stopping_tolerance" -> getStoppingTolerance()
+      )
   }
 
   override def updateH2OParams(): Unit = {

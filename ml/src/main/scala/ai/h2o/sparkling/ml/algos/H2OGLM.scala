@@ -232,8 +232,39 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
 
-  override protected def updateH2OParamsREST: Map[String, String] = {
-    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  override protected def updateH2OParamsREST(): Map[String, Any] = {
+    super.updateH2OParamsREST() ++
+      Map(
+        "standardize" -> getStandardize(),
+        "family" -> getFamily(),
+        "link" -> getLink(),
+        "solver" -> getSolver(),
+        "tweedie_variance_power" -> getTweedieVariancePower(),
+        "tweedie_link_power" -> getTweedieLinkPower(),
+        "alpha" -> getAlphaValue(),
+        "lambda" -> getLambdaValue(),
+        "missing_values_handling" -> getMissingValuesHandling(),
+        "prior" -> getPrior(),
+        "lambda_search" -> getLambdaSearch(),
+        "nlambdas" -> getNlambdas(),
+        "non_negative" -> getNonNegative(),
+        "exactLambdas" -> getExactLambdas(),
+        "lambda_min_ratio" -> getLambdaMinRatio(),
+        "max_iterations" -> getMaxIterations(),
+        "intercept" -> getIntercept(),
+        "beta_epsilon" -> getBetaEpsilon(),
+        "objective_epsilon" -> getObjectiveEpsilon(),
+        "gradient_epsilon" -> getGradientEpsilon(),
+        "obj_reg" -> getObjReg(),
+        "compute_p_values" -> getComputePValues(),
+        "remove_collinear_columns" -> getRemoveCollinearCols(),
+        "interactions" -> getInteractions(),
+        "interaction_pairs" -> {
+          val pairs = getInteractionPairs()
+          if (pairs == null) null else pairs.toMap
+        },
+        "early_stopping" -> getEarlyStopping()
+      )
   }
 
   override def updateH2OParams(): Unit = {
