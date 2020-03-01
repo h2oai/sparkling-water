@@ -20,7 +20,6 @@ package ai.h2o.sparkling.backend.external
 import java.io._
 import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
-import ai.h2o.sparkling.frame.H2OChunk.checkResponseCode
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
@@ -87,7 +86,7 @@ trait RestCommunication extends Logging {
                         conf: H2OConf,
                         streamWrapper: OutputStream => OutputStream = identity,
                         params: Map[String, Any] = Map.empty): OutputStream = {
-    val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
+    val url = resolveUrl(endpoint, s"$suffix?${stringifyParams(params)}")
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       val requestMethod = "PUT"
@@ -175,17 +174,25 @@ trait RestCommunication extends Logging {
     }
   }
 
-  private def decodeArray(arr: Array[_]): String = {
-    java.util.Arrays.toString(arr.map(decodeSimpleParam).map(_.asInstanceOf[AnyRef]))
+  private def stringifyArray(arr: Array[_]): String = {
+    arr.mkString("[", ",", "]")
   }
 
-  private def decodeParams(params: Map[String, Any] = Map.empty): String = {
-    params.map { case (key, value) =>
+  private def stringifyMap(map: java.util.AbstractMap[_, _]): String = {
+    import scala.collection.JavaConversions._
+    stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
+  }
+
+
+  private def stringifyParams(params: Map[String, Any] = Map.empty): String = {
+    params.filter { case (_, value) => value != null }
+      .map { case (name, value) =>
       val encodedValue = value match {
-        case v: Array[_] => decodeArray(v)
-        case v: Any => decodeSimpleParam(v)
+        case map: java.util.AbstractMap[_, _] => stringifyMap(map)
+        case arr: Array[_] => stringifyArray(arr)
+        case simple => simple.toString
       }
-      s"$key=$encodedValue"
+      s"$name=$encodedValue"
     }.mkString("&")
   }
 
@@ -198,7 +205,7 @@ trait RestCommunication extends Logging {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
     if (params.nonEmpty && requestType == "POST") {
-      val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
+      val paramsAsBytes = stringifyParams(params).getBytes("UTF-8")
       connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
       connection.setRequestProperty("charset", "UTF-8")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
@@ -210,7 +217,7 @@ trait RestCommunication extends Logging {
   }
 
   protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
-    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${decodeParams(params)}" else suffix
+    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]

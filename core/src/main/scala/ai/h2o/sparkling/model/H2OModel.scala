@@ -39,7 +39,7 @@ object H2OModel extends RestCommunication {
                                         trainKey: String,
                                         validKey: Option[String]): H2OModel = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val params = mutable.Map("training_frame" -> trainKey) ++ convertParams(H2OParamNameToValueMap)
+    val params = mutable.Map("training_frame" -> trainKey) ++ H2OParamNameToValueMap
     validKey.foreach { key => params += ("validation_frame" -> key) }
     val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params.toMap)) { response =>
       IOUtils.toString(response)
@@ -61,25 +61,5 @@ object H2OModel extends RestCommunication {
     downloadBinaryURLContent(endpoint, s"/3/Models/${model.key}/mojo", conf, target)
     import java.nio.file.Files
     Files.readAllBytes(target.toPath)
-  }
-
-  private def stringifyArray(arr: Array[_]): String = {
-    arr.mkString("[", ",", "]")
-  }
-
-  private def stringifyMap(map: java.util.AbstractMap[_, _]): String = {
-    import scala.collection.JavaConversions._
-    stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
-  }
-
-  protected final def convertParams(params: Map[String, Any]): Map[String, String] = {
-    params.filter { case (_, value) => value != null }
-      .map { case (name, value) =>
-        (name, value match {
-          case map: java.util.AbstractMap[_, _] => stringifyMap(map)
-          case arr: Array[_] => stringifyArray(arr)
-          case simple => simple.toString
-        })
-      }
   }
 }

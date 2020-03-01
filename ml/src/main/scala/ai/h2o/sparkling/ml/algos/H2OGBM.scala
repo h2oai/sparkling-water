@@ -93,8 +93,17 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
 
   def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
 
-  override protected def updateH2OParamsREST: Map[String, String] = {
-    super.updateH2OParamsREST ++ getH2OParamNameToValueMap(this.extractParamMap(), parameters)
+  override protected def updateH2OParamsREST: Map[String, Any] = {
+    super.updateH2OParamsREST() ++
+    Map(
+      "learn_rate" -> getLearnRate(),
+    "learn_rate_annealing" -> getLearnRateAnnealing(),
+    "col_sample_rate" -> getColSampleRate(),
+    "max_abs_leafnode_pred" -> getMaxAbsLeafnodePred(),
+    "pred_noise_bandwidth" -> getPredNoiseBandwidth(),
+    "monotone_constraints" -> getMonotoneConstraintsAsKeyValuePairs(),
+    "quantile_alpha" -> getQuantileAlpha()
+    )
   }
 
   override def updateH2OParams(): Unit = {
