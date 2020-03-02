@@ -46,9 +46,10 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
     schema
   }
 
-  override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
-    super.preProcessBeforeFit(trainFrameKey)
-    if (parameters._distribution == DistributionFamily.bernoulli || parameters._distribution == DistributionFamily.multinomial) {
+  override protected def prepareH2OTrainFrameForFitting(trainFrameKey: String): Unit = {
+    super.prepareH2OTrainFrameForFitting(trainFrameKey)
+    val distribution = DistributionFamily.valueOf(getDistribution())
+    if (distribution == DistributionFamily.bernoulli || distribution == DistributionFamily.multinomial) {
       if (RestApiUtils.isRestAPIBased()) {
         val trainFrame = H2OFrame(trainFrameKey)
         if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType != H2OColumnType.`enum`) {
@@ -57,8 +58,7 @@ abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: 
       } else {
         val trainFrame = DKV.getGet[Frame](trainFrameKey)
         if (!trainFrame.vec(getLabelCol()).isCategorical) {
-          trainFrame.replace(trainFrame.find(getLabelCol()),
-            trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
+          trainFrame.replace(trainFrame.find(getLabelCol()), trainFrame.vec(getLabelCol()).toCategoricalVec).remove()
         }
       }
     }

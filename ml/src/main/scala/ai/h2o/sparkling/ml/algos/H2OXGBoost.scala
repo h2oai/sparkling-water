@@ -301,8 +301,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     set(backend, validated)
   }
 
-  override protected def updateH2OParamsREST(): Map[String, Any] = {
-    super.updateH2OParamsREST() ++
+  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+    super.getH2OAlgoRESTParams() ++
       Map(
         "quiet_mode" -> getQuietMode(),
         "ntrees" -> getNtrees(),

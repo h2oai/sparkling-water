@@ -40,37 +40,36 @@ import scala.reflect.{ClassTag, classTag}
 abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
   extends Estimator[H2OMOJOModel] with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAlgoCommonParams[P] {
 
-  protected def preProcessBeforeFit(trainFrameKey: String): Unit = {}
+  protected def prepareH2OTrainFrameForFitting(trainFrameKey: String): Unit = {}
+
+  private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
+    prepareH2OTrainFrameForFitting(trainKey)
+    val hc = H2OContext.ensure()
+    val model = H2OModel.trainModel(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
+    H2OModel.downloadMOJOData(hc.getConf, model)
+  }
+
+  private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
+    updateH2OParams()
+    parameters._train = DKV.getGet[Frame](trainKey)._key
+    parameters._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
+    prepareH2OTrainFrameForFitting(trainKey)
+    water.DKV.put(parameters._train.get())
+    val binaryModel = trainModel(parameters)
+    ModelSerializationSupport.getMojoData(binaryModel)
+  }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    // Update H2O params based on provided configuration
-    if (!RestApiUtils.isRestAPIBased()) {
-      updateH2OParams()
-    }
-
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    if (!RestApiUtils.isRestAPIBased()) {
-      parameters._train = DKV.getGet[Frame](trainKey)._key
-      parameters._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
-    }
-    preProcessBeforeFit(trainKey)
-    if (!RestApiUtils.isRestAPIBased()) {
-      water.DKV.put(parameters._train.get())
-    }
-
-    // Train
-    val hc = H2OContext.ensure()
-    val (mojoData, algoName) = if (RestApiUtils.isRestAPIBased()) {
-      val model = H2OModel.trainModel(hc.getConf, parameters.algoName().toLowerCase, updateH2OParamsREST(), trainKey, validKey)
-      (H2OModel.downloadMOJOData(hc.getConf, model), model.algoName)
+    val mojoData = if (RestApiUtils.isRestAPIBased()) {
+      fitOverRest(trainKey, validKey)
     } else {
-      val binaryModel = trainModel(parameters)
-      (ModelSerializationSupport.getMojoData(binaryModel), binaryModel._parms.algoName())
+      fitOverClient(trainKey, validKey)
     }
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
-      Identifiable.randomUID(algoName),
+      Identifiable.randomUID(parameters.algoName()),
       modelSettings,
       internalFeatureCols)
   }

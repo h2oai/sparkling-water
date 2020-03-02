@@ -32,8 +32,8 @@ import water.DKV
  */
 class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
 
-  override protected def preProcessBeforeFit(trainFrameKey: String): Unit = {
-    super.preProcessBeforeFit(trainFrameKey)
+  override protected def prepareH2OTrainFrameForFitting(trainFrameKey: String): Unit = {
+    super.prepareH2OTrainFrameForFitting(trainFrameKey)
     val stringCols = if (RestApiUtils.isRestAPIBased()) {
       H2OFrame(trainFrameKey).columns.filter(_.dataType == H2OColumnType.string).map(_.name)
     } else {
@@ -124,8 +124,8 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   def setK(value: Int): this.type = set(k, value)
 
-  override protected def updateH2OParamsREST(): Map[String, Any] = {
-    super.updateH2OParamsREST() ++
+  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+    super.getH2OAlgoRESTParams() ++
       Map(
         "max_iterations" -> getMaxIterations(),
         "standardize" -> getStandardize(),

@@ -24,8 +24,8 @@ import hex.Model.Parameters
 trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
   with H2OCommonSupervisedParams with H2OAlgoCommonParams[P] {
 
-  override protected def updateH2OParamsREST(): Map[String, Any] = {
-    super.updateH2OParamsREST() ++
+  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+    super.getH2OAlgoRESTParams() ++
       Map(
         "response_column" -> getLabelCol(),
         "offset_column" -> getOffsetCol()

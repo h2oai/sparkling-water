@@ -78,7 +78,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
-  protected def updateH2OParamsREST(): Map[String, Any] = {
+  protected def getH2OAlgoRESTParams(): Map[String, Any] = {
     Map(
       "weights_column" -> getWeightCol(),
       "nfolds" -> getNfolds(),

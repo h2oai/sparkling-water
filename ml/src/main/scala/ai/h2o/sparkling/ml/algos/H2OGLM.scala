@@ -232,8 +232,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
 
-  override protected def updateH2OParamsREST(): Map[String, Any] = {
-    super.updateH2OParamsREST() ++
+  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+    super.getH2OAlgoRESTParams() ++
       Map(
         // exactLambdas not specified on purpose, this param needs to added/removed on H2O side first, see SW-2032
         "standardize" -> getStandardize(),
