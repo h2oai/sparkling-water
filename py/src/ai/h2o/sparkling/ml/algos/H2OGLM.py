@@ -40,7 +40,6 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  lambdaSearch=False,
                  nlambdas=-1,
                  nonNegative=False,
-                 exactLambdas=False,
                  lambdaMinRatio=-1.0,
                  maxIterations=-1,
                  intercept=True,
@@ -73,7 +72,8 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True):
+                 namedMojoOutputColumns=True,
+                 **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGLM", self.uid)
