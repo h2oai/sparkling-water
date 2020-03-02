@@ -235,7 +235,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
   override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
-        // exactLambdas not specified on purpose, this param needs to added/removed on H2O side first, see SW-2032
         "standardize" -> getStandardize(),
         "family" -> getFamily(),
         "link" -> getLink(),
