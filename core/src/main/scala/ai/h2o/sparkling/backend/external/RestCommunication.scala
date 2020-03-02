@@ -22,7 +22,7 @@ import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
-import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
+import com.google.gson.{ExclusionStrategy, FieldAttributes, Gson, GsonBuilder}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
@@ -190,24 +190,29 @@ trait RestCommunication extends Logging {
   }
 
   private def stringifyArray(arr: Array[_]): String = {
-    arr.map(stringifyPrimitiveParam).mkString("[", ",", "]")
+    arr.map(stringify).mkString("[", ",", "]")
   }
 
   private def stringifyMap(map: scala.collection.immutable.Map[_, _]): String = {
-    stringifyArray(map.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${pair._2}}").toArray)
+    val arr = map.filter { case (_, value) => value != null }.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${stringify(pair._2)}").toArray
+    stringifyArray(arr)
+  }
+
+  private def stringify(value: Any): String = {
+    import scala.collection.JavaConversions._
+    value match {
+      case map: java.util.AbstractMap[_, _] => stringifyMap(map.toMap)
+      case map: scala.collection.immutable.Map[_, _] => stringifyMap(map)
+      case arr: Array[_] => stringifyArray(arr)
+      case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
+      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
+    }
   }
 
   private def stringifyParams(params: Map[String, Any] = Map.empty): String = {
-    import scala.collection.JavaConversions._
     params.filter { case (_, value) => value != null }
       .map { case (name, value) =>
-        val encodedValue = value match {
-          case map: java.util.AbstractMap[_, _] => stringifyMap(map.toMap)
-          case map: scala.collection.immutable.Map[_, _] => stringifyMap(map)
-          case arr: Array[_] => stringifyArray(arr)
-          case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
-          case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
-        }
+        val encodedValue = stringify(value)
         s"$name=$encodedValue"
       }.mkString("&")
   }
@@ -217,12 +222,20 @@ trait RestCommunication extends Logging {
     endpoint.resolve(suffixWithDelimiter).toURL
   }
 
-  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
+  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any], asJSON: Boolean = false): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
     if (params.nonEmpty && requestType == "POST") {
-      val paramsAsBytes = stringifyParams(params).getBytes("UTF-8")
-      connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      val paramsAsBytes = if (asJSON) {
+        val jsonString = new Gson().toJson(params)
+        val bytes = jsonString.getBytes("UTF-8")
+        connection.setRequestProperty("Content-Type", "application/json")
+        bytes
+      } else {
+        val bytes = stringifyParams(params).getBytes("UTF-8")
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        bytes
+      }
       connection.setRequestProperty("charset", "UTF-8")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
       connection.setDoOutput(true)
@@ -232,13 +245,17 @@ trait RestCommunication extends Logging {
     }
   }
 
-  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
+  protected def readURLContent(endpoint: URI,
+                               requestType: String,
+                               suffix: String,
+                               conf: H2OConf, params: Map[String, Any] = Map.empty,
+                               asJSON: Boolean = false): InputStream = {
     val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      setHeaders(connection, conf, requestType, params)
+      setHeaders(connection, conf, requestType, params, asJSON)
       checkResponseCode(connection)
       connection.getInputStream()
     } catch {

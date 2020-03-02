@@ -18,13 +18,16 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
+import ai.h2o.sparkling.backend.external.RestApiUtils
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import ai.h2o.sparkling.model.H2OModel
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.ScoreKeeper
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.Frame
+import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
@@ -51,13 +54,68 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private var amlOption: Option[AutoML] = None
 
-  override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val spec = new AutoMLBuildSpec
-    amlOption = None
-    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+  private def fitOverRest(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
+    val fr = H2OFrame(trainKey)
+    if (getAllStringColumnsToCategorical()) {
+     fr.convertAllStringColumnsToCategorical()
+    }
+    fr.convertColumnsToCategorical(getColumnsToCategorical())
+
+    val inputSpec = Map(
+      "response_column" -> getLabelCol(),
+      "fold_column" -> getFoldCol(),
+      "weights_column" -> getWeightCol(),
+      "ignored_columns" -> getIgnoredCols(),
+      "sort_metric" -> getSortMetric()
+    )
+
+    val buildModels = Map(
+      "include_algos" -> determineIncludedAlgos(),
+      "exclude_algos" -> null,
+      "algo_parameters" -> {
+        val monotoneConstraints = getMonotoneConstraints()
+        if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
+          Map("monotone_constrains" -> monotoneConstraints)
+        } else {
+          Map()
+        }
+      }
+    )
+
+    val stoppingCriteria = Map(
+      "seed" -> getSeed(),
+      "max_runtime_secs" -> getMaxRuntimeSecs(),
+      "stopping_rounds" -> getStoppingRounds(),
+      "stopping_tolerance" -> getStoppingTolerance(),
+      "stopping_metric" -> getStoppingMetric(),
+      "max_models" -> getMaxModels()
+    )
+
+    val buildControl = Map(
+      "project_name" -> getProjectName(),
+      "nfolds" -> getNfolds(),
+      "balance_classes" -> getBalanceClasses(),
+      "class_sampling_factors" -> getClassSamplingFactors(),
+      "max_after_balance_size" -> getMaxAfterBalanceSize(),
+      "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
+      "keep_cross_validation_models" -> getKeepCrossValidationModels(),
+      "stopping_criteria" -> stoppingCriteria
+    )
+
+    val H2OParamNameToValueMap = Map (
+      "input_spec" -> inputSpec,
+      "build_models" -> buildModels,
+      "build_control" -> buildControl
+    )
+
+    val hc = H2OContext.ensure()
+    val model = H2OModel.trainAutoML(hc.getConf, H2OParamNameToValueMap, trainKey, validKey)
+    H2OModel.downloadMOJOData(hc.getConf, model)
+  }
+
+  private def fitOverClient(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
     spec.input_spec.training_frame = DKV.getGet[Frame](trainKey)._key
     spec.input_spec.validation_frame = validKey.map(DKV.getGet[Frame](_)._key).orNull
-
     val trainFrame = spec.input_spec.training_frame.get()
     if (getAllStringColumnsToCategorical()) {
       H2OFrameSupport.allStringVecToCategorical(trainFrame)
@@ -69,7 +127,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spec.input_spec.weights_column = getWeightCol()
     spec.input_spec.ignored_columns = getIgnoredCols()
     spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.include_algos = determineIncludedAlgos()
+    spec.build_models.include_algos = determineIncludedAlgos().map(Algo.valueOf)
     spec.build_models.exclude_algos = null
     spec.build_control.project_name = getProjectName()
     spec.build_control.stopping_criteria.set_seed(getSeed())
@@ -96,11 +154,23 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     }
     val binaryModel = aml.leader()
-    val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
+    ModelSerializationSupport.getMojoData(binaryModel)
+  }
+
+  override def fit(dataset: Dataset[_]): H2OMOJOModel = {
+    val spec = new AutoMLBuildSpec
+    amlOption = None
+    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    val mojoData = if (RestApiUtils.isRestAPIBased()) {
+      fitOverRest(spec, trainKey, validKey)
+    } else {
+      fitOverClient(spec, trainKey, validKey)
+    }
+
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
-      Identifiable.randomUID(aml.leader()._parms.algoName()),
+      Identifiable.randomUID(ModelSerializationSupport.getMojoModel(mojoData)._algoName),
       modelSettings,
       internalFeatureCols)
   }
@@ -114,13 +184,13 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     }
   }
 
-  private def determineIncludedAlgos(): Array[Algo] = {
+  private def determineIncludedAlgos(): Array[String] = {
     val bothIncludedExcluded = getIncludeAlgos().intersect(getExcludeAlgos())
     bothIncludedExcluded.foreach { algo =>
       logWarning(s"Algorithm '$algo' was specified in both include and exclude parameters. " +
         s"Excluding the algorithm.")
     }
-    getIncludeAlgos().diff(bothIncludedExcluded).map(Algo.valueOf)
+    getIncludeAlgos().diff(bothIncludedExcluded)
   }
 
   private def leaderboardAsSparkFrame(aml: AutoML, extraColumns: Array[String]): DataFrame = {
