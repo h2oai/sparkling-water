@@ -192,5 +192,5 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setExternalCommunicationCompression(self, compression):
-        self._jconf.setExternalCommunicationCompression(self, compression)
+        self._jconf.setExternalCommunicationCompression(compression)
         return self
