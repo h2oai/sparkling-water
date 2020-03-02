@@ -20,7 +20,6 @@ import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.job.H2OJob
-import ai.h2o.sparkling.ml.algos.H2OAutoML.readURLContent
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -38,7 +37,6 @@ import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
 import water.DKV
-import water.automl.api.schemas3.LeaderboardV99
 import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
@@ -126,7 +124,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OJob(jobId).waitForFinish()
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlOption = Some(autoMLJobId)
-    H2OModel(autoMLJobId)
+    H2OModel(H2OAutoML.getLeaderModelId(conf, autoMLJobId))
   }
 
   private def fitOverClient(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
@@ -206,7 +204,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   private def leaderboardAsSparkFrame(amlKey: String, extraColumns: Array[String]): DataFrame = {
     // Get LeaderBoard
     if (RestApiUtils.isRestAPIBased()) {
-        throw new RuntimeException("Unsupported")
+      val hc = H2OContext.ensure()
+        H2OAutoML.getLeaderboard(hc.getConf, amlKey, extraColumns)
     } else {
       val twoDimTable = DKV.getGet[AutoML](amlKey).leaderboard().toTwoDimTable(extraColumns: _*)
       val colNames = twoDimTable.getColHeaders
@@ -240,10 +239,28 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 }
 
 object H2OAutoML extends H2OParamsReadable[H2OAutoML] with RestCommunication {
-  private[sparkling] def getLeaderModelId(conf: H2OConf, automlId: String): String = {
+  private[sparkling] def getLeaderboard(conf: H2OConf, automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val leaderboard = request[LeaderboardV99](endpoint, "GET", s"/99/Leaderboards/$automlId", conf)
-    leaderboard.models(0).name
+    val params = Map("extensions" -> extraColumns)
+    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
+      IOUtils.toString(response)
+    }
+    val gson = new Gson()
+    val table = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonObject("table")
+    import scala.collection.JavaConverters._
+    val colNamesIterator = table.getAsJsonArray("columns").iterator().asScala
+    val colNames = colNamesIterator.toArray.map(_.getAsJsonObject.get("name").getAsString)
+    val colsData = table.getAsJsonArray("data").iterator().asScala.toArray.map(_.getAsJsonArray)
+    val numRows = table.get("rowcount").getAsInt
+    val rows = (0 until numRows).map { idx => Row(colsData.map(_.get(idx).getAsString): _*) }
+    val spark = SparkSessionUtils.active
+    val rdd = spark.sparkContext.parallelize(rows)
+    val schema = StructType(colNames.map(name => StructField(name, StringType)))
+    spark.createDataFrame(rdd, schema)
+  }
+
+  private[sparkling] def getLeaderModelId(conf: H2OConf, automlId: String): String = {
+    getLeaderboard(conf, automlId).select("model_id").head().getString(0)
   }
 }
 
