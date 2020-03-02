@@ -17,11 +17,8 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
-import com.google.common.base.CaseFormat
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
-import org.apache.spark.ml.param.ParamMap
-import water.util.PojoUtils
 
 /**
   * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
