@@ -16,11 +16,15 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.external.RestApiUtils
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import ai.h2o.sparkling.model.H2OModel
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import com.google.gson.{Gson, JsonElement}
 import hex.Model
+import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Estimator
@@ -32,6 +36,7 @@ import water.exceptions.H2OModelBuilderIllegalArgumentException
 import water.support.ModelSerializationSupport
 import water.{DKV, H2O, Key}
 
+import scala.collection.mutable
 import scala.reflect.{ClassTag, classTag}
 
 /**
@@ -45,8 +50,8 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
   private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
     prepareH2OTrainFrameForFitting(trainKey)
     val hc = H2OContext.ensure()
-    val model = H2OModel.trainSimpleModel(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
-    H2OModel.downloadMOJOData(hc.getConf, model)
+    val model = H2OAlgorithm.trainModelOverREST(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
+    model.downloadMOJOData()
   }
 
   private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
@@ -122,4 +127,27 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+}
+
+object H2OAlgorithm extends RestCommunication {
+  private def trainModelOverREST(conf: H2OConf,
+                                 algoName: String,
+                                 H2OParamNameToValueMap: Map[String, Any],
+                                 trainKey: String,
+                                 validKey: Option[String]): H2OModel = {
+    val params = mutable.Map("training_frame" -> trainKey) ++ H2OParamNameToValueMap
+    validKey.foreach { key => params += ("validation_frame" -> key) }
+
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params.toMap)) { response =>
+      IOUtils.toString(response)
+    }
+
+    val gson = new Gson()
+    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
+    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
+    H2OJob(jobId).waitForFinish()
+    val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
+    H2OModel(modelId)
+  }
 }

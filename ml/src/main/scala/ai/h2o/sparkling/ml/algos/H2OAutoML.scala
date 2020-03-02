@@ -18,23 +18,28 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
 import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
-import ai.h2o.sparkling.backend.external.RestApiUtils
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.job.H2OJob
+import ai.h2o.sparkling.ml.algos.H2OAutoML.readURLContent
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.model.H2OModel
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import com.google.gson.{Gson, JsonElement}
 import hex.ScoreKeeper
+import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.{Frame, H2OContext}
+import org.apache.spark.h2o.{Frame, H2OConf, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
 import water.DKV
-import water.support.{H2OFrameSupport, ModelSerializationSupport}
+import water.automl.api.schemas3.LeaderboardV99
+import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
@@ -43,7 +48,7 @@ import scala.util.control.NoStackTrace
   * H2O AutoML algorithm exposed via Spark ML pipelines.
   */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
-  with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams {
+  with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams with RestCommunication {
 
   // Override default values
   setDefault(nfolds, 5)
@@ -52,35 +57,30 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
-  private var amlOption: Option[AutoML] = None
-
+  private var amlOption: Option[String] = None
   private def fitOverRest(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
-    val fr = H2OFrame(trainKey)
-    if (getAllStringColumnsToCategorical()) {
-     fr.convertAllStringColumnsToCategorical()
-    }
-    fr.convertColumnsToCategorical(getColumnsToCategorical())
-
     val inputSpec = Map(
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
       "weights_column" -> getWeightCol(),
       "ignored_columns" -> getIgnoredCols(),
-      "sort_metric" -> getSortMetric()
-    )
+      "sort_metric" -> getSortMetric(),
+      "training_frame" -> trainKey
+    ) ++ validKey.map{ key => Map("validation_frame" -> key) }.getOrElse(Map())
+
+    val monotoneConstraints = getMonotoneConstraints()
+    val algoParameters = if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
+      Map("monotone_constrains" -> monotoneConstraints)
+    } else {
+      Map()
+    }
 
     val buildModels = Map(
       "include_algos" -> determineIncludedAlgos(),
-      "exclude_algos" -> null,
-      "algo_parameters" -> {
-        val monotoneConstraints = getMonotoneConstraints()
-        if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
-          Map("monotone_constrains" -> monotoneConstraints)
-        } else {
-          Map()
-        }
-      }
-    )
+      "exclude_algos" -> null
+    ) ++ (if (algoParameters.nonEmpty) Map("algo_parameters" -> algoParameters) else Map())
+
+
 
     val stoppingCriteria = Map(
       "seed" -> getSeed(),
@@ -109,19 +109,29 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     )
 
     val hc = H2OContext.ensure()
-    val model = H2OModel.trainAutoML(hc.getConf, H2OParamNameToValueMap, trainKey, validKey)
-    H2OModel.downloadMOJOData(hc.getConf, model)
+    val model = trainAutoMLOverREST(hc.getConf, H2OParamNameToValueMap)
+    model.downloadMOJOData()
+  }
+
+  private def trainAutoMLOverREST(conf: H2OConf,
+                                  H2OParamNameToValueMap: Map[String, Any]): H2OModel = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, H2OParamNameToValueMap, asJSON = true)) { response =>
+      IOUtils.toString(response)
+    }
+
+    val gson = new Gson()
+    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
+    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
+    H2OJob(jobId).waitForFinish()
+    val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
+    amlOption = Some(autoMLJobId)
+    H2OModel(autoMLJobId)
   }
 
   private def fitOverClient(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
     spec.input_spec.training_frame = DKV.getGet[Frame](trainKey)._key
     spec.input_spec.validation_frame = validKey.map(DKV.getGet[Frame](_)._key).orNull
-    val trainFrame = spec.input_spec.training_frame.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
-
     spec.input_spec.response_column = getLabelCol()
     spec.input_spec.fold_column = getFoldCol()
     spec.input_spec.weights_column = getWeightCol()
@@ -148,7 +158,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
     // Block until AutoML finishes
     aml.get()
-    amlOption = Some(aml)
+    amlOption = Some(aml._key.toString)
     if (aml.leader() == null) {
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
@@ -158,8 +168,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val spec = new AutoMLBuildSpec
     amlOption = None
+    val spec = new AutoMLBuildSpec
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
     val mojoData = if (RestApiUtils.isRestAPIBased()) {
       fitOverRest(spec, trainKey, validKey)
@@ -193,17 +203,21 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     getIncludeAlgos().diff(bothIncludedExcluded)
   }
 
-  private def leaderboardAsSparkFrame(aml: AutoML, extraColumns: Array[String]): DataFrame = {
+  private def leaderboardAsSparkFrame(amlKey: String, extraColumns: Array[String]): DataFrame = {
     // Get LeaderBoard
-    val twoDimTable = aml.leaderboard().toTwoDimTable(extraColumns: _*)
-    val colNames = twoDimTable.getColHeaders
-    val data = twoDimTable.getCellValues.map(_.map(_.toString))
-    val rows = data.map {
-      Row.fromSeq(_)
+    if (RestApiUtils.isRestAPIBased()) {
+        throw new RuntimeException("Unsupported")
+    } else {
+      val twoDimTable = DKV.getGet[AutoML](amlKey).leaderboard().toTwoDimTable(extraColumns: _*)
+      val colNames = twoDimTable.getColHeaders
+      val data = twoDimTable.getCellValues.map(_.map(_.toString))
+      val rows = data.map {
+        Row.fromSeq(_)
+      }
+      val schema = StructType(colNames.map { name => StructField(name, StringType) })
+      val rdd = spark.sparkContext.parallelize(rows)
+      spark.createDataFrame(rdd, schema)
     }
-    val schema = StructType(colNames.map { name => StructField(name, StringType) })
-    val rdd = spark.sparkContext.parallelize(rows)
-    spark.createDataFrame(rdd, schema)
   }
 
   def getLeaderboard(extraColumns: String*): DataFrame = getLeaderboard(extraColumns.toArray)
@@ -213,9 +227,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   def getLeaderboard(extraColumns: Array[String]): DataFrame = amlOption match {
-    case Some(aml) => leaderboardAsSparkFrame(aml, extraColumns)
-    case None => throw new RuntimeException("The 'fit' method must be called at first!")
-  }
+      case Some(amlKey) => leaderboardAsSparkFrame(amlKey, extraColumns)
+      case None => throw new RuntimeException("The 'fit' method must be called at first!")
+    }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -225,7 +239,13 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 
-object H2OAutoML extends H2OParamsReadable[H2OAutoML]
+object H2OAutoML extends H2OParamsReadable[H2OAutoML] with RestCommunication {
+  private[sparkling] def getLeaderModelId(conf: H2OConf, automlId: String): String = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val leaderboard = request[LeaderboardV99](endpoint, "GET", s"/99/Leaderboards/$automlId", conf)
+    leaderboard.models(0).name
+  }
+}
 
 trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstraints {
 

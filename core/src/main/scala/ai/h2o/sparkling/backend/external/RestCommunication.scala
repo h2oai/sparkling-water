@@ -22,6 +22,8 @@ import java.net.{HttpURLConnection, URI, URL, URLEncoder}
 
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.gson.{ExclusionStrategy, FieldAttributes, Gson, GsonBuilder}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
@@ -227,7 +229,7 @@ trait RestCommunication extends Logging {
 
     if (params.nonEmpty && requestType == "POST") {
       val paramsAsBytes = if (asJSON) {
-        val jsonString = new Gson().toJson(params)
+        val jsonString = new ObjectMapper().registerModule(DefaultScalaModule).writeValueAsString(params)
         val bytes = jsonString.getBytes("UTF-8")
         connection.setRequestProperty("Content-Type", "application/json")
         bytes
