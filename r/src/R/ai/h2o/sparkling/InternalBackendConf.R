@@ -15,13 +15,15 @@
 # limitations under the License.
 #
 
+if (!exists("ConfUtils.getOption", mode = "function")) source(file.path("R", "ConfUtils.R"))
+
 #' @export InternalBackendConf
-InternalBackendConf <- setRefClass("InternalBackendConf", contains = "ConfBase", methods = list(
+InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
 #
 # Getters
 #
-    numH2OWorkers = function() { ConfBase.getOption(invoke(jconf, "numH2OWorkers")) },
+    numH2OWorkers = function() { ConfUtils.getOption(invoke(jconf, "numH2OWorkers")) },
 
     drddMulFactor = function() { invoke(jconf, "drddMulFactor") },
 
@@ -33,9 +35,9 @@ InternalBackendConf <- setRefClass("InternalBackendConf", contains = "ConfBase",
 
     h2oNodeWebEnabled = function() { invoke(jconf, "h2oNodeWebEnabled") },
 
-    nodeIcedDir = function() { ConfBase.getOption(invoke(jconf, "nodeIcedDir")) },
+    nodeIcedDir = function() { ConfUtils.getOption(invoke(jconf, "nodeIcedDir")) },
 
-    hdfsConf = function() { ConfBase.getOption(invoke(jconf, "hdfsConf")) },
+    hdfsConf = function() { ConfUtils.getOption(invoke(jconf, "hdfsConf")) },
 
 #
 # Setters

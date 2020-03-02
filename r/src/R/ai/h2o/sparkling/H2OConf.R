@@ -15,5 +15,22 @@
 # limitations under the License.
 #
 
+if (!exists("SharedBackendConf")) source(file.path("R", "SharedBackendConf.R"))
+if (!exists("ExternalBackendConf")) source(file.path("R", "ExternalBackendConf.R"))
+if (!exists("InternalBackendConf")) source(file.path("R", "InternalBackendConf.R"))
+
 #' @export H2OConf
-H2OConf <- setRefClass("H2OConf", contains = c("SharedBackendConf", "ExternalBackendConf", "InternalBackendConf"))
+H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"),
+                       contains = c("SharedBackendConf", "ExternalBackendConf", "InternalBackendConf"), methods = list(
+    initialize = function(spark = NULL) {
+        if (!is.null(spark)) {
+            print("Constructor H2OConf(spark) with the spark argument is deprecated. Please use just H2OConf(). The argument will be removed in release 3.32.")
+        }
+        sc <- spark_connection_find()[[1]]
+        .self$jconf <- invoke_new(sc, "org.apache.spark.h2o.H2OConf")
+    },
+
+    set = function(option, value) { invoke(jconf, "set", option, value); .self },
+
+    get = function(option) { invoke(jconf, "get", option) }
+))

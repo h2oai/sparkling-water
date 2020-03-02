@@ -15,27 +15,29 @@
 # limitations under the License.
 #
 
+if (!exists("ConfUtils.getOption", mode = "function")) source(file.path("R", "ConfUtils.R"))
+
 #' @export ExternalBackendConf
-ExternalBackendConf <- setRefClass("ExternalBackendConf", contains = "ConfBase", methods = list(
+ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
 #
 # Getters
 #
-    h2oCluster = function() { ConfBase.getOption(invoke(jconf, "h2oCluster")) },
+    h2oCluster = function() { ConfUtils.getOption(invoke(jconf, "h2oCluster")) },
 
-    h2oClusterHost = function() { ConfBase.getOption(invoke(jconf, "h2oClusterHost")) },
+    h2oClusterHost = function() { ConfUtils.getOption(invoke(jconf, "h2oClusterHost")) },
 
-    h2oClusterPort = function() { ConfBase.getOption(invoke(jconf, "h2oClusterPort")) },
+    h2oClusterPort = function() { ConfUtils.getOption(invoke(jconf, "h2oClusterPort")) },
 
-    clusterSize = function() { ConfBase.getOption(invoke(jconf, "clusterSize")) },
+    clusterSize = function() { ConfUtils.getOption(invoke(jconf, "clusterSize")) },
 
     clusterStartTimeout = function() { invoke(jconf, "clusterStartTimeout") },
 
-    clusterInfoFile = function() { ConfBase.getOption(invoke(jconf, "clusterInfoFile")) },
+    clusterInfoFile = function() { ConfUtils.getOption(invoke(jconf, "clusterInfoFile")) },
 
     mapperXmx = function() { invoke(jconf, "mapperXmx") },
 
-    HDFSOutputDir = function() { ConfBase.getOption(invoke(jconf, "HDFSOutputDir")) },
+    HDFSOutputDir = function() { ConfUtils.getOption(invoke(jconf, "HDFSOutputDir")) },
 
     isAutoClusterStartUsed = function() { invoke(jconf, "isAutoClusterStartUsed") },
 
@@ -43,23 +45,23 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", contains = "ConfBase",
 
     clusterStartMode = function() { invoke(jconf, "clusterStartMode") },
 
-    h2oDriverPath = function() { ConfBase.getOption(invoke(jconf, "h2oDriverPath")) },
+    h2oDriverPath = function() { ConfUtils.getOption(invoke(jconf, "h2oDriverPath")) },
 
-    YARNQueue = function() { ConfBase.getOption(invoke(jconf, "YARNQueue")) },
+    YARNQueue = function() { ConfUtils.getOption(invoke(jconf, "YARNQueue")) },
 
     isKillOnUnhealthyClusterEnabled = function() { invoke(jconf, "isKillOnUnhealthyClusterEnabled") },
 
-    kerberosPrincipal = function() { ConfBase.getOption(invoke(jconf, "kerberosPrincipal")) },
+    kerberosPrincipal = function() { ConfUtils.getOption(invoke(jconf, "kerberosPrincipal")) },
 
-    kerberosKeytab = function() { ConfBase.getOption(invoke(jconf, "kerberosKeytab")) },
+    kerberosKeytab = function() { ConfUtils.getOption(invoke(jconf, "kerberosKeytab")) },
 
-    runAsUser = function() { ConfBase.getOption(invoke(jconf, "runAsUser")) },
+    runAsUser = function() { ConfUtils.getOption(invoke(jconf, "runAsUser")) },
 
-    externalH2ODriverIf = function() { ConfBase.getOption(invoke(jconf, "externalH2ODriverIf")) },
+    externalH2ODriverIf = function() { ConfUtils.getOption(invoke(jconf, "externalH2ODriverIf")) },
 
-    externalH2ODriverPort = function() { ConfBase.getOption(invoke(jconf, "externalH2ODriverPort")) },
+    externalH2ODriverPort = function() { ConfUtils.getOption(invoke(jconf, "externalH2ODriverPort")) },
 
-    externalH2ODriverPortRange = function() { ConfBase.getOption(invoke(jconf, "externalH2ODriverPortRange")) },
+    externalH2ODriverPortRange = function() { ConfUtils.getOption(invoke(jconf, "externalH2ODriverPortRange")) },
 
     externalExtraMemoryPercent = function() { invoke(jconf, "externalExtraMemoryPercent") },
 
@@ -67,7 +69,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", contains = "ConfBase",
 
     externalHadoopExecutable = function() { invoke(jconf, "externalHadoopExecutable") },
 
-    externalExtraJars = function() { ConfBase.getOption(invoke(jconf, "externalExtraJars")) },
+    externalExtraJars = function() { ConfUtils.getOption(invoke(jconf, "externalExtraJars")) },
 
     externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
 

@@ -15,15 +15,17 @@
 # limitations under the License.
 #
 
+if (!exists("ConfUtils.getOption", mode = "function")) source(file.path("R", "ConfUtils.R"))
+
 #' @export SharedBackendConf
-SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), methods = list(
+SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
 #
 # Getters
 #
     backendClusterMode = function() { invoke(jconf, "backendClusterMode") },
 
-    cloudName = function() { ConfBase.getOption(invoke(jconf, "cloudName")) },
+    cloudName = function() { ConfUtils.getOption(invoke(jconf, "cloudName")) },
 
     nthreads = function() { invoke(jconf, "nthreads") },
 
@@ -37,11 +39,11 @@ SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), m
 
     isFailOnUnsupportedSparkParamEnabled = function() { invoke(jconf, "isFailOnUnsupportedSparkParamEnabled") },
 
-    jks = function() { ConfBase.getOption(invoke(jconf, "jks")) },
+    jks = function() { ConfUtils.getOption(invoke(jconf, "jks")) },
 
-    jksPass = function() { ConfBase.getOption(invoke(jconf, "jksPass")) },
+    jksPass = function() { ConfUtils.getOption(invoke(jconf, "jksPass")) },
 
-    jksAlias = function() { ConfBase.getOption(invoke(jconf, "jksAlias")) },
+    jksAlias = function() { ConfUtils.getOption(invoke(jconf, "jksAlias")) },
 
     hashLogin = function() { invoke(jconf, "hashLogin") },
 
@@ -49,13 +51,13 @@ SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), m
 
     kerberosLogin = function() { invoke(jconf, "kerberosLogin") },
 
-    loginConf = function() { ConfBase.getOption(invoke(jconf, "loginConf")) },
+    loginConf = function() { ConfUtils.getOption(invoke(jconf, "loginConf")) },
 
-    userName = function() { ConfBase.getOption(invoke(jconf, "userName")) },
+    userName = function() { ConfUtils.getOption(invoke(jconf, "userName")) },
 
-    password = function() { ConfBase.getOption(invoke(jconf, "password")) },
+    password = function() { ConfUtils.getOption(invoke(jconf, "password")) },
 
-    sslConf = function() { ConfBase.getOption(invoke(jconf, "sslConf")) },
+    sslConf = function() { ConfUtils.getOption(invoke(jconf, "sslConf")) },
 
     autoFlowSsl = function() { invoke(jconf, "autoFlowSsl") },
 
@@ -67,11 +69,11 @@ SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), m
 
     cloudTimeout = function() { invoke(jconf, "cloudTimeout") },
 
-    nodeNetworkMask = function() { ConfBase.getOption(invoke(jconf, "nodeNetworkMask")) },
+    nodeNetworkMask = function() { ConfUtils.getOption(invoke(jconf, "nodeNetworkMask")) },
 
     stacktraceCollectorInterval = function() { invoke(jconf, "stacktraceCollectorInterval") },
 
-    contextPath = function() { ConfBase.getOption(invoke(jconf, "contextPath")) },
+    contextPath = function() { ConfUtils.getOption(invoke(jconf, "contextPath")) },
 
     flowScalaCellAsync = function() { invoke(jconf, "flowScalaCellAsync") },
 
@@ -83,21 +85,21 @@ SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), m
 
     nodeBasePort = function() { invoke(jconf, "nodeBasePort") },
 
-    nodeExtraProperties = function() { ConfBase.getOption(invoke(jconf, "nodeExtraProperties")) },
+    nodeExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "nodeExtraProperties")) },
 
-    flowExtraHttpHeaders = function() { ConfBase.getOption(invoke(jconf, "flowExtraHttpHeaders")) },
+    flowExtraHttpHeaders = function() { ConfUtils.getOption(invoke(jconf, "flowExtraHttpHeaders")) },
 
     isInternalSecureConnectionsEnabled = function() { invoke(jconf, "isInternalSecureConnectionsEnabled") },
 
-    flowDir = function() { ConfBase.getOption(invoke(jconf, "flowDir")) },
+    flowDir = function() { ConfUtils.getOption(invoke(jconf, "flowDir")) },
 
-    clientIp = function() { ConfBase.getOption(invoke(jconf, "clientIp")) },
+    clientIp = function() { ConfUtils.getOption(invoke(jconf, "clientIp")) },
 
-    clientIcedDir = function() { ConfBase.getOption(invoke(jconf, "clientIcedDir")) },
+    clientIcedDir = function() { ConfUtils.getOption(invoke(jconf, "clientIcedDir")) },
 
     h2oClientLogLevel = function() { invoke(jconf, "h2oClientLogLevel") },
 
-    h2oClientLogDir = function() { ConfBase.getOption(invoke(jconf, "h2oClientLogDir")) },
+    h2oClientLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oClientLogDir")) },
 
     clientBasePort = function() { invoke(jconf, "clientBasePort") },
 
@@ -105,15 +107,15 @@ SharedBackendConf <- setRefClass("SharedBackendConf", contains = ("ConfBase"), m
 
     clientVerboseOutput = function() { invoke(jconf, "clientVerboseOutput") },
 
-    clientNetworkMask = function() { ConfBase.getOption(invoke(jconf, "clientNetworkMask")) },
+    clientNetworkMask = function() { ConfUtils.getOption(invoke(jconf, "clientNetworkMask")) },
 
     ignoreSparkPublicDNS = function() { invoke(jconf, "ignoreSparkPublicDNS") },
 
     clientWebEnabled = function() { invoke(jconf, "clientWebEnabled") },
 
-    clientFlowBaseurlOverride = function() { ConfBase.getOption(invoke(jconf, "clientFlowBaseurlOverride")) },
+    clientFlowBaseurlOverride = function() { ConfUtils.getOption(invoke(jconf, "clientFlowBaseurlOverride")) },
 
-    clientExtraProperties = function() { ConfBase.getOption(invoke(jconf, "clientExtraProperties")) },
+    clientExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "clientExtraProperties")) },
 
     runsInExternalClusterMode = function() { invoke(jconf, "runsInExternalClusterMode") },
 

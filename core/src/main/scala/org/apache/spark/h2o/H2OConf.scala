@@ -173,4 +173,3 @@ object H2OConf extends Logging {
     sparkConf
   }
 }
-

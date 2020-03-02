@@ -15,23 +15,10 @@
 # limitations under the License.
 #
 
-ConfBase.getOption <- function(option) {
+ConfUtils.getOption <- function(option) {
     if (invoke(option, "isDefined")) {
         invoke(option, "get")
     } else {
         NA_character_
     }
 }
-
-#' @export ConfBase
-ConfBase <- setRefClass("ConfBase", fields = list(jmojo = "ANY"), methods = list(
-  initialize = function(spark = NULL) {
-    if (!is.null(spark)) {
-        print("Constructor H2OConf(spark) with the spark argument is deprecated. Please use just H2OConf(). The argument will be removed in release 3.32.")
-    }
-    sc <- spark_connection_find()[[1]]
-    .self$jconf <- invoke_new(sc, "org.apache.spark.h2o.H2OConf")
-  },
-
-  set = function(option, value) {invoke(jconf, "set", option, value); .self },
-))
