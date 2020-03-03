@@ -77,6 +77,7 @@ class H2OTargetEncoderModel(
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
+      "model" -> targetEncoderModelKey,
       "frame" -> input,
       "data_leakage_handling" -> getHoldoutStrategy(),
       "noise" -> getNoise(),
