@@ -183,7 +183,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | machine.                               |
 |                                                    |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.port.base``                 | ``54321``      | ``setClientPortBase(Integer)``                  | Port on which H2O client publishes     |
+| ``spark.ext.h2o.client.port.base``                 | ``54321``      | ``setClientBasePort(Integer)``                  | Port on which H2O client publishes     |
 |                                                    |                |                                                 | its API. If already occupied, the next |
 |                                                    |                |                                                 | odd port is tried on so on.            |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
