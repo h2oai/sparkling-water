@@ -63,7 +63,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     h2oNodeLogLevel = function() { invoke(jconf, "h2oNodeLogLevel") },
 
-    h2oNodeLogDir = function() { invoke(jconf, "h2oNodeLogDir") },
+    h2oNodeLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oNodeLogDir")) },
 
     backendHeartbeatInterval = function() { invoke(jconf, "backendHeartbeatInterval") },
 
@@ -134,13 +134,13 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setCloudName = function(cloudName) { invoke(jconf, "setCloudName", cloudName); .self },
 
-    setNthreads = function(nthreads) { invoke(jconf, "setNthreads", nthreads); .self },
+    setNthreads = function(nthreads) { invoke(jconf, "setNthreads", as.integer(nthreads)); .self },
 
     setReplEnabled = function() { invoke(jconf, "setReplEnabled"); .self },
 
     setReplDisabled = function() { invoke(jconf, "setReplDisabled"); .self },
 
-    setDefaultNumReplSessions = function(numSessions) { invoke(jconf, "setDefaultNumReplSessions", numSessions); .self },
+    setDefaultNumReplSessions = function(numSessions) { invoke(jconf, "setDefaultNumReplSessions", as.integer(numSessions)); .self },
 
     setClusterTopologyListenerEnabled = function() { invoke(jconf, "setClusterTopologyListenerEnabled"); .self },
 
@@ -188,13 +188,13 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setH2ONodeLogDir = function(dir) { invoke(jconf, "setH2ONodeLogDir", dir); .self },
 
-    setBackendHeartbeatInterval = function(interval) { invoke(jconf, "setBackendHeartbeatInterval", interval); .self },
+    setBackendHeartbeatInterval = function(interval) { invoke(jconf, "setBackendHeartbeatInterval", as.integer(interval)); .self },
 
-    setCloudTimeout = function(timeout) { invoke(jconf, "setCloudTimeout", timeout); .self },
+    setCloudTimeout = function(timeout) { invoke(jconf, "setCloudTimeout", as.integer(timeout)); .self },
 
     setNodeNetworkMask = function(mask) { invoke(jconf, "setNodeNetworkMask", mask); .self },
 
-    setStacktraceCollectorInterval = function(interval) { invoke(jconf, "setStacktraceCollectorInterval", interval); .self },
+    setStacktraceCollectorInterval = function(interval) { invoke(jconf, "setStacktraceCollectorInterval", as.integer(interval)); .self },
 
     setContextPath = function(contextPath) { invoke(jconf, "setContextPath", contextPath); .self },
 
@@ -202,13 +202,13 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setFlowScalaCellAsyncDisabled = function() { invoke(jconf, "setFlowScalaCellAsyncDisabled"); .self },
 
-    setMaxParallelScalaCellJobs = function(limit) { invoke(jconf, "setMaxParallelScalaCellJobs", limit); .self },
+    setMaxParallelScalaCellJobs = function(limit) { invoke(jconf, "setMaxParallelScalaCellJobs", as.integer(limit)); .self },
 
-    setInternalPortOffset = function(offset) { invoke(jconf, "setInternalPortOffset", offset); .self },
+    setInternalPortOffset = function(offset) { invoke(jconf, "setInternalPortOffset", as.integer(offset)); .self },
 
-    setNodeBasePort = function(port) { invoke(jconf, "setNodeBasePort", port); .self },
+    setNodeBasePort = function(port) { invoke(jconf, "setNodeBasePort", as.integer(port)); .self },
 
-    setMojoDestroyTimeout = function(timeoutInMilliseconds) { invoke(jconf, "setMojoDestroyTimeout", timeoutInMilliseconds); .self },
+    setMojoDestroyTimeout = function(timeoutInMilliseconds) { invoke(jconf, "setMojoDestroyTimeout", as.integer(timeoutInMilliseconds)); .self },
 
     setNodeExtraProperties = function(extraProperties) { invoke(jconf, "setNodeExtraProperties", extraProperties); .self },
 
@@ -228,9 +228,9 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setH2OClientLogDir = function(dir) { invoke(jconf, "setH2OClientLogDir", dir); .self },
 
-    setClientPortBase = function(basePort) { invoke(jconf, "setClientPortBase", basePort); .self },
+    setClientPortBase = function(basePort) { invoke(jconf, "setClientPortBase", as.integer(basePort)); .self },
 
-    setClientWebPort = function(port) { invoke(jconf, "setClientWebPort", port); .self },
+    setClientWebPort = function(port) { invoke(jconf, "setClientWebPort", as.integer(port)); .self },
 
     setClientVerboseEnabled = function() { invoke(jconf, "setClientVerboseEnabled"); .self },
 
@@ -248,7 +248,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientFlowBaseurlOverride = function(baseUrl) { invoke(jconf, "setClientFlowBaseurlOverride", baseUrl); .self },
 
-    setClientCheckRetryTimeout = function(timeout) { invoke(jconf, "setClientCheckRetryTimeout", timeout); .self },
+    setClientCheckRetryTimeout = function(timeout) { invoke(jconf, "setClientCheckRetryTimeout", as.integer(timeout)); .self },
 
     setClientExtraProperties = function(extraProperties) { invoke(jconf, "setClientExtraProperties", extraProperties); .self },
 

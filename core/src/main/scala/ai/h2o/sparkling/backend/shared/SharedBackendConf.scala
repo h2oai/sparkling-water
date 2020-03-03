@@ -233,13 +233,17 @@ trait SharedBackendConf {
 
   def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
 
+  def setFlowExtraHttpHeaders(headers: String): H2OConf = { // R mapping
+    set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, headers)
+  }
+
   def setFlowExtraHttpHeaders(headers: java.util.HashMap[String, String]): H2OConf = { // Py4J mapping
     setFlowExtraHttpHeaders(headers.asScala.toMap[String, String])
   }
 
   def setFlowExtraHttpHeaders(headers: Map[String, String]): H2OConf = {
     val stringRepresentation = headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
-    set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, stringRepresentation)
+    setFlowExtraHttpHeaders(stringRepresentation)
   }
 
   def setInternalSecureConnectionsEnabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = true)

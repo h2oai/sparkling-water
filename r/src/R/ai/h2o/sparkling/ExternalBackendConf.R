@@ -76,11 +76,11 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 #
 # Setters
 #
-    setH2OCluster = function(ip, port) { invoke(jconf, "setH2OCluster", ip, port); .self },
+    setH2OCluster = function(ip, port) { invoke(jconf, "setH2OCluster", ip, as.integer(port)); .self },
 
-    setClusterSize = function(clusterSize) { invoke(jconf, "setClusterSize", clusterSize); .self },
+    setClusterSize = function(clusterSize) { invoke(jconf, "setClusterSize", as.integer(clusterSize)); .self },
 
-    setClusterStartTimeout = function(clusterStartTimeout) { invoke(jconf, "setClusterStartTimeout", clusterStartTimeout); .self },
+    setClusterStartTimeout = function(clusterStartTimeout) { invoke(jconf, "setClusterStartTimeout", as.integer(clusterStartTimeout)); .self },
 
     setClusterConfigFile = function(path) { invoke(jconf, "setClusterConfigFile", path); .self },
 
@@ -92,7 +92,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     useManualClusterStart = function() { invoke(jconf, "useManualClusterStart"); .self },
 
-    setH2ODriverPath = function(path) { invoke(jconf, "setH2ODriverPath(", path); .self },
+    setH2ODriverPath = function(path) { invoke(jconf, "setH2ODriverPath", path); .self },
 
     setYARNQueue = function(queueName) { invoke(jconf, "setYARNQueue", queueName); .self },
 
@@ -108,13 +108,13 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalH2ODriverIf = function(iface) { invoke(jconf, "setExternalH2ODriverIf", iface); .self },
 
-    setExternalH2ODriverPort = function(port) { invoke(jconf, "setExternalH2ODriverPort", port); .self },
+    setExternalH2ODriverPort = function(port) { invoke(jconf, "setExternalH2ODriverPort", as.integer(port)); .self },
 
     setExternalH2ODriverPortRange = function(portrange) { invoke(jconf, "setExternalH2ODriverPortRange", portrange); .self },
 
-    setExternalExtraMemoryPercent = function(memoryPercent) { invoke(jconf, "setExternalExtraMemoryPercent", memoryPercent); .self },
+    setExternalExtraMemoryPercent = function(memoryPercent) { invoke(jconf, "setExternalExtraMemoryPercent", as.integer(memoryPercent)); .self },
 
-    setExternalBackendStopTimeout = function(timeout) { invoke(jconf, "setExternalBackendStopTimeout", timeout); .self },
+    setExternalBackendStopTimeout = function(timeout) { invoke(jconf, "setExternalBackendStopTimeout", as.integer(timeout)); .self },
 
     setExternalHadoopExecutable = function(executable) { invoke(jconf, "setExternalHadoopExecutable", executable); .self },
 

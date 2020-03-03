@@ -42,15 +42,15 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 #
 # Setters
 #
-    setNumH2OWorkers = function(numWorkers) { invoke(jconf, "setNumH2OWorkers", numWorkers); .self },
+    setNumH2OWorkers = function(numWorkers) { invoke(jconf, "setNumH2OWorkers", as.integer(numWorkers)); .self },
 
-    setDrddMulFactor = function(factor) { invoke(jconf, "setDrddMulFactor", factor); .self },
+    setDrddMulFactor = function(factor) { invoke(jconf, "setDrddMulFactor", as.integer(factor)); .self },
 
-    setNumRddRetries = function(retries) { invoke(jconf, "setNumRddRetries", retries); .self },
+    setNumRddRetries = function(retries) { invoke(jconf, "setNumRddRetries", as.integer(retries)); .self },
 
-    setDefaultCloudSize = function(defaultClusterSize) { invoke(jconf, "setDefaultCloudSize", defaultClusterSize); .self },
+    setDefaultCloudSize = function(defaultClusterSize) { invoke(jconf, "setDefaultCloudSize", as.integer(defaultClusterSize)); .self },
 
-    setSubseqTries = function(subseqTriesNum) { invoke(jconf, "setSubseqTries", subseqTriesNum); .self },
+    setSubseqTries = function(subseqTriesNum) { invoke(jconf, "setSubseqTries", as.integer(subseqTriesNum)); .self },
 
     setH2ONodeWebEnabled = function() { invoke(jconf, "setH2ONodeWebEnabled"); .self },
 
