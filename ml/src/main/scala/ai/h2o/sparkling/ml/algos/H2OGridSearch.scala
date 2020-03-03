@@ -78,10 +78,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     algoParams._response_column = getLabelCol()
     algoParams._weights_column = getWeightCol()
     val trainFrame = algoParams._train.get()
-    if (getAllStringColumnsToCategorical()) {
-      H2OFrameSupport.allStringVecToCategorical(trainFrame)
-    }
-    H2OFrameSupport.columnsToCategorical(trainFrame, getColumnsToCategorical())
 
     water.DKV.put(trainFrame)
     val Cartesian = HyperSpaceSearchCriteria.Strategy.Cartesian.name()
@@ -208,7 +204,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
-  def selectModelFromGrid(grid: Grid[_]): H2OBaseModel = {
+  private def selectModelFromGrid(grid: Grid[_]): H2OBaseModel = {
     if (gridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
