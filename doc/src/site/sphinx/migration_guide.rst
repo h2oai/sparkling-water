@@ -67,6 +67,8 @@ Removal of Deprecated Methods and Classes
 
 - Method ``get_conf`` on PySparkling ``H2OContext`` is removed in favor of the ``getConf`` method.
 
+- On Python and Scala ``H2OGLM`` API, the methods ``setExactLambdas`` and ``getExactLambdas`` are removed without replacement.
+
 - On H2OConf Python API, the following methods have been renamed to be consistent with the Scala counterparts:
 
        - ``h2o_cluster`` -> ``h2oCluster``
