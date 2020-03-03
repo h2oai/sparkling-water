@@ -303,7 +303,7 @@ External backend configuration properties
 | ``spark.ext.h2o.cluster.start.timeout``               | ``120s``       | ``setClusterStartTimeout(Integer)``             | Timeout in seconds for starting     |
 |                                                       |                |                                                 | H2O external cluster.               |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.cluster.info.name``                   | ``None``       | ``setClusterConfigFile(Integer)``               | Full path to a file which is used   |
+| ``spark.ext.h2o.cluster.info.name``                   | ``None``       | ``setClusterInfoFile(Integer)``                 | Full path to a file which is used   |
 |                                                       |                |                                                 | sd the notification file for the    |
 |                                                       |                |                                                 | startup of external H2O cluster.    |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+

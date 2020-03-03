@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import warnings
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 
 
@@ -116,7 +117,13 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setClusterConfigFile(self, path):
-        self._jconf.setClusterConfigFile(path)
+        warnings.warn("The method 'setClusterConfigFile' has been deprecated and will be removed in 3.30."
+                      " Use the 'setClusterInfoFile' method instead.")
+        self.setClusterInfoFile(path)
+        return self
+
+    def setClusterInfoFile(self, path):
+        self._jconf.setClusterInfoFile(path)
         return self
 
     def setMapperXmx(self, mem):
