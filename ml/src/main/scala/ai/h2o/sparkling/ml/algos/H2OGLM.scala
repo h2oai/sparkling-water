@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -143,9 +142,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def getNonNegative(): Boolean = $(nonNegative)
 
-  @DeprecatedMethod
-  def getExactLambdas(): Boolean = false
-
   def getLambdaMinRatio(): Double = $(lambdaMinRatio)
 
   def getMaxIterations(): Int = $(maxIterations)
@@ -211,9 +207,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
   def setNlambdas(value: Int): this.type = set(nlambdas, value)
 
   def setNonNegative(value: Boolean): this.type = set(nonNegative, value)
-
-  @DeprecatedMethod
-  def setExactLambdas(value: Boolean): this.type = this
 
   def setLambdaMinRatio(value: Double): this.type = set(lambdaMinRatio, value)
 
