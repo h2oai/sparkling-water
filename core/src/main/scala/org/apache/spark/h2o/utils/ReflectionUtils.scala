@@ -151,7 +151,6 @@ object ReflectionUtils {
     *
     * @param v H2O vector
     * @return catalyst data type
-    * @throws IllegalArgumentException if type is recognized
     */
   def dataTypeFor(v: Vec): DataType = supportedType(v).sparkType
 
