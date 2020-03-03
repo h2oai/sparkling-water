@@ -103,11 +103,20 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
     }
 }
 
+def buildingAgainstMasterOrRel() {
+    if (project.hasProperty("buildAgainstH2OBranch")) {
+        def h2oBranch = project.property("buildAgainstH2OBranch")
+        return h2oBranch == "master" || h2oBranch == "rel-${h2oMajorName}"
+    } else {
+        return false
+    }
+}
+
 def getS3Path() {
     def branch = getGitBranch()
     def formattedSWBranch = branch.replaceAll("/", "-")
     String path
-    if (project.hasProperty("buildAgainstH2OBranch")) {
+    if (!buildingAgainstMasterOrRel()) {
         def h2oBranch = project.property("buildAgainstH2OBranch")
         def formattedH2OBranch = h2oBranch.replaceAll("/", "-")
         path = "${formattedSWBranch}_${formattedH2OBranch}"
