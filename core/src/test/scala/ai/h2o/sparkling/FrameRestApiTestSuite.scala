@@ -28,7 +28,13 @@ import water.api.TestUtils
 class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
     conf = defaultSparkConf
-      .set("spark.ext.h2o.rest.api.based.client", "true"))
+      .set("spark.ext.h2o.rest.api.based.client", "true")
+      .set("spark.ext.h2o.cloud.name", "kuba")
+      .set("spark.ext.h2o.backend.cluster.mode", "external")
+      .set("spark.ext.h2o.external.start.mode", "manual")
+      .set("spark.ext.h2o.external.disable.version.check", "true")
+      .set("spark.ext.h2o.cloud.representative", "192.168.0.10:54323"))
+
 
 
   private def uploadH2OFrame(): H2OFrame = {
@@ -88,5 +94,28 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     assert(valid.frameId == s"${originalFrame.frameId}_valid")
     assert(train.numberOfRows == 342)
     assert(valid.numberOfRows == 38)
+  }
+
+  test("subframe with all columns") {
+    val originalFrame = uploadH2OFrame()
+    val newFrame = originalFrame.subframe(originalFrame.columns.map(_.name))
+    assert(originalFrame == newFrame)
+  }
+
+  test("subframe with non-existent column") {
+    val originalFrame = uploadH2OFrame()
+    val nonExistentColumns = Array("non-existent-col")
+    val thrown = intercept[IllegalArgumentException]{
+      originalFrame.subframe(Array("non-existent-col"))
+    }
+    assert(thrown.getMessage == s"The following columns are not available on the H2OFrame ${originalFrame.frameId}: ${nonExistentColumns.mkString(", ")}")
+  }
+
+  test("subframe with specific columns") {
+    val originalFrame = uploadH2OFrame()
+    val selectedColumns = Array("AGE", "CAPSULE")
+    val subframe = originalFrame.subframe(selectedColumns)
+    assert(subframe.columns.map(_.name).sorted.sameElements(selectedColumns))
+    assert(subframe.frameId != originalFrame.frameId)
   }
 }

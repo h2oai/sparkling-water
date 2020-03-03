@@ -17,12 +17,20 @@
 
 package ai.h2o.sparkling.ml.features
 
+import ai.h2o.sparkling.backend.external.RestApiUtils
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
-import org.apache.spark.h2o.Frame
+import water.DKV
+import water.support.H2OFrameSupport
 
 trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {
-  protected def convertRelevantColumnsToCategorical(frame: Frame): Unit = {
+  protected def convertRelevantColumnsToCategorical(frameKey: String): Unit = {
     val relevantColumns = getInputCols() ++ Array(getLabelCol())
-    relevantColumns.foreach(frame.toCategoricalCol(_))
+    if (RestApiUtils.isRestAPIBased()) {
+      H2OFrame(frameKey).convertColumnsToCategorical(relevantColumns)
+    } else {
+      H2OFrameSupport.columnsToCategorical(DKV.getGet(frameKey), relevantColumns)
+    }
+
   }
 }

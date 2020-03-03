@@ -78,6 +78,25 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
     H2OJob(splitFrameV3.key.name).waitForFinish()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
   }
+
+  def subframe(columns: Array[String]): H2OFrame = {
+    val nonExistentColumns = columns.diff(this.columns.map(_.name))
+    if (nonExistentColumns.nonEmpty) {
+      throw new IllegalArgumentException(s"The following columns are not available on the H2OFrame ${this.frameId}: ${nonExistentColumns.mkString(", ")}")
+    }
+    if (columns.sorted.sameElements(this.columns.map(_.name).sorted)) {
+      this
+    } else {
+      val endpoint = getClusterEndpoint(conf)
+      val colIndices = columns.map(col => this.columns.map(_.name).indexOf(col))
+      val newFrameId = s"${frameId}_subframe_${colIndices.mkString("_")}"
+      val params = Map(
+        "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, colIndices.mkString("[", ",", "]"))
+      )
+      val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+      H2OFrame(rapidsFrameV3.key.name)
+    }
+  }
 }
 
 object H2OFrame extends RestCommunication {
