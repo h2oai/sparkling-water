@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos;
+package ai.h2o.sparkling.model;
 
-public enum H2OGridSearchMetric {
+public enum H2OMetric {
     AUTO(true),
     MeanResidualDeviance(false),
     R2(true),
@@ -46,7 +46,7 @@ public enum H2OGridSearchMetric {
 
     private boolean higherTheBetter;
 
-    H2OGridSearchMetric(boolean higherTheBetter) {
+    H2OMetric(boolean higherTheBetter) {
         this.higherTheBetter = higherTheBetter;
     }
 
