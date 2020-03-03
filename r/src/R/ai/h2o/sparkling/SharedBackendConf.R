@@ -228,7 +228,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setH2OClientLogDir = function(dir) { invoke(jconf, "setH2OClientLogDir", dir); .self },
 
-    setClientPortBase = function(basePort) { invoke(jconf, "setClientPortBase", as.integer(basePort)); .self },
+    setClientBasePort = function(basePort) { invoke(jconf, "setClientBasePort", as.integer(basePort)); .self },
 
     setClientWebPort = function(port) { invoke(jconf, "setClientWebPort", as.integer(port)); .self },
 

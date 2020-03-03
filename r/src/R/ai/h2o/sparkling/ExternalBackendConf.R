@@ -82,7 +82,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setClusterStartTimeout = function(clusterStartTimeout) { invoke(jconf, "setClusterStartTimeout", as.integer(clusterStartTimeout)); .self },
 
-    setClusterConfigFile = function(path) { invoke(jconf, "setClusterConfigFile", path); .self },
+    setClusterInfoFile = function(path) { invoke(jconf, "setClusterInfoFile", path); .self },
 
     setMapperXmx = function(mem) { invoke(jconf, "setMapperXmx", mem); .self },
 
