@@ -19,7 +19,7 @@ from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervised
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
-
+import warnings
 
 class H2OGLMParams(H2OAlgoSupervisedParams):
     ##
@@ -102,12 +102,6 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         Params._dummy(),
         "nonNegative",
         "nonNegative",
-        H2OTypeConverters.toBoolean())
-
-    exactLambdas = Param(
-        Params._dummy(),
-        "exactLambdas",
-        "exact lambdas",
         H2OTypeConverters.toBoolean())
 
     lambdaMinRatio = Param(
@@ -224,7 +218,8 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self.getOrDefault(self.nonNegative)
 
     def getExactLambdas(self):
-        return self.getOrDefault(self.exactLambdas)
+        warnings.warn("Method 'getExactLambdas' is deprecated and will be removed in the next major release.")
+        return False
 
     def getLambdaMinRatio(self):
         return self.getOrDefault(self.lambdaMinRatio)
@@ -305,7 +300,8 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(nonNegative=value)
 
     def setExactLambdas(self, value):
-        return self._set(exactLambdas=value)
+        warnings.warn("Method 'setExactLambdas' is deprecated and will be removed in the next major release.")
+        return self
 
     def setLambdaMinRatio(self, value):
         return self._set(lambdaMinRatio=value)
