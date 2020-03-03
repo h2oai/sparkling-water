@@ -106,7 +106,7 @@ class H2OTargetEncoderModel(
       outputFrame.subframe(outputFrameColumns).frameId
     } else {
       val outputFrame = transformOverClient(input)
-      outputFrame.subframe(outputFrameColumns)._key.toString
+      new water.fvec.H2OFrame(outputFrame.subframe(outputFrameColumns))._key.toString
     }
     val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrameKey)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
