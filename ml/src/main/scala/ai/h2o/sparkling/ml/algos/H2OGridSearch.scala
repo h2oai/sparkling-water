@@ -114,7 +114,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoParams.algoName()}_mojoModel"))
     }
 
-    val binaryModel = selectModelFromGrid(grid)
+    val binaryModel = selectModelFromGrid()
     val mojoData = ModelSerializationSupport.getMojoData(binaryModel)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
@@ -204,11 +204,11 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
-  private def selectModelFromGrid(grid: Grid[_]): H2OBaseModel = {
+  private def selectModelFromGrid(): H2OBaseModel = {
     if (gridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
-    grid.getModels.head
+    gridModels.head
   }
 
 
