@@ -24,6 +24,9 @@ From 3.28.1 to 3.30
 - It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithms. Previously,
   the algorithm would create the H2OContext on demand.
 
+- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
+  ``setClusterInfoFile`` on ``H2OConf``.
+
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
