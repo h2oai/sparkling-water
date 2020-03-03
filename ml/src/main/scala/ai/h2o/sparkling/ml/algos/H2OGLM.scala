@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -69,7 +70,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
   private val lambdaSearch = booleanParam("lambdaSearch")
   private val nlambdas = intParam("nlambdas")
   private val nonNegative = booleanParam("nonNegative")
-  private val exactLambdas = booleanParam("exactLambdas", "exact lambdas")
   private val lambdaMinRatio = doubleParam("lambdaMinRatio")
   private val maxIterations = intParam("maxIterations")
   private val intercept = booleanParam("intercept")
@@ -100,7 +100,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
     lambdaSearch -> false,
     nlambdas -> -1,
     nonNegative -> false,
-    exactLambdas -> false,
     lambdaMinRatio -> -1,
     maxIterations -> -1,
     intercept -> true,
@@ -144,7 +143,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def getNonNegative(): Boolean = $(nonNegative)
 
-  def getExactLambdas(): Boolean = $(exactLambdas)
+  @DeprecatedMethod
+  def getExactLambdas(): Boolean = false
 
   def getLambdaMinRatio(): Double = $(lambdaMinRatio)
 
@@ -212,7 +212,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def setNonNegative(value: Boolean): this.type = set(nonNegative, value)
 
-  def setExactLambdas(value: Boolean): this.type = set(exactLambdas, value)
+  @DeprecatedMethod
+  def setExactLambdas(value: Boolean): this.type = this
 
   def setLambdaMinRatio(value: Double): this.type = set(lambdaMinRatio, value)
 
@@ -254,7 +255,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
     parameters._lambda_search = $(lambdaSearch)
     parameters._nlambdas = $(nlambdas)
     parameters._non_negative = $(nonNegative)
-    parameters._exactLambdas = $(exactLambdas)
     parameters._lambda_min_ratio = $(lambdaMinRatio)
     parameters._max_iterations = $(maxIterations)
     parameters._intercept = $(intercept)
