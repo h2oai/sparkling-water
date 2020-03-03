@@ -28,15 +28,8 @@ import water.api.TestUtils
 class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
     conf = defaultSparkConf
-      .set("spark.ext.h2o.rest.api.based.client", "true")
-      .set("spark.ext.h2o.cloud.name", "kuba")
-      .set("spark.ext.h2o.backend.cluster.mode", "external")
-      .set("spark.ext.h2o.external.start.mode", "manual")
-      .set("spark.ext.h2o.external.disable.version.check", "true")
-      .set("spark.ext.h2o.cloud.representative", "192.168.0.10:54323"))
-
-
-
+      .set("spark.ext.h2o.rest.api.based.client", "true"))
+  
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
     val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
