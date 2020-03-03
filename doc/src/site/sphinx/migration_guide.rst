@@ -24,9 +24,6 @@ From 3.28.1 to 3.30
 - It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithms. Previously,
   the algorithm would create the H2OContext on demand.
 
-- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
-  ``setClusterInfoFile`` on ``H2OConf``.
-
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -226,6 +223,9 @@ Removal of Deprecated Methods and Classes
        - ``set_client_extra_properties`` -> ``setClientExtraProperties``
 
 - In ``H2OAutoML`` Python and Scala API, the member ``leaderboard()``/``leaderboard`` is replaced by the method ``getLeaderboard()``.
+
+- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
+  ``setClusterInfoFile`` on ``H2OConf``.
 
 From 3.28.0 to 3.28.1
 ---------------------
