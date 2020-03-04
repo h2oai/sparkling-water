@@ -227,6 +227,10 @@ Removal of Deprecated Methods and Classes
 - The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
   ``setClusterInfoFile`` on ``H2OConf``.
 
+- In ``H2OGridSearch`` Python API, the methods: ``get_grid_models``, ``get_grid_models_params`` and `` get_grid_models_metrics``
+  are removed and replaced by ``getGridModels``, ``getGridModelsParams`` and `` getGridModelsMetrics``
+
+
 From 3.28.0 to 3.28.1
 ---------------------
 

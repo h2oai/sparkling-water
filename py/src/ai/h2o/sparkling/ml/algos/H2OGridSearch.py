@@ -23,6 +23,7 @@ from ai.h2o.sparkling.ml.params import H2OGridSearchParams
 from pyspark import keyword_only
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql import SparkSession
+import warnings
 
 class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
 
@@ -63,14 +64,29 @@ class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
         self._set(**kwargs)
 
     def get_grid_models(self):
+        warnings.warn("The method 'get_grid_models' has been deprecated and will be removed in 3.30."
+                      " Use the 'getGridModels' method instead.")
+        return self.getGridModels()
+
+    def getGridModels(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
 
     def get_grid_models_params(self):
+        warnings.warn("The method 'get_grid_models_params' has been deprecated and will be removed in 3.30."
+                      " Use the 'getGridModelsParams' method instead.")
+        return self.getGridModelsParams()
+
+    def getGridModelsParams(self):
         jdf = self._java_obj.getGridModelsParams()
         sqlContext = SparkSession.builder.getOrCreate()._wrapped
         return DataFrame(jdf, sqlContext)
 
     def get_grid_models_metrics(self):
+        warnings.warn("The method 'get_grid_models_metrics' has been deprecated and will be removed in 3.30."
+                      " Use the 'getGridModelsMetrics' method instead.")
+        return self.getGridModelsMetrics()
+
+    def getGridModelsMetrics(self):
         jdf = self._java_obj.getGridModelsMetrics()
         sqlContext = SparkSession.builder.getOrCreate()._wrapped
         return DataFrame(jdf, sqlContext)
