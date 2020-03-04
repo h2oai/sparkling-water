@@ -294,7 +294,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }.getOrElse(List.empty)
 
 
-    val schema = StructType(List(StructField("Mojo Model ID", StringType, nullable = false)) ++ colNames)
+    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
     val spark = SparkSessionUtils.active
     spark.createDataFrame(spark.sparkContext.parallelize(rowValues), schema)
   }
@@ -310,7 +310,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       metrics.map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
     }.getOrElse(List.empty)
 
-    val schema = StructType(List(StructField("Model ID", StringType, nullable = false)) ++ colNames)
+    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
     val spark = SparkSessionUtils.active
     spark.createDataFrame(spark.sparkContext.parallelize(rowValues), schema)
   }
