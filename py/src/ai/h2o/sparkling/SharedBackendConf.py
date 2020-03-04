@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import warnings
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 
 
@@ -380,12 +379,6 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setH2OClientLogDir(self, dir):
         self._jconf.setH2OClientLogDir(dir)
-        return self
-
-    def setClientPortBase(self, basePort):
-        warnings.warn("The method 'setClientPortBase' has been deprecated and will be removed in 3.30."
-                      " Use the 'setClientBasePort' method instead.")
-        self.setClientBasePort(basePort)
         return self
 
     def setClientBasePort(self, basePort):
