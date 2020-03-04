@@ -752,7 +752,13 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setClientPortBase(baseport)
 
     def setClientPortBase(self, basePort):
-        self._jconf.setClientPortBase(basePort)
+        warnings.warn("The method 'setClientPortBase' has been deprecated and will be removed in 3.30."
+                      " Use the 'setClientBasePort' method instead.")
+        self.setClientBasePort(basePort)
+        return self
+
+    def setClientBasePort(self, basePort):
+        self._jconf.setClientBasePort(basePort)
         return self
 
     def set_client_web_port(self, port):
