@@ -46,9 +46,9 @@ trait H2OModelExtractionUtils {
 
   protected def extractAllMetrics(modelJson: JsonObject): H2OMetricsHolder = {
     val json = modelJson.get("output").getAsJsonObject
-    val trainingMetrics = extractMetrics(json.getAsJsonObject("training_metrics"))
-    val validationMetrics = extractMetrics(json.getAsJsonObject("validation_metrics"))
-    val crossValidationMetrics = extractMetrics(json.getAsJsonObject("cross_validation_metrics"))
+    val trainingMetrics = extractMetrics(json, "training_metrics")
+    val validationMetrics = extractMetrics(json, "validation_metrics")
+    val crossValidationMetrics = extractMetrics(json, "cross_validation_metrics")
     H2OMetricsHolder(trainingMetrics, validationMetrics, crossValidationMetrics)
   }
 
@@ -172,14 +172,18 @@ trait H2OModelExtractionUtils {
     }
   }
 
-  private def extractMetrics(json: JsonObject): Option[Map[H2OMetric, Double]] = {
-    if (json.isJsonNull) {
+  private def extractMetrics(json: JsonObject, metricType: String): Option[Map[H2OMetric, Double]] = {
+    if (json.get(metricType).isJsonNull) {
       None
     } else {
+      import scala.collection.JavaConverters._
+      val metricGroup = json.getAsJsonObject(metricType)
+      val fields = metricGroup.entrySet().asScala.map(_.getKey)
       val metrics = H2OMetric.values().foldLeft(mutable.Map[H2OMetric, Double]()) { case (map, metric) =>
         val metricName = metric.toString
-        if (json.has(metricName)) {
-          map.put(metric, json.get(metricName).getAsDouble)
+        val fieldName = fields.find(_.equalsIgnoreCase(metricName))
+        if (fieldName.isDefined) {
+          map.put(metric, metricGroup.get(fieldName.get).getAsDouble)
         }
         map
       }
