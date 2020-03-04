@@ -139,23 +139,30 @@ Spark, please run:
 
 	sc <- spark_connect(master = "local")
 
-Changing the Default H2O Client Port
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-RSparkling does not expose setters and getters for specifying configuration options.
-You must specify the Spark configuration options directly, for example:
+Using RSparkling
+----------------
+
+Specify H2OConf
+~~~~~~~~~~~~~~~
+``H2OConf`` contains all setting needed the start and run of H2O-3 cluster.
 
 .. code:: r
 
-   config=spark_config()
-   config=c(config, list("spark.ext.h2o.node.port.base"="55555", "spark.ext.h2o.client.port.base"="44444"))
-   sc <- spark_connect(master="yarn-client", app_name = "demo", config = config)
+    h2oConf <- H2OConf()
 
+The newly created instance of ``H2OConf`` contains SW defaults affected by property values specified in ``spark-defaults.conf``.
+If you want to change a value of a given property, use an appropriate setter listed in :ref:`sw_config_properties`.
 
-In the above, ``spark.ext.h2o.node.port.base`` affects the worker nodes,
-and ``spark.ext.h2o.client.port.base`` affects the client.
+.. code:: r
 
-Using RSparkling
-----------------
+    h2oConf$setNodeBasePort(55555)
+    h2oConf$setClientBasePort(44444)
+
+Or you change the property value via the ``set`` method and specifying the property name.:
+
+.. code:: r
+
+    h2oConf$set("spark.ext.h2o.cloud.name", "mycloud")
 
 Create H2OContext
 ~~~~~~~~~~~~~~~~~
@@ -164,7 +171,7 @@ To create H2OContext, call:
 
 .. code:: r
 
-   hc <- H2OContext.getOrCreate()
+   hc <- H2OContext.getOrCreate(h2oConf)
 
 Open H2O Flow
 ~~~~~~~~~~~~~
