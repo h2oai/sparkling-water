@@ -224,6 +224,9 @@ Removal of Deprecated Methods and Classes
 
 - In ``H2OAutoML`` Python and Scala API, the member ``leaderboard()``/``leaderboard`` is replaced by the method ``getLeaderboard()``.
 
+- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
+  ``setClusterInfoFile`` on ``H2OConf``.
+
 From 3.28.0 to 3.28.1
 ---------------------
 
