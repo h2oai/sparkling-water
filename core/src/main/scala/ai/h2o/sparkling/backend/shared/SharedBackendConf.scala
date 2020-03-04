@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.backend.shared
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 
 import scala.collection.JavaConverters._
@@ -261,9 +260,6 @@ trait SharedBackendConf {
   def setH2OClientLogLevel(level: String): H2OConf = set(PROP_CLIENT_LOG_LEVEL._1, level)
 
   def setH2OClientLogDir(dir: String): H2OConf = set(PROP_CLIENT_LOG_DIR._1, dir)
-
-  @DeprecatedMethod("setClientBasePort", "3.30")
-  def setClientPortBase(basePort: Int): H2OConf = setClientBasePort(basePort)
 
   def setClientBasePort(basePort: Int): H2OConf = set(PROP_CLIENT_PORT_BASE._1, basePort.toString)
 
