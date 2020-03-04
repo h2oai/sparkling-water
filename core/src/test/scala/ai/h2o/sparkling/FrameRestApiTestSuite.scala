@@ -98,7 +98,7 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
   test("subframe with non-existent column") {
     val originalFrame = uploadH2OFrame()
     val nonExistentColumns = Array("non-existent-col")
-    val thrown = intercept[IllegalArgumentException]{
+    val thrown = intercept[IllegalArgumentException] {
       originalFrame.subframe(Array("non-existent-col"))
     }
     assert(thrown.getMessage == s"The following columns are not available on the H2OFrame ${originalFrame.frameId}: ${nonExistentColumns.mkString(", ")}")
