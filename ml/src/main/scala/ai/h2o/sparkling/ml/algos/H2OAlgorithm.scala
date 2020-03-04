@@ -36,22 +36,39 @@ import water.exceptions.H2OModelBuilderIllegalArgumentException
 import water.support.ModelSerializationSupport
 import water.{DKV, H2O, Key}
 
-import scala.collection.mutable
 import scala.reflect.{ClassTag, classTag}
 
 /**
  * Base class for H2O algorithm wrapper as a Spark transformer.
  */
 abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends Estimator[H2OMOJOModel] with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAlgoCommonParams[P] {
+  extends Estimator[H2OMOJOModel]
+    with H2OAlgoCommonUtils
+    with DefaultParamsWritable
+    with H2OAlgoCommonParams[P]
+    with RestCommunication {
 
   protected def prepareH2OTrainFrameForFitting(trainFrameKey: String): Unit = {}
 
   private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
     prepareH2OTrainFrameForFitting(trainKey)
-    val hc = H2OContext.ensure()
-    val model = H2OAlgorithm.trainModelOverRest(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
-    model.downloadMOJOData()
+    val conf = H2OContext.ensure().getConf
+    val params = getH2OAlgoRESTParams() ++
+      Map("training_frame" -> trainKey) ++
+      validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
+
+    val algoName = parameters.algoName().toLowerCase
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params)) { response =>
+      IOUtils.toString(response)
+    }
+
+    val gson = new Gson()
+    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
+    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
+    H2OJob(jobId).waitForFinish()
+    val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
+    H2OModel(modelId).downloadMOJOData()
   }
 
   private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
@@ -127,27 +144,4 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-}
-
-object H2OAlgorithm extends RestCommunication {
-  private def trainModelOverRest(conf: H2OConf,
-                                 algoName: String,
-                                 H2OParamNameToValueMap: Map[String, Any],
-                                 trainKey: String,
-                                 validKey: Option[String]): H2OModel = {
-    val params = mutable.Map("training_frame" -> trainKey) ++ H2OParamNameToValueMap
-    validKey.foreach { key => params += ("validation_frame" -> key) }
-
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params.toMap)) { response =>
-      IOUtils.toString(response)
-    }
-
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
-    H2OJob(jobId).waitForFinish()
-    val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
-    H2OModel(modelId)
-  }
 }

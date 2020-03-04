@@ -49,15 +49,15 @@ class H2OTargetEncoder(override val uid: String)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
     val targetEncoderModel = if (RestApiUtils.isRestAPIBased()) {
-      trainTargetEncodingModelOverRest(input, ignoredColumns)
+      fitOverRest(input, ignoredColumns)
     } else {
-      trainTargetEncodingModel(input, ignoredColumns)
+      fitOverClient(input, ignoredColumns)
     }
     val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
     copyValues(model)
   }
 
-  private def trainTargetEncodingModelOverRest(trainingFrameKey: String, ignoredColumns: Array[String]): String = {
+  private def fitOverRest(trainingFrameKey: String, ignoredColumns: Array[String]): String = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
 
@@ -81,7 +81,7 @@ class H2OTargetEncoder(override val uid: String)
     modelId
   }
 
-  private def trainTargetEncodingModel(trainingFrameKey: String, ignoredColumns: Array[String]): String = try {
+  private def fitOverClient(trainingFrameKey: String, ignoredColumns: Array[String]): String = try {
     val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
     targetEncoderParameters._blending = getBlendedAvgEnabled()
     targetEncoderParameters._k = getBlendedAvgInflectionPoint()

@@ -51,8 +51,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   // Override default values
   setDefault(nfolds, 5)
 
-  private lazy val spark = SparkSessionUtils.active
-
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
   private var amlKeyOption: Option[String] = None
@@ -103,22 +101,15 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
-
     val inputSpec = getInputSpec(trainKey, validKey)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
-    val H2OParamNameToValueMap = Map (
+    val H2OParamNameToValueMap = Map(
       "input_spec" -> inputSpec,
       "build_models" -> buildModels,
       "build_control" -> buildControl
     )
-    val hc = H2OContext.ensure()
-    val model = trainAutoMLOverRest(hc.getConf, H2OParamNameToValueMap)
-    model.downloadMOJOData()
-  }
-
-  private def trainAutoMLOverRest(conf: H2OConf,
-                                  H2OParamNameToValueMap: Map[String, Any]): H2OModel = {
+    val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, H2OParamNameToValueMap, asJSON = true)) { response =>
       IOUtils.toString(response)
@@ -130,7 +121,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OJob(jobId).waitForFinish()
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
-    H2OModel(H2OAutoML.getLeaderModelId(conf, autoMLJobId))
+    val model = H2OModel(H2OAutoML.getLeaderModelId(conf, autoMLJobId))
+    model.downloadMOJOData()
   }
 
   private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
@@ -208,20 +200,11 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def leaderboardAsSparkFrame(amlKey: String, extraColumns: Array[String]): DataFrame = {
-    // Get LeaderBoard
     if (RestApiUtils.isRestAPIBased()) {
       val hc = H2OContext.ensure()
-        H2OAutoML.getLeaderboard(hc.getConf, amlKey, extraColumns)
+      getLeaderboardOverRest(hc.getConf, amlKey, extraColumns)
     } else {
-      val twoDimTable = DKV.getGet[AutoML](amlKey).leaderboard().toTwoDimTable(extraColumns: _*)
-      val colNames = twoDimTable.getColHeaders
-      val data = twoDimTable.getCellValues.map(_.map(_.toString))
-      val rows = data.map {
-        Row.fromSeq(_)
-      }
-      val schema = StructType(colNames.map { name => StructField(name, StringType) })
-      val rdd = spark.sparkContext.parallelize(rows)
-      spark.createDataFrame(rdd, schema)
+      getLeaderboardOverClient(amlKey, extraColumns)
     }
   }
 
@@ -241,11 +224,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     schema
   }
 
-  override def copy(extra: ParamMap): this.type = defaultCopy(extra)
-}
-
-object H2OAutoML extends H2OParamsReadable[H2OAutoML] with RestCommunication {
-  private[sparkling] def getLeaderboard(conf: H2OConf, automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
+  private def getLeaderboardOverRest(conf: H2OConf, automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map("extensions" -> extraColumns)
     val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
@@ -265,10 +244,27 @@ object H2OAutoML extends H2OParamsReadable[H2OAutoML] with RestCommunication {
     spark.createDataFrame(rdd, schema)
   }
 
-  private[sparkling] def getLeaderModelId(conf: H2OConf, automlId: String): String = {
-    getLeaderboard(conf, automlId).select("model_id").head().getString(0)
+  private def getLeaderboardOverClient(amlKey: String, extraColumns: Array[String]): DataFrame = {
+    val twoDimTable = DKV.getGet[AutoML](amlKey).leaderboard().toTwoDimTable(extraColumns: _*)
+    val colNames = twoDimTable.getColHeaders
+    val data = twoDimTable.getCellValues.map(_.map(_.toString))
+    val rows = data.map {
+      Row.fromSeq(_)
+    }
+    val schema = StructType(colNames.map { name => StructField(name, StringType) })
+    val spark = SparkSessionUtils.active
+    val rdd = spark.sparkContext.parallelize(rows)
+    spark.createDataFrame(rdd, schema)
   }
+
+  private def getLeaderModelId(conf: H2OConf, automlId: String): String = {
+    getLeaderboardOverRest(conf, automlId).select("model_id").head().getString(0)
+  }
+
+  override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
+
+object H2OAutoML extends H2OParamsReadable[H2OAutoML]
 
 trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstraints {
 
