@@ -17,6 +17,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import java.lang.reflect.Field
+import java.net.URI
 import java.util
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
@@ -102,12 +103,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, GridSearch.getParallelismLevel(getParallelism()))
     // Block until GridSearch finishes
     val grid = job.get()
-    if (grid.getModels.isEmpty) {
-      throw new IllegalArgumentException("No Model returned.")
-    }
-    grid.getModels.map { m =>
-      H2OModel.fromBinary(m, getHyperParameters().asScala.keys.toArray)
-    }
+    val hyperParamsArray = getHyperParameters().asScala.keys.toArray
+    grid.getModels.map(m => H2OModel.fromBinary(m, hyperParamsArray))
   }
 
   private def getSearchCriteria(): String = {
@@ -162,11 +159,17 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
-    getGridModelKeys(gridId)
+    getGridModelKeys(endpoint, conf, gridId)
   }
 
-  private def getGridModelKeys(gridId: String): Array[H2OModel] = {
-    throw new UnsupportedOperationException
+  private def getGridModelKeys(endpoint: URI, conf: H2OConf, gridId: String): Array[H2OModel] = {
+    val gridJson = withResource(readURLContent(endpoint, "GET", s"/99/Grids/$gridId", conf)) { response =>
+      IOUtils.toString(response)
+    }
+    val gson = new Gson()
+    val jsonModelIds = gson.fromJson(gridJson, classOf[JsonElement]).getAsJsonObject.get("model_ids").getAsJsonArray.asScala
+    val keys = jsonModelIds.map(_.getAsJsonObject.get("name").getAsString)
+    keys.map(H2OModel(_)).toArray
   }
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algo = getAlgo()
@@ -183,6 +186,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       fitOverRest(algo, hyperParams, trainKey, validKey)
     } else {
       fitOverClient(algo.parameters, hyperParams, trainKey, validKey)
+    }
+    if (unsortedGridModels.isEmpty) {
+      throw new IllegalArgumentException("No Model returned.")
     }
     gridModels = sortGridModels(unsortedGridModels)
     gridMojoModels = gridModels.map { m =>
