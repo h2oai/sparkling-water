@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.internal
 import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkEnv
@@ -45,6 +46,7 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def subseqTries: Int = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
 
+  @DeprecatedMethod(version = "3.30")
   def h2oNodeWebEnabled: Boolean = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
 
   def nodeIcedDir: Option[String] = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
@@ -62,8 +64,10 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def setSubseqTries(subseqTriesNum: Int): H2OConf = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
 
+  @DeprecatedMethod(version = "3.30")
   def setH2ONodeWebEnabled(): H2OConf = set(PROP_NODE_ENABLE_WEB._1, value = true)
 
+  @DeprecatedMethod(version = "3.30")
   def setH2ONodeWebDisabled(): H2OConf = set(PROP_NODE_ENABLE_WEB._1, value = false)
 
   def setNodeIcedDir(dir: String): H2OConf = set(PROP_NODE_ICED_DIR._1, dir)

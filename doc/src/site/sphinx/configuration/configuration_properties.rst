@@ -266,10 +266,6 @@ Internal backend configuration properties
 |                                                    |                |                                                 | out size of Spark cluster, which are   |
 |                                                    |                |                                                 | producing the same number of nodes.    |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.enable.web``                  | ``false``      | ``setH2ONodeWebEnabled()``                      | Enable or disable web on H2O worker    |
-|                                                    |                |                                                 | nodes. It is disabled by default for   |
-|                                                    |                | ``setH2ONodeWebDisabled()``                     | security reasons.                      |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.hdfs_conf``                        | |hadoopConfig| | ``setHdfsConf(String)``                         | Either a string with the Path to a file|
 |                                                    |                |                                                 | with Hadoop HDFS configuration or the  |
 |                                                    |                |                                                 | org.apache.hadoop.conf.Configuration   |
