@@ -150,7 +150,7 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.flow.extra.http.headers``          | ``None``       | ``setFlowExtraHttpHeaders(Map[String,String])`` | Extra HTTP headers that will be used   |
 |                                                    |                |                                                 | in communication between the front-end |
-|                                                    |                |                                                 | and back-end part of Flow UI.          |
+|                                                    |                | ``setFlowExtraHttpHeaders(String)``             | and back-end part of Flow UI.          |
 |                                                    |                |                                                 | The headers should be delimited by     |
 |                                                    |                |                                                 | a new line. Don't forget to escape     |
 |                                                    |                |                                                 | special characters when passing        |
