@@ -104,14 +104,14 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val inputSpec = getInputSpec(trainKey, validKey)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
-    val H2OParamNameToValueMap = Map(
+    val params = Map(
       "input_spec" -> inputSpec,
       "build_models" -> buildModels,
       "build_control" -> buildControl
     )
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, H2OParamNameToValueMap, asJSON = true)) { response =>
+    val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, params, asJSON = true)) { response =>
       IOUtils.toString(response)
     }
 
