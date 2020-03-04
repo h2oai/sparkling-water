@@ -137,12 +137,27 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
   }
 
+  private def prepareHyperParameters(hyperParams: util.HashMap[String, Array[AnyRef]]): String = {
+    // REST API expects parameters without the starting `_`.
+    // User in SW api should anyway specify Sparkling Water algo names and we should map it to H2O ones internally.
+    // See https://0xdata.atlassian.net/browse/SW-1608
+    def prepareKey(key: String) = {
+      if (key.startsWith("_")) {
+        key.substring(1)
+      } else {
+        key
+      }
+    }
+    hyperParams.asScala.map { case (key, value) =>
+      s"'${prepareKey(key)}': ${value.mkString("[", ",", "]")}" }.mkString("{", ",", "}")
+  }
+
   private def fitOverRest(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
                           hyperParams: util.HashMap[String, Array[AnyRef]],
                           trainKey: String,
                           validKey: Option[String]): Array[H2OModel] = {
     val params = Map(
-      "hyper_parameters" -> hyperParams.asScala.map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}"),
+      "hyper_parameters" -> prepareHyperParameters(hyperParams),
       "parallelism" -> getParallelism(),
       "search_criteria" -> getSearchCriteria()
     ) ++ getAlgoParams(algo, trainKey, validKey)
