@@ -22,6 +22,7 @@ import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
 import water.DKV
 import water.fvec.Frame
+import water.support.H2OFrameSupport
 
 trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {
   protected def convertRelevantColumnsToCategorical(frameKey: String): Unit = {
@@ -29,7 +30,7 @@ trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {
     if (RestApiUtils.isRestAPIBased()) {
       H2OFrame(frameKey).convertColumnsToCategorical(relevantColumns)
     } else {
-      relevantColumns.foreach(DKV.getGet[Frame](frameKey).toCategoricalCol(_))
+      H2OFrameSupport.columnsToCategorical(DKV.getGet[Frame](frameKey), relevantColumns)
     }
   }
 }

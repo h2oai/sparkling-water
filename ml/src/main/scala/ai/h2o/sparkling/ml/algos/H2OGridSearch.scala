@@ -119,56 +119,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
                           hyperParams: util.HashMap[String, Array[AnyRef]],
                           trainKey: String,
                           validKey: Option[String]): Array[Byte] = {
-    // TODO: implement over REST
-    algoParams._train = DKV.getGet[Frame](trainKey)._key
-    algoParams._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
-
-    algoParams._nfolds = getNfolds()
-    algoParams._fold_column = getFoldCol()
-    algoParams._response_column = getLabelCol()
-    algoParams._weights_column = getWeightCol()
-    val trainFrame = algoParams._train.get()
-
-    water.DKV.put(trainFrame)
-    val Cartesian = HyperSpaceSearchCriteria.Strategy.Cartesian.name()
-    val RandomDiscrete = HyperSpaceSearchCriteria.Strategy.RandomDiscrete.name()
-    val criteria = getStrategy() match {
-      case Cartesian => new CartesianSearchCriteria
-      case RandomDiscrete =>
-        val c = new RandomDiscreteValueSearchCriteria
-        c.set_stopping_tolerance(getStoppingTolerance())
-        c.set_stopping_rounds(getStoppingRounds())
-        c.set_stopping_metric(ScoreKeeper.StoppingMetric.valueOf(getStoppingMetric()))
-        c.set_seed(getSeed())
-        c.set_max_models(getMaxModels())
-        c.set_max_runtime_secs(getMaxRuntimeSecs())
-        c
-      case _ => new CartesianSearchCriteria
-    }
-
-    val paramsBuilder = algoParams match {
-      case _: GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
-      case _: DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
-      case _: GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
-      case _: XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
-      case _: DRFParameters => new SimpleParametersBuilderFactory[DRFParameters]
-      case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
-    }
-    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
-      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, GridSearch.getParallelismLevel(getParallelism()))
-    // Block until GridSearch finishes
-    val grid = job.get()
-    if (grid.getModels.isEmpty) {
-      throw new IllegalArgumentException("No Model returned.")
-    }
-    val unsortedGridModels = grid.getModels.map(m => H2OModel.fromBinary(m, getHyperParameters().asScala.keys.toArray))
-    gridModels = sortGridModels(unsortedGridModels)
-    gridMojoModels = gridModels.map { m =>
-      val data = ModelSerializationSupport.getMojoData(DKV.getGet(m.modelId))
-      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoParams.algoName()}_mojoModel"))
-    }
-    val firstModel = extractFirstModelFromGrid()
-    ModelSerializationSupport.getMojoData(DKV.getGet[H2OBaseModel](firstModel.modelId))
+    // TODO: implement
+    throw new UnsupportedOperationException
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {

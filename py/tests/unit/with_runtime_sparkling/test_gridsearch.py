@@ -103,4 +103,4 @@ def testGetGridModels(prostateDataset):
 
     grid.fit(prostateDataset)
     models = grid.get_grid_models()
-    assert len(models) == 1
+    assert len(models) == 3

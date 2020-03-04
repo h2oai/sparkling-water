@@ -50,7 +50,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
   private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
     prepareH2OTrainFrameForFitting(trainKey)
     val hc = H2OContext.ensure()
-    val model = H2OAlgorithm.trainModelOverREST(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
+    val model = H2OAlgorithm.trainModelOverRest(hc.getConf, parameters.algoName().toLowerCase, getH2OAlgoRESTParams(), trainKey, validKey)
     model.downloadMOJOData()
   }
 
@@ -130,7 +130,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
 }
 
 object H2OAlgorithm extends RestCommunication {
-  private def trainModelOverREST(conf: H2OConf,
+  private def trainModelOverRest(conf: H2OConf,
                                  algoName: String,
                                  H2OParamNameToValueMap: Map[String, Any],
                                  trainKey: String,

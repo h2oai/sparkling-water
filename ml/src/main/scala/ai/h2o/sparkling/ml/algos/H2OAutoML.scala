@@ -55,9 +55,10 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
-  private var amlOption: Option[String] = None
-  private def fitOverRest(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
-    val inputSpec = Map(
+  private var amlKeyOption: Option[String] = None
+
+  private def getInputSpec(trainKey: String, validKey: Option[String]): Map[String, Any] = {
+    Map(
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
       "weights_column" -> getWeightCol(),
@@ -65,21 +66,22 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "sort_metric" -> getSortMetric(),
       "training_frame" -> trainKey
     ) ++ validKey.map{ key => Map("validation_frame" -> key) }.getOrElse(Map())
+  }
 
+  private def getBuildModels(): Map[String, Any] = {
     val monotoneConstraints = getMonotoneConstraints()
     val algoParameters = if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
       Map("monotone_constrains" -> monotoneConstraints)
     } else {
       Map()
     }
-
-    val buildModels = Map(
+    Map(
       "include_algos" -> determineIncludedAlgos(),
       "exclude_algos" -> null
     ) ++ (if (algoParameters.nonEmpty) Map("algo_parameters" -> algoParameters) else Map())
+  }
 
-
-
+  private def getBuildControl(): Map[String, Any] = {
     val stoppingCriteria = Map(
       "seed" -> getSeed(),
       "max_runtime_secs" -> getMaxRuntimeSecs(),
@@ -88,8 +90,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "stopping_metric" -> getStoppingMetric(),
       "max_models" -> getMaxModels()
     )
-
-    val buildControl = Map(
+    Map(
       "project_name" -> getProjectName(),
       "nfolds" -> getNfolds(),
       "balance_classes" -> getBalanceClasses(),
@@ -99,19 +100,24 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "keep_cross_validation_models" -> getKeepCrossValidationModels(),
       "stopping_criteria" -> stoppingCriteria
     )
+  }
 
+  private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
+
+    val inputSpec = getInputSpec(trainKey, validKey)
+    val buildModels = getBuildModels()
+    val buildControl = getBuildControl()
     val H2OParamNameToValueMap = Map (
       "input_spec" -> inputSpec,
       "build_models" -> buildModels,
       "build_control" -> buildControl
     )
-
     val hc = H2OContext.ensure()
-    val model = trainAutoMLOverREST(hc.getConf, H2OParamNameToValueMap)
+    val model = trainAutoMLOverRest(hc.getConf, H2OParamNameToValueMap)
     model.downloadMOJOData()
   }
 
-  private def trainAutoMLOverREST(conf: H2OConf,
+  private def trainAutoMLOverRest(conf: H2OConf,
                                   H2OParamNameToValueMap: Map[String, Any]): H2OModel = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, H2OParamNameToValueMap, asJSON = true)) { response =>
@@ -123,11 +129,12 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
-    amlOption = Some(autoMLJobId)
+    amlKeyOption = Some(autoMLJobId)
     H2OModel(H2OAutoML.getLeaderModelId(conf, autoMLJobId))
   }
 
-  private def fitOverClient(spec: AutoMLBuildSpec, trainKey: String, validKey: Option[String]): Array[Byte] = {
+  private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
+    val spec = new AutoMLBuildSpec
     spec.input_spec.training_frame = DKV.getGet[Frame](trainKey)._key
     spec.input_spec.validation_frame = validKey.map(DKV.getGet[Frame](_)._key).orNull
     spec.input_spec.response_column = getLabelCol()
@@ -156,7 +163,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
     // Block until AutoML finishes
     aml.get()
-    amlOption = Some(aml._key.toString)
+    amlKeyOption = Some(aml._key.toString)
     if (aml.leader() == null) {
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
@@ -166,13 +173,12 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    amlOption = None
-    val spec = new AutoMLBuildSpec
+    amlKeyOption = None
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
     val mojoData = if (RestApiUtils.isRestAPIBased()) {
-      fitOverRest(spec, trainKey, validKey)
+      fitOverRest(trainKey, validKey)
     } else {
-      fitOverClient(spec, trainKey, validKey)
+      fitOverClient(trainKey, validKey)
     }
 
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
@@ -225,7 +231,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     getLeaderboard(extraColumns.asScala.toArray)
   }
 
-  def getLeaderboard(extraColumns: Array[String]): DataFrame = amlOption match {
+  def getLeaderboard(extraColumns: Array[String]): DataFrame = amlKeyOption match {
       case Some(amlKey) => leaderboardAsSparkFrame(amlKey, extraColumns)
       case None => throw new RuntimeException("The 'fit' method must be called at first!")
     }
