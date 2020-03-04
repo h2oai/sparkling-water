@@ -162,22 +162,20 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       "search_criteria" -> getSearchCriteria()
     ) ++ getAlgoParams(algo, trainKey, validKey)
 
-    val conf = H2OContext.ensure().getConf
     val algoName = algo.parameters.algoName().toLowerCase()
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "POST", s"/99/Grid/$algoName", conf, params)) { response =>
-      IOUtils.toString(response)
-    }
+    val content = RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
 
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
-    getGridModelKeys(endpoint, conf, gridId)
+    getGridModelKeys(gridId)
   }
 
-  private def getGridModelKeys(endpoint: URI, conf: H2OConf, gridId: String): Array[H2OModel] = {
+  private def getGridModelKeys(gridId: String): Array[H2OModel] = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val gridJson = withResource(readURLContent(endpoint, "GET", s"/99/Grids/$gridId", conf)) { response =>
       IOUtils.toString(response)
     }
@@ -186,6 +184,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val keys = jsonModelIds.map(_.getAsJsonObject.get("name").getAsString)
     keys.map(H2OModel(_)).toArray
   }
+
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algo = getAlgo()
     if (algo == null) {

@@ -109,12 +109,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "build_models" -> buildModels,
       "build_control" -> buildControl
     )
-    val conf = H2OContext.ensure().getConf
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "POST", s"/99/AutoMLBuilder", conf, params, encodeParamsAsJson = true)) { response =>
-      IOUtils.toString(response)
-    }
-
+    val content = RestApiUtils.updateAsJson(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString

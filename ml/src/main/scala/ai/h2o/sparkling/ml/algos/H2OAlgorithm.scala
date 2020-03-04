@@ -52,17 +52,12 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
 
   private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
     prepareH2OTrainFrameForFitting(trainKey)
-    val conf = H2OContext.ensure().getConf
     val params = getH2OAlgoRESTParams() ++
       Map("training_frame" -> trainKey) ++
       validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
 
     val algoName = parameters.algoName().toLowerCase
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/$algoName", conf, params)) { response =>
-      IOUtils.toString(response)
-    }
-
+    val content = RestApiUtils.updateAsJson(s"/3/ModelBuilders/$algoName", params)
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString

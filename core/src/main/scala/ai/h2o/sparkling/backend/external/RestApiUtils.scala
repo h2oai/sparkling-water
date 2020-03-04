@@ -19,10 +19,14 @@ package ai.h2o.sparkling.backend.external
 
 import java.net.URI
 
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3._
+
+import scala.collection.immutable.Map
 
 trait RestApiUtils extends RestCommunication {
 
@@ -94,6 +98,17 @@ trait RestApiUtils extends RestCommunication {
 
   def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
     query[CloudV3](endpoint, "/3/Cloud", conf)
+  }
+
+  def updateAsJson(suffix: String,
+                   params: Map[String, Any] = Map.empty,
+                   encodeParamsAsJson: Boolean = false
+                  ): String = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = getClusterEndpoint(conf)
+    withResource(readURLContent(endpoint, "POST", suffix, conf, params, encodeParamsAsJson)) { response =>
+      IOUtils.toString(response)
+    }
   }
 }
 
