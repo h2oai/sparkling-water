@@ -63,7 +63,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "ignored_columns" -> getIgnoredCols(),
       "sort_metric" -> getSortMetric(),
       "training_frame" -> trainKey
-    ) ++ validKey.map{ key => Map("validation_frame" -> key) }.getOrElse(Map())
+    ) ++ validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
   }
 
   private def getBuildModels(): Map[String, Any] = {
