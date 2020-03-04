@@ -191,13 +191,13 @@ trait RestCommunication extends Logging with RestEncodingUtils {
                                requestType: String,
                                suffix: String,
                                conf: H2OConf, params: Map[String, Any] = Map.empty,
-                               asJSON: Boolean = false): InputStream = {
+                               encodeParamsAsJson: Boolean = false): InputStream = {
     val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      setHeaders(connection, conf, requestType, params, asJSON)
+      setHeaders(connection, conf, requestType, params, encodeParamsAsJson)
       checkResponseCode(connection)
       connection.getInputStream()
     } catch {
