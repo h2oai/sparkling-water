@@ -141,7 +141,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
-      Identifiable.randomUID(ModelSerializationSupport.getMojoModel(mojoData)._algoName),
+      Identifiable.randomUID(algoParams.algoName()),
       modelSettings,
       internalFeatureCols)
   }
@@ -189,7 +189,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       case _: NoSuchElementException => throw new IllegalArgumentException(s"No such parameter: '$hyperParamName'")
     }
   }
-  
+
   private def sortGridModels(gridModels: Array[H2OModel]): Array[H2OModel] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       gridModels(0).modelCategory match {
