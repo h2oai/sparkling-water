@@ -23,6 +23,7 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 from ai.h2o.sparkling.ml.Utils import Utils
+import warnings
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
                        HasStoppingCriteria):
@@ -123,12 +124,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         Params._dummy(),
         "scoreTreeInterval",
         "score tree interval",
-        H2OTypeConverters.toInt())
-
-    initialScoreInterval = Param(
-        Params._dummy(),
-        "initialScoreInterval",
-        "Initial Score Interval",
         H2OTypeConverters.toInt())
 
     scoreInterval = Param(
@@ -309,7 +304,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self.getOrDefault(self.scoreTreeInterval)
 
     def getInitialScoreInterval(self):
-        return self.getOrDefault(self.initialScoreInterval)
+        warnings.warn("Method 'getInitialScoreInterval' is deprecated and will be removed in the next major release 3.30.")
+        return 4000
 
     def getScoreInterval(self):
         return self.getOrDefault(self.scoreInterval)
@@ -429,7 +425,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self._set(scoreTreeInterval=value)
 
     def setInitialScoreInterval(self, value):
-        return self._set(initialScoreInterval=value)
+        warnings.warn("Method 'setInitialScoreInterval' is deprecated and will be removed in the next major release 3.30.")
+        return self
 
     def setScoreInterval(self, value):
         return self._set(scoreInterval=value)

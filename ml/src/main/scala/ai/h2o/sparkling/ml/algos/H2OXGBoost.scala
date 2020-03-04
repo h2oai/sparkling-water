@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
@@ -70,7 +71,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   private val maxAbsLeafnodePred = floatParam("maxAbsLeafnodePred")
   private val maxDeltaStep = floatParam("maxDeltaStep")
   private val scoreTreeInterval = intParam("scoreTreeInterval")
-  private val initialScoreInterval = intParam("initialScoreInterval", "Initial Score Interval")
   private val scoreInterval = intParam("scoreInterval", "Score Interval")
   private val minSplitImprovement = floatParam("minSplitImprovement")
   private val gamma = floatParam("gamma")
@@ -113,7 +113,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     maxAbsLeafnodePred -> 0,
     maxDeltaStep -> 0,
     scoreTreeInterval -> 0,
-    initialScoreInterval -> 4000,
     scoreInterval -> 4000,
     minSplitImprovement -> 0,
     gamma -> 0.0f,
@@ -172,7 +171,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def getScoreTreeInterval(): Int = $(scoreTreeInterval)
 
-  def getInitialScoreInterval(): Int = $(initialScoreInterval)
+  @DeprecatedMethod(version = "3.30")
+  def getInitialScoreInterval(): Int = 4000
 
   def getScoreInterval(): Int = $(scoreInterval)
 
@@ -253,7 +253,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def setScoreTreeInterval(value: Int): this.type = set(scoreTreeInterval, value)
 
-  def setInitialScoreInterval(value: Int): this.type = set(initialScoreInterval, value)
+  @DeprecatedMethod(version = "3.30")
+  def setInitialScoreInterval(value: Int): this.type = this
 
   def setScoreInterval(value: Int): this.type = set(scoreInterval, value)
 
@@ -338,7 +339,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
     parameters._max_delta_step = $(maxDeltaStep)
     parameters._score_tree_interval = $(scoreTreeInterval)
-    parameters._initial_score_interval = $(initialScoreInterval)
     parameters._score_interval = $(scoreInterval)
     parameters._min_split_improvement = $(minSplitImprovement)
     parameters._gamma = $(gamma)
