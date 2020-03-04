@@ -37,7 +37,7 @@ import water.api.schemas3._
  */
 class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
-
+  private val colNames = columns.map(_.name)
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
   def numberOfColumns: Int = columns.length
@@ -49,7 +49,7 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
 
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
-    val indices = this.columns.map(_.name).zipWithIndex.toMap
+    val indices = colNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>
       indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
     }
@@ -80,15 +80,15 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
   }
 
   def subframe(columns: Array[String]): H2OFrame = {
-    val nonExistentColumns = columns.diff(this.columns.map(_.name))
+    val nonExistentColumns = columns.diff(colNames)
     if (nonExistentColumns.nonEmpty) {
       throw new IllegalArgumentException(s"The following columns are not available on the H2OFrame ${this.frameId}: ${nonExistentColumns.mkString(", ")}")
     }
-    if (columns.sorted.sameElements(this.columns.map(_.name).sorted)) {
+    if (columns.sorted.sameElements(colNames.sorted)) {
       this
     } else {
       val endpoint = getClusterEndpoint(conf)
-      val colIndices = columns.map(col => this.columns.map(_.name).indexOf(col))
+      val colIndices = columns.map(col => colNames.indexOf(col))
       val newFrameId = s"${frameId}_subframe_${colIndices.mkString("_")}"
       val params = Map(
         "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, colIndices.mkString("[", ",", "]"))
