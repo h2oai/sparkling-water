@@ -30,7 +30,7 @@ import com.google.gson.{Gson, JsonElement}
 import hex.ScoreKeeper
 import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.{Frame, H2OConf, H2OContext}
+import org.apache.spark.h2o.{Frame, H2OContext}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
@@ -121,7 +121,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OJob(jobId).waitForFinish()
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
-    val model = H2OModel(getLeaderModelId(conf, autoMLJobId))
+    val model = H2OModel(getLeaderModelId(autoMLJobId))
     model.downloadMOJOData()
   }
 
@@ -253,8 +253,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spark.createDataFrame(rdd, schema)
   }
 
-  private def getLeaderModelId(conf: H2OConf, automlId: String): String = {
-    getLeaderboardOverRest(conf, automlId).select("model_id").head().getString(0)
+  private def getLeaderModelId(automlId: String): String = {
+    getLeaderboardOverRest(automlId).select("model_id").head().getString(0)
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
