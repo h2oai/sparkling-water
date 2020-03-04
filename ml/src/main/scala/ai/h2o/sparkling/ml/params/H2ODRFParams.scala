@@ -58,7 +58,7 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
 
   def setMtries(value: Int): this.type = set(mtries, value)
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "binomial_double_trees" -> getBinomialDoubleTrees(),
@@ -66,7 +66,7 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
       )
   }
 
-  override def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._binomial_double_trees = $(binomialDoubleTrees)
     parameters._mtries = $(mtries)

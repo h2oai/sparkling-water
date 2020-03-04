@@ -124,7 +124,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   def setK(value: Int): this.type = set(k, value)
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "max_iterations" -> getMaxIterations(),
@@ -150,7 +150,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     }
   }
 
-  override def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._max_iterations = getMaxIterations()
     parameters._standardize = getStandardize()

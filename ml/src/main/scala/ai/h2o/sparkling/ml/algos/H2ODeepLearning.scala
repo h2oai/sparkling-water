@@ -92,7 +92,7 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "epochs" -> getEpochs(),
@@ -107,7 +107,7 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
       )
   }
 
-  override def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._epochs = $(epochs)
     parameters._l1 = $(l1)

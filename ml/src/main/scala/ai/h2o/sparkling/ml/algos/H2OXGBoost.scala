@@ -301,7 +301,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     set(backend, validated)
   }
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "quiet_mode" -> getQuietMode(),
@@ -350,7 +350,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
       )
   }
 
-  override def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._quiet_mode = $(quietMode)
     parameters._ntrees = $(ntrees)

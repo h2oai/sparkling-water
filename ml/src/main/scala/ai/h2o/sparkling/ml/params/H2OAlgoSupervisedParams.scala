@@ -24,7 +24,7 @@ import hex.Model.Parameters
 trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
   with H2OCommonSupervisedParams with H2OAlgoCommonParams[P] {
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "response_column" -> getLabelCol(),
@@ -33,7 +33,7 @@ trait H2OAlgoSupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
   }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
-  override protected def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._response_column = getLabelCol()
     parameters._offset_column = getOffsetCol()

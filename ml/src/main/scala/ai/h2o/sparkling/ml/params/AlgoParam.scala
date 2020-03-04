@@ -68,7 +68,7 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
         }
         case _ => throw new RuntimeException("Invalid JSON parameters")
       }
-      updateH2OParams(algo)
+      algo.updateH2OParams()
       algo
     }
   }
@@ -77,11 +77,5 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
   private def createH2OAlgoInstance(algoName: String, uid: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
     val cls = Class.forName(algoName)
     cls.getConstructor(classOf[String]).newInstance(uid).asInstanceOf[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]]
-  }
-
-  private def updateH2OParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
-    val updateH2OParamsMethod = algo.getClass.getDeclaredMethod("updateH2OParams")
-    updateH2OParamsMethod.setAccessible(true)
-    updateH2OParamsMethod.invoke(algo)
   }
 }

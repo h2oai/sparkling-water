@@ -125,7 +125,7 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
 
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
 
-  override protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     super.getH2OAlgoRESTParams() ++
       Map(
         "ntrees" -> getNtrees(),
@@ -148,7 +148,7 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
       )
   }
 
-  override def updateH2OParams(): Unit = {
+  override private[sparkling] def updateH2OParams(): Unit = {
     super.updateH2OParams()
     parameters._ntrees = $(ntrees)
     parameters._max_depth = $(maxDepth)

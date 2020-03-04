@@ -75,7 +75,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
-  protected def getH2OAlgoRESTParams(): Map[String, Any] = {
+  private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
     Map(
       "weights_column" -> getWeightCol(),
       "nfolds" -> getNfolds(),
@@ -89,7 +89,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   }
 
   /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
-  protected def updateH2OParams(): Unit = {
+  private[sparkling] def updateH2OParams(): Unit = {
     parameters._weights_column = getWeightCol()
     parameters._nfolds = getNfolds()
     parameters._fold_column = getFoldCol()
