@@ -37,7 +37,7 @@ class H2OModel private(val modelId: String,
   extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
-  private[sparkling] def getOrDownloadMojoData(): Array[Byte] = {
+  private[sparkling] def getOrDownloadMojoData(): Array[Byte] = synchronized {
     if (mojoData.isEmpty) {
       val endpoint = RestApiUtils.getClusterEndpoint(conf)
       val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))

@@ -22,6 +22,7 @@ import hex._
 import org.apache.spark.h2o.H2OBaseModel
 import water.util.PojoUtils
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
@@ -64,7 +65,6 @@ trait H2OModelExtractionUtils {
   }
 
   protected def extractParams(modelJson: JsonObject): Map[String, String] = {
-    import scala.collection.JavaConverters._
     val parameters = modelJson.get("parameters").getAsJsonArray.asScala.toArray
     parameters.flatMap { param =>
       val name = param.getAsJsonObject.get("name").getAsString
@@ -174,7 +174,6 @@ trait H2OModelExtractionUtils {
     if (json.get(metricType).isJsonNull) {
       Map.empty
     } else {
-      import scala.collection.JavaConverters._
       val metricGroup = json.getAsJsonObject(metricType)
       val fields = metricGroup.entrySet().asScala.map(_.getKey)
       val metrics = H2OMetric.values().foldLeft(mutable.Map[H2OMetric, Double]()) { case (map, metric) =>
