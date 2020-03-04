@@ -121,7 +121,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     H2OJob(jobId).waitForFinish()
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
-    val model = H2OModel(H2OAutoML.getLeaderModelId(conf, autoMLJobId))
+    val model = H2OModel(getLeaderModelId(conf, autoMLJobId))
     model.downloadMOJOData()
   }
 
@@ -199,15 +199,6 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     getIncludeAlgos().diff(bothIncludedExcluded)
   }
 
-  private def leaderboardAsSparkFrame(amlKey: String, extraColumns: Array[String]): DataFrame = {
-    if (RestApiUtils.isRestAPIBased()) {
-      val hc = H2OContext.ensure()
-      getLeaderboardOverRest(hc.getConf, amlKey, extraColumns)
-    } else {
-      getLeaderboardOverClient(amlKey, extraColumns)
-    }
-  }
-
   def getLeaderboard(extraColumns: String*): DataFrame = getLeaderboard(extraColumns.toArray)
 
   def getLeaderboard(extraColumns: java.util.ArrayList[String]) : DataFrame = {
@@ -215,16 +206,21 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   def getLeaderboard(extraColumns: Array[String]): DataFrame = amlKeyOption match {
-      case Some(amlKey) => leaderboardAsSparkFrame(amlKey, extraColumns)
-      case None => throw new RuntimeException("The 'fit' method must be called at first!")
+    case Some(amlKey) => if (RestApiUtils.isRestAPIBased()) {
+      getLeaderboardOverRest(amlKey, extraColumns)
+    } else {
+      getLeaderboardOverClient(amlKey, extraColumns)
     }
+    case None => throw new RuntimeException("The 'fit' method must be called at first!")
+  }
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     schema
   }
 
-  private def getLeaderboardOverRest(conf: H2OConf, automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
+  private def getLeaderboardOverRest(automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
+    val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map("extensions" -> extraColumns)
     val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
