@@ -189,19 +189,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       case _: NoSuchElementException => throw new IllegalArgumentException(s"No such parameter: '$hyperParamName'")
     }
   }
-
-  private def getGridModels(gridKey: String): Array[H2OModel] = {
-    if (RestApiUtils.isRestAPIBased()) {
-      throw new UnsupportedOperationException
-    } else {
-      val grid = DKV.getGet[Grid[_ <: Model.Parameters]](gridKey)
-      if (grid.getModels.isEmpty) {
-        throw new IllegalArgumentException("No Model returned.")
-      }
-      grid.getModels.map(m => H2OModel.fromBinary(m, getHyperParameters().asScala.keys.toArray))
-    }
-  }
-
+  
   private def sortGridModels(gridModels: Array[H2OModel]): Array[H2OModel] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       gridModels(0).modelCategory match {
