@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.frame
 
 import java.text.MessageFormat
-import java.util
 
 import ai.h2o.sparkling.backend.external.RestApiUtils._
 import ai.h2o.sparkling.backend.external.{RestCommunication, RestEncodingUtils}
@@ -59,7 +58,7 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
       this
     } else {
       val params = Map(
-        "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, util.Arrays.toString(selectedIndices))
+        "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, stringifyArray(selectedIndices))
       )
       val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
       H2OFrame(rapidsFrameV3.key.name)
