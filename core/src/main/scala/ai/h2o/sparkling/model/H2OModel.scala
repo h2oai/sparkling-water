@@ -50,11 +50,11 @@ class H2OModel private(val modelId: String,
 
   def getCurrentMetrics(nfolds: Int, splitRatio: Double): Map[H2OMetric, Double] = {
     if (nfolds > 1) {
-      metrics.crossValidationMetrics.get
+      metrics.crossValidationMetrics
     } else if (splitRatio < 1) {
-      metrics.validationMetrics.get
+      metrics.validationMetrics
     } else {
-      metrics.trainingMetrics.get
+      metrics.trainingMetrics
     }
   }
 }

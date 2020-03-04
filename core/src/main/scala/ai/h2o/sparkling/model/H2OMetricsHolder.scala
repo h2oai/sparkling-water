@@ -17,6 +17,6 @@
 
 package ai.h2o.sparkling.model
 
-case class H2OMetricsHolder(trainingMetrics: Option[Map[H2OMetric, Double]],
-                            validationMetrics: Option[Map[H2OMetric, Double]],
-                            crossValidationMetrics: Option[Map[H2OMetric, Double]])
+case class H2OMetricsHolder(trainingMetrics: Map[H2OMetric, Double],
+                            validationMetrics: Map[H2OMetric, Double],
+                            crossValidationMetrics: Map[H2OMetric, Double])

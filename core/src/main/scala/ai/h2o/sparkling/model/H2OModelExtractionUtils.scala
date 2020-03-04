@@ -53,10 +53,10 @@ trait H2OModelExtractionUtils {
   }
 
   protected def extractParams(model: H2OBaseModel, selectedParams: Array[String]): Map[String, String] = {
-    selectedParams.map{ paramName =>
+    selectedParams.map { paramName =>
       val value = PojoUtils.getFieldEvenInherited(model._parms, paramName).get(model._parms)
       val stringValue = value match {
-        case v : Array[_] => v.mkString("[", ",", "]")
+        case v: Array[_] => v.mkString("[", ",", "]")
         case v => v.toString
       }
       paramName -> stringValue
@@ -70,8 +70,8 @@ trait H2OModelExtractionUtils {
       val name = param.getAsJsonObject.get("name").getAsString
       val value = param.getAsJsonObject.get("actual_value")
       val stringValue = value match {
-        case v : JsonPrimitive => Some(v.getAsString)
-        case v : JsonArray => Some(v.asScala.mkString("[", ",", "]"))
+        case v: JsonPrimitive => Some(v.getAsString)
+        case v: JsonArray => Some(v.asScala.mkString("[", ",", "]"))
         case _ =>
           // don't put more complex type to output yet
           None
@@ -80,9 +80,9 @@ trait H2OModelExtractionUtils {
     }.toMap
   }
 
-  private def extractMetrics(modelMetrics: ModelMetrics): Option[Map[H2OMetric, Double]] = {
+  private def extractMetrics(modelMetrics: ModelMetrics): Map[H2OMetric, Double] = {
     if (modelMetrics == null) {
-      None
+      Map.empty
     } else {
       val metrics = modelMetrics match {
         case regressionGLM: ModelMetricsRegressionGLM =>
@@ -163,18 +163,16 @@ trait H2OModelExtractionUtils {
           )
         case _ => Seq()
       }
-      Some(
-        Map(
-          H2OMetric.MSE -> modelMetrics.mse,
-          H2OMetric.RMSE -> modelMetrics.rmse()
-        ) ++ metrics.toMap
-      )
+      Map(
+        H2OMetric.MSE -> modelMetrics.mse,
+        H2OMetric.RMSE -> modelMetrics.rmse()
+      ) ++ metrics.toMap
     }
   }
 
-  private def extractMetrics(json: JsonObject, metricType: String): Option[Map[H2OMetric, Double]] = {
+  private def extractMetrics(json: JsonObject, metricType: String): Map[H2OMetric, Double] = {
     if (json.get(metricType).isJsonNull) {
-      None
+      Map.empty
     } else {
       import scala.collection.JavaConverters._
       val metricGroup = json.getAsJsonObject(metricType)
@@ -187,7 +185,7 @@ trait H2OModelExtractionUtils {
         }
         map
       }
-      Some(metrics.toMap)
+      metrics.toMap
     }
   }
 }
