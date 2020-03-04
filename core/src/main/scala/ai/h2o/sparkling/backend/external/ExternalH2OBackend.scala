@@ -312,7 +312,7 @@ object ExternalH2OBackend extends ExternalBackendUtils {
       }
 
       if (conf.clusterInfoFile.isEmpty) {
-        conf.setClusterConfigFile("notify_" + conf.cloudName.get)
+        conf.setClusterInfoFile("notify_" + conf.cloudName.get)
       }
 
       if (conf.getOption("spark.yarn.principal").isDefined &&
