@@ -43,7 +43,7 @@ class H2OTargetEncoderModel(
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojoData = if (RestApiUtils.isRestAPIBased()) {
-      H2OModel(targetEncoderModelKey).downloadMOJOData()
+      H2OModel(targetEncoderModelKey).getOrDownloadMojoData()
     } else {
       ModelSerializationSupport.getMojoData(DKV.getGet[TargetEncoderModel](targetEncoderModelKey))
     }

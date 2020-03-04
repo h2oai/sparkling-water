@@ -122,7 +122,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
     val model = H2OModel(getLeaderModelId(autoMLJobId))
-    model.downloadMOJOData()
+    model.getOrDownloadMojoData()
   }
 
   private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {

@@ -27,20 +27,25 @@ import com.google.gson.{Gson, JsonElement}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.{H2OBaseModel, H2OConf, H2OContext}
+import water.support.ModelSerializationSupport
 
 class H2OModel private(val modelId: String,
                        val modelCategory: H2OModelCategory.Value,
                        val metrics: H2OMetricsHolder,
-                       val trainingParams: Map[String, String])
+                       val trainingParams: Map[String, String],
+                       private[sparkling] var mojoData: Option[Array[Byte]] = None)
   extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
-  private[sparkling] def downloadMOJOData(): Array[Byte] = {
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
-    val target = new File(sparkTmpDir, this.modelId)
-    downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
-    Files.readAllBytes(target.toPath)
+  private[sparkling] def getOrDownloadMojoData(): Array[Byte] = {
+    if (mojoData.isEmpty) {
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
+      val target = new File(sparkTmpDir, this.modelId)
+      downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
+      mojoData = Some(Files.readAllBytes(target.toPath))
+    }
+    mojoData.get
   }
 
   def getCurrentMetrics(nfolds: Int, splitRatio: Double): Map[H2OMetric, Double] = {
@@ -79,6 +84,6 @@ object H2OModel extends RestCommunication with H2OModelExtractionUtils {
     val modelCategory = extractModelCategory(model)
     val metrics = extractAllMetrics(model)
     val params = extractParams(model, selectedParams: Array[String])
-    new H2OModel(model._key.toString, modelCategory, metrics, params)
+    new H2OModel(model._key.toString, modelCategory, metrics, params, Some(ModelSerializationSupport.getMojoData(model)))
   }
 }

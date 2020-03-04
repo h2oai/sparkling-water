@@ -45,7 +45,6 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import water.support.ModelSerializationSupport
 import water.{DKV, Key}
 
 import scala.collection.JavaConverters._
@@ -67,7 +66,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private def fitOverClient(algoParams: Model.Parameters,
                             hyperParams: util.HashMap[String, Array[AnyRef]],
                             trainKey: String,
-                            validKey: Option[String]): Array[Byte] = {
+                            validKey: Option[String]): Array[H2OModel] = {
     algoParams._train = DKV.getGet[Frame](trainKey)._key
     algoParams._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
 
@@ -106,18 +105,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     if (grid.getModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
-    val unsortedGridModels = grid.getModels.map(m => H2OModel.fromBinary(m, getHyperParameters().asScala.keys.toArray))
-    gridModels = sortGridModels(unsortedGridModels)
-    gridMojoModels = gridModels.map { m =>
-      val data = ModelSerializationSupport.getMojoData(DKV.getGet(m.modelId))
-      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoParams.algoName()}_mojoModel"))
+    grid.getModels.map { m =>
+      H2OModel.fromBinary(m, getHyperParameters().asScala.keys.toArray)
     }
-    val firstModel = extractFirstModelFromGrid()
-    ModelSerializationSupport.getMojoData(DKV.getGet[H2OBaseModel](firstModel.modelId))
   }
 
-  private def getSearchCriteria(): Map[String, Any] = {
-    HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
+  private def getSearchCriteria(): String = {
+    val criteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
       case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
         Map(
           "strategy" -> HyperSpaceSearchCriteria.Strategy.RandomDiscrete.name(),
@@ -130,6 +124,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
         )
       case _ => Map("strategy" -> HyperSpaceSearchCriteria.Strategy.Cartesian.name())
     }
+    criteria.map { case (key, value) => s"'$key': $value"}.mkString("{", ",", "}")
   }
 
   private def getAlgoParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
@@ -148,14 +143,12 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private def fitOverRest(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
                           hyperParams: util.HashMap[String, Array[AnyRef]],
                           trainKey: String,
-                          validKey: Option[String]): Array[Byte] = {
-
+                          validKey: Option[String]): Array[H2OModel] = {
     val params = Map(
-      "parameters" -> getAlgoParams(algo, trainKey, validKey),
-      "hyper_parameters" -> hyperParams,
+      "hyper_parameters" -> hyperParams.asScala.map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}"),
       "parallelism" -> getParallelism(),
       "search_criteria" -> getSearchCriteria()
-    )
+    ) ++ getAlgoParams(algo, trainKey, validKey)
 
     val conf = H2OContext.ensure().getConf
     val algoName = algo.parameters.algoName().toLowerCase()
@@ -169,9 +162,12 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
-    throw new UnsupportedOperationException
-    }
+    getGridModelKeys(gridId)
+  }
 
+  private def getGridModelKeys(gridId: String): Array[H2OModel] = {
+    throw new UnsupportedOperationException
+  }
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val algo = getAlgo()
     if (algo == null) {
@@ -183,14 +179,20 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
     val hyperParams = processHyperParams(algo.parameters, getHyperParameters())
     val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    val mojoData = if (RestApiUtils.isRestAPIBased()) {
+    val unsortedGridModels = if (RestApiUtils.isRestAPIBased()) {
       fitOverRest(algo, hyperParams, trainKey, validKey)
     } else {
       fitOverClient(algo.parameters, hyperParams, trainKey, validKey)
     }
+    gridModels = sortGridModels(unsortedGridModels)
+    gridMojoModels = gridModels.map { m =>
+      val data = m.getOrDownloadMojoData()
+      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algo.parameters.algoName()}_mojoModel"))
+    }
+    val firstModel = extractFirstModelFromGrid()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
-      mojoData,
+      firstModel.getOrDownloadMojoData(),
       Identifiable.randomUID(algo.parameters.algoName()),
       modelSettings,
       internalFeatureCols)

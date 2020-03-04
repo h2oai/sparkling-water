@@ -68,7 +68,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
-    H2OModel(modelId).downloadMOJOData()
+    H2OModel(modelId).getOrDownloadMojoData()
   }
 
   private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
