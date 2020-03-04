@@ -21,7 +21,7 @@ import java.text.MessageFormat
 import java.util
 
 import ai.h2o.sparkling.backend.external.RestApiUtils._
-import ai.h2o.sparkling.backend.external.RestCommunication
+import ai.h2o.sparkling.backend.external.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.job.H2OJob
@@ -35,7 +35,9 @@ import water.api.schemas3._
 /**
  * H2OFrame representation via Rest API
  */
-class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
+class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk])
+  extends Serializable
+  with RestEncodingUtils {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
   private val colNames = columns.map(_.name)
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
@@ -91,7 +93,7 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
       val colIndices = columns.map(col => colNames.indexOf(col))
       val newFrameId = s"${frameId}_subframe_${colIndices.mkString("_")}"
       val params = Map(
-        "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, colIndices.mkString("[", ",", "]"))
+        "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, stringifyArray(colIndices))
       )
       val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
       H2OFrame(rapidsFrameV3.key.name)
