@@ -44,7 +44,6 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  maxAbsLeafnodePred=0.0,
                  maxDeltaStep=0.0,
                  scoreTreeInterval=0,
-                 initialScoreInterval=4000,
                  scoreInterval=4000,
                  minSplitImprovement=0.0,
                  gamma=0.0,
