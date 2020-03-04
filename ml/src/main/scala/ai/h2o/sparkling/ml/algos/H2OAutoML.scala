@@ -254,7 +254,12 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def getLeaderModelId(automlId: String): String = {
-    getLeaderboardOverRest(automlId).select("model_id").head().getString(0)
+    val leaderBoard = getLeaderboardOverRest(automlId).select("model_id")
+    if (leaderBoard.count() == 0) {
+      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
+        " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
+    } else {}
+    leaderBoard.head().getString(0)
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
