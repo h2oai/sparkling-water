@@ -18,20 +18,19 @@
 package ai.h2o.sparkling.backend.external
 
 import java.io._
-import java.net.{HttpURLConnection, URI, URL, URLEncoder}
+import java.net.{HttpURLConnection, URI, URL}
 
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.google.gson.{ExclusionStrategy, FieldAttributes, Gson, GsonBuilder}
+import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
+import scala.collection.immutable.Map
 import scala.reflect.{ClassTag, classTag}
 
-trait RestCommunication extends Logging {
+trait RestCommunication extends Logging with RestEncodingUtils {
 
   /**
    *
@@ -164,80 +163,21 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  private def stringifyPrimitiveParam(value: Any): String = {
-    val charset = "UTF-8"
-    value match {
-      case v: Boolean => v.toString
-      case v: Byte => v.toString
-      case v: Int => v.toString
-      case v: Long => v.toString
-      case v: Float => v.toString
-      case v: Double => v.toString
-      case v: String => URLEncoder.encode(v, charset)
-      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
-    }
-  }
-
-  private def isPrimitiveType(value: Any): Boolean = {
-    value match {
-      case _: Boolean => true
-      case _: Byte => true
-      case _: Int => true
-      case _: Long => true
-      case _: Float => true
-      case _: Double => true
-      case _: String => true
-      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
-    }
-  }
-
-  private def stringifyArray(arr: Array[_]): String = {
-    arr.map(stringify).mkString("[", ",", "]")
-  }
-
-  private def stringifyMap(map: scala.collection.immutable.Map[_, _]): String = {
-    val arr = map.filter { case (_, value) => value != null }.toSeq.map(pair => s"{'key': ${pair._1}, 'value':${stringify(pair._2)}").toArray
-    stringifyArray(arr)
-  }
-
-  private def stringify(value: Any): String = {
-    import scala.collection.JavaConversions._
-    value match {
-      case map: java.util.AbstractMap[_, _] => stringifyMap(map.toMap)
-      case map: scala.collection.immutable.Map[_, _] => stringifyMap(map)
-      case arr: Array[_] => stringifyArray(arr)
-      case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
-      case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
-    }
-  }
-
-  private def stringifyParams(params: Map[String, Any] = Map.empty): String = {
-    params.filter { case (_, value) => value != null }
-      .map { case (name, value) =>
-        val encodedValue = stringify(value)
-        s"$name=$encodedValue"
-      }.mkString("&")
-  }
-
   private def resolveUrl(endpoint: URI, suffix: String): URL = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
     endpoint.resolve(suffixWithDelimiter).toURL
   }
 
-  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any], asJSON: Boolean = false): Unit = {
+  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any], encodeParamsAsJson: Boolean = false): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
 
     if (params.nonEmpty && requestType == "POST") {
-      val paramsAsBytes = if (asJSON) {
-        val jsonString = new ObjectMapper().registerModule(DefaultScalaModule).writeValueAsString(params)
-        val bytes = jsonString.getBytes("UTF-8")
+      if (encodeParamsAsJson) {
         connection.setRequestProperty("Content-Type", "application/json")
-        bytes
       } else {
-        val bytes = stringifyParams(params).getBytes("UTF-8")
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        bytes
       }
+      val paramsAsBytes = stringifyParams(params, encodeParamsAsJson).getBytes("UTF-8")
       connection.setRequestProperty("charset", "UTF-8")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
       connection.setDoOutput(true)
