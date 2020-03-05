@@ -233,6 +233,9 @@ Removal of Deprecated Methods and Classes
 - On ``H2OXGboost`` Scala and Python API, the methods ``getInitialScoreIntervals`` and ``setInitialScoreIntervals`` are removed
   without replacement. They correspond to an internal H2O argument which should not be exposed.
 
+- On ``H2OXGboost`` Scala and Python API, the methods ``getLearnRateAnnealing`` and ``setLearnRateAnnealing`` are removed
+  without replacement as this parameter is currently not exposed in H2O.
+
 From 3.28.0 to 3.28.1
 ---------------------
 
