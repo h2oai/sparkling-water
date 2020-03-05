@@ -22,31 +22,23 @@ import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.model.H2OModel
-import ai.h2o.targetencoding.{BlendingParams, TargetEncoder, TargetEncoderModel}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset}
-import water.DKV
 import water.api.schemas3.KeyV3.FrameKeyV3
-import water.fvec.Frame
-import water.support.ModelSerializationSupport
 
-class H2OTargetEncoderModel(
-    override val uid: String,
-    targetEncoderModelKey: String)
-  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable
-  with H2OTargetEncoderModelUtils
-  with RestCommunication {
+class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
+  extends Model[H2OTargetEncoderModel]
+    with H2OTargetEncoderBase
+    with MLWritable
+    with H2OTargetEncoderModelUtils
+    with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
-    val mojoData = if (RestApiUtils.isRestAPIBased()) {
-      H2OModel(targetEncoderModelKey).downloadMojoData()
-    } else {
-      ModelSerializationSupport.getMojoData(DKV.getGet[TargetEncoderModel](targetEncoderModelKey))
-    }
+    val mojoData = targetEncoderModel.downloadMojoData()
     val model = new H2OTargetEncoderMOJOModel()
     copyValues(model).setMojoData(mojoData)
   }
@@ -61,19 +53,17 @@ class H2OTargetEncoderModel(
 
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
-  private def transformOverClient(input: String): water.fvec.Frame = {
-    val holdoutStrategyId = TargetEncoder.DataLeakageHandlingStrategy.valueOf(getHoldoutStrategy()).ordinal().asInstanceOf[Byte]
-    val blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
-    DKV.getGet[TargetEncoderModel](targetEncoderModelKey).transform(
-       DKV.getGet[Frame](input),
-       holdoutStrategyId,
-       getNoise(),
-       getBlendedAvgEnabled(),
-       blendingParams,
-       getNoiseSeed())
-  }
-
-  private def transformOverRest(input: String): H2OFrame = {
+  def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
+    val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+    val temporaryColumn = getClass.getSimpleName + "_temporary_id"
+    val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
+    val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
+    val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
+    val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
+    val input = h2oContext.asH2OFrameKeyString(relevantColumnsDF)
+    convertRelevantColumnsToCategorical(input)
+    val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
+    val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
@@ -87,33 +77,13 @@ class H2OTargetEncoderModel(
       "seed" -> getNoiseSeed()
     )
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
-    H2OFrame(frameKeyV3.name)
-  }
-
-  def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val temporaryColumn = getClass.getSimpleName + "_temporary_id"
-    val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
-    val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
-    val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
-    val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = h2oContext.asH2OFrameKeyString(relevantColumnsDF)
-    convertRelevantColumnsToCategorical(input)
-    val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
-    val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
-    val outputColumnsOnlyFrameKey = if (RestApiUtils.isRestAPIBased()) {
-      val outputFrame = transformOverRest(input)
-      outputFrame.subframe(outputFrameColumns).frameId
-    } else {
-      val outputFrame = transformOverClient(input)
-      new water.fvec.H2OFrame(outputFrame.subframe(outputFrameColumns))._key.toString
-    }
-    val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrameKey)
+    val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name) subframe (outputFrameColumns)
+    val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame.frameId)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
     }
     withIdDF
-      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType="left")
+      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")
       .drop(temporaryColumn)
   }
 

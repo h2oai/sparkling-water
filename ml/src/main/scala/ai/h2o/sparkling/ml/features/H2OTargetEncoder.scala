@@ -31,8 +31,6 @@ import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.Dataset
-import water.DKV
-import water.fvec.Frame
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
   with H2OTargetEncoderBase
@@ -48,19 +46,8 @@ class H2OTargetEncoder(override val uid: String)
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
-    val targetEncoderModel = if (RestApiUtils.isRestAPIBased()) {
-      fitOverRest(input, ignoredColumns)
-    } else {
-      fitOverClient(input, ignoredColumns)
-    }
-    val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
-    copyValues(model)
-  }
-
-  private def fitOverRest(trainingFrameKey: String, ignoredColumns: Array[String]): String = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-
     val params = Map(
       "blending" -> getBlendedAvgEnabled(),
       "k" -> getBlendedAvgInflectionPoint(),
@@ -68,7 +55,7 @@ class H2OTargetEncoder(override val uid: String)
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
       "ignored_columns" -> ignoredColumns,
-      "training_frame" -> trainingFrameKey
+      "training_frame" -> input
     )
     val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/targetencoder", conf, params)) { response =>
       IOUtils.toString(response)
@@ -77,26 +64,9 @@ class H2OTargetEncoder(override val uid: String)
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
-    val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
-    modelId
-  }
-
-  private def fitOverClient(trainingFrameKey: String, ignoredColumns: Array[String]): String = try {
-    val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
-    targetEncoderParameters._blending = getBlendedAvgEnabled()
-    targetEncoderParameters._k = getBlendedAvgInflectionPoint()
-    targetEncoderParameters._f = getBlendedAvgSmoothing()
-    targetEncoderParameters._response_column = getLabelCol()
-    targetEncoderParameters._fold_column = getFoldCol()
-    targetEncoderParameters._ignored_columns = ignoredColumns
-    targetEncoderParameters.setTrain(DKV.getGet[Frame](trainingFrameKey)._key)
-
-    val builder = new TargetEncoderBuilder(targetEncoderParameters)
-    builder.trainModel().get() // Calling get() to wait until the model training is finished.
-    builder.getTargetEncoderModel._key.toString
-  } catch {
-    case e: IllegalStateException if e.getMessage.contains("We do not support multi-class target case") =>
-      throw new RuntimeException("The label column can not contain more than two unique values.")
+    val targetEncoderModelId = job.get("dest").getAsJsonObject.get("name").getAsString
+    val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
+    copyValues(model)
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
