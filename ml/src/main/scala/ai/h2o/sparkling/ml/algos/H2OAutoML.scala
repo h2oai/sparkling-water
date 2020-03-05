@@ -24,13 +24,10 @@ import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.model.H2OModel
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson.{Gson, JsonElement}
 import hex.ScoreKeeper
-import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
@@ -153,15 +150,10 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def getLeaderboard(automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map("extensions" -> extraColumns)
-    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
-      IOUtils.toString(response)
-    }
+    val content = RestApiUtils.requestAsJson(s"/99/Leaderboards/$automlId", params)
     val gson = new Gson()
     val table = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonObject("table")
-    import scala.collection.JavaConverters._
     val colNamesIterator = table.getAsJsonArray("columns").iterator().asScala
     val colNames = colNamesIterator.toArray.map(_.getAsJsonObject.get("name").getAsString)
     val colsData = table.getAsJsonArray("data").iterator().asScala.toArray.map(_.getAsJsonArray)

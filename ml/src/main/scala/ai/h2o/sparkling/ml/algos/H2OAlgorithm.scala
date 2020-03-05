@@ -31,6 +31,7 @@ import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -49,9 +50,11 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
     val params = getH2OAlgorithmParams() ++
-      Map("training_frame" -> train.frameId) ++
+      Map(
+        "training_frame" -> train.frameId,
+        "model_id" -> convertModelIdToKey()
+      ) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
-
     val content = try {
       RestApiUtils.updateAsJson(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
     } catch {
@@ -71,6 +74,35 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
       Identifiable.randomUID(parameters.algoName()),
       modelSettings,
       internalFeatureCols)
+  }
+
+  private def convertModelIdToKey(): String = {
+    val key = getModelId()
+    if (modelAlreadyExists(key)) {
+      val replacement = findAlternativeKey(key)
+      logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
+      replacement
+    } else {
+      key
+    }
+  }
+
+  private def findAlternativeKey(modelId: String): String = {
+    var suffixNumber = 0
+    var replacement: String = null
+    do {
+      suffixNumber = suffixNumber + 1
+      replacement = s"${modelId}_$suffixNumber"
+    } while (modelAlreadyExists(replacement))
+    replacement
+  }
+
+  private def modelAlreadyExists(modelId: String): Boolean = {
+    val content = RestApiUtils.requestAsJson("/3/Models")
+    val gson = new Gson()
+    val models = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("models").getAsJsonArray.asScala
+    val modelIds = models.map(_.getAsJsonObject.get("model_id").getAsJsonObject.get("name").getAsString)
+    modelIds.toArray.contains(modelId)
   }
 
   @DeveloperApi

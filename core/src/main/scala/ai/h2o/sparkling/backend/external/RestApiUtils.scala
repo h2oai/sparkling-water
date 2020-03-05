@@ -110,6 +110,15 @@ trait RestApiUtils extends RestCommunication {
       IOUtils.toString(response)
     }
   }
+
+  def requestAsJson(suffix: String,
+                   params: Map[String, Any] = Map.empty): String = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = getClusterEndpoint(conf)
+    withResource(readURLContent(endpoint, "GET", suffix, conf, params)) { response =>
+      IOUtils.toString(response)
+    }
+  }
 }
 
 object RestApiUtils extends RestApiUtils
