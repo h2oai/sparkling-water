@@ -61,7 +61,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
-    val mojoData = H2OModel(modelId).getOrDownloadMojoData()
+    val mojoData = H2OModel(modelId).downloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,

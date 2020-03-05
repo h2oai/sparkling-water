@@ -34,20 +34,16 @@ import scala.collection.JavaConverters._
 class H2OModel private(val modelId: String,
                        val modelCategory: H2OModelCategory.Value,
                        val metrics: H2OMetricsHolder,
-                       val trainingParams: Map[String, String],
-                       private[sparkling] var mojoData: Option[Array[Byte]] = None)
+                       val trainingParams: Map[String, String])
   extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
-  private[sparkling] def getOrDownloadMojoData(): Array[Byte] = synchronized {
-    if (mojoData.isEmpty) {
-      val endpoint = RestApiUtils.getClusterEndpoint(conf)
-      val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
-      val target = new File(sparkTmpDir, this.modelId)
-      downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
-      mojoData = Some(Files.readAllBytes(target.toPath))
-    }
-    mojoData.get
+  private[sparkling] def downloadMojoData(): Array[Byte] = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
+    val target = new File(sparkTmpDir, this.modelId)
+    downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
+    Files.readAllBytes(target.toPath)
   }
 
   def getCurrentMetrics(nfolds: Int, splitRatio: Double): Map[H2OMetric, Double] = {
@@ -133,4 +129,5 @@ object H2OModel extends RestCommunication {
   private object H2OMetricOrdering extends Ordering[(H2OMetric, Double)] {
     def compare(a: (H2OMetric, Double), b: (H2OMetric, Double)): Int = a._1.name().compare(b._1.name())
   }
+
 }

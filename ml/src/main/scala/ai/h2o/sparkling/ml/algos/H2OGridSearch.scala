@@ -143,13 +143,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
     gridModels = sortGridModels(unsortedGridModels)
     gridMojoModels = gridModels.map { m =>
-      val data = m.getOrDownloadMojoData()
+      val data = m.downloadMojoData()
       H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algo.parameters.algoName()}_mojoModel"))
     }
     val firstModel = extractFirstModelFromGrid()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
-      firstModel.getOrDownloadMojoData(),
+      firstModel.downloadMojoData(),
       Identifiable.randomUID(algo.parameters.algoName()),
       modelSettings,
       internalFeatureCols)

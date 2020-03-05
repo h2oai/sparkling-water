@@ -118,7 +118,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
     val model = H2OModel(getLeaderModelId(autoMLJobId))
-    val mojoData = model.getOrDownloadMojoData()
+    val mojoData = model.downloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
