@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
@@ -55,7 +55,13 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
       Map("training_frame" -> train.frameId) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
 
-    val content = RestApiUtils.updateAsJson(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
+    val content = try {
+      RestApiUtils.updateAsJson(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
+    } catch {
+      case e: RestApiCommunicationException if e.getMessage.contains("There are no usable columns to generate model") =>
+        throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
+          s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
+    }
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
