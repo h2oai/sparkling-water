@@ -18,7 +18,6 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.{H2OAlgoSupervisedParams, HasQuantileAlpha, HasStoppingCriteria}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.ScoreKeeper.StoppingMetric
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
@@ -92,8 +91,8 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
-  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
-    super.getH2OAlgoRESTParams() ++
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
       Map(
         "epochs" -> getEpochs(),
         "l1" -> getL1(),
@@ -105,18 +104,5 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
         "stopping_tolerance" -> getStoppingTolerance(),
         "quantile_alpha" -> getQuantileAlpha()
       )
-  }
-
-  override private[sparkling] def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._epochs = $(epochs)
-    parameters._l1 = $(l1)
-    parameters._l2 = $(l2)
-    parameters._hidden = $(hidden)
-    parameters._reproducible = $(reproducible)
-    parameters._stopping_rounds = getStoppingRounds()
-    parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
-    parameters._stopping_tolerance = getStoppingTolerance()
-    parameters._quantile_alpha = getQuantileAlpha()
   }
 }

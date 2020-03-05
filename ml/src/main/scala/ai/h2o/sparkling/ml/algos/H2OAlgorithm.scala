@@ -51,7 +51,7 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
     //TODO: use convertModelIdToKey
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
-    val params = getH2OAlgoRESTParams() ++
+    val params = getH2OAlgorithmParams() ++
       Map("training_frame" -> train.frameId) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
 

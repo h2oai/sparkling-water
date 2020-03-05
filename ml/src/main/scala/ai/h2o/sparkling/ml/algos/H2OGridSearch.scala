@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication, RestEncodingUtils}
@@ -77,7 +76,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   private def getAlgoParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
                             train: H2OFrame,
                             valid: Option[H2OFrame]): Map[String, Any] = {
-    algo.getH2OAlgoRESTParams() ++
+    algo.getH2OAlgorithmParams() ++
       Map(
         "nfolds" -> getNfolds(),
         "fold_column" -> getFoldCol(),
@@ -87,7 +86,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
   }
 
-  private def prepareHyperParameters(hyperParams: util.HashMap[String, Array[AnyRef]]): String = {
+  private def prepareHyperParameters(): String = {
+    val hyperParams = getHyperParameters()
     // REST API expects parameters without the starting `_`.
     // User in SW api should anyway specify Sparkling Water algo names and we should map it to H2O ones internally.
     // See https://0xdata.atlassian.net/browse/SW-1608
@@ -121,12 +121,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
         s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
 
-    algo.updateH2OParams()
-
-    val hyperParams = processHyperParams(algo.parameters, getHyperParameters())
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     val params = Map(
-      "hyper_parameters" -> prepareHyperParameters(hyperParams),
+      "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
       "search_criteria" -> getSearchCriteria()
     ) ++ getAlgoParams(algo, train, valid)
@@ -156,50 +153,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       Identifiable.randomUID(algo.parameters.algoName()),
       modelSettings,
       internalFeatureCols)
-  }
-
-  //noinspection ComparingUnrelatedTypes
-  private def processHyperParams(params: Model.Parameters, hyperParams: java.util.Map[String, Array[AnyRef]]) = {
-    // If we use PySparkling, we don't have information whether the type is long or int and to set the hyper parameters
-    // correctly, we need this information. We therefore check the type of the hyper parameter at run-time and try to set it
-
-    // we only need to worry about distinguishing between int and long
-    val checkedHyperParams = new java.util.HashMap[String, Array[AnyRef]]()
-
-    val it = hyperParams.entrySet().iterator()
-    while (it.hasNext) {
-      val entry = it.next()
-      val hyperParamName = entry.getKey
-
-      val hyperParamValues = if (entry.getValue.isInstanceOf[util.ArrayList[Object]]) {
-        val length = entry.getValue.asInstanceOf[util.ArrayList[_]].size()
-        val arrayList = entry.getValue.asInstanceOf[util.ArrayList[_]]
-        (0 until length).map(idx => arrayList.get(idx).asInstanceOf[AnyRef]).toArray
-      } else {
-        entry.getValue
-      }
-
-      // get automatically box the java primitives so we can work with them
-      val convertedValue = findField(params, hyperParamName).get(params) match {
-        case v if v.isInstanceOf[java.lang.Long] =>
-          hyperParamValues.map {
-            case arrVal: java.lang.Long => arrVal.asInstanceOf[Long].longValue().asInstanceOf[AnyRef]
-            case arrVal: java.lang.Integer => arrVal.asInstanceOf[Integer].longValue().asInstanceOf[AnyRef]
-          }
-        case _ => hyperParamValues
-      }
-
-      checkedHyperParams.put(hyperParamName, convertedValue)
-    }
-    checkedHyperParams
-  }
-
-  private def findField(params: Model.Parameters, hyperParamName: String): Field = {
-    try {
-      params.getClass.getField(hyperParamName)
-    } catch {
-      case _: NoSuchElementException => throw new IllegalArgumentException(s"No such parameter: '$hyperParamName'")
-    }
   }
 
   private def sortGridModels(gridModels: Array[H2OModel]): Array[H2OModel] = {

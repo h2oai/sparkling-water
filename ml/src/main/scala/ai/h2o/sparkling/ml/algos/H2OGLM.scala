@@ -17,9 +17,8 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams}
+import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.StringPair
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, MissingValuesHandling, Solver}
 import hex.glm.{GLM, GLMModel}
@@ -45,7 +44,7 @@ object H2OGLM extends H2OParamsReadable[H2OGLM]
 /**
   * Parameters for Spark's API exposing underlying H2O model.
   */
-trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with DeprecatableParams {
+trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] {
 
   type H2O_SCHEMA = GLMParametersV3
 
@@ -232,8 +231,8 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
 
   def setEarlyStopping(value: Boolean): this.type = set(earlyStopping, value)
 
-  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
-    super.getH2OAlgoRESTParams() ++
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
       Map(
         "standardize" -> getStandardize(),
         "family" -> getFamily(),
@@ -265,52 +264,6 @@ trait H2OGLMParams extends H2OAlgoSupervisedParams[GLMParameters] with Deprecata
         "early_stopping" -> getEarlyStopping()
       )
   }
-
-  override private[sparkling] def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._standardize = $(standardize)
-    parameters._family = Family.valueOf($(family))
-    parameters._link = Link.valueOf($(link))
-    parameters._solver = Solver.valueOf($(solver))
-    parameters._tweedie_variance_power = $(tweedieVariancePower)
-    parameters._tweedie_link_power = $(tweedieLinkPower)
-    parameters._alpha = $(alphaValue)
-    parameters._lambda = $(lambdaValue)
-    parameters._missing_values_handling = MissingValuesHandling.valueOf($(missingValuesHandling))
-    parameters._prior = $(prior)
-    parameters._lambda_search = $(lambdaSearch)
-    parameters._nlambdas = $(nlambdas)
-    parameters._non_negative = $(nonNegative)
-    parameters._lambda_min_ratio = $(lambdaMinRatio)
-    parameters._max_iterations = $(maxIterations)
-    parameters._intercept = $(intercept)
-    parameters._beta_epsilon = $(betaEpsilon)
-    parameters._objective_epsilon = $(objectiveEpsilon)
-    parameters._gradient_epsilon = $(gradientEpsilon)
-    parameters._obj_reg = $(objReg)
-    parameters._compute_p_values = $(computePValues)
-    parameters._remove_collinear_columns = $(removeCollinearCols)
-    parameters._interactions = $(interactions)
-    parameters._interaction_pairs = {
-      val pairs = $ {
-        interactionPairs
-      }
-      if (pairs == null) {
-        null
-      } else {
-        pairs.map(v => new StringPair(v._1, v._2))
-      }
-    }
-    parameters._early_stopping = $(earlyStopping)
-  }
-
-  /**
-    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
-    */
-  override protected def renamingMap: Map[String, String] = Map[String, String](
-    "alpha" -> "alphaValue",
-    "lambda_" -> "lambdaValue"
-  )
 }
 
 class H2OGLMStringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[(String, String)] => Boolean)

@@ -93,8 +93,8 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
 
   def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
 
-  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
-    super.getH2OAlgoRESTParams() ++
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
       Map(
         "learn_rate" -> getLearnRate(),
         "learn_rate_annealing" -> getLearnRateAnnealing(),
@@ -104,16 +104,5 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
         "monotone_constraints" -> getMonotoneConstraints(),
         "quantile_alpha" -> getQuantileAlpha()
       )
-  }
-
-  override private[sparkling] def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._learn_rate = $(learnRate)
-    parameters._learn_rate_annealing = $(learnRateAnnealing)
-    parameters._col_sample_rate = $(colSampleRate)
-    parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
-    parameters._pred_noise_bandwidth = $(predNoiseBandwidth)
-    parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
-    parameters._quantile_alpha = getQuantileAlpha()
   }
 }

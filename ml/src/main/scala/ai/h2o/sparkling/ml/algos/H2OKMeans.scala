@@ -22,9 +22,8 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.h2o.{Frame, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
-import water.DKV
 
 /**
  * H2O KMeans algorithm exposed via Spark ML pipelines.
@@ -118,8 +117,8 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   def setK(value: Int): this.type = set(k, value)
 
-  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
-    super.getH2OAlgoRESTParams() ++
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
       Map(
         "max_iterations" -> getMaxIterations(),
         "standardize" -> getStandardize(),
@@ -142,18 +141,5 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
         "Please create one as H2OContext.getOrCreate().")
       hc.asH2OFrameKeyString(df)
     }
-  }
-
-  override private[sparkling] def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._max_iterations = getMaxIterations()
-    parameters._standardize = getStandardize()
-    parameters._init = KMeans.Initialization.valueOf(getInit())
-    parameters._user_points = {
-    val key = getUserPointAsH2OFrameKeyString()
-      if (key == null) null else DKV.getGet[Frame](key)._key
-    }
-    parameters._estimate_k = getEstimateK()
-    parameters._k = getK()
   }
 }

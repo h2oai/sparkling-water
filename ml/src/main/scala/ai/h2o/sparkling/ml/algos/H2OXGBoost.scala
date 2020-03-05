@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.ScoreKeeper.StoppingMetric
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
@@ -42,8 +41,9 @@ object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
   * Parameters for Spark's API exposing underlying H2O model.
   */
 trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
-  with H2OTreeBasedSupervisedMOJOParams with HasMonotoneConstraints with HasStoppingCriteria[XGBoostParameters]
-  with DeprecatableParams {
+  with H2OTreeBasedSupervisedMOJOParams
+  with HasMonotoneConstraints
+  with HasStoppingCriteria[XGBoostParameters] {
 
   type H2O_SCHEMA = XGBoostParametersV3
 
@@ -301,8 +301,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     set(backend, validated)
   }
 
-  override private[sparkling] def getH2OAlgoRESTParams(): Map[String, Any] = {
-    super.getH2OAlgoRESTParams() ++
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
       Map(
         "quiet_mode" -> getQuietMode(),
         "ntrees" -> getNtrees(),
@@ -347,53 +347,4 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
         "stopping_tolerance" -> getStoppingTolerance()
       )
   }
-
-  override private[sparkling] def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._quiet_mode = $(quietMode)
-    parameters._ntrees = $(ntrees)
-    parameters._max_depth = $(maxDepth)
-    parameters._min_rows = $(minRows)
-    parameters._min_child_weight = $(minChildWeight)
-    parameters._learn_rate = $(learnRate)
-    parameters._eta = $(eta)
-    parameters._sample_rate = $(sampleRate)
-    parameters._subsample = $(subsample)
-    parameters._col_sample_rate = $(colSampleRate)
-    parameters._colsample_bylevel = $(colSampleByLevel)
-    parameters._col_sample_rate_per_tree = $(colSampleRatePerTree)
-    parameters._colsample_bytree = $(colSampleByTree)
-    parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
-    parameters._max_delta_step = $(maxDeltaStep)
-    parameters._score_tree_interval = $(scoreTreeInterval)
-    parameters._min_split_improvement = $(minSplitImprovement)
-    parameters._gamma = $(gamma)
-    parameters._nthread = $(nthread)
-    parameters._max_bins = $(maxBins)
-    parameters._max_leaves = $(maxLeaves)
-    parameters._min_sum_hessian_in_leaf = $(minSumHessianInLeaf)
-    parameters._min_data_in_leaf = $(minDataInLeaf)
-    parameters._tree_method = TreeMethod.valueOf($(treeMethod))
-    parameters._grow_policy = GrowPolicy.valueOf($(growPolicy))
-    parameters._booster = Booster.valueOf($(booster))
-    parameters._dmatrix_type = DMatrixType.valueOf($(dmatrixType))
-    parameters._reg_lambda = $(regLambda)
-    parameters._reg_alpha = $(regAlpha)
-    parameters._sample_type = DartSampleType.valueOf($(sampleType))
-    parameters._normalize_type = DartNormalizeType.valueOf($(normalizeType))
-    parameters._rate_drop = $(rateDrop)
-    parameters._one_drop = $(oneDrop)
-    parameters._skip_drop = $(skipDrop)
-    parameters._gpu_id = $(gpuId)
-    parameters._backend = Backend.valueOf($(backend))
-    parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
-    parameters._stopping_rounds = getStoppingRounds()
-    parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
-    parameters._stopping_tolerance = getStoppingTolerance()
-  }
-
-  /**
-    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
-    */
-  override protected def renamingMap: Map[String, String] = Map[String, String]()
 }

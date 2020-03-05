@@ -68,7 +68,6 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
         }
         case _ => throw new RuntimeException("Invalid JSON parameters")
       }
-      algo.updateH2OParams()
       algo
     }
   }
