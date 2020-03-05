@@ -16,7 +16,7 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-
+import warnings
 
 class SharedBackendConf(SharedBackendConfUtils):
 
@@ -157,7 +157,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.ignoreSparkPublicDNS()
 
     def clientWebEnabled(self):
-        return self._jconf.clientWebEnabled()
+        warnings.warn("Method 'clientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
+        return True
 
     def clientFlowBaseurlOverride(self):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
@@ -410,11 +411,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setClientWebEnabled(self):
-        self._jconf.setClientWebEnabled()
+        warnings.warn("Method 'setClientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
         return self
 
     def setClientWebDisabled(self):
-        self._jconf.setClientWebDisabled()
+        warnings.warn("Method 'setClientWebDisabled' is deprecated and will be removed in the next major release 3.30.")
         return self
 
     def setClientFlowBaseurlOverride(self, baseUrl):

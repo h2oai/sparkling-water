@@ -29,6 +29,11 @@ From 3.28.1 to 3.30
   ``h2oNodeWebEnabled`` are removed without replacement. Also the option ``spark.ext.h2o.node.enable.web`` does not have
   any effect anymore.
 
+- It is no longer possible to disable web (REST API endpoints) on the client node as we require the Rest API
+  to be available. In particular, the methods ``setClientWebEnabled``, ``setClientWebDisabled`` and
+  ``clientWebEnabled`` are removed without replacement. Also the option ``spark.ext.h2o.client.enable.web`` does not have
+  any effect anymore.
+
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

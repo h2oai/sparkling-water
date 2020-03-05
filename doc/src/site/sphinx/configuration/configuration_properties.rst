@@ -206,14 +206,6 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | the H2O client. The option still       |
 |                                                    |                | ``setIgnoreSparkPublicDNSDisabled()``           | applies to the Spark application.      |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.enable.web``                | ``true``       | ``setClientWebEnabled()``                       | Enable or disable web on h2o client    |
-|                                                    |                |                                                 | node. It is enabled by default.        |
-|                                                    |                | ``setClientWebDisabled()``                      | Disabling the web just on the client   |
-|                                                    |                |                                                 | node just restricts everybody from     |
-|                                                    |                |                                                 | accessing flow, the internal ports     |
-|                                                    |                |                                                 | between client and rest of the cluster |
-|                                                    |                |                                                 | remain open.                           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.baseurl.override``     | ``None``       | ``setClientFlowBaseurlOverride(String)``        | Allows to override the base URL        |
 |                                                    |                |                                                 | address of Flow UI, including the      |
 |                                                    |                |                                                 | scheme, which is showed to the user.   |

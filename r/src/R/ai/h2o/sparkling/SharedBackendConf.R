@@ -111,8 +111,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     ignoreSparkPublicDNS = function() { invoke(jconf, "ignoreSparkPublicDNS") },
 
-    clientWebEnabled = function() { invoke(jconf, "clientWebEnabled") },
-
     clientFlowBaseurlOverride = function() { ConfUtils.getOption(invoke(jconf, "clientFlowBaseurlOverride")) },
 
     clientExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "clientExtraProperties")) },
@@ -241,10 +239,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     setIgnoreSparkPublicDNSEnabled = function() { invoke(jconf, "setIgnoreSparkPublicDNSEnabled"); .self },
 
     setIgnoreSparkPublicDNSDisabled = function() { invoke(jconf, "setIgnoreSparkPublicDNSDisabled"); .self },
-
-    setClientWebEnabled = function() { invoke(jconf, "setClientWebEnabled"); .self },
-
-    setClientWebDisabled = function() { invoke(jconf, "setClientWebDisabled"); .self },
 
     setClientFlowBaseurlOverride = function(baseUrl) { invoke(jconf, "setClientFlowBaseurlOverride", baseUrl); .self },
 
