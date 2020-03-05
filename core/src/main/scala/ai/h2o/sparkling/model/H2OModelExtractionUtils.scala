@@ -71,7 +71,7 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
       val value = param.getAsJsonObject.get("actual_value")
       val stringValue = value match {
         case v: JsonPrimitive => Some(stringifyPrimitiveParam(v.getAsString))
-        case v: JsonArray => Some(stringifyArray(v.asScala.toArray))
+        case v: JsonArray => Some(stringifyArray(v.asScala.toArray.map(_.getAsString)))
         case _ =>
           // don't put more complex type to output yet
           None
