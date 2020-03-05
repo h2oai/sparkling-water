@@ -161,7 +161,7 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
       val fields = metricGroup.entrySet().asScala.map(_.getKey)
       val metrics = H2OMetric.values().flatMap { metric =>
         val metricName = metric.toString
-        val fieldName = fields.find(_.equalsIgnoreCase(metricName))
+        val fieldName = fields.find(field => field.replaceAll("_", "").equalsIgnoreCase(metricName))
         if (fieldName.isDefined) {
           Some(metric -> metricGroup.get(fieldName.get).getAsDouble)
         } else {
