@@ -24,7 +24,6 @@ import org.apache.spark.h2o.H2OBaseModel
 import water.util.PojoUtils
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 /**
  * Utilities to extract information from models obtained via REST and binary models
@@ -62,7 +61,7 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
         case v => stringifyPrimitiveParam(v)
       }
       paramName -> stringValue
-    }.toMap
+    }.sorted.toMap
   }
 
   protected def extractParams(modelJson: JsonObject): Map[String, String] = {
@@ -78,96 +77,79 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
           None
       }
       stringValue.map(name -> _)
-    }.toMap
+    }.sorted.toMap
   }
 
   private def extractMetrics(modelMetrics: ModelMetrics): Map[H2OMetric, Double] = {
     if (modelMetrics == null) {
       Map.empty
     } else {
-      val metrics = modelMetrics match {
+      val specificMetrics = modelMetrics match {
         case regressionGLM: ModelMetricsRegressionGLM =>
           Seq(
-            (
-              H2OMetric.MeanResidualDeviance,
-              regressionGLM._mean_residual_deviance
-            ),
-            (H2OMetric.NullDeviance, regressionGLM._resDev),
-            (
-              H2OMetric.ResidualDegreesOfFreedom,
-              regressionGLM._residualDegressOfFreedom.toDouble
-            ),
-            (H2OMetric.NullDeviance, regressionGLM._nullDev),
-            (
-              H2OMetric.NullDegreesOfFreedom,
-              regressionGLM._nullDegressOfFreedom.toDouble
-            ),
-            (H2OMetric.AIC, regressionGLM._AIC),
-            (H2OMetric.R2, regressionGLM.r2())
+            H2OMetric.MeanResidualDeviance -> regressionGLM._mean_residual_deviance,
+            H2OMetric.NullDeviance -> regressionGLM._resDev,
+            H2OMetric.ResidualDegreesOfFreedom -> regressionGLM._residualDegressOfFreedom.toDouble,
+            H2OMetric.NullDeviance -> regressionGLM._nullDev,
+            H2OMetric.NullDegreesOfFreedom -> regressionGLM._nullDegressOfFreedom.toDouble,
+            H2OMetric.AIC -> regressionGLM._AIC,
+            H2OMetric.R2 -> regressionGLM.r2()
           )
         case regression: ModelMetricsRegression =>
           Seq(
-            (
-              H2OMetric.MeanResidualDeviance,
-              regression._mean_residual_deviance
-            ),
-            (H2OMetric.R2, regression.r2())
+            H2OMetric.MeanResidualDeviance -> regression._mean_residual_deviance,
+            H2OMetric.R2 -> regression.r2()
           )
         case binomialGLM: ModelMetricsBinomialGLM =>
           Seq(
-            (H2OMetric.AUC, binomialGLM.auc),
-            (H2OMetric.Gini, binomialGLM._auc._gini),
-            (H2OMetric.Logloss, binomialGLM.logloss),
-            (H2OMetric.F1, binomialGLM.cm.f1),
-            (H2OMetric.F2, binomialGLM.cm.f2),
-            (H2OMetric.F0point5, binomialGLM.cm.f0point5),
-            (H2OMetric.Accuracy, binomialGLM.cm.accuracy),
-            (H2OMetric.Error, binomialGLM.cm.err),
-            (H2OMetric.Precision, binomialGLM.cm.precision),
-            (H2OMetric.Recall, binomialGLM.cm.recall),
-            (H2OMetric.MCC, binomialGLM.cm.mcc),
-            (H2OMetric.MaxPerClassError, binomialGLM.cm.max_per_class_error),
-            (H2OMetric.ResidualDeviance, binomialGLM._resDev),
-            (
-              H2OMetric.ResidualDegreesOfFreedom,
-              binomialGLM._residualDegressOfFreedom.toDouble
-            ),
-            (H2OMetric.NullDeviance, binomialGLM._nullDev),
-            (
-              H2OMetric.NullDegreesOfFreedom,
-              binomialGLM._nullDegressOfFreedom.toDouble
-            ),
-            (H2OMetric.AIC, binomialGLM._AIC)
+            H2OMetric.AUC -> binomialGLM.auc,
+            H2OMetric.Gini -> binomialGLM._auc._gini,
+            H2OMetric.Logloss -> binomialGLM.logloss,
+            H2OMetric.F1 -> binomialGLM.cm.f1,
+            H2OMetric.F2 -> binomialGLM.cm.f2,
+            H2OMetric.F0point5 -> binomialGLM.cm.f0point5,
+            H2OMetric.Accuracy -> binomialGLM.cm.accuracy,
+            H2OMetric.Error -> binomialGLM.cm.err,
+            H2OMetric.Precision -> binomialGLM.cm.precision,
+            H2OMetric.Recall -> binomialGLM.cm.recall,
+            H2OMetric.MCC -> binomialGLM.cm.mcc,
+            H2OMetric.MaxPerClassError -> binomialGLM.cm.max_per_class_error,
+            H2OMetric.ResidualDeviance -> binomialGLM._resDev,
+            H2OMetric.ResidualDegreesOfFreedom -> binomialGLM._residualDegressOfFreedom.toDouble,
+            H2OMetric.NullDeviance -> binomialGLM._nullDev,
+            H2OMetric.NullDegreesOfFreedom -> binomialGLM._nullDegressOfFreedom.toDouble,
+            H2OMetric.AIC -> binomialGLM._AIC
           )
         case binomial: ModelMetricsBinomial =>
           Seq(
-            (H2OMetric.AUC, binomial.auc),
-            (H2OMetric.Gini, binomial._auc._gini),
-            (H2OMetric.Logloss, binomial.logloss),
-            (H2OMetric.F1, binomial.cm.f1),
-            (H2OMetric.F2, binomial.cm.f2),
-            (H2OMetric.F0point5, binomial.cm.f0point5),
-            (H2OMetric.Accuracy, binomial.cm.accuracy),
-            (H2OMetric.Error, binomial.cm.err),
-            (H2OMetric.Precision, binomial.cm.precision),
-            (H2OMetric.Recall, binomial.cm.recall),
-            (H2OMetric.MCC, binomial.cm.mcc),
-            (H2OMetric.MaxPerClassError, binomial.cm.max_per_class_error)
+            H2OMetric.AUC -> binomial.auc,
+            H2OMetric.Gini -> binomial._auc._gini,
+            H2OMetric.Logloss -> binomial.logloss,
+            H2OMetric.F1 -> binomial.cm.f1,
+            H2OMetric.F2 -> binomial.cm.f2,
+            H2OMetric.F0point5 -> binomial.cm.f0point5,
+            H2OMetric.Accuracy -> binomial.cm.accuracy,
+            H2OMetric.Error -> binomial.cm.err,
+            H2OMetric.Precision -> binomial.cm.precision,
+            H2OMetric.Recall -> binomial.cm.recall,
+            H2OMetric.MCC -> binomial.cm.mcc,
+            H2OMetric.MaxPerClassError.->(binomial.cm.max_per_class_error)
           )
 
         case multinomial: ModelMetricsMultinomial =>
           Seq(
-            (H2OMetric.Logloss, multinomial.logloss),
-            (H2OMetric.Error, multinomial.cm.err),
-            (H2OMetric.MaxPerClassError, multinomial.cm.max_per_class_error),
-            (H2OMetric.Accuracy, multinomial.cm.accuracy)
+            H2OMetric.Logloss -> multinomial.logloss,
+            H2OMetric.Error -> multinomial.cm.err,
+            H2OMetric.MaxPerClassError -> multinomial.cm.max_per_class_error,
+            H2OMetric.Accuracy -> multinomial.cm.accuracy
           )
         case _ => Seq()
       }
-      Map(
+      val allMetrics = specificMetrics ++ Seq(
         H2OMetric.MSE -> modelMetrics.mse,
         H2OMetric.RMSE -> modelMetrics.rmse()
-      ) ++ metrics.toMap
+      )
+      allMetrics.sorted.toMap
     }
   }
 
@@ -177,15 +159,16 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
     } else {
       val metricGroup = json.getAsJsonObject(metricType)
       val fields = metricGroup.entrySet().asScala.map(_.getKey)
-      val metrics = H2OMetric.values().foldLeft(mutable.Map[H2OMetric, Double]()) { case (map, metric) =>
+      val metrics = H2OMetric.values().flatMap { metric =>
         val metricName = metric.toString
         val fieldName = fields.find(_.equalsIgnoreCase(metricName))
         if (fieldName.isDefined) {
-          map.put(metric, metricGroup.get(fieldName.get).getAsDouble)
+          Some(metric -> metricGroup.get(fieldName.get).getAsDouble)
+        } else {
+          None
         }
-        map
       }
-      metrics.toMap
+      metrics.sorted.toMap
     }
   }
 }

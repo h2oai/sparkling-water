@@ -82,7 +82,7 @@ def testGetGridModelsNoParams(prostateDataset):
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
     grid.fit(prostateDataset)
-    params = grid.get_grid_models_params()
+    params = grid.getGridModelsParams()
     assert params.count() == 1
     assert params.columns == ['MOJO Model ID']
     params.collect() # try materializing
@@ -92,7 +92,7 @@ def testGetGridModelsMetrics(prostateDataset):
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
     grid.fit(prostateDataset)
-    metrics = grid.get_grid_models_metrics()
+    metrics = grid.getGridModelsMetrics()
     assert metrics.count() == 3
     assert metrics.columns == ['MOJO Model ID', 'MSE', 'RMSE', 'MeanResidualDeviance', 'R2']
     metrics.collect() # try materializing
@@ -102,5 +102,5 @@ def testGetGridModels(prostateDataset):
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
     grid.fit(prostateDataset)
-    models = grid.get_grid_models()
+    models = grid.getGridModels()
     assert len(models) == 3
