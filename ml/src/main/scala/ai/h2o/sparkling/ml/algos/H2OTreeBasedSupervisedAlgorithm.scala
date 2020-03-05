@@ -20,7 +20,6 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.models.H2OTreeBasedSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams
 import hex.Model
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.sql.Dataset
 
 import scala.reflect.ClassTag

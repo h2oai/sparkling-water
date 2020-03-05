@@ -35,8 +35,6 @@ package object h2o {
 
   type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
 
-  type H2OBaseModelBuilder = ModelBuilder[_ <: H2OBaseModel, _ <: Model.Parameters, _ <: Model.Output]
-
   trait Holder[T] {
     def result: Option[T]
   }
