@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
@@ -36,8 +36,8 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -129,15 +129,23 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     ) ++ getAlgoParams(algo, train, valid)
 
     val algoName = algo.parameters.algoName().toLowerCase()
-    val content = RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
-
+    val content = try {
+      RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
+    } catch {
+      case e: RestApiCommunicationException =>
+        val pattern = "Illegal hyper parameter for grid search! The parameter '([A-Za-z_]+) is not gridable!".r.unanchored
+        e.getMessage match {
+          case pattern(parameterName) =>
+            throw new IllegalArgumentException(s"Parameter '$parameterName' is not supported to be passed as hyper parameter!")
+          case _ => throw e
+        }
+    }
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
     H2OJob(jobId).waitForFinish()
     val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
     val unsortedGridModels = getGridModelKeys(gridId)
-
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }

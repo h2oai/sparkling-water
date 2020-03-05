@@ -126,5 +126,4 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
     assert(thrown.getMessage.startsWith("H2O could not use any of the specified feature" +
       " columns: 'constant'. H2O ignores constant columns, are all the columns constants?"))
   }
-
 }

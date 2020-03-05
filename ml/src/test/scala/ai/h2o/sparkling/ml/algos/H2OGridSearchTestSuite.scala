@@ -38,7 +38,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .csv("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")//TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM()
@@ -72,7 +72,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
       .setHyperParameters(hyperParams)
       .setAlgo(deeplearning)
 
-    val model = grid.fit(dataset)
+    grid.fit(dataset)
     val result = grid.getGridModelsParams().first()
 
     result.getAs[String]("_hidden") shouldEqual "[10, 20, 30]"
@@ -86,14 +86,22 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(xgboost, hyperParams)
   }
 
+  test("Exception thrown when parameter is not gridable") {
+    val drf = new H2ODRF()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += "_binomial_double_trees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
+    val thrown = intercept[IllegalArgumentException]{
+      testGridSearch(drf, hyperParams)
+    }
+    assert(thrown.getMessage == "Parameter 'binomial_double_trees' is not supported to be passed as hyper parameter!")
+  }
+
   test("H2O Grid Search DRF Pipeline") {
     val drf = new H2ODRF()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
     hyperParams += "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
     hyperParams += "_mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
-    hyperParams += "_binomial_double_trees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
-
     testGridSearch(drf, hyperParams)
   }
 
