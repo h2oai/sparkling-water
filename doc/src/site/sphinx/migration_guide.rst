@@ -230,8 +230,10 @@ Removal of Deprecated Methods and Classes
 - In ``H2OGridSearch`` Python API, the methods: ``get_grid_models``, ``get_grid_models_params`` and `` get_grid_models_metrics``
   are removed and replaced by ``getGridModels``, ``getGridModelsParams`` and `` getGridModelsMetrics``.
 
-- On ``H2OXGboost`` Scala and Python API, the methods ``getInitialScoreIntervals`` and ``setInitialScoreIntervals`` are removed
-  without replacement. They correspond to an internal H2O argument which should not be exposed.
+- On ``H2OXGboost`` Scala and Python API, the methods ``getInitialScoreIntervals``, ``setInitialScoreIntervals``,
+  ``getScoreInterval`` and ``setScoreInterval`` are removed without replacement. They correspond to an
+  internal H2O argument which should not be exposed.
+
 
 From 3.28.0 to 3.28.1
 ---------------------
