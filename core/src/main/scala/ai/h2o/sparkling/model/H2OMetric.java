@@ -50,6 +50,4 @@ public enum H2OMetric {
     H2OMetric(boolean higherTheBetter) {
         this.higherTheBetter = higherTheBetter;
     }
-
-
 }

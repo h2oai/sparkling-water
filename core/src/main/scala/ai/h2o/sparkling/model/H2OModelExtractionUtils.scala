@@ -149,7 +149,7 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
         H2OMetric.MSE -> modelMetrics.mse,
         H2OMetric.RMSE -> modelMetrics.rmse()
       )
-      allMetrics.sorted.toMap
+      allMetrics.sorted(H2OMetricOrdering).toMap
     }
   }
 
@@ -168,7 +168,12 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
           None
         }
       }
-      metrics.sorted.toMap
+      metrics.sorted(H2OMetricOrdering).toMap
     }
   }
+
+  private object H2OMetricOrdering extends Ordering[(H2OMetric, Double)] {
+    def compare(a: (H2OMetric, Double), b: (H2OMetric, Double)): Int = a._1.name().compare(b._1.name())
+  }
+
 }
