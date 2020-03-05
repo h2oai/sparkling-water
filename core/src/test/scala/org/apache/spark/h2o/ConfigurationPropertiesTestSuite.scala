@@ -94,7 +94,6 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
       "X-MyCustomHeaderB" -> "B")
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
-      .setH2ONodeWebEnabled()
       .setClusterSize(1)
     hc = H2OContext.getOrCreate(h2oConf)
 
