@@ -54,20 +54,20 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+    val hc = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = h2oContext.asH2OFrameKeyString(relevantColumnsDF)
+    val input = hc.asH2OFrameKeyString(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
-    val conf = H2OContext.ensure().getConf
+    val conf = hc.getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
-      "model" -> targetEncoderModelKey,
+      "model" -> targetEncoderModel.modelId,
       "frame" -> input,
       "data_leakage_handling" -> getHoldoutStrategy(),
       "noise" -> getNoise(),
@@ -78,7 +78,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     )
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
     val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name) subframe (outputFrameColumns)
-    val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame.frameId)
+    val outputColumnsOnlyDF = hc.asDataFrame(outputColumnsOnlyFrame.frameId)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
     }

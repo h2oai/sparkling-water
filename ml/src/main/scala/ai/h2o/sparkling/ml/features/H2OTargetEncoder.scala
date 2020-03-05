@@ -22,10 +22,8 @@ import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import ai.h2o.sparkling.model.H2OModel
-import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.targetencoding._
 import com.google.gson.{Gson, JsonElement}
-import org.apache.commons.io.IOUtils
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
@@ -46,8 +44,6 @@ class H2OTargetEncoder(override val uid: String)
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
-    val conf = H2OContext.ensure().getConf
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
       "blending" -> getBlendedAvgEnabled(),
       "k" -> getBlendedAvgInflectionPoint(),
@@ -57,9 +53,7 @@ class H2OTargetEncoder(override val uid: String)
       "ignored_columns" -> ignoredColumns,
       "training_frame" -> input
     )
-    val content = withResource(readURLContent(endpoint, "POST", s"/3/ModelBuilders/targetencoder", conf, params)) { response =>
-      IOUtils.toString(response)
-    }
+    val content = RestApiUtils.updateAsJson(s"/3/ModelBuilders/targetencoder", params)
     val gson = new Gson()
     val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
     val jobId = job.get("key").getAsJsonObject.get("name").getAsString
@@ -70,7 +64,6 @@ class H2OTargetEncoder(override val uid: String)
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
-
 
   //
   // Parameter Setters

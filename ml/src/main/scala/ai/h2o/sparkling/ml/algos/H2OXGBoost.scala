@@ -311,7 +311,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
         "min_child_weight" -> getMinChildWeight(),
         "learn_rate" -> getLearnRate(),
         "eta" -> getEta(),
-        "learn_rate_annealing" -> getLearnRateAnnealing(),
         "sample_rate" -> getSampleRate(),
         "subsample" -> getSubsample(),
         "col_sample_rate" -> getColSampleRate(),
