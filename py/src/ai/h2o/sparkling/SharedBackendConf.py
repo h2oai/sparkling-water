@@ -158,7 +158,7 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def clientWebEnabled(self):
         warnings.warn("Method 'clientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
-        return self._jconf.clientWebEnabled()
+        return True
 
     def clientFlowBaseurlOverride(self):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
@@ -412,12 +412,10 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setClientWebEnabled(self):
         warnings.warn("Method 'setClientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
-        self._jconf.setClientWebEnabled()
         return self
 
     def setClientWebDisabled(self):
         warnings.warn("Method 'setClientWebDisabled' is deprecated and will be removed in the next major release 3.30.")
-        self._jconf.setClientWebDisabled()
         return self
 
     def setClientFlowBaseurlOverride(self, baseUrl):

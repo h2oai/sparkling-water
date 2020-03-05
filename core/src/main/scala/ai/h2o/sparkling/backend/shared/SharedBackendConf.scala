@@ -124,7 +124,7 @@ trait SharedBackendConf {
   def ignoreSparkPublicDNS: Boolean = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
 
   @DeprecatedMethod(version="3.30")
-  def clientWebEnabled: Boolean = sparkConf.getBoolean(PROP_CLIENT_ENABLE_WEB._1, PROP_CLIENT_ENABLE_WEB._2)
+  def clientWebEnabled: Boolean = true
 
   def clientFlowBaseurlOverride: Option[String] = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
 
@@ -278,10 +278,10 @@ trait SharedBackendConf {
   def setIgnoreSparkPublicDNSDisabled(): H2OConf = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, value = false)
 
   @DeprecatedMethod(version = "3.30")
-  def setClientWebEnabled(): H2OConf = set(PROP_CLIENT_ENABLE_WEB._1, value = true)
+  def setClientWebEnabled(): H2OConf = this
 
   @DeprecatedMethod(version = "3.30")
-  def setClientWebDisabled(): H2OConf = set(PROP_CLIENT_ENABLE_WEB._1, value = false)
+  def setClientWebDisabled(): H2OConf = this
 
   def setClientFlowBaseurlOverride(baseUrl: String): H2OConf = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
 
@@ -443,12 +443,6 @@ object SharedBackendConf {
 
   /** Ignore SPARK_PUBLIC_DNS setting on the H2O client. The option still applies to the Spark application. */
   val PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS: (String, Boolean) = ("spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS", false)
-
-  /** Enable or disable web on h2o client node. It is enabled by default. Disabling the web just
-   * on the client node just restricts everybody from accessing flow, the internal ports
-   * between client and rest of the cluster remain open
-   */
-  val PROP_CLIENT_ENABLE_WEB: (String, Boolean) = ("spark.ext.h2o.client.enable.web", true)
 
   /**
    * Allows to override the base URL address of Flow UI, including the scheme, which is showed
