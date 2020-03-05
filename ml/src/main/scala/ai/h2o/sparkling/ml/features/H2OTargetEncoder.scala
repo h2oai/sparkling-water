@@ -17,13 +17,12 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
-import ai.h2o.sparkling.job.H2OJob
+import ai.h2o.sparkling.backend.external.RestCommunication
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.sparkling.model.H2OModel
 import ai.h2o.targetencoding._
-import com.google.gson.{Gson, JsonElement}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
@@ -34,7 +33,8 @@ class H2OTargetEncoder(override val uid: String)
   with H2OTargetEncoderBase
   with DefaultParamsWritable
   with H2OTargetEncoderModelUtils
-  with RestCommunication {
+  with RestCommunication
+  with EstimatorCommonUtils {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
@@ -56,12 +56,7 @@ class H2OTargetEncoder(override val uid: String)
       "ignored_columns" -> ignoredColumns,
       "training_frame" -> input
     )
-    val content = RestApiUtils.updateAsJson(s"/3/ModelBuilders/targetencoder", params)
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
-    H2OJob(jobId).waitForFinish()
-    val targetEncoderModelId = job.get("dest").getAsJsonObject.get("name").getAsString
+    val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
     val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
     copyValues(model)
   }

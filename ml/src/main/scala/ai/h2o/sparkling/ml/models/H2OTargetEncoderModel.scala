@@ -77,7 +77,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
       "seed" -> getNoiseSeed()
     )
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
-    val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name) subframe (outputFrameColumns)
+    val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name).subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asDataFrame(outputColumnsOnlyFrame.frameId)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)

@@ -18,12 +18,12 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
-import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
-trait H2OAlgoCommonUtils extends H2OCommonParams {
+trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
 
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val excludedCols = getExcludedCols()

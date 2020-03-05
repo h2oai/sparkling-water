@@ -20,17 +20,14 @@ import java.util
 
 import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.frame.H2OFrame
-import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.model.{H2OMetric, H2OModel, H2OModelCategory}
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import com.google.gson.{Gson, JsonElement}
 import hex.grid.HyperSpaceSearchCriteria
+import hex.schemas.GridSchemaV99
 import hex.{Model, ScoreKeeper}
-import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
@@ -104,7 +101,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     // REST API expects parameters without the starting `_`.
-    // User in SW api should anyway specify Sparkling Water algo names and we should map it to H2O ones internally.
+    // User in SW api should anyway specify Sparkling Water parameter names and we should map it to H2O ones internally.
     // See https://0xdata.atlassian.net/browse/SW-1608
     def prepareKey(key: String) = {
       if (key.startsWith("_")) {
@@ -119,16 +116,12 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }.mkString("{", ",", "}")
   }
 
-  private def getGridModelKeys(gridId: String): Array[H2OModel] = {
+  private def getGridModels(gridId: String): Array[H2OModel] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val gridJson = withResource(readURLContent(endpoint, "GET", s"/99/Grids/$gridId", conf)) { response =>
-      IOUtils.toString(response)
-    }
-    val gson = new Gson()
-    val jsonModelIds = gson.fromJson(gridJson, classOf[JsonElement]).getAsJsonObject.get("model_ids").getAsJsonArray.asScala
-    val keys = jsonModelIds.map(_.getAsJsonObject.get("name").getAsString)
-    keys.map(H2OModel(_)).toArray
+    val skippedFields = Seq((classOf[GridSchemaV99], "summary_table"), (classOf[GridSchemaV99], "scoring_history"))
+    val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
+    grid.model_ids.map(modelId => H2OModel(modelId.name))
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -144,8 +137,9 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       "search_criteria" -> getSearchCriteria()
     ) ++ getAlgoParams(algo, train, valid)
     val algoName = H2OGridSearch.SupportedAlgos.toH2OAlgoName(algo)
-    val content = try {
-      RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
+
+    val gridId = try {
+      trainAndGetDestinationKey(s"/99/Grid/$algoName", params)
     } catch {
       case e: RestApiCommunicationException =>
         val pattern = "Illegal hyper parameter for grid search! The parameter '([A-Za-z_]+) is not gridable!".r.unanchored
@@ -155,12 +149,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
           case _ => throw e
         }
     }
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
-    H2OJob(jobId).waitForFinish()
-    val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
-    val unsortedGridModels = getGridModelKeys(gridId)
+    val unsortedGridModels = getGridModels(gridId)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }

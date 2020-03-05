@@ -19,15 +19,17 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.automl.Algo
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
-import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.model.H2OModel
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson.{Gson, JsonElement}
 import hex.ScoreKeeper
+import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
@@ -107,14 +109,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "build_models" -> buildModels,
       "build_control" -> buildControl
     )
-    val content = RestApiUtils.updateAsJson(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
-    H2OJob(jobId).waitForFinish()
-    val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
-    amlKeyOption = Some(autoMLJobId)
-    val model = H2OModel(getLeaderModelId(autoMLJobId))
+    val autoMLId = trainAndGetDestinationKey(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
+    amlKeyOption = Some(autoMLId)
+    val model = H2OModel(getLeaderModelId(autoMLId))
     val mojoData = model.downloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
@@ -151,7 +148,11 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private def getLeaderboard(automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
     val params = Map("extensions" -> extraColumns)
-    val content = RestApiUtils.requestAsJson(s"/99/Leaderboards/$automlId", params)
+    val conf = H2OContext.ensure().getConf
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
+      IOUtils.toString(response)
+    }
     val gson = new Gson()
     val table = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonObject("table")
     val colNamesIterator = table.getAsJsonArray("columns").iterator().asScala

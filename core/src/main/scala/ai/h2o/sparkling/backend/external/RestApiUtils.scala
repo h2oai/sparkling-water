@@ -99,25 +99,6 @@ trait RestApiUtils extends RestCommunication {
   def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
     query[CloudV3](endpoint, "/3/Cloud", conf)
   }
-
-  def updateAsJson(suffix: String,
-                   params: Map[String, Any] = Map.empty,
-                   encodeParamsAsJson: Boolean = false): String = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
-    withResource(readURLContent(endpoint, "POST", suffix, conf, params, encodeParamsAsJson)) { response =>
-      IOUtils.toString(response)
-    }
-  }
-
-  def requestAsJson(suffix: String,
-                    params: Map[String, Any] = Map.empty): String = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
-    withResource(readURLContent(endpoint, "GET", suffix, conf, params)) { response =>
-      IOUtils.toString(response)
-    }
-  }
 }
 
 object RestApiUtils extends RestApiUtils

@@ -18,12 +18,10 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
-import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import ai.h2o.sparkling.model.H2OModel
 import hex.Model
-import hex.schemas.ModelBuilderSchema
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
@@ -56,24 +54,13 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
         "model_id" -> convertModelIdToKey()
       ) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
-    val builderSchema = try {
-      val conf = H2OContext.ensure().getConf
-      val endpoint = RestApiUtils.getClusterEndpoint(conf)
-      update[ModelBuilderSchema[_, _, _]](
-        endpoint,
-        s"/3/ModelBuilders/${parameters.algoName().toLowerCase}",
-        conf,
-        params,
-        Seq((classOf[ModelBuilderSchema[_, _, _]], "parameters"))
-      )
+    val modelId = try {
+      trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
     } catch {
       case e: RestApiCommunicationException if e.getMessage.contains("There are no usable columns to generate model") =>
         throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
           s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
     }
-    val jobId = builderSchema.job.key.name
-    H2OJob(jobId).waitForFinish()
-    val modelId = builderSchema.job.dest.name
     val mojoData = H2OModel(modelId).downloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(

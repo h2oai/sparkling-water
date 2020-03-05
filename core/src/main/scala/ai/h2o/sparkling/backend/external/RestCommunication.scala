@@ -69,8 +69,9 @@ trait RestCommunication extends Logging with RestEncodingUtils {
                                     suffix: String,
                                     conf: H2OConf,
                                     params: Map[String, Any] = Map.empty,
-                                    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, "POST", suffix, conf, params, skippedFields)
+                                    skippedFields: Seq[(Class[_], String)] = Seq.empty,
+                                    encodeParamsAsJson: Boolean = false): ResultType = {
+    request(endpoint, "POST", suffix, conf, params, skippedFields, encodeParamsAsJson)
   }
 
   /**
@@ -111,8 +112,9 @@ trait RestCommunication extends Logging with RestEncodingUtils {
                                      suffix: String,
                                      conf: H2OConf,
                                      params: Map[String, Any] = Map.empty,
-                                     skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
+                                     skippedFields: Seq[(Class[_], String)] = Seq.empty,
+                                     encodeParamsAsJson: Boolean = false): ResultType = {
+    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
     }
