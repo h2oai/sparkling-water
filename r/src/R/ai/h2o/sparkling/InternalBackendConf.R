@@ -33,8 +33,6 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     subseqTries = function() { invoke(jconf, "subseqTries") },
 
-    h2oNodeWebEnabled = function() { invoke(jconf, "h2oNodeWebEnabled") },
-
     nodeIcedDir = function() { ConfUtils.getOption(invoke(jconf, "nodeIcedDir")) },
 
     hdfsConf = function() { ConfUtils.getOption(invoke(jconf, "hdfsConf")) },
@@ -51,10 +49,6 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
     setDefaultCloudSize = function(defaultClusterSize) { invoke(jconf, "setDefaultCloudSize", as.integer(defaultClusterSize)); .self },
 
     setSubseqTries = function(subseqTriesNum) { invoke(jconf, "setSubseqTries", as.integer(subseqTriesNum)); .self },
-
-    setH2ONodeWebEnabled = function() { invoke(jconf, "setH2ONodeWebEnabled"); .self },
-
-    setH2ONodeWebDisabled = function() { invoke(jconf, "setH2ONodeWebDisabled"); .self },
 
     setNodeIcedDir = function(dir) { invoke(jconf, "setNodeIcedDir", dir); .self },
 

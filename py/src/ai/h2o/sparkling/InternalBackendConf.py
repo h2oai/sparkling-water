@@ -17,7 +17,7 @@
 
 import warnings
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-
+import warnings
 
 class InternalBackendConf(SharedBackendConfUtils):
 
@@ -65,6 +65,7 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self.h2oNodeWebEnabled()
 
     def h2oNodeWebEnabled(self):
+        warnings.warn("Method 'h2oNodeWebEnabled' is deprecated and will be removed in the next major release 3.30'.")
         return self._jconf.h2oNodeWebEnabled()
 
     def node_iced_dir(self):
@@ -126,6 +127,7 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self.setH2ONodeWebEnabled()
 
     def setH2ONodeWebEnabled(self):
+        warnings.warn("Method 'setH2ONodeWebEnabled' is deprecated and will be removed in the next major release 3.30'.")
         self._jconf.setH2ONodeWebEnabled()
         return self
 
@@ -134,6 +136,7 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self.setH2ONodeWebDisabled()
 
     def setH2ONodeWebDisabled(self):
+        warnings.warn("Method 'setH2ONodeWebDisabled' is deprecated and will be removed in the next major release 3.30'.")
         self._jconf.setH2ONodeWebDisabled()
         return self
 
