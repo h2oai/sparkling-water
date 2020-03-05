@@ -33,7 +33,7 @@ def testParamsPassedBySetters():
     assertParamsViaSetters("H2OXGBoost")
 
 def testFitXgboostWithoutError(prostateDataset):
-    gbm = H2OXGBoost(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
+    xgboost = H2OXGBoost(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
 
-    model = gbm.fit(prostateDataset)
+    model = xgboost.fit(prostateDataset)
     model.transform(prostateDataset).repartition(1).collect()
