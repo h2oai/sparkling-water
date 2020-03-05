@@ -16,9 +16,8 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
+import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ScoreKeeper.StoppingMetric
 import hex.schemas.XGBoostV3.XGBoostParametersV3
@@ -149,9 +148,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def getEta(): Double = $(eta)
 
-  @DeprecatedMethod(version="3.30")
-  def getLearnRateAnnealing(): Double = 1
-
   def getSampleRate(): Double = $(sampleRate)
 
   def getSubsample(): Double = $(subsample)
@@ -228,9 +224,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   def setLearnRate(value: Double): this.type = set(learnRate, value)
 
   def setEta(value: Double): this.type = set(eta, value)
-
-  @DeprecatedMethod(version="3.30")
-  def setLearnRateAnnealing(value: Double): this.type = this
 
   def setSampleRate(value: Double): this.type = set(sampleRate, value)
 
