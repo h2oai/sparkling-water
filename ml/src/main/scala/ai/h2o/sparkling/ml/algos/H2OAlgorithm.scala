@@ -22,16 +22,17 @@ import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import ai.h2o.sparkling.model.H2OModel
-import com.google.gson.{Gson, JsonElement}
 import hex.Model
+import hex.schemas.ModelBuilderSchema
 import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
+import water.api.schemas3.ModelsV3
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -55,18 +56,24 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
         "model_id" -> convertModelIdToKey()
       ) ++
       valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
-    val content = try {
-      RestApiUtils.updateAsJson(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
+    val builderSchema = try {
+      val conf = H2OContext.ensure().getConf
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      update[ModelBuilderSchema[_, _, _]](
+        endpoint,
+        s"/3/ModelBuilders/${parameters.algoName().toLowerCase}",
+        conf,
+        params,
+        Seq((classOf[ModelBuilderSchema[_, _, _]], "parameters"))
+      )
     } catch {
       case e: RestApiCommunicationException if e.getMessage.contains("There are no usable columns to generate model") =>
         throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
           s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
     }
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
+    val jobId = builderSchema.job.key.name
     H2OJob(jobId).waitForFinish()
-    val modelId = job.get("dest").getAsJsonObject.get("name").getAsString
+    val modelId = builderSchema.job.dest.name
     val mojoData = H2OModel(modelId).downloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
@@ -98,11 +105,11 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
   }
 
   private def modelAlreadyExists(modelId: String): Boolean = {
-    val content = RestApiUtils.requestAsJson("/3/Models")
-    val gson = new Gson()
-    val models = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("models").getAsJsonArray.asScala
-    val modelIds = models.map(_.getAsJsonObject.get("model_id").getAsJsonObject.get("name").getAsString)
-    modelIds.toArray.contains(modelId)
+    val conf = H2OContext.ensure().getConf
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val models = query[ModelsV3](endpoint, "/3/Models", conf)
+    val modelIds = models.models.map(_.model_id.name)
+    modelIds.contains(modelId)
   }
 
   @DeveloperApi
