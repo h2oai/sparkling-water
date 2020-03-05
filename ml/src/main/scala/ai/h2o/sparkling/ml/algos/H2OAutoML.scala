@@ -16,9 +16,9 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.automl.AutoMLBuildSpec.AutoMLCustomParameters
-import ai.h2o.automl.{Algo, AutoML, AutoMLBuildSpec}
+import ai.h2o.automl.Algo
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
@@ -30,13 +30,12 @@ import com.google.gson.{Gson, JsonElement}
 import hex.ScoreKeeper
 import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.{Frame, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
-import water.DKV
 import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
@@ -55,15 +54,15 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private var amlKeyOption: Option[String] = None
 
-  private def getInputSpec(trainKey: String, validKey: Option[String]): Map[String, Any] = {
+  private def getInputSpec(train: H2OFrame, valid: Option[H2OFrame]): Map[String, Any] = {
     Map(
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
       "weights_column" -> getWeightCol(),
       "ignored_columns" -> getIgnoredCols(),
       "sort_metric" -> getSortMetric(),
-      "training_frame" -> trainKey
-    ) ++ validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
+      "training_frame" -> train.frameId
+    ) ++ valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
   }
 
   private def getBuildModels(): Map[String, Any] = {
@@ -100,7 +99,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     )
   }
 
-  private def fitOverRest(trainKey: String, validKey: Option[String]): Array[Byte] = {
+  override def fit(dataset: Dataset[_]): H2OMOJOModel = {
+    amlKeyOption = None
+    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
     val inputSpec = getInputSpec(trainKey, validKey)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
@@ -117,72 +118,13 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val autoMLJobId = job.get("dest").getAsJsonObject.get("name").getAsString
     amlKeyOption = Some(autoMLJobId)
     val model = H2OModel(getLeaderModelId(autoMLJobId))
-    model.getOrDownloadMojoData()
-  }
-
-  private def fitOverClient(trainKey: String, validKey: Option[String]): Array[Byte] = {
-    val spec = new AutoMLBuildSpec
-    spec.input_spec.training_frame = DKV.getGet[Frame](trainKey)._key
-    spec.input_spec.validation_frame = validKey.map(DKV.getGet[Frame](_)._key).orNull
-    spec.input_spec.response_column = getLabelCol()
-    spec.input_spec.fold_column = getFoldCol()
-    spec.input_spec.weights_column = getWeightCol()
-    spec.input_spec.ignored_columns = getIgnoredCols()
-    spec.input_spec.sort_metric = getSortMetric()
-    spec.build_models.include_algos = determineIncludedAlgos().map(Algo.valueOf)
-    spec.build_models.exclude_algos = null
-    spec.build_control.project_name = getProjectName()
-    spec.build_control.stopping_criteria.set_seed(getSeed())
-    spec.build_control.stopping_criteria.set_max_runtime_secs(getMaxRuntimeSecs())
-    spec.build_control.stopping_criteria.set_stopping_rounds(getStoppingRounds())
-    spec.build_control.stopping_criteria.set_stopping_tolerance(getStoppingTolerance())
-    spec.build_control.stopping_criteria.set_stopping_metric(ScoreKeeper.StoppingMetric.valueOf(getStoppingMetric()))
-    spec.build_control.stopping_criteria.set_max_models(getMaxModels())
-    spec.build_control.nfolds = getNfolds()
-    spec.build_control.balance_classes = getBalanceClasses()
-    spec.build_control.class_sampling_factors = getClassSamplingFactors()
-    spec.build_control.max_after_balance_size = getMaxAfterBalanceSize()
-    spec.build_control.keep_cross_validation_predictions = getKeepCrossValidationPredictions()
-    spec.build_control.keep_cross_validation_models = getKeepCrossValidationModels()
-    addMonotoneConstraints(spec)
-
-    val aml = AutoML.startAutoML(spec)
-
-    // Block until AutoML finishes
-    aml.get()
-    amlKeyOption = Some(aml._key.toString)
-    if (aml.leader() == null) {
-      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
-        " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
-    }
-    val binaryModel = aml.leader()
-    ModelSerializationSupport.getMojoData(binaryModel)
-  }
-
-  override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    amlKeyOption = None
-    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    val mojoData = if (RestApiUtils.isRestAPIBased()) {
-      fitOverRest(trainKey, validKey)
-    } else {
-      fitOverClient(trainKey, validKey)
-    }
-
+    val mojoData = model.getOrDownloadMojoData()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       mojoData,
       Identifiable.randomUID(ModelSerializationSupport.getMojoModel(mojoData)._algoName),
       modelSettings,
       internalFeatureCols)
-  }
-
-  private def addMonotoneConstraints(spec: AutoMLBuildSpec) = {
-    val monotoneConstraints = getMonotoneConstraintsAsKeyValuePairs()
-    if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
-      val builder = AutoMLCustomParameters.create()
-      builder.add("monotone_constraints", monotoneConstraints)
-      spec.build_models.algo_parameters = builder.build()
-    }
   }
 
   private def determineIncludedAlgos(): Array[String] = {
@@ -201,11 +143,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   def getLeaderboard(extraColumns: Array[String]): DataFrame = amlKeyOption match {
-    case Some(amlKey) => if (RestApiUtils.isRestAPIBased()) {
-      getLeaderboardOverRest(amlKey, extraColumns)
-    } else {
-      getLeaderboardOverClient(amlKey, extraColumns)
-    }
+    case Some(amlKey) => getLeaderboard(amlKey, extraColumns)
     case None => throw new RuntimeException("The 'fit' method must be called at first!")
   }
 
@@ -214,7 +152,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     schema
   }
 
-  private def getLeaderboardOverRest(automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
+  private def getLeaderboard(automlId: String, extraColumns: Array[String] = Array.empty): DataFrame = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map("extensions" -> extraColumns)
@@ -235,21 +173,8 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     spark.createDataFrame(rdd, schema)
   }
 
-  private def getLeaderboardOverClient(amlKey: String, extraColumns: Array[String]): DataFrame = {
-    val twoDimTable = DKV.getGet[AutoML](amlKey).leaderboard().toTwoDimTable(extraColumns: _*)
-    val colNames = twoDimTable.getColHeaders
-    val data = twoDimTable.getCellValues.map(_.map(_.toString))
-    val rows = data.map {
-      Row.fromSeq(_)
-    }
-    val schema = StructType(colNames.map { name => StructField(name, StringType) })
-    val spark = SparkSessionUtils.active
-    val rdd = spark.sparkContext.parallelize(rows)
-    spark.createDataFrame(rdd, schema)
-  }
-
   private def getLeaderModelId(automlId: String): String = {
-    val leaderBoard = getLeaderboardOverRest(automlId).select("model_id")
+    val leaderBoard = getLeaderboard(automlId).select("model_id")
     if (leaderBoard.count() == 0) {
       throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
         " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace

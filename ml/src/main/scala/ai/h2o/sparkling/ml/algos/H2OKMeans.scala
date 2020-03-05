@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -32,14 +31,9 @@ import water.DKV
  */
 class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
 
-  override protected def prepareH2OTrainFrameForFitting(trainFrameKey: String): Unit = {
-    super.prepareH2OTrainFrameForFitting(trainFrameKey)
-    val stringCols = if (RestApiUtils.isRestAPIBased()) {
-      H2OFrame(trainFrameKey).columns.filter(_.dataType == H2OColumnType.string).map(_.name)
-    } else {
-      val trainFrame = DKV.getGet[Frame](trainFrameKey)
-      trainFrame.names.filter(name => trainFrame.vec(name).isString)
-    }
+  override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
+    super.prepareH2OTrainFrameForFitting(trainFrame)
+    val stringCols = trainFrame.columns.filter(_.dataType == H2OColumnType.string).map(_.name)
     if (stringCols.nonEmpty) {
       throw new IllegalArgumentException(s"Following columns are of type string: '${stringCols.mkString(", ")}', but" +
         s" H2OKMeans does not accept string columns. However, you can use the `allStringColumnsToCategorical`" +

@@ -20,6 +20,7 @@ import java.lang.reflect.Field
 import java.util
 
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
@@ -28,24 +29,16 @@ import ai.h2o.sparkling.model.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson.{Gson, JsonElement}
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.glm.GLMModel.GLMParameters
-import hex.grid.GridSearch.SimpleParametersBuilderFactory
-import hex.grid.HyperSpaceSearchCriteria.{CartesianSearchCriteria, RandomDiscreteValueSearchCriteria}
-import hex.grid.{GridSearch, HyperSpaceSearchCriteria}
-import hex.tree.drf.DRFModel.DRFParameters
-import hex.tree.gbm.GBMModel.GBMParameters
-import hex.tree.xgboost.XGBoostModel.XGBoostParameters
+import hex.grid.HyperSpaceSearchCriteria
 import hex.{Model, ScoreKeeper}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o._
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import water.{DKV, Key}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -63,49 +56,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
 
   private var gridModels: Array[H2OModel] = _
   private var gridMojoModels: Array[H2OMOJOModel] = _
-
-  private def fitOverClient(algoParams: Model.Parameters,
-                            hyperParams: util.HashMap[String, Array[AnyRef]],
-                            trainKey: String,
-                            validKey: Option[String]): Array[H2OModel] = {
-    algoParams._train = DKV.getGet[Frame](trainKey)._key
-    algoParams._valid = validKey.map(DKV.getGet[Frame](_)._key).orNull
-
-    algoParams._nfolds = getNfolds()
-    algoParams._fold_column = getFoldCol()
-    algoParams._response_column = getLabelCol()
-    algoParams._weights_column = getWeightCol()
-    val trainFrame = algoParams._train.get()
-
-    water.DKV.put(trainFrame)
-    val criteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
-      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
-        val c = new RandomDiscreteValueSearchCriteria
-        c.set_stopping_tolerance(getStoppingTolerance())
-        c.set_stopping_rounds(getStoppingRounds())
-        c.set_stopping_metric(ScoreKeeper.StoppingMetric.valueOf(getStoppingMetric()))
-        c.set_seed(getSeed())
-        c.set_max_models(getMaxModels())
-        c.set_max_runtime_secs(getMaxRuntimeSecs())
-        c
-      case _ => new CartesianSearchCriteria
-    }
-
-    val paramsBuilder = algoParams match {
-      case _: GBMParameters => new SimpleParametersBuilderFactory[GBMParameters]
-      case _: DeepLearningParameters => new SimpleParametersBuilderFactory[DeepLearningParameters]
-      case _: GLMParameters => new SimpleParametersBuilderFactory[GLMParameters]
-      case _: XGBoostParameters => new SimpleParametersBuilderFactory[XGBoostParameters]
-      case _: DRFParameters => new SimpleParametersBuilderFactory[DRFParameters]
-      case algo => throw new IllegalArgumentException("Unsupported Algorithm " + algo.algoName())
-    }
-    val job = GridSearch.startGridSearch(Key.make(), algoParams, hyperParams,
-      paramsBuilder.asInstanceOf[SimpleParametersBuilderFactory[Model.Parameters]], criteria, GridSearch.getParallelismLevel(getParallelism()))
-    // Block until GridSearch finishes
-    val grid = job.get()
-    val hyperParamsArray = getHyperParameters().asScala.keys.toArray
-    grid.getModels.map(m => H2OModel.fromBinary(m, hyperParamsArray))
-  }
 
   private def getSearchCriteria(): String = {
     val criteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
@@ -125,16 +75,16 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def getAlgoParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
-                            trainKey: String, validKey:
-                            Option[String]): Map[String, Any] = {
+                            train: H2OFrame,
+                            valid: Option[H2OFrame]): Map[String, Any] = {
     algo.getH2OAlgoRESTParams() ++
       Map(
         "nfolds" -> getNfolds(),
         "fold_column" -> getFoldCol(),
         "response_column" -> getLabelCol(),
         "weights_column" -> getWeightCol(),
-        "training_frame" -> trainKey) ++
-      validKey.map { key => Map("validation_frame" -> key) }.getOrElse(Map())
+        "training_frame" -> train.frameId) ++
+      valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
   }
 
   private def prepareHyperParameters(hyperParams: util.HashMap[String, Array[AnyRef]]): String = {
@@ -150,27 +100,6 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
     hyperParams.asScala.map { case (key, value) =>
       s"'${prepareKey(key)}': ${value.mkString("[", ",", "]")}" }.mkString("{", ",", "}")
-  }
-
-  private def fitOverRest(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
-                          hyperParams: util.HashMap[String, Array[AnyRef]],
-                          trainKey: String,
-                          validKey: Option[String]): Array[H2OModel] = {
-    val params = Map(
-      "hyper_parameters" -> prepareHyperParameters(hyperParams),
-      "parallelism" -> getParallelism(),
-      "search_criteria" -> getSearchCriteria()
-    ) ++ getAlgoParams(algo, trainKey, validKey)
-
-    val algoName = algo.parameters.algoName().toLowerCase()
-    val content = RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
-
-    val gson = new Gson()
-    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
-    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
-    H2OJob(jobId).waitForFinish()
-    val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
-    getGridModelKeys(gridId)
   }
 
   private def getGridModelKeys(gridId: String): Array[H2OModel] = {
@@ -195,12 +124,23 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     algo.updateH2OParams()
 
     val hyperParams = processHyperParams(algo.parameters, getHyperParameters())
-    val (trainKey, validKey, internalFeatureCols) = prepareDatasetForFitting(dataset)
-    val unsortedGridModels = if (RestApiUtils.isRestAPIBased()) {
-      fitOverRest(algo, hyperParams, trainKey, validKey)
-    } else {
-      fitOverClient(algo.parameters, hyperParams, trainKey, validKey)
-    }
+    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    val params = Map(
+      "hyper_parameters" -> prepareHyperParameters(hyperParams),
+      "parallelism" -> getParallelism(),
+      "search_criteria" -> getSearchCriteria()
+    ) ++ getAlgoParams(algo, train, valid)
+
+    val algoName = algo.parameters.algoName().toLowerCase()
+    val content = RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
+
+    val gson = new Gson()
+    val job = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("job").getAsJsonObject
+    val jobId = job.get("key").getAsJsonObject.get("name").getAsString
+    H2OJob(jobId).waitForFinish()
+    val gridId = job.get("dest").getAsJsonObject.get("name").getAsString
+    val unsortedGridModels = getGridModelKeys(gridId)
+
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No Model returned.")
     }
