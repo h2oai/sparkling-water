@@ -71,7 +71,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   private val maxAbsLeafnodePred = floatParam("maxAbsLeafnodePred")
   private val maxDeltaStep = floatParam("maxDeltaStep")
   private val scoreTreeInterval = intParam("scoreTreeInterval")
-  private val scoreInterval = intParam("scoreInterval", "Score Interval")
   private val minSplitImprovement = floatParam("minSplitImprovement")
   private val gamma = floatParam("gamma")
   private val nthread = intParam("nthread")
@@ -113,7 +112,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     maxAbsLeafnodePred -> 0,
     maxDeltaStep -> 0,
     scoreTreeInterval -> 0,
-    scoreInterval -> 4000,
     minSplitImprovement -> 0,
     gamma -> 0.0f,
     nthread -> -1,
@@ -177,7 +175,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   @DeprecatedMethod(version = "3.30")
   def getInitialScoreInterval(): Int = 4000
 
-  def getScoreInterval(): Int = $(scoreInterval)
+  @DeprecatedMethod(version = "3.30")
+  def getScoreInterval(): Int = 4000
 
   def getMinSplitImprovement(): Float = $(minSplitImprovement)
 
@@ -262,7 +261,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   @DeprecatedMethod(version = "3.30")
   def setInitialScoreInterval(value: Int): this.type = this
 
-  def setScoreInterval(value: Int): this.type = set(scoreInterval, value)
+  @DeprecatedMethod(version = "3.30")
+  def setScoreInterval(value: Int): this.type = this
 
   def setMinSplitImprovement(value: Float): this.type = set(minSplitImprovement, value)
 
@@ -345,7 +345,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
     parameters._max_delta_step = $(maxDeltaStep)
     parameters._score_tree_interval = $(scoreTreeInterval)
-    parameters._score_interval = $(scoreInterval)
     parameters._min_split_improvement = $(minSplitImprovement)
     parameters._gamma = $(gamma)
     parameters._nthread = $(nthread)

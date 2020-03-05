@@ -126,12 +126,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "score tree interval",
         H2OTypeConverters.toInt())
 
-    scoreInterval = Param(
-        Params._dummy(),
-        "scoreInterval",
-        "Score Interval",
-        H2OTypeConverters.toInt())
-
     minSplitImprovement = Param(
         Params._dummy(),
         "minSplitImprovement",
@@ -312,7 +306,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return 4000
 
     def getScoreInterval(self):
-        return self.getOrDefault(self.scoreInterval)
+        warnings.warn("Method 'getScoreInterval' is deprecated and will be removed in the next major release 3.30.")
+        return 4000
 
     def getMinSplitImprovement(self):
         return self.getOrDefault(self.minSplitImprovement)
@@ -437,7 +432,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self
 
     def setScoreInterval(self, value):
-        return self._set(scoreInterval=value)
+        warnings.warn("Method 'setScoreInterval' is deprecated and will be removed in the next major release 3.30.")
+        return self
 
     def setMinSplitImprovement(self, value):
         return self._set(minSplitImprovement=value)
