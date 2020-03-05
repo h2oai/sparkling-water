@@ -168,9 +168,12 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     endpoint.resolve(suffixWithDelimiter).toURL
   }
 
-  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any], encodeParamsAsJson: Boolean = false): Unit = {
+  private def setHeaders(connection: HttpURLConnection,
+                         conf: H2OConf,
+                         requestType: String,
+                         params: Map[String, Any],
+                         encodeParamsAsJson: Boolean = false): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
-
     if (params.nonEmpty && requestType == "POST") {
       if (encodeParamsAsJson) {
         connection.setRequestProperty("Content-Type", "application/json")
