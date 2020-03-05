@@ -23,7 +23,6 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 from ai.h2o.sparkling.ml.Utils import Utils
-import warnings
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
                        HasStoppingCriteria):
@@ -297,10 +296,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
     def getScoreTreeInterval(self):
         return self.getOrDefault(self.scoreTreeInterval)
 
-    def getScoreInterval(self):
-        warnings.warn("Method 'getScoreInterval' is deprecated and will be removed in the next major release 3.30.")
-        return 4000
-
     def getMinSplitImprovement(self):
         return self.getOrDefault(self.minSplitImprovement)
 
@@ -414,10 +409,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setScoreTreeInterval(self, value):
         return self._set(scoreTreeInterval=value)
-
-    def setScoreInterval(self, value):
-        warnings.warn("Method 'setScoreInterval' is deprecated and will be removed in the next major release 3.30.")
-        return self
 
     def setMinSplitImprovement(self, value):
         return self._set(minSplitImprovement=value)

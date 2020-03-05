@@ -16,9 +16,8 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
-import ai.h2o.sparkling.ml.params.{DeprecatableParams, H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints, HasStoppingCriteria}
+import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.ScoreKeeper.StoppingMetric
 import hex.schemas.XGBoostV3.XGBoostParametersV3
@@ -169,9 +168,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def getScoreTreeInterval(): Int = $(scoreTreeInterval)
 
-  @DeprecatedMethod(version = "3.30")
-  def getScoreInterval(): Int = 4000
-
   def getMinSplitImprovement(): Float = $(minSplitImprovement)
 
   def getGamma(): Float = $(gamma)
@@ -248,9 +244,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   def setMaxDeltaStep(value: Float): this.type = set(maxDeltaStep, value)
 
   def setScoreTreeInterval(value: Int): this.type = set(scoreTreeInterval, value)
-
-  @DeprecatedMethod(version = "3.30")
-  def setScoreInterval(value: Int): this.type = this
 
   def setMinSplitImprovement(value: Float): this.type = set(minSplitImprovement, value)
 
