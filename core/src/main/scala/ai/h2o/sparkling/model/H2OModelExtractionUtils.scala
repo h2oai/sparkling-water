@@ -175,5 +175,4 @@ trait H2OModelExtractionUtils extends RestEncodingUtils {
   private object H2OMetricOrdering extends Ordering[(H2OMetric, Double)] {
     def compare(a: (H2OMetric, Double), b: (H2OMetric, Double)): Int = a._1.name().compare(b._1.name())
   }
-
 }
