@@ -34,7 +34,6 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  minChildWeight=1.0,
                  learnRate=0.3,
                  eta=0.3,
-                 learnRateAnnealing=1.0,
                  sampleRate=1.0,
                  subsample=1.0,
                  colSampleRate=1.0,

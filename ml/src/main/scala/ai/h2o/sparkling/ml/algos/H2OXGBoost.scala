@@ -61,7 +61,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
   private val minChildWeight = doubleParam("minChildWeight")
   private val learnRate = doubleParam("learnRate")
   private val eta = doubleParam("eta")
-  private val learnRateAnnealing = doubleParam("learnRateAnnealing", "Learn Rate Annealing")
   private val sampleRate = doubleParam("sampleRate")
   private val subsample = doubleParam("subsample")
   private val colSampleRate = doubleParam("colSampleRate")
@@ -102,7 +101,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     minChildWeight -> 1,
     learnRate -> 0.3,
     eta -> 0.3,
-    learnRateAnnealing -> 1,
     sampleRate -> 1.0,
     subsample -> 1.0,
     colSampleRate -> 1.0,
@@ -152,7 +150,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def getEta(): Double = $(eta)
 
-  def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
+  @DeprecatedMethod(version="3.30")
+  def getLearnRateAnnealing(): Double = 1
 
   def getSampleRate(): Double = $(sampleRate)
 
@@ -238,7 +237,8 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
 
   def setEta(value: Double): this.type = set(eta, value)
 
-  def setLearnRateAnnealing(value: Double): this.type = set(learnRateAnnealing, value)
+  @DeprecatedMethod(version="3.30")
+  def setLearnRateAnnealing(value: Double): this.type = this
 
   def setSampleRate(value: Double): this.type = set(sampleRate, value)
 
@@ -335,7 +335,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     parameters._min_child_weight = $(minChildWeight)
     parameters._learn_rate = $(learnRate)
     parameters._eta = $(eta)
-    parameters._learn_rate_annealing = $(learnRateAnnealing)
     parameters._sample_rate = $(sampleRate)
     parameters._subsample = $(subsample)
     parameters._col_sample_rate = $(colSampleRate)
