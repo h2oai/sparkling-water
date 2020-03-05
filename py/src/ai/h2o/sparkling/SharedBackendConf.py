@@ -18,7 +18,7 @@
 import warnings
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-
+import warnings
 
 class SharedBackendConf(SharedBackendConfUtils):
 
@@ -319,7 +319,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.clientWebEnabled()
 
     def clientWebEnabled(self):
-        return self._jconf.clientWebEnabled()
+        warnings.warn("Method 'clientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
+        return True
 
     def client_flow_baseurl_override(self):
         warnings.warn("Method 'client_flow_baseurl_override' is deprecated and will be removed in the next major release. Please use 'clientFlowBaseurlOverride'.")
@@ -814,7 +815,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setClientWebEnabled()
 
     def setClientWebEnabled(self):
-        self._jconf.setClientWebEnabled()
+        warnings.warn("Method 'setClientWebEnabled' is deprecated and will be removed in the next major release 3.30.")
         return self
 
     def set_client_web_disabled(self):
@@ -822,7 +823,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setClientWebDisabled()
 
     def setClientWebDisabled(self):
-        self._jconf.setClientWebDisabled()
+        warnings.warn("Method 'setClientWebDisabled' is deprecated and will be removed in the next major release 3.30.")
         return self
 
     def set_client_flow_baseurl_override(self, value):
