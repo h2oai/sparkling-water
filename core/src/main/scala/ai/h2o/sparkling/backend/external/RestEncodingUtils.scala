@@ -53,7 +53,7 @@ private[sparkling] trait RestEncodingUtils {
   }
 
   protected def stringifyArray(arr: Array[_]): String = {
-    arr.map(stringify).mkString("[", ", ", "]")
+    arr.map(stringify).mkString("[", ",", "]")
   }
 
   protected def stringifyMap(map: Map[_, _]): String = {

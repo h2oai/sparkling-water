@@ -22,14 +22,13 @@ import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
-import hex.tree.xgboost.{XGBoost, XGBoostModel}
 import org.apache.spark.ml.util.Identifiable
 
 /**
   * H2O XGBoost algorithm exposed via Spark ML pipelines.
   */
 class H2OXGBoost(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[XGBoost, XGBoostModel, XGBoostParameters] with H2OXGBoostParams {
+  extends H2OTreeBasedSupervisedAlgorithm[XGBoostParameters] with H2OXGBoostParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OXGBoost].getSimpleName))
 }

@@ -21,7 +21,6 @@ import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.glm.GLMModel.GLMParameters
 import hex.glm.GLMModel.GLMParameters.{Family, Link, MissingValuesHandling, Solver}
-import hex.glm.{GLM, GLMModel}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.Identifiable
@@ -33,7 +32,7 @@ import water.AutoBuffer
 /**
   * H2O GLM algorithm exposed via Spark ML pipelines.
   */
-class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLM, GLMModel, GLMParameters] with H2OGLMParams {
+class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLMParameters] with H2OGLMParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGLM].getSimpleName))
 }

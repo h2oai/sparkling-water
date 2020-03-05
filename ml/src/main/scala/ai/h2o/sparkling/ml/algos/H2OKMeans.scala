@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.{H2OAlgoParamsHelper, H2OAlgoUnsupervisedParams}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import hex.kmeans.KMeans
 import hex.kmeans.KMeansModel.KMeansParameters
-import hex.kmeans.{KMeans, KMeansModel}
 import hex.schemas.GLMV3.GLMParametersV3
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
@@ -28,7 +28,7 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 /**
  * H2O KMeans algorithm exposed via Spark ML pipelines.
  */
-class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeans, KMeansModel, KMeansParameters] with H2OKMeansParams {
+class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeansParameters] with H2OKMeansParams {
 
   override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
     super.prepareH2OTrainFrameForFitting(trainFrame)

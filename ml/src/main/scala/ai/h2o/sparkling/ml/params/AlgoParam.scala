@@ -24,13 +24,13 @@ import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
-class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] => Boolean)
-  extends Param[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]](parent, name, doc, isValid) {
+class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervisedAlgorithm[_ <: Model.Parameters] => Boolean)
+  extends Param[H2OSupervisedAlgorithm[_ <: Model.Parameters]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  override def jsonEncode(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): String = {
+  override def jsonEncode(value: H2OSupervisedAlgorithm[_ <: Model.Parameters]): String = {
     val encoded = if (value == null) {
       JNull
     } else {
@@ -47,7 +47,7 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
   }
 
 
-  override def jsonDecode(json: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
+  override def jsonDecode(json: String): H2OSupervisedAlgorithm[_ <: Model.Parameters] = {
     val parsed = parse(json)
 
     if (parsed == JNull) {
@@ -73,8 +73,8 @@ class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OSupervise
   }
 
 
-  private def createH2OAlgoInstance(algoName: String, uid: String): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = {
+  private def createH2OAlgoInstance(algoName: String, uid: String): H2OSupervisedAlgorithm[_ <: Model.Parameters] = {
     val cls = Class.forName(algoName)
-    cls.getConstructor(classOf[String]).newInstance(uid).asInstanceOf[H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]]
+    cls.getConstructor(classOf[String]).newInstance(uid).asInstanceOf[H2OSupervisedAlgorithm[_ <: Model.Parameters]]
   }
 }

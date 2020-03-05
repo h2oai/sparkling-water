@@ -20,14 +20,13 @@ import ai.h2o.sparkling.ml.params.{H2OAlgoSharedTreeParams, HasMonotoneConstrain
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
-import hex.tree.gbm.{GBM, GBMModel}
 import org.apache.spark.ml.util.Identifiable
 
 /**
   * H2O GBM algorithm exposed via Spark ML pipelines.
   */
 class H2OGBM(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
+  extends H2OTreeBasedSupervisedAlgorithm[GBMParameters] with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGBM].getSimpleName))
 }

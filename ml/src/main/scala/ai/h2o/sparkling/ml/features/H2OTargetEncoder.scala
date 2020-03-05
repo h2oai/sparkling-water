@@ -17,8 +17,7 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication}
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper

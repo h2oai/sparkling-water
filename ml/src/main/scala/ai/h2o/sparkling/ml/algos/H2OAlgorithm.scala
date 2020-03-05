@@ -25,20 +25,18 @@ import ai.h2o.sparkling.model.H2OModel
 import com.google.gson.{Gson, JsonElement}
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
-import water.{H2O, Key}
 
 import scala.reflect.ClassTag
 
 /**
  * Base class for H2O algorithm wrapper as a Spark transformer.
  */
-abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
+abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
   extends Estimator[H2OMOJOModel]
     with H2OAlgoCommonUtils
     with DefaultParamsWritable
@@ -48,7 +46,6 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
   protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    //TODO: use convertModelIdToKey
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
     val params = getH2OAlgorithmParams() ++
@@ -74,27 +71,6 @@ abstract class H2OAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseMod
       Identifiable.randomUID(parameters.algoName()),
       modelSettings,
       internalFeatureCols)
-  }
-
-  private def convertModelIdToKey(modelId: String): Key[M] = {
-    val key = Key.make[M](modelId)
-    if (H2O.containsKey(key)) {
-      val replacement = findAlternativeKey(modelId)
-      logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
-      replacement
-    } else {
-      key
-    }
-  }
-
-  private def findAlternativeKey(modelId: String): Key[M] = {
-    var suffixNumber = 0
-    var replacement: Key[M] = null
-    do {
-      suffixNumber = suffixNumber + 1
-      replacement = Key.make[M](s"${modelId}_$suffixNumber")
-    } while (H2O.containsKey(replacement))
-    replacement
   }
 
   @DeveloperApi

@@ -97,8 +97,8 @@ object H2OModel extends RestCommunication {
       val name = param.getAsJsonObject.get("name").getAsString
       val value = param.getAsJsonObject.get("actual_value")
       val stringValue = value match {
-        case v: JsonPrimitive => Some(stringifyPrimitiveParam(v.getAsString))
-        case v: JsonArray => Some(stringifyArray(v.asScala.toArray.map(_.getAsString)))
+        case v: JsonPrimitive => Some(v.getAsString)
+        case v: JsonArray => Some(v.asScala.toArray.map(_.getAsString).mkString("[", ", ", "]"))
         case _ =>
           // don't put more complex type to output yet
           None

@@ -40,7 +40,7 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
   // The same for schema
   protected def schemaTag: ClassTag[H2O_SCHEMA]
 
-  private[sparkling] var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
+  var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
 
   protected def booleanParam(name: String, doc: String): BooleanParam = booleanParam(name, Some(doc))
 

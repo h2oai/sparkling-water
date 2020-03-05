@@ -22,14 +22,13 @@ import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 
 import scala.reflect.ClassTag
 
-abstract class H2OSupervisedAlgorithm[B <: H2OBaseModelBuilder : ClassTag, M <: H2OBaseModel, P <: Model.Parameters : ClassTag]
-  extends H2OAlgorithm[B, M, P] with H2OAlgoSupervisedParams[P] {
+abstract class H2OSupervisedAlgorithm[P <: Model.Parameters : ClassTag]
+  extends H2OAlgorithm[P] with H2OAlgoSupervisedParams[P] {
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {

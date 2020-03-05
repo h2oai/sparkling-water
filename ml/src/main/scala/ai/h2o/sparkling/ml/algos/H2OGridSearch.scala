@@ -36,8 +36,8 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -73,7 +73,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     criteria.map { case (key, value) => s"'$key': $value"}.mkString("{", ",", "}")
   }
 
-  private def getAlgoParams(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters],
+  private def getAlgoParams(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters],
                             train: H2OFrame,
                             valid: Option[H2OFrame]): Map[String, Any] = {
     algo.getH2OAlgorithmParams() ++
@@ -87,7 +87,22 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   }
 
   private def prepareHyperParameters(): String = {
-    val hyperParams = getHyperParameters()
+    val it = getHyperParameters().entrySet().iterator()
+    val checkedHyperParams = new java.util.HashMap[String, Array[AnyRef]]()
+    while (it.hasNext) {
+      val entry = it.next()
+      val hyperParamName = entry.getKey
+
+      val values = if (entry.getValue.isInstanceOf[util.ArrayList[Object]]) {
+        val length = entry.getValue.asInstanceOf[util.ArrayList[_]].size()
+        val arrayList = entry.getValue.asInstanceOf[util.ArrayList[_]]
+        (0 until length).map(idx => arrayList.get(idx).asInstanceOf[AnyRef]).toArray
+      } else {
+        entry.getValue
+      }
+      checkedHyperParams.put(hyperParamName, values)
+    }
+
     // REST API expects parameters without the starting `_`.
     // User in SW api should anyway specify Sparkling Water algo names and we should map it to H2O ones internally.
     // See https://0xdata.atlassian.net/browse/SW-1608
@@ -98,7 +113,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
         key
       }
     }
-    hyperParams.asScala.map { case (key, value) =>
+
+    checkedHyperParams.asScala.map { case (key, value) =>
       s"'${prepareKey(key)}': ${stringify(value)}"
     }.mkString("{", ",", "}")
   }
@@ -121,15 +137,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       throw new IllegalArgumentException(s"Algorithm has to be specified. Available algorithms are " +
         s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
-
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
       "search_criteria" -> getSearchCriteria()
     ) ++ getAlgoParams(algo, train, valid)
-
-    val algoName = algo.parameters.algoName().toLowerCase()
+    val algoName = H2OGridSearch.SupportedAlgos.toH2OAlgoName(algo)
     val content = try {
       RestApiUtils.updateAsJson(s"/99/Grid/$algoName", params)
     } catch {
@@ -153,13 +167,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     gridModels = sortGridModels(unsortedGridModels)
     gridMojoModels = gridModels.map { m =>
       val data = m.downloadMojoData()
-      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algo.parameters.algoName()}_mojoModel"))
+      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoName}_mojoModel"))
     }
     val firstModel = extractFirstModelFromGrid()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     H2OMOJOModel.createFromMojo(
       firstModel.downloadMojoData(),
-      Identifiable.randomUID(algo.parameters.algoName()),
+      Identifiable.randomUID(algoName),
       modelSettings,
       internalFeatureCols)
   }
@@ -247,14 +261,26 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF = Value
 
-    def checkIfSupported(algo: H2OAlgorithm[_, _, _ <: Model.Parameters]): Unit = {
+    def checkIfSupported(algo: H2OAlgorithm[_ <: Model.Parameters]): Unit = {
       val exists = values.exists(_.toString == algo.getClass.getSimpleName)
       if (!exists) {
         throw new IllegalArgumentException(s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
           s"algorithms are ${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
       }
     }
+
+    def toH2OAlgoName(algo: H2OAlgorithm[_ <: Model.Parameters]): String = {
+      val algoValue = values.find(_.toString == algo.getClass.getSimpleName).get
+      algoValue match {
+        case H2OGBM => "gbm"
+        case H2OGLM => "glm"
+        case H2ODeepLearning => "deeplearning"
+        case H2OXGBoost => "xgboost"
+        case H2ODRF => "drf"
+      }
+    }
   }
+
 }
 
 trait H2OGridSearchParams extends H2OCommonSupervisedParams {
@@ -298,7 +324,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   //
   // Getters
   //
-  def getAlgo(): H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters] = $(algo)
+  def getAlgo(): H2OSupervisedAlgorithm[_ <: Model.Parameters] = $(algo)
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
@@ -321,7 +347,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   //
   // Setters
   //
-  def setAlgo(value: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters]): this.type = {
+  def setAlgo(value: H2OSupervisedAlgorithm[_ <: Model.Parameters]): this.type = {
     H2OGridSearch.SupportedAlgos.checkIfSupported(value)
     set(algo, value)
   }

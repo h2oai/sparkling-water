@@ -19,14 +19,13 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.params.H2ODRFParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.tree.drf.DRFModel.DRFParameters
-import hex.tree.drf.{DRF, DRFModel}
 import org.apache.spark.ml.util.Identifiable
 
 /**
   * H2O DRF algorithm exposed via Spark ML pipelines.
   */
 class H2ODRF(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[DRF, DRFModel, DRFParameters] with H2ODRFParams {
+  extends H2OTreeBasedSupervisedAlgorithm[DRFParameters] with H2ODRFParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2ODRF].getSimpleName))
 }
