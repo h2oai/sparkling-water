@@ -38,7 +38,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")//TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM()

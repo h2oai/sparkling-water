@@ -99,7 +99,8 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
       }
     }
     hyperParams.asScala.map { case (key, value) =>
-      s"'${prepareKey(key)}': ${value.mkString("[", ",", "]")}" }.mkString("{", ",", "}")
+      s"'${prepareKey(key)}': ${stringify(value)}"
+    }.mkString("{", ",", "}")
   }
 
   private def getGridModelKeys(gridId: String): Array[H2OModel] = {
@@ -197,13 +198,13 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
     val rowValues = gridModels.zip(gridMojoModels.map(_.uid)).map { case (model, id) =>
-      val outputParams = model.trainingParams.filter { case (key, _) => hyperParamNames.contains(key) }
+      val outputParams = model.trainingParams.filter { case (key, _) => hyperParamNames.contains("_" + key) }
       Row(Seq(id) ++ outputParams.values: _*)
     }
 
     val colNames = gridModels.headOption.map { model =>
-      val outputParams = model.trainingParams.filter { case (key, _) => hyperParamNames.contains(key) }
-      outputParams.keys.map(StructField(_, StringType, nullable = false)).toList
+      val outputParams = model.trainingParams.filter { case (key, _) => hyperParamNames.contains("_" + key) }
+      outputParams.keys.map(name => StructField(s"_$name", StringType, nullable = false)).toList
     }.getOrElse(List.empty)
 
 
