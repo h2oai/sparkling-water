@@ -278,9 +278,10 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setHoldoutStrategy("None")
       .setNoise(0.0)
 
-    intercept[RuntimeException] {
+    val thrown = intercept[RuntimeException] {
       targetEncoder.fit(trainingDatasetWithLabel)
     }
+    assert(thrown.getMessage == "The label column can not contain more than two unique values.")
   }
 
   test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {

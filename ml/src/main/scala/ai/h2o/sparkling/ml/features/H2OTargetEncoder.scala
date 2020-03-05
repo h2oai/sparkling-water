@@ -17,7 +17,8 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
@@ -39,6 +40,9 @@ class H2OTargetEncoder(override val uid: String)
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
+    if (dataset.select(getLabelCol()).distinct().count() > 2) {
+      throw new RuntimeException("The label column can not contain more than two unique values.")
+    }
     val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val input = h2oContext.asH2OFrameKeyString(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
