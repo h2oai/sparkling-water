@@ -20,7 +20,6 @@ package ai.h2o.sparkling.backend.internal
 import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkEnv
@@ -46,9 +45,6 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def subseqTries: Int = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
 
-  @DeprecatedMethod(version = "3.30")
-  def h2oNodeWebEnabled: Boolean = sparkConf.getBoolean(PROP_NODE_ENABLE_WEB._1, PROP_NODE_ENABLE_WEB._2)
-
   def nodeIcedDir: Option[String] = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
 
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
@@ -63,12 +59,6 @@ trait InternalBackendConf extends SharedBackendConf {
   def setDefaultCloudSize(defaultClusterSize: Int): H2OConf = set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
 
   def setSubseqTries(subseqTriesNum: Int): H2OConf = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
-
-  @DeprecatedMethod(version = "3.30")
-  def setH2ONodeWebEnabled(): H2OConf = set(PROP_NODE_ENABLE_WEB._1, value = true)
-
-  @DeprecatedMethod(version = "3.30")
-  def setH2ONodeWebDisabled(): H2OConf = set(PROP_NODE_ENABLE_WEB._1, value = false)
 
   def setNodeIcedDir(dir: String): H2OConf = set(PROP_NODE_ICED_DIR._1, dir)
 
@@ -118,10 +108,7 @@ object InternalBackendConf {
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES: (String, Int) = ("spark.ext.h2o.subseq.tries", 5)
-
-  /** Enable or disable web on H2O worker nodes in internal backend mode. It is disabled by default for security reasons */
-  val PROP_NODE_ENABLE_WEB: (String, Boolean) = ("spark.ext.h2o.node.enable.web", false)
-
+  
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR: (String, None.type) = ("spark.ext.h2o.node.iced.dir", None)
 

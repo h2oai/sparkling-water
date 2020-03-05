@@ -16,7 +16,6 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-import warnings
 
 class InternalBackendConf(SharedBackendConfUtils):
 
@@ -38,10 +37,6 @@ class InternalBackendConf(SharedBackendConfUtils):
 
     def subseqTries(self):
         return self._jconf.subseqTries()
-
-    def h2oNodeWebEnabled(self):
-        warnings.warn("Method 'h2oNodeWebEnabled' is deprecated and will be removed in the next major release 3.30'.")
-        return self._jconf.h2oNodeWebEnabled()
 
     def nodeIcedDir(self):
         return self._get_option(self._jconf.nodeIcedDir())
@@ -71,16 +66,6 @@ class InternalBackendConf(SharedBackendConfUtils):
 
     def setSubseqTries(self, subseqTriesNum):
         self._jconf.setSubseqTries(subseqTriesNum)
-        return self
-
-    def setH2ONodeWebEnabled(self):
-        warnings.warn("Method 'setH2ONodeWebEnabled' is deprecated and will be removed in the next major release 3.30'.")
-        self._jconf.setH2ONodeWebEnabled()
-        return self
-
-    def setH2ONodeWebDisabled(self):
-        warnings.warn("Method 'setH2ONodeWebDisabled' is deprecated and will be removed in the next major release 3.30'.")
-        self._jconf.setH2ONodeWebDisabled()
         return self
 
     def setNodeIcedDir(self, dir):
