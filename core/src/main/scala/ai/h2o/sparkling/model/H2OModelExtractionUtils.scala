@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.model
 
+import ai.h2o.sparkling.backend.external.RestEncodingUtils
 import com.google.gson.{JsonArray, JsonObject, JsonPrimitive}
 import hex._
 import org.apache.spark.h2o.H2OBaseModel
@@ -28,7 +29,7 @@ import scala.collection.mutable
 /**
  * Utilities to extract information from models obtained via REST and binary models
  */
-trait H2OModelExtractionUtils {
+trait H2OModelExtractionUtils extends RestEncodingUtils {
   protected def extractModelCategory(model: H2OBaseModel): H2OModelCategory.Value = {
     H2OModelCategory.fromString(model._output.getModelCategory.toString)
   }
@@ -57,8 +58,8 @@ trait H2OModelExtractionUtils {
     selectedParams.map { paramName =>
       val value = PojoUtils.getFieldEvenInherited(model._parms, paramName).get(model._parms)
       val stringValue = value match {
-        case v: Array[_] => v.mkString("[", ",", "]")
-        case v => v.toString
+        case v: Array[_] => stringifyArray(v)
+        case v => stringifyPrimitiveParam(v)
       }
       paramName -> stringValue
     }.toMap
@@ -70,8 +71,8 @@ trait H2OModelExtractionUtils {
       val name = param.getAsJsonObject.get("name").getAsString
       val value = param.getAsJsonObject.get("actual_value")
       val stringValue = value match {
-        case v: JsonPrimitive => Some(v.getAsString)
-        case v: JsonArray => Some(v.asScala.mkString("[", ",", "]"))
+        case v: JsonPrimitive => Some(stringifyPrimitiveParam(v))
+        case v: JsonArray => Some(stringifyArray(v.asScala.toArray))
         case _ =>
           // don't put more complex type to output yet
           None

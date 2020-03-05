@@ -17,10 +17,9 @@
 package ai.h2o.sparkling.ml.algos
 
 import java.lang.reflect.Field
-import java.net.URI
 import java.util
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
@@ -57,7 +56,8 @@ import scala.collection.mutable
   */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams
-  with RestCommunication {
+  with RestCommunication
+  with RestEncodingUtils {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 
