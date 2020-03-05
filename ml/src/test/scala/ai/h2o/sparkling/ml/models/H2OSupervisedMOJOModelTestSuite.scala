@@ -21,7 +21,6 @@ import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
@@ -43,7 +42,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
 
   def testOffsetColumnGetsPropagatedToMOJOModel(
-      algo: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSplitRatio(0.8)
@@ -86,7 +85,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testDeserializedMOJOAndOriginalMOJOReturnSameResult(
-      algo: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -126,7 +125,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testMOJOWithSetOffsetColumnReturnsDifferentResult(
-      algo: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -186,7 +185,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testLoadingOfSuppervisedAlgorithmWorks(
-    algo: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+    algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetCol = "PSA"
     algo
       .setSeed(1)

@@ -148,7 +148,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     }
   }
 
-  private def testGridSearch(algo: H2OSupervisedAlgorithm[_, _, _ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+  private def testGridSearch(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters], hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
     val stage = new H2OGridSearch()
       .setLabelCol("AGE")
       .setHyperParameters(hyperParams)

@@ -21,7 +21,6 @@ import ai.h2o.sparkling.ml.algos._
 import hex.Model
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -39,7 +38,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     .cache()
 
   def testTrainedTreeBasedModelHasPositiveNumberOfTrees(
-      algo: H2OTreeBasedSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+      algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)
       .setSeed(1)
@@ -64,7 +63,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
   }
 
   def testLoadedTreeBasedModelHasPositiveNumberOfTrees(
-    algo: H2OTreeBasedSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters]): Unit = {
+    algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)
       .setSeed(1)
