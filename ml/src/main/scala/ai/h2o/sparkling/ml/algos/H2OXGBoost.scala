@@ -321,7 +321,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
         "max_abs_leafnode_pred" -> getMaxAbsLeafnodePred(),
         "max_delta_step" -> getMaxDeltaStep(),
         "score_tree_interval" -> getScoreTreeInterval(),
-        "score_interval" -> getScoreInterval(),
         "min_split_improvement" -> getMinSplitImprovement(),
         "gamma" -> getGamma(),
         "nthread" -> getNthread(),
