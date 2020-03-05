@@ -24,7 +24,7 @@ From 3.28.1 to 3.30
 - It is now required to explicitly create ``H2OContext`` before you run any of our exposed algorithms. Previously,
   the algorithm would create the H2OContext on demand.
 
-- It is no longer possible to disable web (REST API endpoints) on the worker ndoes in the internal client as we require
+- It is no longer possible to disable web (REST API endpoints) on the worker nodes in the internal client as we require
   the endpoints to be available. In particular, the methods ``setH2ONodeWebEnabled``, ``setH2ONodeWebDisabled`` and
   ``h2oNodeWebEnabled`` are removed without replacement. Also the option ``spark.ext.h2o.node.enable.web`` does not have
   any effect anymore.
