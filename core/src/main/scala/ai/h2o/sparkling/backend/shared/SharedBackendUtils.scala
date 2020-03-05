@@ -98,15 +98,7 @@ trait SharedBackendUtils extends Logging with Serializable {
         }
       }
     }
-
-    if (!conf.clientWebEnabled) {
-      val f = new File(createTempDir(), "dummy")
-      f.createNewFile()
-      f.deleteOnExit()
-      conf.setHashLoginEnabled()
-      conf.setLoginConf(f.toString)
-    }
-
+    
     if (conf.clientVerboseOutput) {
       conf.setH2OClientLogLevel(incLogLevel(conf.h2oClientLogLevel, "INFO"))
     }

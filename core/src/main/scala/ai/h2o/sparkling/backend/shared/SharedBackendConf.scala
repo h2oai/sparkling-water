@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.backend.shared
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.h2o.H2OConf
 
 import scala.collection.JavaConverters._
@@ -122,9 +121,6 @@ trait SharedBackendConf {
   def clientNetworkMask: Option[String] = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
 
   def ignoreSparkPublicDNS: Boolean = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
-
-  @DeprecatedMethod(version="3.30")
-  def clientWebEnabled: Boolean = true
 
   def clientFlowBaseurlOverride: Option[String] = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
 
@@ -276,12 +272,6 @@ trait SharedBackendConf {
   def setIgnoreSparkPublicDNSEnabled(): H2OConf = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, value = true)
 
   def setIgnoreSparkPublicDNSDisabled(): H2OConf = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, value = false)
-
-  @DeprecatedMethod(version = "3.30")
-  def setClientWebEnabled(): H2OConf = this
-
-  @DeprecatedMethod(version = "3.30")
-  def setClientWebDisabled(): H2OConf = this
 
   def setClientFlowBaseurlOverride(baseUrl: String): H2OConf = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
 
