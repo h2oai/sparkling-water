@@ -102,8 +102,7 @@ trait RestApiUtils extends RestCommunication {
 
   def updateAsJson(suffix: String,
                    params: Map[String, Any] = Map.empty,
-                   encodeParamsAsJson: Boolean = false
-                  ): String = {
+                   encodeParamsAsJson: Boolean = false): String = {
     val conf = H2OContext.ensure().getConf
     val endpoint = getClusterEndpoint(conf)
     withResource(readURLContent(endpoint, "POST", suffix, conf, params, encodeParamsAsJson)) { response =>
@@ -112,7 +111,7 @@ trait RestApiUtils extends RestCommunication {
   }
 
   def requestAsJson(suffix: String,
-                   params: Map[String, Any] = Map.empty): String = {
+                    params: Map[String, Any] = Map.empty): String = {
     val conf = H2OContext.ensure().getConf
     val endpoint = getClusterEndpoint(conf)
     withResource(readURLContent(endpoint, "GET", suffix, conf, params)) { response =>
