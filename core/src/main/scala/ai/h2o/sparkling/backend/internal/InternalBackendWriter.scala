@@ -17,8 +17,6 @@
 
 package ai.h2o.sparkling.backend.internal
 
-import java.sql.{Date, Timestamp}
-
 import ai.h2o.sparkling.backend.shared.Writer
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import water.fvec.ChunkUtils
@@ -50,10 +48,6 @@ private[sparkling] class InternalBackendWriter(frameName: String,
   override def put(columnNum: Int, data: Float): Unit = chunks(columnNum).addNum(data)
 
   override def put(columnNum: Int, data: Double): Unit = chunks(columnNum).addNum(data)
-
-  override def put(columnNum: Int, data: Timestamp): Unit = chunks(columnNum).addNum(data.getTime)
-
-  override def put(columnNum: Int, data: Date): Unit = chunks(columnNum).addNum(data.getTime)
 
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
 
