@@ -23,7 +23,6 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 from ai.h2o.sparkling.ml.Utils import Utils
-import warnings
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
                        HasStoppingCriteria):
@@ -261,10 +260,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
     def getEta(self):
         return self.getOrDefault(self.eta)
 
-    def getLearnRateAnnealing(self):
-        warnings.warn("Method 'getLearnRateAnnealing' is deprecated and will be removed in the next major release 3.30.")
-        return 1.0
-
     def getSampleRate(self):
         return self.getOrDefault(self.sampleRate)
 
@@ -375,10 +370,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setEta(self, value):
         return self._set(eta=value)
-
-    def setLearnRateAnnealing(self, value):
-        warnings.warn("Method 'setLearnRateAnnealing' is deprecated and will be removed in the next major release 3.30.")
-        return self
 
     def setSampleRate(self, value):
         return self._set(sampleRate=value)
