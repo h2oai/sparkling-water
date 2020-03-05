@@ -79,7 +79,7 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeWebDisabled(self):
-        warnings.warn("Method 'setH2ONodeWebEnabled' is deprecated and will be removed in the next major release 3.30'.")
+        warnings.warn("Method 'setH2ONodeWebDisabled' is deprecated and will be removed in the next major release 3.30'.")
         self._jconf.setH2ONodeWebDisabled()
         return self
 
