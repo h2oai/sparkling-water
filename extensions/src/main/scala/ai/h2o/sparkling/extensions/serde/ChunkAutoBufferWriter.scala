@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.extensions.serde
 
 import java.io.{Closeable, OutputStream}
-import java.sql.Timestamp
 import java.util.UUID
 
 import water.fvec.{ChunkUtils, Frame}
@@ -106,8 +105,6 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
       buffer.put1(MARKER_ORIGINAL_VALUE)
     }
   }
-
-  def writeTimestamp(timestamp: Timestamp): Unit = writeLong(timestamp.getTime)
 
   def writeNA(expectedType: Byte): Unit = expectedType match {
     case EXPECTED_BOOL | EXPECTED_BYTE =>

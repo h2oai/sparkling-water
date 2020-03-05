@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import java.time.LocalDate
+
 import ai.h2o.sparkling.backend.external.{ExternalBackendConverter, ExternalBackendH2OFrameRelation, ExternalH2OBackend}
 import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
 import ai.h2o.sparkling.backend.shared.{Converter, Writer}
@@ -30,6 +32,7 @@ import org.apache.spark.{mllib, _}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.sql.catalyst.util.DateTimeUtils
 
 object SparkDataFrameConverter extends Logging {
 
@@ -170,8 +173,8 @@ object SparkDataFrameConverter extends Logging {
           case _: DecimalType => con.put(idxH2O, row.getDecimal(idxField).doubleValue())
           case DoubleType => con.put(idxH2O, row.getDouble(idxField))
           case StringType => con.put(idxH2O, row.getString(idxField))
-          case TimestampType => con.put(idxH2O, row.getAs[java.sql.Timestamp](idxField))
-          case DateType => con.put(idxH2O, row.getAs[java.sql.Date](idxField))
+          case TimestampType => con.put(idxH2O, row.getLong(idxField))
+          case DateType => con.put(idxH2O, DateTimeUtils.daysToMillis(row.getInt(idxField)))
           case v if ExposeUtils.isMLVectorUDT(v) => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")

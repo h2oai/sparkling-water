@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
@@ -167,6 +168,11 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
     updateUIAfterStart() // updates the spark UI
     backendHeartbeatThread.start() // start backend heartbeats
+
+    val timezoneOption = sparkContext.conf.getOption("spark.sql.session.timeZone")
+    if (timezoneOption.isDefined) {
+      TimeZone.setDefault(TimeZone.getTimeZone(timezoneOption.get))
+    }
     this
   }
 
