@@ -94,7 +94,7 @@ def testGetGridModelsMetrics(prostateDataset):
     grid.fit(prostateDataset)
     metrics = grid.getGridModelsMetrics()
     assert metrics.count() == 3
-    assert metrics.columns == ['MOJO Model ID', 'MeanResidualDeviance', 'MSE', 'R2', 'RMSE']
+    assert metrics.columns == ['MOJO Model ID', 'MSE', 'MeanResidualDeviance', 'R2', 'RMSE']
     metrics.collect() # try materializing
 
 def testGetGridModels(prostateDataset):
