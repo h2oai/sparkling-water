@@ -43,7 +43,7 @@
   },
   {
     "name" : "vehicles",
-    "url" : "s3://ai.h2o.sparkling/benchmarks/data/vehicle.csv",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/vehicles.csv",
     "isVirtual" : false,
     "labelCol" : "Vehicle"
   }
