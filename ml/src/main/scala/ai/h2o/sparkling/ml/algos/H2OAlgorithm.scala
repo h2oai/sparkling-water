@@ -16,20 +16,18 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
 import ai.h2o.sparkling.model.H2OModel
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
-import water.api.schemas3.ModelsV3
 
 import scala.reflect.ClassTag
 
@@ -72,7 +70,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
 
   private def convertModelIdToKey(): String = {
     val key = getModelId()
-    if (modelAlreadyExists(key)) {
+    if (H2OModel.modelExists(key)) {
       val replacement = findAlternativeKey(key)
       logWarning(s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
       replacement
@@ -87,16 +85,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters : ClassTag]
     do {
       suffixNumber = suffixNumber + 1
       replacement = s"${modelId}_$suffixNumber"
-    } while (modelAlreadyExists(replacement))
+    } while (H2OModel.modelExists(replacement))
     replacement
-  }
-
-  private def modelAlreadyExists(modelId: String): Boolean = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val models = query[ModelsV3](endpoint, "/3/Models", conf)
-    val modelIds = models.models.map(_.model_id.name)
-    modelIds.contains(modelId)
   }
 
   @DeveloperApi

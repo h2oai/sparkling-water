@@ -27,6 +27,7 @@ import com.google.gson._
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import water.api.schemas3.ModelsV3
 
 import scala.collection.JavaConverters._
 
@@ -58,6 +59,15 @@ class H2OModel private(val modelId: String,
 }
 
 object H2OModel extends RestCommunication {
+
+  private[sparkling] def listAllModels(): Array[String] =  {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val models = query[ModelsV3](endpoint, "/3/Models", conf)
+    models.models.map(_.model_id.name)
+  }
+
+  private[sparkling] def modelExists(modelId: String): Boolean = listAllModels().contains(modelId)
 
   def apply(modelId: String): H2OModel = {
     val conf = H2OContext.ensure().getConf
