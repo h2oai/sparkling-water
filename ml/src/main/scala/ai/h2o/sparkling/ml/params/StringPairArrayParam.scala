@@ -16,47 +16,45 @@
 */
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.{Param, ParamPair, Params}
-import org.json4s.JsonAST.JArray
+import org.apache.spark.ml.param.{Param, Params}
+import org.json4s.JsonAST.{JArray, JInt}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import org.json4s.{JNull, JString}
+import org.json4s.{JNull, JValue}
+import water.AutoBuffer
 
-import scala.collection.JavaConverters._
-
-class NullableStringArrayParam(parent: Params, name: String, doc: String, isValid: Array[String] => Boolean)
-  extends Param[Array[String]](parent, name, doc, isValid) {
+class StringPairArrayParam(parent: Params, name: String, doc: String, isValid: Array[(String, String)] => Boolean)
+  extends Param[Array[(String, String)]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[java.lang.String]): ParamPair[Array[String]] =
-    w(value.asScala.map(_.asInstanceOf[String]).toArray)
-
-  override def jsonEncode(value: Array[String]): String = {
-    if (value == null) {
-      compact(render(JNull))
+  override def jsonEncode(value: Array[(String, String)]): String = {
+    val encoded: JValue = if (value == null) {
+      JNull
     } else {
-      import org.json4s.JsonDSL._
-      compact(render(value.toSeq.map {
-        JString(_)
-      }))
+      val ab = new AutoBuffer()
+      ab.putASer(value.asInstanceOf[Array[AnyRef]])
+      val bytes = ab.buf()
+      JArray(bytes.toSeq.map(JInt(_)).toList)
     }
+    compact(render(encoded))
   }
 
-  override def jsonDecode(json: String): Array[String] = {
+  override def jsonDecode(json: String): Array[(String, String)] = {
     parse(json) match {
       case JNull =>
         null
       case JArray(values) =>
-        values.map {
-          case JString(s) =>
-            s
-          case jValue =>
-            throw new IllegalArgumentException(s"Cannot decode $jValue to String.")
+        val bytes = values.map {
+          case JInt(x) =>
+            x.byteValue()
+          case _ =>
+            throw new IllegalArgumentException(s"Cannot decode $json to Byte.")
         }.toArray
+        val ab = new AutoBuffer(bytes)
+        ab.getASer[(String, String)](classOf[(String, String)])
       case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to Array[String].")
+        throw new IllegalArgumentException(s"Cannot decode $json to Array[(String, String)].")
     }
   }
 }

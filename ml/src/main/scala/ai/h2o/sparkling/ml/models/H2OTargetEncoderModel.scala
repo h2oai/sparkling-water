@@ -17,25 +17,28 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
-import ai.h2o.targetencoding.{BlendingParams, TargetEncoder, TargetEncoderModel}
+import ai.h2o.sparkling.model.H2OModel
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset}
-import water.support.ModelSerializationSupport
+import water.api.schemas3.KeyV3.FrameKeyV3
 
-class H2OTargetEncoderModel(
-    override val uid: String,
-    targetEncoderModel: TargetEncoderModel)
-  extends Model[H2OTargetEncoderModel] with H2OTargetEncoderBase with MLWritable
-  with H2OTargetEncoderModelUtils {
+class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
+  extends Model[H2OTargetEncoderModel]
+    with H2OTargetEncoderBase
+    with MLWritable
+    with H2OTargetEncoderModelUtils
+    with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
-    val mojoData = ModelSerializationSupport.getMojoData(targetEncoderModel)
+    val mojoData = targetEncoderModel.downloadMojoData()
     val model = new H2OTargetEncoderMOJOModel()
     copyValues(model).setMojoData(mojoData)
   }
@@ -51,31 +54,36 @@ class H2OTargetEncoderModel(
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+    val hc = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = h2oContext.asH2OFrame(relevantColumnsDF)
+    val input = hc.asH2OFrameKeyString(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
-    val holdoutStrategyId = TargetEncoder.DataLeakageHandlingStrategy.valueOf(getHoldoutStrategy()).ordinal().asInstanceOf[Byte]
-    val blendingParams = new BlendingParams(getBlendedAvgInflectionPoint(), getBlendedAvgSmoothing())
-    val outputFrame = targetEncoderModel.transform(
-      input,
-      holdoutStrategyId,
-      getNoise(),
-      getBlendedAvgEnabled(),
-      blendingParams,
-      getNoiseSeed())
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
-    val outputColumnsOnlyFrame = outputFrame.subframe(internalOutputColumns ++ Array(temporaryColumn))
-    val outputColumnsOnlyDF = h2oContext.asDataFrame(outputColumnsOnlyFrame)
+    val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
+    val conf = hc.getConf
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val params = Map(
+      "model" -> targetEncoderModel.modelId,
+      "frame" -> input,
+      "data_leakage_handling" -> getHoldoutStrategy(),
+      "noise" -> getNoise(),
+      "blending" -> getBlendedAvgEnabled(),
+      "inflection_point" -> getBlendedAvgInflectionPoint(),
+      "smoothing" -> getBlendedAvgSmoothing(),
+      "seed" -> getNoiseSeed()
+    )
+    val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
+    val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name).subframe(outputFrameColumns)
+    val outputColumnsOnlyDF = hc.asDataFrame(outputColumnsOnlyFrame.frameId)
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
     }
     withIdDF
-      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType="left")
+      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")
       .drop(temporaryColumn)
   }
 

@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
-import water.exceptions.H2OModelBuilderIllegalArgumentException
 
 @RunWith(classOf[JUnitRunner])
 class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
@@ -126,5 +125,4 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
     assert(thrown.getMessage.startsWith("H2O could not use any of the specified feature" +
       " columns: 'constant'. H2O ignores constant columns, are all the columns constants?"))
   }
-
 }

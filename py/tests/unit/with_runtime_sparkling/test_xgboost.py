@@ -20,6 +20,7 @@ Unit tests for PySparkling H2OKMeans
 """
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pysparkling.ml import H2OXGBoost
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -30,3 +31,9 @@ def testParamsPassedByConstructor():
 
 def testParamsPassedBySetters():
     assertParamsViaSetters("H2OXGBoost")
+
+def testFitXgboostWithoutError(prostateDataset):
+    xgboost = H2OXGBoost(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
+
+    model = xgboost.fit(prostateDataset)
+    model.transform(prostateDataset).repartition(1).collect()

@@ -22,7 +22,7 @@ import java.util
 import hex.KeyValue
 import org.apache.spark.ml.param.Params
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 trait HasMonotoneConstraints extends Params {
   private val monotoneConstraints = new DictionaryParam(

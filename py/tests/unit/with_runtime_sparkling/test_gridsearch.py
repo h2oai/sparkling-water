@@ -65,3 +65,42 @@ def testPipelineSerializationXGBoost(prostateDataset):
 
 def testPipelineSerializationDRF(prostateDataset):
     gridSearchTester(H2ODRF(), prostateDataset)
+
+
+def testGetGridModelsParams(prostateDataset):
+    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM(),
+                         strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
+
+    grid.fit(prostateDataset)
+    params = grid.getGridModelsParams()
+    assert params.count() == 3
+    assert params.columns == ['MOJO Model ID', '_seed']
+    params.collect() # try materializing
+
+def testGetGridModelsNoParams(prostateDataset):
+    grid = H2OGridSearch(labelCol="AGE", splitRatio=0.8, algo=H2OGBM(),
+                         strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
+
+    grid.fit(prostateDataset)
+    params = grid.getGridModelsParams()
+    assert params.count() == 1
+    assert params.columns == ['MOJO Model ID']
+    params.collect() # try materializing
+
+def testGetGridModelsMetrics(prostateDataset):
+    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM(),
+                         strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
+
+    grid.fit(prostateDataset)
+    metrics = grid.getGridModelsMetrics()
+    assert metrics.count() == 3
+    assert metrics.columns == ['MOJO Model ID', 'MSE', 'MeanResidualDeviance', 'R2', 'RMSE']
+    metrics.collect() # try materializing
+
+def testGetGridModels(prostateDataset):
+    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"_seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM(),
+                         strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
+
+    grid.fit(prostateDataset)
+    models = grid.getGridModels()
+    assert len(models) == 3

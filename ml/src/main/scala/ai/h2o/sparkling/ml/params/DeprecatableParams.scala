@@ -21,13 +21,13 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param.{Param, Params}
 
 /**
-  * The trait represents a definition of ML algorithm parameters that may contain some deprecations
-  */
+ * The trait represents a definition of ML algorithm parameters that may contain some deprecations
+ */
 trait DeprecatableParams extends Params with Logging {
 
   /**
-    * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
-    */
+   * When a parameter is renamed, the mapping 'old name' -> 'new name' should be added into this map.
+   */
   protected def renamingMap: Map[String, String]
 
   private def applyRenaming(parameterName: String): String = renamingMap.getOrElse(parameterName, parameterName)

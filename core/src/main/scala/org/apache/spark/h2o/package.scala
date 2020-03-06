@@ -17,7 +17,7 @@
 
 package org.apache.spark
 
-import hex.{Model, ModelBuilder}
+import hex.Model
 import org.apache.spark.sql._
 
 /** Type shortcuts to simplify work in Sparkling REPL */
@@ -34,8 +34,6 @@ package object h2o {
   type Dataset[X] = org.apache.spark.sql.Dataset[X]
 
   type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
-
-  type H2OBaseModelBuilder = ModelBuilder[_ <: H2OBaseModel, _ <: Model.Parameters, _ <: Model.Output]
 
   trait Holder[T] {
     def result: Option[T]

@@ -14,12 +14,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.params
 
-import hex.Model.Parameters
+package ai.h2o.sparkling.model
 
-/**
- * A trait extracting a shared parameters among all unsupervised simple algorithms (all except Grid & AutoML).
- */
-trait H2OAlgoUnsupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
-  with H2OCommonUnsupervisedParams with H2OAlgoCommonParams[P]
+case class H2OMetricsHolder(trainingMetrics: Map[H2OMetric, Double],
+                            validationMetrics: Map[H2OMetric, Double],
+                            crossValidationMetrics: Map[H2OMetric, Double])

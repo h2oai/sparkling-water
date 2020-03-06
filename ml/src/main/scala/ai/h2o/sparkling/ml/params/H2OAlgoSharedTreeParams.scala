@@ -17,7 +17,6 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
-import hex.ScoreKeeper.StoppingMetric
 import hex.tree.SharedTreeModel.SharedTreeParameters
 import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
 import org.apache.spark.expose.Logging
@@ -125,24 +124,26 @@ trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters] extends H2OAlgoSupervis
 
   def setColSampleRatePerTree(value: Double): this.type = set(colSampleRatePerTree, value)
 
-  override def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._ntrees = $(ntrees)
-    parameters._max_depth = $(maxDepth)
-    parameters._min_rows = $(minRows)
-    parameters._nbins = $(nbins)
-    parameters._nbins_cats = $(nbinsCats)
-    parameters._min_split_improvement = $(minSplitImprovement)
-    parameters._histogram_type = HistogramType.valueOf($(histogramType))
-    parameters._stopping_rounds = getStoppingRounds()
-    parameters._stopping_metric = StoppingMetric.valueOf(getStoppingMetric())
-    parameters._stopping_tolerance = getStoppingTolerance()
-    parameters._nbins_top_level = $(nbinsTopLevel)
-    parameters._build_tree_one_node = $(buildTreeOneNode)
-    parameters._score_tree_interval = $(scoreTreeInterval)
-    parameters._sample_rate = $(sampleRate)
-    parameters._sample_rate_per_class = $(sampleRatePerClass)
-    parameters._col_sample_rate_change_per_level = $(colSampleRateChangePerLevel)
-    parameters._col_sample_rate_per_tree = $(colSampleRatePerTree)
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
+      Map(
+        "ntrees" -> getNtrees(),
+        "max_depth" -> getMaxDepth(),
+        "min_rows" -> getMinRows(),
+        "nbins" -> getNbins(),
+        "nbins_cats" -> getNbinsCats(),
+        "min_split_improvement" -> getMinSplitImprovement(),
+        "histogram_type" -> getHistogramType(),
+        "stopping_rounds" -> getStoppingRounds(),
+        "stopping_metric" -> getStoppingMetric(),
+        "stopping_tolerance" -> getStoppingTolerance(),
+        "nbins_top_level" -> getNbinsTopLevel(),
+        "build_tree_one_node" -> getBuildTreeOneNode(),
+        "score_tree_interval" -> getScoreTreeInterval(),
+        "sample_rate" -> getSampleRate(),
+        "sample_rate_per_class" -> getSampleRatePerClass(),
+        "col_sample_rate_change_per_level" -> getColSampleRateChangePerLevel(),
+        "col_sample_rate_per_tree" -> getColSampleRatePerTree()
+      )
   }
 }

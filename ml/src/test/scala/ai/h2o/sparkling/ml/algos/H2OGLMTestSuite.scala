@@ -15,20 +15,20 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml.models
+package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.model.H2OModel
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.Key
 import water.api.TestUtils
-import water.{H2O, Key}
 
 @RunWith(classOf[JUnitRunner])
-class H2OAlgoTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
@@ -74,9 +74,9 @@ class H2OAlgoTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
   test("H2OGLM with set modelId is trained mutliple times") {
     val modelId = "testingH2OGLMModel"
 
-    val key1 = Key.make(modelId)
-    val key2 = Key.make(modelId + "_1")
-    val key3 = Key.make(modelId + "_2")
+    val key1 = Key.make(modelId).toString
+    val key2 = Key.make(modelId + "_1").toString
+    val key3 = Key.make(modelId + "_2").toString
 
     val dataset = spark.read
       .option("header", "true")
@@ -91,21 +91,21 @@ class H2OAlgoTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
-    H2O.containsKey(Key.make(modelId)) shouldBe false
+    H2OModel.modelExists(key1) shouldBe false
 
     algo.fit(dataset)
-    H2O.containsKey(key1) shouldBe true
-    H2O.containsKey(key2) shouldBe false
-    H2O.containsKey(key3) shouldBe false
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe false
+    H2OModel.modelExists(key3) shouldBe false
 
     algo.fit(dataset)
-    H2O.containsKey(key1) shouldBe true
-    H2O.containsKey(key2) shouldBe true
-    H2O.containsKey(key3) shouldBe false
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe true
+    H2OModel.modelExists(key3) shouldBe false
 
     algo.fit(dataset)
-    H2O.containsKey(key1) shouldBe true
-    H2O.containsKey(key2) shouldBe true
-    H2O.containsKey(key3) shouldBe true
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe true
+    H2OModel.modelExists(key3) shouldBe true
   }
 }

@@ -20,18 +20,15 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{OutputStream, PrintWriter}
 import java.net.URI
 
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
+import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
 import hex.glm.GLM
 import hex.glm.GLMModel.GLMParameters
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.{Model, ModelBuilder}
-import org.apache.spark.h2o.{H2OBaseModel, H2OBaseModelBuilder, H2OFrame}
+import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.DataFrame
-import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
-import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.storage.StorageLevel
@@ -178,7 +175,7 @@ object AlgorithmBenchmarkBase {
 }
 
 case class AlgorithmBundle(
-    swAlgorithm: H2OSupervisedAlgorithm[_ <: H2OBaseModelBuilder, _ <: H2OBaseModel, _ <: Model.Parameters],
+    swAlgorithm: H2OSupervisedAlgorithm[_ <: Model.Parameters],
     h2oAlgorithm: ModelBuilder[_, _ <: Model.Parameters, _]) {
   def newInstance(): AlgorithmBundle = {
     val clonedSwAlgorithm = swAlgorithm.copy(ParamMap.empty)

@@ -14,12 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.ml.params
 
-import hex.Model.Parameters
+package ai.h2o.sparkling.model
 
 /**
- * A trait extracting a shared parameters among all unsupervised simple algorithms (all except Grid & AutoML).
+ * Copied from H2O's class ModelCategory
  */
-trait H2OAlgoUnsupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
-  with H2OCommonUnsupervisedParams with H2OAlgoCommonParams[P]
+object H2OModelCategory extends Enumeration {
+  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression,
+  Clustering, AutoEncoder, TargetEncoder, DimReduction, WordEmbedding, CoxPH,
+  AnomalyDetection = Value
+
+  def fromString(modelCategory: String): Value = {
+    values
+      .find(_.toString == modelCategory)
+      .getOrElse(
+        throw new RuntimeException(s"Unknown model category $modelCategory")
+      )
+  }
+}

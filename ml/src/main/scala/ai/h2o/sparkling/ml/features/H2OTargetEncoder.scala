@@ -17,10 +17,13 @@
 
 package ai.h2o.sparkling.ml.features
 
+import ai.h2o.sparkling.backend.external.RestCommunication
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
+import ai.h2o.sparkling.model.H2OModel
 import ai.h2o.targetencoding._
-import org.apache.spark.h2o.{Frame, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
@@ -28,43 +31,38 @@ import org.apache.spark.sql.Dataset
 
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
-  with H2OTargetEncoderBase
-  with DefaultParamsWritable
-  with H2OTargetEncoderModelUtils {
+    with H2OTargetEncoderBase
+    with DefaultParamsWritable
+    with H2OTargetEncoderModelUtils
+    with RestCommunication
+    with EstimatorCommonUtils {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
+    if (dataset.select(getLabelCol()).distinct().count() > 2) {
+      throw new RuntimeException("The label column can not contain more than two unique values.")
+    }
     val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val input = h2oContext.asH2OFrame(dataset.toDF())
+    val input = h2oContext.asH2OFrameKeyString(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
-    val targetEncoderModel = trainTargetEncodingModel(input, ignoredColumns)
-    val model = new H2OTargetEncoderModel(uid, targetEncoderModel).setParent(this)
+    val params = Map(
+      "blending" -> getBlendedAvgEnabled(),
+      "k" -> getBlendedAvgInflectionPoint(),
+      "f" -> getBlendedAvgSmoothing(),
+      "response_column" -> getLabelCol(),
+      "fold_column" -> getFoldCol(),
+      "ignored_columns" -> ignoredColumns,
+      "training_frame" -> input
+    )
+    val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
+    val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
     copyValues(model)
   }
 
-  private def trainTargetEncodingModel(trainingFrame: Frame, ignoredColumns: Array[String]) = try {
-    val targetEncoderParameters = new TargetEncoderModel.TargetEncoderParameters()
-    targetEncoderParameters._blending = getBlendedAvgEnabled()
-    targetEncoderParameters._k = getBlendedAvgInflectionPoint()
-    targetEncoderParameters._f = getBlendedAvgSmoothing()
-    targetEncoderParameters._response_column = getLabelCol()
-    targetEncoderParameters._fold_column = getFoldCol()
-    targetEncoderParameters._ignored_columns = ignoredColumns
-    targetEncoderParameters.setTrain(trainingFrame._key)
-
-    val builder = new TargetEncoderBuilder(targetEncoderParameters)
-    builder.trainModel().get() // Calling get() to wait until the model training is finished.
-    builder.getTargetEncoderModel()
-  } catch {
-    case e: IllegalStateException if e.getMessage.contains("We do not support multi-class target case") =>
-      throw new RuntimeException("The label column can not contain more than two unique values.")
-  }
-
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
-
 
   //
   // Parameter Setters

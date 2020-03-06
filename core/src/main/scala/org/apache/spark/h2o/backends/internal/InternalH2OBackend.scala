@@ -42,6 +42,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Register H2O and Sparkling Water REST API for H2O client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
+    conf.setH2OCluster(H2O.CLOUD.leader().getIpPortString)
     nodes
   }
 

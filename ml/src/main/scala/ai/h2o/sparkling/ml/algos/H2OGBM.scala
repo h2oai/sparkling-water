@@ -16,92 +16,18 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha}
+import ai.h2o.sparkling.ml.params.H2OGBMParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
-import hex.tree.gbm.{GBM, GBMModel}
 import org.apache.spark.ml.util.Identifiable
 
 /**
-  * H2O GBM algorithm exposed via Spark ML pipelines.
-  */
+ * H2O GBM algorithm exposed via Spark ML pipelines.
+ */
 class H2OGBM(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[GBM, GBMModel, GBMParameters] with H2OGBMParams {
+  extends H2OTreeBasedSupervisedAlgorithm[GBMParameters] with H2OGBMParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGBM].getSimpleName))
 }
 
 object H2OGBM extends H2OParamsReadable[H2OGBM]
-
-/**
-  * Parameters for Spark's API exposing underlying H2O model.
-  */
-trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
-  with HasMonotoneConstraints
-  with HasQuantileAlpha {
-
-  type H2O_SCHEMA = GBMParametersV3
-
-  protected def paramTag = reflect.classTag[GBMParameters]
-
-  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
-
-  //
-  // Param definitions
-  //
-  private val learnRate = doubleParam("learnRate")
-  private val learnRateAnnealing = doubleParam("learnRateAnnealing")
-  private val colSampleRate = doubleParam("colSampleRate")
-  private val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
-  private val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
-
-  //
-  // Default values
-  //
-  setDefault(
-    learnRate -> parameters._learn_rate,
-    learnRateAnnealing -> parameters._learn_rate_annealing,
-    colSampleRate -> parameters._col_sample_rate,
-    maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred,
-    predNoiseBandwidth -> parameters._pred_noise_bandwidth
-  )
-
-  //
-  // Getters
-  //
-  def getLearnRate(): Double = $(learnRate)
-
-  def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
-
-  def getColSampleRate(): Double = $(colSampleRate)
-
-  def getMaxAbsLeafnodePred(): Double = $(maxAbsLeafnodePred)
-
-  def getPredNoiseBandwidth(): Double = $(predNoiseBandwidth)
-
-  //
-  // Setters
-  //
-  def setLearnRate(value: Double): this.type = set(learnRate, value)
-
-  def setLearnRateAnnealing(value: Double): this.type = set(learnRateAnnealing, value)
-
-  def setColSampleRate(value: Double): this.type = set(colSampleRate, value)
-
-  def setMaxAbsLeafnodePred(value: Double): this.type = set(maxAbsLeafnodePred, value)
-
-  def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
-
-
-  override def updateH2OParams(): Unit = {
-    super.updateH2OParams()
-    parameters._learn_rate = $(learnRate)
-    parameters._learn_rate_annealing = $(learnRateAnnealing)
-    parameters._col_sample_rate = $(colSampleRate)
-    parameters._max_abs_leafnode_pred = $(maxAbsLeafnodePred)
-    parameters._pred_noise_bandwidth = $(predNoiseBandwidth)
-    parameters._monotone_constraints = getMonotoneConstraintsAsKeyValuePairs()
-    parameters._quantile_alpha = getQuantileAlpha()
-  }
-}

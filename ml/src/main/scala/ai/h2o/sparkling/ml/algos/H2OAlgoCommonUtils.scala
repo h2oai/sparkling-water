@@ -16,19 +16,16 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.external.RestApiUtils
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OCommonParams
-import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.Dataset
-import water.support.H2OFrameSupport
-import water.{DKV, Key}
+import org.apache.spark.sql.functions.col
 
-trait H2OAlgoCommonUtils extends H2OCommonParams {
+trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
 
-  protected def prepareDatasetForFitting(dataset: Dataset[_]): (String, Option[String], Array[String]) = {
+  protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val excludedCols = getExcludedCols()
 
     if ($(featuresCols).isEmpty) {
@@ -46,38 +43,24 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
 
     val cols = (getFeaturesCols() ++ excludedCols).map(col)
     val h2oContext = H2OContext.ensure("H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
-    val h2oFrameKey = h2oContext.asH2OFrameKeyString(dataset.select(cols: _*).toDF())
+    val trainFrame = H2OFrame(h2oContext.asH2OFrameKeyString(dataset.select(cols: _*).toDF()))
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
     if (getAllStringColumnsToCategorical()) {
-      if (RestApiUtils.isRestAPIBased()) {
-        H2OFrame(h2oFrameKey).convertAllStringColumnsToCategorical()
-      } else {
-        H2OFrameSupport.allStringVecToCategorical(DKV.getGet(h2oFrameKey))
-      }
+      trainFrame.convertAllStringColumnsToCategorical()
     }
-
-    if (RestApiUtils.isRestAPIBased()) {
-      H2OFrame(h2oFrameKey).convertColumnsToCategorical(getColumnsToCategorical())
-    } else {
-      H2OFrameSupport.columnsToCategorical(DKV.getGet(h2oFrameKey), getColumnsToCategorical())
-    }
+    trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
     if (getSplitRatio() < 1.0) {
-      // need to do splitting
-      val keys = if (RestApiUtils.isRestAPIBased()) {
-        H2OFrame(h2oFrameKey).splitToTrainAndValidationFrames(getSplitRatio()).map(_.frameId)
+      val frames = trainFrame.splitToTrainAndValidationFrames(getSplitRatio())
+      if (frames.length > 1) {
+        (frames(0), Some(frames(1)), internalFeatureCols)
       } else {
-        H2OFrameSupport.split(DKV.getGet(h2oFrameKey), Seq(Key.rand(), Key.rand()), Seq(getSplitRatio())).map(_._key.toString)
-      }
-      if (keys.length > 1) {
-        (keys(0), Some(keys(1)), internalFeatureCols)
-      } else {
-        (keys(0), None, internalFeatureCols)
+        (frames(0), None, internalFeatureCols)
       }
     } else {
-      (h2oFrameKey, None, internalFeatureCols)
+      (trainFrame, None, internalFeatureCols)
     }
   }
 }

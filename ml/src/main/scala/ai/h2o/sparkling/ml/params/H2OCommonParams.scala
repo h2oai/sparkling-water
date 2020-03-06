@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 /**
-  * This trait contains parameters that are shared across all algorithms.
-  */
+ * This trait contains parameters that are shared across all algorithms.
+ */
 trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")

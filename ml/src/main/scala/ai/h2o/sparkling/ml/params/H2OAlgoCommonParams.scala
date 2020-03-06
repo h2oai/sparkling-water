@@ -21,8 +21,8 @@ import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 
 /**
-  * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
-  */
+ * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
+ */
 trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams {
 
   //
@@ -70,20 +70,21 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
 
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
-  
+
   def setDistribution(value: String): this.type = {
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
-  /** Update H2O params based on provided parameters to Spark Transformer/Estimator */
-  protected def updateH2OParams(): Unit = {
-    parameters._weights_column = getWeightCol()
-    parameters._nfolds = getNfolds()
-    parameters._fold_column = getFoldCol()
-    parameters._keep_cross_validation_predictions = getKeepCrossValidationPredictions()
-    parameters._keep_cross_validation_fold_assignment = getKeepCrossValidationFoldAssignment()
-    parameters._parallelize_cross_validation = getParallelizeCrossValidation()
-    parameters._seed = getSeed()
-    parameters._distribution = DistributionFamily.valueOf(getDistribution())
+  private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    Map(
+      "weights_column" -> getWeightCol(),
+      "nfolds" -> getNfolds(),
+      "fold_column" -> getFoldCol(),
+      "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
+      "keep_cross_validation_fold_assignment" -> getKeepCrossValidationFoldAssignment(),
+      "parallelize_cross_validation" -> getParallelizeCrossValidation(),
+      "seed" -> getSeed(),
+      "distribution" -> getDistribution()
+    )
   }
 }

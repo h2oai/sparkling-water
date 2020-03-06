@@ -18,10 +18,9 @@
 package ai.h2o.sparkling.frame
 
 import java.text.MessageFormat
-import java.util
 
 import ai.h2o.sparkling.backend.external.RestApiUtils._
-import ai.h2o.sparkling.backend.external.RestCommunication
+import ai.h2o.sparkling.backend.external.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.job.H2OJob
@@ -35,9 +34,10 @@ import water.api.schemas3._
 /**
  * H2OFrame representation via Rest API
  */
-class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk]) extends Serializable {
+class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val chunks: Array[H2OChunk])
+  extends Serializable with RestEncodingUtils {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
-
+  val columnNames: Array[String] = columns.map(_.name)
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
 
   def numberOfColumns: Int = columns.length
@@ -49,15 +49,19 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
 
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
-    val indices = this.columns.map(_.name).zipWithIndex.toMap
+    val indices = columnNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>
       indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
     }
-    val params = Map(
-      "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, util.Arrays.toString(selectedIndices))
-    )
-    val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
-    H2OFrame(rapidsFrameV3.key.name)
+    if (selectedIndices.isEmpty) {
+      this
+    } else {
+      val params = Map(
+        "ast" -> MessageFormat.format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, stringifyArray(selectedIndices))
+      )
+      val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+      H2OFrame(rapidsFrameV3.key.name)
+    }
   }
 
   def splitToTrainAndValidationFrames(splitRatio: Double): Array[H2OFrame] = {
@@ -73,6 +77,25 @@ class H2OFrame private(val frameId: String, val columns: Array[H2OColumn], val c
     val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf, params)
     H2OJob(splitFrameV3.key.name).waitForFinish()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
+  }
+
+  def subframe(columns: Array[String]): H2OFrame = {
+    val nonExistentColumns = columns.diff(columnNames)
+    if (nonExistentColumns.nonEmpty) {
+      throw new IllegalArgumentException(s"The following columns are not available on the H2OFrame ${this.frameId}: ${nonExistentColumns.mkString(", ")}")
+    }
+    if (columns.sorted.sameElements(columnNames.sorted)) {
+      this
+    } else {
+      val endpoint = getClusterEndpoint(conf)
+      val colIndices = columns.map(columnNames.indexOf)
+      val newFrameId = s"${frameId}_subframe_${colIndices.mkString("_")}"
+      val params = Map(
+        "ast" -> MessageFormat.format(s"( assign {0} (cols {1} {2}))", newFrameId, frameId, stringifyArray(colIndices))
+      )
+      val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+      H2OFrame(rapidsFrameV3.key.name)
+    }
   }
 }
 

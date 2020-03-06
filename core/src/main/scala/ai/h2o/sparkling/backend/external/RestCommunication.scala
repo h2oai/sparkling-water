@@ -18,9 +18,8 @@
 package ai.h2o.sparkling.backend.external
 
 import java.io._
-import java.net.{HttpURLConnection, URI, URL, URLEncoder}
+import java.net.{HttpURLConnection, URI, URL}
 
-import ai.h2o.sparkling.frame.H2OChunk.checkResponseCode
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
@@ -28,9 +27,10 @@ import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
+import scala.collection.immutable.Map
 import scala.reflect.{ClassTag, classTag}
 
-trait RestCommunication extends Logging {
+trait RestCommunication extends Logging with RestEncodingUtils {
 
   /**
    *
@@ -69,8 +69,9 @@ trait RestCommunication extends Logging {
                                     suffix: String,
                                     conf: H2OConf,
                                     params: Map[String, Any] = Map.empty,
-                                    skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, "POST", suffix, conf, params, skippedFields)
+                                    skippedFields: Seq[(Class[_], String)] = Seq.empty,
+                                    encodeParamsAsJson: Boolean = false): ResultType = {
+    request(endpoint, "POST", suffix, conf, params, skippedFields, encodeParamsAsJson)
   }
 
   /**
@@ -87,7 +88,7 @@ trait RestCommunication extends Logging {
                         conf: H2OConf,
                         streamWrapper: OutputStream => OutputStream = identity,
                         params: Map[String, Any] = Map.empty): OutputStream = {
-    val url = resolveUrl(endpoint, s"$suffix?${decodeParams(params)}")
+    val url = resolveUrl(endpoint, s"$suffix?${stringifyParams(params)}")
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       val requestMethod = "PUT"
@@ -111,8 +112,9 @@ trait RestCommunication extends Logging {
                                      suffix: String,
                                      conf: H2OConf,
                                      params: Map[String, Any] = Map.empty,
-                                     skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf, params)) { response =>
+                                     skippedFields: Seq[(Class[_], String)] = Seq.empty,
+                                     encodeParamsAsJson: Boolean = false): ResultType = {
+    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
     }
@@ -163,43 +165,24 @@ trait RestCommunication extends Logging {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-  private def decodeSimpleParam(value: Any): String = {
-    val charset = "UTF-8"
-    value match {
-      case v: String => URLEncoder.encode(v, charset)
-      case v: Byte => v.toString
-      case v: Int => v.toString
-      case v: Long => v.toString
-      case v: Double => v.toString
-      case unknown => throw new RuntimeException(s"Following class can't be passed as param ${unknown.getClass}")
-    }
-  }
-
-  private def decodeArray(arr: Array[_]): String = {
-    java.util.Arrays.toString(arr.map(decodeSimpleParam).map(_.asInstanceOf[AnyRef]))
-  }
-
-  private def decodeParams(params: Map[String, Any] = Map.empty): String = {
-    params.map { case (key, value) =>
-      val encodedValue = value match {
-        case v: Array[_] => decodeArray(v)
-        case v: Any => decodeSimpleParam(v)
-      }
-      s"$key=$encodedValue"
-    }.mkString("&")
-  }
-
   private def resolveUrl(endpoint: URI, suffix: String): URL = {
     val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
     endpoint.resolve(suffixWithDelimiter).toURL
   }
 
-  private def setHeaders(connection: HttpURLConnection, conf: H2OConf, requestType: String, params: Map[String, Any]): Unit = {
+  private def setHeaders(connection: HttpURLConnection,
+                         conf: H2OConf,
+                         requestType: String,
+                         params: Map[String, Any],
+                         encodeParamsAsJson: Boolean = false): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
-
     if (params.nonEmpty && requestType == "POST") {
-      val paramsAsBytes = decodeParams(params).getBytes("UTF-8")
-      connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      if (encodeParamsAsJson) {
+        connection.setRequestProperty("Content-Type", "application/json")
+      } else {
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      }
+      val paramsAsBytes = stringifyParams(params, encodeParamsAsJson).getBytes("UTF-8")
       connection.setRequestProperty("charset", "UTF-8")
       connection.setRequestProperty("Content-Length", Integer.toString(paramsAsBytes.length))
       connection.setDoOutput(true)
@@ -209,13 +192,18 @@ trait RestCommunication extends Logging {
     }
   }
 
-  protected def readURLContent(endpoint: URI, requestType: String, suffix: String, conf: H2OConf, params: Map[String, Any] = Map.empty): InputStream = {
-    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${decodeParams(params)}" else suffix
+  protected def readURLContent(endpoint: URI,
+                               requestType: String,
+                               suffix: String,
+                               conf: H2OConf,
+                               params: Map[String, Any] = Map.empty,
+                               encodeParamsAsJson: Boolean = false): InputStream = {
+    val suffixWithParams = if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      setHeaders(connection, conf, requestType, params)
+      setHeaders(connection, conf, requestType, params, encodeParamsAsJson)
       checkResponseCode(connection)
       connection.getInputStream()
     } catch {

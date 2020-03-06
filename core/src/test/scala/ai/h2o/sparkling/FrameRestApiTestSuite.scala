@@ -30,7 +30,6 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     conf = defaultSparkConf
       .set("spark.ext.h2o.rest.api.based.client", "true"))
 
-
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
     val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
@@ -88,5 +87,28 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     assert(valid.frameId == s"${originalFrame.frameId}_valid")
     assert(train.numberOfRows == 342)
     assert(valid.numberOfRows == 38)
+  }
+
+  test("subframe with all columns") {
+    val originalFrame = uploadH2OFrame()
+    val newFrame = originalFrame.subframe(originalFrame.columns.map(_.name))
+    assert(originalFrame == newFrame)
+  }
+
+  test("subframe with non-existent column") {
+    val originalFrame = uploadH2OFrame()
+    val nonExistentColumns = Array("non-existent-col")
+    val thrown = intercept[IllegalArgumentException] {
+      originalFrame.subframe(Array("non-existent-col"))
+    }
+    assert(thrown.getMessage == s"The following columns are not available on the H2OFrame ${originalFrame.frameId}: ${nonExistentColumns.mkString(", ")}")
+  }
+
+  test("subframe with specific columns") {
+    val originalFrame = uploadH2OFrame()
+    val selectedColumns = Array("AGE", "CAPSULE")
+    val subframe = originalFrame.subframe(selectedColumns)
+    assert(subframe.columnNames.sorted.sameElements(selectedColumns))
+    assert(subframe.frameId != originalFrame.frameId)
   }
 }

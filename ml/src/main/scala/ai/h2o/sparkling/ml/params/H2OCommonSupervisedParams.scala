@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 /**
-  * This trait contains parameters that are shared across all supervised algorithms.
-  */
+ * This trait contains parameters that are shared across all supervised algorithms.
+ */
 trait H2OCommonSupervisedParams extends H2OSupervisedMOJOParams with H2OCommonParams {
 
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
