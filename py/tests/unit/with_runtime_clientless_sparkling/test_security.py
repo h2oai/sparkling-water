@@ -50,7 +50,7 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     conf = createH2OConf()
     conf.setHashLoginEnabled()
     conf.setCloudName("test-cluster")
-    conf.setClusterConfigFile("notify_file.txt")
+    conf.setClusterInfoFile("notify_file.txt")
     conf.setLoginConf("build/login.conf")
 
     with pytest.raises(Exception):

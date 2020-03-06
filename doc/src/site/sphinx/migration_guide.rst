@@ -101,7 +101,7 @@ Removal of Deprecated Methods and Classes
        - ``set_h2o_cluster`` -> ``setH2OCluster``
        - ``set_cluster_size`` -> ``setClusterSize``
        - ``set_cluster_start_timeout`` -> ``setClusterStartTimeout``
-       - ``set_cluster_config_file`` -> ``setClusterConfigFile``
+       - ``set_cluster_config_file`` -> ``setClusterInfoFile``
        - ``set_mapper_xmx`` -> ``setMapperXmx``
        - ``set_hdfs_output_dir`` -> ``setHDFSOutputDir``
        - ``use_auto_cluster_start`` -> ``useAutoClusterStart``
@@ -219,7 +219,7 @@ Removal of Deprecated Methods and Classes
        - ``set_client_iced_dir`` -> ``setClientIcedDir``
        - ``set_h2o_client_log_level`` -> ``setH2OClientLogLevel``
        - ``set_h2o_client_log_dir`` -> ``setH2OClientLogDir``
-       - ``set_client_port_base`` -> ``setClientPortBase``
+       - ``set_client_port_base`` -> ``setClientBasePort``
        - ``set_client_web_port`` -> ``setClientWebPort``
        - ``set_client_verbose_enabled`` -> ``setClientVerboseEnabled``
        - ``set_client_verbose_disabled`` -> ``setClientVerboseDisabled``
@@ -234,8 +234,11 @@ Removal of Deprecated Methods and Classes
 
 - In ``H2OAutoML`` Python and Scala API, the member ``leaderboard()``/``leaderboard`` is replaced by the method ``getLeaderboard()``.
 
-- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Python and Scala API. The replacement method is
+- The method ``setClusterConfigFile`` was removed from ``H2OConf`` in Scala API. The replacement method is
   ``setClusterInfoFile`` on ``H2OConf``.
+
+- The method ``setClientPortBase`` was removed from ``H2OConf`` in  Scala API. The replacement method is
+  ``setClientBasePort`` on ``H2OConf``.
 
 - In ``H2OGridSearch`` Python API, the methods: ``get_grid_models``, ``get_grid_models_params`` and `` get_grid_models_metrics``
   are removed and replaced by ``getGridModels``, ``getGridModelsParams`` and `` getGridModelsMetrics``.
