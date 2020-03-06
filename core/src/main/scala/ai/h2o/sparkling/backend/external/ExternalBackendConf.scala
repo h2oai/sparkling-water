@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.shared.SharedBackendConf
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.h2o.H2OConf
 
@@ -109,9 +108,6 @@ trait ExternalBackendConf extends SharedBackendConf {
   def setClusterSize(clusterSize: Int): H2OConf = set(PROP_EXTERNAL_CLUSTER_SIZE._1, clusterSize.toString)
 
   def setClusterStartTimeout(clusterStartTimeout: Int): H2OConf = set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
-
-  @DeprecatedMethod("setClusterInfoFile", "3.30")
-  def setClusterConfigFile(path: String): H2OConf = setClusterInfoFile(path)
 
   def setClusterInfoFile(path: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
 
