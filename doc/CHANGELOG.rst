@@ -1,6 +1,124 @@
 Change Log
 ==========
 
+v3.28.1.1-1 (2020-03-06)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/rel-3.28.1/3.28.1.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/rel-3.28.1/3.28.1.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/rel-3.28.1/3.28.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/rel-3.28.1/3.28.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/rel-3.28.1/3.28.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/rel-3.28.1/3.28.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/rel-3.28.1/3.28.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/rel-3.28.1/3.28.1.1-1-2.4/index.html>`__
+
+-  Epic
+        
+   -  `SW-1728 <https://0xdata.atlassian.net/browse/SW-1728>`__ - Replace External H2O writer &amp; reader by rest api
+                
+-  Bug
+        
+   -  `SW-1151 <https://0xdata.atlassian.net/browse/SW-1151>`__ - Loophole in H2O authentication with Sparkling water
+   -  `SW-1897 <https://0xdata.atlassian.net/browse/SW-1897>`__ - In prediction which do classification, be more explicit about relations about class and probabilities
+   -  `SW-1914 <https://0xdata.atlassian.net/browse/SW-1914>`__ - Copy extension jar to jars folder in distribution archive
+   -  `SW-1918 <https://0xdata.atlassian.net/browse/SW-1918>`__ - Ensure credentials are pass to connection before we actually connect
+   -  `SW-1930 <https://0xdata.atlassian.net/browse/SW-1930>`__ - Improve ChicagoCrime test so it does not block in external backend
+   -  `SW-1940 <https://0xdata.atlassian.net/browse/SW-1940>`__ - Ensure citibike demo does not use TimeSplit so it does not block external backend
+   -  `SW-1941 <https://0xdata.atlassian.net/browse/SW-1941>`__ - Fix intermittent failures of &quot;splitFrameToTrainAndValidationFrames with ratio lower than 1.0&quot;
+   -  `SW-1942 <https://0xdata.atlassian.net/browse/SW-1942>`__ - Ignore failing &quot;splitFrameToTrainAndValidationFrames with ratio lower than 1.0&quot;
+   -  `SW-2000 <https://0xdata.atlassian.net/browse/SW-2000>`__ - Fix distribution artifact name
+   -  `SW-2004 <https://0xdata.atlassian.net/browse/SW-2004>`__ - Two notebooks in Databricks can&#39;t both connect to same H2O cluster
+   -  `SW-2005 <https://0xdata.atlassian.net/browse/SW-2005>`__ - Fix getter for autoFlowSsl in H2OConf.R
+   -  `SW-2008 <https://0xdata.atlassian.net/browse/SW-2008>`__ - Fix compile after removing code for external backend from H2O
+   -  `SW-2010 <https://0xdata.atlassian.net/browse/SW-2010>`__ - Fix wrong statement in migration guide -&gt; internal_security_conf is not enabled by default
+   -  `SW-2020 <https://0xdata.atlassian.net/browse/SW-2020>`__ - Fix typo in migration guide
+   -  `SW-2021 <https://0xdata.atlassian.net/browse/SW-2021>`__ - Benchmarks fail on  OperationAborted: A conflicting conditional operation is currently in progress against this resource
+   -  `SW-2023 <https://0xdata.atlassian.net/browse/SW-2023>`__ - Avoid repeated log messages
+   -  `SW-2034 <https://0xdata.atlassian.net/browse/SW-2034>`__ - Fix nightly build upload path
+                
+-  New Feature
+        
+   -  `SW-1840 <https://0xdata.atlassian.net/browse/SW-1840>`__ - Read Chunks via REST API
+   -  `SW-1846 <https://0xdata.atlassian.net/browse/SW-1846>`__ - Be able to compile Sparkling Water with Scala 2.12
+   -  `SW-1854 <https://0xdata.atlassian.net/browse/SW-1854>`__ - Expose Individual Chunks via REST API
+   -  `SW-1878 <https://0xdata.atlassian.net/browse/SW-1878>`__ - Replace H2O_EXTENDED_JAR with H2O_DRIVER_JAR in all cases
+   -  `SW-1883 <https://0xdata.atlassian.net/browse/SW-1883>`__ - Write Individual Chunks via REST API
+   -  `SW-1903 <https://0xdata.atlassian.net/browse/SW-1903>`__ - Be able to params in rest api methods
+   -  `SW-1904 <https://0xdata.atlassian.net/browse/SW-1904>`__ - Remove extended jar from the codebase
+   -  `SW-1958 <https://0xdata.atlassian.net/browse/SW-1958>`__ - Property for Passing Extra Jars to External Backend
+   -  `SW-2026 <https://0xdata.atlassian.net/browse/SW-2026>`__ - Expose H2OConf Getters and Setters in R
+                
+-  Improvement
+        
+   -  `SW-1589 <https://0xdata.atlassian.net/browse/SW-1589>`__ - Remove Sparkling Water SVM in favor of H2O one
+   -  `SW-1844 <https://0xdata.atlassian.net/browse/SW-1844>`__ - Replace Apache Http Client with a Client Supporting Request Streaming
+   -  `SW-1845 <https://0xdata.atlassian.net/browse/SW-1845>`__ - Separate Http Communication Logic and REST API Methods
+   -  `SW-1868 <https://0xdata.atlassian.net/browse/SW-1868>`__ - Remove deprecated option externalWriteConfirmationTimeout
+   -  `SW-1875 <https://0xdata.atlassian.net/browse/SW-1875>`__ - Ensure method prepareDatasetForFitting works in Rest API based mode
+   -  `SW-1876 <https://0xdata.atlassian.net/browse/SW-1876>`__ - Ensure we don&#39;t call DKV.put in Fit method on H2OALgorithm in case of rest api
+   -  `SW-1877 <https://0xdata.atlassian.net/browse/SW-1877>`__ - Ensure method preprocessBeforeFitting works in RestApi Mode
+   -  `SW-1881 <https://0xdata.atlassian.net/browse/SW-1881>`__ - Fix typo in RestCommunication
+   -  `SW-1912 <https://0xdata.atlassian.net/browse/SW-1912>`__ - Update remaining documentation with new way how to start external backend
+   -  `SW-1915 <https://0xdata.atlassian.net/browse/SW-1915>`__ - Put sparkling water assembly jar into jars folder in the distribution archive instead into assembly/build/libs
+   -  `SW-1919 <https://0xdata.atlassian.net/browse/SW-1919>`__ - Make benchmarks up-to-date with removal of extended h2o jar
+   -  `SW-1924 <https://0xdata.atlassian.net/browse/SW-1924>`__ - Move stacktrace collector extension to extensions submodule
+   -  `SW-1931 <https://0xdata.atlassian.net/browse/SW-1931>`__ - Remove extra plugin import in :sparkling-water-extensions
+   -  `SW-1932 <https://0xdata.atlassian.net/browse/SW-1932>`__ - Use enum for H2OColumn (Rest API)
+   -  `SW-1937 <https://0xdata.atlassian.net/browse/SW-1937>`__ - Move RestAPIUtils to ai.h2o.sparkling package
+   -  `SW-1943 <https://0xdata.atlassian.net/browse/SW-1943>`__ - Remove unnecessary ExternalH2OBackend.verifyH2OClientCloudUp(conf, nodes) check
+   -  `SW-1944 <https://0xdata.atlassian.net/browse/SW-1944>`__ - Remove isRestApiBased defined on ExternalH2OBackend as it is already defined on RestApiUtils
+   -  `SW-1945 <https://0xdata.atlassian.net/browse/SW-1945>`__ - Remove unused H2OSQLContextUtils
+   -  `SW-1946 <https://0xdata.atlassian.net/browse/SW-1946>`__ - Move H2OFrame to Sparkling Water
+   -  `SW-1947 <https://0xdata.atlassian.net/browse/SW-1947>`__ - Move RestCommunication to ai.h2o.sparkling package
+   -  `SW-1948 <https://0xdata.atlassian.net/browse/SW-1948>`__ - No need to check cluster size in manual cluster mode anymore
+   -  `SW-1952 <https://0xdata.atlassian.net/browse/SW-1952>`__ - Remove deprecated block size configuration
+   -  `SW-1954 <https://0xdata.atlassian.net/browse/SW-1954>`__ - Move classess in repl to a new package ai.h2o.sparkling
+   -  `SW-1955 <https://0xdata.atlassian.net/browse/SW-1955>`__ - Move examples to ai.h2o.sparkling package
+   -  `SW-1956 <https://0xdata.atlassian.net/browse/SW-1956>`__ - Refactor converters
+   -  `SW-1962 <https://0xdata.atlassian.net/browse/SW-1962>`__ - Remove materialization via .toList.toIterator in H2ORDD and H2ODaframe on external H2O backend
+   -  `SW-1967 <https://0xdata.atlassian.net/browse/SW-1967>`__ - Remove H2OFrameUtils bridge as not required anymore
+   -  `SW-1970 <https://0xdata.atlassian.net/browse/SW-1970>`__ - Deprecate sparkSession and sparkContext argument of H2OContext.getOrCreate()
+   -  `SW-1977 <https://0xdata.atlassian.net/browse/SW-1977>`__ - Create parameterless methods getOrCreate as we don&#39;t need to pass spark anymore
+   -  `SW-1979 <https://0xdata.atlassian.net/browse/SW-1979>`__ - Remove deprecated enableSSL methods and hide the method
+   -  `SW-1981 <https://0xdata.atlassian.net/browse/SW-1981>`__ - Remove H2OSecurityBridge
+   -  `SW-1983 <https://0xdata.atlassian.net/browse/SW-1983>`__ - Publish extensions to maven central
+   -  `SW-1987 <https://0xdata.atlassian.net/browse/SW-1987>`__ - Remove verbose H2O arg from H2OContext.getOrCreate in python
+   -  `SW-1995 <https://0xdata.atlassian.net/browse/SW-1995>`__ - Enable compression method for rest api conversions
+   -  `SW-2003 <https://0xdata.atlassian.net/browse/SW-2003>`__ - Remove rest api client from experimental page in our documentation
+   -  `SW-2006 <https://0xdata.atlassian.net/browse/SW-2006>`__ - Update experimental doc
+   -  `SW-2007 <https://0xdata.atlassian.net/browse/SW-2007>`__ - Call print(hc) during first creation of H2OContext.r as in H2OContex.py
+   -  `SW-2009 <https://0xdata.atlassian.net/browse/SW-2009>`__ - No need to search for client ip in rest api mode
+   -  `SW-2011 <https://0xdata.atlassian.net/browse/SW-2011>`__ - Deprecate download_h2o_logs on H2OContext.py
+   -  `SW-2013 <https://0xdata.atlassian.net/browse/SW-2013>`__ - Deprecate get_conf on H2OContext.py
+   -  `SW-2016 <https://0xdata.atlassian.net/browse/SW-2016>`__ - Expose getDomainValues on H2OMojoModel
+   -  `SW-2018 <https://0xdata.atlassian.net/browse/SW-2018>`__ - Don&#39;t use allow_client flag in rest api mode
+   -  `SW-2024 <https://0xdata.atlassian.net/browse/SW-2024>`__ - Mention in migration guide that explicit creation of H2OContext is required to run algo
+   -  `SW-2025 <https://0xdata.atlassian.net/browse/SW-2025>`__ - Extend REST Errors with Details from Server
+   -  `SW-2027 <https://0xdata.atlassian.net/browse/SW-2027>`__ - Cleanup, Use H2OContext.ensure in right places
+   -  `SW-2033 <https://0xdata.atlassian.net/browse/SW-2033>`__ - Deprecate exactLambdas parameter in H2OGLM
+   -  `SW-2035 <https://0xdata.atlassian.net/browse/SW-2035>`__ - Rename the &#39;setClientPortBase&#39; on H2OConf to &#39;setClientBasePort&#39;
+   -  `SW-2036 <https://0xdata.atlassian.net/browse/SW-2036>`__ - Rename &#39;setClusterConfigFile&#39; on H2OConf to &#39;setClusterInfoFile&#39;
+   -  `SW-2040 <https://0xdata.atlassian.net/browse/SW-2040>`__ - Fix doc warning: Could not find any member to link for &quot;org.apache.spark.internal.Logging&quot;
+   -  `SW-2041 <https://0xdata.atlassian.net/browse/SW-2041>`__ - Fix warning: Could not find any member to link for &quot;IllegalArgumentException&quot;
+   -  `SW-2043 <https://0xdata.atlassian.net/browse/SW-2043>`__ - Deprecate get_grid_models, get_grid_models_params and get_grid_models_metrics params from H2OGridSearch
+   -  `SW-2045 <https://0xdata.atlassian.net/browse/SW-2045>`__ - Deprecate initial_score_interval on H2OXGBoost as it&#39;s only H2O&#39;s internal argument
+   -  `SW-2047 <https://0xdata.atlassian.net/browse/SW-2047>`__ - Deprecate options for disabling or enabling REST api on H2O worker nodes. It needs to be on because of REST client
+   -  `SW-2049 <https://0xdata.atlassian.net/browse/SW-2049>`__ - Upgrade to Gradle 6.2.2
+   -  `SW-2051 <https://0xdata.atlassian.net/browse/SW-2051>`__ - Deprecate _score_interval argument as it&#39;s only H2O&#39;s internal argument
+   -  `SW-2053 <https://0xdata.atlassian.net/browse/SW-2053>`__ - Ensure that web on client is always enabled
+   -  `SW-2054 <https://0xdata.atlassian.net/browse/SW-2054>`__ - Deprecate learn_rate_annealing as it is not yet supported on H2OXGBoost
+   -  `SW-2057 <https://0xdata.atlassian.net/browse/SW-2057>`__ - Update SW version on rel branch to 3.28.1.1
+   -  `SW-2059 <https://0xdata.atlassian.net/browse/SW-2059>`__ - Upgrade to H2O 3.28.1.1
+                
+-  Engineering Story
+        
+   -  `SW-1853 <https://0xdata.atlassian.net/browse/SW-1853>`__ - Create H2O Extensions Assembly Jar
+   -  `SW-1908 <https://0xdata.atlassian.net/browse/SW-1908>`__ - Ignore SVM Tests
+   -  `SW-1960 <https://0xdata.atlassian.net/browse/SW-1960>`__ - Final move - move external backend classes to a new package
+   -  `SW-1976 <https://0xdata.atlassian.net/browse/SW-1976>`__ - Tests Covering Spark/H2O Frame Conversions
+   -  `SW-1984 <https://0xdata.atlassian.net/browse/SW-1984>`__ - Hide internal identifyClientIp method
+   -  `SW-1996 <https://0xdata.atlassian.net/browse/SW-1996>`__ - Benchmarks are failing on exception &quot;VpcLimitExceeded&quot;
+   -  `SW-1998 <https://0xdata.atlassian.net/browse/SW-1998>`__ - Add Setter Methods of H2OConf to Documentation of Configuration Properties
+   -  `SW-2039 <https://0xdata.atlassian.net/browse/SW-2039>`__ - Upgrade to Gradle 6.2.1
+                
+                            
 v3.28.0.4-1 (2020-02-25)
 ------------------------
 Downloads:
