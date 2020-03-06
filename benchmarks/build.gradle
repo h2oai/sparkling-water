@@ -100,6 +100,8 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-asse
             environment("run_yarn_internal", "false")
             environment("run_yarn_external", "true")
             environment("run_local_internal", "false")
+            environment("timeout", 18000) // 5 hours
+            environment("aws_emr_timeout", "6 hours")
 
             commandLine "./run_benchmarks.sh"
         }
@@ -125,6 +127,8 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-asse
             environment("run_yarn_internal", "false")
             environment("run_yarn_external", "true")
             environment("run_local_internal", "false")
+            environment("timeout", 18000) // 5 hours
+            environment("aws_emr_timeout", "6 hours")
 
             commandLine "./run_benchmarks.sh"
         }
