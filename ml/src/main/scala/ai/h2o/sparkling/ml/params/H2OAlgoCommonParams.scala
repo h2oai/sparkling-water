@@ -21,8 +21,8 @@ import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 
 /**
-  * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
-  */
+ * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
+ */
 trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams {
 
   //
@@ -70,7 +70,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
 
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
-  
+
   def setDistribution(value: String): this.type = {
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }

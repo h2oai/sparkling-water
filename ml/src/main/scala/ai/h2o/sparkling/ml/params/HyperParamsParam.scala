@@ -39,12 +39,12 @@ class HyperParamsParam(parent: Params, name: String, doc: String, isValid: java.
       val ab = new AutoBuffer()
       ab.put1(value.size)
       val it = value.entrySet().iterator()
-      while(it.hasNext){
+      while (it.hasNext) {
         val entry = it.next()
         ab.putStr(entry.getKey)
         //
         //noinspection ComparingUnrelatedTypes
-        if(entry.getValue.isInstanceOf[util.ArrayList[Object]]){
+        if (entry.getValue.isInstanceOf[util.ArrayList[Object]]) {
           val length = entry.getValue.asInstanceOf[util.ArrayList[_]].size()
           val arrayList = entry.getValue.asInstanceOf[util.ArrayList[_]]
           val arr = (0 until length).map(idx => arrayList.get(idx).asInstanceOf[AnyRef]).toArray
@@ -73,7 +73,7 @@ class HyperParamsParam(parent: Params, name: String, doc: String, isValid: java.
         }.toArray
         val ab = new AutoBuffer(bytes)
         val numParams = ab.get1()
-        (0 until numParams).map{ _ => (ab.getStr, ab.getASer[AnyRef](classOf[AnyRef]))}.toMap.asJava
+        (0 until numParams).map { _ => (ab.getStr, ab.getASer[AnyRef](classOf[AnyRef])) }.toMap.asJava
       case _ =>
         throw new IllegalArgumentException(s"Cannot decode $json to Map[String, Array[AnyRef]].")
     }

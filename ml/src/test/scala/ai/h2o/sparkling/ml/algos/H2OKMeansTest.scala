@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
-import water.exceptions.H2OModelBuilderIllegalArgumentException
 
 @RunWith(classOf[JUnitRunner])
 class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {

@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.automl.Algo
 import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
@@ -26,7 +25,6 @@ import ai.h2o.sparkling.model.H2OModel
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson.{Gson, JsonElement}
-import hex.ScoreKeeper
 import org.apache.commons.io.IOUtils
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
@@ -41,8 +39,8 @@ import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
 
 /**
-  * H2O AutoML algorithm exposed via Spark ML pipelines.
-  */
+ * H2O AutoML algorithm exposed via Spark ML pipelines.
+ */
 class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams with RestCommunication {
 
@@ -132,7 +130,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 
   def getLeaderboard(extraColumns: String*): DataFrame = getLeaderboard(extraColumns.toArray)
 
-  def getLeaderboard(extraColumns: java.util.ArrayList[String]) : DataFrame = {
+  def getLeaderboard(extraColumns: java.util.ArrayList[String]): DataFrame = {
     getLeaderboard(extraColumns.asScala.toArray)
   }
 
@@ -179,125 +177,3 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
 }
 
 object H2OAutoML extends H2OParamsReadable[H2OAutoML]
-
-trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstraints {
-
-  //
-  // Param definitions
-  //
-  private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
-  private val includeAlgos = new StringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
-  private val excludeAlgos = new StringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
-    " (e.g., airlines and iris)")
-  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
-  private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
-  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
-  private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping metric")
-  private val sortMetric = new Param[String](this, "sortMetric", "Sort metric for the AutoML leaderboard")
-  private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
-  private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
-  private val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
-  private val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
-  private val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
-  private val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
-
-  //
-  // Default values
-  //
-  setDefault(
-    ignoredCols -> Array.empty[String],
-    includeAlgos -> Algo.values().map(_.name()),
-    excludeAlgos -> Array.empty[String],
-    projectName -> null, // will be automatically generated
-    maxRuntimeSecs -> 0.0,
-    stoppingRounds -> 3,
-    stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
-    sortMetric -> H2OAutoMLSortMetric.AUTO.name(),
-    balanceClasses -> false,
-    classSamplingFactors -> null,
-    maxAfterBalanceSize -> 5.0f,
-    keepCrossValidationPredictions -> false,
-    keepCrossValidationModels -> false,
-    maxModels -> 0
-  )
-
-  //
-  // Getters
-  //
-  def getIgnoredCols(): Array[String] = $(ignoredCols)
-
-  def getIncludeAlgos(): Array[String] = $(includeAlgos)
-
-  def getExcludeAlgos(): Array[String] = $(excludeAlgos)
-
-  def getProjectName(): String = $(projectName)
-
-  def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
-
-  def getStoppingRounds(): Int = $(stoppingRounds)
-
-  def getStoppingTolerance(): Double = $(stoppingTolerance)
-
-  def getStoppingMetric(): String = $(stoppingMetric)
-
-  def getSortMetric(): String = $(sortMetric)
-
-  def getBalanceClasses(): Boolean = $(balanceClasses)
-
-  def getClassSamplingFactors(): Array[Float] = $(classSamplingFactors)
-
-  def getMaxAfterBalanceSize(): Float = $(maxAfterBalanceSize)
-
-  def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
-
-  def getKeepCrossValidationModels(): Boolean = $(keepCrossValidationModels)
-
-  def getMaxModels(): Int = $(maxModels)
-
-  //
-  // Setters
-  //
-  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
-
-  def setIncludeAlgos(value: Array[String]): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
-    set(includeAlgos, validated)
-  }
-
-  def setExcludeAlgos(value: Array[String]): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
-    set(excludeAlgos, validated)
-  }
-
-  def setProjectName(value: String): this.type = set(projectName, value)
-
-  def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
-
-  def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
-
-  def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
-
-  def setStoppingMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
-    set(stoppingMetric, validated)
-  }
-
-  def setSortMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OAutoMLSortMetric](value)
-    set(sortMetric, validated)
-  }
-
-  def setBalanceClasses(value: Boolean): this.type = set(balanceClasses, value)
-
-  def setClassSamplingFactors(value: Array[Float]): this.type = set(classSamplingFactors, value)
-
-  def setMaxAfterBalanceSize(value: Float): this.type = set(maxAfterBalanceSize, value)
-
-  def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
-
-  def setKeepCrossValidationModels(value: Boolean): this.type = set(keepCrossValidationModels, value)
-
-  def setMaxModels(value: Int): this.type = set(maxModels, value)
-}

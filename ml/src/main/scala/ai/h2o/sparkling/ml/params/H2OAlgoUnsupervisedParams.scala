@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 import hex.Model.Parameters
 
 /**
-  * A trait extracting a shared parameters among all unsupervised simple algorithms (all except Grid & AutoML).
-  */
+ * A trait extracting a shared parameters among all unsupervised simple algorithms (all except Grid & AutoML).
+ */
 trait H2OAlgoUnsupervisedParams[P <: Parameters] extends H2OAlgoParamsHelper[P]
   with H2OCommonUnsupervisedParams with H2OAlgoCommonParams[P]

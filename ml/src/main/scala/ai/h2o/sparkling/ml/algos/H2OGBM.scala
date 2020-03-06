@@ -16,15 +16,14 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha}
+import ai.h2o.sparkling.ml.params.H2OGBMParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.ml.util.Identifiable
 
 /**
-  * H2O GBM algorithm exposed via Spark ML pipelines.
-  */
+ * H2O GBM algorithm exposed via Spark ML pipelines.
+ */
 class H2OGBM(override val uid: String)
   extends H2OTreeBasedSupervisedAlgorithm[GBMParameters] with H2OGBMParams {
 
@@ -32,76 +31,3 @@ class H2OGBM(override val uid: String)
 }
 
 object H2OGBM extends H2OParamsReadable[H2OGBM]
-
-/**
-  * Parameters for Spark's API exposing underlying H2O model.
-  */
-trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters]
-  with HasMonotoneConstraints
-  with HasQuantileAlpha {
-
-  type H2O_SCHEMA = GBMParametersV3
-
-  protected def paramTag = reflect.classTag[GBMParameters]
-
-  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
-
-  //
-  // Param definitions
-  //
-  private val learnRate = doubleParam("learnRate")
-  private val learnRateAnnealing = doubleParam("learnRateAnnealing")
-  private val colSampleRate = doubleParam("colSampleRate")
-  private val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
-  private val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
-
-  //
-  // Default values
-  //
-  setDefault(
-    learnRate -> parameters._learn_rate,
-    learnRateAnnealing -> parameters._learn_rate_annealing,
-    colSampleRate -> parameters._col_sample_rate,
-    maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred,
-    predNoiseBandwidth -> parameters._pred_noise_bandwidth
-  )
-
-  //
-  // Getters
-  //
-  def getLearnRate(): Double = $(learnRate)
-
-  def getLearnRateAnnealing(): Double = $(learnRateAnnealing)
-
-  def getColSampleRate(): Double = $(colSampleRate)
-
-  def getMaxAbsLeafnodePred(): Double = $(maxAbsLeafnodePred)
-
-  def getPredNoiseBandwidth(): Double = $(predNoiseBandwidth)
-
-  //
-  // Setters
-  //
-  def setLearnRate(value: Double): this.type = set(learnRate, value)
-
-  def setLearnRateAnnealing(value: Double): this.type = set(learnRateAnnealing, value)
-
-  def setColSampleRate(value: Double): this.type = set(colSampleRate, value)
-
-  def setMaxAbsLeafnodePred(value: Double): this.type = set(maxAbsLeafnodePred, value)
-
-  def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
-
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++
-      Map(
-        "learn_rate" -> getLearnRate(),
-        "learn_rate_annealing" -> getLearnRateAnnealing(),
-        "col_sample_rate" -> getColSampleRate(),
-        "max_abs_leafnode_pred" -> getMaxAbsLeafnodePred(),
-        "pred_noise_bandwidth" -> getPredNoiseBandwidth(),
-        "monotone_constraints" -> getMonotoneConstraints(),
-        "quantile_alpha" -> getQuantileAlpha()
-      )
-  }
-}

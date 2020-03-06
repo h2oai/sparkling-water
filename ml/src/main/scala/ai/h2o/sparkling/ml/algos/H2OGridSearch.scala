@@ -21,13 +21,13 @@ import java.util
 import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
-import ai.h2o.sparkling.ml.params.{AlgoParam, H2OAlgoParamsHelper, H2OCommonSupervisedParams, HyperParamsParam}
+import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.model.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
 import hex.schemas.GridSchemaV99
-import hex.{Model, ScoreKeeper}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
@@ -37,12 +37,11 @@ import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructTy
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 /**
-  * H2O Grid Search algorithm exposed via Spark ML pipelines.
-  *
-  */
+ * H2O Grid Search algorithm exposed via Spark ML pipelines.
+ *
+ */
 class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   with H2OAlgoCommonUtils with DefaultParamsWritable with H2OGridSearchParams
   with RestCommunication
@@ -67,7 +66,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
         )
       case _ => Map("strategy" -> HyperSpaceSearchCriteria.Strategy.Cartesian.name())
     }
-    criteria.map { case (key, value) => s"'$key': $value"}.mkString("{", ",", "}")
+    criteria.map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}")
   }
 
   private def getAlgoParams(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters],
@@ -193,7 +192,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     gridModels.head
   }
 
-  private def ensureGridSearchIsFitted() : Unit = {
+  private def ensureGridSearchIsFitted(): Unit = {
     require(gridMojoModels != null, "The fit method of the grid search must be called first to be able to obtain a list of models.")
   }
 
@@ -270,105 +269,4 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
     }
   }
 
-}
-
-trait H2OGridSearchParams extends H2OCommonSupervisedParams {
-
-  //
-  // Param definitions
-  //
-  private val algo = new AlgoParam(this, "algo", "Specifies the algorithm for grid search")
-  private val hyperParameters = new HyperParamsParam(this, "hyperParameters", "Hyper Parameters")
-  private val strategy = new Param[String](this, "strategy", "Search criteria strategy")
-  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "maxRuntimeSecs")
-  private val maxModels = new IntParam(this, "maxModels", "maxModels")
-  private val stoppingRounds = new IntParam(this, "stoppingRounds", "Early stopping based on convergence of stoppingMetric")
-  private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Relative tolerance for metric-based" +
-    " stopping criterion: stop if relative improvement is not at least this much.")
-  private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping Metric")
-  private val selectBestModelBy = new Param[String](this, "selectBestModelBy", "Select best model by specific metric." +
-    "If this value is not specified that the first model os taken.")
-  private val parallelism = new IntParam(this,
-    "parallelism",
-    """Level of model-building parallelism, the possible values are:
-      | 0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
-      | 1 -> Sequential model building, no parallelism
-      | n>1 -> n models will be built in parallel if possible""".stripMargin)
-  //
-  // Default values
-  //
-  setDefault(
-    algo -> null,
-    hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
-    strategy -> HyperSpaceSearchCriteria.Strategy.Cartesian.name(),
-    maxRuntimeSecs -> 0,
-    maxModels -> 0,
-    stoppingRounds -> 0,
-    stoppingTolerance -> 0.001,
-    stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
-    selectBestModelBy -> H2OMetric.AUTO.name(),
-    parallelism -> 1
-  )
-
-  //
-  // Getters
-  //
-  def getAlgo(): H2OSupervisedAlgorithm[_ <: Model.Parameters] = $(algo)
-
-  def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
-
-  def getStrategy(): String = $(strategy)
-
-  def getMaxRuntimeSecs(): Double = $(maxRuntimeSecs)
-
-  def getMaxModels(): Int = $(maxModels)
-
-  def getStoppingRounds(): Int = $(stoppingRounds)
-
-  def getStoppingTolerance(): Double = $(stoppingTolerance)
-
-  def getStoppingMetric(): String = $(stoppingMetric)
-
-  def getSelectBestModelBy(): String = $(selectBestModelBy)
-
-  def getParallelism(): Int = $(parallelism)
-
-  //
-  // Setters
-  //
-  def setAlgo(value: H2OSupervisedAlgorithm[_ <: Model.Parameters]): this.type = {
-    H2OGridSearch.SupportedAlgos.checkIfSupported(value)
-    set(algo, value)
-  }
-
-  def setHyperParameters(value: Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.asJava)
-
-  def setHyperParameters(value: mutable.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value.toMap.asJava)
-
-  def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
-
-  def setStrategy(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[HyperSpaceSearchCriteria.Strategy](value)
-    set(strategy, validated)
-  }
-
-  def setMaxRuntimeSecs(value: Double): this.type = set(maxRuntimeSecs, value)
-
-  def setMaxModels(value: Int): this.type = set(maxModels, value)
-
-  def setStoppingRounds(value: Int): this.type = set(stoppingRounds, value)
-
-  def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
-
-  def setStoppingMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
-    set(stoppingMetric, validated)
-  }
-
-  def setSelectBestModelBy(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OMetric](value)
-    set(selectBestModelBy, validated)
-  }
-
-  def setParallelism(value: Int): this.type = set(parallelism, value)
 }

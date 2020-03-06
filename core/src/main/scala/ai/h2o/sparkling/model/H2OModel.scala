@@ -60,7 +60,7 @@ class H2OModel private(val modelId: String,
 
 object H2OModel extends RestCommunication {
 
-  private[sparkling] def listAllModels(): Array[String] =  {
+  private[sparkling] def listAllModels(): Array[String] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val models = query[ModelsV3](endpoint, "/3/Models", conf)

@@ -16,15 +16,14 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.{H2OAlgoSupervisedParams, HasQuantileAlpha, HasStoppingCriteria}
+import ai.h2o.sparkling.ml.params.H2ODeepLearningParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 import org.apache.spark.ml.util._
 
 /**
-  * H2O DeepLearning algorithm exposed via Spark ML pipelines.
-  */
+ * H2O DeepLearning algorithm exposed via Spark ML pipelines.
+ */
 class H2ODeepLearning(override val uid: String) extends
   H2OSupervisedAlgorithm[DeepLearningParameters] with H2ODeepLearningParams {
 
@@ -32,76 +31,3 @@ class H2ODeepLearning(override val uid: String) extends
 }
 
 object H2ODeepLearning extends H2OParamsReadable[H2ODeepLearning]
-
-/**
-  * Parameters here can be set as normal and are duplicated to DeepLearningParameters H2O object
-  */
-trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParameters]
-  with HasStoppingCriteria[DeepLearningParameters]
-  with HasQuantileAlpha {
-
-  type H2O_SCHEMA = DeepLearningParametersV3
-
-  protected def paramTag = reflect.classTag[DeepLearningParameters]
-
-  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
-
-  //
-  // Param definitions
-  //
-  private val epochs = doubleParam("epochs")
-  private val l1 = doubleParam("l1")
-  private val l2 = doubleParam("l2")
-  private val hidden = intArrayParam("hidden")
-  private val reproducible = booleanParam("reproducible")
-  //
-  // Default values
-  //
-  setDefault(
-    epochs -> parameters._epochs,
-    l1 -> parameters._l1,
-    l2 -> parameters._l2,
-    hidden -> parameters._hidden,
-    reproducible -> parameters._reproducible)
-
-  //
-  // Getters
-  //
-  def getEpochs(): Double = $(epochs)
-
-  def getL1(): Double = $(l1)
-
-  def getL2(): Double = $(l2)
-
-  def getHidden(): Array[Int] = $(hidden)
-
-  def getReproducible(): Boolean = $(reproducible)
-
-  //
-  // Setters
-  //
-  def setEpochs(value: Double): this.type = set(epochs, value)
-
-  def setL1(value: Double): this.type = set(l1, value)
-
-  def setL2(value: Double): this.type = set(l2, value)
-
-  def setHidden(value: Array[Int]): this.type = set(hidden, value)
-
-  def setReproducible(value: Boolean): this.type = set(reproducible, value)
-
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++
-      Map(
-        "epochs" -> getEpochs(),
-        "l1" -> getL1(),
-        "l2" -> getL2(),
-        "hidden" -> getHidden(),
-        "reproducible" -> getReproducible(),
-        "stopping_rounds" -> getStoppingRounds(),
-        "stopping_metric" -> getStoppingMetric(),
-        "stopping_tolerance" -> getStoppingTolerance(),
-        "quantile_alpha" -> getQuantileAlpha()
-      )
-  }
-}

@@ -22,8 +22,8 @@ import hex.tree.drf.DRFModel.DRFParameters
 import org.apache.spark.ml.util.Identifiable
 
 /**
-  * H2O DRF algorithm exposed via Spark ML pipelines.
-  */
+ * H2O DRF algorithm exposed via Spark ML pipelines.
+ */
 class H2ODRF(override val uid: String)
   extends H2OTreeBasedSupervisedAlgorithm[DRFParameters] with H2ODRFParams {
 

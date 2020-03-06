@@ -25,8 +25,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
@@ -198,7 +198,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = model.transformTrainingDataset(trainingWithNullsDF).cache()
     val transformedByMOJOModel = model.transform(trainingWithNullsDF).cache()
 
-    transformedByModel.filter('DCAPS_te.isNull).count() shouldBe  0
+    transformedByModel.filter('DCAPS_te.isNull).count() shouldBe 0
     transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
 
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
@@ -340,7 +340,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val expectedResult = transformTrainingDataset(Array("RACE", "DPROS", "DCAPS"))
     val result = transformTrainingDataset(Array("DPROS", "DCAPS", "RACE"))
-      .select('ID, 'CAPSULE, 'AGE , 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+      .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
@@ -361,7 +361,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val expectedResult = transformTestingDataset(Array("RACE", "DPROS", "DCAPS"))
     val result = transformTestingDataset(Array("DPROS", "DCAPS", "RACE"))
-      .select('ID, 'CAPSULE, 'AGE , 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+      .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
   }

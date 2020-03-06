@@ -42,7 +42,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
 
   def testOffsetColumnGetsPropagatedToMOJOModel(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+                                                 algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSplitRatio(0.8)
@@ -61,6 +61,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     def getModelOffset(model: PipelineModel): String = {
       model.stages(0).asInstanceOf[H2OSupervisedMOJOModel].getOffsetCol()
     }
+
     val modelOffset = getModelOffset(model)
     val deserializedModelOffset = getModelOffset(loadedModel)
 
@@ -85,7 +86,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testDeserializedMOJOAndOriginalMOJOReturnSameResult(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+                                                           algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -125,7 +126,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testMOJOWithSetOffsetColumnReturnsDifferentResult(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+                                                         algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -134,6 +135,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
       .setOffsetCol(offsetColumn)
 
     val model = algo.fit(trainingDataset)
+
     def extractResult(model: H2OSupervisedMOJOModel): Array[Any] = {
       model
         .transform(testingDataset)
@@ -185,7 +187,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
   }
 
   def testLoadingOfSuppervisedAlgorithmWorks(
-    algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+                                              algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetCol = "PSA"
     algo
       .setSeed(1)

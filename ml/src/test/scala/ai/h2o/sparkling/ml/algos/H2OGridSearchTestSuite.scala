@@ -90,7 +90,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val drf = new H2ODRF()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "_binomial_double_trees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
-    val thrown = intercept[IllegalArgumentException]{
+    val thrown = intercept[IllegalArgumentException] {
       testGridSearch(drf, hyperParams)
     }
     assert(thrown.getMessage == "Parameter 'binomial_double_trees' is not supported to be passed as hyper parameter!")

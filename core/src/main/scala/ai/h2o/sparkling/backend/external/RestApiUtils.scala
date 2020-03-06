@@ -19,14 +19,10 @@ package ai.h2o.sparkling.backend.external
 
 import java.net.URI
 
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import org.apache.commons.io.IOUtils
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3._
-
-import scala.collection.immutable.Map
 
 trait RestApiUtils extends RestCommunication {
 

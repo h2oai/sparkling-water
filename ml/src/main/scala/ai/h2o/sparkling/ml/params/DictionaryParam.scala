@@ -19,9 +19,9 @@ package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.DefaultFormats
-import org.json4s.jackson.Serialization.write
-import org.json4s.jackson.Serialization.read
-import collection.JavaConverters._
+import org.json4s.jackson.Serialization.{read, write}
+
+import scala.collection.JavaConverters._
 
 class DictionaryParam(parent: Params, name: String, doc: String, isValid: java.util.Map[String, Double] => Boolean)
   extends Param[java.util.Map[String, Double]](parent, name, doc, isValid) {

@@ -17,7 +17,7 @@
 
 package org.apache.spark
 
-import hex.{Model, ModelBuilder}
+import hex.Model
 import org.apache.spark.sql._
 
 /** Type shortcuts to simplify work in Sparkling REPL */
