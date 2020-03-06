@@ -30,7 +30,7 @@ import water.server.ServletUtils
   */
 final class ChunkServlet extends HttpServlet {
 
-  private case class GETRequestParameters(
+  private case class POSTRequestParameters(
       frameName: String,
       numRows: Int,
       chunkId: Int,
@@ -85,8 +85,8 @@ final class ChunkServlet extends HttpServlet {
     }
   }
 
-  private object GETRequestParameters {
-    def parse(request: HttpServletRequest): GETRequestParameters = {
+  private object POSTRequestParameters {
+    def parse(request: HttpServletRequest): POSTRequestParameters = {
       val frameName = getParameterAsString(request, "frame_name")
       val numRowsString = getParameterAsString(request, "num_rows")
       val numRows = numRowsString.toInt
@@ -97,7 +97,7 @@ final class ChunkServlet extends HttpServlet {
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
       val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
       val compression = getParameterAsString(request, "compression")
-      GETRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices, compression)
+      POSTRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices, compression)
     }
   }
 
@@ -134,8 +134,9 @@ final class ChunkServlet extends HttpServlet {
   }
 
   /*
-   * The method handles handles GET requests for the path /3/Chunk
-   * It requires 4 get parameters
+   * The method handles handles POST requests for the path /3/Chunk and serves for downloading chunks.
+   * The POST method was select over the GET method due to unlimited size of requests (wide columns).
+   * It requires 4 POST parameters
    * - frame_name - a unique string identifier of H2O Frame
    * - chunk_id - a unique identifier of the chunk within the H2O Frame
    * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
@@ -143,9 +144,9 @@ final class ChunkServlet extends HttpServlet {
    * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
    * The data stream starts with the integer representing the number of rows.
    */
-  override protected def doGet(request: HttpServletRequest, response: HttpServletResponse): Unit = {
+  override protected def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = {
     processRequest(request, response) {
-      val parameters = GETRequestParameters.parse(request)
+      val parameters = POSTRequestParameters.parse(request)
       parameters.validate()
       response.setContentType("application/octet-stream")
       withResource(response.getOutputStream) { outputStream =>
