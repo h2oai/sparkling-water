@@ -4,10 +4,10 @@ Change Log
 v3.28.1.1-1 (2020-03-06)
 ------------------------
 Downloads:
-   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/rel-3.28.1/3.28.1.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/rel-3.28.1/3.28.1.1-1-2.1/index.html>`__
-   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/rel-3.28.1/3.28.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/rel-3.28.1/3.28.1.1-1-2.2/index.html>`__
-   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/rel-3.28.1/3.28.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/rel-3.28.1/3.28.1.1-1-2.3/index.html>`__
-   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/rel-3.28.1/3.28.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/rel-3.28.1/3.28.1.1-1-2.4/index.html>`__
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.1-1-2.4/index.html>`__
 
 -  Epic
         
