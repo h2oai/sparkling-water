@@ -108,7 +108,7 @@ class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
     val originalFrame = uploadH2OFrame()
     val selectedColumns = Array("AGE", "CAPSULE")
     val subframe = originalFrame.subframe(selectedColumns)
-    assert(subframe.columns.map(_.name).sorted.sameElements(selectedColumns))
+    assert(subframe.columnNames.sorted.sameElements(selectedColumns))
     assert(subframe.frameId != originalFrame.frameId)
   }
 }
