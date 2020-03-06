@@ -108,7 +108,7 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                     def majorVersion = majorVersionLine.split("=")[1]
                     def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
                     def buildVersion = buildVersionLine.split("=")[1]
-                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2oDriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
 
                 def customEnv = [
