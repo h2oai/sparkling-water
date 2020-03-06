@@ -118,8 +118,9 @@ def getS3Path() {
         path = "${formattedSWBranch}_${formattedH2OBranch}"
     } else {
         def majorVersion = "${version.split("\\.")[0]}.${version.split("\\.")[1]}"
+        def majorMinorVersion = "${majorVersion}.${version.split("\\.")[2]}"
         def relBranch = "rel-${majorVersion}"
-        if (branch == relBranch) {
+        if (branch == "rel-${majorVersion}" || branch == "rel-${majorMinorVersion}") {
             path = ""
         } else {
             path = "${formattedSWBranch}"
