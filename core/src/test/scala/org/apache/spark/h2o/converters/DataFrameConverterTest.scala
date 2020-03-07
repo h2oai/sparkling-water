@@ -27,7 +27,7 @@ import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.types._
@@ -789,17 +789,20 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(hf.names() sameElements Array("name.given.name", "name.family", "person.age"))
   }
 
-  test("Test conversion of frame with high number of columns"){
+  test("Test conversion of DataFrame to H2OFrame and back with a high number of columns"){
     import spark.implicits._
-    val numCols = 5000
-    val cols = (1 to numCols).map{ n =>
-      $"_tmp".getItem(n).as("col" + n)
-    }
     import org.apache.spark.sql.functions._
+    val numCols = 20000
+    val cols = (1 to numCols).map(n => $"_tmp".getItem(n).as("col" + n))
+
     val df = sc.parallelize(Seq((1 to numCols).mkString(","))).toDF
-    val widenDF = df.withColumn("_tmp", split($"value", ",")).select(cols: _*).drop("_tmp")
-    val hf = hc.asH2OFrame(widenDF)
+    val wideDF = df.withColumn("_tmp", split($"value", ",")).select(cols: _*).drop("_tmp")
+
+    val hf = hc.asH2OFrame(wideDF)
+    val resultDF = hc.asDataFrame(hf)
+
     assert(hf.numCols() == numCols)
+    resultDF.foreach(_ => {})
   }
 
   def fp(it: Iterator[Row]): Unit = {

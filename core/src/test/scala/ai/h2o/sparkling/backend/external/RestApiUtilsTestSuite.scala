@@ -32,7 +32,7 @@ class RestApiUtilsTestSuite extends FunSuite with SharedH2OTestContext {
     val conf = hc.getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
 
-    val caught = intercept[RestApiCommunicationException](RestApiUtils.query(endpoint, Paths.CHUNK, conf))
+    val caught = intercept[RestApiCommunicationException](RestApiUtils.update(endpoint, Paths.CHUNK, conf))
 
     assert(caught.getMessage.contains("Cannot find value for the parameter 'frame_name'"))
   }
