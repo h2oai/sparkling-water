@@ -101,18 +101,25 @@ object H2OModel extends RestCommunication {
     H2OMetricsHolder(trainingMetrics, validationMetrics, crossValidationMetrics)
   }
 
+  private def stringifyJSON(value: JsonElement): Option[String] = {
+    value match {
+      case v: JsonPrimitive => Some(v.getAsString)
+      case v: JsonArray =>
+        val stringElements = v.asScala.flatMap(stringifyJSON)
+        val arrayAsString = stringElements.mkString("[", ", ", "]")
+        Some(arrayAsString)
+      case _ =>
+        // don't put more complex type to output yet
+        None
+    }
+  }
+
   protected def extractParams(modelJson: JsonObject): Map[String, String] = {
     val parameters = modelJson.get("parameters").getAsJsonArray.asScala.toArray
     parameters.flatMap { param =>
       val name = param.getAsJsonObject.get("name").getAsString
       val value = param.getAsJsonObject.get("actual_value")
-      val stringValue = value match {
-        case v: JsonPrimitive => Some(v.getAsString)
-        case v: JsonArray => Some(v.asScala.toArray.map(_.getAsString).mkString("[", ", ", "]"))
-        case _ =>
-          // don't put more complex type to output yet
-          None
-      }
+      val stringValue = stringifyJSON(value)
       stringValue.map(name -> _)
     }.sorted.toMap
   }
