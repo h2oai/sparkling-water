@@ -28,5 +28,23 @@
     "nPartitions" : 2000,
     "minValue" : 0,
     "maxValue" : 1
+  },
+  {
+    "name" : "airlines-all",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/airlines_all.csv",
+    "isVirtual" : false,
+    "labelCol" : "Distance"
+  },
+  {
+    "name" : "pca10krc",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/PCA10KRC_5000K.csv",
+    "isVirtual" : false,
+    "labelCol" : "C1"
+  },
+  {
+    "name" : "vehicles",
+    "url" : "s3://ai.h2o.sparkling/benchmarks/data/vehicles.csv",
+    "isVirtual" : false,
+    "labelCol" : "Vehicle"
   }
 ]
