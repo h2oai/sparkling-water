@@ -173,7 +173,7 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
   }
 
   private def setTimeZone(): Unit = {
-    if (conf.isSparkTimezoneFollowed) {
+    if (conf.isSparkTimeZoneFollowed) {
       val sparkTimeZone = sparkSession.sessionState.conf.sessionLocalTimeZone
       if (DateTimeZone.getAvailableIDs.contains(sparkTimeZone)) {
         RestApiUtils.setTimeZone(conf, sparkTimeZone)
