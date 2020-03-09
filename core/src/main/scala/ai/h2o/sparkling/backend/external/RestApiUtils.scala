@@ -109,7 +109,6 @@ trait RestApiUtils extends RestCommunication {
     val expression = s"""(setTimeZone "$timezone")"""
     executeStringRapidsExpression(conf, expression)
   }
-
 }
 
 object RestApiUtils extends RestApiUtils
