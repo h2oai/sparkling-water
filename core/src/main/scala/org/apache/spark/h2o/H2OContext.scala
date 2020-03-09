@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
@@ -174,13 +175,17 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
 
   private def setTimeZone(): Unit = {
     if (conf.isSparkTimeZoneFollowed) {
-      val sparkTimeZone = sparkSession.sessionState.conf.sessionLocalTimeZone
+      val sparkTimeZone = sparkSession
+        .sparkContext
+        .getConf
+        .getOption("spark.sql.session.timeZone")
+        .getOrElse(TimeZone.getDefault.getID)
+
       if (DateTimeZone.getAvailableIDs.contains(sparkTimeZone)) {
         RestApiUtils.setTimeZone(conf, sparkTimeZone)
       } else {
         log.warn(s"The current Spark local time zone '$sparkTimeZone' is not supported by H2O. " +
-          "Setting time zone of H2O cluster to 'UTC'.")
-        RestApiUtils.setTimeZone(conf, "UTC")
+          "Using default H2O Spark session.")
       }
     }
   }
