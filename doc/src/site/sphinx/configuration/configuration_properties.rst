@@ -166,6 +166,11 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | master/h2o-docs/src/product/           |
 |                                                    |                |                                                 | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.follow_spark_time_zone``           | ``true``       | ``setSparkTimeZoneFollowingEnabled()``          | Determines whether H2O cluster will    |
+|                                                    |                |                                                 | use the same timezone settings as      |
+|                                                    |                | ``setSparkTimeZoneFollowingDisabled()``         | the running Spark session              |
+|                                                    |                |                                                 | (``spark.sql.session.timeZone``).      |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |

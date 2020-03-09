@@ -32,6 +32,7 @@ import org.apache.spark.h2o.utils._
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.ShutdownHookManager
+import org.joda.time.DateTimeZone
 import water._
 
 import scala.language.{implicitConversions, postfixOps}
@@ -151,6 +152,7 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     initBackend()
+    setTimeZone()
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
     shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
@@ -168,6 +170,19 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     updateUIAfterStart() // updates the spark UI
     backendHeartbeatThread.start() // start backend heartbeats
     this
+  }
+
+  private def setTimeZone(): Unit = {
+    if (conf.isSparkTimezoneFollowed) {
+      val sparkTimeZone = sparkSession.sessionState.conf.sessionLocalTimeZone
+      if (DateTimeZone.getAvailableIDs.contains(sparkTimeZone)) {
+        RestApiUtils.setTimeZone(conf, sparkTimeZone)
+      } else {
+        log.warn(s"The current Spark local time zone '$sparkTimeZone' is not supported by H2O. " +
+          "Setting time zone of H2O cluster to 'UTC'.")
+        RestApiUtils.setTimeZone(conf, "UTC")
+      }
+    }
   }
 
   protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo
