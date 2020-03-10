@@ -21,11 +21,12 @@ import ai.h2o.sparkling.extensions.rest.api.Paths
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import water.parser.ParseTime
 
 @RunWith(classOf[JUnitRunner])
-class RestApiUtilsTestSuite extends FunSuite with SharedH2OTestContext {
+class RestApiUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getSimpleName, defaultSparkConf)
 
   test("Error message from unsuccessful call contains information from the server") {
@@ -35,5 +36,25 @@ class RestApiUtilsTestSuite extends FunSuite with SharedH2OTestContext {
     val caught = intercept[RestApiCommunicationException](RestApiUtils.update(endpoint, Paths.CHUNK, conf))
 
     assert(caught.getMessage.contains("Cannot find value for the parameter 'frame_name'"))
+  }
+
+  test("Set America/Los_Angeles timezone to H2O cluster") {
+    testSettingTimezoneToH2OCluster("America/Los_Angeles")
+  }
+
+  test("Set Europe/Prague timezone to H2O cluster") {
+    testSettingTimezoneToH2OCluster("Europe/Prague")
+  }
+
+  test("Set UTC timezone to H2O cluster") {
+    testSettingTimezoneToH2OCluster("UTC")
+  }
+
+  def testSettingTimezoneToH2OCluster(timezone: String): Unit = {
+    val conf = hc.getConf
+    println(ParseTime.listTimezones)
+    RestApiUtils.setTimeZone(conf, timezone)
+    val result = RestApiUtils.getTimeZone(conf)
+    result shouldEqual timezone
   }
 }
