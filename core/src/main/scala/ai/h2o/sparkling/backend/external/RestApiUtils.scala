@@ -95,6 +95,20 @@ trait RestApiUtils extends RestCommunication {
   def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
     query[CloudV3](endpoint, "/3/Cloud", conf)
   }
+
+  private def executeStringRapidsExpression(conf: H2OConf, expression: String): String = {
+    val endpoint = getClusterEndpoint(conf)
+    val params = Map("ast" -> expression)
+    val result = update[RapidsStringV3](endpoint: URI, "/99/Rapids", conf, params)
+    result.string
+  }
+
+  def getTimeZone(conf: H2OConf): String = executeStringRapidsExpression(conf, "(getTimeZone)")
+
+  def setTimeZone(conf: H2OConf, timezone: String): Unit = {
+    val expression = s"""(setTimeZone "$timezone")"""
+    executeStringRapidsExpression(conf, expression)
+  }
 }
 
 object RestApiUtils extends RestApiUtils

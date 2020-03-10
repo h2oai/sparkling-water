@@ -104,6 +104,16 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     }
   }
 
+  /**
+    *
+    * @param endpoint An address of H2O node with exposed REST endpoint
+    * @param suffix   REST relative path representing a specific call
+    * @param conf     H2O conf object
+    */
+  protected def delete(endpoint: URI, suffix: String, conf: H2OConf): Unit = {
+    withResource(readURLContent(endpoint, "DELETE", suffix, conf))(identity)
+  }
+
 
 
   def request[ResultType: ClassTag](
