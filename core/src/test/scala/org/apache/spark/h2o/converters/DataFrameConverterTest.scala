@@ -48,6 +48,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
+  import spark.implicits._
+
   test("Creation of H2ODataFrame") {
     // FIXME: create different shapes of frame
     val h2oFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
@@ -293,8 +295,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[ByteField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val df = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte])).toDF()
     val h2oFrame = hc.asH2OFrame(df)
 
@@ -303,8 +303,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[ShortField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val df = sc.parallelize(-2048 to 4096).map(v => ShortField(v.asInstanceOf[Short])).toDF()
     val h2oFrame = hc.asH2OFrame(df)
 
@@ -313,8 +311,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[IntField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val values = Seq(Int.MinValue, Int.MaxValue, 0, -100, 200, -5000, 568901)
     val df = sc.parallelize(values).map(v => IntField(v)).toDF()
     val h2oFrame = hc.asH2OFrame(df)
@@ -324,8 +320,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[LongField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val values = Seq(Long.MinValue, Long.MaxValue, 0L, -100L, 200L, -5000L, 5689323201L, -432432433335L)
     val df = sc.parallelize(values).map(v => LongField(v)).toDF()
     val h2oFrame = hc.asH2OFrame(df)
@@ -335,8 +329,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[FloatField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
     val df = sc.parallelize(values).map(v => FloatField(v)).toDF
     val h2oFrame = hc.asH2OFrame(df)
@@ -346,8 +338,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[BooleanField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val values = Seq(true, false, true, false)
     val df = sc.parallelize(values).toDF()
     val h2oFrame = hc.asH2OFrame(df)
@@ -362,8 +352,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[DoubleField] to H2OFrame[Numeric]") {
-    import spark.implicits._
-
     val values = Seq(Double.MinValue, Double.MaxValue, -33.33, 200.001, -5000.34)
     val df = sc.parallelize(values).map(v => DoubleField(v)).toDF
     val h2oFrame = hc.asH2OFrame(df)
@@ -373,8 +361,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[StringField] to H2OFrame[String]") {
-    import spark.implicits._
-
     val domSize = 3000
     val values = (1 to domSize).map(v => StringField(v + "-value"))
     val df = sc.parallelize(values).toDF()
@@ -389,9 +375,21 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(catVec.domain().length == domSize)
   }
 
-  test("DataFrame[TimeStampField] to H2OFrame[Time]") {
-    import spark.implicits._
+  test("DataFrame[DateType] to H2OFrame[Time]") {
+    val dates = Seq("2020-12-12", "2020-01-01", "2020-02-02", "2019-05-10")
+    val df = dates.toDF("strings").select('strings.cast("date").alias("dates"))
 
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isTime)
+
+    val numericVec = h2oFrame.vec(0).toNumericVec
+    val values = dates.indices.map(i => new java.sql.Date(numericVec.at8(i)).toString)
+    values.sorted shouldEqual dates.sorted
+  }
+
+  test("DataFrame[TimeStampField] to H2OFrame[Time]") {
     val num = 20
     val values = (1 to num).map(v => new Timestamp(v))
     val df = sc.parallelize(values).map(v => TimestampField(v)).toDF
@@ -402,8 +400,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[Struct(TimeStampField)] to H2OFrame[Time]") {
-    import spark.implicits._
-
     val num = 20
     val values = (1 to num).map(v =>
       ComposedWithTimestamp(
@@ -430,8 +426,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
-    import spark.implicits._
-
     val num = 20
     val values = (1 to num).map(x => ComposedA(PrimitiveA(x, "name=" + x), x * 3.14))
     val df = sc.parallelize(values).toDF
@@ -441,8 +435,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFrame[IntField] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
-    import spark.implicits._
-
     val values = 1 to 100
     val df = sc.parallelize(values, 2000).map(v => IntField(v)).toDF
 
@@ -523,8 +515,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Expand schema with MLLIB dense vectors") {
-    import spark.implicits._
-
     val num = 3
     val values = (1 to num).map(x => PrimitiveMllibFixture(Vectors.dense((1 to x).map(1.0 * _).toArray)))
     val df = sc.parallelize(values).toDF
@@ -603,8 +593,6 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Expand schema with ML dense vectors") {
-    import spark.implicits._
-
     val num = 2
     val values = (0 to num).map(x =>
       PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
