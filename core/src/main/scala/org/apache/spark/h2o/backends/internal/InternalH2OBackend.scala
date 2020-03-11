@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
@@ -42,7 +43,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
     // Register H2O and Sparkling Water REST API for H2O client
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
-    conf.setH2OCluster(H2O.CLOUD.leader().getIpPortString)
+    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.CLOUD.leader().getIpPortString)
     nodes
   }
 
