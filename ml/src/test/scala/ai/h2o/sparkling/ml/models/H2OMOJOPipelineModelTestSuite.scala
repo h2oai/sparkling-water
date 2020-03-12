@@ -22,6 +22,8 @@ import java.sql.{Date, Timestamp}
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.SparkTestContext
+import ai.h2o.sparkling.ml.algos.H2OGBM
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -33,7 +35,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  override def createSparkSession(): SparkSession =
+    sparkSession("local[*]", defaultSparkConf.set("spark.sql.codegen.wholeStage", "false"))
 
   test("Test columns names and numbers") {
     val df =
@@ -294,4 +297,64 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
   }
+
+  test("Test distributed pipeline") {
+    // Test mojo
+    // Notes:
+    //   - Need to disable stage codegen: 'spark.sql.codegen.wholeStage' = false
+    //   - Also need schema from MOJO to assembly proper inputs for algos
+    //   - there is no way how to get output columns from MOJO at this point
+    //   - TODO: the MOJO should provide training schema, also scoring schema
+    val mojoTransf = H2OMOJOPipelineModel.createFromMojo(
+      "/tmp/mojo-pipeline/pipeline.mojo",
+      H2OMOJOSettings(removeModel = true, expandNamedMojoOutputColumns = true))
+
+    val inputScoringSchema = StructType(mojoTransf.getFeaturesCols().map(name => StructField(name, DoubleType, true)))
+    val inputTrainingSchema =
+      StructType(inputScoringSchema.fields ++ Array(StructField("default payment next month", IntegerType, true)))
+
+    val trainingDataset = spark.read
+      .schema(StructType(Array(StructField("ID", IntegerType, false)) ++ inputTrainingSchema.fields))
+      .option("header", true)
+      .csv("/Users/michal/Devel/projects/h2o/repos/dai/tests/data/creditcard.csv")
+    println(f"Training data schema: ${trainingDataset.schema}")
+    trainingDataset.show(10)
+    mojoTransf.transform(trainingDataset).printSchema()
+    mojoTransf.transformSchema(trainingDataset.schema).printTreeString()
+    assert(mojoTransf.transform(trainingDataset).schema === mojoTransf.transformSchema(trainingDataset.schema))
+
+    println("-------------- MOJO ----------")
+    println(f"Transformation input: ${mojoTransf.getFeaturesCols().mkString(",")}")
+
+    // TODO: we need to figure out what were original inputs of model
+    H2OContext.getOrCreate()
+    val model = new H2OGBM()
+      .setNtrees(100)
+      .setLearnRate(0.01)
+      .setMaxDepth(4)
+      .setLabelCol("default payment next month")
+      .setFeaturesCols(mojoTransf.getOutputCols() ++ inputTrainingSchema.map(f => f.name))
+    println("Model feature columns:")
+    println(model.getFeaturesCols().mkString("\n"))
+
+    val pipeline = new Pipeline("test_x")
+    pipeline.setStages(Array(mojoTransf, model))
+
+    val pipelineModel = pipeline.fit(trainingDataset)
+    pipelineModel.write.overwrite().save("/tmp/pipelineModel.xxx")
+
+    val loadedPipeline = PipelineModel.load("/tmp/pipelineModel.xxx")
+    val ppredictions = loadedPipeline.transform(trainingDataset)
+    ppredictions.select("ID", "prediction").show(10)
+  }
+
+  def sqlPredicate(colName: String, nestedPrefix: String, newName: (String) => String) =
+    f"`${nestedPrefix}`.`${colName}` AS `${newName(colName)}`"
+
+}
+
+object NameHelper {
+  val pattern = "\\W+".r
+
+  def normalize(n: String) = pattern.replaceAllIn(n, "_")
 }

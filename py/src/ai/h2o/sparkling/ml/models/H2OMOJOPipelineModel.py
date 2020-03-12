@@ -36,3 +36,12 @@ class H2OMOJOPipelineModel(H2OMOJOModelBase):
     def selectPredictionUDF(self, column):
         java_col = self._java_obj.selectPredictionUDF(column)
         return Column(java_col)
+
+    def getOutputCols(self):
+        return self._java_obj.getOutputCols()
+
+    def getMojoInputSchema(self):
+        return self._java_obj.getMojoInputSchema()
+
+    def getMojoOutputSchema(self):
+        return self._java_obj.getMojoOutputSchema()

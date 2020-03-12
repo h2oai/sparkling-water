@@ -18,24 +18,26 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io._
+import java.util.UUID
 
 import ai.h2o.mojos.runtime.MojoPipeline
-import ai.h2o.mojos.runtime.api.MojoPipelineService
+import ai.h2o.mojos.runtime.api.backend.{MemoryReaderBackend, ZipFileReaderBackend}
+import ai.h2o.mojos.runtime.api.{MojoPipelineService, PipelinePreprocessor}
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
-import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
+import ai.h2o.mojos.runtime.frame.MojoFrameMeta
+import ai.h2o.sparkling.ml.params.H2OMOJOPipelineParams
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.mutable
-import scala.util.Random
 
-class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
+class H2OMOJOPipelineModel(override val uid: String)
+  extends H2OMOJOModelBase[H2OMOJOPipelineModel]
+  with H2OMOJOPipelineParams {
 
   H2OMOJOPipelineCache.startCleanupThread()
-
-  // private parameter used to store MOJO output columns
-  protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
   @transient private lazy val mojoPipeline: MojoPipeline = {
     H2OMOJOPipelineCache.getMojoBackend(uid, getMojo, this)
@@ -134,43 +136,22 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   override def transform(dataset: Dataset[_]): DataFrame = {
     val frameWithPredictions = applyPredictionUdf(dataset, modelUdf)
 
-    val fr = if (getNamedMojoOutputColumns()) {
+    val fr = if ($(namedMojoOutputColumns)) {
+      val randName = if ($(expandNamedMojoOutputColumns)) $(predictionCol) else UUID.randomUUID().toString
+      val predictionArray = s"${randName}.preds"
+      val predictionCols = $(outputCols).zipWithIndex.map(i => enforceNullability(col(predictionArray)(i._2)).as(i._1))
+      val expandedFrameWithPredictions =
+        if ($(expandNamedMojoOutputColumns))
+          frameWithPredictions
+            .select(Seq(col("*")) ++ predictionCols: _*)
+            .drop($(predictionCol))
+        else
+          frameWithPredictions
+            .withColumnRenamed($(predictionCol), randName)
+            .withColumn($(predictionCol), enforceNullability(struct(predictionCols: _*)))
+            .drop(randName)
 
-      def uniqueRandomName(colName: String, r: Random) = {
-        var randName = r.nextString(30)
-        while (colName == randName) {
-          randName = r.nextString(30)
-        }
-        randName
-      }
-
-      val r = new scala.util.Random(31)
-      val tempColNames = $(outputCols).map(uniqueRandomName(_, r))
-      val tempCols = tempColNames.map(col)
-
-      // Transform the resulted Array of predictions into own but temporary columns
-      // Temporary columns are created as we can't create the columns directly as nested ones
-      val predictionCols = $(outputCols).indices.map { idx =>
-        selectFromArray(idx)(frameWithPredictions.col(s"${getPredictionCol()}.preds"))
-      }
-
-      val frameWithExtractedPredictions = $(outputCols).indices.foldLeft(frameWithPredictions) {
-        case (df, idx) =>
-          df.withColumn(tempColNames(idx), enforceNullability(predictionCols(idx)))
-      }
-
-      // Transform the columns at the top level under "output" column
-      val nestedPredictionCols = tempColNames.indices.map { idx =>
-        tempCols(idx).alias($(outputCols)(idx))
-      }
-      val resultCol = struct(nestedPredictionCols: _*)
-      val nullableResultCol = enforceNullability(resultCol)
-      val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), nullableResultCol)
-
-      // Remove the temporary columns at the top level and return
-      val frameWithoutTempCols = frameWithNestedPredictions.drop(tempColNames: _*)
-
-      frameWithoutTempCols
+      expandedFrameWithPredictions
     } else {
       frameWithPredictions
     }
@@ -187,7 +168,10 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     } else {
       StructType(StructField("preds", ArrayType(DoubleType, containsNull = false), nullable = true) :: Nil)
     }
-    Seq(StructField(getPredictionCol(), predictionType, nullable = true))
+    if (getNamedMojoOutputColumns() && getExpandNamedMojoOutputColumns())
+      predictionType.fields
+    else
+      Seq(StructField(getPredictionCol(), predictionType, nullable = true))
   }
 
   def selectPredictionUDF(column: String): Column = {
@@ -207,19 +191,54 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
-    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
-    val featureCols = pipelineMojo.getInputMeta.getColumnNames
-    model.set(model.featuresCols, featureCols)
-    model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
+    val backend = MemoryReaderBackend.fromZipStream(mojo)
+    // TODO: this should use new light-weight API to load only metadata and avoid loading full model
+    val pipeline = if (settings.removeModel) {
+      val factory = MojoPipelineService.INSTANCE.get(backend)
+      val loader = factory.createLoader(backend, null)
+      loader.preprocessAndLoad(PipelinePreprocessor.EXTRACT_MODEL).head
+    } else {
+      MojoPipelineService.loadPipeline(model.getMojo())
+    }
+    // Configure model
+    model.set(model.featuresCols, pipeline.getInputMeta.getColumnNames)
+    model.set(model.outputCols, pipeline.getOutputMeta.getColumnNames)
+    model.set(model.mojoInputSchema, toSchema(pipeline.getInputMeta))
+    model.set(model.mojoOutputSchema, toSchema(pipeline.getOutputMeta))
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    model.set(model.removeModel -> settings.removeModel)
+    model.set(model.expandNamedMojoOutputColumns -> settings.expandNamedMojoOutputColumns)
     model
+  }
+
+  def toSchema(f: MojoFrameMeta): StructType = {
+    StructType(f.getColumnNames.zip(f.getColumnTypes).map(p => StructField(p._1, toSparkType(p._2), true)))
+  }
+
+  def toSparkType(t: Type): DataType = {
+    t match {
+      case Type.Bool => BooleanType
+      case Type.Float32 => FloatType
+      case Type.Float64 => DoubleType
+      case Type.Int32 => IntegerType
+      case Type.Int64 => LongType
+      case Type.Str => StringType
+      case Type.Time64 => TimestampType
+    }
   }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    MojoPipelineService.loadPipeline(mojo)
+    val backend = ZipFileReaderBackend.open(mojo.getCanonicalFile)
+    if (model.getRemoveModel()) {
+      val factory = MojoPipelineService.INSTANCE.get(backend)
+      val loader = factory.createLoader(backend, null)
+      loader.preprocessAndLoad(PipelinePreprocessor.EXTRACT_MODEL).head
+    } else {
+      MojoPipelineService.loadPipeline(backend)
+    }
   }
 }

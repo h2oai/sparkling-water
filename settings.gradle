@@ -27,3 +27,4 @@ include 'booklet'
 rootProject.children.each { project ->
   project.name = rootProject.name + "-" + project.name
 }
+includeBuild("/Users/kuba/devel/repos/mojo2/java")
