@@ -50,7 +50,7 @@ private[backend] trait ExternalBackendUtils extends SharedBackendUtils {
         ChunkSerdeConstants.EXPECTED_DOUBLE
       } else if (clazz == classOf[java.lang.String]) {
         ChunkSerdeConstants.EXPECTED_STRING
-      } else if (clazz == classOf[java.sql.Timestamp]) {
+      } else if (clazz == classOf[java.sql.Timestamp] || clazz == classOf[java.sql.Date]) {
         ChunkSerdeConstants.EXPECTED_TIMESTAMP
       } else if (clazz == classOf[org.apache.spark.ml.linalg.Vector]) {
         ChunkSerdeConstants.EXPECTED_VECTOR
