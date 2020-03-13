@@ -125,9 +125,6 @@ class SharedBackendConf(SharedBackendConfUtils):
     def isInternalSecureConnectionsEnabled(self):
         return self._jconf.isInternalSecureConnectionsEnabled()
 
-    def isSparkTimeZoneFollowed(self):
-        return self._jconf.isSparkTimeZoneFollowed()
-
     def flowDir(self):
         return self._get_option(self._jconf.flowDir())
 
@@ -358,14 +355,6 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setInternalSecureConnectionsDisabled(self):
         self._jconf.setInternalSecureConnectionsDisabled()
-        return self
-
-    def setSparkTimeZoneFollowingEnabled(self):
-        self._jconf.setSparkTimeZoneFollowingEnabled()
-        return self
-
-    def setSparkTimeZoneFollowingDisabled(self):
-        self._jconf.setSparkTimeZoneFollowingDisabled()
         return self
 
     def setFlowDir(self, dir):

@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend.shared
 
+import ai.h2o.sparkling.backend.converters.TimeZoneConversions
 import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.SupportedTypes
 import org.apache.spark.h2o.utils.SupportedTypes._
@@ -30,7 +31,7 @@ import scala.language.postfixOps
  * Read Converter Context is a class which holds the state of connection/chunks and allows us to read/download data from those chunks
  * via unified API
  */
-private[backend] trait Reader {
+private[backend] trait Reader extends TimeZoneConversions {
 
   /** Type from which we query the data */
   type DataSource
@@ -97,7 +98,7 @@ private[backend] trait Reader {
 
   protected def utfString(source: DataSource) = UTF8String.fromString(string(source))
 
-  protected def timestamp(source: DataSource): Long = longAt(source) * 1000
+  protected def timestamp(source: DataSource): Long = fromUTCToSparkTimeZone(longAt(source) * 1000)
 
   /**
    * This map registers for each type corresponding extractor

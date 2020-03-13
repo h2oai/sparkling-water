@@ -54,7 +54,7 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
   }) toArray
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = new H2ODataFrameIterator {
-    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index)
+    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, hc.getConf)
   }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
