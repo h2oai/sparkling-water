@@ -177,6 +177,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self.setH2OCluster(ip, port)
 
     def setH2OCluster(self, ip, port):
+        warnings.warn("The method 'setH2OCluster(ip, port)' also sets backend to external. "
+                      "This side effect will be removed in the version in 3.32.")
         self._jconf.setH2OCluster(ip, port)
         return self
 
