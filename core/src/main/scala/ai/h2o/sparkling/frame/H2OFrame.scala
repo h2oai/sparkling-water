@@ -19,8 +19,8 @@ package ai.h2o.sparkling.frame
 
 import java.text.MessageFormat
 
-import ai.h2o.sparkling.backend.external.RestApiUtils._
-import ai.h2o.sparkling.backend.external.{RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.backend.utils.RestApiUtils._
+import ai.h2o.sparkling.backend.utils.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.job.H2OJob

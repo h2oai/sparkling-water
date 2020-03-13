@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.internal
 
 import java.io.{File, FileWriter}
 
-import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkEnv
@@ -108,7 +108,7 @@ object InternalBackendConf {
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES: (String, Int) = ("spark.ext.h2o.subseq.tries", 5)
-  
+
   /** Location of iced directory for Spark nodes */
   val PROP_NODE_ICED_DIR: (String, None.type) = ("spark.ext.h2o.node.iced.dir", None)
 

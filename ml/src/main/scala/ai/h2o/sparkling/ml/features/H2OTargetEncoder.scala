@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.backend.external.RestCommunication
+import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils

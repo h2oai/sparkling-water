@@ -17,10 +17,9 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.backend.SparklingBackend
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
@@ -29,7 +28,7 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
-import water.util.{Log, PrettyPrint}
+import water.util.Log
 import water.{H2O, H2OStarter}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
@@ -48,12 +47,6 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   }
 
   override def epilog: String = ""
-
-  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
-    val members = H2O.CLOUD.members() ++ Array(H2O.SELF)
-    val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
-    SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
-  }
 }
 
 object InternalH2OBackend extends InternalBackendUtils {

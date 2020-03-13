@@ -19,7 +19,7 @@ package ai.h2o.sparkling.frame
 
 import java.io.{InputStream, OutputStream}
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import org.apache.spark.h2o.H2OConf
@@ -78,3 +78,4 @@ object H2OChunk extends RestCommunication {
     insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
   }
 }
+

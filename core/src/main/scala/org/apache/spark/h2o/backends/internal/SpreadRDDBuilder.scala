@@ -17,8 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
-
-import ai.h2o.sparkling.backend.shared.SharedBackendUtils
+import ai.h2o.sparkling.backend.utils.SharedBackendUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}

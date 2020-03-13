@@ -18,8 +18,7 @@
 .rsparklingenv$isConnected <- FALSE
 
 getClientConnectedField <- function(jhc) {
-  child <- sparklyr::invoke(jhc, "getClass")
-  context <- sparklyr::invoke(child, "getSuperclass")
+  context <- sparklyr::invoke(jhc, "getClass")
   field <- sparklyr::invoke(context, "getDeclaredField", "clientConnected")
   sparklyr::invoke(field, "setAccessible", TRUE)
   field

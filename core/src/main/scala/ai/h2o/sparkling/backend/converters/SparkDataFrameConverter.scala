@@ -17,22 +17,21 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import java.util.TimeZone
-
 import ai.h2o.sparkling.SparkTimeZone
-import ai.h2o.sparkling.backend.external.{ExternalBackendConverter, ExternalBackendH2OFrameRelation, ExternalH2OBackend}
-import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
-import ai.h2o.sparkling.backend.shared.{Converter, Writer}
-import ai.h2o.sparkling.utils.ScalaUtils._
+import ai.h2o.sparkling.backend.utils.ConversionUtils.expectedTypesFromClasses
+import ai.h2o.sparkling.backend.{H2OAwareRDD, H2OFrameRelation, Writer, WriterMetadata}
+import ai.h2o.sparkling.ml.utils.SchemaUtils._
+import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.ExposeUtils
 import org.apache.spark.expose.Logging
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ReflectionUtils
-import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType, _}
-import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.{mllib, _}
+import org.apache.spark.h2o.utils.SupportedTypes.Double
+import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.{DataType, DecimalType}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
-import ai.h2o.sparkling.utils.SparkSessionUtils
 
 object SparkDataFrameConverter extends Logging {
 
@@ -47,15 +46,8 @@ object SparkDataFrameConverter extends Logging {
    */
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
-    // Relation referencing H2OFrame
-    if (hc.getConf.runsInInternalClusterMode) {
-      val spark = SparkSessionUtils.active
-      val relation = InternalBackendH2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
-      spark.baseRelationToDataFrame(relation)
-    } else {
-      DKV.put(fr)
-      toDataFrame(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString), copyMetadata)
-    }
+    DKV.put(fr)
+    toDataFrame(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString), copyMetadata)
   }
 
   /**
@@ -68,128 +60,41 @@ object SparkDataFrameConverter extends Logging {
    */
 
   def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
-    // Relation referencing H2OFrame
     val spark = SparkSessionUtils.active
-    val relation = ExternalBackendH2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
+    val relation = H2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
     spark.baseRelationToDataFrame(relation)
   }
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName, Converter.getConverter(hc.getConf))
+    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName)
     new H2OFrame(DKV.getGet[Frame](key))
   }
 
-  def toH2OFrameKeyString(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String], converter: Converter): String = {
-    import ai.h2o.sparkling.ml.utils.SchemaUtils._
-
+  def toH2OFrameKeyString(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): String = {
     val flatDataFrame = flattenDataFrame(dataFrame)
-    val dfRdd = flatDataFrame.rdd
-    val keyName = frameKeyName.getOrElse("frame_rdd_" + dfRdd.id + Key.rand())
 
     val elemMaxSizes = collectMaxElementSizes(flatDataFrame)
-    val elemStartIndices = collectElemStartPositions(elemMaxSizes)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
-    val sparseInfo = collectSparseInfo(flatDataFrame, elemMaxSizes)
-    // Expands RDD's schema ( Arrays and Vectors)
-    val flatRddSchema = expandedSchema(flatDataFrame.schema, elemMaxSizes)
-    // Patch the flat schema based on information about types
-    val fnames = flatRddSchema.map(_.name).toArray
+    val flattenSchema = expandedSchema(flatDataFrame.schema, elemMaxSizes)
+    val colNames = flattenSchema.map(_.name).toArray
+    val maxVecSizes = vecIndices.map(elemMaxSizes(_))
+    val expectedTypes = determineExpectedTypes(flatDataFrame)
 
-    // In case of internal backend, store regular H2O vector types
-    // otherwise for external backend, store expected types
-    val expectedTypes = if (hc.getConf.runsInInternalClusterMode) {
-      // Transform datatype into h2o types
-      flatRddSchema.map(f => ReflectionUtils.vecTypeFor(f.dataType)).toArray
-    } else {
-      val internalJavaClasses = flatDataFrame.schema.map { f =>
-        ExternalBackendConverter.internalJavaClassOf(f.dataType)
-      }.toArray
-      ExternalH2OBackend.prepareExpectedTypes(internalJavaClasses)
-    }
-
-    converter.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices, SparkTimeZone.current()))
+    val rdd = flatDataFrame.rdd
+    val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
+    val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
+    Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
   }
 
-  /**
-   * @param conf             H2O conf
-   * @param keyName          key of the frame
-   * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
-   * @param elemMaxSizes     array containing max size of each element in the dataframe
-   * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
-   * @param timeZone         time zone of the current spark session
-   * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
-   * @param sparse           identifies which columns are sparse
-   * @param context          spark task context
-   * @param it               iterator over data in the partition
-   * @return pair (partition ID, number of rows in this partition)
-   */
-  private def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int], timeZone: TimeZone)
-                             (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[Converter.UploadPlan], sparse: Array[Boolean],
-                              partitions: Seq[Int], partitionSizes: Map[Int, Int])
-                             (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
-    val chunkIdx = partitions.indexOf(context.partitionId())
-    // Collect mapping start position of vector and its size
-    val vecStartSize = (for (vecIdx <- vecIndices) yield {
-      (elemStartIndices(vecIdx), elemMaxSizes(vecIdx))
-    }).toMap
-
-    val partitionSize = partitionSizes(context.partitionId())
-    withResource(
-      Converter.createWriter(
-        conf,
-        uploadPlan,
-        chunkIdx,
-        keyName,
-        partitionSize,
-        expectedTypes,
-        vecIndices.map(elemMaxSizes(_)),
-        sparse,
-        vecStartSize)) { writer =>
-      it.foldLeft(0) {
-        case (localRowIdx, row) => sparkRowToH2ORow(row, localRowIdx, writer, elemStartIndices, elemMaxSizes, timeZone)
+  private def determineExpectedTypes(flatDataFrame: DataFrame): Array[Byte] = {
+    val internalJavaClasses = flatDataFrame.schema.map { f =>
+      f.dataType match {
+        case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
+        case v if ExposeUtils.isAnyVectorUDT(v) => classOf[Vector]
+        case dt: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
       }
-    }
-    (chunkIdx, partitionSize)
-  }
-
-  /**
-   * Converts a single Spark Row to H2O Row with expanded vectors and arrays
-   */
-  private def sparkRowToH2ORow(row: Row,
-                               rowIdx: Int,
-                               con: Writer,
-                               elemStartIndices: Array[Int],
-                               elemSizes: Array[Int],
-                               timeZone: TimeZone): Int = {
-    con.startRow(rowIdx)
-    val timeZoneConverter = new TimeZoneConverter(timeZone)
-    row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
-      val idxH2O = elemStartIndices(idxField)
-      if (row.isNullAt(idxField)) {
-        con.putNA(idxH2O, idxField)
-      } else {
-        entry.dataType match {
-          case BooleanType => con.put(idxH2O, row.getBoolean(idxField))
-          case ByteType => con.put(idxH2O, row.getByte(idxField))
-          case ShortType => con.put(idxH2O, row.getShort(idxField))
-          case IntegerType => con.put(idxH2O, row.getInt(idxField))
-          case LongType => con.put(idxH2O, row.getLong(idxField))
-          case FloatType => con.put(idxH2O, row.getFloat(idxField))
-          case _: DecimalType => con.put(idxH2O, row.getDecimal(idxField).doubleValue())
-          case DoubleType => con.put(idxH2O, row.getDouble(idxField))
-          case StringType => con.put(idxH2O, row.getString(idxField))
-          case TimestampType => con.put(idxH2O, timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Timestamp](idxField)))
-          case DateType => con.put(idxH2O, timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Date](idxField)))
-          case v if ExposeUtils.isMLVectorUDT(v) => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
-          case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
-          case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
-          case unsupported => throw new UnsupportedOperationException(s"Data of type ${unsupported.getClass} are not supported for the conversion" +
-            s"to H2OFrame.")
-        }
-      }
-    }
-    rowIdx + 1
+    }.toArray
+    expectedTypesFromClasses(internalJavaClasses)
   }
 }

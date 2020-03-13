@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
