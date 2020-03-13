@@ -17,10 +17,10 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.backend.SparklingBackend
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
+import org.apache.spark.h2o.backends.internal.InternalH2OBackend._
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
@@ -29,7 +29,7 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
-import water.util.{Log, PrettyPrint}
+import water.util.Log
 import water.{H2O, H2OStarter}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
@@ -37,23 +37,21 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   override def backendUIInfo: Seq[(String, String)] = Seq()
 
   /** Initialize Sparkling H2O and start H2O cloud. */
-  override def init(conf: H2OConf): Array[NodeDesc] = {
-    logInfo(s"Starting H2O services: " + conf)
-    val nodes = InternalH2OBackend.startH2OCluster(hc)
-    // Register H2O and Sparkling Water REST API for H2O client
-    RestAPIManager(hc).registerAll()
-    H2O.startServingRestApi()
-    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.CLOUD.leader().getIpPortString)
-    nodes
+  override def startH2OCluster(conf: H2OConf): Unit = {
+    logInfo("Starting the H2O cluster inside Spark.")
+    if (hc.sparkContext.isLocal) {
+      startSingleH2OWorker(hc, conf)
+    } else {
+      val endpoints = registerEndpoints(hc)
+      val workerNodes = startH2OWorkers(endpoints, conf)
+      distributeFlatFile(endpoints, conf, workerNodes)
+      tearDownEndpoints(endpoints)
+      registerNewExecutorListener(hc)
+      conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, workerNodes.head.ipPort())
+    }
   }
 
   override def epilog: String = ""
-
-  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
-    val members = H2O.CLOUD.members() ++ Array(H2O.SELF)
-    val memoryInfo = members.map(node => (node.getIpPortString, PrettyPrint.bytes(node._heartbeat.get_free_mem())))
-    SparklingWaterHeartbeatEvent(H2O.CLOUD.healthy(), System.currentTimeMillis(), memoryInfo)
-  }
 }
 
 object InternalH2OBackend extends InternalBackendUtils {
@@ -96,33 +94,18 @@ object InternalH2OBackend extends InternalBackendUtils {
     ("spark.dynamicAllocation.enabled", "true"),
     ("spark.speculation", "true"))
 
-  private def startH2OCluster(hc: H2OContext): Array[NodeDesc] = {
-    val conf = hc.getConf
-    if (hc.sparkContext.isLocal) {
-      Array(startH2OWorkerAsClient(conf))
-    } else {
-      val endpoints = registerEndpoints(hc)
-      val workerNodes = startH2OWorkers(endpoints, conf)
-      val clientNode = startH2OClient(conf, workerNodes)
-      distributeFlatFile(endpoints, conf, workerNodes, clientNode)
-      tearDownEndpoints(endpoints)
-
-      registerNewExecutorListener(hc)
-
-      H2O.waitForCloudSize(endpoints.length, conf.cloudTimeout)
-      workerNodes
-    }
-  }
-
   /**
    * Used in local mode where we start directly one H2O worker node
    * without additional client
    */
-  private def startH2OWorkerAsClient(conf: H2OConf): NodeDesc = {
+  private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): NodeDesc = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, false)
+    RestAPIManager(hc).registerAll()
+    H2O.startServingRestApi()
+    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.SELF.getIpPortString)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
@@ -132,14 +115,6 @@ object InternalH2OBackend extends InternalBackendUtils {
     val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, true)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
-  }
-
-  private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
-    val args = getH2OClientArgs(conf)
-    val launcherArgs = toH2OArgs(args, nodes)
-
-    H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
@@ -176,11 +151,10 @@ object InternalH2OBackend extends InternalBackendUtils {
   }
 
 
-  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], conf: H2OConf, nodes: Array[NodeDesc], clientNode: NodeDesc): Unit = {
+  private def distributeFlatFile(endpoints: Array[RpcEndpointRef], conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
     Log.info(s"Distributing worker nodes locations: ${nodes.mkString(",")}")
-    Log.info(s"Distributing client location: $clientNode")
     endpoints.foreach {
-      _.send(FlatFileMsg(nodes ++ Array(clientNode), conf.internalPortOffset))
+      _.send(FlatFileMsg(nodes, conf.internalPortOffset))
     }
   }
 

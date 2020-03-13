@@ -155,9 +155,6 @@ class SharedBackendConf(SharedBackendConfUtils):
     def clientNetworkMask(self):
         return self._get_option(self._jconf.clientNetworkMask())
 
-    def ignoreSparkPublicDNS(self):
-        return self._jconf.ignoreSparkPublicDNS()
-
     def clientFlowBaseurlOverride(self):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
 
@@ -406,14 +403,6 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setClientNetworkMask(self, mask):
         self._jconf.setClientNetworkMask(mask)
-        return self
-
-    def setIgnoreSparkPublicDNSEnabled(self):
-        self._jconf.setIgnoreSparkPublicDNSEnabled()
-        return self
-
-    def setIgnoreSparkPublicDNSDisabled(self):
-        self._jconf.setIgnoreSparkPublicDNSDisabled()
         return self
 
     def setClientFlowBaseurlOverride(self, baseUrl):

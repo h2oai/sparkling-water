@@ -1,7 +1,7 @@
 package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.backend.SharedBackendConf
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 import water.init.NetworkInit
 

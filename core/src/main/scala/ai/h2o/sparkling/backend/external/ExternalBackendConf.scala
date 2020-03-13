@@ -17,12 +17,12 @@
 
 package ai.h2o.sparkling.backend.external
 
-import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 /**
  * External backend configuration
@@ -264,4 +264,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_COMMUNICATION_COMPRESSION: (String, String) = {
     ("spark.ext.h2o.external.communication.compression", Compression.defaultCompression)
   }
+
+  /** ID of external H2O backend started on YARN application */
+  val PROP_EXTERNAL_CLUSTER_YARN_APP_ID: (String, None.type) = ("spark.ext.h2o.external.yarn.app.id", None)
 }

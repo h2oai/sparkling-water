@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.backends
 
-import ai.h2o.sparkling.backend.shared.SharedBackendUtils
+import ai.h2o.sparkling.backend.utils.SharedBackendUtils
 import org.scalatest.{FunSuite, Matchers}
 
 class SharedBackendUtilsTestSuite extends FunSuite with Matchers with SharedBackendUtils {

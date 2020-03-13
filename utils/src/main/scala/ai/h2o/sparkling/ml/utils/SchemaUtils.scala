@@ -366,57 +366,6 @@ object SchemaUtils {
     expandedSchema
   }
 
-  /** Returns array for all expanded elements with values true/false based on the fact whether the value is sparse
-    * vector or not
-    *  - schema is represented as list of types
-    *  - all arrays are expanded into columns based on the longest one
-    *  - all vectors are expanded into columns based on the longest one
-    *
-    * @param flatDataFrame flat data frame
-    * @param elemMaxSizes  max sizes of each element in the dataframe
-    * @return list of types with their positions
-    */
-  def collectSparseInfo(flatDataFrame: DataFrame, elemMaxSizes: Array[Int]): Array[Boolean] = {
-    val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
-    val sparseInfoForVec = flatDataFrame.take(1).headOption.map { head =>
-      vectorIndices.map { idx =>
-        head.get(idx) match {
-          case _: ml.linalg.SparseVector | _: mllib.linalg.SparseVector => (idx, true)
-          case _ => (idx, false)
-        }
-      }.toMap
-    }.getOrElse {
-      vectorIndices.zip(Array.fill(vectorIndices.length)(false)).toMap
-    }
-
-    flatDataFrame.schema.fields.zipWithIndex.flatMap { case (field, idx) =>
-
-      field.dataType match {
-        case v if ExposeUtils.isAnyVectorUDT(v) =>
-          Array.fill(elemMaxSizes(idx))(sparseInfoForVec(idx)).toSeq
-        case _ => Seq(false)
-      }
-    }
-  }
-
-  /**
-    * Mapping from row in Spark frame to position where to start filling in H2OFrame
-    */
-
-  def collectElemStartPositions(maxElemSizes: Array[Int]): Array[Int] = {
-    // empty array filled with zeros
-    val startPositions = Array.ofDim[Int](maxElemSizes.length)
-    if (maxElemSizes.length == 0) {
-      startPositions
-    } else {
-      startPositions(0) = 0
-      (1 until maxElemSizes.length).foreach { idx =>
-        startPositions(idx) = startPositions(idx - 1) + maxElemSizes(idx - 1)
-      }
-      startPositions
-    }
-  }
-
   private def fieldSizeFromMetadata(field: StructField): Option[Int] = {
     field.dataType match {
       case v if ExposeUtils.isMLVectorUDT(v) =>

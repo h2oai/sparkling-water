@@ -18,43 +18,36 @@
 package ai.h2o.sparkling.backend.external
 
 import java.io.{File, FileInputStream, FileOutputStream}
+import java.net.{InetAddress, NetworkInterface}
 import java.util.Properties
 
-import ai.h2o.sparkling.backend.shared.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
+import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, RestApiUtils, SharedBackendUtils, ShellUtils}
+import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
-import org.apache.spark.h2o.utils.NodeDesc
-import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.{SparkEnv, SparkFiles}
-import water.api.schemas3.{CloudLockV3, PingV3}
-import water.util.PrettyPrint
+import water.init.{HostnameGuesser, NetworkBridge}
 
 import scala.io.Source
 
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging {
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
-
-  var yarnAppId: Option[String] = None
-
-  override def init(conf: H2OConf): Array[NodeDesc] = {
+  override def startH2OCluster(conf: H2OConf): Unit = {
     if (conf.isAutoClusterStartUsed) {
       launchExternalH2OOnYarn(conf)
     }
+  }
 
-    logInfo("Connecting to external H2O cluster.")
-    val nodes = getAndVerifyWorkerNodes(conf)
-    if (!RestApiUtils.isRestAPIBased(hc)) {
-      ExternalH2OBackend.startH2OClient(hc, conf, nodes)
-    }
-    nodes
+  private def getYarnAppId(): Option[String] = {
+    hc.getConf.getOption(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1)
   }
 
   override def backendUIInfo: Seq[(String, String)] = {
     Seq(
-      ("External backend YARN AppID", yarnAppId),
+      ("External backend YARN AppID", getYarnAppId()),
       ("External IP", hc.getConf.h2oCluster)
     ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
   }
@@ -62,25 +55,18 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   override def epilog: String =
     if (hc.getConf.isAutoClusterStartUsed) {
       s"""
-         | * Yarn App ID of external H2O cluster: ${yarnAppId.get}
+         | * Yarn App ID of external H2O cluster: ${getYarnAppId().get}
     """.stripMargin
     } else {
       ""
     }
-
-  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
-    val conf = hc.getConf
-    val ping = getPingInfo(conf)
-    val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-    SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
-  }
 
   private def launchExternalH2OOnYarn(conf: H2OConf): Unit = {
     logInfo("Starting the external H2O cluster on YARN.")
     val cmdToLaunch = getExternalH2ONodesArguments(conf)
     logInfo("Command used to start H2O on yarn: " + cmdToLaunch.mkString(" "))
 
-    val proc = ExternalH2OBackend.launchShellCommand(cmdToLaunch)
+    val proc = ShellUtils.launchShellCommand(cmdToLaunch)
 
     val notifyFile = new File(conf.clusterInfoFile.get)
     if (!notifyFile.exists()) {
@@ -99,7 +85,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     // get ip port
     val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines()
     val ipPort = clusterInfo.next()
-    yarnAppId = Some(clusterInfo.next().replace("job", "application"))
+    val yarnAppId = clusterInfo.next().replace("job", "application")
+    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1, yarnAppId)
     // we no longer need the notification file
     new File(conf.clusterInfoFile.get).delete()
     logInfo(s"Yarn ID obtained from cluster file: $yarnAppId")
@@ -174,96 +161,17 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
         None
     }
   }
-
-  private def stopExternalH2OCluster(): Int = {
-    ExternalH2OBackend.launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
-  }
-
-  private def verifyVersion(nodes: Array[NodeDesc]): Unit = {
-    val referencedVersion = BuildInfo.H2OVersion
-    for (node <- nodes) {
-      val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
-      if (referencedVersion != externalVersion) {
-        if (hc.getConf.isAutoClusterStartUsed) {
-          stopExternalH2OCluster()
-        }
-        throw new RuntimeException(
-          s"""The external H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
-             |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
-      }
-    }
-  }
-
-  private def lockCloud(conf: H2OConf): Unit = {
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
-  }
-
-  private def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
-    val nodesWithoutWeb = nodes.flatMap { node =>
-      try {
-        getCloudInfoFromNode(node, conf)
-        None
-      } catch {
-        case cause: RestApiException => Some((node, cause))
-      }
-    }
-    if (nodesWithoutWeb.nonEmpty) {
-      throw new H2OClusterNotReachableException(
-        s"""
-    The following worker nodes are not reachable, but belong to the cluster:
-    ${conf.h2oCluster.get} - ${conf.cloudName.get}:
-    ----------------------------------------------
-    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""", nodesWithoutWeb.head._2)
-    }
-  }
-
-  private def getPingInfo(conf: H2OConf): PingV3 = {
-    val endpoint = getClusterEndpoint(conf)
-    query[PingV3](endpoint, "/3/Ping", conf)
-  }
-
-  private def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
-    try {
-      lockCloud(conf)
-      val nodes = getNodes(conf)
-      verifyWebOpen(nodes, conf)
-      if (!conf.isBackendVersionCheckDisabled) {
-        verifyVersion(nodes)
-      }
-      val leaderIpPort = getLeaderNode(conf).ipPort()
-      if (conf.h2oCluster.get != leaderIpPort) {
-        logInfo(s"Updating %s to H2O's leader node %s".format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
-        conf.setH2OCluster(leaderIpPort)
-      }
-      nodes
-    } catch {
-      case cause: RestApiException =>
-        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-        if (conf.isAutoClusterStartUsed) {
-          stopExternalH2OCluster()
-        }
-        throw new H2OClusterNotReachableException(
-          s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
-             |H2OContext has not been created.""".stripMargin, cause)
-    }
-  }
 }
 
-object ExternalH2OBackend extends ExternalBackendUtils {
+object ExternalH2OBackend extends SharedBackendUtils {
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
-
+    setClientIp(conf)
     // Increase locality timeout since h2o-specific tasks can be long computing
     if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
       conf.set("spark.locality.wait", "30000")
-    }
-
-    // to mimic the previous behaviour, set the client ip like this only in manual cluster mode when using multi-cast
-    if (conf.clientIp.isEmpty && conf.isManualClusterStartUsed && conf.h2oCluster.isEmpty) {
-      conf.setClientIp(getHostname(SparkEnv.get))
     }
 
     if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
@@ -371,4 +279,31 @@ object ExternalH2OBackend extends ExternalBackendUtils {
 
   // Name of the environmental property, which may contain path to the external H2O driver
   val ENV_H2O_DRIVER_JAR = "H2O_DRIVER_JAR"
+
+  private def setClientIp(conf: H2OConf): Unit = {
+    val clientIp = identifyClientIp(conf.h2oClusterHost.get)
+    if (clientIp.isDefined && conf.clientNetworkMask.isEmpty) {
+      conf.setClientIp(clientIp.get)
+    }
+
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
+    }
+  }
+
+  private def identifyClientIp(remoteAddress: String): Option[String] = {
+    val interfaces = NetworkInterface.getNetworkInterfaces
+    while (interfaces.hasMoreElements) {
+      val interface = interfaces.nextElement()
+      import scala.collection.JavaConverters._
+      interface.getInterfaceAddresses.asScala.foreach { address =>
+        val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
+        val cidr = HostnameGuesser.CIDRBlock.parse(ip)
+        if (cidr != null && NetworkBridge.isInetAddressOnNetwork(cidr, InetAddress.getByName(remoteAddress))) {
+          return Some(address.getAddress.getHostAddress)
+        }
+      }
+    }
+    None
+  }
 }

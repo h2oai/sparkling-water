@@ -21,9 +21,10 @@ import java.util.TimeZone
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
-import ai.h2o.sparkling.backend.external
-import ai.h2o.sparkling.backend.external.{H2OContextUtils => _, _}
-import ai.h2o.sparkling.backend.shared.{AzureDatabricksUtils, Converter, SharedBackendConf, SparklingBackend}
+import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
+import ai.h2o.sparkling.backend.external._
+import ai.h2o.sparkling.backend.utils._
+import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._
@@ -35,7 +36,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.ShutdownHookManager
 import org.joda.time.DateTimeZone
 import water._
-import water.parser.ParseTime
+import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
@@ -64,126 +65,55 @@ import scala.util.control.NoStackTrace
  *
  * @param conf         H2O configuration
  */
-abstract class H2OContext private(private val conf: H2OConf) extends Logging with H2OContextUtils {
+class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions {
   self =>
   val sparkSession = SparkSessionUtils.active
   val sparkContext = sparkSession.sparkContext
-  private val backendHeartbeatThread = new Thread {
-    override def run(): Unit = {
-      while (!Thread.interrupted()) {
-        try {
-          val swHeartBeatInfo = getSparklingWaterHeartBeatEvent()
-          if (conf.runsInExternalClusterMode) {
-            if (!swHeartBeatInfo.cloudHealthy) {
-              logError("External H2O cluster not healthy!")
-              if (conf.isKillOnUnhealthyClusterEnabled) {
-                logError("Stopping external H2O cluster as it is not healthy.")
-                if (RestApiUtils.isRestAPIBased(Some(H2OContext.this))) {
-                  H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-                } else {
-                  H2OContext.this.stop(true)
-                }
-              }
-            }
-          }
-          sparkContext.listenerBus.post(swHeartBeatInfo)
-        } catch {
-          case cause: RestApiException =>
-            H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-            throw new H2OClusterNotReachableException(
-              s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
-                 |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
-                 |external H2O cluster.""".stripMargin, cause)
-        }
-
-        try {
-          Thread.sleep(conf.backendHeartbeatInterval)
-        } catch {
-          case _: InterruptedException => Thread.currentThread.interrupt()
-        }
-      }
-    }
-  }
-  backendHeartbeatThread.setDaemon(true)
-
-  /** IP of H2O client */
-  private var localClientIp: String = _
-  /** REST port of H2O client */
-  private var localClientPort: Int = _
+  private val backendHeartbeatThread = createBackendHeartbeatThread()
   private var stopped = false
   /** Here the client means Python or R H2O client */
   private var clientConnected = false
-
   /** Used backend */
   protected val backend: SparklingBackend = if (conf.runsInExternalClusterMode) {
     new ExternalH2OBackend(this)
   } else {
     new InternalH2OBackend(this)
   }
-
-  protected def getH2OEndpointIp(): String
-
-  protected def getH2OEndpointPort(): Int
-
-  protected def getFlowEndpoint(): String
-
-  protected def getSelfNodeDesc(): Option[NodeDesc]
-
-  def getH2ONodes(): Array[NodeDesc]
-
-  protected def initBackend(): Unit
-
-  private var shutdownHookRef: AnyRef = _
-
-  /**
-   * This method connects to external H2O cluster if spark.ext.h2o.externalClusterMode is set to true,
-   * otherwise it creates new H2O cluster living in Spark
-   */
-  protected def init(): H2OContext = {
-    logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
-    logInfo("Spark version: " + sparkContext.version)
-    logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
-    logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
-    if (!isRunningOnCorrectSpark(sparkContext)) {
-      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
-        s" but your $$SPARK_HOME(=${sparkContext.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
-        s" points to Spark of version ${sparkContext.version}. Please ensure correct Spark is provided and" +
-        s" re-run Sparkling Water.")
-    }
-
-    // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
-    // backend or list of spark executors on which H2O runs in case of internal backend
-    initBackend()
-    setTimeZone()
-    // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
-    // resources before Spark does as we run as embedded application inside the Spark
-    shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
-      logWarning("Spark shutdown hook called, stopping H2OContext!")
-      stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
-    }
-    localClientIp = getH2OEndpointIp()
-    localClientPort = getH2OEndpointPort()
-
-    if (sparkContext.ui.isDefined) {
-      SparkSpecificUtils.addSparklingWaterTab(sparkContext)
-    }
-
-    logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
-    updateUIAfterStart() // updates the spark UI
-    backendHeartbeatThread.start() // start backend heartbeats
-    this
+  H2OContext.logStartingInfo(conf)
+  H2OContext.verifySparkVersion()
+  backend.startH2OCluster(conf)
+  private val nodes = connectToH2OCluster()
+  setTimeZone()
+  // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
+  // resources before Spark does as we run as embedded application inside the Spark
+  private val shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
+    logWarning("Spark shutdown hook called, stopping H2OContext!")
+    stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
   }
+  private val leaderNode = RestApiUtils.getLeaderNode(conf)
+  if (sparkContext.ui.isDefined) {
+    SparkSpecificUtils.addSparklingWaterTab(sparkContext)
+  }
+  logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
+  updateUIAfterStart() // updates the spark UI
+  backendHeartbeatThread.start() // start backend heartbeats
+  private val (flowIp, flowPort) = {
+    val uri = ProxyStarter.startFlowProxy(conf)
+    (uri.getHost, uri.getPort)
+  }
+
+  def getH2ONodes(): Array[NodeDesc] = nodes
 
   private def setTimeZone(): Unit = {
     if (conf.isSparkTimeZoneFollowed) {
-      val sparkTimeZone = sparkSession
+      val sparkTimeZone = SparkSessionUtils.active
         .sparkContext
         .getConf
         .getOption("spark.sql.session.timeZone")
         .getOrElse(TimeZone.getDefault.getID)
 
       if (DateTimeZone.getAvailableIDs.contains(sparkTimeZone)) {
-        setTimeZoneImpl(sparkTimeZone)
+        RestApiUtils.setTimeZone(conf, sparkTimeZone)
       } else {
         log.warn(s"The current Spark local time zone '$sparkTimeZone' is not supported by H2O. " +
           "Using default H2O Spark session.")
@@ -191,22 +121,26 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     }
   }
 
-  protected def setTimeZoneImpl(timeZone: String): Unit
-
-  protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo
-
-  protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo
-
-  protected def getSparklingWaterHeartBeatEvent(): SparklingWaterHeartbeatEvent = backend.getSparklingWaterHeartbeatEvent
-
   private[this] def updateUIAfterStart(): Unit = {
-    val nodes = getH2ONodes()
-    val h2oBuildInfo = getH2OBuildInfo(nodes)
-    val h2oClusterInfo = getH2OClusterInfo(nodes)
+    val cloudV3 = RestApiUtils.getClusterInfo(conf)
+    val h2oBuildInfo = H2OBuildInfo(
+      cloudV3.version,
+      cloudV3.branch_name,
+      cloudV3.last_commit_hash,
+      cloudV3.describe,
+      cloudV3.compiled_by,
+      cloudV3.compiled_on
+    )
+    val h2oClusterInfo = H2OClusterInfo(
+      s"$flowIp:$flowPort",
+      cloudV3.cloud_healthy,
+      cloudV3.internal_security_enabled,
+      nodes.map(_.ipPort()),
+      backend.backendUIInfo,
+      cloudV3.cloud_uptime_millis)
     val swPropertiesInfo = conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
-    // Initial update
-    val swHeartBeatEvent = getSparklingWaterHeartBeatEvent()
+    val swHeartBeatEvent = getSparklingWaterHeartbeatEvent()
     SparkSessionUtils.active.sparkContext.listenerBus.post(swHeartBeatEvent)
     val listenerBus = SparkSessionUtils.active.sparkContext.listenerBus
     listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
@@ -228,15 +162,16 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
 
   def asH2OFrameKeyString(rdd: SupportedRDD, frameName: String): String = asH2OFrameKeyString(rdd, Some(frameName))
 
-  def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = toH2OFrameKey(rdd, frameName).toString
+  def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
+    SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName)
+  }
 
   /** Transforms RDD[Supported type] to H2OFrame */
   def asH2OFrame(rdd: SupportedRDD): H2OFrame = asH2OFrame(rdd, None)
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", {
-      val converter = Converter.getConverter(conf)
-      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, converter)
+      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName)
       new H2OFrame(DKV.getGet[Frame](key))
     })
 
@@ -268,7 +203,9 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
 
   def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
 
-  def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = toH2OFrameKey(df, frameName).toString
+  def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
+    SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName)
+  }
 
   /** Transform DataFrame to H2OFrame key */
   def toH2OFrameKey(df: DataFrame): Key[Frame] = toH2OFrameKey(df, None)
@@ -318,6 +255,10 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     def apply[T <: Frame](fr: T): RDD[A] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
   }
 
+  def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.frame.H2OFrame): org.apache.spark.rdd.RDD[A] = {
+    SupportedRDDConverter.toRDD[A](this, fr)
+  }
+
   /** Convert given H2O frame into DataFrame type */
 
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
@@ -325,19 +266,20 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
   }
 
   def asDataFrame(s: String, copyMetadata: Boolean): DataFrame = {
-    SparkDataFrameConverter.toDataFrame(this, new H2OFrame(s), copyMetadata)
+    val frame = ai.h2o.sparkling.frame.H2OFrame(s)
+    SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
   }
 
   def asDataFrame(s: String): DataFrame = asDataFrame(s, true)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = this.localClientIp + ":" + this.localClientPort + conf.contextPath.getOrElse("")
+  def h2oLocalClient = leaderNode.hostname + ":" + leaderNode.port + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
-  def h2oLocalClientIp = this.localClientIp
+  def h2oLocalClientIp = leaderNode.hostname
 
   /** Returns port where H2O REST API is exposed */
-  def h2oLocalClientPort = this.localClientPort
+  def h2oLocalClientPort = leaderNode.port
 
   /** Set log level for the client running in driver */
   def setH2OClientLogLevel(level: String): Unit = LogUtil.setH2OClientLogLevel(level)
@@ -394,12 +336,12 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     } else if (conf.clientFlowBaseurlOverride.isDefined) {
       conf.clientFlowBaseurlOverride.get + conf.contextPath.getOrElse("")
     } else {
-      s"${conf.getScheme()}://${getFlowEndpoint()}"
+      "%s://%s:%d%s".format(conf.getScheme(), flowIp, flowPort, conf.contextPath.getOrElse(""))
     }
   }
 
   /** Open H2O Flow running in this client. */
-  def openFlow(): Unit = openURI(sparkContext, flowURL())
+  def openFlow(): Unit = openURI(flowURL())
 
   override def toString: String = {
     val basic =
@@ -407,11 +349,11 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
          |Sparkling Water Context:
          | * Sparkling Water Version: ${BuildInfo.SWVersion}
          | * H2O name: ${H2O.ARGS.name}
-         | * cluster size: ${getH2ONodes().length}
+         | * cluster size: ${nodes.length}
          | * list of used nodes:
          |  (executorId, host, port)
          |  ------------------------
-         |  ${getH2ONodes().mkString("\n  ")}
+         |  ${nodes.mkString("\n  ")}
          |  ------------------------
          |
          |  Open H2O Flow in browser: ${flowURL()} (CMD + click in Mac OSX)
@@ -437,139 +379,64 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
 
   // scalastyle:on
 
-  def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String
+  private def getSparklingWaterHeartbeatEvent(): SparklingWaterHeartbeatEvent = {
+    val ping = RestApiUtils.getPingInfo(conf)
+    val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
+    SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
+  }
+
+  private def connectToH2OCluster(): Array[NodeDesc] = {
+    logInfo("Connecting to H2O cluster.")
+    val nodes = getAndVerifyWorkerNodes(conf)
+    if (!RestApiUtils.isRestAPIBased(this)) {
+      H2OClientUtils.startH2OClient(this, conf, nodes)
+    }
+    nodes
+  }
+
+  private def createBackendHeartbeatThread(): Thread = {
+    val thread = new Thread {
+      override def run(): Unit = {
+        while (!Thread.interrupted()) {
+          try {
+            val swHeartBeatInfo = getSparklingWaterHeartbeatEvent()
+            if (conf.runsInExternalClusterMode) {
+              if (!swHeartBeatInfo.cloudHealthy) {
+                logError("External H2O cluster not healthy!")
+                if (conf.isKillOnUnhealthyClusterEnabled) {
+                  logError("Stopping external H2O cluster as it is not healthy.")
+                  if (RestApiUtils.isRestAPIBased(Some(H2OContext.this))) {
+                    H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+                  } else {
+                    H2OContext.this.stop(true)
+                  }
+                }
+              }
+            }
+            sparkContext.listenerBus.post(swHeartBeatInfo)
+          } catch {
+            case cause: RestApiException =>
+              H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
+              throw new H2OClusterNotReachableException(
+                s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
+                   |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
+                   |external H2O cluster.""".stripMargin, cause)
+          }
+
+          try {
+            Thread.sleep(conf.backendHeartbeatInterval)
+          } catch {
+            case _: InterruptedException => Thread.currentThread.interrupt()
+          }
+        }
+      }
+    }
+    thread.setDaemon(true)
+    thread
+  }
 }
 
 object H2OContext extends Logging {
-
-  private class H2OContextClientBased(conf: H2OConf) extends H2OContext(conf) {
-
-    /** Runtime list of active H2O nodes */
-    protected var h2oNodes: Array[NodeDesc] = _
-
-    override protected def getH2OEndpointIp(): String = {
-      if (conf.ignoreSparkPublicDNS) {
-        H2O.getIpPortString.split(":")(0)
-      } else {
-        sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
-      }
-    }
-
-    override protected def setTimeZoneImpl(timeZone: String): Unit = ParseTime.setTimezone(timeZone)
-
-    override protected def getH2OEndpointPort(): Int = H2O.API_PORT
-
-    override protected def getSelfNodeDesc(): Option[NodeDesc] = Some(NodeDesc(H2O.SELF))
-
-    override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      H2OClusterInfo(
-        h2oLocalClient,
-        H2O.CLOUD.healthy(),
-        H2OSecurityManager.instance.securityEnabled,
-        nodes.map(_.ipPort()),
-        backend.backendUIInfo,
-        H2O.START_TIME_MILLIS.get()
-      )
-    }
-
-    override def getH2ONodes(): Array[NodeDesc] = h2oNodes
-
-    override protected def initBackend(): Unit = {
-      h2oNodes = backend.init(conf)
-    }
-
-    override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
-      H2OBuildInfo(
-        H2O.ABV.projectVersion(),
-        H2O.ABV.branchName(),
-        H2O.ABV.lastCommitHash(),
-        H2O.ABV.describe(),
-        H2O.ABV.compiledBy(),
-        H2O.ABV.compiledOn()
-      )
-    }
-
-    override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
-      verifyLogContainer(logContainer)
-      H2O.downloadLogs(destinationDir, logContainer).toString
-    }
-
-    override protected def getFlowEndpoint(): String = s"${getH2OEndpointIp()}:${getH2OEndpointPort()}${conf.contextPath.getOrElse("")}"
-  }
-
-  private class H2OContextRestAPIBased(conf: H2OConf) extends H2OContext(conf) with
-    external.H2OContextUtils {
-    private var flowIp: String = _
-    private var flowPort: Int = _
-    private var leaderNode: NodeDesc = _
-
-    override protected def setTimeZoneImpl(timeZone: String): Unit = RestApiUtils.setTimeZone(conf, timeZone)
-
-    override protected def getH2OEndpointIp(): String = leaderNode.hostname
-
-    override protected def getH2OEndpointPort(): Int = leaderNode.port
-
-    override protected def getSelfNodeDesc(): Option[NodeDesc] = None
-
-    override protected def getH2OClusterInfo(nodes: Array[NodeDesc]): H2OClusterInfo = {
-      val cloudV3 = getClusterInfo(conf)
-      H2OClusterInfo(
-        s"$flowIp:$flowPort",
-        cloudV3.cloud_healthy,
-        cloudV3.internal_security_enabled,
-        nodes.map(_.ipPort()),
-        backend.backendUIInfo,
-        cloudV3.cloud_uptime_millis)
-    }
-
-    override def getH2ONodes(): Array[NodeDesc] = getNodes(conf)
-
-    override protected def initBackend(): Unit = {
-      backend.init(conf)
-      leaderNode = getLeaderNode(conf)
-      val uri = ProxyStarter.startFlowProxy(conf)
-      flowIp = uri.getHost
-      flowPort = uri.getPort
-    }
-
-    override protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo = {
-      val cloudV3 = getClusterInfo(conf)
-      H2OBuildInfo(
-        cloudV3.version,
-        cloudV3.branch_name,
-        cloudV3.last_commit_hash,
-        cloudV3.describe,
-        cloudV3.compiled_by,
-        cloudV3.compiled_on
-      )
-    }
-
-    override def downloadH2OLogs(destinationDir: String, logContainer: String = "ZIP"): String = {
-      verifyLogContainer(logContainer)
-      downloadLogs(destinationDir, logContainer, conf)
-    }
-
-    override def asDataFrame(frameId: String, copyMetadata: Boolean): DataFrame = {
-      val frame = ai.h2o.sparkling.frame.H2OFrame(frameId)
-      SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
-    }
-
-    def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.frame.H2OFrame): org.apache.spark.rdd.RDD[A] = {
-      SupportedRDDConverter.toRDD[A](this, fr)
-    }
-
-    override def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
-      SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName, ExternalBackendConverter)
-    }
-
-    override def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
-      SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName, ExternalBackendConverter)
-    }
-
-    override protected def getFlowEndpoint(): String = s"$flowIp:$flowPort${conf.contextPath.getOrElse("")}"
-
-  }
-
   private[H2OContext] def setInstantiatedContext(h2oContext: H2OContext): Unit = {
     synchronized {
       val ctx = instantiatedContext.get()
@@ -622,20 +489,20 @@ object H2OContext extends Logging {
           }
           if (connectingToNewCluster(existingContext, conf)) {
             val checkedConf = checkAndUpdateConf(conf)
-            instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
+            instantiatedContext.set(new H2OContext(checkedConf))
             logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
           }
         }
 
       } else {
         val checkedConf = checkAndUpdateConf(conf)
-        instantiatedContext.set(new H2OContextRestAPIBased(checkedConf).init())
+        instantiatedContext.set(new H2OContext(checkedConf))
       }
     } else {
       if (instantiatedContext.get() == null)
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
           val checkedConf = checkAndUpdateConf(conf)
-          instantiatedContext.set(new H2OContextClientBased(checkedConf).init())
+          instantiatedContext.set(new H2OContext(checkedConf))
         } else {
           throw new IllegalArgumentException(
             """
@@ -675,6 +542,29 @@ object H2OContext extends Logging {
   @DeprecatedMethod("getOrCreate()", "3.32")
   def getOrCreate(sc: SparkContext): H2OContext = {
     getOrCreate()
+  }
+
+  private def logStartingInfo(conf: H2OConf): Unit = {
+    logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
+    logInfo("Spark version: " + SparkSessionUtils.active.version)
+    logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
+    logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
+  }
+
+  /** Checks whether version of provided Spark is the same as Spark's version designated for this Sparkling Water version.
+   * We check for correct version in shell scripts and during the build but we need to do the check also in the code in cases when the user
+   * executes for example spark-shell command with sparkling water assembly jar passed as --jars and initiates H2OContext.
+   * (Because in that case no check for correct Spark version has been done so far.)
+   */
+  private def verifySparkVersion(): Unit = {
+    val sc = SparkSessionUtils.active.sparkContext
+    val runningOnCorrectSpark = sc.version.startsWith(BuildInfo.buildSparkMajorVersion)
+    if (!runningOnCorrectSpark) {
+      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
+        s" but your $$SPARK_HOME(=${sc.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
+        s" points to Spark of version ${sc.version}. Please ensure correct Spark is provided and" +
+        s" re-run Sparkling Water.")
+    }
   }
 }
 

@@ -18,7 +18,8 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
-import ai.h2o.sparkling.backend.external.{RestApiCommunicationException, RestApiUtils, RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.frame.H2OFrame
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams

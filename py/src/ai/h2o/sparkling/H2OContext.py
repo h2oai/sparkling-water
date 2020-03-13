@@ -89,8 +89,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-        if selected_conf.runsInExternalClusterMode():
-            selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
+        selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
 
         h2o_context = H2OContext()
 
@@ -114,7 +113,7 @@ class H2OContext(object):
 
     def __isStopped(self):
         hc = self._jhc
-        field = hc.getClass().getSuperclass().getDeclaredField("stopped")
+        field = hc.getClass().getDeclaredField("stopped")
         field.setAccessible(True)
         return field.get(hc)
 
@@ -127,7 +126,7 @@ class H2OContext(object):
         field.set(self._jhc, True)
 
     def __getClientConnectedField(self):
-        field = self._jhc.getClass().getSuperclass().getDeclaredField("clientConnected")
+        field = self._jhc.getClass().getDeclaredField("clientConnected")
         field.setAccessible(True)
         return field
 
