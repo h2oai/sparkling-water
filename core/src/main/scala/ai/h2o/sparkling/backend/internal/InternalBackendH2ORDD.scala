@@ -48,8 +48,10 @@ private[backend] class InternalBackendH2ORDD[A <: Product : TypeTag : ClassTag, 
   def this(@transient fr: T)
           (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
+  private val h2oConf = hc.getConf
+
   override def compute(split: Partition, context: TaskContext): Iterator[A] = new H2ORDDIterator() {
-    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, hc.getConf)
+    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, h2oConf)
   }
 
   H2OFrameSupport.lockAndUpdate(frame)
