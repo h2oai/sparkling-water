@@ -31,18 +31,13 @@ trait TimeZoneConversions {
     conf.get("spark.sql.session.timeZone", defaultTimeZone)
   }
 
-  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, sparkTimeZone())
+  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, sparkTimeZone())
 
-  def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = {
-    fromSparkTimeZoneToUTC(DateTimeUtils.fromJavaTimestamp(timestamp))
-  }
+  def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
 
-  def fromSparkTimeZoneToUTC(date: Date): Long = {
-    println(date.getTime)
-    fromSparkTimeZoneToUTC(date.getTime * 1000) / 1000
-  }
+  def fromSparkTimeZoneToUTC(date: Date): Long = fromSparkTimeZoneToUTC(date.getTime * 1000) / 1000
 
-  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, sparkTimeZone())
+  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, sparkTimeZone())
 }
 
 class TimeZoneConverter(val conf: H2OConf) extends TimeZoneConversions
