@@ -76,7 +76,11 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 #
 # Setters
 #
-    setH2OCluster = function(ip, port) { invoke(jconf, "setH2OCluster", ip, as.integer(port)); .self },
+    setH2OCluster = function(ip, port) {
+        warning("The method 'setH2OCluster(ip, port)' also sets backend to external. This side effect will be removed in the version in 3.32.");
+        invoke(jconf, "setH2OCluster", ip, as.integer(port));
+        .self
+    },
 
     setClusterSize = function(clusterSize) { invoke(jconf, "setClusterSize", as.integer(clusterSize)); .self },
 

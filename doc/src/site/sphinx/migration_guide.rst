@@ -18,6 +18,9 @@ From 3.30 to 3.32
   been removed. Also, ``H2OContext`` can be created as ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``.
   The other variants of this method have been removed.
 
+- The ``setH2OCluster(ip, port)`` method on ``H2OConf`` in all APIs doesn't implicitly set the external backend anymore.
+  The method ``setExternalClusterMode()`` must be called explicitly.
+
 From 3.28.1 to 3.30
 -------------------
 
