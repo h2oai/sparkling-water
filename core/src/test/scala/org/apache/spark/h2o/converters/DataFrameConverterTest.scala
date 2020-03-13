@@ -115,7 +115,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val dataFrame = hc.asDataFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
-    val localtime = DateTimeUtils.fromUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
+    val localtime = DateTimeUtils.toUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
     assert(dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == localtime)
     assert(dataFrame.schema.fields(0) match {
       case StructField("C0", TimestampType, false, _) => true
@@ -387,8 +387,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).isTime)
 
     val numericVec = h2oFrame.vec(0).toNumericVec
-    def fromUTC(time: Long): Long = DateTimeUtils.fromUTCTime(time * 1000, TimeZone.getDefault.getID) / 1000
-    val values = dates.indices.map(i => new java.sql.Date(fromUTC(numericVec.at8(i))).toString)
+    def toUTC(time: Long): Long = DateTimeUtils.toUTCTime(time * 1000, TimeZone.getDefault.getID) / 1000
+    val values = dates.indices.map(i => new java.sql.Date(toUTC(numericVec.at8(i))).toString)
     dates.indices.foreach(i => println(numericVec.at8(i)))
     values.sorted shouldEqual dates.sorted
   }
@@ -728,7 +728,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val hf = hc.asH2OFrame(df)
     assert(hf.numRows() == 1)
     assert(hf.numCols() == 1)
-    val expectedValue = DateTimeUtils.toUTCTime(Date.valueOf("2016-12-24").getTime * 1000, TimeZone.getDefault.getID) / 1000
+    val expectedValue = DateTimeUtils.fromUTCTime(Date.valueOf("2016-12-24").getTime * 1000, TimeZone.getDefault.getID) / 1000
     assert(hf.vec(0).at8(0) == expectedValue)
   }
 
