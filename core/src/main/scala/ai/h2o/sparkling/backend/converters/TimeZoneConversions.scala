@@ -27,7 +27,7 @@ trait TimeZoneConversions {
   protected def conf: H2OConf
 
   private def sparkTimeZone(): String = {
-    val defaultTimeZone = DateTimeUtils.defaultTimeZone().getID
+    val defaultTimeZone = TimeZone.getDefault().getID
     conf.get("spark.sql.session.timeZone", defaultTimeZone)
   }
 
@@ -36,7 +36,7 @@ trait TimeZoneConversions {
   def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
 
   def fromSparkTimeZoneToUTC(date: Date): Long = {
-    DateTimeUtils.fromUTCTime(date.getTime * 1000, DateTimeUtils.defaultTimeZone().getID) / 1000
+    DateTimeUtils.fromUTCTime(date.getTime * 1000, TimeZone.getDefault().getID) / 1000
   }
 
   def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, sparkTimeZone())
