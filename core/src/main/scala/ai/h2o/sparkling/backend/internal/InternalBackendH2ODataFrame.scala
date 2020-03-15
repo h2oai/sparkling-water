@@ -40,8 +40,6 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
                                                                          (@transient val hc: H2OContext)
   extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes()) with H2ODataFrameBase with InternalBackendSparkEntity[T] {
 
-  private val h2oConf = hc.getConf
-
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
@@ -56,7 +54,7 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
   }) toArray
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = new H2ODataFrameIterator {
-    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, h2oConf)
+    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index)
   }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {
