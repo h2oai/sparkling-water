@@ -268,7 +268,7 @@ def testConvertTimeValueFromSparkToH2OAndBack(spark, hc, timeZone, sparkType):
 
     dfResult = hc.asSparkFrame(hf)
     dfResultRows = dfResult.select(col("time").cast("string").alias("strings")).collect()
-    dfResultItems = map(lambda row: row[0], dfResultRows)
+    dfResultItems = list(map(lambda row: row[0], dfResultRows))
     dfResultItems.sort()
 
     assert dfResultItems == expected
