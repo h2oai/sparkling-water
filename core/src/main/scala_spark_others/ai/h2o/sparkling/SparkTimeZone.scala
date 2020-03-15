@@ -18,7 +18,12 @@
 package ai.h2o.sparkling
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.util.DateTimeUtils
 
 object SparkTimeZone {
-  def current(): String = SparkSession.active.sessionState.conf.sessionLocalTimeZone
+  def current(): String = {
+    SparkSession.getActiveSession
+      .map(_.sessionState.conf.sessionLocalTimeZone)
+      .getOrElse(DateTimeUtils.defaultTimeZone.getID)
+  }
 }
