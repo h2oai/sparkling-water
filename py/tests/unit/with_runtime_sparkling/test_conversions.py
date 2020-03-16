@@ -253,22 +253,25 @@ def testConvertEmptyRDD(spark, hc):
     ],
 )
 def testConvertTimeValueFromSparkToH2OAndBack(spark, hc, timeZone, sparkType):
-    spark.conf.set("spark.sql.session.timeZone", timeZone)
+spark.conf.set("spark.sql.session.timeZone", "America/Phoenix")
 
-    expected = ["2019-04-04 00:00:00", "2020-01-01 00:00:00", "2020-02-02 00:00:00", "2020-03-03 00:00:00"]
-    data = [("2019-04-04",), ("2020-01-01",), ("2020-02-02",), ("2020-03-03",)]
-    df = spark.createDataFrame(data, ['strings']).select(col('strings').cast(sparkType).alias('time'))
+from pysparkling import *
+hc = H2OContext.getOrCreate()
+from pyspark.sql.functions import *
+expected = ["2019-04-04 00:00:00", "2020-01-01 00:00:00", "2020-02-02 00:00:00", "2020-03-03 00:00:00"]
+data = [("2019-04-04",), ("2020-01-01",), ("2020-02-02",), ("2020-03-03",)]
+df = spark.createDataFrame(data, ['strings']).select(col('strings').cast('date').alias('time'))
 
-    hf = hc.asH2OFrame(df)
-    hfResultString = hf.__unicode__()
-    hfParsedItems = hfResultString.split('\n')[2:6]
-    hfParsedItems.sort()
+hf = hc.asH2OFrame(df)
+hfResultString = hf.__unicode__()
+hfParsedItems = hfResultString.split('\n')[2:6]
+hfParsedItems.sort()
 
-    assert hfParsedItems == expected
+assert hfParsedItems == expected
 
-    dfResult = hc.asSparkFrame(hf)
-    dfResultRows = dfResult.select(col("time").cast("string").alias("strings")).collect()
-    dfResultItems = list(map(lambda row: row[0], dfResultRows))
-    dfResultItems.sort()
+dfResult = hc.asSparkFrame(hf)
+dfResultRows = dfResult.select(col("time").cast("string").alias("strings")).collect()
+dfResultItems = list(map(lambda row: row[0], dfResultRows))
+dfResultItems.sort()
 
-    assert dfResultItems == expected
+assert dfResultItems == expected
