@@ -123,6 +123,7 @@ trait SharedBackendConf {
 
   def clientNetworkMask: Option[String] = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
 
+  @DeprecatedMethod(version="3.30")
   def ignoreSparkPublicDNS: Boolean = sparkConf.getBoolean(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._2)
 
   @DeprecatedMethod(version="3.30")
@@ -285,8 +286,10 @@ trait SharedBackendConf {
 
   def setClientNetworkMask(mask: String): H2OConf = set(PROP_CLIENT_NETWORK_MASK._1, mask)
 
+  @DeprecatedMethod(version="3.30")
   def setIgnoreSparkPublicDNSEnabled(): H2OConf = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, value = true)
 
+  @DeprecatedMethod(version="3.30")
   def setIgnoreSparkPublicDNSDisabled(): H2OConf = set(PROP_CLIENT_IGNORE_SPARK_PUBLIC_DNS._1, value = false)
 
   @DeprecatedMethod(version = "3.30")

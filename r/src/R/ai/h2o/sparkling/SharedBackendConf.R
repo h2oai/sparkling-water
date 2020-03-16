@@ -111,7 +111,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     clientNetworkMask = function() { ConfUtils.getOption(invoke(jconf, "clientNetworkMask")) },
 
-    ignoreSparkPublicDNS = function() { invoke(jconf, "ignoreSparkPublicDNS") },
+    ignoreSparkPublicDNS = function() {
+      print("Method 'ignoreSparkPublicDNS' is deprecated in release 3.30 without replacement.")
+      invoke(jconf, "ignoreSparkPublicDNS")
+    },
 
     clientFlowBaseurlOverride = function() { ConfUtils.getOption(invoke(jconf, "clientFlowBaseurlOverride")) },
 
@@ -242,9 +245,14 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientNetworkMask = function(mask) { invoke(jconf, "setClientNetworkMask", mask); .self },
 
-    setIgnoreSparkPublicDNSEnabled = function() { invoke(jconf, "setIgnoreSparkPublicDNSEnabled"); .self },
+    setIgnoreSparkPublicDNSEnabled = function() {
+      print("Method 'setIgnoreSparkPublicDNSEnabled' is deprecated in release 3.30 without replacement.")
+      invoke(jconf, "setIgnoreSparkPublicDNSEnabled"); .self
+    },
 
-    setIgnoreSparkPublicDNSDisabled = function() { invoke(jconf, "setIgnoreSparkPublicDNSDisabled"); .self },
+    setIgnoreSparkPublicDNSDisabled = function() {
+      print("Method 'setIgnoreSparkPublicDNSEnabled' is deprecated in release 3.30 without replacement.")
+      invoke(jconf, "setIgnoreSparkPublicDNSDisabled"); .self },
 
     setClientFlowBaseurlOverride = function(baseUrl) { invoke(jconf, "setClientFlowBaseurlOverride", baseUrl); .self },
 

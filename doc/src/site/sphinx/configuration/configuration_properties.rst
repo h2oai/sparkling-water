@@ -207,10 +207,6 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | but tries to find IP based on the      |
 |                                                    |                |                                                 | specified mask.                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``   | ``false``      | ``setIgnoreSparkPublicDNSEnabled()``            | Ignore SPARK_PUBLIC_DNS setting on     |
-|                                                    |                |                                                 | the H2O client. The option still       |
-|                                                    |                | ``setIgnoreSparkPublicDNSDisabled()``           | applies to the Spark application.      |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.baseurl.override``     | ``None``       | ``setClientFlowBaseurlOverride(String)``        | Allows to override the base URL        |
 |                                                    |                |                                                 | address of Flow UI, including the      |
 |                                                    |                |                                                 | scheme, which is showed to the user.   |
