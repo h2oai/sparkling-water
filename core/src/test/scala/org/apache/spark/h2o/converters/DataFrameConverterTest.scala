@@ -115,7 +115,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val dataFrame = hc.asDataFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
-    val localtime = DateTimeUtils.toUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
+    //val localtime = DateTimeUtils.toUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
+    val localtime = 1428517566L
     assert(dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == localtime)
     assert(dataFrame.schema.fields(0) match {
       case StructField("C0", TimestampType, false, _) => true

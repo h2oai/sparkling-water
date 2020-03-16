@@ -24,13 +24,13 @@ import org.apache.spark.sql.catalyst.util.DateTimeUtils
 trait TimeZoneConversions {
   def defaultTimeZone = DateTimeUtils.defaultTimeZone.getID
 
-  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, defaultTimeZone)
+  def fromSparkTimeZoneToUTC(timestamp: Long): Long = timestamp
 
-  def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
+  def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = timestamp.getTime
 
-  def fromSparkTimeZoneToUTC(date: Date): Long = fromSparkTimeZoneToUTC(date.getTime * 1000) / 1000
+  def fromSparkTimeZoneToUTC(date: Date): Long = DateTimeUtils.fromUTCTime(date.getTime * 1000, defaultTimeZone) / 1000
 
-  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, defaultTimeZone)
+  def fromUTCToSparkTimeZone(timestamp: Long): Long = timestamp
 }
 
 object TimeZoneConversions extends TimeZoneConversions
