@@ -23,7 +23,7 @@ import ai.h2o.sparkling.SparkTimeZone
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 
 trait TimeZoneConversions {
-  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, SparkTimeZone.current())
+  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, DateTimeUtils.defaultTimeZone.getID)
 
   def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
 
@@ -31,7 +31,7 @@ trait TimeZoneConversions {
     DateTimeUtils.toUTCTime(date.getTime * 1000, DateTimeUtils.defaultTimeZone.getID) / 1000
   }
 
-  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, SparkTimeZone.current())
+  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, DateTimeUtils.defaultTimeZone.getID)
 }
 
 object TimeZoneConversions extends TimeZoneConversions
