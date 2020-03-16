@@ -18,12 +18,14 @@
 package ai.h2o.sparkling.backend.converters
 
 import java.sql.{Date, Timestamp}
+import java.util.TimeZone
 
-import ai.h2o.sparkling.SparkTimeZone
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 
 trait TimeZoneConversions {
-  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, SparkTimeZone.current())
+  def sparkTimeZone: TimeZone
+
+  def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, sparkTimeZone.getID)
 
   def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
 
@@ -31,7 +33,7 @@ trait TimeZoneConversions {
     DateTimeUtils.fromUTCTime(date.getTime * 1000, DateTimeUtils.defaultTimeZone.getID) / 1000
   }
 
-  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, SparkTimeZone.current())
+  def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, sparkTimeZone.getID)
 }
 
-object TimeZoneConversions extends TimeZoneConversions
+class TimeZoneConverter(val sparkTimeZone: TimeZone) extends TimeZoneConversions

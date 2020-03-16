@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend.external
 
+import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.shared.{H2ORDDBase, Reader}
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
@@ -45,6 +46,7 @@ private[backend] class ExternalBackendH2ORDD[A <: Product : TypeTag : ClassTag] 
   override val expectedTypes: Option[Array[Byte]] = Option(ExternalH2OBackend.prepareExpectedTypes(productType.memberClasses))
 
   private val h2oConf = hc.getConf
+  private val sparkTimeZone = SparkTimeZone.current()
 
   // Get product type before building an RDD
   def this(@transient frame: H2OFrame)
@@ -54,7 +56,7 @@ private[backend] class ExternalBackendH2ORDD[A <: Product : TypeTag : ClassTag] 
     new H2ORDDIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
       override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
-        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
+        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf, sparkTimeZone)
     }
   }
 

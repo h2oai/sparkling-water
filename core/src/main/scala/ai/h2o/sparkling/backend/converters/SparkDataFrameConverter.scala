@@ -17,6 +17,9 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import java.util.TimeZone
+
+import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.external.{ExternalBackendConverter, ExternalBackendH2OFrameRelation, ExternalH2OBackend}
 import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
 import ai.h2o.sparkling.backend.shared.{Converter, Writer}
@@ -106,7 +109,7 @@ object SparkDataFrameConverter extends Logging {
     }
 
     converter.convert[Row](hc, dfRdd, keyName, fnames, expectedTypes, vecIndices.map(elemMaxSizes(_)),
-      sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices))
+      sparseInfo, perSQLPartition(hc.getConf, elemMaxSizes, elemStartIndices, vecIndices, SparkTimeZone.current()))
   }
 
   /**
@@ -115,13 +118,14 @@ object SparkDataFrameConverter extends Logging {
    * @param expectedTypes    expected types of H2O vectors after the corresponding data are converted from Spark
    * @param elemMaxSizes     array containing max size of each element in the dataframe
    * @param elemStartIndices array containing positions in h2o frame corresponding to spark frame
+   * @param timeZone         time zone of the current spark session
    * @param uploadPlan       plan which assigns each partition h2o node where the data from that partition will be uploaded
    * @param sparse           identifies which columns are sparse
    * @param context          spark task context
    * @param it               iterator over data in the partition
    * @return pair (partition ID, number of rows in this partition)
    */
-  private def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int])
+  private def perSQLPartition(conf: H2OConf, elemMaxSizes: Array[Int], elemStartIndices: Array[Int], vecIndices: Array[Int], timeZone: TimeZone)
                              (keyName: String, expectedTypes: Array[Byte], uploadPlan: Option[Converter.UploadPlan], sparse: Array[Boolean],
                               partitions: Seq[Int], partitionSizes: Map[Int, Int])
                              (context: TaskContext, it: Iterator[Row]): (Int, Long) = {
@@ -144,7 +148,7 @@ object SparkDataFrameConverter extends Logging {
         sparse,
         vecStartSize)) { writer =>
       it.foldLeft(0) {
-        case (localRowIdx, row) => sparkRowToH2ORow(row, localRowIdx, writer, elemStartIndices, elemMaxSizes)
+        case (localRowIdx, row) => sparkRowToH2ORow(row, localRowIdx, writer, elemStartIndices, elemMaxSizes, timeZone)
       }
     }
     (chunkIdx, partitionSize)
@@ -153,8 +157,14 @@ object SparkDataFrameConverter extends Logging {
   /**
    * Converts a single Spark Row to H2O Row with expanded vectors and arrays
    */
-  private def sparkRowToH2ORow(row: Row, rowIdx: Int, con: Writer, elemStartIndices: Array[Int], elemSizes: Array[Int]): Int = {
+  private def sparkRowToH2ORow(row: Row,
+                               rowIdx: Int,
+                               con: Writer,
+                               elemStartIndices: Array[Int],
+                               elemSizes: Array[Int],
+                               timeZone: TimeZone): Int = {
     con.startRow(rowIdx)
+    val timeZoneConverter = new TimeZoneConverter(timeZone)
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       val idxH2O = elemStartIndices(idxField)
       if (row.isNullAt(idxField)) {
@@ -170,8 +180,8 @@ object SparkDataFrameConverter extends Logging {
           case _: DecimalType => con.put(idxH2O, row.getDecimal(idxField).doubleValue())
           case DoubleType => con.put(idxH2O, row.getDouble(idxField))
           case StringType => con.put(idxH2O, row.getString(idxField))
-          case TimestampType => con.put(idxH2O, TimeZoneConversions.fromSparkTimeZoneToUTC(row.getAs[java.sql.Timestamp](idxField)))
-          case DateType => con.put(idxH2O, TimeZoneConversions.fromSparkTimeZoneToUTC(row.getAs[java.sql.Date](idxField)))
+          case TimestampType => con.put(idxH2O, timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Timestamp](idxField)))
+          case DateType => con.put(idxH2O, timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Date](idxField)))
           case v if ExposeUtils.isMLVectorUDT(v) => con.putVector(idxH2O, row.getAs[ml.linalg.Vector](idxField), elemSizes(idxField))
           case _: mllib.linalg.VectorUDT => con.putVector(idxH2O, row.getAs[mllib.linalg.Vector](idxField), elemSizes(idxField))
           case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")

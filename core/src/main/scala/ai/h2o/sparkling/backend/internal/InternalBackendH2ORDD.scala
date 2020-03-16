@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend.internal
 
+import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.shared.{H2ORDDBase, Reader}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ProductType
@@ -48,8 +49,10 @@ private[backend] class InternalBackendH2ORDD[A <: Product : TypeTag : ClassTag, 
   def this(@transient fr: T)
           (@transient hc: H2OContext) = this(fr, ProductType.create[A])(hc)
 
+  val sparkTimeZone = SparkTimeZone.current()
+
   override def compute(split: Partition, context: TaskContext): Iterator[A] = new H2ORDDIterator() {
-    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index)
+    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, sparkTimeZone)
   }
 
   H2OFrameSupport.lockAndUpdate(frame)
