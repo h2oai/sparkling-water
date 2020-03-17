@@ -44,12 +44,15 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
       }
     }
 
-    val cols = (getFeaturesCols() ++ excludedCols).map(col)
+    val featureColumns = getFeaturesCols().map(sanitize).map(col)
+    val excludedColumns = excludedCols.map(sanitize).map(col)
+    val columns = featureColumns ++ excludedColumns
+
     val h2oContext = H2OContext.getOrCreate()
-    val h2oFrameKey = h2oContext.asH2OFrameKeyString(dataset.select(cols: _*).toDF())
+    val h2oFrameKey = h2oContext.asH2OFrameKeyString(dataset.select(columns: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
-    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(getFeaturesCols().map(col): _*)).columns
+    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(featureColumns: _*)).columns
     if (getAllStringColumnsToCategorical()) {
       if (RestApiUtils.isRestAPIBased()) {
         H2OFrame(h2oFrameKey).convertAllStringColumnsToCategorical()
@@ -80,4 +83,6 @@ trait H2OAlgoCommonUtils extends H2OCommonParams {
       (h2oFrameKey, None, internalFeatureCols)
     }
   }
+
+  def sanitize(colName: String) = '`' + colName + '`'
 }
