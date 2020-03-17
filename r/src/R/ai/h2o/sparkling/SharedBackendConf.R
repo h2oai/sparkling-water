@@ -251,7 +251,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     },
 
     setIgnoreSparkPublicDNSDisabled = function() {
-      print("Method 'setIgnoreSparkPublicDNSEnabled' is deprecated in release 3.30 without replacement.")
+      print("Method 'setIgnoreSparkPublicDNSDisabled' is deprecated in release 3.30 without replacement.")
       invoke(jconf, "setIgnoreSparkPublicDNSDisabled"); .self },
 
     setClientFlowBaseurlOverride = function(baseUrl) { invoke(jconf, "setClientFlowBaseurlOverride", baseUrl); .self },
