@@ -154,7 +154,7 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     // Init the H2O Context in a way provided by used backend and return the list of H2O nodes in case of external
     // backend or list of spark executors on which H2O runs in case of internal backend
     initBackend()
-    setTimeZone()
+    setTimeZoneOfH2OCluster("UTC")
     // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
     // resources before Spark does as we run as embedded application inside the Spark
     shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
@@ -174,24 +174,7 @@ abstract class H2OContext private(private val conf: H2OConf) extends Logging wit
     this
   }
 
-  private def setTimeZone(): Unit = {
-    if (conf.isSparkTimeZoneFollowed) {
-      val sparkTimeZone = sparkSession
-        .sparkContext
-        .getConf
-        .getOption("spark.sql.session.timeZone")
-        .getOrElse(TimeZone.getDefault.getID)
-
-      if (DateTimeZone.getAvailableIDs.contains(sparkTimeZone)) {
-        setTimeZoneImpl(sparkTimeZone)
-      } else {
-        log.warn(s"The current Spark local time zone '$sparkTimeZone' is not supported by H2O. " +
-          "Using default H2O Spark session.")
-      }
-    }
-  }
-
-  protected def setTimeZoneImpl(timeZone: String): Unit
+  protected def setTimeZoneOfH2OCluster(timeZone: String): Unit
 
   protected def getH2OBuildInfo(nodes: Array[NodeDesc]): H2OBuildInfo
 
@@ -447,6 +430,8 @@ object H2OContext extends Logging {
     /** Runtime list of active H2O nodes */
     protected var h2oNodes: Array[NodeDesc] = _
 
+    override protected def setTimeZoneOfH2OCluster(timeZone: String): Unit = ParseTime.setTimezone(timeZone)
+
     override protected def getH2OEndpointIp(): String = {
       if (conf.ignoreSparkPublicDNS) {
         H2O.getIpPortString.split(":")(0)
@@ -454,8 +439,6 @@ object H2OContext extends Logging {
         sys.env.getOrElse("SPARK_PUBLIC_DNS", H2O.getIpPortString.split(":")(0))
       }
     }
-
-    override protected def setTimeZoneImpl(timeZone: String): Unit = ParseTime.setTimezone(timeZone)
 
     override protected def getH2OEndpointPort(): Int = H2O.API_PORT
 
@@ -503,7 +486,7 @@ object H2OContext extends Logging {
     private var flowPort: Int = _
     private var leaderNode: NodeDesc = _
 
-    override protected def setTimeZoneImpl(timeZone: String): Unit = RestApiUtils.setTimeZone(conf, timeZone)
+    override protected def setTimeZoneOfH2OCluster(timeZone: String): Unit = RestApiUtils.setTimeZone(conf, timeZone)
 
     override protected def getH2OEndpointIp(): String = leaderNode.hostname
 

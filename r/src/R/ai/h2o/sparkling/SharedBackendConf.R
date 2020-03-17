@@ -91,8 +91,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     isInternalSecureConnectionsEnabled = function() { invoke(jconf, "isInternalSecureConnectionsEnabled") },
 
-    isSparkTimeZoneFollowed = function() { invoke(jconf, "isSparkTimeZoneFollowed") },
-
     flowDir = function() { ConfUtils.getOption(invoke(jconf, "flowDir")) },
 
     clientIp = function() { ConfUtils.getOption(invoke(jconf, "clientIp")) },
@@ -217,10 +215,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     setInternalSecureConnectionsEnabled = function() { invoke(jconf, "setInternalSecureConnectionsEnabled"); .self },
 
     setInternalSecureConnectionsDisabled = function() { invoke(jconf, "setInternalSecureConnectionsDisabled"); .self },
-
-    setSparkTimeZoneFollowingEnabled = function() { invoke(jconf, "setSparkTimeZoneFollowingEnabled"); .self },
-
-    setSparkTimeZoneFollowingDisabled = function() { invoke(jconf, "setSparkTimeZoneFollowingDisabled"); .self },
 
     setFlowDir = function(dir) { invoke(jconf, "setFlowDir", dir); .self },
 

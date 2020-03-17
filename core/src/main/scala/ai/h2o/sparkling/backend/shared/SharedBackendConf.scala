@@ -102,8 +102,6 @@ trait SharedBackendConf {
   def isInternalSecureConnectionsEnabled: Boolean = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
     PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
-  def isSparkTimeZoneFollowed: Boolean = sparkConf.getBoolean(PROP_FOLLOW_SPARK_TIME_ZONE._1, PROP_FOLLOW_SPARK_TIME_ZONE._2)
-
   /** H2O Client parameters */
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
 
@@ -256,10 +254,6 @@ trait SharedBackendConf {
   def setInternalSecureConnectionsEnabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = true)
 
   def setInternalSecureConnectionsDisabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = false)
-
-  def setSparkTimeZoneFollowingEnabled(): H2OConf = set(PROP_FOLLOW_SPARK_TIME_ZONE._1, value = true)
-
-  def setSparkTimeZoneFollowingDisabled(): H2OConf = set(PROP_FOLLOW_SPARK_TIME_ZONE._1, value = false)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String): H2OConf = set(PROP_FLOW_DIR._1, dir)
@@ -427,9 +421,6 @@ object SharedBackendConf {
 
   /** Secure internal connections by automatically generated credentials */
   val PROP_INTERNAL_SECURE_CONNECTIONS: (String, Boolean) = ("spark.ext.h2o.internal_secure_connections", false)
-
-  /** Whether the H2O cluster should follow the time zone settings of Spark ("spark.sql.session.timeZone"). */
-  val PROP_FOLLOW_SPARK_TIME_ZONE: (String, Boolean) = ("spark.ext.h2o.follow_spark_time_zone", true)
 
   /** IP of H2O client node */
   val PROP_CLIENT_IP: (String, None.type) = ("spark.ext.h2o.client.ip", None)

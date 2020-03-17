@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.backend.internal
 
+import java.util.TimeZone
+
 import ai.h2o.sparkling.backend.shared.Reader
 import water.fvec.{Chunk, Frame, Vec}
 import water.parser.BufferedString
@@ -24,7 +26,7 @@ import water.{DKV, Key}
 
 import scala.language.postfixOps
 
-class InternalBackendReader(override val keyName: String, override val chunkIdx: Int) extends Reader {
+class InternalBackendReader(override val keyName: String, override val chunkIdx: Int, val sparkTimeZone: TimeZone) extends Reader {
 
   override type DataSource = Chunk
 

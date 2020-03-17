@@ -21,6 +21,7 @@ import pytest
 import time
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pyspark.sql.functions import *
 from pyspark.ml.util import _jvm
 
 from tests import generic_test_utils
@@ -210,3 +211,60 @@ def testConvertEmptyRDD(spark, hc):
     fr = hc.asH2OFrame(empty)
     assert fr.nrows == 0
     assert fr.ncols == 0
+
+
+@pytest.mark.parametrize(
+    "timeZone,sparkType",
+    [
+        pytest.param(
+            "UTC",
+            "date",
+            id="date-UTC"
+        ),
+        pytest.param(
+            "Europe/Prague",
+            "date",
+            id="date-Prague"
+        ),
+        pytest.param(
+            "America/Phoenix",
+            "date",
+            id="date-Phoenix"
+        ),
+        pytest.param(
+            "UTC",
+            "timestamp",
+            id="timestamp-UTC"
+        ),
+        pytest.param(
+            "Europe/Prague",
+            "timestamp",
+            id="timestamp-Prague"
+        ),
+        pytest.param(
+            "America/Phoenix",
+            "timestamp",
+            id="timestamp-Phoenix"
+        ),
+    ],
+)
+def testConvertTimeValueFromSparkToH2OAndBack(spark, hc, timeZone, sparkType):
+    spark.conf.set("spark.sql.session.timeZone", timeZone)
+
+    expected = ["2019-04-04 00:00:00", "2020-01-01 00:00:00", "2020-02-02 00:00:00", "2020-03-03 00:00:00"]
+    data = [("2019-04-04",), ("2020-01-01",), ("2020-02-02",), ("2020-03-03",)]
+    df = spark.createDataFrame(data, ['strings']).select(col('strings').cast(sparkType).alias('time'))
+
+    hf = hc.asH2OFrame(df)
+    hfResultString = hf.__unicode__()
+    hfParsedItems = hfResultString.split('\n')[2:6]
+    hfParsedItems.sort()
+
+    assert hfParsedItems == expected
+
+    dfResult = hc.asSparkFrame(hf)
+    dfResultRows = dfResult.select(col("time").cast("string").alias("strings")).collect()
+    dfResultItems = list(map(lambda row: row[0], dfResultRows))
+    dfResultItems.sort()
+
+    assert dfResultItems == expected

@@ -51,10 +51,6 @@ private[sparkling] class InternalBackendWriter(frameName: String,
 
   override def put(columnNum: Int, data: Double): Unit = chunks(columnNum).addNum(data)
 
-  override def put(columnNum: Int, data: Timestamp): Unit = chunks(columnNum).addNum(data.getTime)
-
-  override def put(columnNum: Int, data: Date): Unit = chunks(columnNum).addNum(data.getTime)
-
   override def put(columnNum: Int, data: String): Unit = chunks(columnNum).addStr(data)
 
   override def putNA(columnNum: Int, sparkIdx: Int): Unit = chunks(columnNum).addNA()
