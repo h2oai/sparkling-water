@@ -52,10 +52,6 @@ private[sparkling] class ExternalBackendWriter(conf: H2OConf,
 
   override def put(colIdx: Int, data: Double): Unit = chunkWriter.writeDouble(data)
 
-  override def put(colIdx: Int, data: java.sql.Timestamp): Unit = chunkWriter.writeTimestamp(data)
-
-  override def put(colIdx: Int, data: java.sql.Date): Unit = chunkWriter.writeLong(data.getTime)
-
   override def put(colIdx: Int, data: String): Unit = chunkWriter.writeString(data)
 
   override def putNA(columnIdx: Int, sparkIdx: Int): Unit = chunkWriter.writeNA(expectedTypes(sparkIdx))

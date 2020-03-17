@@ -20,7 +20,7 @@ package org.apache.spark.h2o.converters
 import java.io.File
 import java.sql.Timestamp
 import java.util
-import java.util.UUID
+import java.util.{TimeZone, UUID}
 
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import hex.splitframe.ShuffleSplitFrame
@@ -30,6 +30,7 @@ import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
@@ -114,7 +115,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val dataFrame = hc.asDataFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
-    assert(dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == 1428517566L)
+    val localtime = DateTimeUtils.toUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
+    assert(dataFrame.take(4)(3)(0).asInstanceOf[Timestamp].getTime == localtime)
     assert(dataFrame.schema.fields(0) match {
       case StructField("C0", TimestampType, false, _) => true
       case _ => false
@@ -385,7 +387,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).isTime)
 
     val numericVec = h2oFrame.vec(0).toNumericVec
-    val values = dates.indices.map(i => new java.sql.Date(numericVec.at8(i)).toString)
+    def toUTC(time: Long): Long = DateTimeUtils.toUTCTime(time * 1000, TimeZone.getDefault.getID) / 1000
+    val values = dates.indices.map(i => new java.sql.Date(toUTC(numericVec.at8(i))).toString)
+    dates.indices.foreach(i => println(numericVec.at8(i)))
     values.sorted shouldEqual dates.sorted
   }
 
@@ -724,7 +728,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val hf = hc.asH2OFrame(df)
     assert(hf.numRows() == 1)
     assert(hf.numCols() == 1)
-    assert(hf.vec(0).at8(0) == Date.valueOf("2016-12-24").getTime)
+    val expectedValue = DateTimeUtils.fromUTCTime(Date.valueOf("2016-12-24").getTime * 1000, TimeZone.getDefault.getID) / 1000
+    assert(hf.vec(0).at8(0) == expectedValue)
   }
 
   test("SW-310 Decimal(2,1) not compatible in h2o frame") {

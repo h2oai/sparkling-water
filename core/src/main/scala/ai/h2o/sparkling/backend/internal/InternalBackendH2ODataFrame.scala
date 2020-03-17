@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend.internal
 
+import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.shared.{H2ODataFrameBase, Reader}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.h2o.utils.ReflectionUtils
@@ -43,6 +44,8 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
   def this(@transient frame: T)
           (@transient hc: H2OContext) = this(frame, null)(hc)
 
+  private val sparkTimeZone = SparkTimeZone.current()
+
   H2OFrameSupport.lockAndUpdate(frame)
   private val colNames = frame.names()
   protected override val types: Array[DataType] = frame.vecs map ReflectionUtils.dataTypeFor
@@ -54,7 +57,7 @@ private[backend] class InternalBackendH2ODataFrame[T <: water.fvec.Frame](@trans
   }) toArray
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = new H2ODataFrameIterator {
-    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index)
+    override val reader: Reader = new InternalBackendReader(frameKeyName, split.index, sparkTimeZone)
   }
 
   protected override def indexToSupportedType(index: Int): SupportedType = {

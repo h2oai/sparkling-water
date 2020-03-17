@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.util.TimeZone
+
 import ai.h2o.sparkling.backend.shared.Reader
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
 import ai.h2o.sparkling.frame.H2OChunk
@@ -31,7 +33,7 @@ import org.apache.spark.h2o.utils.NodeDesc
  */
 class ExternalBackendReader(override val keyName: String, override val chunkIdx: Int, override val numRows: Int,
                             val nodeDesc: NodeDesc, expectedTypes: Array[Byte], selectedColumnIndices: Array[Int],
-                            val conf: H2OConf)
+                            val conf: H2OConf, val sparkTimeZone: TimeZone)
   extends Reader {
   override type DataSource = ChunkAutoBufferReader
 

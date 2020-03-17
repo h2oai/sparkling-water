@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend.external
 
+import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.shared.{H2ODataFrameBase, Reader}
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
@@ -39,6 +40,7 @@ private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requ
   extends RDD[InternalRow](hc.sparkContext, Nil) with H2ODataFrameBase with ExternalBackendSparkEntity {
 
   private val h2oConf = hc.getConf
+  private val sparkTimeZone = SparkTimeZone.current()
 
   def this(frame: H2OFrame)(@transient hc: H2OContext) = this(frame, null)(hc)
 
@@ -64,7 +66,7 @@ private[backend] class ExternalBackendH2ODataFrame(val frame: H2OFrame, val requ
     new H2ODataFrameIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
       override val reader: Reader = new ExternalBackendReader(frameKeyName, split.index, chnk.numberOfRows,
-        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf)
+        chnk.location, expectedTypes.get, selectedColumnIndices, h2oConf, sparkTimeZone)
     }
   }
 
