@@ -18,15 +18,14 @@
 package ai.h2o.sparkling.backend
 
 import java.io.Closeable
-import java.util.TimeZone
 
 import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.H2OFrame.query
-import ai.h2o.sparkling.backend.converters.TimeZoneConverter
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3
-import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
+import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneConverter}
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ChunkSerdeConstants, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.{H2OConf, RDD}
@@ -113,15 +112,16 @@ private[backend] object Writer {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val numRows = partitionSizes(context.partitionId())
     withResource(new Writer(uploadPlan(chunkIdx), metadata, numRows, chunkIdx)) { writer =>
+      val domainBuilder = new CategoricalDomainBuilder()
       it.foreach { row =>
-        sparkRowToH2ORow(row, writer, metadata.timezone)
+        sparkRowToH2ORow(row, writer, metadata, domainBuilder)
       }
     }
     (chunkIdx, numRows)
   }
 
-  private def sparkRowToH2ORow(row: Row, con: Writer, timezone: TimeZone): Unit = {
-    val timeZoneConverter = new TimeZoneConverter(timezone)
+  private def sparkRowToH2ORow(row: Row, con: Writer, metadata: WriterMetadata, domainBuilder: CategoricalDomainBuilder): Unit = {
+    val timeZoneConverter = new TimeZoneConverter(metadata.timezone)
     row.schema.fields.zipWithIndex.foreach {
       case (entry, idxField) =>
         if (row.isNullAt(idxField)) {
@@ -136,7 +136,12 @@ private[backend] object Writer {
             case FloatType => con.put(row.getFloat(idxField))
             case _: DecimalType => con.put(row.getDecimal(idxField).doubleValue())
             case DoubleType => con.put(row.getDouble(idxField))
-            case StringType => con.put(row.getString(idxField))
+            case StringType => metadata.expectedTypes(idxField) match {
+            case ChunkSerdeConstants.EXPECTED_STRING => con.put(row.getString(idxField))
+            case ChunkSerdeConstants.EXPECTED_CATEGORICAL =>
+              val valueIndex = domainBuilder.stringToIndex(row.getString(idxField), idxField)
+              con.put(valueIndex)
+          }
             case TimestampType =>
               con.put(timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Timestamp](idxField)))
             case DateType => con.put(timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Date](idxField)))

@@ -28,6 +28,7 @@ object SerdeUtils {
           EXPECTED_FLOAT | EXPECTED_DOUBLE =>
         Array(Vec.T_NUM)
       case EXPECTED_STRING => Array(Vec.T_STR)
+      case EXPECTED_CATEGORICAL => Array(Vec.T_CAT)
       case EXPECTED_TIMESTAMP => Array(Vec.T_TIME)
       case EXPECTED_VECTOR =>
         val result = Array.fill(vecElemSizes(vecCount))(Vec.T_NUM)
