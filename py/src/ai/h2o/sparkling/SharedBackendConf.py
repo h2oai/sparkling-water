@@ -314,7 +314,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.ignoreSparkPublicDNS()
 
     def ignoreSparkPublicDNS(self):
-        warnings.warn("Method 'ignoreSparkPublicDNS' is deprecated in release 3.30 without replacement.")
+        warnings.warn("Method 'ignoreSparkPublicDNS' is deprecated. It will be removed in the release 3.30 without replacement.")
         return self._jconf.ignoreSparkPublicDNS()
 
     def client_web_enabled(self):
@@ -810,7 +810,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setIgnoreSparkPublicDNSEnabled()
 
     def setIgnoreSparkPublicDNSEnabled(self):
-        warnings.warn("Method 'setIgnoreSparkPublicDNSEnabled' is deprecated in release 3.30 without replacement.")
+        warnings.warn("Method 'etIgnoreSparkPublicDNSEnabled' is deprecated. It will be removed in the release 3.30 without replacement.")
         self._jconf.setIgnoreSparkPublicDNSEnabled()
         return self
 
@@ -819,7 +819,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setIgnoreSparkPublicDNSDisabled()
 
     def setIgnoreSparkPublicDNSDisabled(self):
-        warnings.warn("Method 'setIgnoreSparkPublicDNSDisabled' is deprecated in release 3.30 without replacement.")
+        warnings.warn("Method 'setIgnoreSparkPublicDNSDisabled' is deprecated. It will be removed in the release 3.30 without replacement.")
         self._jconf.setIgnoreSparkPublicDNSDisabled()
         return self
 

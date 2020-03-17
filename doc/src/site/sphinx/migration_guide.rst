@@ -254,6 +254,10 @@ Removal of Deprecated Methods and Classes
 - On ``H2OXGboost`` Scala and Python API, the methods ``getLearnRateAnnealing`` and ``setLearnRateAnnealing`` are removed
   without replacement as this parameter is currently not exposed in H2O.
 
+- The methods ``ignoreSparkPublicDNS``, ``setIgnoreSparkPublicDNSEnabled`` and ``setIgnoreSparkPublicDNSDisabled`` are
+  removed without replacement as they are no longer required. Also the option ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``
+  does not have any effect anymore.
+
 From 3.28.0 to 3.28.1
 ---------------------
 
