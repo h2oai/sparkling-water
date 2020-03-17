@@ -15,24 +15,28 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.extensions.serde
+package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants._
-import water.fvec.Vec
+import scala.collection.mutable
 
-object SerdeUtils {
-  private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Byte] = {
-    var vecCount = 0
-    expectedTypes.flatMap {
-      case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-           EXPECTED_FLOAT | EXPECTED_DOUBLE => Array(Vec.T_NUM)
-      case EXPECTED_STRING => Array(Vec.T_STR)
-      case EXPECTED_CATEGORICAL => Array(Vec.T_CAT)
-      case EXPECTED_TIMESTAMP => Array(Vec.T_TIME)
-      case EXPECTED_VECTOR =>
-        val result = Array.fill(vecElemSizes(vecCount))(Vec.T_NUM)
-        vecCount += 1
-        result
-    }
+/**
+ * This class is not thread safe.
+ */
+class CategoricalDomainBuilder() {
+
+  private val domains = mutable.ArrayBuffer[mutable.LinkedHashMap[String, Int]]()
+
+  private val indexMapping = mutable.OpenHashMap[Int, Int]()
+
+  def stringToIndex(value: String, columnIndex: Int): Int = {
+    val domainIndex = indexMapping.getOrElseUpdate(columnIndex, {
+      val result = domains.size
+      domains.append(mutable.LinkedHashMap[String, Int]())
+      result
+    })
+    val domain = domains(domainIndex)
+    domain.getOrElseUpdate(value, domain.size)
   }
+
+  def getDomains(): Array[Array[String]] = domains.map(_.keys.toArray).toArray
 }
