@@ -136,13 +136,14 @@ final class ChunkServlet extends HttpServlet {
   /*
    * The method handles handles POST requests for the path /3/Chunk and serves for downloading chunks.
    * The POST method was select over the GET method due to unlimited size of requests (wide columns).
-   * It requires 4 POST parameters
+   * It requires 6 POST parameters
    * - frame_name - a unique string identifier of H2O Frame
+   * - num_rows - a number of rows forming by the body  of the response
    * - chunk_id - a unique identifier of the chunk within the H2O Frame
    * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
    * - selected_columns - selected columns indices encoded into Base64 encoding.
-   * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
-   * The data stream starts with the integer representing the number of rows.
+   * - compression - a type of compression applied on the body of the response.
+   * The result is represented as a stream of binary data. Data is encoded to AutoBuffer row by row.
    */
   override protected def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = {
     processRequest(request, response) {
@@ -207,13 +208,14 @@ final class ChunkServlet extends HttpServlet {
 
   /*
    * The method handles handles PUT requests for the path /3/Chunk
-   * It requires 4 get parameters
+   * It requires 6 GET parameters
    * - frame_name - a unique string identifier of H2O Frame
+   * - num_rows - a number of rows forming by the body  of the request
    * - chunk_id - a unique identifier of the chunk within the H2O Frame
    * - expected_type - byte array encoded in Base64 encoding. The types corresponds to the `selected_columns` parameter
    * - maximum_vector_sizes - maximum vector sizes for each vector column encoded into Base64 encoding.
-   * The result is represented as a stream of binary data. Data are encoded to AutoBuffer row by row.
-   * The data stream starts with the integer representing the number of rows.
+   * - compression - a type of compression applied on the body of the request.
+   * The request is represented as a stream of binary data. Data is encoded to AutoBuffer row by row.
    */
   override def doPut(request: HttpServletRequest, response: HttpServletResponse): Unit = {
     processRequest(request, response) {
