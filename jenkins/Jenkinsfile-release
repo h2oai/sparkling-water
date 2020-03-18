@@ -29,24 +29,22 @@ def getS3Path() {
     return sh(script: "./gradlew -q s3path", returnStdout: true).trim()
 }
 
-def getParallelStageDefinition(params){
+def getParallelStageDefinition(params) {
     return {
-        stage ("Spark ${params.spark}") {
-            node('docker') {
-                docker.withRegistry("http://harbor.h2o.ai") {
-                    ansiColor('xterm') {
-                        timestamps {
-                            ws("${env.WORKSPACE}-spark-${params.spark}") {
-                                withDocker {
-                                    sh "git pull"
-                                    build()(params)
-                                    buildConda()(params)
-                                    publishToNexus()(params)
-                                    publishToS3()(params)
-                                    updateDocLinks()(params)
-                                    publishToPipy()(params)
-                                    publishToConda()(params)
-                                }
+        stage("Spark ${params.spark}") {
+            docker.withRegistry("http://harbor.h2o.ai") {
+                ansiColor('xterm') {
+                    timestamps {
+                        ws("${env.WORKSPACE}-spark-${params.spark}") {
+                            withDocker {
+                                sh "git pull"
+                                build()(params)
+                                buildConda()(params)
+                                publishToNexus()(params)
+                                publishToS3()(params)
+                                updateDocLinks()(params)
+                                publishToPipy()(params)
+                                publishToConda()(params)
                             }
                         }
                     }
@@ -236,23 +234,23 @@ sparkMajorVersions.each { version ->
     parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
 }
 
-updateChangeLogStage(sparkMajorVersions)(params)
-parallel(parallelStages)
-updateRelVersionStage()(params)
+node('docker') {
+    updateChangeLogStage(sparkMajorVersions)(params)
+    parallel(parallelStages)
+    updateRelVersionStage()(params)
+}
 
 def updateChangeLogStage(sparkMajorVersions) {
     return { params ->
         stage('Update Change Log') {
             if (params.updateChangeLog.toBoolean()) {
-                node("docker") {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        ansiColor('xterm') {
-                            cleanWs()
-                            checkout scm
-                            timestamps {
-                                withDocker {
-                                    prepareReleaseNotes(sparkMajorVersions)
-                                }
+                docker.withRegistry("http://harbor.h2o.ai") {
+                    ansiColor('xterm') {
+                        cleanWs()
+                        checkout scm
+                        timestamps {
+                            withDocker {
+                                prepareReleaseNotes(sparkMajorVersions)
                             }
                         }
                     }
@@ -266,13 +264,11 @@ def updateRelVersionStage() {
     return { params ->
         stage('Update Next Release Version') {
             if (params.releaseOnGithub.toBoolean()) {
-                node("docker") {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        ansiColor('xterm') {
-                            timestamps {
-                                withDocker {
-                                    updateNexRelVersion(params)
-                                }
+                docker.withRegistry("http://harbor.h2o.ai") {
+                    ansiColor('xterm') {
+                        timestamps {
+                            withDocker {
+                                updateNexRelVersion(params)
                             }
                         }
                     }
