@@ -27,7 +27,6 @@ import water.fvec.Vec
 import water.parser.{BufferedString, PreviewParseWriter}
 
 private[backend] object DataTypeConverter {
-  private class CategoricalPreviewWriter extends PreviewParseWriter
 
   private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, Byte] = {
     val stringTypeIndices = for {
