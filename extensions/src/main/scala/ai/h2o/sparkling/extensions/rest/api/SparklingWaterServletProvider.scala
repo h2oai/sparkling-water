@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import java.util
-import java.util.Collections
 
 import water.server.{ServletMeta, ServletProvider}
 
@@ -29,6 +28,9 @@ class SparklingWaterServletProvider extends ServletProvider {
    * @return a map of context path to a Servlet class
    */
   override def servlets(): util.List[ServletMeta] = {
-    Collections.singletonList(new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]))
+    val result = new util.ArrayList[ServletMeta](2)
+    result.add(new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]))
+    result.add(new ServletMeta(Paths.CHUNK_CATEGORICAL_DOMAINS, classOf[ChunkCategoricalDomainsServlet]))
+    result
   }
 }

@@ -22,20 +22,21 @@ import java.io.{InputStream, OutputStream}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.spark.h2o.H2OConf
+import water.AutoBuffer
 
 
 private[sparkling] case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
 
 private[sparkling] object H2OChunk extends RestCommunication {
-  def getChunkAsInputStream(
-                             node: NodeDesc,
-                             conf: H2OConf,
-                             frameName: String,
-                             numRows: Int,
-                             chunkId: Int,
-                             expectedTypes: Array[Byte],
-                             selectedColumnsIndices: Array[Int]): InputStream = {
+  def getChunkAsInputStream(node: NodeDesc,
+                            conf: H2OConf,
+                            frameName: String,
+                            numRows: Int,
+                            chunkId: Int,
+                            expectedTypes: Array[Byte],
+                            selectedColumnsIndices: Array[Int]): InputStream = {
     val expectedTypesString = Base64Encoding.encode(expectedTypes)
     val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
 
@@ -52,14 +53,13 @@ private[sparkling] object H2OChunk extends RestCommunication {
     Compression.decompress(conf.externalCommunicationCompression, inputStream)
   }
 
-  def putChunk(
-                node: NodeDesc,
-                conf: H2OConf,
-                frameName: String,
-                numRows: Int,
-                chunkId: Int,
-                expectedTypes: Array[Byte],
-                maxVecSizes: Array[Int]): OutputStream = {
+  def putChunk(node: NodeDesc,
+               conf: H2OConf,
+               frameName: String,
+               numRows: Int,
+               chunkId: Int,
+               expectedTypes: Array[Byte],
+               maxVecSizes: Array[Int]): OutputStream = {
     val expectedTypesString = Base64Encoding.encode(expectedTypes)
     val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
 
@@ -75,5 +75,24 @@ private[sparkling] object H2OChunk extends RestCommunication {
     val addCompression =
       (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
     insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
+  }
+
+  def putChunkCategoricalDomains(node: NodeDesc,
+                                 conf: H2OConf,
+                                 frameName: String,
+                                 chunkId: Int,
+                                 domains: Array[Array[String]]): Unit = {
+    val parameters = Map(
+      "frame_name" -> frameName,
+      "chunk_id" -> chunkId,
+      "compression" -> conf.externalCommunicationCompression)
+    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
+    val addCompression =
+      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
+    withResource(insert(endpoint, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, addCompression, parameters)) { outputStream =>
+      withResource(new AutoBuffer(outputStream, false)) { buffer =>
+        buffer.putAAStr(domains)
+      }
+    }
   }
 }
