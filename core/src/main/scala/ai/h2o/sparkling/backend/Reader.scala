@@ -65,9 +65,9 @@ private[backend] class Reader(keyName: String,
 
   protected def doubleAt(source: ChunkAutoBufferReader): Double = source.readDouble()
 
-  protected def string(source: ChunkAutoBufferReader) = source.readString()
+  protected def string(source: ChunkAutoBufferReader): String = source.readString()
 
-  protected def utfString(source: ChunkAutoBufferReader) = UTF8String.fromString(string(source))
+  protected def utfString(source: ChunkAutoBufferReader): UTF8String = UTF8String.fromString(string(source))
 
   protected def timestamp(source: ChunkAutoBufferReader): Long = fromUTCToSparkTimeZone(longAt(source) * 1000)
 
