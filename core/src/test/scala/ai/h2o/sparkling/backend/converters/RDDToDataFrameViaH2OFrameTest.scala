@@ -15,13 +15,13 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.IntHolder
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import water.{Key, MRTask}
+import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
 
 /**

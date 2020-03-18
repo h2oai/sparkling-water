@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
 import java.io.File
 import java.sql.Timestamp
@@ -22,6 +22,7 @@ import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
+import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.h2o.utils._
 import org.apache.spark.h2o.{ByteHolder, DoubleHolder, IntHolder, ShortHolder, StringHolder}
 import org.apache.spark.mllib.linalg.Vectors
@@ -33,7 +34,6 @@ import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
-import org.apache.spark.h2o.utils.TestFrameUtils._
 /**
   * Testing schema for rdd  to h2o frame transformations.
   */

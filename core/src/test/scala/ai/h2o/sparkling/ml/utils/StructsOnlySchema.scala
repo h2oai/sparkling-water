@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.utils.schemas
+package ai.h2o.sparkling.ml.utils
 
 import org.apache.spark.h2o.utils.TestFrameUtils
 import org.apache.spark.sql.types._

@@ -14,23 +14,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o
+package ai.h2o.sparkling.ml.utils
 
-import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ArrayType, DoubleType, IntegerType, MapType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
-import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
  * Set of test for various DataFrame's schema-related methods.
  */
 @RunWith(classOf[JUnitRunner])
-class H2OSchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext {
+class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext {
 
   sc = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 

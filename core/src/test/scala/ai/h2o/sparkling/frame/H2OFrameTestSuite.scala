@@ -14,9 +14,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling
+package ai.h2o.sparkling.frame
 
-import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
@@ -25,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
-class FrameRestApiTestSuite extends FunSuite with SharedH2OTestContext {
+class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
     conf = defaultSparkConf
       .set("spark.ext.h2o.rest.api.based.client", "true"))

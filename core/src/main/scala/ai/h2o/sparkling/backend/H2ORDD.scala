@@ -27,10 +27,8 @@ import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.annotation.meta.{field, getter, param}
-import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-
 
 /**
  * Convert H2OFrame into an RDD (lazily).

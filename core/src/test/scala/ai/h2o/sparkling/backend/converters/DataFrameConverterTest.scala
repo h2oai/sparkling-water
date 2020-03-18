@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
 import java.io.File
 import java.sql.Timestamp
@@ -27,7 +27,7 @@ import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
@@ -40,6 +40,7 @@ import water.Key
 import water.api.TestUtils
 import water.fvec._
 import water.parser.BufferedString
+import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 
 /**
   * Testing Conversions between H2OFrame and Spark DataFrame
@@ -660,9 +661,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
         org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
     }
     val schema = StructType(Seq(
-      StructField("f1", new org.apache.spark.ml.linalg.VectorUDT),
+      StructField("f1", VectorType),
       StructField("idx", IntegerType, nullable = false),
-      StructField("f2", new org.apache.spark.ml.linalg.VectorUDT)
+      StructField("f2", VectorType)
     ))
     val df = spark.createDataFrame(rdd, schema)
 
@@ -783,8 +784,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
   test("Test conversion of DataFrame to H2OFrame and back with a high number of columns"){
-    import spark.implicits._
     import org.apache.spark.sql.functions._
+    import spark.implicits._
     val numCols = 20000
     val cols = (1 to numCols).map(n => $"_tmp".getItem(n).as("col" + n))
 

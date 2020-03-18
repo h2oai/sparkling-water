@@ -15,11 +15,12 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -28,7 +29,6 @@ import water.parser.BufferedString
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-import org.apache.spark.h2o.utils.TestFrameUtils._
 
 /**
  * Testing schema for h2o schema spark dataset transformation.

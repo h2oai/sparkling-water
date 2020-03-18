@@ -15,16 +15,16 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.converters
+package ai.h2o.sparkling.backend.converters
 
-import org.apache.spark.{ExposeUtils, SparkContext}
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.{ExposeUtils, SparkContext}
 import org.scalatest.{FunSuite, Matchers}
-
+import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
@@ -89,8 +89,8 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     ColumnSpecification(StructField("Dates", DateType, false), generateDates))
 
   val vectorColumns = Seq(
-    ColumnSpecification(StructField("SparseVectors", new VectorUDT, false), generateSparseVectors),
-    ColumnSpecification(StructField("DenseVectors", new VectorUDT, false), generateDenseVectors))
+    ColumnSpecification(StructField("SparseVectors", VectorType, false), generateSparseVectors),
+    ColumnSpecification(StructField("DenseVectors", VectorType, false), generateDenseVectors))
 
 
   val simpleColumnsWithNulls = simpleColumns.map { case ColumnSpecification(field, valueGenerator) =>

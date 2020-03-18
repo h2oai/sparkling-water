@@ -18,7 +18,7 @@ package org.apache.spark.h2o
 
 import org.apache.spark.h2o.utils.ReflectionUtils._
 import org.apache.spark.h2o.utils.SupportedTypes._
-import org.apache.spark.h2o.utils.{OldH2OTypeUtils, OldReflectionUtils, SupportedTypes}
+import org.apache.spark.h2o.utils.SupportedTypes
 import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -32,22 +32,6 @@ import scala.reflect.runtime.universe._
 @RunWith(classOf[JUnitRunner])
 class SupportedTypesTest extends FunSuite {
 
-  test("Compare ClassIndex with the old version") {
-    val oldKeys = OldH2OTypeUtils.dataTypeToVecType.keySet
-    val newKeys = byClass.keySet
-    assert(oldKeys.diff(newKeys).isEmpty)
-    assert(OldH2OTypeUtils.dataTypeToVecType == byClass.filterKeys(oldKeys.contains).mapValues(_.vecType))
-  }
-
-  test("Compare with oldVersion of dataTypeTOVecType") {
-    import org.apache.spark.sql.types._
-    val samples = ByteType :: ShortType :: IntegerType :: LongType :: FloatType :: DoubleType :: StringType :: TimestampType :: Nil
-    val oldStuff = samples map OldReflectionUtils.dataTypeToVecType
-    val newStuff = samples map bySparkType map (_.vecType)
-    assert(oldStuff == newStuff)
-  }
-
-  // TODO(vlad): move to ReflectionUtilsTest
   test("Infer type from a value") {
     def mustBe[T](expected: SupportedType, value: T) = assert(supportedTypeOf(value) == expected)
 

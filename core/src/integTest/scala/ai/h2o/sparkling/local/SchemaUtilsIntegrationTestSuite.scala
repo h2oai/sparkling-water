@@ -17,8 +17,7 @@
 
 package ai.h2o.sparkling.local
 
-import ai.h2o.sparkling.ml.utils.SchemaUtils
-import ai.h2o.sparkling.utils.schemas.ComplexSchema
+import ai.h2o.sparkling.ml.utils.{ComplexSchema, SchemaUtils}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
@@ -29,7 +28,7 @@ import org.scalatest.{FunSuite, Matchers}
 import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class H2OSchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class SchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
   private val conf = defaultSparkConf
     .set("spark.executor.memory", "1g")
     .set("spark.driver.memory", "2g")

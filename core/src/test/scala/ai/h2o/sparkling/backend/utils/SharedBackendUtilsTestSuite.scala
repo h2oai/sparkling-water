@@ -15,9 +15,8 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.backends
+package ai.h2o.sparkling.backend.utils
 
-import ai.h2o.sparkling.backend.utils.SharedBackendUtils
 import org.scalatest.{FunSuite, Matchers}
 
 class SharedBackendUtilsTestSuite extends FunSuite with Matchers with SharedBackendUtils {
