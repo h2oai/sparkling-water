@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.bench
 
 import ai.h2o.sparkling.ml.utils.{FlatArraysOnlySchema, FlatSchema, SchemaUtils, StructsOnlySchema}
-import ai.h2o.sparkling.utils.schemas._
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
