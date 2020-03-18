@@ -37,9 +37,6 @@ def getParallelStageDefinition(params){
                     ansiColor('xterm') {
                         timestamps {
                             ws("${env.WORKSPACE}-spark-${params.spark}") {
-
-                                cleanWs()
-                                checkout scm
                                 withDocker {
                                     sh "git pull"
                                     build()(params)
@@ -250,6 +247,8 @@ def updateChangeLogStage(sparkMajorVersions) {
                 node("docker") {
                     docker.withRegistry("http://harbor.h2o.ai") {
                         ansiColor('xterm') {
+                            cleanWs()
+                            checkout scm
                             timestamps {
                                 withDocker {
                                     prepareReleaseNotes(sparkMajorVersions)
