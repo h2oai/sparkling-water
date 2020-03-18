@@ -12,5 +12,4 @@ public class RDD2H2OFrameIDV3 extends Schema<IcedRDD2H2OFrameID, RDD2H2OFrameIDV
 
     @API(help = "Id of transformed H2OFrame", direction = API.Direction.INOUT)
     public String h2oframe_id;
-
 }

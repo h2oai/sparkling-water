@@ -25,7 +25,7 @@ import water.api.schemas3.JobV3;
  * Schema representing [POST] /3/scalaint/&lt;session_id&gt; endpoint.
  */
 public class ScalaCodeV3 extends Schema<IcedCode, ScalaCodeV3> {
-
+    
     @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INPUT)
     public int session_id;
 
@@ -47,6 +47,4 @@ public class ScalaCodeV3 extends Schema<IcedCode, ScalaCodeV3> {
 
     @API(help = "Job responsible for executing the Scala code", direction = API.Direction.OUTPUT)
     public JobV3 job;
-
 }
-

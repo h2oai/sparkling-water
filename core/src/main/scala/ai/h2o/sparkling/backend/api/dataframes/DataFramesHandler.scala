@@ -98,7 +98,5 @@ object DataFramesHandler {
     context.registerEndpoint("dataFrametoH2OFrame", "POST",
       "/3/dataframes/{dataframe_id}/h2oframe", classOf[DataFramesHandler], "toH2OFrame",
       "Transform Spark's DataFrame with the given ID to H2OFrame", dataFramesfactory)
-
   }
-
 }

@@ -34,11 +34,11 @@ import scala.collection.concurrent.TrieMap
  */
 class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
-  val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum
-  val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
-  var mapIntr = new TrieMap[Int, H2OInterpreter]
-  var lastIdUsed = new AtomicInteger(0)
-  var jobCount = new AtomicInteger(0)
+  private val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum
+  private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
+  private var mapIntr = new TrieMap[Int, H2OInterpreter]
+  private val lastIdUsed = new AtomicInteger(0)
+  private val jobCount = new AtomicInteger(0)
   initializeInterpreterPool()
 
   def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
@@ -192,7 +192,4 @@ object ScalaCodeHandler {
     context.registerEndpoint("getScalaCodeResult", "POST", "/3/scalaint/result/{result_key}",
       classOf[ScalaCodeHandler], "getScalaCodeResult", "Get Scala code result for desired job", scalaCodeFactory)
   }
-
 }
-
-
