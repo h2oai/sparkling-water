@@ -78,4 +78,3 @@ object H2OChunk extends RestCommunication {
     insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
   }
 }
-

@@ -20,7 +20,7 @@ package ai.h2o.sparkling.backend.utils
 import java.io._
 import java.net.{HttpURLConnection, URI, URL}
 
-import ai.h2o.sparkling.backend.exceptions.{RestApiCommunicationException, RestApiException, RestApiNotReachableException, RestApiUnauthorisedException}
+import ai.h2o.sparkling.backend.exceptions._
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}

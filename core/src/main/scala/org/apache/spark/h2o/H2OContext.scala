@@ -61,7 +61,7 @@ import scala.util.control.NoStackTrace
 /**
  * Create new H2OContext based on provided H2O configuration
  *
- * @param conf         H2O configuration
+ * @param conf H2O configuration
  */
 class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions {
   self =>

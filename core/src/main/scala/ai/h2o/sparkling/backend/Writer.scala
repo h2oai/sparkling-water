@@ -75,10 +75,8 @@ private[backend] class Writer(nodeDesc: NodeDesc,
 
   def putVector(vector: ml.linalg.Vector): Unit = {
     vector match {
-      case sparseVector: ml.linalg.SparseVector =>
-        putSparseVector(sparseVector)
-      case denseVector: ml.linalg.DenseVector =>
-        putDenseVector(denseVector)
+      case sparseVector: ml.linalg.SparseVector => putSparseVector(sparseVector)
+      case denseVector: ml.linalg.DenseVector => putDenseVector(denseVector)
     }
   }
 
@@ -139,7 +137,7 @@ private[backend] object Writer {
           case _: mllib.linalg.VectorUDT => con.putVector(row.getAs[mllib.linalg.Vector](idxField))
           case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
           case unsupported => throw new UnsupportedOperationException(s"Data of type ${unsupported.getClass} are not supported for the conversion" +
-            s"to H2OFrame.")
+            s" to H2OFrame.")
         }
       }
     }
