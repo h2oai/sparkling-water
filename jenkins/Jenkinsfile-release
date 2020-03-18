@@ -213,28 +213,25 @@ def updateNexRelVersion(params) {
 //
 
 def sparkMajorVersions
-node("docker") {
+node("docker && micro") {
     cleanWs()
     checkout scm
     def versionLine = readFile("gradle.properties")
             .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
     sparkMajorVersions = versionLine.split("=")[1].split(" ")
-}
 
+    if (params.releaseFor.toString() != "all") {
+        sparkMajorVersions = params.releaseFor.split(" ")
+    }
 
-if (params.releaseFor.toString() != "all") {
-    sparkMajorVersions = params.releaseFor.split(" ")
-}
+    parallelStages = [:]
+    sparkMajorVersions.each { version ->
+        config = [:]
+        params.each { k, v -> config[k] = v }
+        config["spark"] = version
+        parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
+    }
 
-parallelStages = [:]
-sparkMajorVersions.each { version ->
-    config = [:]
-    params.each { k, v -> config[k] = v }
-    config["spark"] = version
-    parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
-}
-
-node('docker') {
     updateChangeLogStage(sparkMajorVersions)(params)
     parallel(parallelStages)
     updateRelVersionStage()(params)
@@ -246,8 +243,6 @@ def updateChangeLogStage(sparkMajorVersions) {
             if (params.updateChangeLog.toBoolean()) {
                 docker.withRegistry("http://harbor.h2o.ai") {
                     ansiColor('xterm') {
-                        cleanWs()
-                        checkout scm
                         timestamps {
                             withDocker {
                                 prepareReleaseNotes(sparkMajorVersions)
