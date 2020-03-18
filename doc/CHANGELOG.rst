@@ -1,6 +1,39 @@
 Change Log
 ==========
 
+v3.28.1.2-1 (2020-03-18)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.2-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-2050 <https://0xdata.atlassian.net/browse/SW-2050>`__ - Fix Timezone Handling via Conversions to UTC
+   -  `SW-2063 <https://0xdata.atlassian.net/browse/SW-2063>`__ - Fix release path on s3
+   -  `SW-2064 <https://0xdata.atlassian.net/browse/SW-2064>`__ - asDataFrame() Conversion Function Throws Exception on Wide Datasets
+   -  `SW-2065 <https://0xdata.atlassian.net/browse/SW-2065>`__ - Fix Deployment of Artifacts to Maven Central
+   -  `SW-2070 <https://0xdata.atlassian.net/browse/SW-2070>`__ - Time shift occurring between spark and h2o frame
+   -  `SW-2072 <https://0xdata.atlassian.net/browse/SW-2072>`__ - ExternalBackend Converts DateType to Numeric
+   -  `SW-2076 <https://0xdata.atlassian.net/browse/SW-2076>`__ - H2O Transformers do not sanitize feature columns 
+                
+-  New Feature
+        
+   -  `SW-2067 <https://0xdata.atlassian.net/browse/SW-2067>`__ - Propagate Timezone Settings from Spark to H2O
+   -  `SW-2078 <https://0xdata.atlassian.net/browse/SW-2078>`__ - Upgrade to H2O 3.28.1.2
+                
+-  Improvement
+        
+   -  `SW-2073 <https://0xdata.atlassian.net/browse/SW-2073>`__ - Deprecate Implicit Switch to External Backend when H2OConf.setH2OCluster is Called
+   -  `SW-2075 <https://0xdata.atlassian.net/browse/SW-2075>`__ - Deprecate ignorePublicDNS option as in 3.30 it is no longer required
+                
+-  Engineering Story
+        
+   -  `SW-2058 <https://0xdata.atlassian.net/browse/SW-2058>`__ - Add More Test Cases into Data Conversion Benchmarks
+                
+                            
 v3.28.1.1-1 (2020-03-06)
 ------------------------
 Downloads:
