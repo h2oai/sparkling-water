@@ -27,6 +27,8 @@ import water.fvec.Vec
 import water.parser.{BufferedString, PreviewParseWriter}
 
 private[backend] object DataTypeConverter {
+  private class CategoricalPreviewWriter extends PreviewParseWriter
+
   private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, Byte] = {
     val stringTypeIndices = for {
       (field, index) <- schema.fields.zipWithIndex
@@ -34,8 +36,8 @@ private[backend] object DataTypeConverter {
     } yield index
 
     val preview = rdd
-      .mapPartitions[PreviewParseWriter](createPartitionPreview(_, stringTypeIndices))
-      .reduce(PreviewParseWriter.unifyColumnPreviews)
+      .mapPartitions[CategoricalPreviewWriter](createPartitionPreview(_, stringTypeIndices))
+      .reduce((a, b) => PreviewParseWriter.unifyColumnPreviews(a, b).asInstanceOf[CategoricalPreviewWriter])
 
     val types = preview.guessTypes().map {
       case Vec.T_STR => ChunkSerdeConstants.EXPECTED_STRING
@@ -45,8 +47,9 @@ private[backend] object DataTypeConverter {
     stringTypeIndices.zip(types).toMap
   }
 
-  private def createPartitionPreview(rows: Iterator[Row], stringTypeIndices: Array[Int]): Iterator[PreviewParseWriter] = {
-    val previewParseWriter = new PreviewParseWriter()
+  private def createPartitionPreview(rows: Iterator[Row],
+                                     stringTypeIndices: Array[Int]): Iterator[CategoricalPreviewWriter] = {
+    val previewParseWriter = new CategoricalPreviewWriter()
     val bufferedString = new BufferedString()
     while (rows.hasNext) {
       val row = rows.next()
