@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.extensions.rest.api
+package water.parser;
 
-object Paths {
-  val CHUNK: String = "/3/Chunk"
-  val CHUNK_CATEGORICAL_DOMAINS: String = "/3/ChunkCategoricalDomains"
-  val INITIALIZE_FRAME: String = "/3/InitializeFrame"
-  val FINALIZE_FRAME: String = "/3/FinalizeFrame"
-  val UPLOAD_PLAN: String = "/3/UploadPlan"
+import water.Key;
+import water.nbhm.NonBlockingHashMap;
+
+public final class LocalNodeDomains {
+    private static NonBlockingHashMap<Key, Categorical[]> domainsMap = new NonBlockingHashMap<>();
+
+    public static void addDomains(String frameName, int chunkId, String[][] domains) {
+        Key key = Key.make(frameName + "_" + chunkId);
+        Categorical[] result = new Categorical[domains.length];
+        for (int i = 0; i < domains.length; i++) {
+            String[] domain = domains[i];
+            Categorical categorical = new Categorical();
+            for (int j = 0; j < domain.length; j++) {
+                categorical.addKey(new BufferedString(domain[j]));
+            }
+            result[i] = categorical;
+        }
+        domainsMap.put(key, result);
+    }
 }
