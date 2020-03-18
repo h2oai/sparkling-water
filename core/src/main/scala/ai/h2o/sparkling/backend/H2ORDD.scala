@@ -49,7 +49,6 @@ private[backend] class H2ORDD[A <: Product : TypeTag : ClassTag] private(val fra
   private val h2oConf = hc.getConf
   private val sparkTimeZone = SparkTimeZone.current()
 
-  // Get product type before building an RDD
   def this(@transient frame: H2OFrame)
           (@transient hc: H2OContext) = this(frame, ProductType.create[A])(hc)
 
