@@ -56,7 +56,7 @@ private[backend] class H2ORDD[A <: Product : TypeTag : ClassTag] private(val fra
   override def compute(split: Partition, context: TaskContext): Iterator[A] = {
     new H2ORDDIterator {
       private val chnk = frame.chunks.find(_.index == split.index).head
-      override val reader: Reader = new Reader(frameId, split.index, chnk.numberOfRows,
+      override lazy val reader: Reader = new Reader(frameId, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes, selectedColumnIndices, h2oConf, sparkTimeZone)
     }
   }

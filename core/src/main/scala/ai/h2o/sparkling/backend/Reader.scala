@@ -35,7 +35,7 @@ private[backend] class Reader(keyName: String,
                               expectedTypes: Array[Byte],
                               selectedColumnIndices: Array[Int],
                               conf: H2OConf,
-                              val sparkTimeZone: TimeZone) extends TimeZoneConversions {
+                              protected val sparkTimeZone: TimeZone) extends TimeZoneConversions {
   /** Current row index */
   private var rowIdx: Int = 0
 

@@ -64,7 +64,7 @@ private[backend] class H2ODataFrame(val frame: H2OFrame, val requiredColumns: Ar
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {
     new H2OChunkIterator[InternalRow] {
       private val chnk = frame.chunks.find(_.index == split.index).head
-      override val reader: Reader = new Reader(frameId, split.index, chnk.numberOfRows,
+      override lazy val reader: Reader = new Reader(frameId, split.index, chnk.numberOfRows,
         chnk.location, expectedTypes, selectedColumnIndices, h2oConf, sparkTimeZone)
 
       private lazy val columnIndicesWithTypes: Array[(Int, SimpleType[_])] = {

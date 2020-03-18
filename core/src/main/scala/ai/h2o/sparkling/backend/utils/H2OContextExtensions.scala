@@ -29,7 +29,7 @@ import water.fvec.Frame
 
 trait H2OContextExtensions extends RestCommunication with RestApiUtils {
   _: H2OContext =>
-  
+
   def downloadH2OLogs(destinationDir: String, logContainer: String): String = {
     verifyLogContainer(logContainer)
     val endpoint = RestApiUtils.getClusterEndpoint(getConf)
