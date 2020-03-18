@@ -19,15 +19,17 @@ package ai.h2o.sparkling.backend.converters
 import java.io.File
 import java.sql.Timestamp
 
+import ai.h2o.sparkling.SparkTimeZone
 import org.apache.spark.SparkContext
+import org.apache.spark.h2o._
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.h2o.utils._
-import org.apache.spark.h2o.{ByteHolder, DoubleHolder, IntHolder, ShortHolder, StringHolder}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
@@ -454,13 +456,17 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   }
 
   test("RDD[java.sql.Timestamp] to H2OFrame[Time] and back") {
-    // Create RDD with 100 Timestamp values, 10 values per 1 Spark partition
+    // Create RDD with timestamp value in default timezone
     val rdd = sc.parallelize(1 to 100, 10).map(v => new Timestamp(v.toLong))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
-
-    val rddBack = hc.asRDD[IntHolder](h2oFrame).map{r => new Timestamp(r.result.get)}
-    assert(rdd.collect().sameElements(rddBack.collect()))
+    val timestamp = DateTimeUtils.toUTCTime(h2oFrame.vec(0).at8(0) * 1000, SparkTimeZone.current().getID) / 1000
+    assert(rdd.first().getTime == timestamp)
+    // the rdd back should have spark time zone set up because the h2o frame -> rdd respects the Spark timezone
+    import spark.implicits._
+    val rddBack = hc.asDataFrame(h2oFrame).map(_.getTimestamp(0)).rdd
+    val rddBackData = rddBack.collect()
+    assert(rdd.collect.sameElements(rddBackData))
     h2oFrame.delete()
   }
 
