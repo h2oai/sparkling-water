@@ -1,7 +1,6 @@
-package water.api.RDDs;
+package ai.h2o.sparkling.backend.api.rdds;
 
 import water.api.API;
-import water.api.DataFrames.IcedH2OFrameID;
 import water.api.Schema;
 
 /**

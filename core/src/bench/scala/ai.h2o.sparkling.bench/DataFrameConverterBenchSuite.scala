@@ -24,7 +24,6 @@ import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {

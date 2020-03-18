@@ -14,9 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api
+package ai.h2o.sparkling.backend.api
 
 import org.apache.spark.h2o.H2OContext
+import water.api.RestApiContext
 
 trait RestApi {
   def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit

@@ -14,14 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.RDDs
+package ai.h2o.sparkling.backend.api.dataframes
 
 import water.api.{API, Schema}
 
 /**
- * Schema representing [GET] /3/RDDs endpoint
+ * Schema representing /3/dataframes endpoint
  */
-class RDDsV3 extends Schema[RDDs, RDDsV3] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+class DataFramesV3 extends Schema[DataFrames, DataFramesV3] {
+  @API(help = "List of DataFrames", direction = API.Direction.OUTPUT)
+  val dataframes: Array[DataFrameV3] = null
 }

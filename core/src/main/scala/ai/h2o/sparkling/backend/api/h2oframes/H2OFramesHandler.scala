@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.H2OFrames
+package ai.h2o.sparkling.backend.api.h2oframes
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
@@ -25,8 +25,8 @@ import water.fvec.Frame
 import water.{DKV, Iced}
 
 /**
-  * Handler for all H2OFrame related queries
-  */
+ * Handler for all H2OFrame related queries
+ */
 class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
     val value = DKV.get(s.h2oframe_id)

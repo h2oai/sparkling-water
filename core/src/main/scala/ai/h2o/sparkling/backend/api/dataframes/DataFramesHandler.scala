@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.DataFrames
+package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
@@ -25,8 +25,8 @@ import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
-  * Handler for all Spark's DataFrame related queries
-  */
+ * Handler for all Spark's DataFrame related queries
+ */
 class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   val sqlContext = SparkSessionUtils.active.sqlContext
 
@@ -52,7 +52,6 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     s
   }
 
-  // TODO(vlad): see the same code in RDDsHandler
   def toH2OFrame(version: Int, s: H2OFrameIDV3): H2OFrameIDV3 = {
     if (!sqlContext.tableNames().toList.contains(s.dataframe_id)) {
       throw new H2ONotFoundArgumentException(s"DataFrame with id '${s.dataframe_id}' does not exist, can not proceed with the transformation!")

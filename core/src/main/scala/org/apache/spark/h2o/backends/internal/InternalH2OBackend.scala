@@ -18,6 +18,7 @@
 package org.apache.spark.h2o.backends.internal
 
 import ai.h2o.sparkling.backend.SparklingBackend
+import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.utils.NodeDesc
@@ -27,7 +28,6 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
-import water.api.RestAPIManager
 import water.util.Log
 import water.{H2O, H2OStarter}
 

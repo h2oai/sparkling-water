@@ -14,14 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api
+package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
-import water.api.scalaInt._
 import water.exceptions.H2ONotFoundArgumentException
 
 /**

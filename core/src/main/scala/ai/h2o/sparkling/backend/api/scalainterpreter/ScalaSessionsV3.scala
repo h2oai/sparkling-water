@@ -14,27 +14,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api
+package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import org.apache.spark.h2o.H2OContext
-import water.api.DataFrames.DataFramesHandler
-import water.api.H2OFrames.H2OFramesHandler
-import water.api.RDDs.RDDsHandler
-import water.api.scalaInt.ScalaCodeHandler
+import water.api.{API, Schema}
 
 /**
-  * Sparkling Water Core REST API
-  */
-object CoreRestAPI extends RestApi {
+ * Schema representing [GET] /3/scalaint endpoint
+ */
+class ScalaSessionsV3 extends Schema[IcedSessions, ScalaSessionsV3] {
 
-  override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
-    if (hc.getConf.isH2OReplEnabled) {
-      ScalaCodeHandler.registerEndpoints(context, hc.sparkContext, hc)
-    }
-    DataFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    H2OFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    RDDsHandler.registerEndpoints(context, hc.sparkContext, hc)
-  }
-
-  override def name: String = "Core Sparkling Water Rest API"
+  @API(help = "List of session IDs", direction = API.Direction.OUTPUT)
+  var sessions: Array[Int] = _
 }

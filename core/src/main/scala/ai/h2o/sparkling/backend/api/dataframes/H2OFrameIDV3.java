@@ -1,4 +1,4 @@
-package water.api.DataFrames;
+package ai.h2o.sparkling.backend.api.dataframes;
 
 import water.api.API;
 import water.api.Schema;

@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.scalaInt
+package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -30,8 +30,8 @@ import water.exceptions.H2ONotFoundArgumentException
 import scala.collection.concurrent.TrieMap
 
 /**
-  * Handler for all Scala related endpoints
-  */
+ * Handler for all Scala related endpoints
+ */
 class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
   val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum

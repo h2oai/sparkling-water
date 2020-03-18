@@ -15,12 +15,13 @@
 * limitations under the License.
 */
 
-package water.api
+package ai.h2o.sparkling.backend.api
 
 import java.util.ServiceLoader
 
 import org.apache.spark.h2o.H2OContext
 import water.api.RequestServer.DummyRestApiContext
+import water.api.RestApiContext
 
 private[api] class RestAPIManager(hc: H2OContext) {
   private val loader: ServiceLoader[RestApi] = ServiceLoader.load(classOf[RestApi])

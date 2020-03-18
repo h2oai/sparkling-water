@@ -14,7 +14,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api
+package ai.h2o.sparkling.backend.api.h2oframes
 
 import java.io.File
 
@@ -23,7 +23,7 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.H2OFrames.{DataFrameIDV3, H2OFramesHandler}
+import water.api.TestUtils
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 

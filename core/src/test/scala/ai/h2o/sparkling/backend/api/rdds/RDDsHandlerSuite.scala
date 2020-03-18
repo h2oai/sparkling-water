@@ -14,14 +14,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api
+package ai.h2o.sparkling.backend.api.rdds
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.RDDs.{RDD2H2OFrameIDV3, RDDV3, RDDsHandler, RDDsV3}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**

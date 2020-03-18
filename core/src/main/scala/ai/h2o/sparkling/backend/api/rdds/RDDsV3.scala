@@ -14,15 +14,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package water.api.scalaInt
+package ai.h2o.sparkling.backend.api.rdds
 
 import water.api.{API, Schema}
 
 /**
- * Schema representing [GET] /3/scalaint endpoint
+ * Schema representing [GET] /3/RDDs endpoint
  */
-class ScalaSessionsV3 extends Schema[IcedSessions, ScalaSessionsV3] {
-
-  @API(help = "List of session IDs", direction = API.Direction.OUTPUT)
-  var sessions: Array[Int] = _
+class RDDsV3 extends Schema[RDDs, RDDsV3] {
+  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
+  val rdds: Array[RDDV3] = null
 }
