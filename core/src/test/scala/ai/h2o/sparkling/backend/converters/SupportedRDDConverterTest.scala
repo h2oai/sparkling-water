@@ -463,9 +463,8 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val timestamp = DateTimeUtils.toUTCTime(h2oFrame.vec(0).at8(0) * 1000, SparkTimeZone.current().getID) / 1000
     assert(rdd.first().getTime == timestamp)
     // the rdd back should have spark time zone set up because the h2o frame -> rdd respects the Spark timezone
-    import spark.implicits._
-    val rddBack = hc.asDataFrame(h2oFrame).map(_.getTimestamp(0)).rdd
-    val rddBackData = rddBack.collect()
+    val rddBack = hc.asDataFrame(h2oFrame)
+    val rddBackData = rddBack.collect().map(_.getTimestamp(0))
     assert(rdd.collect.sameElements(rddBackData))
     h2oFrame.delete()
   }
@@ -481,8 +480,6 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(2), Seq(2, 6))
     assertVectorDoubleValues(h2oFrame.vec(3), Seq(3, 7))
     assertVectorDoubleValues(h2oFrame.vec(4), Seq(4, 8))
-
-
   }
 
   test("RDD[LabeledPoint] ( Dense Vector, different size ) to H2OFrame[LabeledPoint]") {
