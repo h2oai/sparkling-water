@@ -22,13 +22,21 @@ import scala.collection.mutable
 /**
  * This class is not thread safe.
  */
-class CategoricalDomainBuilder() {
+private[backend] class CategoricalDomainBuilder() {
 
   private val domains = mutable.ArrayBuffer[mutable.LinkedHashMap[String, Int]]()
 
   private val indexMapping = mutable.OpenHashMap[Int, Int]()
 
-  def stringToIndex(value: String, columnIndex: Int): Int = {
+  /**
+    * The method adds string value to a corresponding categorical domain and returns position of the value within
+    * the domain. If the value is already there, returns just the original position and doesn't make any update.
+    * @param value String value
+    * @param columnIndex Index of a column determining the categorical domain.
+    *                    Indexing also includes columns of other types.
+    * @return Index of the value within the categorical domain.
+    */
+  def addStringToDomain(value: String, columnIndex: Int): Int = {
     val domainIndex = indexMapping.getOrElseUpdate(columnIndex, {
       val result = domains.size
       domains.append(mutable.LinkedHashMap[String, Int]())

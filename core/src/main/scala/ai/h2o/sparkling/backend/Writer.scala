@@ -139,7 +139,7 @@ private[backend] object Writer {
             case StringType => metadata.expectedTypes(idxField) match {
             case ChunkSerdeConstants.EXPECTED_STRING => con.put(row.getString(idxField))
             case ChunkSerdeConstants.EXPECTED_CATEGORICAL =>
-              val valueIndex = domainBuilder.stringToIndex(row.getString(idxField), idxField)
+              val valueIndex = domainBuilder.addStringToDomain(row.getString(idxField), idxField)
               con.put(valueIndex)
           }
             case TimestampType =>
