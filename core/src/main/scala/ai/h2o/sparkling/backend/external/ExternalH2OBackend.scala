@@ -20,22 +20,22 @@ package ai.h2o.sparkling.backend.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
-import ai.h2o.sparkling.backend.shared.{ArgumentBuilder, SharedBackendConf, SparklingBackend}
+import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
+import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, RestApiUtils}
+import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
 import org.apache.spark.{SparkEnv, SparkFiles}
-import water.api.schemas3.{CloudLockV3, PingV3}
-import water.util.PrettyPrint
+import water.api.schemas3.CloudLockV3
 
 import scala.io.Source
 
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging with RestApiUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Logging {
 
   var yarnAppId: Option[String] = None
 
@@ -67,13 +67,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     } else {
       ""
     }
-
-  override def getSparklingWaterHeartbeatEvent: SparklingWaterHeartbeatEvent = {
-    val conf = hc.getConf
-    val ping = getPingInfo(conf)
-    val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
-    SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
-  }
 
   private def launchExternalH2OOnYarn(conf: H2OConf): Unit = {
     logInfo("Starting the external H2O cluster on YARN.")
@@ -182,7 +175,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
   private def verifyVersion(nodes: Array[NodeDesc]): Unit = {
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
-      val externalVersion = getCloudInfoFromNode(node, hc.getConf).version
+      val externalVersion = RestApiUtils.getCloudInfoFromNode(node, hc.getConf).version
       if (referencedVersion != externalVersion) {
         if (hc.getConf.isAutoClusterStartUsed) {
           stopExternalH2OCluster()
@@ -196,13 +189,13 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
   private def lockCloud(conf: H2OConf): Unit = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
+    RestApiUtils.update[CloudLockV3](endpoint, "/3/CloudLock", conf, Map("reason" -> "Locked from Sparkling Water."))
   }
 
   private def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
     val nodesWithoutWeb = nodes.flatMap { node =>
       try {
-        getCloudInfoFromNode(node, conf)
+        RestApiUtils.getCloudInfoFromNode(node, conf)
         None
       } catch {
         case cause: RestApiException => Some((node, cause))
@@ -218,20 +211,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
     }
   }
 
-  private def getPingInfo(conf: H2OConf): PingV3 = {
-    val endpoint = getClusterEndpoint(conf)
-    query[PingV3](endpoint, "/3/Ping", conf)
-  }
-
   private def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
     try {
       lockCloud(conf)
-      val nodes = getNodes(conf)
+      val nodes = RestApiUtils.getNodes(conf)
       verifyWebOpen(nodes, conf)
       if (!conf.isBackendVersionCheckDisabled) {
         verifyVersion(nodes)
       }
-      val leaderIpPort = getLeaderNode(conf).ipPort()
+      val leaderIpPort = RestApiUtils.getLeaderNode(conf).ipPort()
       if (conf.h2oCluster.get != leaderIpPort) {
         logInfo(s"Updating %s to H2O's leader node %s".format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
         conf.setH2OCluster(leaderIpPort)

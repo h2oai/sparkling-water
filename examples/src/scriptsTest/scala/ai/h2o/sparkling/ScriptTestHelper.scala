@@ -3,7 +3,7 @@ package ai.h2o.sparkling
 import java.io.File
 
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
 import org.apache.spark.expose.Logging
 import org.apache.spark.{SparkConf, SparkContext}

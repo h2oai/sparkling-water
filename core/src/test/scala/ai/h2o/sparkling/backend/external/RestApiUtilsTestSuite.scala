@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.backend.external
 
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
+import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext

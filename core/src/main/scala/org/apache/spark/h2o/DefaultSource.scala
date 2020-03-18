@@ -17,11 +17,11 @@
 
 package org.apache.spark.h2o
 
-import ai.h2o.sparkling.backend.internal.InternalBackendH2OFrameRelation
+import ai.h2o.sparkling.backend.H2OFrameRelation
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
-import water.{DKV, Key}
+import water.DKV
 
 /**
   * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
@@ -59,10 +59,10 @@ class DefaultSource extends RelationProvider
     */
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
-                              schema: StructType): InternalBackendH2OFrameRelation[_] = {
+                              schema: StructType): H2OFrameRelation = {
     val key = checkKey(parameters)
 
-    InternalBackendH2OFrameRelation(getFrame(key), copyMetadata = true)(sqlContext)
+    H2OFrameRelation(ai.h2o.sparkling.frame.H2OFrame(key), copyMetadata = true)(sqlContext)
   }
 
   override def createRelation(sqlContext: SQLContext,
@@ -92,6 +92,4 @@ class DefaultSource extends RelationProvider
 
     createRelation(sqlContext, parameters, data.schema)
   }
-
-  private def getFrame[T <: Frame](keyName: String) = DKV.get(Key.make(keyName)).get.asInstanceOf[T]
 }

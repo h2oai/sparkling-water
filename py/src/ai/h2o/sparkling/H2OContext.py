@@ -114,7 +114,7 @@ class H2OContext(object):
 
     def __isStopped(self):
         hc = self._jhc
-        field = hc.getClass().getSuperclass().getDeclaredField("stopped")
+        field = hc.getClass().getDeclaredField("stopped")
         field.setAccessible(True)
         return field.get(hc)
 
@@ -127,7 +127,7 @@ class H2OContext(object):
         field.set(self._jhc, True)
 
     def __getClientConnectedField(self):
-        field = self._jhc.getClass().getSuperclass().getDeclaredField("clientConnected")
+        field = self._jhc.getClass().getDeclaredField("clientConnected")
         field.setAccessible(True)
         return field
 

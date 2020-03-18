@@ -153,7 +153,6 @@ val (train, test) = (hc.asH2OFrame(frs(0)), hc.asH2OFrame(frs(1)))
 //
 // Show results
 //
-hc.openFlow()
 
 def GBMModel(train: H2OFrame, test: H2OFrame, response: String,
              ntrees: Int = 10, depth: Int = 6, family: DistributionFamily = DistributionFamily.bernoulli): GBMModel = {

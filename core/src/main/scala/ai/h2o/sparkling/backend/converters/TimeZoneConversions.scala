@@ -23,7 +23,7 @@ import java.util.TimeZone
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 
 trait TimeZoneConversions {
-  def sparkTimeZone: TimeZone
+  protected def sparkTimeZone: TimeZone
 
   def fromSparkTimeZoneToUTC(timestamp: Long): Long = DateTimeUtils.fromUTCTime(timestamp, sparkTimeZone.getID)
 

@@ -17,9 +17,7 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.backend.external.ExternalBackendH2ORDD
-import ai.h2o.sparkling.backend.internal.InternalBackendH2ORDD
-import ai.h2o.sparkling.backend.shared.Converter
+import ai.h2o.sparkling.backend.H2ORDD
 import org.apache.spark.h2o._
 import water.DKV
 import water.fvec.Frame
@@ -38,23 +36,18 @@ object SupportedRDDConverter {
   def toH2OFrameKeyString(
                            hc: H2OContext,
                            rdd: SupportedRDD,
-                           frameKeyName: Option[String],
-                           converter: Converter): String = {
-    rdd.toH2OFrameKeyString(hc, frameKeyName, converter)
+                           frameKeyName: Option[String]): String = {
+    rdd.toH2OFrameKeyString(hc, frameKeyName)
   }
 
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): RDD[A] = {
-    if (hc.getConf.runsInInternalClusterMode) {
-      new InternalBackendH2ORDD[A, T](fr)(hc)
-    } else {
-      DKV.put(fr)
-      toRDD(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString))
-    }
+    DKV.put(fr)
+    toRDD(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString))
   }
 
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame): RDD[A] = {
-    new ExternalBackendH2ORDD[A](fr)(hc)
+    new H2ORDD[A](fr)(hc)
   }
 }

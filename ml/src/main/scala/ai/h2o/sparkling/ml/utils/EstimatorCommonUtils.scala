@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.utils
 
-import ai.h2o.sparkling.backend.external.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.job.H2OJob
 import hex.schemas.ModelBuilderSchema
 import org.apache.spark.h2o.H2OContext

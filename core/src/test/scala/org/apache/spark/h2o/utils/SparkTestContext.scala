@@ -17,7 +17,7 @@
 
 package org.apache.spark.h2o.utils
 
-import ai.h2o.sparkling.backend.shared.SharedBackendConf
+import ai.h2o.sparkling.backend.SharedBackendConf
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.{SQLContext, SparkSession}
