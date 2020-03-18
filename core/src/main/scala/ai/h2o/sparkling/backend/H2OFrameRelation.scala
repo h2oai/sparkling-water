@@ -41,12 +41,9 @@ case class H2OFrameRelation(frame: H2OFrame, copyMetadata: Boolean)(@transient v
 
   override val schema: StructType = createSchema(frame, copyMetadata)
 
-  override def buildScan(): RDD[Row] =
-    new H2ODataFrame(frame)(hc).asInstanceOf[RDD[Row]]
+  override def buildScan(): RDD[Row] = new H2ODataFrame(frame)(hc).asInstanceOf[RDD[Row]]
 
-  override def buildScan(requiredColumns: Array[String]): RDD[Row] =
-    new H2ODataFrame(frame, requiredColumns)(hc).asInstanceOf[RDD[Row]]
-
+  override def buildScan(requiredColumns: Array[String]): RDD[Row] = new H2ODataFrame(frame, requiredColumns)(hc).asInstanceOf[RDD[Row]]
 
   private def extractMetadata(column: H2OColumn, numberOfRows: Long): Metadata = {
     val builder = new MetadataBuilder()
