@@ -26,11 +26,11 @@ import org.apache.spark.sql.types._
 import water.fvec.Vec
 import water.parser.{BufferedString, PreviewParseWriter}
 
-object DataTypeConverter {
+private[backend] object DataTypeConverter {
   private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, Byte] = {
     val stringTypeIndices = for {
       (field, index) <- schema.fields.zipWithIndex
-      if field == StringType
+      if field.dataType == StringType
     } yield index
 
     val preview = rdd
@@ -72,5 +72,35 @@ object DataTypeConverter {
         case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
       }
     }.toArray
+  }
+
+  def expectedTypesFromClasses(classes: Array[Class[_]]): Array[Byte] = {
+    classes.map { clazz =>
+      if (clazz == classOf[java.lang.Boolean]) {
+        ChunkSerdeConstants.EXPECTED_BOOL
+      } else if (clazz == classOf[java.lang.Byte]) {
+        ChunkSerdeConstants.EXPECTED_BYTE
+      } else if (clazz == classOf[java.lang.Short]) {
+        ChunkSerdeConstants.EXPECTED_SHORT
+      } else if (clazz == classOf[java.lang.Character]) {
+        ChunkSerdeConstants.EXPECTED_CHAR
+      } else if (clazz == classOf[java.lang.Integer]) {
+        ChunkSerdeConstants.EXPECTED_INT
+      } else if (clazz == classOf[java.lang.Long]) {
+        ChunkSerdeConstants.EXPECTED_LONG
+      } else if (clazz == classOf[java.lang.Float]) {
+        ChunkSerdeConstants.EXPECTED_FLOAT
+      } else if (clazz == classOf[java.lang.Double]) {
+        ChunkSerdeConstants.EXPECTED_DOUBLE
+      } else if (clazz == classOf[java.lang.String]) {
+        ChunkSerdeConstants.EXPECTED_STRING
+      } else if (clazz == classOf[java.sql.Timestamp] || clazz == classOf[java.sql.Date]) {
+        ChunkSerdeConstants.EXPECTED_TIMESTAMP
+      } else if (clazz == classOf[org.apache.spark.ml.linalg.Vector]) {
+        ChunkSerdeConstants.EXPECTED_VECTOR
+      } else {
+        throw new RuntimeException("Unsupported class: " + clazz)
+      }
+    }
   }
 }
