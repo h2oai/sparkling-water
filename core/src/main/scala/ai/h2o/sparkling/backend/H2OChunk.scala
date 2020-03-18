@@ -91,9 +91,9 @@ private[sparkling] object H2OChunk extends RestCommunication {
     val addCompression =
       (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
     withResource(insert(endpoint, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, addCompression, parameters)) { outputStream =>
-      withResource(new AutoBuffer(outputStream, false)) { buffer =>
-        buffer.putAAStr(domains)
-      }
+      val autoBuffer = new AutoBuffer(outputStream, false)
+      autoBuffer.putAAStr(domains)
+      autoBuffer.close()
     }
   }
 }

@@ -22,7 +22,7 @@ import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.{AutoBuffer, DKV}
 import water.fvec.Frame
-import water.parser.{Categorical, LocalNodeDomains}
+import water.parser.LocalNodeDomains
 import water.server.ServletUtils
 
 /**
@@ -60,10 +60,10 @@ class ChunkCategoricalDomainsServlet extends ServletBase {
       parameters.validate()
       withResource(request.getInputStream) { inputStream =>
         withResource(Compression.decompress(parameters.compression, inputStream)) { decompressed =>
-          withResource(new AutoBuffer(decompressed)) { buffer: AutoBuffer =>
-            val domains = buffer.getAAStr()
-            LocalNodeDomains.addDomains(parameters.frameName, parameters.chunkId, domains)
-          }
+          val autoBuffer = new AutoBuffer(decompressed)
+          val domains =  autoBuffer.getAAStr()
+          LocalNodeDomains.addDomains(parameters.frameName, parameters.chunkId, domains)
+          autoBuffer.close()
         }
       }
       ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
