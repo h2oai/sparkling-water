@@ -18,8 +18,10 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
-import ai.h2o.sparkling.backend.utils.{ConversionUtils, ReflectionUtils}
-import ai.h2o.sparkling.{H2OFrame, SparkTimeZone}
+import ai.h2o.sparkling.SparkTimeZone
+import ai.h2o.sparkling.backend.converters.DataTypeConverter
+import ai.h2o.sparkling.backend.utils.ReflectionUtils
+import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
@@ -53,9 +55,9 @@ private[backend] class H2ODataFrame(val frame: H2OFrame, val requiredColumns: Ar
     }
   }
 
-  override val expectedTypes: Array[VecType] = {
+  override val expectedTypes: Array[Byte] = {
     val javaClasses = selectedColumnIndices.map(indexToSupportedType(_).javaClass)
-    ConversionUtils.expectedTypesFromClasses(javaClasses)
+    DataTypeConverter.expectedTypesFromClasses(javaClasses)
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {

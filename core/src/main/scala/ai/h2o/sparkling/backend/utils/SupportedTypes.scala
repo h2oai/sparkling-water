@@ -92,7 +92,7 @@ private[backend] object SupportedTypes extends Enumeration {
   val Long      = SimpleType[scala.Long   ] (Vec.T_NUM,  EXPECTED_LONG,      LongType,      classOf[jl.Long     ], onNAthrow, typeOf[Long])
   val Float     = SimpleType[scala.Float  ] (Vec.T_NUM,  EXPECTED_FLOAT,     FloatType,     classOf[jl.Float    ], onNAreturn(scala.Float.NaN), typeOf[Float])
   val Double    = SimpleType[scala.Double ] (Vec.T_NUM,  EXPECTED_DOUBLE,    DoubleType,    classOf[jl.Double   ], onNAreturn(scala.Double.NaN), typeOf[Double])
-  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, EXPECTED_TIMESTAMP, TimestampType,  classOf[js.Timestamp], onNAthrow)
+  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, EXPECTED_TIMESTAMP, TimestampType, classOf[js.Timestamp], onNAthrow)
   val Date      = SimpleType[js.Date      ] (Vec.T_TIME, EXPECTED_TIMESTAMP, DateType,      classOf[js.Date     ], onNAthrow)
   val String    = SimpleType[String       ] (Vec.T_STR,  EXPECTED_STRING,    StringType,    classOf[String],       onNAreturn(null), typeOf[String])
   val UTF8 = SimpleType[UTF8String](Vec.T_STR, EXPECTED_STRING,    StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
