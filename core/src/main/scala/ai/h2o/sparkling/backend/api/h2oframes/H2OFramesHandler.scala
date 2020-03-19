@@ -19,10 +19,10 @@ package ai.h2o.sparkling.backend.api.h2oframes
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import water.DKV
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.Frame
-import water.{DKV, Iced}
 
 /**
  * Handler for all H2OFrame related queries
@@ -53,12 +53,6 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
   }
 }
 
-private[api] class IcedDataFrameID(val h2oframe_id: String, val dataframe_id: String) extends Iced[IcedDataFrameID] {
-
-  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
-}
-
 object H2OFramesHandler {
 
   private[api] def registerEndpoints(context: RestApiContext, sc: SparkContext, hc: H2OContext) = {
@@ -73,4 +67,3 @@ object H2OFramesHandler {
       "toDataFrame", "Transform H2OFrame with given ID to Spark's DataFrame", h2oFramesFactory)
   }
 }
-

@@ -20,7 +20,7 @@ import water.api.API;
 import water.api.Schema;
 
 /**
- * Schema representing /3/h2oframes/&lt;h2oframe_id&gt;/dataframe
+ * Schema representing /3/h2oframes/[h2oframe_id]/dataframe
  */
 public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
     @API(help = "ID of H2OFrame to be transformed", direction = API.Direction.INPUT)
