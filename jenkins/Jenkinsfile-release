@@ -21,6 +21,8 @@ properties(
         ]
 )
 
+def releaseNode = node("docker && micro")
+
 //
 // Utility methods for the pipeline
 //
@@ -31,20 +33,24 @@ def getS3Path() {
 
 def getParallelStageDefinition(params) {
     return {
-        stage("Spark ${params.spark}") {
-            docker.withRegistry("http://harbor.h2o.ai") {
-                ansiColor('xterm') {
-                    timestamps {
-                        ws("${env.WORKSPACE}-spark-${params.spark}") {
-                            withDocker {
-                                sh "git pull"
-                                build()(params)
-                                buildConda()(params)
-                                publishToNexus()(params)
-                                publishToS3()(params)
-                                updateDocLinks()(params)
-                                publishToPipy()(params)
-                                publishToConda()(params)
+        stage ("Spark ${params.spark}") {
+            releaseNode {
+                docker.withRegistry("http://harbor.h2o.ai") {
+                    ansiColor('xterm') {
+                        timestamps {
+                            ws("${env.WORKSPACE}-spark-${params.spark}") {
+                                cleanWs()
+                                checkout scm
+                                withDocker {
+                                    sh "git pull"
+                                    build()(params)
+                                    buildConda()(params)
+                                    publishToNexus()(params)
+                                    publishToS3()(params)
+                                    updateDocLinks()(params)
+                                    publishToPipy()(params)
+                                    publishToConda()(params)
+                                }
                             }
                         }
                     }
@@ -211,9 +217,8 @@ def updateNexRelVersion(params) {
 //
 // Main entry point to the pipeline and definition of all stages
 //
-
 def sparkMajorVersions
-node("docker && micro") {
+releaseNode {
     cleanWs()
     checkout scm
     def versionLine = readFile("gradle.properties")
@@ -241,11 +246,13 @@ def updateChangeLogStage(sparkMajorVersions) {
     return { params ->
         stage('Update Change Log') {
             if (params.updateChangeLog.toBoolean()) {
-                docker.withRegistry("http://harbor.h2o.ai") {
-                    ansiColor('xterm') {
-                        timestamps {
-                            withDocker {
-                                prepareReleaseNotes(sparkMajorVersions)
+                releaseNode {
+                    docker.withRegistry("http://harbor.h2o.ai") {
+                        ansiColor('xterm') {
+                            timestamps {
+                                withDocker {
+                                    prepareReleaseNotes(sparkMajorVersions)
+                                }
                             }
                         }
                     }
@@ -259,11 +266,13 @@ def updateRelVersionStage() {
     return { params ->
         stage('Update Next Release Version') {
             if (params.releaseOnGithub.toBoolean()) {
-                docker.withRegistry("http://harbor.h2o.ai") {
-                    ansiColor('xterm') {
-                        timestamps {
-                            withDocker {
-                                updateNexRelVersion(params)
+                releaseNode {
+                    docker.withRegistry("http://harbor.h2o.ai") {
+                        ansiColor('xterm') {
+                            timestamps {
+                                withDocker {
+                                    updateNexRelVersion(params)
+                                }
                             }
                         }
                     }
