@@ -20,6 +20,9 @@ package water.parser;
 import water.Iced;
 
 class CategoricalUpdateMap extends Iced {
-  final int [][] map;
-  public CategoricalUpdateMap(int[][] map){this.map = map;}
+    final int[][] map;
+
+    public CategoricalUpdateMap(int[][] map) {
+        this.map = map;
+    }
 }
