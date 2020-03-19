@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.backend.H2ORDD
 import org.apache.spark.h2o._
 import water.DKV
 import water.fvec.Frame

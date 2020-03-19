@@ -23,11 +23,7 @@ import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConv
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
-<<<<<<< HEAD
-import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf, SparklingBackend}
-=======
-import ai.h2o.sparkling.backend.{BuildInfo, H2OContextImplicits, SharedBackendConf, SparklingBackend}
->>>>>>> [SW-2093] Remove unused classes & move a few remaining classes to a ai.h2o.sparkling
+import ai.h2o.sparkling.backend._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._
