@@ -27,22 +27,22 @@ object ExposeUtils {
 
   def isMLVectorUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : ml.linalg.VectorUDT => true
+      case _: ml.linalg.VectorUDT => true
       case _ => false
     }
   }
 
   def isAnyVectorUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : ml.linalg.VectorUDT => true
-      case _ : mllib.linalg.VectorUDT => true
+      case _: ml.linalg.VectorUDT => true
+      case _: mllib.linalg.VectorUDT => true
       case _ => false
     }
   }
 
   def isUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : UserDefinedType[_] => true
+      case _: UserDefinedType[_] => true
       case _ => false
     }
   }
