@@ -22,7 +22,7 @@ From 3.30 to 3.32
   The method ``setExternalClusterMode()`` must be called explicitly.
 
 - The method ``classify`` in the ``hex.ModelUtils`` object is removed. Please use Sparkling Water algorithm API to train
-  and score H2O models.
+  and score H2O models. This removal affects only Scala API as other APIs don't have such functionality.
 
 From 3.28.1 to 3.30
 -------------------
