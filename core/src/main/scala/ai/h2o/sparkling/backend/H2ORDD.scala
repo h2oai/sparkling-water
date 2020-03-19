@@ -36,8 +36,8 @@ import scala.reflect.runtime.universe._
  * @param hc          an instance of H2O context
  * @tparam A type for resulting RDD
  */
-private[backend] class H2ORDD[A <: Product : TypeTag : ClassTag] private(val frame: H2OFrame, val productType: ProductType)
-                                                                        (@(transient@param @field) hc: H2OContext)
+private[backend] class H2ORDD[A <: Product : TypeTag : ClassTag](val frame: H2OFrame, val productType: ProductType)
+                                                                (@(transient@param @field) hc: H2OContext)
   extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes()) with H2OSparkEntity {
 
   override val expectedTypes: Array[Byte] = ConversionUtils.expectedTypesFromClasses(productType.memberClasses)
