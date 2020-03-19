@@ -17,6 +17,7 @@
 
 package hex
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model.Output
 import water.util.ArrayUtils
 
@@ -24,7 +25,7 @@ import water.util.ArrayUtils
  * Helper class to access package-private methods of Model API.
  */
 object ModelUtils {
-
+  @DeprecatedMethod("Sparkling Water Algorithm API to train and score H2O models")
   def classify(row: Array[Double], m : Model[_, _, _]): (String, Array[Double]) = {
     val modelOutput = m._output.asInstanceOf[Output]
     val nclasses = modelOutput.nclasses()
