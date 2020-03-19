@@ -26,7 +26,7 @@ When submitting a Sparkling Water application to a CHD or Apache Hadoop cluster,
 
 .. code:: bash
 
-    ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver
+    ./spark-submit --master=yarn --deploy-mode=client --class ai.h2o.sparkling.SparklingWaterDriver
     --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
     sparkling-water-assembly-SUBST_SW_VERSION-all.jar
 
@@ -34,7 +34,7 @@ When submitting a Sparkling Water application to an HDP Cluster, the command to 
 
 .. code:: bash
 
-    ./spark-submit --master=yarn --deploy-mode=client --class water.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-Dhdp.version=current"
+    ./spark-submit --master=yarn --deploy-mode=client --class ai.h2o.sparkling.SparklingWaterDriver --conf "spark.yarn.am.extraJavaOptions=-Dhdp.version=current"
     --driver-memory=8G --num-executors=3 --executor-memory=3G --conf "spark.executor.extraClassPath=-Dhdp.version=current"
     sparkling-water-assembly-SUBST_SW_VERSION-all.jar
 

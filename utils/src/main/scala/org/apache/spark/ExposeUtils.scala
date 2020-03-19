@@ -17,6 +17,7 @@
 
 package org.apache.spark
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, UserDefinedType}
 
 object ExposeUtils {
@@ -26,23 +27,27 @@ object ExposeUtils {
 
   def isMLVectorUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : ml.linalg.VectorUDT => true
+      case _: ml.linalg.VectorUDT => true
       case _ => false
     }
   }
 
   def isAnyVectorUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : ml.linalg.VectorUDT => true
-      case _ : mllib.linalg.VectorUDT => true
+      case _: ml.linalg.VectorUDT => true
+      case _: mllib.linalg.VectorUDT => true
       case _ => false
     }
   }
 
   def isUDT(dataType: DataType): Boolean = {
     dataType match {
-      case _ : UserDefinedType[_] => true
+      case _: UserDefinedType[_] => true
       case _ => false
     }
+  }
+
+  def hiveClassesArePresent: Boolean = {
+    SparkSession.hiveClassesArePresent
   }
 }
