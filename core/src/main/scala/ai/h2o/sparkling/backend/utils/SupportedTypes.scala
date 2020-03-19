@@ -87,20 +87,19 @@ private[backend] object SupportedTypes extends Enumeration {
   private def onNAreturn[T](value: T)(what: String) = value
 
   val Boolean =
-    SimpleType[scala.Boolean](Vec.T_NUM, EXPECTED_BOOL,      BooleanType,   classOf[jl.Boolean  ], onNAreturn(false), typeOf[Boolean])
-  val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  EXPECTED_BYTE,      ByteType,      classOf[jl.Byte     ], onNAthrow, typeOf[Byte])
-  val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  EXPECTED_SHORT,     ShortType,     classOf[jl.Short    ], onNAthrow, typeOf[Short])
-  val Integer   = SimpleType[scala.Int    ] (Vec.T_NUM,  EXPECTED_INT,       IntegerType,   classOf[jl.Integer  ], onNAthrow, typeOf[Int])
-  val Long      = SimpleType[scala.Long   ] (Vec.T_NUM,  EXPECTED_LONG,      LongType,      classOf[jl.Long     ], onNAthrow, typeOf[Long])
-  val Float     =
-    SimpleType[scala.Float  ] (Vec.T_NUM,  EXPECTED_FLOAT,     FloatType,     classOf[jl.Float    ], onNAreturn(scala.Float.NaN), typeOf[Float])
-  val Double    =
-    SimpleType[scala.Double ] (Vec.T_NUM,  EXPECTED_DOUBLE,    DoubleType,    classOf[jl.Double   ], onNAreturn(scala.Double.NaN), typeOf[Double])
-  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, EXPECTED_TIMESTAMP, TimestampType, classOf[js.Timestamp], onNAthrow)
-  val Date      = SimpleType[js.Date      ] (Vec.T_TIME, EXPECTED_TIMESTAMP, DateType,      classOf[js.Date     ], onNAthrow)
-  val String    = SimpleType[String       ] (Vec.T_STR,  EXPECTED_STRING,    StringType,    classOf[String],       onNAreturn(null), typeOf[String])
-  val UTF8 = SimpleType[UTF8String](Vec.T_STR, EXPECTED_STRING,    StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
-
+    SimpleType[scala.Boolean](Vec.T_NUM, EXPECTED_BOOL, BooleanType, classOf[jl.Boolean], onNAreturn(false), typeOf[Boolean])
+  val Byte = SimpleType[scala.Byte](Vec.T_NUM, EXPECTED_BYTE, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
+  val Short = SimpleType[scala.Short](Vec.T_NUM, EXPECTED_SHORT, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
+  val Integer = SimpleType[scala.Int](Vec.T_NUM, EXPECTED_INT, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
+  val Long = SimpleType[scala.Long](Vec.T_NUM, EXPECTED_LONG, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
+  val Float =
+    SimpleType[scala.Float](Vec.T_NUM, EXPECTED_FLOAT, FloatType, classOf[jl.Float], onNAreturn(scala.Float.NaN), typeOf[Float])
+  val Double =
+    SimpleType[scala.Double](Vec.T_NUM, EXPECTED_DOUBLE, DoubleType, classOf[jl.Double], onNAreturn(scala.Double.NaN), typeOf[Double])
+  val Timestamp = SimpleType[js.Timestamp](Vec.T_TIME, EXPECTED_TIMESTAMP, TimestampType, classOf[js.Timestamp], onNAthrow)
+  val Date = SimpleType[js.Date](Vec.T_TIME, EXPECTED_TIMESTAMP, DateType, classOf[js.Date], onNAthrow)
+  val String = SimpleType[String](Vec.T_STR, EXPECTED_STRING, StringType, classOf[String], onNAreturn(null), typeOf[String])
+  val UTF8 = SimpleType[UTF8String](Vec.T_STR, EXPECTED_STRING, StringType, classOf[String], onNAreturn(null), typeOf[UTF8String])
   private implicit def val2type(v: Value): SimpleType[_] = v.asInstanceOf[SimpleType[_]]
 
   val allSimple: List[SimpleType[_]] = values.toList.map(val2type)
