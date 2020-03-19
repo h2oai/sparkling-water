@@ -17,6 +17,7 @@
 
 package org.apache.spark
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, UserDefinedType}
 
 object ExposeUtils {
@@ -44,5 +45,9 @@ object ExposeUtils {
       case _ : UserDefinedType[_] => true
       case _ => false
     }
+  }
+
+  def hiveClassesArePresent: Boolean = {
+    SparkSession.hiveClassesArePresent
   }
 }

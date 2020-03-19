@@ -22,12 +22,12 @@ import java.util.Properties
 
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, RestApiUtils}
-import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf, SparklingBackend}
+import ai.h2o.sparkling.backend.{BuildInfo, NodeDesc, SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.{BuildInfo, H2OConf, H2OContext}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.{SparkEnv, SparkFiles}
 import water.api.schemas3.CloudLockV3
 
