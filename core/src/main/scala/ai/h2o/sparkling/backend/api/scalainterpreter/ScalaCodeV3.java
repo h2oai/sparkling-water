@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.backend.api.scalainterpreter;
 
-
 import water.api.API;
 import water.api.Schema;
 import water.api.schemas3.JobV3;

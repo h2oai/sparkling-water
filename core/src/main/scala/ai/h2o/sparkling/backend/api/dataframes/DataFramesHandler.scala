@@ -20,7 +20,6 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.DataFrame
-import water.Iced
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
@@ -37,9 +36,9 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     s
   }
 
-  def fetchAll(): Array[IcedDataFrameInfo] = {
+  def fetchAll(): Array[IcedDataFrame] = {
     val names = sqlContext.tableNames()
-    names.map(name => new IcedDataFrameInfo(name, sqlContext.table(name).rdd.partitions.length, sqlContext.table(name).schema.json))
+    names.map(name => new IcedDataFrame(name, sqlContext.table(name).rdd.partitions.length, sqlContext.table(name).schema.json))
   }
 
   def getDataFrame(version: Int, s: DataFrameV3): DataFrameV3 = {
@@ -61,23 +60,6 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     s.h2oframe_id = h2oFrame._key.toString
     s
   }
-}
-
-/** Simple POJO holding list of DataFrames */
-private[api] class DataFrames extends Iced[DataFrames] {
-  var dataframes: Array[IcedDataFrameInfo] = _
-}
-
-private[api] class IcedDataFrameInfo(val dataframe_id: String, val partitions: Int, val schema: String) extends Iced[IcedDataFrameInfo] {
-  def this() = this(null, -1, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
-}
-
-
-private[api] class IcedH2OFrameID(val dataframe_id: String, val h2oframe_id: String) extends Iced[IcedH2OFrameID] {
-
-  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
 }
 
 object DataFramesHandler {

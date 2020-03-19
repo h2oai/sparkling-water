@@ -21,7 +21,7 @@ import water.api.{API, Schema}
 /**
  * Schema representing /3/dataframes endpoint
  */
-class DataFramesV3 extends Schema[DataFrames, DataFramesV3] {
+class DataFramesV3 extends Schema[IcedDataFrames, DataFramesV3] {
   @API(help = "List of DataFrames", direction = API.Direction.OUTPUT)
   val dataframes: Array[DataFrameV3] = null
 }

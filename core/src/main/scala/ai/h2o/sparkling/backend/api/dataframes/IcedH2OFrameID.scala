@@ -14,23 +14,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.backend.api.scalainterpreter
+package ai.h2o.sparkling.backend.api.dataframes
 
+import water.Iced
 
-import water.{Key, Lockable};
+private[api] class IcedH2OFrameID(val dataframe_id: String, val h2oframe_id: String) extends Iced[IcedH2OFrameID] {
 
-/**
- * This object is returned by jobs executing the Scala code
- */
-class ScalaCodeResult(key: Key[ScalaCodeResult]) extends Lockable[ScalaCodeResult](key) {
-  var code: String = _
-  var scalaStatus: String = _
-  var scalaResponse: String = _
-  var scalaOutput: String = _
-
-  def this() = this(null)
-
-  override def makeSchema(): Class[ScalaCodeResultV3] = {
-    classOf[ScalaCodeResultV3]
-  }
+  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
+  //RequestServer, as it calls constructor without any arguments
 }

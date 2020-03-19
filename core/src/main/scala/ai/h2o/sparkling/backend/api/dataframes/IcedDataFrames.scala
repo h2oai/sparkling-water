@@ -14,23 +14,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package ai.h2o.sparkling.backend.api.scalainterpreter
+package ai.h2o.sparkling.backend.api.dataframes
 
+import water.Iced
 
-import water.{Key, Lockable};
-
-/**
- * This object is returned by jobs executing the Scala code
- */
-class ScalaCodeResult(key: Key[ScalaCodeResult]) extends Lockable[ScalaCodeResult](key) {
-  var code: String = _
-  var scalaStatus: String = _
-  var scalaResponse: String = _
-  var scalaOutput: String = _
-
-  def this() = this(null)
-
-  override def makeSchema(): Class[ScalaCodeResultV3] = {
-    classOf[ScalaCodeResultV3]
-  }
+/** Simple POJO holding list of DataFrames */
+private[api] class IcedDataFrames extends Iced[IcedDataFrames] {
+  var dataframes: Array[IcedDataFrame] = _
 }
