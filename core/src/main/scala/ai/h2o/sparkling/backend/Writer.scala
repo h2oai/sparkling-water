@@ -25,7 +25,6 @@ import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
 import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OContext, RDD}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._

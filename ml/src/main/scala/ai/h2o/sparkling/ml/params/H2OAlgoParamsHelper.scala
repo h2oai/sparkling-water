@@ -20,7 +20,7 @@ import java.util
 
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
-import org.apache.spark.h2o.utils.ReflectionUtils.api
+import ai.h2o.sparkling.backend.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
 
 import scala.reflect.ClassTag

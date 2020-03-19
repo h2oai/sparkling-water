@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.backend.utils
 
+import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import ai.h2o.sparkling.frame.{H2OColumn, H2OColumnType}
-import org.apache.spark.h2o.utils.SupportedTypes._
 import org.apache.spark.sql.types._
 import water.api.API
 import water.fvec.Vec
@@ -28,8 +28,8 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
-  * Work with reflection only inside this helper.
-  */
+ * Work with reflection only inside this helper.
+ */
 object ReflectionUtils {
   type NameOfType = String
 
@@ -51,7 +51,6 @@ object ReflectionUtils {
     tt map (supportedTypeFor(_).javaClass) toArray
   }
 
-  // TODO(vlad): get rid of this duplication (see productMembers)
   def listMemberTypes(st: Type): Seq[Type] = {
     val names = fieldNamesOf(st)
     val formalTypeArgs = st.typeSymbol.asClass.typeParams
@@ -86,12 +85,12 @@ object ReflectionUtils {
   }
 
   /** Return API annotation assigned with the given field
-    * or null.
-    *
-    * @param klazz     class to query
-    * @param fieldName field name to query
-    * @return instance of API annotation assigned with the field or null
-    */
+   * or null.
+   *
+   * @param klazz     class to query
+   * @param fieldName field name to query
+   * @return instance of API annotation assigned with the field or null
+   */
   def api(klazz: Class[_], fieldName: String): API = {
     klazz.getField(fieldName).getAnnotation(classOf[API])
   }
@@ -145,13 +144,13 @@ object ReflectionUtils {
   import SupportedTypes._
 
   /**
-    * Return catalyst structural type for given H2O vector.
-    *
-    * The mapping of type is flat.
-    *
-    * @param v H2O vector
-    * @return catalyst data type
-    */
+   * Return catalyst structural type for given H2O vector.
+   *
+   * The mapping of type is flat.
+   *
+   * @param v H2O vector
+   * @return catalyst data type
+   */
   def dataTypeFor(v: Vec): DataType = supportedType(v).sparkType
 
   def dataTypeFor(columnType: H2OColumn): DataType = supportedType(columnType).sparkType
@@ -171,10 +170,11 @@ object ReflectionUtils {
   }
 
   /**
-    * This method converts a REST column entity to a data type supported by Spark.
-    * @param column A column entity obtained via H2O REST API
-    * @return A data type supported by Spark
-    */
+   * This method converts a REST column entity to a data type supported by Spark.
+   *
+   * @param column A column entity obtained via H2O REST API
+   * @return A data type supported by Spark
+   */
   def supportedType(column: H2OColumn): SupportedType = column.dataType match {
     case H2OColumnType.`enum` | H2OColumnType.string | H2OColumnType.uuid => String
     case H2OColumnType.int =>
@@ -211,7 +211,7 @@ object ReflectionUtils {
   }
 }
 
-import ReflectionUtils._
+import ai.h2o.sparkling.backend.utils.ReflectionUtils._
 
 case class ProductMember(name: String, typeName: NameOfType, typeClass: Class[_]) {
   override def toString = s"$name: $typeName"

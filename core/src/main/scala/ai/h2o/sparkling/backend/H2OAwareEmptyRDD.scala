@@ -17,7 +17,6 @@
 package ai.h2o.sparkling.backend
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.NodeDesc
 
 import scala.reflect.ClassTag
 

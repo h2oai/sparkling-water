@@ -19,13 +19,13 @@ package ai.h2o.sparkling.frame
 
 import java.text.MessageFormat
 
+import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.utils.RestApiUtils._
 import ai.h2o.sparkling.backend.utils.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.job.H2OJob
 import ai.h2o.sparkling.utils.Base64Encoding
-import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3

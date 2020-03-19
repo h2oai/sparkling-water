@@ -15,16 +15,17 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.backend.utils
 
 import org.apache.log4j.{Level, LogManager}
+import org.apache.spark.expose.Logging
 import water.MRTask
 import water.util.{Log, LogBridge}
 
 /**
-  * A simple helper to control H2O log subsystem
-  */
-object LogUtil extends org.apache.spark.internal.Logging {
+ * A simple helper to control H2O log subsystem
+ */
+object LogUtil extends Logging {
 
   def setH2OClientLogLevel(level: String): Unit = {
     setLogLevel(
@@ -57,4 +58,3 @@ object LogUtil extends org.apache.spark.internal.Logging {
     }
   }
 }
-

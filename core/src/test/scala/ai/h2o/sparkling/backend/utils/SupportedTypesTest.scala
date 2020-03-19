@@ -14,11 +14,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o
+package ai.h2o.sparkling.backend.utils
 
-import org.apache.spark.h2o.utils.ReflectionUtils._
-import org.apache.spark.h2o.utils.SupportedTypes._
-import org.apache.spark.h2o.utils.SupportedTypes
+import ai.h2o.sparkling.backend.utils.ReflectionUtils._
+import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -27,8 +26,8 @@ import org.scalatest.junit.JUnitRunner
 import scala.reflect.runtime.universe._
 
 /**
-  * Tests for type info handling
-  */
+ * Tests for type info handling
+ */
 @RunWith(classOf[JUnitRunner])
 class SupportedTypesTest extends FunSuite {
 
@@ -58,7 +57,8 @@ class SupportedTypesTest extends FunSuite {
 
   test("Fail to infer type from a weird value") {
     def mustFail[T](msg: String, value: T) = try {
-      val t = supportedTypeOf(value); fail(s"Not acceptable: $msg: got $t")
+      val t = supportedTypeOf(value);
+      fail(s"Not acceptable: $msg: got $t")
     } catch {
       case iae: IllegalArgumentException => ; //success
     }
