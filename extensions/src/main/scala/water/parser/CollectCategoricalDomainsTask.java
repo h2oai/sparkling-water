@@ -36,12 +36,14 @@ class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask
   @Override
   public void setupLocal() {
     if (!LocalNodeDomains.containsDomains(key)) return;
-    final String[][] domains = LocalNodeDomains.getDomains(key);
+    final Categorical[] domains = LocalNodeDomains.getDomains(key);
     packedDomains = new byte[domains.length][];
     int i = 0;
-    for (String[] domain: domains) {
-      Arrays.sort(domain);
-      packedDomains[i] = PackedDomains.pack(BufferedString.toBufferedString(domain));
+    for (Categorical domain : domains) {
+      domain.convertToUTF8(-1);
+      BufferedString[] values = domain.getColumnDomain();
+      Arrays.sort(values);
+      packedDomains[i] = PackedDomains.pack(values);
       i++;
     }
     Log.trace("Done locally collecting domains on each node.");
