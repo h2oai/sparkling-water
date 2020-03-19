@@ -14,20 +14,19 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.backend.utils
 
-import org.apache.spark.h2o.utils.ReflectionUtils.NameOfType
+import ai.h2o.sparkling.backend.utils.ReflectionUtils.NameOfType
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import water.fvec.Vec
 
-import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.runtime.universe._
 
 /**
-  * All type associations are gathered in this file.
-  */
-object SupportedTypes extends Enumeration {
+ * All type associations are gathered in this file.
+ */
+private[backend] object SupportedTypes extends Enumeration {
 
   type VecType = Byte
 
@@ -74,50 +73,45 @@ object SupportedTypes extends Enumeration {
 
   import java.{lang => jl, sql => js}
 
-  private val ZeroTime = new js.Timestamp(0L)
-
   private def onNAthrow(what: String) = {
     throw new IllegalArgumentException(s"$what value missing")
   }
 
   private def onNAreturn[T](value: T)(what: String) = value
 
-  // scalastyle:off
-  val Boolean   = SimpleType[scala.Boolean] (Vec.T_NUM,  BooleanType,   classOf[jl.Boolean  ], onNAreturn(false), typeOf[Boolean])
-  val Byte      = SimpleType[scala.Byte   ] (Vec.T_NUM,  ByteType,      classOf[jl.Byte     ], onNAthrow, typeOf[Byte])
-  val Short     = SimpleType[scala.Short  ] (Vec.T_NUM,  ShortType,     classOf[jl.Short    ], onNAthrow, typeOf[Short])
-  val Integer   = SimpleType[scala.Int    ] (Vec.T_NUM,  IntegerType,   classOf[jl.Integer  ], onNAthrow, typeOf[Int])
-  val Long      = SimpleType[scala.Long   ] (Vec.T_NUM,  LongType,      classOf[jl.Long     ], onNAthrow, typeOf[Long])
-  val Float     = SimpleType[scala.Float  ] (Vec.T_NUM,  FloatType,     classOf[jl.Float    ], onNAreturn(scala.Float.NaN), typeOf[Float])
-  val Double    = SimpleType[scala.Double ] (Vec.T_NUM,  DoubleType,    classOf[jl.Double   ], onNAreturn(scala.Double.NaN), typeOf[Double])
-  val Timestamp = SimpleType[js.Timestamp ] (Vec.T_TIME, TimestampType, classOf[js.Timestamp], onNAthrow)
-  val Date      = SimpleType[js.Date      ] (Vec.T_TIME, DateType,      classOf[js.Date     ], onNAthrow)
-  val String    = SimpleType[String       ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[String])
-  // TODO(vlad): figure it out, why
-  val UTF8      = SimpleType[UTF8String   ] (Vec.T_STR,  StringType,    classOf[String],       onNAreturn(null), typeOf[UTF8String])
-  // scalastyle:on
-  
+  val Boolean = SimpleType[scala.Boolean](Vec.T_NUM, BooleanType, classOf[jl.Boolean], onNAreturn(false), typeOf[Boolean])
+  val Byte = SimpleType[scala.Byte](Vec.T_NUM, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
+  val Short = SimpleType[scala.Short](Vec.T_NUM, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
+  val Integer = SimpleType[scala.Int](Vec.T_NUM, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
+  val Long = SimpleType[scala.Long](Vec.T_NUM, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
+  val Float = SimpleType[scala.Float](Vec.T_NUM, FloatType, classOf[jl.Float], onNAreturn(scala.Float.NaN), typeOf[Float])
+  val Double = SimpleType[scala.Double](Vec.T_NUM, DoubleType, classOf[jl.Double], onNAreturn(scala.Double.NaN), typeOf[Double])
+  val Timestamp = SimpleType[js.Timestamp](Vec.T_TIME, TimestampType, classOf[js.Timestamp], onNAthrow)
+  val Date = SimpleType[js.Date](Vec.T_TIME, DateType, classOf[js.Date], onNAthrow)
+  val String = SimpleType[String](Vec.T_STR, StringType, classOf[String], onNAreturn(null), typeOf[String])
+  val UTF8 = SimpleType[UTF8String](Vec.T_STR, StringType, classOf[String], onNAreturn(null), typeOf[UTF8String])
+
   private implicit def val2type(v: Value): SimpleType[_] = v.asInstanceOf[SimpleType[_]]
 
-  val allSimple: List[SimpleType[_]] = values.toList map val2type
+  val allSimple: List[SimpleType[_]] = values.toList.map(val2type)
 
-  val allOptional: List[OptionalType[_]] = allSimple map (t => OptionalType(t))
+  val allOptional: List[OptionalType[_]] = allSimple.map(t => OptionalType(t))
 
   val all: List[SupportedType] = allSimple ++ allOptional
 
   private def index[F, T <: SupportedType](what: List[T]) = new {
-    def by(f: T => F): Map[F, T] = what map (t => f(t) -> t) toMap
+    def by(f: T => F): Map[F, T] = what.map(t => f(t) -> t).toMap
   }
 
-  val byClass: Map[Class[_], SimpleType[_]] = index(allSimple) by (_.javaClass)
-  val byVecType: Map[VecType, SimpleType[_]] = index(allSimple) by (_.vecType)
-  val bySparkType: Map[DataType, SimpleType[_]] = index(allSimple) by (_.sparkType)
-  val simpleByName: Map[NameOfType, SimpleType[_]] = index(allSimple) by (_.name)
-  val byName: Map[NameOfType, SupportedType] = index(all) by (_.name)
-  val byBaseType: Map[SimpleType[_], OptionalType[_]] = index(allOptional) by (_.contentType)
+  val byClass: Map[Class[_], SimpleType[_]] = index(allSimple).by(_.javaClass)
+  val byVecType: Map[VecType, SimpleType[_]] = index(allSimple).by(_.vecType)
+  val bySparkType: Map[DataType, SimpleType[_]] = index(allSimple).by(_.sparkType)
+  val simpleByName: Map[NameOfType, SimpleType[_]] = index(allSimple).by(_.name)
+  val byName: Map[NameOfType, SupportedType] = index(all).by(_.name)
+  val byBaseType: Map[SimpleType[_], OptionalType[_]] = index(allOptional).by(_.contentType)
 
   def byType(tpe: Type): SupportedType = {
-    SupportedTypes.all find (_.matches(tpe)) getOrElse {
+    SupportedTypes.all.find(_.matches(tpe)).getOrElse {
       throw new IllegalArgumentException(s"Type $tpe is not supported!")
     }
   }

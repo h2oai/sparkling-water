@@ -16,7 +16,6 @@
 */
 package ai.h2o.sparkling.backend
 
-import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, TaskContext}
 

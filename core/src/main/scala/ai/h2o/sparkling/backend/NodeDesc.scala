@@ -15,18 +15,18 @@
 * limitations under the License.
 */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling.backend
 
 import water.H2ONode
 import water.nbhm.NonBlockingHashMap
 
 /** Helper class containing node ID, hostname and port.
-  *
-  * @param nodeId  In case of external cluster mode the node ID is ID of H2O Node, in the internal cluster mode the ID
-  * is ID of Spark Executor where corresponding instance is located
-  * @param hostname hostname of the node
-  * @param port port of the node
-  */
+ *
+ * @param nodeId   In case of external cluster mode the node ID is ID of H2O Node, in the internal cluster mode the ID
+ *                 is ID of Spark Executor where corresponding instance is located
+ * @param hostname hostname of the node
+ * @param port     port of the node
+ */
 case class NodeDesc(nodeId: String, hostname: String, port: Int) {
   override def productPrefix = ""
 
@@ -38,24 +38,25 @@ object NodeDesc {
     intern(node)
   }
 
-  private[utils] def fromH2ONode(node: H2ONode): NodeDesc = {
+  private def fromH2ONode(node: H2ONode): NodeDesc = {
     val ipPort = node.getIpPortString.split(":")
     NodeDesc(node.index().toString, ipPort(0), Integer.parseInt(ipPort(1)))
   }
 
-  private[utils] def intern(node: H2ONode): NodeDesc = {
+  private def intern(node: H2ONode): NodeDesc = {
     var nodeDesc = INTERN_CACHE.get(node)
     if (nodeDesc != null) {
-      return nodeDesc
+      nodeDesc
     } else {
       nodeDesc = fromH2ONode(node)
       val oldNodeDesc = INTERN_CACHE.putIfAbsent(node, nodeDesc)
       if (oldNodeDesc != null) {
-        return oldNodeDesc
+        oldNodeDesc
       } else {
-        return nodeDesc
+        nodeDesc
       }
     }
   }
-  val INTERN_CACHE = new NonBlockingHashMap[H2ONode, NodeDesc]
+
+  private val INTERN_CACHE = new NonBlockingHashMap[H2ONode, NodeDesc]
 }

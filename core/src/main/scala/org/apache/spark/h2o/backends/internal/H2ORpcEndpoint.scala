@@ -20,8 +20,8 @@ package org.apache.spark.h2o.backends.internal
 
 import java.net.InetAddress
 
+import ai.h2o.sparkling.backend.NodeDesc
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.rpc.{RpcCallContext, RpcEnv, ThreadSafeRpcEndpoint}
 import water.util.Log
 import water.{H2O, H2ONode}

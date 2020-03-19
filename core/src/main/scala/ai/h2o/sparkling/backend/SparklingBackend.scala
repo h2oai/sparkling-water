@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend
 
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.NodeDesc
 
 trait SparklingBackend {
 

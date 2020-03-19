@@ -19,14 +19,14 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.utils.ConversionUtils.expectedTypesFromClasses
+import ai.h2o.sparkling.backend.utils.ReflectionUtils
+import ai.h2o.sparkling.backend.utils.SupportedTypes.Double
 import ai.h2o.sparkling.backend.{H2OAwareRDD, H2OFrameRelation, Writer, WriterMetadata}
 import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ExposeUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.ReflectionUtils
-import org.apache.spark.h2o.utils.SupportedTypes.Double
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.{DataType, DecimalType}

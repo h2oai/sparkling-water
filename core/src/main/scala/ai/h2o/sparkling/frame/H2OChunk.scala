@@ -19,11 +19,11 @@ package ai.h2o.sparkling.frame
 
 import java.io.{InputStream, OutputStream}
 
+import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import org.apache.spark.h2o.H2OConf
-import org.apache.spark.h2o.utils.NodeDesc
 
 
 case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)

@@ -20,10 +20,9 @@ package ai.h2o.sparkling.backend
 import java.lang.reflect.Constructor
 
 import ai.h2o.sparkling.SparkTimeZone
-import ai.h2o.sparkling.backend.utils.ConversionUtils
+import ai.h2o.sparkling.backend.utils.{ConversionUtils, ProductType}
 import ai.h2o.sparkling.frame.H2OFrame
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.h2o.utils.ProductType
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.annotation.meta.{field, getter, param}
