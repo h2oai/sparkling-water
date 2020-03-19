@@ -10,7 +10,7 @@ call %LIBSW% checkSparkVersion
 call %LIBSW% checkFatJarExists
 rem end of checking Sparkling environment
 
-set DRIVER_CLASS=water.SparklingWaterDriver
+set DRIVER_CLASS=ai.h2o.sparkling.SparklingWaterDriver
 
 if not defined MASTER (
 set MASTER=%DEFAULT_MASTER%

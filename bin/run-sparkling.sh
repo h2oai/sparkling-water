@@ -12,7 +12,7 @@ checkSparkHome
 checkSparkVersion
 # Check sparkling water assembly Jar exists
 checkFatJarExists
-DRIVER_CLASS=water.SparklingWaterDriver
+DRIVER_CLASS=ai.h2o.sparkling.SparklingWaterDriver
 
 DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}
 MASTER=${MASTER:-"$DEFAULT_MASTER"}

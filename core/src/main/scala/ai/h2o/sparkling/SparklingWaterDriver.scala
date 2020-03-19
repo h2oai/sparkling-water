@@ -15,17 +15,17 @@
 * limitations under the License.
 */
 
-package water
+package ai.h2o.sparkling
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.SparkConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 
 /**
-  * A simple wrapper to allow launching H2O itself on the
-  * top of Spark.
-  */
-object SparklingWaterWithHiveDriver {
+ * A simple wrapper to allow launching H2O itself on the
+ * top of Spark.
+ */
+object SparklingWaterDriver {
 
   /** Entry point */
   def main(args: Array[String]) {
@@ -36,8 +36,7 @@ object SparklingWaterWithHiveDriver {
         .setIfMissing("spark.master", sys.env.getOrElse("spark.master", "local[*]"))
         .set("spark.ext.h2o.repl.enabled", "true"))
 
-    // Create SparkContext to execute application on Spark cluster
-    SparkSessionUtils.createSparkSession(conf, forceHive = true)
+    SparkSessionUtils.createSparkSession(conf)
     // Start H2O cluster only
     val hc = H2OContext.getOrCreate()
 
