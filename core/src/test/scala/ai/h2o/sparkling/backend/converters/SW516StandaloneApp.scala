@@ -29,6 +29,7 @@ case class Data(f1: org.apache.spark.ml.linalg.Vector,
                 f2: org.apache.spark.ml.linalg.Vector)
 
 object SWApp {
+
   import SW516StandaloneApp._
 
   def main(args: Array[String]): Unit = {
@@ -36,19 +37,19 @@ object SWApp {
       .appName("SW516")
       .master("local[*]")
       .getOrCreate()
-    
+
     val h2oConf = new H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName(cloudName)
     val hc = H2OContext.getOrCreate(h2oConf)
 
     val values = (0 until valuesCnt).map(x =>
-     Data(
-       org.apache.spark.ml.linalg.Vectors.sparse(valuesCnt, Seq((x, 1.0))),
-       org.apache.spark.ml.linalg.Vectors.dense(x.toDouble, 0.0, 1.0, 42.0)
-     ))
+      Data(
+        org.apache.spark.ml.linalg.Vectors.sparse(valuesCnt, Seq((x, 1.0))),
+        org.apache.spark.ml.linalg.Vectors.dense(x.toDouble, 0.0, 1.0, 42.0)
+      ))
 
     import spark.implicits._
     println(s"Values to transfer: ${values.mkString("\n")}")
-    
+
     // Create data in Spark
     val df = spark.sparkContext.parallelize(values, partitions).toDF()
     df.printSchema()
@@ -62,6 +63,7 @@ object SWApp {
 }
 
 object H2OApp {
+
   import SW516StandaloneApp._
 
   def main(args: Array[String]): Unit = {

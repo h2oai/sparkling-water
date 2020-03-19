@@ -36,9 +36,10 @@ import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
+
 /**
-  * Testing schema for rdd  to h2o frame transformations.
-  */
+ * Testing schema for rdd  to h2o frame transformations.
+ */
 @RunWith(classOf[JUnitRunner])
 class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
@@ -86,7 +87,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(c2 == numRows, "Number of rows should match")
   }
 
-  test("Empty RDD to H2O frame, Byte type"){
+  test("Empty RDD to H2O frame, Byte type") {
     val rdd = sc.parallelize(Array.empty[Byte])
     val fr = hc.asH2OFrame(rdd)
 
@@ -94,7 +95,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Short type"){
+  test("Empty RDD to H2O frame, Short type") {
     val rdd = sc.parallelize(Array.empty[Short])
     val fr = hc.asH2OFrame(rdd)
 
@@ -102,7 +103,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Integer type"){
+  test("Empty RDD to H2O frame, Integer type") {
     val rdd = sc.parallelize(Array.empty[Integer])
     val fr = hc.asH2OFrame(rdd)
 
@@ -110,7 +111,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Long type"){
+  test("Empty RDD to H2O frame, Long type") {
     val rdd = sc.parallelize(Array.empty[Long])
     val fr = hc.asH2OFrame(rdd)
 
@@ -118,7 +119,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Float type"){
+  test("Empty RDD to H2O frame, Float type") {
     val rdd = sc.parallelize(Array.empty[Float])
     val fr = hc.asH2OFrame(rdd)
 
@@ -126,7 +127,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Double type"){
+  test("Empty RDD to H2O frame, Double type") {
     val rdd = sc.parallelize(Array.empty[Double])
     val fr = hc.asH2OFrame(rdd)
 
@@ -134,7 +135,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, String type"){
+  test("Empty RDD to H2O frame, String type") {
     val rdd = sc.parallelize(Array.empty[String])
     val fr = hc.asH2OFrame(rdd)
 
@@ -142,7 +143,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Boolean type"){
+  test("Empty RDD to H2O frame, Boolean type") {
     val rdd = sc.parallelize(Array.empty[Boolean])
     val fr = hc.asH2OFrame(rdd)
 
@@ -150,7 +151,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Timestamp type"){
+  test("Empty RDD to H2O frame, Timestamp type") {
     val rdd = sc.parallelize(Array.empty[Timestamp])
     val fr = hc.asH2OFrame(rdd)
 
@@ -158,7 +159,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Product type"){
+  test("Empty RDD to H2O frame, Product type") {
     val rdd = sc.parallelize(Array.empty[ByteField])
     val fr = hc.asH2OFrame(rdd)
 
@@ -166,7 +167,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Empty RDD to H2O frame, Labeled point"){
+  test("Empty RDD to H2O frame, Labeled point") {
     val rdd = sc.parallelize(Array.empty[LabeledPoint])
     val fr = hc.asH2OFrame(rdd)
 

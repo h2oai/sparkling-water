@@ -98,8 +98,8 @@ case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
           StructField("field_V6NMVFBPZTK0IQ", StringType)
         ))),
         StructField("field_5HFZCI5KDM", StructType(Seq(
-            StructField("field_1JJ8V0Y2K", LongType),
-            StructField("field_W06XUE4JNETUKK6", StringType)
+          StructField("field_1JJ8V0Y2K", LongType),
+          StructField("field_W06XUE4JNETUKK6", StringType)
         ))),
         StructField("field_CN2PQ748U1OBJ", StructType(Seq(
           StructField("field_HKTXKOYLO6RFQ9H", LongType),
