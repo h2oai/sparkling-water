@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.ml.backend
+package ai.h2o.sparkling.ml.internals
 
 import java.io.File
 import java.nio.file.Files

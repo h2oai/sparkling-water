@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend
 
 import java.io.{InputStream, OutputStream}
 
-import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
