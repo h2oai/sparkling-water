@@ -25,28 +25,44 @@ import water.util.Log;
 
 import java.util.Arrays;
 
-class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask> {
-    private final Key key;
+public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask> {
+    private final Key frameKey;
     private byte[][] packedDomains;
 
-    private CollectCategoricalDomainsTask(Key key) {
-        this.key = key;
+    public CollectCategoricalDomainsTask(Key frameKey) {
+        this.frameKey = frameKey;
     }
 
     @Override
     public void setupLocal() {
-        if (!LocalNodeDomains.containsDomains(key)) return;
-        final Categorical[] domains = LocalNodeDomains.getDomains(key);
-        packedDomains = new byte[domains.length][];
-        int i = 0;
-        for (Categorical domain : domains) {
-            domain.convertToUTF8(-1);
-            BufferedString[] values = domain.getColumnDomain();
-            Arrays.sort(values);
-            packedDomains[i] = PackedDomains.pack(values);
-            i++;
+        if (!LocalNodeDomains.containsDomains(frameKey)) return;
+        final Categorical[][] localDomains = LocalNodeDomains.getDomains(frameKey);
+        if (localDomains.length == 0) return;
+        packedDomains = chunkDomainsToPackedDomains(localDomains[0]);
+        for (int i = 1; i < localDomains.length; i++) {
+            byte[][] anotherPackedDomains = chunkDomainsToPackedDomains(localDomains[i]);
+            packedDomains = mergePackedDomains(packedDomains, anotherPackedDomains);
         }
         Log.trace("Done locally collecting domains on each node.");
+    }
+
+    private byte[][] chunkDomainsToPackedDomains(Categorical[] domains) {
+        byte[][] result = new byte[domains.length][];
+        for(int i = 0; i < domains.length; i++) {
+            Categorical columnDomain = domains[i];
+            columnDomain.convertToUTF8(-1);
+            BufferedString[] values = columnDomain.getColumnDomain();
+            Arrays.sort(values);
+            result[i] = PackedDomains.pack(values);
+        }
+        return result;
+    }
+
+    private byte[][] mergePackedDomains(byte[][] first, byte[][] second) {
+        for (int i = 0; i < first.length; i++) {
+            first[i] = PackedDomains.merge(first[i], second[i]);
+        }
+        return first;
     }
 
     @Override
@@ -70,11 +86,16 @@ class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask
         Log.trace("Done merging domains.");
     }
 
-    public int getDomainLength(int colIdx) {
-        return packedDomains == null ? 0 : PackedDomains.sizeOf(packedDomains[colIdx]);
-    }
-
     public String[] getDomain(int colIdx) {
         return packedDomains == null ? null : PackedDomains.unpackToStrings(packedDomains[colIdx]);
+    }
+
+    public String[][] getDomains() {
+        if (packedDomains == null) return null;
+        String[][] result = new String[packedDomains.length][];
+        for (int i = 0; i < packedDomains.length; i++) {
+            result[i] = PackedDomains.unpackToStrings(packedDomains[i]);
+        }
+        return result;
     }
 }

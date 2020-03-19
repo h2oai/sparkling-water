@@ -20,11 +20,21 @@ package water.parser;
 import water.Key;
 import water.nbhm.NonBlockingHashMap;
 
-public final class LocalNodeDomains {
-    private static NonBlockingHashMap<Key, Categorical[]> domainsMap = new NonBlockingHashMap<>();
+import java.util.ArrayList;
 
-    public static void addDomains(String frameName, int chunkId, String[][] domains) {
-        Key key = createDomainKey(frameName, chunkId);
+public final class LocalNodeDomains {
+    private static NonBlockingHashMap<Key, ArrayList<Categorical[]>> domainsMap = new NonBlockingHashMap<>();
+    private static NonBlockingHashMap<String, Categorical[]> domainsMapByChunk = new NonBlockingHashMap<>();
+
+    public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
+        ArrayList<Categorical[]> nodeDomains = domainsMap.putIfAbsent(frameKey, new ArrayList<>());
+        Categorical[] categoricalDomains = domainsToCategoricals(domains);
+        nodeDomains.add(categoricalDomains);
+        String chunkKey = createChunkKey(frameKey, chunkId);
+        domainsMapByChunk.putIfAbsent(chunkKey, categoricalDomains);
+    }
+
+    private static Categorical[] domainsToCategoricals(String[][] domains) {
         Categorical[] result = new Categorical[domains.length];
         for (int i = 0; i < domains.length; i++) {
             String[] domain = domains[i];
@@ -34,18 +44,28 @@ public final class LocalNodeDomains {
             }
             result[i] = categorical;
         }
-        domainsMap.put(key, result);
+        return result;
     }
 
-    public static boolean containsDomains(Key key) {
+    public synchronized static boolean containsDomains(Key key) {
         return domainsMap.containsKey(key);
     }
 
-    public static Categorical[] getDomains(Key key) {
-        return domainsMap.get(key);
+    public synchronized static boolean containsDomains(Key key, int chunkId) {
+        String chunkKey = createChunkKey(key, chunkId);
+        return domainsMapByChunk.containsKey(chunkKey);
     }
 
-    public static Key createDomainKey(String frameName, int chunkId) {
-        return Key.make(frameName + "_" + chunkId);
+    public synchronized static Categorical[][] getDomains(Key key) {
+        return domainsMap.get(key).toArray(new Categorical[0][]);
+    }
+
+    public synchronized static Categorical[] getDomains(Key key, int chunkId) {
+        String chunkKey = createChunkKey(key, chunkId);
+        return domainsMapByChunk.get(chunkKey);
+    }
+
+    private static String createChunkKey(Key frameKey, int chunkId) {
+        return frameKey.toString() + "_" + chunkId;
     }
 }
