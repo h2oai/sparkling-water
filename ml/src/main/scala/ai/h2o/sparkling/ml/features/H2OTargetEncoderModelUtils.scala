@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
 
 trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {

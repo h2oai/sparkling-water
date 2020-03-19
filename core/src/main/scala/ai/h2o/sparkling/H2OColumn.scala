@@ -15,21 +15,19 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.model
+package ai.h2o.sparkling
 
-/**
- * Copied from H2O's class ModelCategory
- */
-object H2OModelCategory extends Enumeration {
-  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression,
-  Clustering, AutoEncoder, TargetEncoder, DimReduction, WordEmbedding, CoxPH,
-  AnomalyDetection = Value
-
-  def fromString(modelCategory: String): Value = {
-    values
-      .find(_.toString == modelCategory)
-      .getOrElse(
-        throw new RuntimeException(s"Unknown model category $modelCategory")
-      )
-  }
+case class H2OColumn(
+                      name: String,
+                      dataType: H2OColumnType.Value,
+                      min: Double,
+                      max: Double,
+                      mean: Double,
+                      sigma: Double,
+                      numberOfZeros: Long,
+                      numberOfMissingElements: Long,
+                      percentiles: Array[Double],
+                      domain: Array[String],
+                      domainCardinality: Long) {
+  def nullable: Boolean = numberOfMissingElements > 0
 }

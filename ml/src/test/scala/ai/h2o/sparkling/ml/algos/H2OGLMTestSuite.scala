@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.model.H2OModel
+import ai.h2o.sparkling.ml.internals.H2OModel
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}

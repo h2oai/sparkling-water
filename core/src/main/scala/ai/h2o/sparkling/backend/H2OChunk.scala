@@ -15,20 +15,19 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.frame
+package ai.h2o.sparkling.backend
 
 import java.io.{InputStream, OutputStream}
 
-import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import org.apache.spark.h2o.H2OConf
 
 
-case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
+private[sparkling] case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
 
-object H2OChunk extends RestCommunication {
+private[sparkling] object H2OChunk extends RestCommunication {
   def getChunkAsInputStream(
                              node: NodeDesc,
                              conf: H2OConf,

@@ -76,7 +76,7 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
         Params._dummy(),
         "selectBestModelBy",
         "Specifies the metric which is used for comparing and sorting the models returned by the grid.",
-        H2OTypeConverters.toEnumString("ai.h2o.sparkling.model.H2OMetric"))
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.internals.H2OMetric"))
 
     parallelism = Param(
         Params._dummy(),

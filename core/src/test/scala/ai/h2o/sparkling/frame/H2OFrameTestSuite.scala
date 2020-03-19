@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.frame
 
+import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith

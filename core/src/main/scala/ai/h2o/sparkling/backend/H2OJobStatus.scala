@@ -15,12 +15,12 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.frame
+package ai.h2o.sparkling.backend
 
-object H2OColumnType extends Enumeration {
-  val enum, string, int, real, time, uuid = Value
+object H2OJobStatus extends Enumeration {
+  val DONE, CANCELLED, FAILED, RUNNING = Value
 
-  def fromString(dataType: String): Value = {
-    values.find(_.toString == dataType).getOrElse(throw new RuntimeException(s"Unknown H2O's Data type $dataType"))
+  def fromString(status: String): Value = {
+    values.find(_.toString == status).getOrElse(throw new RuntimeException(s"Unknown H2O's Job status $status"))
   }
 }

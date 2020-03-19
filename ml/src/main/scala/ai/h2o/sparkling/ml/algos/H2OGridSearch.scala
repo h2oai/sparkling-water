@@ -18,13 +18,13 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
+import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import ai.h2o.sparkling.model.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
