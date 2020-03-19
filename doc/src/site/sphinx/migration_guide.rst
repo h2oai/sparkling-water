@@ -24,6 +24,11 @@ From 3.30 to 3.32
 - The method ``classify`` in the ``hex.ModelUtils`` object is removed. Please use Sparkling Water algorithm API to train
   and score H2O models. This removal affects only Scala API as other APIs don't have such functionality.
 
+- The method ``DLModel`` in ``water.support.DeepLearningSupport`` is removed. Please use ``H2ODeepLearning`` instead.
+  The same holds for method ``GBMModel`` in ``water.support.GBMSupport``. Please
+  use ``H2OGBM`` instead. The classes wrapping these methods are removed as well. This removal affects only Scala API
+  as other APIs don't have such functionality.
+
 From 3.28.1 to 3.30
 -------------------
 
