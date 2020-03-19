@@ -18,21 +18,34 @@
 package water.parser;
 
 import water.Key;
-import java.util.concurrent.ConcurrentHashMap;
+import water.nbhm.NonBlockingHashMap;
 
 public final class LocalNodeDomains {
-    private static ConcurrentHashMap<Key, String[][]> domainsMap = new ConcurrentHashMap<>();
+    private static NonBlockingHashMap<Key, Categorical[]> domainsMap = new NonBlockingHashMap<>();
 
     public static void addDomains(String frameName, int chunkId, String[][] domains) {
-        Key key = Key.make(frameName + "_" + chunkId);
-        domainsMap.put(key, domains);
+        Key key = createDomainKey(frameName, chunkId);
+        Categorical[] result = new Categorical[domains.length];
+        for (int i = 0; i < domains.length; i++) {
+            String[] domain = domains[i];
+            Categorical categorical = new Categorical();
+            for (int j = 0; j < domain.length; j++) {
+                categorical.addKey(new BufferedString(domain[j]));
+            }
+            result[i] = categorical;
+        }
+        domainsMap.put(key, result);
     }
 
     public static boolean containsDomains(Key key) {
         return domainsMap.containsKey(key);
     }
 
-    public static String[][] getDomains(Key key) {
+    public static Categorical[] getDomains(Key key) {
         return domainsMap.get(key);
+    }
+
+    public static Key createDomainKey(String frameName, int chunkId) {
+        return Key.make(frameName + "_" + chunkId);
     }
 }
