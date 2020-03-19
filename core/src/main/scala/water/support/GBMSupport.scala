@@ -19,12 +19,13 @@ package water.support
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o._
 
 /**
   * Support class to create and train GBM
   */
-trait GBMSupport {
+trait GBMSupport extends Logging {
 
   /**
     * Create Gradient Boosting Model for the basic usage. This method exposes

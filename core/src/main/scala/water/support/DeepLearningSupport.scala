@@ -20,12 +20,13 @@ import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o._
 
 /**
   * Support class to create and train Deep Learning Model
   */
-trait DeepLearningSupport {
+trait DeepLearningSupport extends Logging {
 
   /**
     * Create Deep Learning Model for the basic usage. This method exposes
