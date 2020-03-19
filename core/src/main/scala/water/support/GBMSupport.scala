@@ -16,6 +16,7 @@
 */
 package water.support
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.genmodel.utils.DistributionFamily
 import hex.tree.gbm.GBMModel
 import org.apache.spark.h2o._
@@ -39,6 +40,7 @@ trait GBMSupport {
     * @tparam T H2O Frame Type
     * @return Gradient Boosting Model
     */
+  @DeprecatedMethod("ai.h2o.sparkling.algos.H2OGBM", "3.32")
   def GBMModel[T <: Frame](train: T, test: T, response: String,
                modelId: String = "model",
                ntrees: Int = 50,

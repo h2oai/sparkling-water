@@ -16,6 +16,7 @@
 */
 package water.support
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
@@ -42,6 +43,7 @@ trait DeepLearningSupport {
     * @tparam T H2O Frame Type
     * @return Deep Learning Model
     */
+  @DeprecatedMethod("ai.h2o.sparkling.algos.H2ODeepLearning", "3.32")
   def DLModel[T <: Frame](train: T, valid: T, response: String,
               modelId: String = "model",
               epochs: Int = 10, l1: Double = 0.0001, l2: Double = 0.0001,
