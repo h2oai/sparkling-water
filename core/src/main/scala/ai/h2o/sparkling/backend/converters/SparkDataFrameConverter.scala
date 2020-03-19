@@ -47,7 +47,7 @@ object SparkDataFrameConverter extends Logging {
 
   def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
     DKV.put(fr)
-    toDataFrame(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString), copyMetadata)
+    toDataFrame(hc, ai.h2o.sparkling.H2OFrame(fr._key.toString), copyMetadata)
   }
 
   /**
@@ -59,7 +59,7 @@ object SparkDataFrameConverter extends Logging {
    * @return a new DataFrame definition using given H2OFrame as data source
    */
 
-  def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame, copyMetadata: Boolean): DataFrame = {
+  def toDataFrame(hc: H2OContext, fr: ai.h2o.sparkling.H2OFrame, copyMetadata: Boolean): DataFrame = {
     val spark = SparkSessionUtils.active
     val relation = H2OFrameRelation(fr, copyMetadata)(spark.sqlContext)
     spark.baseRelationToDataFrame(relation)

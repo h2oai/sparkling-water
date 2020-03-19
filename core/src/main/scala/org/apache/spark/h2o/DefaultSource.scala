@@ -62,7 +62,7 @@ class DefaultSource extends RelationProvider
                               schema: StructType): H2OFrameRelation = {
     val key = checkKey(parameters)
 
-    H2OFrameRelation(ai.h2o.sparkling.frame.H2OFrame(key), copyMetadata = true)(sqlContext)
+    H2OFrameRelation(ai.h2o.sparkling.H2OFrame(key), copyMetadata = true)(sqlContext)
   }
 
   override def createRelation(sqlContext: SQLContext,

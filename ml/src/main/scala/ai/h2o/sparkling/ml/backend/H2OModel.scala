@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.model
+package ai.h2o.sparkling.ml.backend
 
 import java.io.File
 import java.nio.file.Files
@@ -31,7 +31,7 @@ import water.api.schemas3.ModelsV3
 import scala.collection.JavaConverters._
 
 
-class H2OModel private(val modelId: String,
+private[sparkling] class H2OModel private(val modelId: String,
                        val modelCategory: H2OModelCategory.Value,
                        val metrics: H2OMetricsHolder,
                        val trainingParams: Map[String, String])
@@ -57,7 +57,7 @@ class H2OModel private(val modelId: String,
   }
 }
 
-object H2OModel extends RestCommunication {
+private[sparkling] object H2OModel extends RestCommunication {
 
   private[sparkling] def listAllModels(): Array[String] = {
     val conf = H2OContext.ensure().getConf

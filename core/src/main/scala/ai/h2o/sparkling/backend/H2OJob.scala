@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.job
+package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.backend.utils.RestCommunication
@@ -23,7 +23,7 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.{JobV3, JobsV3}
 
-class H2OJob private(val id: String) extends Logging {
+private[sparkling] class H2OJob private(val id: String) extends Logging {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
   private def fetchStatus(): H2OJobStatus.Value = {
@@ -48,7 +48,7 @@ class H2OJob private(val id: String) extends Logging {
   }
 }
 
-object H2OJob extends RestCommunication {
+private[sparkling] object H2OJob extends RestCommunication {
   def apply(jobId: String): H2OJob = {
     val conf = H2OContext.ensure().getConf
     verifyAndGetJob(conf, jobId)

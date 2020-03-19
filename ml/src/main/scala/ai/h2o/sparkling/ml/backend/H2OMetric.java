@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.model;
+package ai.h2o.sparkling.ml.backend;
 
 public enum H2OMetric {
     AUTO(true),

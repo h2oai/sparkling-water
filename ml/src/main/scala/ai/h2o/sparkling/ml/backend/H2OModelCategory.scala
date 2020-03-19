@@ -15,12 +15,21 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.frame
+package ai.h2o.sparkling.ml.backend
 
-object H2OColumnType extends Enumeration {
-  val enum, string, int, real, time, uuid = Value
+/**
+ * Copied from H2O's class ModelCategory
+ */
+private[sparkling] object H2OModelCategory extends Enumeration {
+  val Unknown, Binomial, Multinomial, Ordinal, Regression, HGLMRegression,
+  Clustering, AutoEncoder, TargetEncoder, DimReduction, WordEmbedding, CoxPH,
+  AnomalyDetection = Value
 
-  def fromString(dataType: String): Value = {
-    values.find(_.toString == dataType).getOrElse(throw new RuntimeException(s"Unknown H2O's Data type $dataType"))
+  def fromString(modelCategory: String): Value = {
+    values
+      .find(_.toString == modelCategory)
+      .getOrElse(
+        throw new RuntimeException(s"Unknown model category $modelCategory")
+      )
   }
 }

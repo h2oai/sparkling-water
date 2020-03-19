@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.frame.{H2OColumnType, H2OFrame}
+import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
 import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
 import hex.Model

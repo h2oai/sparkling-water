@@ -43,11 +43,11 @@ object SupportedRDDConverter {
   /** Transform H2OFrame to RDD */
   def toRDD[A <: Product : TypeTag : ClassTag, T <: Frame](hc: H2OContext, fr: T): RDD[A] = {
     DKV.put(fr)
-    toRDD(hc, ai.h2o.sparkling.frame.H2OFrame(fr._key.toString))
+    toRDD(hc, ai.h2o.sparkling.H2OFrame(fr._key.toString))
   }
 
   /** Transform H2OFrame to RDD */
-  def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: ai.h2o.sparkling.frame.H2OFrame): RDD[A] = {
+  def toRDD[A <: Product : TypeTag : ClassTag](hc: H2OContext, fr: ai.h2o.sparkling.H2OFrame): RDD[A] = {
     new H2ORDD[A](fr)(hc)
   }
 }

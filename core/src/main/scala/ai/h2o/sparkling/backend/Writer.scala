@@ -20,9 +20,9 @@ package ai.h2o.sparkling.backend
 import java.io.Closeable
 import java.util.TimeZone
 
+import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.converters.TimeZoneConverter
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
-import ai.h2o.sparkling.frame.{H2OChunk, H2OFrame}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.{H2OContext, RDD}

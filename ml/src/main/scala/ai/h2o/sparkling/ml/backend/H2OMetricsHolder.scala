@@ -15,8 +15,8 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.model
+package ai.h2o.sparkling.ml.backend
 
-case class H2OMetricsHolder(trainingMetrics: Map[H2OMetric, Double],
-                            validationMetrics: Map[H2OMetric, Double],
-                            crossValidationMetrics: Map[H2OMetric, Double])
+private[sparkling] case class H2OMetricsHolder(trainingMetrics: Map[H2OMetric, Double],
+                                               validationMetrics: Map[H2OMetric, Double],
+                                               crossValidationMetrics: Map[H2OMetric, Double])

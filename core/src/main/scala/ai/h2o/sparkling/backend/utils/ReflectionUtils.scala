@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.backend.utils
 
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
-import ai.h2o.sparkling.frame.{H2OColumn, H2OColumnType}
+import ai.h2o.sparkling.{H2OColumn, H2OColumnType}
 import org.apache.spark.sql.types._
 import water.api.API
 import water.fvec.Vec

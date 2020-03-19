@@ -15,19 +15,12 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.frame
+package ai.h2o.sparkling.backend
 
-case class H2OColumn(
-                      name: String,
-                      dataType: H2OColumnType.Value,
-                      min: Double,
-                      max: Double,
-                      mean: Double,
-                      sigma: Double,
-                      numberOfZeros: Long,
-                      numberOfMissingElements: Long,
-                      percentiles: Array[Double],
-                      domain: Array[String],
-                      domainCardinality: Long) {
-  def nullable: Boolean = numberOfMissingElements > 0
+object H2OJobStatus extends Enumeration {
+  val DONE, CANCELLED, FAILED, RUNNING = Value
+
+  def fromString(status: String): Value = {
+    values.find(_.toString == status).getOrElse(throw new RuntimeException(s"Unknown H2O's Job status $status"))
+  }
 }

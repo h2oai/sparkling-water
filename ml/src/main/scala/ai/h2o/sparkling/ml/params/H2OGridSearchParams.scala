@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 import java.util
 
 import ai.h2o.sparkling.ml.algos.{H2OGridSearch, H2OSupervisedAlgorithm}
-import ai.h2o.sparkling.model.H2OMetric
+import ai.h2o.sparkling.ml.backend.H2OMetric
 import hex.grid.HyperSpaceSearchCriteria
 import hex.{Model, ScoreKeeper}
 import org.apache.spark.ml.param._

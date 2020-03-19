@@ -17,11 +17,11 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
-import ai.h2o.sparkling.frame.H2OFrame
+import ai.h2o.sparkling.ml.backend.H2OModel
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.utils.SchemaUtils
-import ai.h2o.sparkling.model.H2OModel
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
