@@ -28,17 +28,17 @@ import water.util.Log;
 import water.util.PrettyPrint;
 
 class UpdateCategoricalChunksTask extends MRTask<UpdateCategoricalChunksTask> {
-    private final Key _parseCatMapsKey;
+    private final Key domainsKey;
     private final int[] _chunk2ParseNodeMap;
 
-    private UpdateCategoricalChunksTask(Key parseCatMapsKey, int[] chunk2ParseNodeMap) {
-        _parseCatMapsKey = parseCatMapsKey;
+    private UpdateCategoricalChunksTask(Key domainsKey, int[] chunk2ParseNodeMap) {
+        this.domainsKey = domainsKey;
         _chunk2ParseNodeMap = chunk2ParseNodeMap;
     }
 
     @Override
     public void map(Chunk[] chks) {
-        CategoricalUpdateMap temp = DKV.getGet(Key.make(_parseCatMapsKey.toString() + "parseCatMapNode" + _chunk2ParseNodeMap[chks[0].cidx()]));
+        CategoricalUpdateMap temp = DKV.getGet(Key.make(domainsKey.toString() + "parseCatMapNode" + _chunk2ParseNodeMap[chks[0].cidx()]));
         if (temp == null || temp.map == null)
             throw new H2OIllegalValueException("Missing categorical update map", this);
         int[][] _parse2GlobalCatMaps = temp.map;
@@ -69,7 +69,8 @@ class UpdateCategoricalChunksTask extends MRTask<UpdateCategoricalChunksTask> {
 
     @Override
     public void postGlobal() {
-        for (int i = 0; i < H2O.CLOUD.size(); i++)
-            DKV.remove(Key.make(_parseCatMapsKey.toString() + "parseCatMapNode" + i));
+        for (int i = 0; i < H2O.CLOUD.size(); i++) {
+            DKV.remove(Key.make(domainsKey.toString() + "parseCatMapNode" + i));
+        }
     }
 }
