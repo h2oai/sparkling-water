@@ -20,10 +20,9 @@ import water.api.API;
 import water.api.Schema;
 
 /**
- * Schema representing [POST] /3/RDDs/&lt;rdd_id&gt; endpoint
+ * Schema representing [POST] /3/RDDs/[rdd_id] endpoint
  */
-public class RDDV3 extends Schema<IcedRDDInfo, RDDV3> {
-
+public class RDDV3 extends Schema<IcedRDD, RDDV3> {
     @API(help = "RDD ID", direction = API.Direction.INOUT)
     public int rdd_id;
 

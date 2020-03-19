@@ -24,7 +24,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.{StructField, StructType}
-import water.Iced
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
@@ -40,8 +39,8 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     s
   }
 
-  def fetchAll(): Array[IcedRDDInfo] =
-    sc.getPersistentRDDs.values.map(IcedRDDInfo.fromRdd).toArray
+  def fetchAll(): Array[IcedRDD] =
+    sc.getPersistentRDDs.values.map(IcedRDD.fromRdd).toArray
 
   def getRDD(version: Int, s: RDDV3): RDDV3 = {
     val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
@@ -52,7 +51,6 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     s
   }
 
-  // TODO(vlad): fix this 'instanceOf'
   private[RDDsHandler] def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
@@ -80,43 +78,14 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     }
   }
 
-  // TODO(vlad): see the same code in DataFrames
   def toH2OFrame(version: Int, s: RDD2H2OFrameIDV3): RDD2H2OFrameIDV3 = {
     val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
       throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!"))
 
-    // TODO(vlad): take care of the cases when the data are missing
     val h2oFrame = convertToH2OFrame(rdd, Option(s.h2oframe_id) map (_.toLowerCase))
     s.h2oframe_id = h2oFrame._key.toString
     s
   }
-}
-
-private[api] class IcedRDDInfo(val rdd_id: Int,
-                               val name: String,
-                               val partitions: Int) extends Iced[IcedRDDInfo] {
-
-  def this() = this(-1, null, -1) // initialize with dummy values, this is used by the createImpl method in the
-  //RequestServer as it calls constructor without any arguments
-}
-
-private[api] object IcedRDDInfo {
-  def fromRdd(rdd: RDD[_]): IcedRDDInfo = {
-    val rddName = Option(rdd.name).getOrElse(rdd.id.toString)
-    new IcedRDDInfo(rdd.id, rddName, rdd.partitions.length)
-  }
-}
-
-/** Simple implementation pojo holding list of RDDs */
-private[api] class RDDs extends Iced[RDDs] {
-  var rdds: Array[IcedRDDInfo] = _
-}
-
-
-private[api] class IcedRDD2H2OFrameID(val rdd_id: Integer, val h2oframe_id: String) extends Iced[IcedRDD2H2OFrameID] {
-
-  def this() = this(-1, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
 }
 
 object RDDsHandler {
@@ -136,7 +105,5 @@ object RDDsHandler {
 
     context.registerEndpoint("rddToH2OFrame", "POST", "/3/RDDs/{rdd_id}/h2oframe",
       classOf[RDDsHandler], "toH2OFrame", "Transform RDD with the given ID to H2OFrame", rddsFactory)
-
   }
-
 }

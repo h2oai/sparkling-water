@@ -16,12 +16,10 @@
 */
 package ai.h2o.sparkling.backend.api.rdds
 
-import water.api.{API, Schema}
+import water.Iced
 
-/**
- * Schema representing [GET] /3/RDDs endpoint
- */
-class RDDsV3 extends Schema[IcedRDDs, RDDsV3] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+private[rdds] class IcedRDD2H2OFrameID(val rdd_id: Integer, val h2oframe_id: String) extends Iced[IcedRDD2H2OFrameID] {
+
+  def this() = this(-1, null) // initialize with empty values, this is used by the createImpl method in the
+  //RequestServer, as it calls constructor without any arguments
 }

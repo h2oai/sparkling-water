@@ -16,12 +16,20 @@
 */
 package ai.h2o.sparkling.backend.api.rdds
 
-import water.api.{API, Schema}
+import org.apache.spark.rdd.RDD
+import water.Iced
 
-/**
- * Schema representing [GET] /3/RDDs endpoint
- */
-class RDDsV3 extends Schema[IcedRDDs, RDDsV3] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+private[rdds] class IcedRDD(val rdd_id: Int,
+                            val name: String,
+                            val partitions: Int) extends Iced[IcedRDD] {
+
+  def this() = this(-1, null, -1) // initialize with dummy values, this is used by the createImpl method in the
+  //RequestServer as it calls constructor without any arguments
+}
+
+private[rdds] object IcedRDD {
+  def fromRdd(rdd: RDD[_]): IcedRDD = {
+    val rddName = Option(rdd.name).getOrElse(rdd.id.toString)
+    new IcedRDD(rdd.id, rddName, rdd.partitions.length)
+  }
 }

@@ -16,12 +16,9 @@
 */
 package ai.h2o.sparkling.backend.api.rdds
 
-import water.api.{API, Schema}
+import water.Iced
 
-/**
- * Schema representing [GET] /3/RDDs endpoint
- */
-class RDDsV3 extends Schema[IcedRDDs, RDDsV3] {
-  @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
-  val rdds: Array[RDDV3] = null
+/** Simple implementation pojo holding list of RDDs */
+private[rdds] class IcedRDDs extends Iced[IcedRDDs] {
+  var rdds: Array[IcedRDD] = _
 }
