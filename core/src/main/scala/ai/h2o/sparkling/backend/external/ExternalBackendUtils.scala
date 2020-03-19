@@ -24,7 +24,7 @@ import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.utils.SharedBackendUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import water.init.HostnameGuesser
+import water.init.{HostnameGuesser, NetworkBridge}
 import water.{H2O, H2OStarter, Paxos}
 
 private[external] trait ExternalBackendUtils extends SharedBackendUtils {
@@ -79,7 +79,7 @@ private[external] trait ExternalBackendUtils extends SharedBackendUtils {
       interface.getInterfaceAddresses.asScala.foreach { address =>
         val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
         val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
+        if (cidr != null && NetworkBridge.isInetAddressOnNetwork(cidr, InetAddress.getByName(remoteAddress))) {
           return Some(address.getAddress.getHostAddress)
         }
       }
