@@ -23,8 +23,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
 import water.H2O.H2OCountedCompleter
 import water._
-import water.api.schemas3.JobV3
 import water.api._
+import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -147,22 +147,6 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
     intp
   }
 
-}
-
-private[api] class IcedCode(val session_id: Int, val code: String) extends Iced[IcedCode] {
-
-  def this() = this(-1, null)
-
-  // initialize with dummy values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
-}
-
-private[api] class IcedSessions extends Iced[IcedSessions] {}
-
-private[api] class IcedSessionId(val rdd_id: Integer, val async: Boolean) extends Iced[IcedSessionId] {
-
-  def this() = this(-1, false) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
 }
 
 object ScalaCodeHandler {
