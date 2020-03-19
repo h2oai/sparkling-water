@@ -29,6 +29,7 @@ import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.h2o.utils.TestFrameUtils._
+import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.types._
@@ -40,11 +41,10 @@ import water.Key
 import water.api.TestUtils
 import water.fvec._
 import water.parser.BufferedString
-import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 
 /**
-  * Testing Conversions between H2OFrame and Spark DataFrame
-  */
+ * Testing Conversions between H2OFrame and Spark DataFrame
+ */
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
@@ -62,7 +62,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
-  test("Convert Empty dataframe, empty schema"){
+  test("Convert Empty dataframe, empty schema") {
     val schema = StructType(Seq())
     val empty = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
     val fr = hc.asH2OFrame(empty)
@@ -71,7 +71,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(fr.numRows() == 0)
   }
 
-  test("Convert Empty dataframe, non-empty schema"){
+  test("Convert Empty dataframe, non-empty schema") {
     val schema = StructType(Seq(StructField("name", StringType), StructField("age", IntegerType)))
     val empty = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
     val fr = hc.asH2OFrame(empty)
@@ -388,7 +388,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).isTime)
 
     val numericVec = h2oFrame.vec(0).toNumericVec
+
     def toUTC(time: Long): Long = DateTimeUtils.toUTCTime(time * 1000, TimeZone.getDefault.getID) / 1000
+
     val values = dates.indices.map(i => new java.sql.Date(toUTC(numericVec.at8(i))).toString)
     dates.indices.foreach(i => println(numericVec.at8(i)))
     values.sorted shouldEqual dates.sorted
@@ -746,9 +748,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assertVectorDoubleValues(hf.vec("label"), Seq(1.0, 1.0, 0.0, 0.0, 0.0, 0.0))
   }
 
-  test("SparkDataFrame with BinaryType to H2O Frame"){
+  test("SparkDataFrame with BinaryType to H2O Frame") {
     import sqlContext.implicits._
-    val df = sc.parallelize(1 to 3).map{v => (0 until v).map(_.toByte).toArray[Byte]}.toDF()
+    val df = sc.parallelize(1 to 3).map { v => (0 until v).map(_.toByte).toArray[Byte] }.toDF()
     // just verify that we are really testing the binary type case
     assert(df.schema.fields(0).dataType == BinaryType)
     val hf = hc.asH2OFrame(df)
@@ -762,7 +764,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   }
 
-  test("Convert DataFrame to H2OFrame with dot in column name"){
+  test("Convert DataFrame to H2OFrame with dot in column name") {
     import spark.implicits._
     val df = sc.parallelize(1 to 10).toDF("with.dot")
     val hf = hc.asH2OFrame(df)
@@ -770,7 +772,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   }
 
 
-  test("Convert nested DataFrame to H2OFrame with dots in column names"){
+  test("Convert nested DataFrame to H2OFrame with dots in column names") {
     import org.apache.spark.sql.types._
     val nameSchema = StructType(Seq[StructField](StructField("given.name", StringType, true), StructField("family", StringType, true)))
     val personSchema = StructType(Seq(StructField("name", nameSchema, true), StructField("person.age", IntegerType, false)))
@@ -783,7 +785,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(hf.names() sameElements Array("name.given.name", "name.family", "person.age"))
   }
 
-  test("Test conversion of DataFrame to H2OFrame and back with a high number of columns"){
+  test("Test conversion of DataFrame to H2OFrame and back with a high number of columns") {
     import org.apache.spark.sql.functions._
     import spark.implicits._
     val numCols = 20000

@@ -25,9 +25,9 @@ import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
 
 /**
-  * Test conversion from RDD to DataFrame via H2OFrame
-  */
-class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll  {
+ * Test conversion from RDD to DataFrame via H2OFrame
+ */
+class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 
@@ -40,8 +40,8 @@ class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext w
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
-    assert (rdd.count == h2oFrame.numRows())
-    assert (rdd.count == dataFrame.count)
+    assert(rdd.count == h2oFrame.numRows())
+    assert(rdd.count == dataFrame.count)
   }
 
   // @formatter:off
@@ -68,4 +68,5 @@ class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext w
       }
     }
   }
+
 }

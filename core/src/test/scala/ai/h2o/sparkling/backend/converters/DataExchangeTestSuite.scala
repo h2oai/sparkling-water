@@ -18,13 +18,14 @@
 package ai.h2o.sparkling.backend.converters
 
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.{ExposeUtils, SparkContext}
 import org.scalatest.{FunSuite, Matchers}
-import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
+
 class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
@@ -61,13 +62,14 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
 
   def generateDenseVectors(numberOfRows: Int): Seq[Vector] = {
     (1 to numberOfRows).map { size =>
-      val doubles = generateDoubles(size).zipWithIndex.map{ case (v, i) => if (i % 2 == 0) 0.0 else v }.toArray
+      val doubles = generateDoubles(size).zipWithIndex.map { case (v, i) => if (i % 2 == 0) 0.0 else v }.toArray
       Vectors.dense(doubles)
     }
   }
 
   def generateSparseVectors(numberOfRows: Int): Seq[Vector] = {
     def filterCondition(i: Int): Boolean = i % 2 == 0
+
     (1 to numberOfRows).map { size =>
       val rawDoubles = generateDoubles(size)
       val doubles = generateDoubles(size).zipWithIndex.withFilter(pair => filterCondition(pair._2)).map(_._1).toArray
@@ -97,7 +99,7 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     ColumnSpecification(
       StructField(field.name + "AndSomeNulls", field.dataType, true),
       valueGenerator.andThen { (values: Seq[Any]) =>
-        values.zipWithIndex.map{ case (value, index) => if (index % 4 == 0) null else value }
+        values.zipWithIndex.map { case (value, index) => if (index % 4 == 0) null else value }
       })
   }
 

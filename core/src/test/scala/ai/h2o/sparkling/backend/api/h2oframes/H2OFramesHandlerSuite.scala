@@ -28,8 +28,8 @@ import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 
 /**
-  * Test suite for H2OFrames handler
-  */
+ * Test suite for H2OFrames handler
+ */
 @RunWith(classOf[JUnitRunner])
 class H2OFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)

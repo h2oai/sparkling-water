@@ -194,8 +194,8 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
     lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
 
     val sampleCats =
-    samplePartialPeopleWithAges.flatMap(p =>
-      SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil)
+      samplePartialPeopleWithAges.flatMap(p =>
+        SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil)
     val extracted = readWholeFrame[SampleCat](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
 
     matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored

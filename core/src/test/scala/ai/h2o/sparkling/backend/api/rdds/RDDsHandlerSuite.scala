@@ -24,8 +24,8 @@ import org.scalatest.junit.JUnitRunner
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
-  * Test suite for RDDs handler
-  */
+ * Test suite for RDDs handler
+ */
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedH2OTestContext {
 

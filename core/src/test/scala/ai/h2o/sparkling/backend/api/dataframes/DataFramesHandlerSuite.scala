@@ -31,8 +31,8 @@ import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
 
 /**
-  * Test suite for DataFrames handler
-  */
+ * Test suite for DataFrames handler
+ */
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
