@@ -74,7 +74,8 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
         .foreachRDD(rdd => if (!rdd.isEmpty()) {
           println("Poison pill received! Application is going to shut down...")
           ssc.stop(true, true)
-          staticApp.shutdown()
+          sc.stop()
+          h2oContext.stop()
       })
 
       println("Please start the event producer at port 9999, for example: nc -lk 9999")
@@ -85,7 +86,8 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
       case e: Throwable => e.printStackTrace()
     } finally {
       ssc.stop()
-      staticApp.shutdown()
+      sc.stop()
+      h2oContext.stop()
     }
   }
 

@@ -24,15 +24,17 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import water.support.{SparkContextSupport, SparkSessionSupport}
+import org.apache.spark.sql.SparkSession
+import water.support.SparkContextSupport
 
-object AirlinesWithWeatherDemo extends SparkContextSupport with SparkSessionSupport {
+object AirlinesWithWeatherDemo extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     // Configure this application
     val conf: SparkConf = configure("Sparkling Water: Join of Airlines with Weather Data")
     // Create SparkContext to execute application on Spark cluster
-    val sc = sparkContext(conf)
+    val spark = SparkSession.builder().config(conf).getOrCreate()
+    val sc = spark.sparkContext
     import spark.implicits._ // import implicit conversions
 
     @transient val h2oContext = H2OContext.getOrCreate()

@@ -22,16 +22,18 @@ import java.io.File
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.sql.Dataset
-import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
+import org.apache.spark.sql.{Dataset, SparkSession}
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 
-object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
+object DeepLearningDemo extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     // Create Spark context which will drive computation.
     val conf = configure("Sparkling Water: Deep Learning on Airlines data")
-    val sc = sparkContext(conf)
+    val spark = SparkSession.builder().config(conf).getOrCreate()
+    val sc = spark.sparkContext
+    import spark.implicits._ // import implicit conversions
 
     // Run H2O cluster inside Spark cluster
     val h2oContext = H2OContext.getOrCreate()
@@ -46,7 +48,6 @@ object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
     //
     // Use H2O to RDD transformation
     //
-    import spark.implicits._
     val airlinesTable : Dataset[Airlines] = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
@@ -58,7 +59,7 @@ object DeepLearningDemo extends SparkContextSupport with SparkSessionSupport {
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result : H2OFrame = sqlContext.sql(query) // Using a registered context and tables
+    val result : H2OFrame = spark.sql(query) // Using a registered context and tables
     println(s"\n===> Number of flights with destination in SFO: ${result.numRows()}\n")
 
     //

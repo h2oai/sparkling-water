@@ -24,9 +24,9 @@ import org.apache.spark.sql.{DataFrame, Row}
 import org.joda.time.{DateTimeZone, MutableDateTime}
 import water.MRTask
 import water.fvec._
-import water.support.{ModelMetricsSupport, SparkContextSupport, SparkSessionSupport}
+import water.support.{ModelMetricsSupport, SparkContextSupport}
 
-object AmazonFineFood extends SparkContextSupport with SparkSessionSupport with ModelMetricsSupport {
+object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
 
   def main(args: Array[String]): Unit = {
     val conf: SparkConf = configure("Amazon Fine Food Review Sentiment Analysis")

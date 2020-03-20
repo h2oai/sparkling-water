@@ -65,7 +65,8 @@ object CraigslistJobTitlesStreamingOnlyApp extends SparkContextSupport with Mode
       case e: Throwable => e.printStackTrace()
     } finally {
       ssc.stop()
-      staticApp.shutdown()
+      sc.stop()
+      h2oContext.stop()
     }
   }
 }

@@ -26,7 +26,7 @@ import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkContext, SparkFiles, mllib}
+import org.apache.spark.{SparkContext, mllib}
 import water.support._
 
 /**
@@ -34,10 +34,8 @@ import water.support._
   * classifying job offers at Craigslist.
   */
 class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv"))
-                            (@transient override val sc: SparkContext,
-                             @transient override val sqlContext: SQLContext,
-                             @transient override val h2oContext: H2OContext) extends SparklingWaterApp
-  with SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
+                            (sc: SparkContext, sqlContext: SQLContext, h2oContext: H2OContext)
+  extends SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
 
   // Import companion object methods
   import CraigslistJobTitlesApp._
@@ -76,8 +74,8 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
     val vec = wordsToVector(tokens, w2vModel)
 
     // FIXME should use Model#score(double[]) method but it is now wrong and need to be fixed
-    import sqlContext.implicits._
     import h2oContext.implicits._
+    import sqlContext.implicits._
     val frameToPredict: H2OFrame = sc.parallelize(Seq(vec)).map(v => JobOffer(null, v)).toDF
     frameToPredict.remove(0).remove()
     val prediction = model.score(frameToPredict)
@@ -192,7 +190,8 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
   def main(args: Array[String]): Unit = {
     // Prepare environment
     val sc = new SparkContext(configure("CraigslistJobTitlesApp"))
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
+    val spark = SparkSession.builder().getOrCreate()
+    val sqlContext = spark.sqlContext
     // Start H2O services
     val h2oContext = H2OContext.getOrCreate()
 
@@ -204,7 +203,8 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
         e.printStackTrace()
         throw e
     } finally {
-      app.shutdown()
+      sc.stop()
+      h2oContext.stop()
     }
   }
 

@@ -27,12 +27,13 @@ import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.sql.SparkSession
 import water.Key
 import water.fvec.Frame
-import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 /** Demo for meetup presented at 12/17/2014 */
-object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSupport {
+object AirlinesWithWeatherDemo2 extends SparkContextSupport {
 
   def residualPlotRCode(prediction: Frame, predCol: String, actual: Frame, actCol: String, hc: H2OContext = null): String = {
     val (ip, port) = if (hc == null) ("127.0.0.1", 54321) else (hc.h2oLocalClientIp, hc.h2oLocalClientPort)
@@ -62,8 +63,8 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     // Configure this application
     val conf: SparkConf = configure("Sparkling Water Meetup: Use Airlines and Weather Data for delay prediction")
     // Create SparkContext to execute application on Spark cluster
-    val sc = sparkContext(conf)
-
+    val spark = SparkSession.builder().config(conf).getOrCreate()
+    val sc = spark.sparkContext
     import spark.implicits._ // import implicit conversions
 
     @transient val h2oContext = H2OContext.getOrCreate()
@@ -94,7 +95,7 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport with SparkSessionSup
     //
     // -- Join both tables and select interesting columns
     //
-    val joinedTable = sqlContext.sql(
+    val joinedTable = spark.sql(
       """SELECT
         |f.Year,f.Month,f.DayofMonth,
         |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,

@@ -23,17 +23,19 @@ import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import water.support.{H2OFrameSupport, SparkContextSupport, SparkSessionSupport}
+import org.apache.spark.sql.SparkSession
+import water.support.{H2OFrameSupport, SparkContextSupport}
 
 
-object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSessionSupport {
+object DeepLearningDemoWithoutExtension extends SparkContextSupport {
 
   def main(args: Array[String]): Unit = {
     // Create a Spark config
     val conf: SparkConf = configure("Sparkling water: DL demo without Spark modification")
 
-    // Create SparkContext to execute application on Spark cluster
-    val sc = sparkContext(conf)
+    val spark = SparkSession.builder().config(conf).getOrCreate()
+    val sc = spark.sparkContext
+    import spark.implicits._ // import implicit conversions
 
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
@@ -47,7 +49,6 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
     //
     // Use H2O to RDD transformation
     //
-    import spark.implicits._
     val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
@@ -59,7 +60,7 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport with SparkSe
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result: H2OFrame = sqlContext.sql(query) // Using a registered context and tables
+    val result: H2OFrame = spark.sql(query) // Using a registered context and tables
     println(s"\n===> Number of flights with destination in SFO: ${result.numRows()}\n")
 
     //
