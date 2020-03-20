@@ -50,15 +50,17 @@ private[backend] object DataTypeConverter {
                                      stringTypeIndices: Array[Int]): Iterator[CategoricalPreviewWriter] = {
     val previewParseWriter = new CategoricalPreviewWriter()
     val bufferedString = new BufferedString()
-    while (rows.hasNext) {
+    var rowId = 0
+    while (rows.hasNext && rowId < CategoricalPreviewWriter.MAX_PREVIEW_RECORDS) {
       val row = rows.next()
       var i = 0
       while (i < stringTypeIndices.length) {
-        val index = stringTypeIndices(i)
-        bufferedString.set(row.getString(index))
-        previewParseWriter.addStrCol(index, bufferedString)
+        val colId = stringTypeIndices(i)
+        bufferedString.set(row.getString(colId))
+        previewParseWriter.addStrCol(colId, bufferedString)
         i += 1
       }
+      rowId += 1
     }
     Iterator.single(previewParseWriter)
   }
