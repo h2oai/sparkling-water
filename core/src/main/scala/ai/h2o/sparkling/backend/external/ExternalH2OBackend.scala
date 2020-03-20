@@ -302,7 +302,6 @@ object ExternalH2OBackend extends SharedBackendUtils {
         if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
           return Some(address.getAddress.getHostAddress)
         }
-        None
       }
     }
     None

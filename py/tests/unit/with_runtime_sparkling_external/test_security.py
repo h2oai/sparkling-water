@@ -8,8 +8,8 @@
 import pytest
 from pysparkling.context import H2OContext
 
-from tests.unit.with_runtime_sparkling.algo_test_utils import *
 from tests.unit_test_utils import *
+
 
 def testSSL(spark):
     conf = createH2OConf()
@@ -42,6 +42,7 @@ def testAuth(spark):
         lines = list(filter(lambda line: "-hash_login" in line, originalLines))
         assert len(lines) >= 1
     context.stop()
+
 
 def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     with open('build/login.conf', 'w') as f:

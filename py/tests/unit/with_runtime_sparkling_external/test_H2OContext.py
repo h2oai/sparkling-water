@@ -16,28 +16,31 @@
 #
 
 import os
-import time
-
+import pytest
 import requests
+import time
 from pysparkling.context import H2OContext
 
+from tests.unit.with_runtime_sparkling_external.external_backend_test_utils import *
 from tests.unit_test_utils import *
-from tests.unit.with_runtime_sparkling.algo_test_utils import *
-import pytest
 
 
 def testZombieExternalH2OCluster():
     jarPath = os.environ['H2O_DRIVER_JAR']
     notifyFile = "notify.txt"
-    subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
+    subprocess.check_call(
+        "hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath,
+                                                                                                         notifyFile,
+                                                                                                         10000),
+        shell=True)
     ipPort = getIpPortFromNotifyFile(notifyFile)
     appId = getYarnAppIdFromNotifyFile(notifyFile)
     # Lock the cloud, from this time, the cluster should stop after 10 seconds if nothing pings the /3/Ping endpoint
-    requests.post(url = "http://" + ipPort + "/3/CloudLock")
+    requests.post(url="http://" + ipPort + "/3/CloudLock")
 
     # Keep pinging the cluster
     for x in range(0, 5):
-        requests.get(url = "http://" + ipPort + "/3/Ping")
+        requests.get(url="http://" + ipPort + "/3/Ping")
         assert appId in listYarnApps()
         time.sleep(5)
     # Wait 60 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint

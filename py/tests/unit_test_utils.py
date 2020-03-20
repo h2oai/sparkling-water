@@ -16,7 +16,6 @@
 #
 
 from pyspark import SparkConf
-
 from tests.generic_test_utils import *
 
 

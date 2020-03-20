@@ -19,19 +19,9 @@ import h2o
 import pytest
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.context import H2OContext
 
 from tests import generic_test_utils
 from tests import unit_test_utils
-from tests.unit.with_runtime_sparkling.algo_test_utils import *
-
-
-@pytest.fixture(scope="module")
-def hc(spark):
-    conf = createH2OConf()
-    hc = H2OContext.getOrCreate(conf)
-    yield hc
-    hc.stop()
 
 
 def testH2OFrameToDataframeNew(hc):

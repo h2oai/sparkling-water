@@ -50,22 +50,3 @@ def assertParamsViaSetters(algoName, skip=[]):
             getter = getattr(instance, "get" + name[:1].upper() + name[1:])
             setter(kwargs[name])
             assert getter() == kwargs[name]
-
-def createH2OConf():
-    conf = H2OConf()
-    conf.setClusterSize(1)
-    conf.set("spark.ext.h2o.rest.api.based.client", "true")
-    conf.useAutoClusterStart()
-    conf.setExternalClusterMode()
-    return conf
-
-def yarnLogs(appId):
-    return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
-
-def getYarnAppIdFromNotifyFile(path):
-    with open(path, 'r') as f:
-        return f.readlines()[1].replace("job", "application").strip()
-
-def getIpPortFromNotifyFile(path):
-    with open(path, 'r') as f:
-        return f.readlines()[0].strip()

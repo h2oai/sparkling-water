@@ -312,9 +312,14 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
 }
 
+task testPythonExternal(type: PythonTask, dependsOn: distPython) {
+    extraArgs(*createUnitTestArgs())
+    command = "tests/test_runner.py 'tests/unit/with_runtime_sparkling_external'"
+}
+
 task testPython(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
+    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py --ignore=tests/unit/with_runtime_sparkling_external'"
 }
 
 task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
@@ -364,4 +369,7 @@ distPython.dependsOn createVersionFile
 build.dependsOn distPython
 test.dependsOn testPython
 
+if (detectBackendClusterMode() == "external") {
+    test.dependsOn testPythonExternal
+}
 integTest.dependsOn integTestPython
