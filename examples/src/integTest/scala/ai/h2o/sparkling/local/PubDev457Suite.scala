@@ -13,8 +13,8 @@ import water.support.SparkContextSupport
 
 
 /**
-  * PUBDEV-457 test suite.
-  */
+ * PUBDEV-457 test suite.
+ */
 @RunWith(classOf[JUnitRunner])
 class PubDev457Suite extends FunSuite with IntegTestHelper {
 
@@ -29,13 +29,13 @@ class PubDev457Suite extends FunSuite with IntegTestHelper {
   }
 }
 
-object PubDev457Test extends SparkContextSupport with IntegTestStopper{
+object PubDev457Test extends SparkContextSupport with IntegTestStopper {
 
   case class LabeledDocument(id: Long, text: String, label: Double)
 
   case class Document(id: Long, text: String)
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()

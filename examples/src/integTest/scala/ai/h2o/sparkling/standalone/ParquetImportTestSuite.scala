@@ -9,10 +9,10 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
-  * Test for Parquet Import : Save small airlines data as Parquet File,
-  * import Parquet file into Spark as DataFrame, then run Deep Learning
-  * using H2O*
-  */
+ * Test for Parquet Import : Save small airlines data as Parquet File,
+ * import Parquet file into Spark as DataFrame, then run Deep Learning
+ * using H2O*
+ */
 @RunWith(classOf[JUnitRunner])
 class ParquetImportTestSuite extends FunSuite with IntegTestHelper {
 
@@ -30,9 +30,9 @@ class ParquetImportTestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object ParquetImportTest extends IntegTestStopper{
+object ParquetImportTest extends IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = new SparkConf().setAppName("ParquetImportTest")
 
     // Launch H2O

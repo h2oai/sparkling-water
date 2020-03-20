@@ -42,17 +42,17 @@ object AirlinesWithWeatherDemo2 extends SparkContextSupport {
        |library(h2o)
        |h = h2o.init(ip="${ip}", port=${port})
        |
-        |pred = h2o.getFrame("${prediction._key}")
+       |pred = h2o.getFrame("${prediction._key}")
        |act = h2o.getFrame ("${actual._key}")
        |
-        |predDelay = pred$$${predCol}
+       |predDelay = pred$$${predCol}
        |actDelay = act$$${actCol}
        |
-        |nrow(actDelay) == nrow(predDelay)
+       |nrow(actDelay) == nrow(predDelay)
        |
-        |residuals = predDelay - actDelay
+       |residuals = predDelay - actDelay
        |
-        |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
+       |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
        |nrow(compare)
        |plot( compare[,1:2] )
        |

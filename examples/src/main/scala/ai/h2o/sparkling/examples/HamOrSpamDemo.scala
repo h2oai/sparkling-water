@@ -18,8 +18,8 @@
 package ai.h2o.sparkling.examples
 
 import hex.ModelMetricsBinomial
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.{DeepLearning, DeepLearningModel}
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
 import org.apache.spark.rdd.RDD
@@ -28,11 +28,11 @@ import org.apache.spark.{SparkConf, SparkContext, mllib}
 import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
 
 /**
-  * Demo for NYC meetup and MLConf 2015.
-  *
-  * It predicts spam text messages.
-  * Training dataset is available in the file smalldata/smsData.txt.
-  */
+ * Demo for NYC meetup and MLConf 2015.
+ *
+ * It predicts spam text messages.
+ * Training dataset is available in the file smalldata/smsData.txt.
+ */
 object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H2OFrameSupport {
 
   val DATAFILE = "smsData.txt"
@@ -109,12 +109,12 @@ object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H
   }
 
   /** Text message tokenizer.
-    *
-    * Produce a bag of word representing given message.
-    *
-    * @param data RDD of text messages
-    * @return RDD of bag of words
-    */
+   *
+   * Produce a bag of word representing given message.
+   *
+   * @param data RDD of text messages
+   * @return RDD of bag of words
+   */
   def tokenize(data: RDD[String]): RDD[Seq[String]] = {
     val ignoredWords = Seq("the", "a", "", "in", "on", "at", "as", "not", "for")
     val ignoredChars = Seq(',', ':', ';', '/', '<', '>', '"', '.', '(', ')', '?', '-', '\'', '!', '0', '1')

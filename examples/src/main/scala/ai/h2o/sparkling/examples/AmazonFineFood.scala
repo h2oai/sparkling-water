@@ -66,7 +66,7 @@ object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
     val toTokens = udf { summary: String =>
       summary.split(",")
         .map(v => v.trim.toLowerCase.replaceAll("[^\\p{IsAlphabetic}]", ""))
-          .filter(v => !H2OStopWords.English.contains(v))
+        .filter(v => !H2OStopWords.English.contains(v))
     }
 
     val hashingTF = new HashingTF(4096) // Larger space?
@@ -77,8 +77,8 @@ object AmazonFineFood extends SparkContextSupport with ModelMetricsSupport {
       .withColumn("Score", toBinaryScore(col("Score")))
       .withColumn("Summary", toNumericFeatures(toTokens(col("Summary"))))
 
-    val idfModel = new IDF(minDocFreq = 1).fit(vectorizedFrame.select("Summary").rdd.map { case Row(v: org.apache.spark.mllib.linalg.Vector) => v})
-    val toIdf = udf { vector: org.apache.spark.mllib.linalg.Vector => idfModel.transform(vector)}
+    val idfModel = new IDF(minDocFreq = 1).fit(vectorizedFrame.select("Summary").rdd.map { case Row(v: org.apache.spark.mllib.linalg.Vector) => v })
+    val toIdf = udf { vector: org.apache.spark.mllib.linalg.Vector => idfModel.transform(vector) }
     val finalFrame: DataFrame = vectorizedFrame.withColumn("Summary", toIdf(col("Summary")))
     finalFrame.printSchema()
 

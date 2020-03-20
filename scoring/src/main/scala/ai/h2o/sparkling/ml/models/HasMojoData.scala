@@ -23,7 +23,7 @@ import org.apache.spark.broadcast.Broadcast
 private[models] trait HasMojoData {
 
   // Called during init of the model
-   def setMojoData(mojoData : Array[Byte]): this.type = {
+  def setMojoData(mojoData: Array[Byte]): this.type = {
     this.mojoData = mojoData
     broadcastMojo = SparkSessionUtils.active.sparkContext.broadcast(this.mojoData)
     this

@@ -16,15 +16,13 @@
 */
 package ai.h2o.sparkling.ml.models
 
-import java.util
-
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionWordEmbedding.Base
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 trait H2OMOJOPredictionWordEmbedding {

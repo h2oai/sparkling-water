@@ -1,6 +1,6 @@
 /**
-  * Tests for the scripts in the example/scripts directory
-  */
+ * Tests for the scripts in the example/scripts directory
+ */
 
 package ai.h2o.sparkling
 
@@ -135,9 +135,9 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper {
 }
 
 /**
-  * To run this test successfully we need to download the citibike-nyc data to
-  * examples/bigdata/laptop/citibike-nyc directory
-  */
+ * To run this test successfully we need to download the citibike-nyc data to
+ * examples/bigdata/laptop/citibike-nyc directory
+ */
 @RunWith(classOf[JUnitRunner])
 class CityBikeSharing extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {

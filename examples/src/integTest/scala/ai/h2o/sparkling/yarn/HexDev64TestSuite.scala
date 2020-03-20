@@ -28,9 +28,9 @@ class HexDev64TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev64Test extends IntegTestStopper{
+object HexDev64Test extends IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = H2OConf.checkSparkConf(new SparkConf().setAppName("HexDev64Test"))
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()

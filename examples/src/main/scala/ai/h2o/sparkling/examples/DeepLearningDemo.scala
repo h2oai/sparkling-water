@@ -48,7 +48,7 @@ object DeepLearningDemo extends SparkContextSupport {
     //
     // Use H2O to RDD transformation
     //
-    val airlinesTable : Dataset[Airlines] = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
+    val airlinesTable: Dataset[Airlines] = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
     println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
     println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
 
@@ -59,7 +59,7 @@ object DeepLearningDemo extends SparkContextSupport {
 
     // Select only interesting columns and flights with destination in SFO
     val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result : H2OFrame = spark.sql(query) // Using a registered context and tables
+    val result: H2OFrame = spark.sql(query) // Using a registered context and tables
     println(s"\n===> Number of flights with destination in SFO: ${result.numRows()}\n")
 
     //
@@ -70,9 +70,9 @@ object DeepLearningDemo extends SparkContextSupport {
     // Training data
     val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-      'Distance, 'IsDepDelayed )
-    H2OFrameSupport.withLockAndUpdate(train){ fr =>
-      fr.replace(fr.numCols()-1, fr.lastVec().toCategoricalVec)
+      'Distance, 'IsDepDelayed)
+    H2OFrameSupport.withLockAndUpdate(train) { fr =>
+      fr.replace(fr.numCols() - 1, fr.lastVec().toCategoricalVec)
     }
     // Configure Deep Learning algorithm
     val dlParams = new DeepLearningParameters()
@@ -87,11 +87,11 @@ object DeepLearningDemo extends SparkContextSupport {
     //
     println("\n====> Making prediction with help of DeepLearning model\n")
     val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map ( _.result.getOrElse("NaN") )
+    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse("NaN"))
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Stop Spark cluster and destroy all executors
-    if (System.getProperty("spark.ext.h2o.preserve.executors")==null) {
+    if (System.getProperty("spark.ext.h2o.preserve.executors") == null) {
       sc.stop()
     }
     // Shutdown H2O

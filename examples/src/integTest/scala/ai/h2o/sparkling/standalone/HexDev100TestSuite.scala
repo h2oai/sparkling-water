@@ -12,9 +12,9 @@ import water.fvec.H2OFrame
 
 
 /**
-  * Test for Jira Hex-Dev 100 : Import airlines data and run a host of classification models,
-  * including GBM, GLM, and Deep Learning.
-  */
+ * Test for Jira Hex-Dev 100 : Import airlines data and run a host of classification models,
+ * including GBM, GLM, and Deep Learning.
+ */
 @RunWith(classOf[JUnitRunner])
 class HexDev100TestSuite extends FunSuite with IntegTestHelper {
 
@@ -32,9 +32,9 @@ class HexDev100TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev100Test extends IntegTestStopper{
+object HexDev100Test extends IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = new SparkConf().setAppName("HexDev100Test")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()

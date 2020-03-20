@@ -23,15 +23,15 @@ import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, ml, mllib}
 
 /**
-  * The object is responsible for conversions between entities representing rows in H2O and Apache Spark.
-  */
+ * The object is responsible for conversions between entities representing rows in H2O and Apache Spark.
+ */
 object RowConverter {
 
   val temporaryColumnPrefix = "SparklingWater_MOJO_temporary"
 
   /**
-    * Converts a Spark to H2O row data
-    */
+   * Converts a Spark to H2O row data
+   */
   def toH2ORowData(row: Row): RowData = new RowData {
     val fieldsWithIndex = row.schema.fields.zipWithIndex
     fieldsWithIndex.foreach { case (f, idxRow) =>

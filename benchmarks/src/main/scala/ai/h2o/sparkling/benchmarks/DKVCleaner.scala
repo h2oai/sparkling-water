@@ -17,8 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import water.MRTask
-import water.H2O
+import water.{H2O, MRTask}
 
 class DKVCleaner extends MRTask[DKVCleaner] {
   override def setupLocal(): Unit = {

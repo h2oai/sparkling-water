@@ -80,7 +80,10 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   def consoleOutput: String = {
     consoleStream.content
   }
-  def valueOfTerm(term: String): Option[Any] = { intp.valueOfTerm(term) }
+
+  def valueOfTerm(term: String): Option[Any] = {
+    intp.valueOfTerm(term)
+  }
 
   /**
    * Run scala code in a string
@@ -176,8 +179,8 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   private def exceptionOccurred(): Boolean = {
-      val lastException = extractValue("lastException")
-      lastException.isDefined && lastException.get != null
+    val lastException = extractValue("lastException")
+    lastException.isDefined && lastException.get != null
   }
 
   private def setSuccess() = {

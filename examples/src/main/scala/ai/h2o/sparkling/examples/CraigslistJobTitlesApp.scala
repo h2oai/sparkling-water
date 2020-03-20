@@ -30,14 +30,15 @@ import org.apache.spark.{SparkFiles, mllib}
 import water.support._
 
 /**
-  * This application use word2vec to build a model
-  * classifying job offers at Craigslist.
-  */
+ * This application use word2vec to build a model
+ * classifying job offers at Craigslist.
+ */
 class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv"))
                             (spark: SparkSession, h2oContext: H2OContext)
   extends ModelMetricsSupport with H2OFrameSupport with Serializable {
 
   // Import companion object methods
+
   import CraigslistJobTitlesApp._
 
   // Build models and predict a few job titles
@@ -142,14 +143,14 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
 }
 
 /**
-  * Representation of single job offer with its classification.
-  *
-  * @param category job category (education, labor, ...)
-  * @param fv       feature vector describing job title
-  */
+ * Representation of single job offer with its classification.
+ *
+ * @param category job category (education, labor, ...)
+ * @param fv       feature vector describing job title
+ */
 case class JobOffer(category: String, fv: mllib.linalg.Vector)
 
-object CraigslistJobTitlesApp{
+object CraigslistJobTitlesApp {
 
   val EMPTY_PREDICTION = ("NA", Array[Double]())
 

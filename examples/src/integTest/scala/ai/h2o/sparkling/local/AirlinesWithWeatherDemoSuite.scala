@@ -1,7 +1,7 @@
 package ai.h2o.sparkling.local
 
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import ai.h2o.sparkling.examples.AirlinesWithWeatherDemo
+import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -21,8 +21,8 @@ class AirlinesWithWeatherDemoSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object AirlinesWithWeatherDemoTest extends IntegTestStopper{
-  def main(args: Array[String]): Unit = exitOnException{
+object AirlinesWithWeatherDemoTest extends IntegTestStopper {
+  def main(args: Array[String]): Unit = exitOnException {
     AirlinesWithWeatherDemo.main(args)
   }
 }

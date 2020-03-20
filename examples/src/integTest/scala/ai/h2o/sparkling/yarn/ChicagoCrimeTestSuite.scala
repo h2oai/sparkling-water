@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.yarn
 
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper}
 import ai.h2o.sparkling.examples.{ChicagoCrimeApp, Crime}
+import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith

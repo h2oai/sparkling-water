@@ -24,12 +24,14 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
+
 @RunWith(classOf[JUnitRunner])
 class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
   import spark.implicits._
+
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")

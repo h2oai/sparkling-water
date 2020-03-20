@@ -37,5 +37,5 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       "Performs finalizing procedures after the data chunks were delivered to the server")
   }
 
-  override def getName(): String =  "Sparkling Water REST API Extensions"
+  override def getName(): String = "Sparkling Water REST API Extensions"
 }

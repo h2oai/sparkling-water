@@ -24,10 +24,10 @@ import water.server.{ServletMeta, ServletProvider}
 
 class SparklingWaterServletProvider extends ServletProvider {
   /**
-    * Provides a collection of Servlets that should be registered.
-    *
-    * @return a map of context path to a Servlet class
-    */
+   * Provides a collection of Servlets that should be registered.
+   *
+   * @return a map of context path to a Servlet class
+   */
   override def servlets(): util.List[ServletMeta] = {
     Collections.singletonList(new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]))
   }

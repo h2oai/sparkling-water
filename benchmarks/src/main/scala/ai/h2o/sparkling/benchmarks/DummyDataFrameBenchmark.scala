@@ -20,8 +20,8 @@ package ai.h2o.sparkling.benchmarks
 import org.apache.spark.sql.DataFrame
 
 /**
-  *  The purpose of this benchmark is to measure how much time is spent on deserialization from data frame cache.
-  */
+ * The purpose of this benchmark is to measure how much time is spent on deserialization from data frame cache.
+ */
 class DummyDataFrameBenchmark(context: BenchmarkContext) extends BenchmarkBase[DataFrame](context) {
 
   override protected def initialize(): DataFrame = loadDataToDataFrame()

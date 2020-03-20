@@ -37,16 +37,16 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     val offsetColumn = getOffsetCol()
-    if(offsetColumn != null) {
+    if (offsetColumn != null) {
       require(schema.fieldNames.contains(offsetColumn), "Offset column must be present within the dataset!")
     }
     super.transformSchema(schema)
   }
 
   protected override def applyPredictionUdfToFlatDataFrame(
-      flatDataFrame: DataFrame,
-      udfConstructor: Array[String] => UserDefinedFunction,
-      inputs: Array[String]): DataFrame = {
+                                                            flatDataFrame: DataFrame,
+                                                            udfConstructor: Array[String] => UserDefinedFunction,
+                                                            inputs: Array[String]): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)

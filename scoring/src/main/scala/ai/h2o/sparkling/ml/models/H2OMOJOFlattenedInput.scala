@@ -28,8 +28,8 @@ trait H2OMOJOFlattenedInput {
   protected def outputColumnName: String
 
   protected def applyPredictionUdf(
-      dataset: Dataset[_],
-      udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
+                                    dataset: Dataset[_],
+                                    udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
     DatasetShape.getDatasetShape(dataset.schema) match {
       case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor, inputColumnNames)
@@ -44,9 +44,9 @@ trait H2OMOJOFlattenedInput {
   }
 
   protected def applyPredictionUdfToFlatDataFrame(
-      flatDataFrame: DataFrame,
-      udfConstructor: Array[String] => UserDefinedFunction,
-      inputs: Array[String]): DataFrame = {
+                                                   flatDataFrame: DataFrame,
+                                                   udfConstructor: Array[String] => UserDefinedFunction,
+                                                   inputs: Array[String]): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)

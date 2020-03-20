@@ -25,11 +25,11 @@ import hex.tree.gbm.GBMModel
 import hex.{Model, ModelMetricsBinomial}
 import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.types.StringType
 import water.fvec.Vec
 import water.parser.ParseSetup
 import water.support.{H2OFrameSupport, ModelMetricsSupport}
-import org.apache.spark.sql.functions.udf
 
 /**
  * Chicago Crimes Application predicting probability of arrest in Chicago.

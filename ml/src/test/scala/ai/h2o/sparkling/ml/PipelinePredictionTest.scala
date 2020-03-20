@@ -20,7 +20,6 @@ package ai.h2o.sparkling.ml
 import java.io.{File, PrintWriter}
 import java.nio.file.Files
 
-import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.feature._
@@ -50,8 +49,8 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {
 
     /**
-      * Define the pipeline stages
-      */
+     * Define the pipeline stages
+     */
     // Tokenize the messages
     val tokenizer = new RegexTokenizer()
       .setInputCol("text")
@@ -105,8 +104,8 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
 class PipelinePredictionTest extends PipelinePredictionTestBase {
 
   /**
-    * This test is not using H2O runtime since we are testing deployment of the pipeline
-    */
+   * This test is not using H2O runtime since we are testing deployment of the pipeline
+   */
   test("Run predictions on Spark pipeline model containing H2O Mojo") {
 
     //

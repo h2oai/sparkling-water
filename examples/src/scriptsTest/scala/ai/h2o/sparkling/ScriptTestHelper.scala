@@ -2,8 +2,8 @@ package ai.h2o.sparkling
 
 import java.io.File
 
-import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
 import org.apache.spark.expose.Logging
 import org.apache.spark.{SparkConf, SparkContext}
@@ -38,7 +38,7 @@ trait ScriptsTestHelper extends FunSuite with Logging with BeforeAndAfterAll {
 
   override protected def afterAll(): Unit = {
 
-    if (sc != null){
+    if (sc != null) {
       sc.stop()
     }
     super.afterAll()
@@ -66,12 +66,12 @@ trait ScriptsTestHelper extends FunSuite with Logging with BeforeAndAfterAll {
     val testResult = new ScriptTestResult()
     val codeExecutionStatus = loop.runCode(code)
     testResult.setCodeResult(codeExecutionStatus)
-    println("\n\nInterpreter Response:\n" + loop.interpreterResponse +"\n")
-    println("\n\nPrinted output:\n" + loop.consoleOutput +"\n")
+    println("\n\nInterpreter Response:\n" + loop.interpreterResponse + "\n")
+    println("\n\nPrinted output:\n" + loop.consoleOutput + "\n")
     inspections.codeAndResponses.foreach {
       snippet => {
         val snippetExecutionStatus = loop.runCode(snippet)
-        testResult.addSnippetResult(snippet,snippetExecutionStatus)
+        testResult.addSnippetResult(snippet, snippetExecutionStatus)
       }
     }
 
@@ -105,18 +105,19 @@ trait ScriptsTestHelper extends FunSuite with Logging with BeforeAndAfterAll {
     res
   }
 
-  def launchCodeWithIntp(code: String, loop: H2OInterpreter, inspections: ScriptInspections = new ScriptInspections()): ScriptTestResult ={
-    launch(code,loop,inspections)
+  def launchCodeWithIntp(code: String, loop: H2OInterpreter, inspections: ScriptInspections = new ScriptInspections()): ScriptTestResult = {
+    launch(code, loop, inspections)
   }
 
 }
+
 /**
-  * Helper class which is used for script testing. We can specify name of terms and expected values and we can also
-  * specify small code snippets which will be executed once the script has been interpreted. It is expected that any code
-  * snippet is valid piece of scala code.
-  *
-  * First, the code snippets are executed and then the terms are checked
-  */
+ * Helper class which is used for script testing. We can specify name of terms and expected values and we can also
+ * specify small code snippets which will be executed once the script has been interpreted. It is expected that any code
+ * snippet is valid piece of scala code.
+ *
+ * First, the code snippets are executed and then the terms are checked
+ */
 class ScriptInspections {
   var termsAndValues = new ListBuffer[String]()
   var codeAndResponses = new ListBuffer[String]()
@@ -133,18 +134,19 @@ class ScriptInspections {
 
 class ScriptTestResult() {
   var realTermValues = new HashMap[String, String]()
-  var snippetResults =  new ListBuffer[SnippetResult]
+  var snippetResults = new ListBuffer[SnippetResult]
   var codeExecutionStatus = CodeResults.Success
 
   def setCodeResult(codeExecutionStatus: CodeResults.Value) = {
     this.codeExecutionStatus = codeExecutionStatus
   }
+
   def addSnippetResult(snippet: String, snippetExecutionStatus: CodeResults.Value) = {
-    snippetResults+=SnippetResult(snippet, snippetExecutionStatus)
+    snippetResults += SnippetResult(snippet, snippetExecutionStatus)
   }
 
   def addTermValue(termName: String, termValue: String) = {
-    realTermValues+=(termName->termValue)
+    realTermValues += (termName -> termValue)
   }
 
 }

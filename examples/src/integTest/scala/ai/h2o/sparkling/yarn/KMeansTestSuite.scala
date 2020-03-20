@@ -34,10 +34,10 @@ class KMeansITestSuite extends FunSuite with IntegTestHelper {
 }
 
 /**
-  * Test runner loading large airlines data from YARN HDFS via H2O API
-  * transforming them into RDD and launching MLlib K-means.
-  */
-object KMeansITest extends IntegTestStopper{
+ * Test runner loading large airlines data from YARN HDFS via H2O API
+ * transforming them into RDD and launching MLlib K-means.
+ */
+object KMeansITest extends IntegTestStopper {
 
   def main(args: Array[String]): Unit = exitOnException {
     val conf = new SparkConf().setAppName("KMeansITest")

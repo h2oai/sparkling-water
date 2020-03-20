@@ -34,10 +34,10 @@ import water.{Key, MRTask}
 import scala.collection.mutable
 
 /**
-  * Citibike NYC Demo.
-  *
-  *
-  */
+ * Citibike NYC Demo.
+ *
+ *
+ */
 object CitiBikeSharingDemo extends SparkContextSupport {
 
   val DIR_PREFIX = "/Users/michal/Devel/projects/h2o/repos/h2o2/bigdata/laptop/citibike-nyc/"
@@ -209,7 +209,6 @@ object CitiBikeSharingDemo extends SparkContextSupport {
   }
 
   def basicStats(brdd: DataFrame)(implicit sqlContext: SQLContext): Unit = {
-    import sqlContext.implicits._
 
     // check Sri's first case
     brdd.first

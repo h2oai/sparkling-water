@@ -21,7 +21,7 @@ import java.io.{Closeable, InputStream}
 import java.sql.Timestamp
 
 import water.AutoBuffer
-import water.fvec.{ChunkUtils, NewChunk, Vec}
+import water.fvec.{ChunkUtils, NewChunk}
 
 final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeable with ChunkSerdeConstants {
 

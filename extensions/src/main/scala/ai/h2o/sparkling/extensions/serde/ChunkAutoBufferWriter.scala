@@ -152,8 +152,8 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
   }
 
   /**
-    * Sends another byte as a marker if it's needed and send the data
-    */
+   * Sends another byte as a marker if it's needed and send the data
+   */
   private def putMarker(data: Long): Unit = {
     if (data == NUM_MARKER_NEXT_BYTE_FOLLOWS) { // we need to send another byte because zero is represented as 00 ( 2 bytes )
       buffer.put1(MARKER_ORIGINAL_VALUE)
