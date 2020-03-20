@@ -185,18 +185,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     conf.flowExtraHttpHeaders.map(parseStringToHttpHeaderArgs).getOrElse(Seq.empty)
   }
 
-  /**
-   * Get common arguments for H2O client.
-   *
-   * @return array of H2O client arguments.
-   */
-  def getH2OClientArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
-      .add(getH2OWorkerAsClientArgs(conf))
-      .add("-client")
-      .buildArgs()
-  }
-
   def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
     val flatFileString = toFlatFileString(executors)
     val flatFile = saveFlatFileAsFile(flatFileString)

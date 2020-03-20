@@ -264,4 +264,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_COMMUNICATION_COMPRESSION: (String, String) = {
     ("spark.ext.h2o.external.communication.compression", Compression.defaultCompression)
   }
+
+  /** ID of external H2O backend started on YARN application */
+  val PROP_EXTERNAL_CLUSTER_YARN_APP_ID: (String, None.type) = ("spark.ext.h2o.external.yarn.app.id", None)
 }

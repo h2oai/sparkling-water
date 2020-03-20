@@ -89,8 +89,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-        if selected_conf.runsInExternalClusterMode():
-            selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
+        selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
 
         h2o_context = H2OContext()
 

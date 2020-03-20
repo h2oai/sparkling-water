@@ -79,7 +79,8 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   }
   H2OContext.logStartingInfo(conf)
   H2OContext.verifySparkVersion()
-  private val nodes = backend.init(conf)
+  backend.startH2OCluster(conf)
+  private val nodes = connectToH2OCluster()
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
   // resources before Spark does as we run as embedded application inside the Spark
@@ -363,6 +364,15 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
     val ping = RestApiUtils.getPingInfo(conf)
     val memoryInfo = ping.nodes.map(node => (node.ip_port, PrettyPrint.bytes(node.free_mem)))
     SparklingWaterHeartbeatEvent(ping.cloud_healthy, ping.cloud_uptime_millis, memoryInfo)
+  }
+
+  private def connectToH2OCluster(): Array[NodeDesc] = {
+    logInfo("Connecting to H2O cluster.")
+    val nodes = getAndVerifyWorkerNodes(conf)
+    if (!RestApiUtils.isRestAPIBased(this)) {
+      H2OClientUtils.startH2OClient(this, conf, nodes)
+    }
+    nodes
   }
 
   private def createHeartBeatEventThread(): Thread = {
