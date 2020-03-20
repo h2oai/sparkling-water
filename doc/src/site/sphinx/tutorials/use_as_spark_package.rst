@@ -9,7 +9,7 @@ command:
 
 .. code:: bash
 
-    $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-package_2.11:SUBST_SW_VERSION --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp /dev/null
+    $SPARK_HOME/bin/spark-submit --packages ai.h2o:sparkling-water-package_2.11:SUBST_SW_VERSION --class ai.h2o.sparkling.examples.CraigslistJobTitlesStreamingApp /dev/null
 
 The Spark option ``--packages`` points to the Duke package and the published Sparkling Water packages in the Maven repository.
 

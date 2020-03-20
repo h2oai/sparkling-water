@@ -1,18 +1,10 @@
 /**
-  * Craigslist example
-  *
-  * It predicts job category based on job description (called "job title").
-  *
-  * Launch following commands:
-  *    export MASTER="local-cluster[3,2,4096]"
-  *   bin/sparkling-shell -i examples/scripts/craigslistJobTitles.script.scala
-  *
-  * When running using spark shell or using scala rest API:
-  *    SQLContext is available as sqlContext
-  *     - if you want to use sqlContext implicitly, you have to redefine it like: implicit val sqlContext = sqlContext,
-  *      but better is to use it like this: implicit val sqlContext = SQLContext.getOrCreate(sc)
-  *    SparkContext is available as sc
-  */
+ * Launch following commands:
+ * export MASTER="local[*]"
+ * bin/sparkling-shell -i examples/scripts/CraigslistJobTitles.script
+ *
+ */
+
 import org.apache.spark.mllib.feature.Word2Vec
 import org.apache.spark.mllib.feature.Word2VecModel
 import org.apache.spark.mllib.linalg._
@@ -23,7 +15,7 @@ import org.apache.spark.SparkFiles
 
 def isHeader(line: String) = line.contains("category")
 
-SparkContextSupport.addFiles(sc, TestUtils.locate("smalldata/craigslistJobTitles.csv"))
+sc.addFile(TestUtils.locate("smalldata/craigslistJobTitles.csv"))
 // Load and split data based on ","
 val data = sc.textFile(SparkFiles.get("craigslistJobTitles.csv")).filter(x => !isHeader(x)).map(d => d.split(','))
 
@@ -114,10 +106,6 @@ model.findSynonyms("teacher", 5).foreach(println)
 val title_vectors = words.map(x => new DenseVector(
   divArray(x.map(m => wordToVector(m, model).toArray).
     reduceLeft(sumArray),x.length)).asInstanceOf[Vector])
-
-//val title_pairs = words.map(x => (x,new DenseVector(
-//    divArray(x.map(m => wordToVector(m, model).toArray).
-//            reduceLeft(sumArray),x.length)).asInstanceOf[Vector]))
 
 // Create H2OFrame
 import org.apache.spark.mllib

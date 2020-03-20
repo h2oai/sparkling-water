@@ -19,14 +19,14 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
-import hex.Model
-import hex.Model.Output
+import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkContext, mllib}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.{SparkFiles, mllib}
 import water.support._
 
 /**
@@ -34,8 +34,8 @@ import water.support._
   * classifying job offers at Craigslist.
   */
 class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/craigslistJobTitles.csv"))
-                            (sc: SparkContext, sqlContext: SQLContext, h2oContext: H2OContext)
-  extends SparkContextSupport with GBMSupport with ModelMetricsSupport with H2OFrameSupport with Serializable {
+                            (spark: SparkSession, h2oContext: H2OContext)
+  extends ModelMetricsSupport with H2OFrameSupport with Serializable {
 
   // Import companion object methods
   import CraigslistJobTitlesApp._
@@ -45,66 +45,43 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
     // Get training frame and word to vec model for data
     val (gbmModel, w2vModel) = buildModels(jobsFile, "modelX")
 
-    val classNames = gbmModel._output.asInstanceOf[Output].classNames()
-    println(show(predict("school teacher having holidays every month", gbmModel, w2vModel), classNames))
-    println(show(predict("developer with 3+ Java experience, jumping", gbmModel, w2vModel), classNames))
-    println(show(predict("Financial accountant CPA preferred", gbmModel, w2vModel), classNames))
+    println(show(predict("school teacher having holidays every month", gbmModel, w2vModel)))
+    println(show(predict("developer with 3+ Java experience, jumping", gbmModel, w2vModel)))
+    println(show(predict("Financial accountant CPA preferred", gbmModel, w2vModel)))
   }
 
-  def buildModels(datafile: String = jobsFile, modelName: String): (Model[_, _, _], Word2VecModel) = {
-    // Get training frame and word to vec model for data
+  def buildModels(datafile: String = jobsFile, modelName: String): (H2OMOJOModel, Word2VecModel) = {
     val (allDataFrame, w2vModel) = createH2OFrame(datafile)
-    val frs = splitFrame(allDataFrame, Array("train.hex", "valid.hex"), Array(0.8, 0.2))
-    val (trainFrame, validFrame) = (h2oContext.asH2OFrame(frs(0)), h2oContext.asH2OFrame(frs(1)))
 
-    val gbmModel = GBMModel(trainFrame, validFrame, "category", modelName, ntrees = 50)
-    // Cleanup
-    Seq(trainFrame, validFrame, allDataFrame).foreach(_.delete)
+    val gbm = new H2OGBM()
+      .setModelId(modelName)
+      .setNtrees(50)
+      .setSplitRatio(0.8)
+      .setMaxDepth(6)
+      .setDistribution("AUTO")
+      .setColumnsToCategorical("category")
+      .setLabelCol("category")
+      .setWithDetailedPredictionCol(true)
+    val model = gbm.fit(allDataFrame)
 
-    (gbmModel, w2vModel)
+    (model, w2vModel)
   }
 
-
-  def predict(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
-    predict(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
-  }
-
-  def predict(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
+  def predict(jobTitle: String, model: H2OMOJOModel, w2vModel: Word2VecModel): (String, Map[String, Double]) = {
     val tokens = tokenize(jobTitle, STOP_WORDS)
     val vec = wordsToVector(tokens, w2vModel)
 
-    // FIXME should use Model#score(double[]) method but it is now wrong and need to be fixed
-    import h2oContext.implicits._
-    import sqlContext.implicits._
-    val frameToPredict: H2OFrame = sc.parallelize(Seq(vec)).map(v => JobOffer(null, v)).toDF
-    frameToPredict.remove(0).remove()
-    val prediction = model.score(frameToPredict)
+    import spark.implicits._
+    val frameToPredict = spark.sparkContext.parallelize(Seq(vec)).map(v => JobOffer(null, v)).toDF()
+    val predictionDF = model.transform(frameToPredict.drop(frameToPredict.columns(0)))
     // Read predicted category
-    val predictedCategory = prediction.vec(0).factor(prediction.vec(0).at8(0))
+    val predictedCategory = predictionDF.select("prediction").head().getString(0)
     // Read probabilities for each category
-    val probs = 1 to prediction.vec(0).cardinality() map (idx => prediction.vec(idx).at(0))
-    // Cleanup
-    Seq(frameToPredict, prediction).foreach(_.delete)
-    (predictedCategory, probs.toArray)
+    val probs = predictionDF.select("detailed_prediction.probabilities").head().getMap[String, Double](0).toMap
+    (predictedCategory, probs)
   }
 
-  def classify(jobTitle: String, modelId: String, w2vModel: Word2VecModel): (String, Array[Double]) = {
-    classify(jobTitle, model = water.DKV.getGet(modelId), w2vModel)
-
-  }
-
-  def classify(jobTitle: String, model: Model[_, _, _], w2vModel: Word2VecModel): (String, Array[Double]) = {
-    val tokens = tokenize(jobTitle, STOP_WORDS)
-    if (tokens.length == 0) {
-      EMPTY_PREDICTION
-    } else {
-      val vec = wordsToVector(tokens, w2vModel)
-
-      hex.ModelUtils.classify(vec.toArray, model)
-    }
-  }
-
-  def createH2OFrame(datafile: String): (H2OFrame, Word2VecModel) = {
+  def createH2OFrame(datafile: String): (DataFrame, Word2VecModel) = {
     // Load data from specified file
     val dataRdd = loadData(datafile)
 
@@ -137,15 +114,8 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
       JobOffer(label, vec)
     })
 
-    // Transform RDD into DF and then to HF
-    import h2oContext.implicits._
-    import sqlContext.implicits._
-    val h2oFrame: H2OFrame = finalRdd.toDF
-    withLockAndUpdate(h2oFrame) { fr =>
-      fr.replace(fr.find("category"), fr.vec("category").toCategoricalVec).remove()
-
-    }
-    (h2oFrame, w2vModel)
+    import spark.implicits._
+    (finalRdd.toDF(), w2vModel)
   }
 
   def computeRareWords(dataRdd: RDD[Array[String]]): Set[String] = {
@@ -162,8 +132,10 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
 
   // Load data via Spark API
   private def loadData(filename: String): RDD[Array[String]] = {
-    SparkContextSupport.addFiles(sc, filename)
-    val data = sc.textFile(enforceLocalSparkFile(new File(filename).getName))
+    val sc = spark.sparkContext
+    sc.addFile(filename)
+    val f = new File(filename).getName
+    val data = sc.textFile("file://" + SparkFiles.get(f))
       .filter(line => !line.contains("category")).map(_.split(','))
     data
   }
@@ -177,7 +149,7 @@ class CraigslistJobTitlesApp(jobsFile: String = TestUtils.locate("smalldata/crai
   */
 case class JobOffer(category: String, fv: mllib.linalg.Vector)
 
-object CraigslistJobTitlesApp extends SparkContextSupport {
+object CraigslistJobTitlesApp{
 
   val EMPTY_PREDICTION = ("NA", Array[Double]())
 
@@ -188,14 +160,10 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
 
 
   def main(args: Array[String]): Unit = {
-    // Prepare environment
-    val sc = new SparkContext(configure("CraigslistJobTitlesApp"))
-    val spark = SparkSession.builder().getOrCreate()
-    val sqlContext = spark.sqlContext
-    // Start H2O services
-    val h2oContext = H2OContext.getOrCreate()
+    val spark = SparkSession.builder().appName("CraigslistJobTitlesApp").getOrCreate()
+    val hc = H2OContext.getOrCreate()
 
-    val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv"))(sc, sqlContext, h2oContext)
+    val app = new CraigslistJobTitlesApp(TestUtils.locate("smalldata/craigslistJobTitles.csv"))(spark, hc)
     try {
       app.run()
     } catch {
@@ -203,8 +171,8 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
         e.printStackTrace()
         throw e
     } finally {
-      sc.stop()
-      h2oContext.stop()
+      spark.stop()
+      hc.stop()
     }
   }
 
@@ -227,17 +195,17 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
 
   // Make some helper functions
   private def sumArray(m: Array[Double], n: Array[Double]): Array[Double] = {
-    for (i <- 0 until m.length) {
+    for (i <- m.indices) {
       m(i) += n(i)
     }
-    return m
+    m
   }
 
   private def divArray(m: Array[Double], divisor: Double): Array[Double] = {
-    for (i <- 0 until m.length) {
+    for (i <- m.indices) {
       m(i) /= divisor
     }
-    return m
+    m
   }
 
   private[h2o] def wordsToVector(words: Array[String], model: Word2VecModel): Vector = {
@@ -250,14 +218,13 @@ object CraigslistJobTitlesApp extends SparkContextSupport {
 
   private def wordToVector(word: String, model: Word2VecModel): Vector = {
     try {
-      return model.transform(word)
+      model.transform(word)
     } catch {
-      case e: Exception => return Vectors.zeros(100)
+      case _: Exception => Vectors.zeros(100)
     }
   }
 
-  def show(pred: (String, Array[Double]), classNames: Array[String]): String = {
-    val probs = classNames.zip(pred._2).map(v => f"${v._1}: ${v._2}%.3f")
-    pred._1 + ": " + probs.mkString("[", ", ", "]")
+  def show(pred: (String, Map[String, Double])): String = {
+    pred._1 + ": " + pred._2.mkString("[", ":", "]")
   }
 }

@@ -19,9 +19,6 @@ package ai.h2o.sparkling.examples
 
 import java.net.URI
 
-import hex.Model.Output
-import org.apache.spark.SparkContext
-import CraigslistJobTitlesApp.show
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
@@ -42,41 +39,36 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
   val POISON_PILL_MSG = "poison pill"
 
   def main(args: Array[String]) {
-    // Prepare environment
-    val sc = new SparkContext(configure("CraigslistJobTitlesStreamingApp"))
-    val ssc = new StreamingContext(sc, Seconds(10))
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-    // Start H2O services
-    val h2oContext = H2OContext.getOrCreate()
+    val spark = SparkSession.builder().appName("CraigslistJobTitlesStreamingApp").getOrCreate()
+    val hc = H2OContext.getOrCreate()
+    val ssc = new StreamingContext(spark.sparkContext, Seconds(10))
+
 
     // Build an initial model
-    val staticApp = new CraigslistJobTitlesApp()(sc, sqlContext, h2oContext)
+    val staticApp = new CraigslistJobTitlesApp()(spark, hc)
     try {
       val (svModel, w2vModel) = staticApp.buildModels(TestUtils.locate("smalldata/craigslistJobTitles.csv"), "initialModel")
-      val modelId = svModel._key.toString
-      val classNames = svModel._output.asInstanceOf[Output].classNames()
 
       // Lets save models
       exportSparkModel(w2vModel, URI.create("file:///tmp/sparkmodel"))
-      exportH2OModel(svModel, URI.create("file:///tmp/h2omodel/"))
+      exportSparkModel(svModel, URI.create("file:///tmp/h2omodel/"))
 
       // Start streaming context
       val jobTitlesStream = ssc.socketTextStream("localhost", 9999)
 
       // Classify incoming messages
       jobTitlesStream.filter(!_.isEmpty)
-        .map(jobTitle => (jobTitle, staticApp.classify(jobTitle, modelId, w2vModel)))
-        .map(pred => "\"" + pred._1 + "\" = " + show(pred._2, classNames))
+        .map(jobTitle => (jobTitle, staticApp.predict(jobTitle, svModel, w2vModel)))
         .print()
 
       // Shutdown app if poison pill is passed as a message
       jobTitlesStream.filter(msg => POISON_PILL_MSG == msg)
         .foreachRDD(rdd => if (!rdd.isEmpty()) {
           println("Poison pill received! Application is going to shut down...")
-          ssc.stop(true, true)
-          sc.stop()
-          h2oContext.stop()
-      })
+          ssc.stop(stopSparkContext = true, stopGracefully = true)
+          spark.stop()
+          hc.stop()
+        })
 
       println("Please start the event producer at port 9999, for example: nc -lk 9999")
       ssc.start()
@@ -86,8 +78,8 @@ object CraigslistJobTitlesStreamingApp extends SparkContextSupport with ModelSer
       case e: Throwable => e.printStackTrace()
     } finally {
       ssc.stop()
-      sc.stop()
-      h2oContext.stop()
+      spark.stop()
+      hc.stop()
     }
   }
 

@@ -128,8 +128,8 @@ class ScriptCraigListJobTitles extends ScriptsTestHelper {
     super.beforeAll()
   }
 
-  test("craigslistJobTitles.script.scala ") {
-    val result = launchScript("craigslistJobTitles.script.scala")
+  test("CraigslistJobTitles.script.scala ") {
+    val result = launchScript("CraigslistJobTitles.script.scala")
     assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
   }
 }
