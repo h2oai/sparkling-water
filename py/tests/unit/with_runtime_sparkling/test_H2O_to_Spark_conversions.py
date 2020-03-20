@@ -31,14 +31,13 @@ def testH2OFrameToDataframeNew(hc):
     assert len(df.columns) == frame.ncol, "Number of columns should match"
     assert df.columns == frame.names, "Column names should match"
 
-
-def testH2OFrameToDataframe(spark, hc):
-    rdd = spark.sparkContext.parallelize(["a", "b", "c"])
-    h2o_frame = hc.asH2OFrame(rdd)
-    df = hc.asSparkFrame(h2o_frame)
-    assert df.count() == h2o_frame.nrow, "Number of rows should match"
-    assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
-    assert df.columns == h2o_frame.names, "Column names should match"
+def testH2OFrameToDataframeWithSecondConversion(hc):
+    h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
+    df1 = hc.asSparkFrame(h2o_frame)
+    df2 = hc.asSparkFrame(h2o_frame)
+    assert df1.count() == df2.count(), "Number of rows should match"
+    assert len(df1.columns) == len(df2.columns), "Number of columns should match"
+    assert df1.columns == df2.columns, "Column names should match"
 
 
 @pytest.mark.parametrize(
