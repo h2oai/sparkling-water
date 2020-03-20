@@ -167,8 +167,8 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-flow_dir", conf.flowDir)
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
-      .add("-network", conf.clientNetworkMask)
-      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
+      .addIf("-network", conf.clientNetworkMask, !RestApiUtils.isRestAPIBased(conf))
+      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty && !RestApiUtils.isRestAPIBased(conf))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
   }
