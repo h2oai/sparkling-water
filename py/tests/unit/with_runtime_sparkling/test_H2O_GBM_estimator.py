@@ -23,7 +23,7 @@ from pyspark.sql.functions import log, col
 from pysparkling.ml import H2OMOJOModel
 from h2o.estimators.gbm import H2OGradientBoostingEstimator
 from pysparkling.context import H2OContext
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 from tests import unit_test_utils
 

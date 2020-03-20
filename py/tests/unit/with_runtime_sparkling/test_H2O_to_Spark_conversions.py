@@ -23,18 +23,18 @@ from pysparkling.context import H2OContext
 
 from tests import generic_test_utils
 from tests import unit_test_utils
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
 @pytest.fixture(scope="module")
 def hc(spark):
     conf = createH2OConf()
-    hc =  H2OContext.getOrCreate(conf)
+    hc = H2OContext.getOrCreate(conf)
     yield hc
     hc.stop()
 
 
-def testH2OFrameToDataframe(hc):
+def testH2OFrameToDataframeNew(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
     df = hc.asSparkFrame(frame)
     assert df.count() == frame.nrow, "Number of rows should match"
@@ -42,13 +42,13 @@ def testH2OFrameToDataframe(hc):
     assert df.columns == frame.names, "Column names should match"
 
 
-def testH2OFrameToDataframeWithSecondConversion(hc):
-    frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df1 = hc.asSparkFrame(frame)
-    df2 = hc.asSparkFrame(frame)
-    assert df1.count() == df2.count(), "Number of rows should match"
-    assert len(df1.columns) == len(df2.columns), "Number of columns should match"
-    assert df1.columns == df2.columns, "Column names should match"
+def testH2OFrameToDataframe(spark, hc):
+    rdd = spark.sparkContext.parallelize(["a", "b", "c"])
+    h2o_frame = hc.asH2OFrame(rdd)
+    df = hc.asSparkFrame(h2o_frame)
+    assert df.count() == h2o_frame.nrow, "Number of rows should match"
+    assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
+    assert df.columns == h2o_frame.names, "Column names should match"
 
 
 @pytest.mark.parametrize(
@@ -108,6 +108,7 @@ def testInnerCbindTransform(hc):
     df = hc.asSparkFrame(frame1.cbind(frame2))
     count = df.count()
     assert count == 3, "Number of rows is 3"
+
 
 # test for SW-430
 def testLazyFrames(spark, hc):

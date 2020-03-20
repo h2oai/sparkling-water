@@ -22,7 +22,7 @@ import requests
 from pysparkling.context import H2OContext
 
 from tests.unit_test_utils import *
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+from tests.unit.with_runtime_sparkling.algo_test_utils import *
 import pytest
 
 
