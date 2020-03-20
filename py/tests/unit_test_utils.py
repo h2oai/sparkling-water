@@ -71,7 +71,7 @@ def assert_data_frames_are_identical(expected, produced):
     producedDistinctCount = produced.distinct().count()
 
     assert expectedDistinctCount == producedDistinctCount,\
-        'The expected data frame has %s distinct rows whereas the produced data frame has %s distinct rows.' \
+        'The expected data frame has %s distinct rows whereas the produced data frame has %s distinct rows.'\
         % (expectedDistinctCount, producedDistinctCount)
 
     numberOfExtraRowsInExpected = expected.subtract(produced).count()
