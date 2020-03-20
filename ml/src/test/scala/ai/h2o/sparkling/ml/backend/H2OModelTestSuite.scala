@@ -24,7 +24,6 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -33,7 +32,7 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .csv("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")//TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("getCurrentMetrics when trained with just training frame") {
     val modelId = "gbm_model_1"
@@ -49,7 +48,7 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     assert(model.metrics.validationMetrics.isEmpty)
     assert(model.metrics.crossValidationMetrics.isEmpty)
     assert(model.currentMetrics.nonEmpty)
-    //TODO
+    assert(model.metrics.trainingMetrics == model.currentMetrics)
   }
 
   test("getCurrentMetrics when trained with validation frame") {
@@ -67,7 +66,7 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     assert(model.metrics.validationMetrics.nonEmpty)
     assert(model.metrics.crossValidationMetrics.isEmpty)
     assert(model.currentMetrics.nonEmpty)
-    //TODO
+    assert(model.metrics.validationMetrics == model.currentMetrics)
   }
 
   test("getCurrentMetrics when trained with cross-validation") {
@@ -85,7 +84,7 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     assert(model.metrics.validationMetrics.isEmpty)
     assert(model.metrics.crossValidationMetrics.nonEmpty)
     assert(model.currentMetrics.nonEmpty)
-    //TODO
+    assert(model.metrics.crossValidationMetrics == model.currentMetrics)
   }
 
   test("getCurrentMetrics when trained with validation frame and cross-validation") {
@@ -104,6 +103,6 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     assert(model.metrics.validationMetrics.nonEmpty)
     assert(model.metrics.crossValidationMetrics.nonEmpty)
     assert(model.currentMetrics.nonEmpty)
-    //TODO
+    assert(model.metrics.crossValidationMetrics == model.currentMetrics)
   }
 }
