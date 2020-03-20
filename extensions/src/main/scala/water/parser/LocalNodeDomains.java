@@ -25,12 +25,17 @@ import java.util.ArrayList;
 public final class LocalNodeDomains {
     private static NonBlockingHashMap<Key, ArrayList<Categorical[]>> domainsMap = new NonBlockingHashMap<>();
     private static NonBlockingHashMap<String, Categorical[]> domainsMapByChunk = new NonBlockingHashMap<>();
+    private static NonBlockingHashMap<Key, ArrayList<String>>  frameKeyToChunkKeys = new NonBlockingHashMap<>();
 
     public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
         ArrayList<Categorical[]> nodeDomains = domainsMap.putIfAbsent(frameKey, new ArrayList<>());
         Categorical[] categoricalDomains = domainsToCategoricals(domains);
         nodeDomains.add(categoricalDomains);
+
+        ArrayList<String> chunkKeys = frameKeyToChunkKeys.putIfAbsent(frameKey, new ArrayList<>());
         String chunkKey = createChunkKey(frameKey, chunkId);
+        chunkKeys.add(chunkKey);
+
         domainsMapByChunk.putIfAbsent(chunkKey, categoricalDomains);
     }
 
@@ -47,22 +52,30 @@ public final class LocalNodeDomains {
         return result;
     }
 
-    public synchronized static boolean containsDomains(Key key) {
-        return domainsMap.containsKey(key);
+    public synchronized static boolean containsDomains(Key frameKey) {
+        return domainsMap.containsKey(frameKey);
     }
 
-    public synchronized static boolean containsDomains(Key key, int chunkId) {
-        String chunkKey = createChunkKey(key, chunkId);
+    public synchronized static boolean containsDomains(Key frameKey, int chunkId) {
+        String chunkKey = createChunkKey(frameKey, chunkId);
         return domainsMapByChunk.containsKey(chunkKey);
     }
 
-    public synchronized static Categorical[][] getDomains(Key key) {
-        return domainsMap.get(key).toArray(new Categorical[0][]);
+    public synchronized static Categorical[][] getDomains(Key frameKey) {
+        return domainsMap.get(frameKey).toArray(new Categorical[0][]);
     }
 
-    public synchronized static Categorical[] getDomains(Key key, int chunkId) {
-        String chunkKey = createChunkKey(key, chunkId);
+    public synchronized static Categorical[] getDomains(Key frameKey, int chunkId) {
+        String chunkKey = createChunkKey(frameKey, chunkId);
         return domainsMapByChunk.get(chunkKey);
+    }
+
+    public synchronized static void remove(Key frameKey) {
+        domainsMap.remove(frameKey);
+        ArrayList<String> chunkKeys = frameKeyToChunkKeys.remove(frameKey);
+        for (String chunkKey : chunkKeys) {
+            domainsMapByChunk.remove(chunkKey);
+        }
     }
 
     private static String createChunkKey(Key frameKey, int chunkId) {
