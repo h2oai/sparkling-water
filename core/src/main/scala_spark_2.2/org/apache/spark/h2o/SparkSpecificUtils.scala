@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.ui.SparklingWaterUITab
+import org.apache.spark.h2o.ui.{SparklingWaterListener, SparklingWaterUITab}
 import org.apache.spark.ui.{SparkUITab, UIUtils}
 
 import scala.xml.Node

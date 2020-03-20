@@ -20,7 +20,7 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{OutputStream, PrintWriter}
 import java.net.URI
 
-import ai.h2o.sparkling.ml.algos.{H2OGLM, H2OSupervisedAlgorithm}
+import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
 import hex.glm.GLM
 import hex.glm.GLMModel.GLMParameters
 import hex.tree.gbm.GBM
