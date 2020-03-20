@@ -21,8 +21,8 @@ import org.apache.spark.status.KVUtils.KVIndexParam
 import org.apache.spark.util.kvstore.KVStore
 
 /**
-  * Sparkling Water accessors into general Spark KVStore
-  */
+ * Sparkling Water accessors into general Spark KVStore
+ */
 class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None)
   extends SparklingWaterInfoProvider {
 
@@ -57,8 +57,8 @@ class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = N
 }
 
 /**
-  * Object encapsulating information produced when Sparkling Water is started
-  */
+ * Object encapsulating information produced when Sparkling Water is started
+ */
 class SparklingWaterStartedInfo(val h2oClusterInfo: H2OClusterInfo,
                                 val h2oBuildInfo: H2OBuildInfo,
                                 val swProperties: Array[(String, String)]) {
@@ -67,8 +67,8 @@ class SparklingWaterStartedInfo(val h2oClusterInfo: H2OClusterInfo,
 }
 
 /**
-  * Object encapsulating information about Sparkling Water Heartbeat
-  */
+ * Object encapsulating information about Sparkling Water Heartbeat
+ */
 class SparklingWaterUpdateInfo(val cloudHealthy: Boolean, val timeInMillis: Long, val memoryInfo: Array[(String, String)]) {
   // Use lass name ad key since there is always just a single instance of this object in KVStore
   @KVIndexParam val id: String = getClass.getName

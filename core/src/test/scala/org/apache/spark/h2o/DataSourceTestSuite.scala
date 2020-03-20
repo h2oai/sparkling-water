@@ -26,8 +26,8 @@ import org.scalatest.junit.JUnitRunner
 import water.DKV
 
 /**
-  * Test using H2O Frame as Spark SQL data source
-  */
+ * Test using H2O Frame as Spark SQL data source
+ */
 @RunWith(classOf[JUnitRunner])
 class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 

@@ -96,7 +96,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
-    import TestUtils.sparseVector
     import sqlContext.implicits._
     val numberOfCols = 50 * 1000
     val sparsity = 0.2

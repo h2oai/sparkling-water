@@ -32,13 +32,13 @@ import water.fvec.H2OFrame;
 
 /**
  * A Java-friendly version of [[org.apache.spark.h2o.H2OContext]]
- *
+ * <p>
  * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
  * mode, it tries to connect to existing H2O cluster using the provided spark
  * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
  * that each Spark executor will have one h2o instance running in it.  This mode is not
  * recommended for big clusters and clusters where Spark executors are not stable.
- *
+ * <p>
  * Cluster mode can be set using the spark configuration
  * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
  * can be set in H2O configuration class H2OConf
@@ -136,7 +136,7 @@ public class JavaH2OContext {
     /**
      * Convert given H2O frame into DataFrame type
      *
-     * @param fr         the frame to be used
+     * @param fr the frame to be used
      * @return a new data frame
      */
     public Dataset<Row> asDataFrame(Frame fr) {
@@ -157,7 +157,7 @@ public class JavaH2OContext {
     /**
      * Convert given H2O frame into DataFrame type
      *
-     * @param key        key of H2O frame to convert
+     * @param key key of H2O frame to convert
      * @return Spark dataset
      */
     public Dataset<Row> asDataFrame(String key) {
@@ -249,7 +249,7 @@ public class JavaH2OContext {
 
     private static JavaH2OContext deprecationWarn(JavaH2OContext jhc, String oldParams, String newParams) {
         jhc.hc.log().warn("Method 'getOrCreate(" + oldParams + ")' is deprecated and will be removed in release 3.32. Use" +
-        "'getOrCreate(" + newParams + ")' instead!");
+                "'getOrCreate(" + newParams + ")' instead!");
         return jhc;
     }
 

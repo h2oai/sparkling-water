@@ -28,9 +28,9 @@ import org.apache.spark.{SparkConf, SparkEnv}
 import scala.annotation.tailrec
 
 /**
-  * Start RPC endpoint on all discovered executors. These RPC endpoints are later used to start
-  * H2O on remote executors.
-  */
+ * Start RPC endpoint on all discovered executors. These RPC endpoints are later used to start
+ * H2O on remote executors.
+ */
 private[spark]
 class SpreadRDDBuilder(@transient private val hc: H2OContext,
                        numExecutorHint: Option[Int] = None) extends Logging {
@@ -92,8 +92,8 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
   }
 
   /**
-    * Return number of registered Spark executors
-    */
+   * Return number of registered Spark executors
+   */
   private def numOfSparkExecutors = if (isLocal) 1 else {
     val sb = sc.schedulerBackend
     sb match {
@@ -107,7 +107,9 @@ class SpreadRDDBuilder(@transient private val hc: H2OContext,
 }
 
 object RpcReferenceCache extends SharedBackendUtils {
+
   private object Lock
+
   private val rpcServiceName = s"sparkling-water-h2o-start-${SparkEnv.get.executorId}"
   private val rpcEndpointName = "h2o"
   private var ref: RpcEndpointRef = _

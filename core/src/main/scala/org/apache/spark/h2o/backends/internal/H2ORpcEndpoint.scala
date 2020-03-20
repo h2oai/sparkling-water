@@ -29,9 +29,9 @@ import water.{H2O, H2ONode}
 import scala.collection.JavaConverters._
 
 /**
-  * An RpcEndpoint used for communication between H2O client and H2O worker nodes on remote executors.
-  * This endpoint is started on each Spark executor where H2O worker will be running.
-  */
+ * An RpcEndpoint used for communication between H2O client and H2O worker nodes on remote executors.
+ * This endpoint is started on each Spark executor where H2O worker will be running.
+ */
 class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
   extends ThreadSafeRpcEndpoint {
 

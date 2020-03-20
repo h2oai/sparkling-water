@@ -24,8 +24,8 @@ import org.apache.spark.ui.SparkUI
 
 
 /**
-  * Required at the history server in order to create the [[SparklingWaterHistoryListener]]
-  */
+ * Required at the history server in order to create the [[SparklingWaterHistoryListener]]
+ */
 class SparklingWaterHistoryListenerFactory extends SparkHistoryListenerFactory {
 
   override def createListeners(conf: SparkConf, sparkUI: SparkUI): Seq[SparkListener] = {
@@ -34,8 +34,8 @@ class SparklingWaterHistoryListenerFactory extends SparkHistoryListenerFactory {
 }
 
 /**
-  * Listener processing related sparkling water spark events
-  */
+ * Listener processing related sparkling water spark events
+ */
 class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging with SparklingWaterInfoProvider {
   var uiReady = false
   var h2oClusterInfo: Option[H2OClusterInfo] = None
@@ -79,8 +79,8 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
 
 
 /**
-  * A [[SparklingWaterListener]] for rendering the Sparkling Water UI in the history server.
-  */
+ * A [[SparklingWaterListener]] for rendering the Sparkling Water UI in the history server.
+ */
 class SparklingWaterHistoryListener(conf: SparkConf, sparkUI: SparkUI)
   extends SparklingWaterListener(conf) {
 

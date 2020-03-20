@@ -21,8 +21,8 @@ import org.apache.spark.ui.{SparkUI, SparkUITab}
 
 
 /**
-  * Enrich Spark UI by a Sparkling Water specific tab.
-  */
+ * Enrich Spark UI by a Sparkling Water specific tab.
+ */
 private[h2o] class SparklingWaterUITab(val provider: SparklingWaterInfoProvider, val parent: SparkUI)
   extends SparkUITab(parent, "sparkling-water") {
 

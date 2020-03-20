@@ -28,9 +28,9 @@ import water.init.NetworkInit
 import scala.util.Random
 
 /**
-  * Helper trait to simplify initialization and termination of Spark contexts.
-  *
-  */
+ * Helper trait to simplify initialization and termination of Spark contexts.
+ *
+ */
 trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 

@@ -24,8 +24,8 @@ import org.apache.spark.ui.{UIUtils, WebUIPage}
 import scala.xml.Node
 
 /**
-  * Sparkling Water info page.
-  */
+ * Sparkling Water info page.
+ */
 case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage("") {
 
   private val provider = parent.provider
@@ -70,7 +70,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       val h2oInfoTable = UIUtils.listingTable(
         propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
       val memoryInfo = UIUtils.listingTable(
-        propertyHeader, h2oRow, provider.memoryInfo.map{ case (n, m) => (n, "Free: " + m)}, fixedWidth = true)
+        propertyHeader, h2oRow, provider.memoryInfo.map { case (n, m) => (n, "Free: " + m) }, fixedWidth = true)
       <div>
         <ul class="unstyled">
           <li>
@@ -99,9 +99,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         </ul>
       </div>
         <span>
-          <h4>Sparkling Water</h4>{swInfoTable}
-          <h4>Sparkling Water Properties</h4>{swPropertiesTable}
-          <h4>H2O Build Information</h4>{h2oInfoTable}
+          <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>{h2oInfoTable}
         </span>
 
     } else {

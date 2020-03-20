@@ -23,8 +23,8 @@ import org.apache.spark.scheduler.{SparkListener, SparkListenerEvent}
 import org.apache.spark.status.{ElementTrackingStore, LiveEntity}
 
 /**
-  * Listener processing Sparkling Water events
-  */
+ * Listener processing Sparkling Water events
+ */
 class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Boolean) extends SparkListener with Logging {
 
   private def onSparklingWaterStart(event: H2OContextStartedEvent): Unit = {

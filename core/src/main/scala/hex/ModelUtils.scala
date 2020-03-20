@@ -27,12 +27,12 @@ import water.util.ArrayUtils
  */
 object ModelUtils extends Logging {
   @DeprecatedMethod("Sparkling Water Algorithm API to train and score H2O models", "3.32")
-  def classify(row: Array[Double], m : Model[_, _, _]): (String, Array[Double]) = {
+  def classify(row: Array[Double], m: Model[_, _, _]): (String, Array[Double]) = {
     val modelOutput = m._output.asInstanceOf[Output]
     val nclasses = modelOutput.nclasses()
     val classNames = modelOutput.classNames()
     val pred = m.score0(row, new Array[Double](nclasses + 1))
-    val predProb = pred slice (1, pred.length)
+    val predProb = pred slice(1, pred.length)
     val maxProbIdx = ArrayUtils.maxIndex(predProb)
     (classNames(maxProbIdx), predProb)
   }

@@ -23,8 +23,8 @@ import org.apache.spark.status.{AppHistoryServerPlugin, ElementTrackingStore}
 import org.apache.spark.ui.SparkUI
 
 /**
-  * History server plugin to enable Sparkling Water UI on history server
-  */
+ * History server plugin to enable Sparkling Water UI on history server
+ */
 class AppStatusPlugin extends AppHistoryServerPlugin {
   override def createListeners(conf: SparkConf, store: ElementTrackingStore): Seq[SparkListener] = {
     Seq(new AppStatusListener(conf, store, live = false))

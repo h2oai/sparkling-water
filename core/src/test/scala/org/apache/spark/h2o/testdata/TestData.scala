@@ -38,7 +38,7 @@ case class StringField(v: String)
 
 case class TimestampField(v: Timestamp)
 
-case class DateField(d : java.sql.Date)
+case class DateField(d: java.sql.Date)
 
 case class PrimitiveA(n: Int, name: String)
 

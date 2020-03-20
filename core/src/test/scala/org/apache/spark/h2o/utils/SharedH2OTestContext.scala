@@ -24,9 +24,9 @@ import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.scalatest.Suite
 
 /**
-  * Helper trait to simplify initialization and termination of H2O contexts.
-  *
-  */
+ * Helper trait to simplify initialization and termination of H2O contexts.
+ *
+ */
 trait SharedH2OTestContext extends SparkTestContext {
   self: Suite =>
 
