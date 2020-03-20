@@ -22,7 +22,7 @@ import ai.h2o.sparkling.utils.Base64Encoding
 import water.{DKV, Key}
 import water.api.Handler
 import water.fvec.{Vec, ChunkUtils, Frame}
-import water.parser.{CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
+import water.parser.{Categorical, CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
 
 class ImportFrameHandler extends Handler {
   def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
@@ -35,16 +35,27 @@ class ImportFrameHandler extends Handler {
     val columnTypes = Base64Encoding.decode(request.column_types)
     val frameKey = Key.make(request.key)
 
+    // Collect global domains from local domains on h2o nodes.
     val collectDomainsTask = new CollectCategoricalDomainsTask(frameKey)
     collectDomainsTask.doAllNodes()
     val domains = collectDomainsTask.getDomains()
 
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
 
+    // Update categorical indexes for all chunks.
     val frame = DKV.getGet[Frame](frameKey)
     val categoricalColumnIndices = for((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
     updateCategoricalIndicesTask.doAllNodes()
+
+    // Convert categorical columns with too many categories to T_STR
+    categoricalColumnIndices.foreach { catColIdx =>
+      val vector = frame.vec(catColIdx)
+      if (vector.cardinality() > Categorical.MAX_CATEGORICAL_COUNT) {
+        val stringVector = vector.toStringVec()
+        frame.replace(catColIdx, stringVector)
+      }
+    }
 
     request
   }
