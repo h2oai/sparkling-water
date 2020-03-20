@@ -179,7 +179,7 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
     }
 
     val modelMetricPair = gridModels.map { model =>
-      (model, model.getCurrentMetrics(getNfolds(), getSplitRatio()).find(_._1 == metric).get._2)
+      (model, model.currentMetrics.find(_._1 == metric).get._2)
     }
 
     val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
@@ -219,12 +219,10 @@ class H2OGridSearch(override val uid: String) extends Estimator[H2OMOJOModel]
   def getGridModelsMetrics(): DataFrame = {
     ensureGridSearchIsFitted()
     val rowValues = gridModels.zip(gridMojoModels.map(_.uid)).map { case (model, id) =>
-      val metrics = model.getCurrentMetrics(getNfolds(), getSplitRatio())
-      Row(Seq(id) ++ metrics.values: _*)
+      Row(Seq(id) ++ model.currentMetrics.values: _*)
     }
     val colNames = gridModels.headOption.map { model =>
-      val metrics = model.getCurrentMetrics(getNfolds(), getSplitRatio())
-      metrics.map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
+      model.currentMetrics.map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
     }.getOrElse(List.empty)
 
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
