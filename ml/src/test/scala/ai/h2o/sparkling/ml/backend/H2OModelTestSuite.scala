@@ -24,6 +24,7 @@ import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -32,7 +33,7 @@ class H2OModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
-    .csv("/Users/kuba/devel/repos/sparkling-water/examples/smalldata/prostate/prostate.csv")//TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("getCurrentMetrics when trained with just training frame") {
     val modelId = "gbm_model_1"
