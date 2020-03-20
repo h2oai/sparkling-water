@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml
 import java.io.{File, PrintWriter}
 import java.nio.file.Files
 
+import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.feature._

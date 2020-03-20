@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.File
 
-import ai.h2o.sparkling.ml.algos.H2ODeepLearning
+import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
