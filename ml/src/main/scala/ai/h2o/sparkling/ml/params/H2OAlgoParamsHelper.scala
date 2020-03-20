@@ -18,9 +18,9 @@ package ai.h2o.sparkling.ml.params
 
 import java.util
 
+import ai.h2o.sparkling.backend.utils.ReflectionUtils.api
 import com.google.common.base.CaseFormat
 import hex.Model.Parameters
-import ai.h2o.sparkling.backend.utils.ReflectionUtils.api
 import org.apache.spark.ml.param._
 
 import scala.reflect.ClassTag

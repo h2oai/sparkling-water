@@ -31,13 +31,12 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
-  import spark.implicits._
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/insurance.csv"))
 
-  private def createAlgorithm(): H2OGLM =  {
+  private def createAlgorithm(): H2OGLM = {
     new H2OGLM()
       .setSplitRatio(0.8)
       .setFeaturesCols("District", "Group", "Claims")

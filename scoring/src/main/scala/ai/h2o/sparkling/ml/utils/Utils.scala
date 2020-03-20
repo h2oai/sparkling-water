@@ -24,10 +24,11 @@ import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 object Utils {
 
   /**
-    * Get MOJO from a binary representation of MOJO
-    * @param mojoData data representing the MOJO model
-    * @return MOJO model
-    */
+   * Get MOJO from a binary representation of MOJO
+   *
+   * @param mojoData data representing the MOJO model
+   * @return MOJO model
+   */
   def getMojoModel(mojoData: Array[Byte]): MojoModel = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)

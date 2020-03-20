@@ -16,8 +16,8 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import ai.h2o.sparkling.ml.params.H2OKMeansParams
+import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import hex.kmeans.KMeansModel.KMeansParameters
 import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 

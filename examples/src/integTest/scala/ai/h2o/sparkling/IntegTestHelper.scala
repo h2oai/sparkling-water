@@ -1,26 +1,26 @@
 package ai.h2o.sparkling
 
-import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
 import water.init.NetworkInit
 
 import scala.collection.mutable
 
 /**
-  * Integration test support to be run on top of Spark.
-  */
+ * Integration test support to be run on top of Spark.
+ */
 trait IntegTestHelper extends BeforeAndAfterEach {
   self: Suite =>
 
   private var testEnv: IntegTestEnv = _
 
   /** Launch given class name via SparkSubmit and use given environment
-    * to configure SparkSubmit command line.
-    *
-    * @param className name of class to launch as integration test
-    * @param env       Spark environment
-    */
+   * to configure SparkSubmit command line.
+   *
+   * @param className name of class to launch as integration test
+   * @param env       Spark environment
+   */
   def launch(className: String, env: IntegTestEnv): Unit = {
     val cmdToLaunch = Seq[String](
       getSubmitScript(env.sparkHome),

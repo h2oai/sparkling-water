@@ -19,6 +19,8 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.ByteArrayInputStream
 
+import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
+import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
@@ -28,10 +30,8 @@ import com.google.gson.{GsonBuilder, JsonElement}
 import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
-import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
-import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -71,9 +71,9 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   }
 
   protected override def applyPredictionUdfToFlatDataFrame(
-      flatDataFrame: DataFrame,
-      udfConstructor: Array[String] => UserDefinedFunction,
-      inputs: Array[String]): DataFrame = {
+                                                            flatDataFrame: DataFrame,
+                                                            udfConstructor: Array[String] => UserDefinedFunction,
+                                                            inputs: Array[String]): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)

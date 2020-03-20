@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.File
 
-import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
+import ai.h2o.sparkling.ml.algos.H2ODeepLearning
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
@@ -146,7 +146,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       'ID,
       'CAPSULE,
       'AGE,
-      struct( 'RACE, 'DPROS, struct( 'DCAPS, 'PSA) as "b") as "a",
+      struct('RACE, 'DPROS, struct('DCAPS, 'PSA) as "b") as "a",
       'VOL,
       'GLEASON)
 
@@ -195,14 +195,14 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   def assertGBMPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit = {
-    val records = predictionDF.select( "detailed_prediction.probabilities").collect()
+    val records = predictionDF.select("detailed_prediction.probabilities").collect()
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
     records.foreach { row =>
       val m = row.getMap[String, Double](0)
       assert(m.keys.toList.sorted == Seq("0", "1"))
       m.values.foreach { value =>
-       value should (be >= 0.0 and be <= 1.0)
+        value should (be >= 0.0 and be <= 1.0)
       }
     }
   }

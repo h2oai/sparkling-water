@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}

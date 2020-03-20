@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import java.io.{File, FileOutputStream, FileReader, InputStreamReader}
+import java.io.{File, FileOutputStream, InputStreamReader}
 import java.lang.reflect.Modifier
 
 import com.google.common.reflect.ClassPath
@@ -112,7 +112,7 @@ object Runner {
 
     def isBenchmark(clazz: Class[_]) = {
       val isAbstract = Modifier.isAbstract(clazz.getModifiers)
-      val inheritsFromBenchmarkBase  = classOf[BenchmarkBase[_]].isAssignableFrom(clazz)
+      val inheritsFromBenchmarkBase = classOf[BenchmarkBase[_]].isAssignableFrom(clazz)
       !isAbstract && inheritsFromBenchmarkBase
     }
 
@@ -121,10 +121,10 @@ object Runner {
   }
 
   private def filterCollection[T](
-      entity: String,
-      filter: Option[String],
-      collection: Seq[T],
-      nameGetter: T => String): Seq[T] = filter match {
+                                   entity: String,
+                                   filter: Option[String],
+                                   collection: Seq[T],
+                                   nameGetter: T => String): Seq[T] = filter match {
     case None => collection
     case Some(name) =>
       val result = collection.filter(nameGetter(_) == name)
@@ -133,10 +133,11 @@ object Runner {
   }
 
   private def createBatches(
-      datasetDetails: Seq[DatasetDetails],
-      benchmarkClasses: Seq[Class[_]],
-      algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch]  = {
+                             datasetDetails: Seq[DatasetDetails],
+                             benchmarkClasses: Seq[Class[_]],
+                             algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch] = {
     def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_]].isAssignableFrom(clazz)
+
     val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _))
     benchmarkClasses.map { benchmarkClass =>
       val parameterSets = if (isAlgorithmBenchmark(benchmarkClass)) {
@@ -173,9 +174,10 @@ object Runner {
   private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
 
   private case class Settings(
-    datasetSpecificationsFile: String,
-    benchmark: Option[String],
-    dataset: Option[String],
-    algorithm: Option[String],
-    outputDir: Option[String])
+                               datasetSpecificationsFile: String,
+                               benchmark: Option[String],
+                               dataset: Option[String],
+                               algorithm: Option[String],
+                               outputDir: Option[String])
+
 }

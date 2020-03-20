@@ -21,8 +21,8 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param._
 
 /**
-  * Parameters available on the algorithm & MOJO Model
-  */
+ * Parameters available on the algorithm & MOJO Model
+ */
 trait H2OMOJOAlgoSharedParams extends Params with Logging {
 
   //

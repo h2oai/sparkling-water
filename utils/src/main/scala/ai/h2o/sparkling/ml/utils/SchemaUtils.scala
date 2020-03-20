@@ -28,8 +28,8 @@ import org.apache.spark.{ExposeUtils, ml, mllib}
 import scala.collection.mutable.ArrayBuffer
 
 /**
-  * Utilities for working with Spark SQL component.
-  */
+ * Utilities for working with Spark SQL component.
+ */
 object SchemaUtils {
 
   def flattenDataFrame(df: DataFrame): DataFrame = DatasetShape.getDatasetShape(df.schema) match {
@@ -344,13 +344,13 @@ object SchemaUtils {
   }
 
   /** Returns expanded schema
-    *  - schema is represented as list of types
-    *  - all arrays are expanded into columns based on the longest one
-    *  - all vectors are expanded into columns based on the longest one
-    *
-    * @param flatSchema flat schema of spark data frame
-    * @return list of types with their positions
-    */
+   *  - schema is represented as list of types
+   *  - all arrays are expanded into columns based on the longest one
+   *  - all vectors are expanded into columns based on the longest one
+   *
+   * @param flatSchema flat schema of spark data frame
+   * @return list of types with their positions
+   */
   def expandedSchema(flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
 
     val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
@@ -375,13 +375,13 @@ object SchemaUtils {
   }
 
   /**
-    * Collect max size of each element in DataFrame.
-    * For array -> max array size
-    * For vectors -> max vector size
-    * For simple types -> 1
-    *
-    * @return array containing size of each element
-    */
+   * Collect max size of each element in DataFrame.
+   * For array -> max array size
+   * For vectors -> max vector size
+   * For simple types -> 1
+   *
+   * @return array containing size of each element
+   */
   def collectMaxElementSizes(flatDataFrame: DataFrame): Array[Int] = {
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
@@ -438,11 +438,11 @@ object SchemaUtils {
   }
 
   /**
-    * Get size of Array or Vector type. Expects already flattened DataFrame
-    *
-    * @param row current row
-    * @param idx index of the element
-    */
+   * Get size of Array or Vector type. Expects already flattened DataFrame
+   *
+   * @param row current row
+   * @param idx index of the element
+   */
   private def getCollectionSize(row: Row, idx: Int): Int = {
     if (row.schema == null || row.isNullAt(idx)) {
       0

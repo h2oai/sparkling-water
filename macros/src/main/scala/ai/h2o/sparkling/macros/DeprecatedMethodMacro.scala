@@ -32,17 +32,18 @@ class DeprecatedMethod(replacement: String = "", version: String = "") extends S
 }
 
 /**
-  * The object contains all the logic for expanding the [[DeprecatedMethod]] annotation.
-  */
+ * The object contains all the logic for expanding the [[DeprecatedMethod]] annotation.
+ */
 object DeprecatedMethodMacro {
 
   /**
-    * The method replaces the [[DeprecatedMethod]] annotation with the standard [[deprecated]] annotation and injects
-    * a logging logic into an annotated method.
-    * @param c A reflection white-box context
-    * @param annottees An expression annotated by [[DeprecatedMethod]]
-    * @return An expression that is result of the annotation expansion
-    */
+   * The method replaces the [[DeprecatedMethod]] annotation with the standard [[deprecated]] annotation and injects
+   * a logging logic into an annotated method.
+   *
+   * @param c         A reflection white-box context
+   * @param annottees An expression annotated by [[DeprecatedMethod]]
+   * @return An expression that is result of the annotation expansion
+   */
   def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 

@@ -60,8 +60,8 @@ class H2OTargetEncoderMOJOModel(override val uid: String) extends Model[H2OTarge
 }
 
 /**
-  * The class holds all necessary dependencies of udf that needs to be serialized.
-  */
+ * The class holds all necessary dependencies of udf that needs to be serialized.
+ */
 case class H2OTargetEncoderMOJOUdfWrapper(mojoData: Array[Byte], outputCols: Array[String]) {
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val model = Utils.getMojoModel(mojoData).asInstanceOf[TargetEncoderMojoModel]

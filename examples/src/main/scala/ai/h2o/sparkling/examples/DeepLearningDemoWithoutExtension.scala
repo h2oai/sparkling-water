@@ -71,9 +71,9 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     // Result of SQL query
     val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
-      'Distance, 'IsDepDelayed )
-    H2OFrameSupport.withLockAndUpdate(train){ fr =>
-      fr.replace(fr.numCols()-1, fr.lastVec().toCategoricalVec)
+      'Distance, 'IsDepDelayed)
+    H2OFrameSupport.withLockAndUpdate(train) { fr =>
+      fr.replace(fr.numCols() - 1, fr.lastVec().toCategoricalVec)
     }
 
     // Configure Deep Learning algorithm
@@ -94,11 +94,11 @@ object DeepLearningDemoWithoutExtension extends SparkContextSupport {
     //
     println("\n====> Making prediction with help of DeepLearning model\n")
     val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).take(10).map ( _.result.getOrElse("NaN") )
+    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).take(10).map(_.result.getOrElse("NaN"))
     println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
 
     // Stop Spark cluster and destroy all executors
-    if (System.getProperty("spark.ext.h2o.preserve.executors")==null) {
+    if (System.getProperty("spark.ext.h2o.preserve.executors") == null) {
       sc.stop()
     }
 

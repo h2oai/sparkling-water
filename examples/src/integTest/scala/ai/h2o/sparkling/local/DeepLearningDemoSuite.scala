@@ -1,7 +1,7 @@
 package ai.h2o.sparkling.local
 
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import ai.h2o.sparkling.examples.DeepLearningDemo
+import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -20,8 +20,8 @@ class DeepLearningDemoSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object DeepLearningDemoTest extends IntegTestStopper{
-  def main(args: Array[String]): Unit = exitOnException{
+object DeepLearningDemoTest extends IntegTestStopper {
+  def main(args: Array[String]): Unit = exitOnException {
     DeepLearningDemo.main(args)
   }
 }

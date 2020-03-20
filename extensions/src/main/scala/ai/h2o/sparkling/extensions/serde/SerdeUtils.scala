@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.extensions.serde
 
+import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants._
 import water.fvec.Vec
-import ChunkSerdeConstants._
 
 object SerdeUtils {
   private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Byte] = {

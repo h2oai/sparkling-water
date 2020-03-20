@@ -17,26 +17,26 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
-import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
 import water.fvec.Frame
 import water.server.ServletUtils
 
 /**
-  * This servlet class handles GET and PUT requests for the path /3/Chunk
-  */
+ * This servlet class handles GET and PUT requests for the path /3/Chunk
+ */
 final class ChunkServlet extends HttpServlet {
 
   private case class POSTRequestParameters(
-      frameName: String,
-      numRows: Int,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      selectedColumnIndices: Array[Int],
-      compression: String) {
+                                            frameName: String,
+                                            numRows: Int,
+                                            chunkId: Int,
+                                            expectedTypes: Array[Byte],
+                                            selectedColumnIndices: Array[Int],
+                                            compression: String) {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
@@ -166,12 +166,12 @@ final class ChunkServlet extends HttpServlet {
   }
 
   private case class PUTRequestParameters(
-      frameName: String,
-      numRows: Int,
-      chunkId: Int,
-      expectedTypes: Array[Byte],
-      maxVecSizes: Array[Int],
-      compression: String) {
+                                           frameName: String,
+                                           numRows: Int,
+                                           chunkId: Int,
+                                           expectedTypes: Array[Byte],
+                                           maxVecSizes: Array[Int],
+                                           compression: String) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName")
@@ -182,7 +182,7 @@ final class ChunkServlet extends HttpServlet {
 
     def validateMaxVecSizes(): Unit = {
       val numberOfVectorTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
-      if(numberOfVectorTypes != maxVecSizes.length) {
+      if (numberOfVectorTypes != maxVecSizes.length) {
         val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
           s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
         new IllegalArgumentException(message)

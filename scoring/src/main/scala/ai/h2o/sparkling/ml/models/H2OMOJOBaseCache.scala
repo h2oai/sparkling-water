@@ -23,6 +23,7 @@ import org.apache.spark.expose.Logging
 import scala.collection.mutable
 
 trait H2OMOJOBaseCache[B, M] extends Logging {
+
   private object Lock
 
   private val pipelineCache = mutable.Map.empty[String, B]
@@ -69,7 +70,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, bytesGetter: ()=> Array[Byte], model: M): B = Lock.synchronized {
+  def getMojoBackend(uid: String, bytesGetter: () => Array[Byte], model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
       pipelineCache.put(uid, loadMojoBackend(bytesGetter(), model))
     }

@@ -2,8 +2,8 @@ package ai.h2o.sparkling.local
 
 import java.io.File
 
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import ai.h2o.sparkling.examples.{Airlines, TestUtils}
+import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
@@ -18,10 +18,10 @@ import water.support.{H2OFrameSupport, SparkContextSupport}
 
 
 /**
-  * PUBDEV-928 test suite.
-  *
-  * Verifies that DL can be run on 0-length chunks.
-  */
+ * PUBDEV-928 test suite.
+ *
+ * Verifies that DL can be run on 0-length chunks.
+ */
 @RunWith(classOf[JUnitRunner])
 class PubDev928Suite extends FunSuite with IntegTestHelper {
 
@@ -38,7 +38,7 @@ class PubDev928Suite extends FunSuite with IntegTestHelper {
 
 object PubDev928Test extends SparkContextSupport with IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = configure("PUBDEV-928")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()
@@ -64,7 +64,7 @@ object PubDev928Test extends SparkContextSupport with IntegTestStopper {
     val train: H2OFrame = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed)
-    H2OFrameSupport.withLockAndUpdate(train){ fr =>
+    H2OFrameSupport.withLockAndUpdate(train) { fr =>
       fr.replace(fr.numCols() - 1, fr.lastVec().toCategoricalVec)
     }
     println(s"Any vec chunk cnt: ${train.anyVec().nChunks()}")

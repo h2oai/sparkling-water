@@ -161,7 +161,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       // Transform the columns at the top level under "output" column
       val nestedPredictionCols = tempColNames.indices.map { idx => tempCols(idx).alias($(outputCols)(idx)) }
       val resultCol = struct(nestedPredictionCols: _*)
-      val nullableResultCol =  enforceNullability(resultCol)
+      val nullableResultCol = enforceNullability(resultCol)
       val frameWithNestedPredictions = frameWithExtractedPredictions.withColumn(getPredictionCol(), nullableResultCol)
 
       // Remove the temporary columns at the top level and return

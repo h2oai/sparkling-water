@@ -1,7 +1,7 @@
 package ai.h2o.sparkling.yarn
 
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper}
 import ai.h2o.sparkling.examples.AirlinesParse
+import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
@@ -10,8 +10,8 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
-  * Test suite for given JIRA bug.
-  */
+ * Test suite for given JIRA bug.
+ */
 @RunWith(classOf[JUnitRunner])
 class HexDev62TestSuite extends FunSuite with IntegTestHelper {
 
@@ -33,9 +33,9 @@ class HexDev62TestSuite extends FunSuite with IntegTestHelper {
   }
 }
 
-object HexDev62Test extends IntegTestStopper{
+object HexDev62Test extends IntegTestStopper {
 
-  def main(args: Array[String]): Unit = exitOnException{
+  def main(args: Array[String]): Unit = exitOnException {
     val conf = H2OConf.checkSparkConf(new SparkConf().setAppName("HexDev62Test"))
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()

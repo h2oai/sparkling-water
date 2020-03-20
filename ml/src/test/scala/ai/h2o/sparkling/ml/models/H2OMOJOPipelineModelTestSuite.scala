@@ -197,8 +197,8 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   /**
-    * The purpose of this test is to simply pass and don't throw NullPointerException
-    */
+   * The purpose of this test is to simply pass and don't throw NullPointerException
+   */
   test("Prediction with null as row element") {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
