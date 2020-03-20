@@ -19,6 +19,7 @@ package org.apache.spark.h2o.backends.internal
 
 import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.backend.{NodeDesc, SparklingBackend}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend._
@@ -37,8 +38,9 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     logInfo("Starting the H2O cluster inside Spark.")
-    if (hc.sparkContext.isLocal) {
+    val numNodes = if (hc.sparkContext.isLocal) {
       startSingleH2OWorker(hc, conf)
+      1
     } else {
       val endpoints = registerEndpoints(hc)
       val workerNodes = startH2OWorkers(endpoints, conf)
@@ -46,14 +48,33 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       tearDownEndpoints(endpoints)
       registerNewExecutorListener(hc)
       conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, workerNodes.head.ipPort())
+      workerNodes.length
+    }
+    if (RestApiUtils.isRestAPIBased(conf)) {
+      waitForCloudSize(conf, numNodes)
     }
   }
-
 
   override def epilog: String = ""
 }
 
 object InternalH2OBackend extends InternalBackendUtils {
+
+  private def waitForCloudSize(conf: H2OConf, expectedSize: Int): Unit = {
+    val start = System.currentTimeMillis()
+    val timeout = conf.cloudTimeout
+    while (System.currentTimeMillis() - start < timeout) {
+      val cloudInfo = RestApiUtils.getClusterInfo(conf)
+      if (cloudInfo.cloud_size >= expectedSize && cloudInfo.consensus) {
+        return
+      }
+      try {
+        Thread.sleep(100)
+      } catch {
+        case _: InterruptedException =>
+      }
+    }
+  }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
@@ -155,5 +176,4 @@ object InternalH2OBackend extends InternalBackendUtils {
       _.send(FlatFileMsg(nodes, conf.internalPortOffset))
     }
   }
-
 }
