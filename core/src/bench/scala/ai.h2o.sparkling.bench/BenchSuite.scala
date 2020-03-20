@@ -25,16 +25,17 @@ import org.scalatest.FunSuite
 class BenchSuite extends FunSuite {
 
   protected def benchTest(
-      testName: String,
-      iterations: Int = 5,
-      warmUp: Int = 1,
-      outputTimeUnit: TimeUnit = TimeUnit.MILLISECONDS)(testFun: => Unit): Unit = {
+                           testName: String,
+                           iterations: Int = 5,
+                           warmUp: Int = 1,
+                           outputTimeUnit: TimeUnit = TimeUnit.MILLISECONDS)(testFun: => Unit): Unit = {
     def body: Unit = {
       val result = bench(iterations, warmUp, outputTimeUnit) {
         val evaluated = testFun
       }
       println(s"$testName: ${result.show()}")
     }
+
     registerTest(testName)(body)
   }
 }

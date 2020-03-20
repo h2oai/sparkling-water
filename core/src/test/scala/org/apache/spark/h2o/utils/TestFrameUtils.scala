@@ -34,8 +34,8 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 /**
-  * Various helpers to help with working with Frames during tests
-  */
+ * Various helpers to help with working with Frames during tests
+ */
 object TestFrameUtils extends Matchers {
   def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
                                 data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
@@ -60,15 +60,15 @@ object TestFrameUtils extends Matchers {
       values.indices.foreach { idx =>
         val chunk: NewChunk = nchunks(idx)
         values(idx) match {
-          case null                                  => chunk.addNA()
-          case u: UUID                               => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
-          case s: String                             => chunk.addStr(new BufferedString(s))
-          case b: Byte                               => chunk.addNum(b)
-          case s: Short                              => chunk.addNum(s)
+          case null => chunk.addNA()
+          case u: UUID => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
+          case s: String => chunk.addStr(new BufferedString(s))
+          case b: Byte => chunk.addNum(b)
+          case s: Short => chunk.addNum(s)
           case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
           case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
-          case l: Long                               => chunk.addNum(l)
-          case d: Double                             => chunk.addNum(d)
+          case l: Long => chunk.addNum(l)
+          case d: Double => chunk.addNum(d)
           case x =>
             throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
         }
@@ -80,6 +80,7 @@ object TestFrameUtils extends Matchers {
 
   def assertFieldNamesAreEqual(expected: DataFrame, produced: DataFrame): Unit = {
     def fieldNames(df: DataFrame) = df.schema.fields.map(_.name)
+
     val expectedNames = fieldNames(expected)
     val producedNames = fieldNames(produced)
     producedNames shouldEqual expectedNames
@@ -166,20 +167,20 @@ object TestFrameUtils extends Matchers {
 
 
   case class GenerateDataFrameSettings(
-    numberOfRows: Int,
-    rowsPerPartition: Int,
-    maxCollectionSize: Int,
-    nullProbability: Double = 0.1,
-    seed: Long = 1234L)
+                                        numberOfRows: Int,
+                                        rowsPerPartition: Int,
+                                        maxCollectionSize: Int,
+                                        nullProbability: Double = 0.1,
+                                        seed: Long = 1234L)
 
   trait SchemaHolder {
     def schema: StructType
   }
 
   def generateDataFrame(
-      spark: SparkSession,
-      schemaHolder: SchemaHolder,
-      settings: GenerateDataFrameSettings): DataFrame = {
+                         spark: SparkSession,
+                         schemaHolder: SchemaHolder,
+                         settings: GenerateDataFrameSettings): DataFrame = {
     implicit val encoder = RowEncoder(schemaHolder.schema)
     val numberOfPartitions = Math.max(1, settings.numberOfRows / settings.rowsPerPartition)
     spark
@@ -195,10 +196,10 @@ object TestFrameUtils extends Matchers {
   }
 
   private def generateValueForField(
-      random: Random,
-      field: StructField,
-      settings: GenerateDataFrameSettings,
-      prefix: Option[String] = None): Any = {
+                                     random: Random,
+                                     field: StructField,
+                                     settings: GenerateDataFrameSettings,
+                                     prefix: Option[String] = None): Any = {
     val StructField(name, dataType, nullable, _) = field
     val nameWithPrefix = prefix match {
       case None => name
@@ -227,7 +228,7 @@ object TestFrameUtils extends Matchers {
             val key = generateValueForField(random, keyField, settings, Some(nameWithPrefix))
             key -> a
           }.toMap
-        case struct @ StructType(fields) =>
+        case struct@StructType(fields) =>
           val values = fields.map(f => generateValueForField(random, f, settings, Some(nameWithPrefix)))
           new GenericRowWithSchema(values, struct)
       }
@@ -235,11 +236,11 @@ object TestFrameUtils extends Matchers {
   }
 
   private def generateArray(
-      random: Random,
-      settings: GenerateDataFrameSettings,
-      elementType: DataType,
-      containsNull: Boolean,
-      nameWithPrefix: String): Seq[Any] = {
+                             random: Random,
+                             settings: GenerateDataFrameSettings,
+                             elementType: DataType,
+                             containsNull: Boolean,
+                             nameWithPrefix: String): Seq[Any] = {
     (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
       val arrayField = StructField(idx.toString, elementType, containsNull)
       generateValueForField(random, arrayField, settings, Some(nameWithPrefix))

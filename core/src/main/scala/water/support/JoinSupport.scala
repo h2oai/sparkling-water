@@ -21,45 +21,47 @@ import water.munging.JoinMethod
 import water.rapids.Rapids
 
 /**
-  * Trait which contains methods for specific H2O join and merge operation.
-  */
+ * Trait which contains methods for specific H2O join and merge operation.
+ */
 trait JoinSupport {
 
   private val MERGE_RAPIDS: String = "(merge %s %s %s %s [] [] \"%s\")"
 
   /**
-    * Join H2O frames
-    * @param left left frame
-    * @param right right frame
-    * @param allX all X values
-    * @param allY all Y values
-    * @param method joining method
-    * @return
-    */
+   * Join H2O frames
+   *
+   * @param left   left frame
+   * @param right  right frame
+   * @param allX   all X values
+   * @param allY   all Y values
+   * @param method joining method
+   * @return
+   */
   def join[T <: Frame](left: T,
-           right: T,
-           allX: Boolean = false,
-           allY: Boolean = false,
-           method: JoinMethod = JoinMethod.AUTO
-          ): Frame = {
+                       right: T,
+                       allX: Boolean = false,
+                       allY: Boolean = false,
+                       method: JoinMethod = JoinMethod.AUTO
+                      ): Frame = {
     val rCode = String.format(MERGE_RAPIDS,
-                              left._key,
-                              right._key,
-                              toStr(allX),
-                              toStr(allY),
-                              method.name)
+      left._key,
+      right._key,
+      toStr(allX),
+      toStr(allY),
+      method.name)
     val session = new water.rapids.Session()
     val ret = Rapids.exec(rCode, session)
     ret.getFrame
   }
 
   /**
-    * Left join two frames
-    * @param left left frame
-    * @param right right frame
-    * @param method joining method
-    * @return new frame
-    */
+   * Left join two frames
+   *
+   * @param left   left frame
+   * @param right  right frame
+   * @param method joining method
+   * @return new frame
+   */
   def leftJoin(left: Frame,
                right: Frame,
                method: JoinMethod = JoinMethod.AUTO): Frame = {
@@ -67,25 +69,27 @@ trait JoinSupport {
   }
 
   /**
-    * Right join two frames
-    * @param left left frame
-    * @param right right frame
-    * @param method joining method
-    * @return new frame
-    */
+   * Right join two frames
+   *
+   * @param left   left frame
+   * @param right  right frame
+   * @param method joining method
+   * @return new frame
+   */
   def rightJoin(left: Frame,
-               right: Frame,
-               method: JoinMethod = JoinMethod.AUTO): Frame = {
+                right: Frame,
+                method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = false, allY = true, method = method)
   }
 
   /**
-    * Inner join two frames
-    * @param left left frame
-    * @param right right frame
-    * @param method joining method
-    * @return new frame
-    */
+   * Inner join two frames
+   *
+   * @param left   left frame
+   * @param right  right frame
+   * @param method joining method
+   * @return new frame
+   */
   def innerJoin(left: Frame,
                 right: Frame,
                 method: JoinMethod = JoinMethod.AUTO): Frame = {
@@ -93,12 +97,13 @@ trait JoinSupport {
   }
 
   /**
-    * Outer join two frames
-    * @param left left frame
-    * @param right right frame
-    * @param method joining method
-    * @return new frame
-    */
+   * Outer join two frames
+   *
+   * @param left   left frame
+   * @param right  right frame
+   * @param method joining method
+   * @return new frame
+   */
   def outerJoin(left: Frame,
                 right: Frame,
                 method: JoinMethod = JoinMethod.AUTO): Frame = {

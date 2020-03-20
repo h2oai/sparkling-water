@@ -20,12 +20,12 @@ import org.apache.spark.SparkConf
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 /**
-  * Test passing parameters via SparkConf.
-  */
+ * Test passing parameters via SparkConf.
+ */
 @RunWith(classOf[JUnitRunner])
 class H2OConfTestSuite extends FunSuite with SparkTestContext {
 

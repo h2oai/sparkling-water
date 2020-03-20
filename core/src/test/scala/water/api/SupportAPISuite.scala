@@ -44,8 +44,8 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
     right.add("salary", vec(null, 10000, 20000, 10000, 40000))
     right.update()
 
-    import water.support.JoinSupport._
     import water.munging.JoinMethod._
+    import water.support.JoinSupport._
     // Define test space
     type JOIN_TYPE = (Frame, Frame, JoinMethod) => Frame
     val NA = null.asInstanceOf[Int]

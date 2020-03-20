@@ -19,11 +19,11 @@ package org.apache.spark.h2o
 
 import java.util.concurrent.atomic.AtomicReference
 
+import ai.h2o.sparkling.backend._
 import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
-import ai.h2o.sparkling.backend._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._

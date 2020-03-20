@@ -20,12 +20,13 @@ package org.apache.spark.h2o.utils
 import org.scalatest.{Canceled, FunSuite, Outcome}
 
 /**
-  * Base class for H2O tests
-  * These tests can be aborted.
-  *
-  * Idea: Eugene Zhulenev, http://stackoverflow.com/questions/26001795/how-to-configure-scalatest-to-abort-a-suite-if-a-test-fails
-  */
+ * Base class for H2O tests
+ * These tests can be aborted.
+ *
+ * Idea: Eugene Zhulenev, http://stackoverflow.com/questions/26001795/how-to-configure-scalatest-to-abort-a-suite-if-a-test-fails
+ */
 trait TestBase extends FunSuite {
+
   import TestBase._
 
   override def withFixture(test: NoArgTest): Outcome = {

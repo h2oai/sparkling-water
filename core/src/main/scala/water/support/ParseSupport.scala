@@ -17,50 +17,56 @@
 package water.support
 
 /**
-  * Simple support for parsing data.
-  */
+ * Simple support for parsing data.
+ */
 trait ParseSupport {
 
   /**
-    * Parse string as an integer
-    * @param s string to parse
-    * @return option with parsed int or empty option in case the parse failed
-    */
+   * Parse string as an integer
+   *
+   * @param s string to parse
+   * @return option with parsed int or empty option in case the parse failed
+   */
   def int(s: String): Option[Int] = if (isValid(s)) parseInt(s) else None
 
   /**
-    * Parse string as a long
-    * @param s string to parse
-    * @return option with parsed long or empty option in case the parse failed
-    */
+   * Parse string as a long
+   *
+   * @param s string to parse
+   * @return option with parsed long or empty option in case the parse failed
+   */
   def long(s: String): Option[Long] = if (isValid(s)) parseLong(s) else None
 
   /**
-    * Parse string as a float
-    * @param s string to parse
-    * @return option with parsed float or empty option in case the parse failed
-    */
+   * Parse string as a float
+   *
+   * @param s string to parse
+   * @return option with parsed float or empty option in case the parse failed
+   */
   def float(s: String): Option[Float] = if (isValid(s)) parseFloat(s) else None
 
   /**
-    * Parse string as a string
-    * @param s string to parse
-    * @return option with parsed string or empty option in case the parse failed
-    */
+   * Parse string as a string
+   *
+   * @param s string to parse
+   * @return option with parsed string or empty option in case the parse failed
+   */
   def str(s: String): Option[String] = if (isValid(s)) Option(s) else None
 
   /**
-    * Parse string as a boolean
-    * @param s string to parse
-    * @return option with parsed boolean or empty option in case the parse failed
-    */
+   * Parse string as a boolean
+   *
+   * @param s string to parse
+   * @return option with parsed boolean or empty option in case the parse failed
+   */
   def bool(s: String): Option[Boolean] = if (isValid(s)) parseBool(s) else None
 
   /**
-    * Parse string as an integer
-    * @param s string to parse
-    * @return option with parsed int or empty option in case the parse failed
-    */
+   * Parse string as an integer
+   *
+   * @param s string to parse
+   * @return option with parsed int or empty option in case the parse failed
+   */
   def parseInt(s: String): Option[Int] =
     try {
       Option(s.trim().toInt)
@@ -69,10 +75,11 @@ trait ParseSupport {
     }
 
   /**
-    * Parse string as a long
-    * @param s string to parse
-    * @return option with parsed long or empty option in case the parse failed
-    */
+   * Parse string as a long
+   *
+   * @param s string to parse
+   * @return option with parsed long or empty option in case the parse failed
+   */
   def parseLong(s: String): Option[Long] =
     try {
       Option(s.trim().toLong)
@@ -81,10 +88,11 @@ trait ParseSupport {
     }
 
   /**
-    * Parse string as a float
-    * @param s string to parse
-    * @return option with parsed float or empty option in case the parse failed
-    */
+   * Parse string as a float
+   *
+   * @param s string to parse
+   * @return option with parsed float or empty option in case the parse failed
+   */
   def parseFloat(s: String): Option[Float] =
     try {
       Option(s.trim().toFloat)
@@ -93,10 +101,11 @@ trait ParseSupport {
     }
 
   /**
-    * Parse string as a boolean
-    * @param s string to parse
-    * @return option with parsed boolean or empty option in case the parse failed
-    */
+   * Parse string as a boolean
+   *
+   * @param s string to parse
+   * @return option with parsed boolean or empty option in case the parse failed
+   */
   def parseBool(s: String): Option[Boolean] = s.trim().toLowerCase match {
     case "true" | "yes" => Option(true)
     case "false" | "no" => Option(false)
@@ -104,17 +113,18 @@ trait ParseSupport {
   }
 
   /**
-    * Check if the value is NA
-    * @param s string to check if it represents NA
-    * @return true or false whether the string represents NA
-    */
+   * Check if the value is NA
+   *
+   * @param s string to check if it represents NA
+   * @return true or false whether the string represents NA
+   */
   def isNA(s: String): Boolean = s == null || s.isEmpty || (s.trim.toLowerCase match {
     case "na" => true
     case "n/a" => true
     case _ => false
   })
 
-  /** Check if the value is valid, such as if it's not NA*/
+  /** Check if the value is valid, such as if it's not NA */
   def isValid(s: String): Boolean = !isNA(s)
 }
 

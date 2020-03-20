@@ -25,11 +25,11 @@ import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 
 abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers with SparkTestContext {
@@ -54,7 +54,7 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
     try {
       val securityManager = new NoExitCheckSecurityManager
       System.setSecurityManager(securityManager)
-      if (hc != null){
+      if (hc != null) {
         hc.stop()
       }
     } catch {
@@ -82,6 +82,7 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
       throw new SecurityException()
     }
   }
+
 }
 
 abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends ConfigurationPropertiesTestSuite {

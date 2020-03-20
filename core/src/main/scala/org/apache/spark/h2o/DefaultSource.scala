@@ -24,15 +24,15 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import water.DKV
 
 /**
-  * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
-  * JDBC server).
-  */
+ * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
+ * JDBC server).
+ */
 class DefaultSource extends RelationProvider
   with SchemaRelationProvider with CreatableRelationProvider with DataSourceRegister {
 
   /**
-    * Short alias for spark-csv data source.
-    */
+   * Short alias for spark-csv data source.
+   */
   override def shortName(): String = "h2o"
 
   private def checkKey(parameters: Map[String, String]): String = {
@@ -45,18 +45,18 @@ class DefaultSource extends RelationProvider
   }
 
   /**
-    * Creates a new relation for data store in H2OFrame given parameters.
-    * Parameters have to include 'key'
-    */
+   * Creates a new relation for data store in H2OFrame given parameters.
+   * Parameters have to include 'key'
+   */
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String]): BaseRelation = {
     createRelation(sqlContext, parameters, null)
   }
 
   /**
-    * Creates a new relation for data store in H2OFrame given parameters.
-    * Parameters have to include 'key'
-    */
+   * Creates a new relation for data store in H2OFrame given parameters.
+   * Parameters have to include 'key'
+   */
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
                               schema: StructType): H2OFrameRelation = {

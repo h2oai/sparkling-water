@@ -51,9 +51,9 @@ package object h2o {
 
 
   /**
-    * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
-    * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
-    */
+   * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
+   * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
+   */
   implicit class H2ODataFrameWriter[T](writer: DataFrameWriter[T]) {
     def h2o(key: String): Unit = writer.format("org.apache.spark.h2o").save(key)
 
@@ -61,9 +61,9 @@ package object h2o {
   }
 
   /**
-    * Adds a method, `h2o`, to DataFrameReader that allows you to read h2o frames using
-    * the DataFileReader. It's alias for sqlContext.read.format("org.apache.spark.h2o").option("key",frame.key.toString).load()
-    */
+   * Adds a method, `h2o`, to DataFrameReader that allows you to read h2o frames using
+   * the DataFileReader. It's alias for sqlContext.read.format("org.apache.spark.h2o").option("key",frame.key.toString).load()
+   */
   implicit class H2ODataFrameReader(reader: DataFrameReader) {
     def h2o(key: String): DataFrame = reader.format("org.apache.spark.h2o").load(key)
 
