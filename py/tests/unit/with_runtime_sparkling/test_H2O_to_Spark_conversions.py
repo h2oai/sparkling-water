@@ -24,7 +24,7 @@ from tests import generic_test_utils
 from tests import unit_test_utils
 
 
-def testH2OFrameToDataframeNew(hc):
+def testH2OFrameToDataframe(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
     df = hc.asSparkFrame(frame)
     assert df.count() == frame.nrow, "Number of rows should match"
@@ -32,9 +32,9 @@ def testH2OFrameToDataframeNew(hc):
     assert df.columns == frame.names, "Column names should match"
 
 def testH2OFrameToDataframeWithSecondConversion(hc):
-    h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df1 = hc.asSparkFrame(h2o_frame)
-    df2 = hc.asSparkFrame(h2o_frame)
+    frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
+    df1 = hc.asSparkFrame(frame)
+    df2 = hc.asSparkFrame(frame)
     assert df1.count() == df2.count(), "Number of rows should match"
     assert len(df1.columns) == len(df2.columns), "Number of columns should match"
     assert df1.columns == df2.columns, "Column names should match"

@@ -16,31 +16,28 @@
 #
 
 import os
-import pytest
-import requests
 import time
+
+import requests
 from pysparkling.context import H2OContext
 
-from tests.unit.with_runtime_sparkling_external.external_backend_test_utils import *
 from tests.unit_test_utils import *
+from tests.unit.with_runtime_sparkling_external.external_backend_test_utils import *
+import pytest
 
 
 def testZombieExternalH2OCluster():
     jarPath = os.environ['H2O_DRIVER_JAR']
     notifyFile = "notify.txt"
-    subprocess.check_call(
-        "hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath,
-                                                                                                         notifyFile,
-                                                                                                         10000),
-        shell=True)
+    subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
     ipPort = getIpPortFromNotifyFile(notifyFile)
     appId = getYarnAppIdFromNotifyFile(notifyFile)
     # Lock the cloud, from this time, the cluster should stop after 10 seconds if nothing pings the /3/Ping endpoint
-    requests.post(url="http://" + ipPort + "/3/CloudLock")
+    requests.post(url = "http://" + ipPort + "/3/CloudLock")
 
     # Keep pinging the cluster
     for x in range(0, 5):
-        requests.get(url="http://" + ipPort + "/3/Ping")
+        requests.get(url = "http://" + ipPort + "/3/Ping")
         assert appId in listYarnApps()
         time.sleep(5)
     # Wait 60 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
@@ -95,12 +92,12 @@ def testStopAndStartAgain(spark):
         return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 
     context1 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId1 = str(context1.getConf().get("spark.ext.h2o.external.yarn.app.id"))
+    yarnAppId1 = str(context1._jhc.backend().yarnAppId().get())
     assert yarnAppId1 in listYarnApps()
     context1.stop()
     assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
     context2 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId2 = str(context2.getConf().get("spark.ext.h2o.external.yarn.app.id"))
+    yarnAppId2 = str(context2._jhc.backend().yarnAppId().get())
     assert yarnAppId1 not in listYarnApps()
     assert "Orderly shutdown:  Shutting down now." in yarnLogs(yarnAppId1)
     assert yarnAppId2 in listYarnApps()
