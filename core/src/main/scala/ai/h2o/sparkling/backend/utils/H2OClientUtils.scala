@@ -21,7 +21,6 @@ import java.net.{InetAddress, NetworkInterface}
 
 import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.api.RestAPIManager
-import ai.h2o.sparkling.backend.external.ExternalH2OBackend
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.init.HostnameGuesser
@@ -46,7 +45,13 @@ object H2OClientUtils extends SharedBackendUtils {
   }
 
   def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
-    setClientIp(conf)
+    if (conf.runsInExternalClusterMode) {
+      setClientIp(conf)
+    } else {
+      if (conf.clientIp.isEmpty) {
+        conf.setClientIp(getHostname(SparkEnv.get))
+      }
+    }
     if (!(conf.runsInInternalClusterMode && hc.sparkContext.isLocal)) {
       val args = getH2OClientArgs(conf).toArray
       val launcherArgs = toH2OArgs(args, nodes)
@@ -94,7 +99,7 @@ object H2OClientUtils extends SharedBackendUtils {
     }
 
     if (conf.clientIp.isEmpty) {
-      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
+      conf.setClientIp(getHostname(SparkEnv.get))
     }
   }
 

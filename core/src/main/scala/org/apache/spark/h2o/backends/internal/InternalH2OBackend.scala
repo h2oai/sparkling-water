@@ -79,10 +79,6 @@ object InternalH2OBackend extends InternalBackendUtils {
     logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
     conf.set("spark.locality.wait", "0")
 
-    if (conf.clientIp.isEmpty) {
-      conf.setClientIp(getHostname(SparkEnv.get))
-    }
-
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
 
     if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !SparkSessionUtils.active.sparkContext.isLocal) {
