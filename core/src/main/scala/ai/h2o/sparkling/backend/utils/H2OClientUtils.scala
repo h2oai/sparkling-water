@@ -64,6 +64,9 @@ object H2OClientUtils extends SharedBackendUtils {
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
+  /**
+   * Wait for cloud size from the H2O client point of view
+   */
   private def waitForCloudSize(expectedSize: Int, timeoutInMilliseconds: Long): Int = {
     val start = System.currentTimeMillis()
     while (System.currentTimeMillis() - start < timeoutInMilliseconds) {

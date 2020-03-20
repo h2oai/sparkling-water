@@ -38,9 +38,8 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     logInfo("Starting the H2O cluster inside Spark.")
-    val numNodes = if (hc.sparkContext.isLocal) {
+    if (hc.sparkContext.isLocal) {
       startSingleH2OWorker(hc, conf)
-      1
     } else {
       val endpoints = registerEndpoints(hc)
       val workerNodes = startH2OWorkers(endpoints, conf)
@@ -48,10 +47,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       tearDownEndpoints(endpoints)
       registerNewExecutorListener(hc)
       conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, workerNodes.head.ipPort())
-      workerNodes.length
-    }
-    if (RestApiUtils.isRestAPIBased(conf)) {
-      waitForCloudSize(conf, numNodes)
+      waitForClusterSize(conf, workerNodes.length)
     }
   }
 
@@ -60,7 +56,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
 object InternalH2OBackend extends InternalBackendUtils {
 
-  private def waitForCloudSize(conf: H2OConf, expectedSize: Int): Unit = {
+  private def waitForClusterSize(conf: H2OConf, expectedSize: Int): Unit = {
     val start = System.currentTimeMillis()
     val timeout = conf.cloudTimeout
     while (System.currentTimeMillis() - start < timeout) {
