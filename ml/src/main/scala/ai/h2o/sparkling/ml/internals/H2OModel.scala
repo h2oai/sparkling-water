@@ -32,9 +32,9 @@ import scala.collection.JavaConverters._
 
 
 private[sparkling] class H2OModel private(val modelId: String,
-                       val modelCategory: H2OModelCategory.Value,
-                       val metrics: H2OMetricsHolder,
-                       val trainingParams: Map[String, String])
+                                          val modelCategory: H2OModelCategory.Value,
+                                          val metrics: H2OMetricsHolder,
+                                          val trainingParams: Map[String, String])
   extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
@@ -46,10 +46,12 @@ private[sparkling] class H2OModel private(val modelId: String,
     Files.readAllBytes(target.toPath)
   }
 
-  def getCurrentMetrics(nfolds: Int, splitRatio: Double): Map[H2OMetric, Double] = {
-    if (nfolds > 1) {
+  def currentMetrics: Map[H2OMetric, Double] = {
+    val nfolds = trainingParams.get("nfolds")
+    val validationFrame = trainingParams.get("validation_frame")
+    if (nfolds.isDefined && nfolds.get.toInt > 1) {
       metrics.crossValidationMetrics
-    } else if (splitRatio < 1) {
+    } else if (validationFrame.isDefined) {
       metrics.validationMetrics
     } else {
       metrics.trainingMetrics
@@ -107,9 +109,13 @@ private[sparkling] object H2OModel extends RestCommunication {
         val stringElements = v.asScala.flatMap(stringifyJSON)
         val arrayAsString = stringElements.mkString("[", ", ", "]")
         Some(arrayAsString)
-      case _ =>
-        // don't put more complex type to output yet
-        None
+      case _: JsonNull => None
+      case v: JsonObject =>
+        if (v.has("name")) {
+          stringifyJSON(v.get("name"))
+        } else {
+          None
+        }
     }
   }
 
