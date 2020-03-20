@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.external
 
 import java.io.{File, FileInputStream, FileOutputStream}
-import java.net.{InetAddress, NetworkInterface}
 import java.util.Properties
 
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, RestApiUtils, SharedBackendUtils, ShellUtils}
@@ -26,9 +25,8 @@ import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
+import org.apache.spark.SparkFiles
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.{SparkEnv, SparkFiles}
-import water.init.HostnameGuesser
 
 import scala.io.Source
 
@@ -166,7 +164,6 @@ object ExternalH2OBackend extends SharedBackendUtils {
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
-    setClientIp(conf)
     // Increase locality timeout since h2o-specific tasks can be long computing
     if (conf.getInt("spark.locality.wait", 3000) <= 3000) {
       logWarning(s"Increasing 'spark.locality.wait' to value 30000")
@@ -278,32 +275,4 @@ object ExternalH2OBackend extends SharedBackendUtils {
 
   // Name of the environmental property, which may contain path to the external H2O driver
   val ENV_H2O_DRIVER_JAR = "H2O_DRIVER_JAR"
-
-
-  private def setClientIp(conf: H2OConf): Unit = {
-    val clientIp = identifyClientIp(conf.h2oClusterHost.get)
-    if (clientIp.isDefined && conf.clientNetworkMask.isEmpty) {
-      conf.setClientIp(clientIp.get)
-    }
-
-    if (conf.clientIp.isEmpty) {
-      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
-    }
-  }
-
-  private def identifyClientIp(remoteAddress: String): Option[String] = {
-    val interfaces = NetworkInterface.getNetworkInterfaces
-    while (interfaces.hasMoreElements) {
-      val interface = interfaces.nextElement()
-      import scala.collection.JavaConverters._
-      interface.getInterfaceAddresses.asScala.foreach { address =>
-        val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
-        val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
-          return Some(address.getAddress.getHostAddress)
-        }
-      }
-    }
-    None
-  }
 }

@@ -17,10 +17,14 @@
 
 package ai.h2o.sparkling.backend.utils
 
+import java.net.{InetAddress, NetworkInterface}
+
 import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.api.RestAPIManager
+import ai.h2o.sparkling.backend.external.ExternalH2OBackend
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import water.init.HostnameGuesser
 import water.{H2O, H2OStarter, Paxos}
 
 /**
@@ -42,6 +46,7 @@ object H2OClientUtils extends SharedBackendUtils {
   }
 
   def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
+    setClientIp(conf)
     if (!(conf.runsInInternalClusterMode && hc.sparkContext.isLocal)) {
       val args = getH2OClientArgs(conf).toArray
       val launcherArgs = toH2OArgs(args, nodes)
@@ -80,5 +85,32 @@ object H2OClientUtils extends SharedBackendUtils {
       }
     }
     H2O.CLOUD.size()
+  }
+
+  private def setClientIp(conf: H2OConf): Unit = {
+    val clientIp = identifyClientIp(conf.h2oClusterHost.get)
+    if (clientIp.isDefined && conf.clientNetworkMask.isEmpty) {
+      conf.setClientIp(clientIp.get)
+    }
+
+    if (conf.clientIp.isEmpty) {
+      conf.setClientIp(ExternalH2OBackend.getHostname(SparkEnv.get))
+    }
+  }
+
+  private def identifyClientIp(remoteAddress: String): Option[String] = {
+    val interfaces = NetworkInterface.getNetworkInterfaces
+    while (interfaces.hasMoreElements) {
+      val interface = interfaces.nextElement()
+      import scala.collection.JavaConverters._
+      interface.getInterfaceAddresses.asScala.foreach { address =>
+        val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
+        val cidr = HostnameGuesser.CIDRBlock.parse(ip)
+        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
+          return Some(address.getAddress.getHostAddress)
+        }
+      }
+    }
+    None
   }
 }
