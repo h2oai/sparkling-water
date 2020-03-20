@@ -23,6 +23,7 @@ import water.{DKV, Key}
 import water.api.Handler
 import water.fvec.{Vec, ChunkUtils, Frame}
 import water.parser.{Categorical, CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
+import water.util.Log
 
 class ImportFrameHandler extends Handler {
   def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
@@ -52,8 +53,9 @@ class ImportFrameHandler extends Handler {
     categoricalColumnIndices.foreach { catColIdx =>
       val vector = frame.vec(catColIdx)
       if (vector.cardinality() > Categorical.MAX_CATEGORICAL_COUNT) {
-        val stringVector = vector.toStringVec()
-        frame.replace(catColIdx, stringVector)
+        Log.warn(s"Categorical column with index '$catColIdx' exceeded maximum number of categories. " +
+          "Converting it to a column of strings ...")
+        frame.replace(catColIdx, vector.toStringVec())
       }
     }
 
