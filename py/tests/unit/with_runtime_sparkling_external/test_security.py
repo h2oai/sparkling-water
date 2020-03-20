@@ -7,6 +7,7 @@
 
 import pytest
 from pysparkling.context import H2OContext
+from tests.unit.with_runtime_sparkling_external.external_backend_test_utils import *
 
 from tests.unit_test_utils import *
 
