@@ -146,9 +146,17 @@ private[backend] object Writer {
     val hc = H2OContext.ensure("H2OContext needs to be running")
     val nodes = hc.getH2ONodes()
     if (hc.getConf.runsInInternalClusterMode) {
-      rdd.mapPartitionsWithIndex { case (idx, _) =>
-        Iterator.single((idx, NodeDesc(H2O.SELF)))
-      }.collect().toMap
+      val mapping = rdd.mapPartitionsWithIndex { case (idx, _) =>
+        val self = H2O.SELF
+        if (self != null) {
+          Iterator.single((idx, Some(NodeDesc(self))))
+        } else {
+          Iterator.single((idx, None))
+        }
+      }.collect()
+      val withoutH2O = mapping.filter(_._2.isEmpty).map(_._1).zip(Stream.continually(nodes).flatten).toMap
+      val withH2O = mapping.filter(_._2.isDefined).map { case (idx, node) => idx -> node.get }.toMap
+      withoutH2O ++ withH2O
     } else {
       val uploadPlan = (0 until numPartitions).zip(Stream.continually(nodes).flatten).toMap
       uploadPlan
