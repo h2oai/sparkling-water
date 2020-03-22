@@ -167,8 +167,8 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-flow_dir", conf.flowDir)
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
-      .add("-network", conf.clientNetworkMask)
-      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
+      .addIf("-network", conf.clientNetworkMask, !RestApiUtils.isRestAPIBased(conf))
+      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty && !RestApiUtils.isRestAPIBased(conf))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
   }
@@ -183,18 +183,6 @@ trait SharedBackendUtils extends Logging with Serializable {
 
   def getExtraHttpHeaderArgs(conf: H2OConf): Seq[String] = {
     conf.flowExtraHttpHeaders.map(parseStringToHttpHeaderArgs).getOrElse(Seq.empty)
-  }
-
-  /**
-   * Get common arguments for H2O client.
-   *
-   * @return array of H2O client arguments.
-   */
-  def getH2OClientArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
-      .add(getH2OWorkerAsClientArgs(conf))
-      .add("-client")
-      .buildArgs()
   }
 
   def toH2OArgs(h2oArgs: Seq[String], executors: Array[NodeDesc] = Array()): Array[String] = {
@@ -253,5 +241,4 @@ trait SharedBackendUtils extends Logging with Serializable {
       en => s"${translateHostnameToIp(en.hostname)}:${en.port}"
     }.mkString("\n")
   }
-
 }

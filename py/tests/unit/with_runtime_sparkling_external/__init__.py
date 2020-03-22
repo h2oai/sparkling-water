@@ -15,25 +15,4 @@
 # limitations under the License.
 #
 
-from pysparkling.conf import H2OConf
-import subprocess
-
-
-def createH2OConf():
-    conf = H2OConf()
-    conf.setClusterSize(1)
-    conf.set("spark.ext.h2o.rest.api.based.client", "true")
-    conf.useAutoClusterStart()
-    conf.setExternalClusterMode()
-    return conf
-
-def yarnLogs(appId):
-    return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
-
-def getYarnAppIdFromNotifyFile(path):
-    with open(path, 'r') as f:
-        return f.readlines()[1].replace("job", "application").strip()
-
-def getIpPortFromNotifyFile(path):
-    with open(path, 'r') as f:
-        return f.readlines()[0].strip()
+# This directory contains test suites which require Spark & H2O

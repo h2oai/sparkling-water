@@ -19,19 +19,9 @@ import h2o
 import pytest
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.context import H2OContext
 
 from tests import generic_test_utils
 from tests import unit_test_utils
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
-
-
-@pytest.fixture(scope="module")
-def hc(spark):
-    conf = createH2OConf()
-    hc =  H2OContext.getOrCreate(conf)
-    yield hc
-    hc.stop()
 
 
 def testH2OFrameToDataframe(hc):
@@ -40,7 +30,6 @@ def testH2OFrameToDataframe(hc):
     assert df.count() == frame.nrow, "Number of rows should match"
     assert len(df.columns) == frame.ncol, "Number of columns should match"
     assert df.columns == frame.names, "Column names should match"
-
 
 def testH2OFrameToDataframeWithSecondConversion(hc):
     frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
@@ -108,6 +97,7 @@ def testInnerCbindTransform(hc):
     df = hc.asSparkFrame(frame1.cbind(frame2))
     count = df.count()
     assert count == 3, "Number of rows is 3"
+
 
 # test for SW-430
 def testLazyFrames(spark, hc):

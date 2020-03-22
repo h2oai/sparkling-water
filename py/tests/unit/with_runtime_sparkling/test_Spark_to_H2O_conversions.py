@@ -15,17 +15,15 @@
 # limitations under the License.
 #
 
-
 import h2o
 import pytest
 import time
-from pyspark.mllib.linalg import *
-from pyspark.sql.types import *
-from pyspark.sql.functions import *
-from pyspark.ml.util import _jvm
 from h2o.exceptions import H2OTypeError
+from pyspark.ml.util import _jvm
+from pyspark.mllib.linalg import *
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
 
-from tests import generic_test_utils
 from tests import unit_test_utils
 
 
@@ -90,6 +88,7 @@ def testDoubleRDDToH2OFrame(spark, hc):
     h2o_frame = hc.asH2OFrame(rdd)
     assert h2o_frame[0, 0] == 0.5
     assert pytest.approx(h2o_frame[1, 0]) == 1.3333333333
+    assert h2o_frame[2, 0] == 178
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 
@@ -124,59 +123,6 @@ def testNumericRDDtoH2OFrameWithValueTooBig(spark, hc):
     assert h2o_frame[1, 0] == str(min)
     assert h2o_frame[2, 0] == str(max)
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
-
-# test transformation from h2o frame to data frame, when given h2o frame was created without calling asH2OFrame
-# on h2o context
-def testH2OFrameToDataframeNew(hc):
-    h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df = hc.asSparkFrame(h2o_frame)
-    assert df.count() == h2o_frame.nrow, "Number of rows should match"
-    assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
-    assert df.columns == h2o_frame.names, "Column names should match"
-
-
-def testH2OFrameToDataframeWithSecondConversion(hc):
-    h2o_frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
-    df1 = hc.asSparkFrame(h2o_frame)
-    df2 = hc.asSparkFrame(h2o_frame)
-    assert df1.count() == df2.count(), "Number of rows should match"
-    assert len(df1.columns) == len(df2.columns), "Number of columns should match"
-    assert df1.columns == df2.columns, "Column names should match"
-
-
-# test transformation from h2o frame to data frame, when given h2o frame was obtained using asH2OFrame method
-# on h2o context
-def testH2OFrameToDataframe(spark, hc):
-    rdd = spark.sparkContext.parallelize(["a", "b", "c"])
-    h2o_frame = hc.asH2OFrame(rdd)
-    df = hc.asSparkFrame(h2o_frame)
-    assert df.count() == h2o_frame.nrow, "Number of rows should match"
-    assert len(df.columns) == h2o_frame.ncol, "Number of columns should match"
-    assert df.columns == h2o_frame.names, "Column names should match"
-
-
-# test for SW-321
-def testInnerCbindTransform(hc):
-    h2o_df1 = h2o.H2OFrame({'A': [1, 2, 3]})
-    h2o_df2 = h2o.H2OFrame({'B': [4, 5, 6]})
-    spark_frame = hc.asSparkFrame(h2o_df1.cbind(h2o_df2))
-    count = spark_frame.count()
-    assert count == 3, "Number of rows is 3"
-
-
-# test for SW-430
-def testLazyFrames(spark, hc):
-    from pyspark.sql import Row
-    data = [Row(c1=1, c2="first"), Row(c1=2, c2="second")]
-    df = spark.createDataFrame(data)
-    hf = hc.asH2OFrame(df)
-    # Modify H2O frame - this should invalidate internal cache
-    hf['c3'] = 3
-    # Now try to convert modified H2O frame back to Spark data frame
-    dfe = hc.asSparkFrame(hf)
-    assert dfe.count() == len(data), "Number of rows should match"
-    assert len(dfe.columns) == 3, "Number of columns should match"
-    assert dfe.collect() == [Row(c1=1, c2='first', c3=3), Row(c1=2, c2='second', c3=3)]
 
 
 def testSparseDataConversion(spark, hc):
@@ -215,6 +161,61 @@ def testConvertEmptyRDD(spark, hc):
     fr = hc.asH2OFrame(empty)
     assert fr.nrows == 0
     assert fr.ncols == 0
+
+
+@pytest.mark.parametrize(
+    "data,sparkType,h2oType",
+    [
+        pytest.param(
+            [1, 2, 3, 4, -3, -2, -1],
+            ByteType(),
+            "numeric",
+            id="byte"
+        ),
+        pytest.param(
+            [1001, 1002, 1003, 1004, -1003, -1002, -1001],
+            ShortType(),
+            "numeric",
+            id="short"
+        ),
+        pytest.param(
+            [100001, 100002, 100003, 100004, -100003, -100002, -100001],
+            IntegerType(),
+            "numeric",
+            id="integer"
+        ),
+        pytest.param(
+            [100000000001, 100000000002, 100000000003, 100000000004, -100000000003, -100000000002, -100000000001],
+            LongType(),
+            "numeric",
+            id="long"
+        ),
+        pytest.param(
+            [1.1, 2.2, 3.3, 4.4, -3.3, -2.2, -1.1],
+            DoubleType(),
+            "numeric",
+            id="double"
+        ),
+        pytest.param(
+            ["a", "b", "c", "d", "c", "b", "a"],
+            StringType(),
+            "string",
+            id="string"
+        ),
+    ],
+)
+def testH2OFrameOfSpecificTypeToDataframe(spark, hc, data, sparkType, h2oType):
+    columnName = 'A'
+    schema = StructType([
+        StructField(columnName, sparkType, False),
+    ])
+
+    originalH2OFrame = h2o.H2OFrame(data, column_names=[columnName], column_types=[h2oType])
+    df = spark.createDataFrame(map(lambda i: (i,), data), schema)
+
+    transformedH2OFrame = hc.asH2OFrame(df)
+
+    unit_test_utils.assert_h2o_frames_are_identical(originalH2OFrame, transformedH2OFrame)
 
 
 @pytest.mark.parametrize(

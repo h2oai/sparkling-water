@@ -22,7 +22,7 @@ import requests
 from pysparkling.context import H2OContext
 
 from tests.unit_test_utils import *
-from tests.unit.with_runtime_clientless_sparkling.clientless_test_utils import *
+from tests.unit.with_runtime_sparkling_external.external_backend_test_utils import *
 import pytest
 
 
@@ -92,12 +92,12 @@ def testStopAndStartAgain(spark):
         return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 
     context1 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId1 = str(context1._jhc.backend().yarnAppId().get())
+    yarnAppId1 = str(context1.getConf().get("spark.ext.h2o.external.yarn.app.id"))
     assert yarnAppId1 in listYarnApps()
     context1.stop()
     assert context1.__str__().startswith("H2OContext has been stopped or hasn't been created.")
     context2 = H2OContext.getOrCreate(createH2OConf())
-    yarnAppId2 = str(context2._jhc.backend().yarnAppId().get())
+    yarnAppId2 = str(context2.getConf().get("spark.ext.h2o.external.yarn.app.id"))
     assert yarnAppId1 not in listYarnApps()
     assert "Orderly shutdown:  Shutting down now." in yarnLogs(yarnAppId1)
     assert yarnAppId2 in listYarnApps()
