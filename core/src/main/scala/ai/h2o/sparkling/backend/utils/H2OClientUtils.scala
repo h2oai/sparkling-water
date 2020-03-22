@@ -32,6 +32,16 @@ import water.{H2O, H2OStarter, Paxos}
  */
 object H2OClientUtils extends SharedBackendUtils {
 
+  val PROP_SCALA_H2O_CLIENT_BASED: (String, Boolean) = ("spark.ext.h2o.scala.api.client.based", true)
+
+  def isH2OClientBased(conf: H2OConf): Boolean = {
+    conf.getBoolean(PROP_SCALA_H2O_CLIENT_BASED._1, PROP_SCALA_H2O_CLIENT_BASED._2)
+  }
+
+  def isH2OClientBased(hc: H2OContext): Boolean = {
+    isH2OClientBased(hc.getConf)
+  }
+
   /**
    * Get common arguments for H2O client.
    *

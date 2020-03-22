@@ -89,7 +89,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-        selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
+        selected_conf.set("spark.ext.h2o.scala.api.client.based", "false")
 
         h2o_context = H2OContext()
 

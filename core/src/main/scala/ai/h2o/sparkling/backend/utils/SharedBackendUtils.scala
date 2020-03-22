@@ -142,7 +142,7 @@ trait SharedBackendUtils extends Logging with Serializable {
    */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-allow_clients", !RestApiUtils.isRestAPIBased(conf))
+      .add("-allow_clients", H2OClientUtils.isH2OClientBased(conf))
       .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)
@@ -167,8 +167,8 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-flow_dir", conf.flowDir)
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
-      .addIf("-network", conf.clientNetworkMask, !RestApiUtils.isRestAPIBased(conf))
-      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty && !RestApiUtils.isRestAPIBased(conf))
+      .addIf("-network", conf.clientNetworkMask, H2OClientUtils.isH2OClientBased(conf))
+      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty && H2OClientUtils.isH2OClientBased(conf))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
   }

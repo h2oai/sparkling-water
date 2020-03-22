@@ -48,7 +48,7 @@ H2OContext.getOrCreate <- function(sc = NULL, conf = NULL) {
   } else if (is.null(conf)) {
     conf <- H2OConf()
   }
-  conf$set("spark.ext.h2o.rest.api.based.client", "true")
+  conf$set("spark.ext.h2o.scala.api.client.based", "false")
 
   sc <- spark_connection_find()[[1]]
   jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", conf$jconf)

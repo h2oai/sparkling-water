@@ -21,6 +21,7 @@ import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
 import java.security.Permission
 
+import ai.h2o.sparkling.backend.utils.H2OClientUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.SparkSession
@@ -191,7 +192,7 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
     test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
       val h2oConf = new H2OConf()
       h2oConf.setExternalCommunicationCompression(compressionType)
-      h2oConf.set("spark.ext.h2o.rest.api.based.client", "true")
+      h2oConf.set(H2OClientUtils.PROP_SCALA_H2O_CLIENT_BASED._1, "false")
       h2oConf.setClusterSize(1)
       hc = H2OContext.getOrCreate(h2oConf)
       val dataset = spark.read

@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.frame
 
+import ai.h2o.sparkling.backend.utils.H2OClientUtils
 import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
@@ -27,8 +28,7 @@ import water.api.TestUtils
 @RunWith(classOf[JUnitRunner])
 class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
-    conf = defaultSparkConf
-      .set("spark.ext.h2o.rest.api.based.client", "true"))
+    conf = defaultSparkConf.set(H2OClientUtils.PROP_SCALA_H2O_CLIENT_BASED._1, "false"))
 
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
