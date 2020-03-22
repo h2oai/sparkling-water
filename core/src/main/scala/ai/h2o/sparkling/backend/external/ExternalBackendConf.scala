@@ -196,9 +196,7 @@ object ExternalBackendConf {
   /** ip:port of arbitrary h2o node to identify external h2o cluster */
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE: (String, None.type) = ("spark.ext.h2o.cloud.representative", None)
 
-  /** Number of nodes to wait for when connecting to external H2O cluster in manual mode. In auto mode, number
-   * of nodes to be started. This option does not have any effect in manual cluster start in case
-   * spark.ext.h2o.rest.api.based.client is set to true */
+  /** Number of nodes to be started in automatic mode. */
   val PROP_EXTERNAL_CLUSTER_SIZE: (String, None.type) = ("spark.ext.h2o.external.cluster.size", None)
 
   /** Timeout in seconds for starting h2o external cluster */

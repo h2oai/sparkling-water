@@ -457,10 +457,8 @@ object H2OContext extends Logging {
    * @return H2O Context
    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
-    val isRestApiBasedClient = conf.getBoolean(SharedBackendConf.PROP_REST_API_BASED_CLIENT._1,
-      SharedBackendConf.PROP_REST_API_BASED_CLIENT._2)
     val isExternalBackend = conf.runsInExternalClusterMode
-    if (isExternalBackend && isRestApiBasedClient) {
+    if (isExternalBackend && RestApiUtils.isRestAPIBased(conf)) {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed

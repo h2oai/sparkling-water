@@ -19,26 +19,26 @@ from tests.integ_test_utils import *
 import time
 
 def testStoppingWithoutExplicitStopWithH2OClient(integ_spark_conf):
+    integ_spark_conf["spark.ext.h2o.rest.api.based.client"] = "false"
     return_code = launch(integ_spark_conf, "examples/scripts/tests/H2OContextWithoutExplicitStop.py")
     time.sleep(10)
     assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
 
 def testStoppingWithoutExplicitStopWithRESTClient(integ_spark_conf):
-    integ_spark_conf["spark.ext.h2o.rest.api.based.client"] = "true"
     return_code = launch(integ_spark_conf, "examples/scripts/tests/H2OContextWithoutExplicitStop.py")
     time.sleep(10)
     assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
 
 def testStoppingWithExplicitStopWithH2OClient(integ_spark_conf):
+    integ_spark_conf["spark.ext.h2o.rest.api.based.client"] = "false"
     return_code = launch(integ_spark_conf, "examples/scripts/tests/H2OContextWithExplicitStop.py")
     time.sleep(10)
     assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
 
 def testStoppingWithExplicitStopWithRESTClient(integ_spark_conf):
-    integ_spark_conf["spark.ext.h2o.rest.api.based.client"] = "true"
     return_code = launch(integ_spark_conf, "examples/scripts/tests/H2OContextWithExplicitStop.py")
     time.sleep(10)
     assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()

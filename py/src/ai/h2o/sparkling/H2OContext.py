@@ -135,9 +135,6 @@ class H2OContext(object):
         scalaStopMethod = getattr(self._jhc, "org$apache$spark$h2o$H2OContext$$stop")
         scalaStopMethod(False, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
 
-        if self._conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false":
-            sys.exit()
-
     def downloadH2OLogs(self,  destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
         return self._jhc.downloadH2OLogs(destination, container)
