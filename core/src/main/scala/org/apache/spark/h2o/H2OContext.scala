@@ -287,15 +287,15 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
       // In internal backend, Spark takes care of stopping executors automatically
       // In manual mode of external backend, the H2O cluster is managed by the user
       if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
-        if (RestApiUtils.isRestAPIBased(Some(this))) {
-          RestApiUtils.shutdownCluster(conf)
-        } else {
+        if (H2OClientUtils.isH2OClientBased(conf)) {
           H2O.orderlyShutdown(conf.externalBackendStopTimeout)
+        } else {
+          RestApiUtils.shutdownCluster(conf)
         }
       }
       H2OContext.instantiatedContext.set(null)
       stopped = true
-      if (stopJvm && !RestApiUtils.isRestAPIBased(Some(this))) {
+      if (stopJvm && H2OClientUtils.isH2OClientBased(conf)) {
         H2O.exit(0)
       }
     } else {
@@ -369,7 +369,7 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   private def connectToH2OCluster(): Array[NodeDesc] = {
     logInfo("Connecting to H2O cluster.")
     val nodes = getAndVerifyWorkerNodes(conf)
-    if (!RestApiUtils.isRestAPIBased(this)) {
+    if (H2OClientUtils.isH2OClientBased(conf)) {
       H2OClientUtils.startH2OClient(this, conf, nodes)
     }
     nodes
@@ -388,10 +388,10 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
                 logError("External H2O cluster not healthy!")
                 if (conf.isKillOnUnhealthyClusterEnabled) {
                   logError("Stopping external H2O cluster as it is not healthy.")
-                  if (RestApiUtils.isRestAPIBased(Some(H2OContext.this))) {
-                    H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-                  } else {
+                  if (H2OClientUtils.isH2OClientBased(conf)) {
                     H2OContext.this.stop(true)
+                  } else {
+                    H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
                   }
                 }
               }
@@ -458,7 +458,7 @@ object H2OContext extends Logging {
    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
     val isExternalBackend = conf.runsInExternalClusterMode
-    if (isExternalBackend && RestApiUtils.isRestAPIBased(conf)) {
+    if (isExternalBackend && !H2OClientUtils.isH2OClientBased(conf)) {
       val existingContext = instantiatedContext.get()
       if (existingContext != null) {
         val startedManually = existingContext.conf.isManualClusterStartUsed

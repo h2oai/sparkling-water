@@ -20,7 +20,7 @@ package ai.h2o.sparkling.backend.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
-import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, RestApiUtils, SharedBackendUtils, ShellUtils}
+import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, H2OClientUtils, SharedBackendUtils, ShellUtils}
 import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -113,9 +113,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-baseport", conf.nodeBasePort)
       .add("-timeout", conf.clusterStartTimeout)
       .add("-disown")
-      .add("-sw_ext_backend", !RestApiUtils.isRestAPIBased(hc))
+      .add(H2OClientUtils.getH2OCommonArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
-      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString), !RestApiUtils.isRestAPIBased(hc))
       .add("-run_as_user", conf.runAsUser)
       .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)
       .add("-output", conf.HDFSOutputDir)

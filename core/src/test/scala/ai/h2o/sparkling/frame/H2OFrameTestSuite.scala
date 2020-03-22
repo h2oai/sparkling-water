@@ -27,8 +27,7 @@ import water.api.TestUtils
 @RunWith(classOf[JUnitRunner])
 class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
-    conf = defaultSparkConf
-      .set("spark.ext.h2o.rest.api.based.client", "true"))
+    conf = defaultSparkConf)
 
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings

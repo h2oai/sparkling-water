@@ -191,7 +191,6 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
     test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
       val h2oConf = new H2OConf()
       h2oConf.setExternalCommunicationCompression(compressionType)
-      h2oConf.set("spark.ext.h2o.rest.api.based.client", "true")
       h2oConf.setClusterSize(1)
       hc = H2OContext.getOrCreate(h2oConf)
       val dataset = spark.read

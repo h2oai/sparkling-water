@@ -142,13 +142,12 @@ trait SharedBackendUtils extends Logging with Serializable {
    */
   def getH2OCommonArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
-      .add("-allow_clients", !RestApiUtils.isRestAPIBased(conf))
+      .add(H2OClientUtils.getH2OCommonArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add("-internal_security_conf_rel_paths")
       .add("-name", conf.cloudName.get)
       .add("-port_offset", conf.internalPortOffset)
       .add("-stacktrace_collector_interval", Some(conf.stacktraceCollectorInterval).filter(_ > 0))
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
-      .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
       .add("-hdfs_config", getDistributedFilePath(conf.hdfsConf))
       .add(getExtraHttpHeaderArgs(conf))
       .add("-embedded")
@@ -167,8 +166,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-flow_dir", conf.flowDir)
       .add("-ice_root", conf.clientIcedDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
-      .addIf("-network", conf.clientNetworkMask, !RestApiUtils.isRestAPIBased(conf))
-      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty && !RestApiUtils.isRestAPIBased(conf))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
   }

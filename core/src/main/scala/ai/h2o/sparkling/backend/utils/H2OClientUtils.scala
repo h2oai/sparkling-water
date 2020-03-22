@@ -32,6 +32,12 @@ import water.{H2O, H2OStarter, Paxos}
  */
 object H2OClientUtils extends SharedBackendUtils {
 
+  val PROP_REST_API_BASED_CLIENT: (String, Boolean) = ("spark.ext.h2o.rest.api.based.client", false)
+
+  def isH2OClientBased(conf: H2OConf): Boolean = {
+    conf.get("spark.ext.h2o.rest.api.based.client", "false") == "false"
+  }
+
   /**
    * Get common arguments for H2O client.
    *
@@ -40,8 +46,24 @@ object H2OClientUtils extends SharedBackendUtils {
   private def getH2OClientArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add(getH2OWorkerAsClientArgs(conf))
+      .add("-network", conf.clientNetworkMask)
+      .addIf("-ip", conf.clientIp, conf.clientNetworkMask.isEmpty)
       .add("-client")
       .buildArgs()
+  }
+
+  def getH2OCommonArgsWhenClientBased(conf: H2OConf): Seq[String] = {
+    if (conf.runsInInternalClusterMode) {
+      new ArgumentBuilder()
+        .add("-allow_clients")
+        .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
+        .buildArgs()
+    } else {
+      new ArgumentBuilder()
+        .add("-sw_ext_backend")
+        .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString))
+        .buildArgs()
+    }
   }
 
   def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {

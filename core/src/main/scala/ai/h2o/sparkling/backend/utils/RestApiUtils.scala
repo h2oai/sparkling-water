@@ -21,20 +21,10 @@ import java.net.URI
 
 import ai.h2o.sparkling.backend.NodeDesc
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OConf
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {
-
-  def isRestAPIBased(hc: Option[H2OContext] = None): Boolean = {
-    isRestAPIBased(hc.getOrElse(H2OContext.ensure()).getConf)
-  }
-
-  def isRestAPIBased(conf: H2OConf): Boolean = {
-    conf.get("spark.ext.h2o.rest.api.based.client", "false") == "true"
-  }
-
-  def isRestAPIBased(hc: H2OContext): Boolean = isRestAPIBased(Some(hc))
 
   def getPingInfo(conf: H2OConf): PingV3 = {
     val endpoint = getClusterEndpoint(conf)
