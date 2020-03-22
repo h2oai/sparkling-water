@@ -158,14 +158,6 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
 }
 
 @RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_LocalCluster extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
-
-  test("test that notify_local set via client extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraClientProperties)
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   def setExtraNodeProperties(conf: H2OConf, filePath: Path): H2OConf = {

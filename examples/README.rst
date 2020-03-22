@@ -128,46 +128,22 @@ Step-by-Step Weather Data Example
 
     val joinedDf = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
-9. Transform the columns containing date information into enum columns:
+9. Run deep learning to produce a model estimating arrival delay:
 
 .. code:: scala
-
-    import water.support.H2OFrameSupport._
-    val joinedHf = columnsToCategorical(hc.asH2OFrame(joinedDf), Array("Year", "Month", "DayofMonth"))
-
-10. Run deep learning to produce a model estimating arrival delay:
-
-.. code:: scala
-
-    import _root_.hex.deeplearning.DeepLearning
-    import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
-    import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-    val dlParams = new DeepLearningParameters()
-    dlParams._train = joinedHf
-    dlParams._response_column = "ArrDelay"
-    dlParams._epochs = 5
-    dlParams._activation = Activation.RectifierWithDropout
-    dlParams._hidden = Array[Int](100, 100)
-
-    // Create a job
-    val dl = new DeepLearning(dlParams)
-    val dlModel = dl.trainModel.get
+    import ai.h2o.sparkling.algos.H2ODeepLearning
+    val dl = new H2ODeepLearning()
+        .setLabelCol("ArrDelay")
+        .setColumnsToCategorical(Array("Year", "Month", "DayofMonth"))
+        .setEpochs(5)
+        .setActivation("RectifierWithDropout")
+        .setHidden(Array(100, 100))
 
 11. Use the model to estimate the delay on the training data:
 
 .. code:: scala
 
-    val predictionsHf = dlModel.score(joinedHf)
-    val predictionsDf = hc.asDataFrame(predictionsHf)
-
-12. Generate an R-code producing residual plot:
-
-The generated code can be run in RStudio to produce residual plots.
-
-.. code:: scala
-
-    import org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2.residualPlotRCode
-    residualPlotRCode(predictionsHf, "predict", joinedDf, "ArrDelay", hc)
+    val predictions = model.transform(joinedHf)
 
 
 .. Links to the examples
