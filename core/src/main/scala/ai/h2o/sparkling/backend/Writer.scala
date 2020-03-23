@@ -110,10 +110,12 @@ private[backend] object Writer {
                                     partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val numRows = partitionSizes(context.partitionId())
-    withResource(new Writer(uploadPlan(chunkIdx), metadata, numRows, chunkIdx)) { writer =>
-      val domainBuilder = new CategoricalDomainBuilder()
+    val domainBuilder = new CategoricalDomainBuilder()
+    val h2oNode = uploadPlan(chunkIdx)
+    withResource(new Writer(h2oNode, metadata, numRows, chunkIdx)) { writer =>
       it.foreach { row => sparkRowToH2ORow(row, writer, metadata, domainBuilder) }
     }
+    H2OChunk.putChunkCategoricalDomains(h2oNode, metadata.conf, metadata.frameId, chunkIdx, domainBuilder.getDomains())
     (chunkIdx, numRows)
   }
 
@@ -122,6 +124,9 @@ private[backend] object Writer {
     row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
       if (row.isNullAt(idxField)) {
         con.putNA(idxField)
+        if (metadata.expectedTypes(idxField) == ChunkSerdeConstants.EXPECTED_CATEGORICAL) {
+          domainBuilder.markNA(idxField)
+        }
       } else {
         entry.dataType match {
           case BooleanType => con.put(row.getBoolean(idxField))

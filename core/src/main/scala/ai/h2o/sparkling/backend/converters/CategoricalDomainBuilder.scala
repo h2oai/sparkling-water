@@ -17,7 +17,10 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import org.apache.parquet.format.ColumnIndex
+
 import scala.collection.mutable
+import scala.reflect.internal.util.TableDef.Column
 
 /**
  * This class is not thread safe.
@@ -37,13 +40,24 @@ private[backend] class CategoricalDomainBuilder() {
     * @return Index of the value within the categorical domain.
     */
   def addStringToDomain(value: String, columnIndex: Int): Int = {
+    val domain = getOrCreateDomain(columnIndex)
+    domain.getOrElseUpdate(value, domain.size)
+  }
+
+  /**
+    * The method does not any category to a domain, just creates a mapping from a columnId to a domain if does not exist
+    * @param columnIndex Index of a column determining the categorical domain.
+    *                    Indexing also includes columns of other types.
+    */
+  def markNA(columnIndex: Int): Unit = getOrCreateDomain(columnIndex)
+
+  private def getOrCreateDomain(columnIndex: Int): mutable.LinkedHashMap[String, Int] = {
     val domainIndex = indexMapping.getOrElseUpdate(columnIndex, {
       val result = domains.size
       domains.append(mutable.LinkedHashMap[String, Int]())
       result
     })
-    val domain = domains(domainIndex)
-    domain.getOrElseUpdate(value, domain.size)
+    domains(domainIndex)
   }
 
   def getDomains(): Array[Array[String]] = domains.map(_.keys.toArray).toArray

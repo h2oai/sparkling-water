@@ -39,7 +39,8 @@ class ImportFrameHandler extends Handler {
     // Collect global domains from local domains on h2o nodes.
     val collectDomainsTask = new CollectCategoricalDomainsTask(frameKey)
     collectDomainsTask.doAllNodes()
-    val domains = collectDomainsTask.getDomains()
+    val stringDomains = collectDomainsTask.getDomains()
+    val domains = expandDomains(stringDomains, columnTypes)
 
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
 
@@ -47,7 +48,7 @@ class ImportFrameHandler extends Handler {
     val frame = DKV.getGet[Frame](frameKey)
     val categoricalColumnIndices = for((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
-    updateCategoricalIndicesTask.doAllNodes()
+    updateCategoricalIndicesTask.doAll(frame)
 
     // Convert categorical columns with too many categories to T_STR
     categoricalColumnIndices.foreach { catColIdx =>
@@ -60,6 +61,20 @@ class ImportFrameHandler extends Handler {
     }
 
     request
+  }
+
+  private def expandDomains(stringDomains: Array[Array[String]], columnTypes: Array[Byte]): Array[Array[String]] = {
+    var strIdx = 0
+    var idx = 0
+    val result = Array.fill[Array[String]](columnTypes.length)(null)
+    while (idx < columnTypes.length) {
+      if (columnTypes(idx) == Vec.T_CAT) {
+        result(idx) = stringDomains(strIdx)
+        strIdx += 1
+      }
+      idx += 1
+    }
+    result
   }
 
   def getUploadPlan(version: Int, request: UploadPlanV3): UploadPlanV3 = {

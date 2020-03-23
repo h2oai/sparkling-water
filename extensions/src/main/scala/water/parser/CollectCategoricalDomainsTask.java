@@ -71,7 +71,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
             packedDomains = other.packedDomains;
         } else if (other.packedDomains != null) { // merge two packed domains
             H2O.H2OCountedCompleter[] tasks = new H2O.H2OCountedCompleter[packedDomains.length];
-            for (int i = 0; i < this.packedDomains.length; i++) {
+            for (int i = 0; i < packedDomains.length; i++) {
                 final int fi = i;
                 tasks[i] = new H2O.H2OCountedCompleter(currThrPriority()) {
                     @Override

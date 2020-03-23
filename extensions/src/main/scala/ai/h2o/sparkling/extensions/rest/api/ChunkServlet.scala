@@ -103,7 +103,7 @@ final class ChunkServlet extends ServletBase {
 
   def validateExpectedTypes(expectedTypes: Array[Byte], frame: Frame): Unit = {
     val lowerBound = ChunkSerdeConstants.EXPECTED_BOOL
-    val upperBound = ChunkSerdeConstants.EXPECTED_VECTOR
+    val upperBound = ChunkSerdeConstants.EXPECTED_CATEGORICAL
     for (i <- expectedTypes.indices) {
       if (expectedTypes(i) < lowerBound || expectedTypes(i) > upperBound) {
         val message = s"Expected Type ('expected_types') at position $i with " +

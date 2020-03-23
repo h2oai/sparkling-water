@@ -27,7 +27,7 @@ import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.mllib.linalg.Vectors
@@ -376,6 +376,28 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     assert(catVec.isCategorical)
     assert(catVec.domain() != null)
     assert(catVec.domain().length == domSize)
+  }
+
+  test("DataFrame[String] to H2OFrame[T_STRING] and back") {
+    val df = Seq("one", "two", "three", "four", "five", "six", "seven").toDF("Strings").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isString)
+
+    val resultDF = hc.asDataFrame(h2oFrame)
+    TestFrameUtils.assertDataFramesAreIdentical(df, resultDF)
+  }
+
+  test("DataFrame[String] to H2OFrame[T_CAT] and back") {
+    val df = Seq("one", "two", "three", "one", "two", "three", "one").toDF("Strings").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isCategorical)
+
+    val resultDF = hc.asDataFrame(h2oFrame)
+    TestFrameUtils.assertDataFramesAreIdentical(df, resultDF)
   }
 
   test("DataFrame[DateType] to H2OFrame[Time]") {
