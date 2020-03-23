@@ -477,7 +477,7 @@ object H2OContext extends Logging {
         val startedManually = existingContext.conf.isManualClusterStartUsed
         if (isExternalBackend && startedManually) {
           if (conf.h2oCluster.isEmpty) {
-            throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+            throw new IllegalArgumentException("H2O cluster endpoint has to be specified!")
           }
           if (connectingToNewCluster(existingContext, conf)) {
             val checkedConf = checkAndUpdateConf(conf)
