@@ -16,7 +16,9 @@
 */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 
 trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParameters]
@@ -37,6 +39,8 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
   private val l2 = doubleParam("l2")
   private val hidden = intArrayParam("hidden")
   private val reproducible = booleanParam("reproducible")
+  private val activation = stringParam("activation")
+
   //
   // Default values
   //
@@ -45,7 +49,8 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
     l1 -> parameters._l1,
     l2 -> parameters._l2,
     hidden -> parameters._hidden,
-    reproducible -> parameters._reproducible)
+    reproducible -> parameters._reproducible,
+    activation -> parameters._activation.name())
 
   //
   // Getters
@@ -60,6 +65,8 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def getReproducible(): Boolean = $(reproducible)
 
+  def getActivation(): String = $(activation)
+
   //
   // Setters
   //
@@ -73,6 +80,10 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
 
   def setReproducible(value: Boolean): this.type = set(reproducible, value)
 
+  def setActivation(value: String): this.type = {
+    set(activation, getValidatedEnumValue[Activation](value))
+  }
+
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
       Map(
@@ -84,7 +95,8 @@ trait H2ODeepLearningParams extends H2OAlgoSupervisedParams[DeepLearningParamete
         "stopping_rounds" -> getStoppingRounds(),
         "stopping_metric" -> getStoppingMetric(),
         "stopping_tolerance" -> getStoppingTolerance(),
-        "quantile_alpha" -> getQuantileAlpha()
+        "quantile_alpha" -> getQuantileAlpha(),
+        "activation" -> getActivation()
       )
   }
 }

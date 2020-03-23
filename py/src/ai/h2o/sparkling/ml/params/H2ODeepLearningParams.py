@@ -15,12 +15,11 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
-
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
 from ai.h2o.sparkling.ml.params.HasQuantileAlpha import HasQuantileAlpha
+from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
+from pyspark.ml.param import *
 
 
 class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQuantileAlpha):
@@ -61,6 +60,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Force reproducibility on small data (will be slow - only uses 1 thread)",
         H2OTypeConverters.toBoolean())
 
+    activation = Param(
+        Params._dummy(),
+        "activation",
+        "The activation function (non-linearity) to be used the neurons in the hidden layers.",
+        H2OTypeConverters.toEnumString("import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation"))
+
     ##
     # Getters
     ##
@@ -79,6 +84,9 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getReproducible(self):
         return self.getOrDefault(self.reproducible)
 
+    def getActivation(self):
+        return self.getOrDefault(self.activation)
+
     ##
     # Setters
     ##
@@ -96,3 +104,6 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setReproducible(self, value):
         return self._set(reproducible=value)
+
+    def setActivation(self, value):
+        return self._set(activation=value)
