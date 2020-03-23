@@ -13,6 +13,16 @@ import scala.collection.mutable
 trait IntegTestHelper extends BeforeAndAfterEach {
   self: Suite =>
 
+  protected def getTestName(obj: Any): String = {
+    obj.getClass.getName.replace("$", "")
+  }
+
+  protected val localTestEnv: IntegTestEnv = env {
+    sparkMaster("local[*]")
+    conf("spark.executor.memory", "3G")
+    conf("spark.driver.memory", "3G")
+  }
+
   private var testEnv: IntegTestEnv = _
 
   /** Launch given class name via SparkSubmit and use given environment
@@ -126,13 +136,6 @@ trait IntegTestHelper extends BeforeAndAfterEach {
   }
 
 }
-
-// List of test tags - the intention is to use them for
-// filtering.
-object YarnTest extends Tag("water.sparkling.itest.YarnTest")
-
-object LocalTest extends Tag("water.sparkling.itest.LocalTest")
-
 
 trait IntegTestStopper {
 
