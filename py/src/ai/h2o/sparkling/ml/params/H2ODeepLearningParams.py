@@ -61,6 +61,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Force reproducibility on small data (will be slow - only uses 1 thread)",
         H2OTypeConverters.toBoolean())
 
+    activation = Param(
+        Params._dummy(),
+        "activation",
+        "The activation function (non-linearity) to be used the neurons in the hidden layers.",
+        H2OTypeConverters.toEnumString("import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation"))
+
+    forceLoadBalance = Param(
+        Params._dummy(),
+        "forceLoadBalance",
+        "Increase training speed on small datasets by splitting it into many chunks to allow utilization of all cores",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -79,6 +91,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getReproducible(self):
         return self.getOrDefault(self.reproducible)
 
+    def getActivation(self):
+        return self.getOrDefault(self.activation)
+
+    def getForceLoadBalance(self):
+        return self.getOrDefault(self.forceLoadBalance)
+
     ##
     # Setters
     ##
@@ -96,3 +114,9 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setReproducible(self, value):
         return self._set(reproducible=value)
+
+    def setActivation(self, value):
+        return self._set(activation=value)
+
+    def setForceLoadBalance(self, value):
+        return self._set(forceLoadBalance=value)

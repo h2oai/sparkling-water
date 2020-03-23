@@ -87,6 +87,7 @@ Step-by-Step Weather Data Example
     val hc = H2OContext.getOrCreate()
     import hc.implicits._
     import spark.implicits._
+    import import org.apache.spark.sql.functions._
 
 4.  Load weather data for Chicago international airport (ORD):
 
@@ -126,7 +127,7 @@ Step-by-Step Weather Data Example
 
 .. code:: scala
 
-    val joinedDf = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
+    val joined = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
 9. Run deep learning to produce a model estimating arrival delay:
 
@@ -143,7 +144,7 @@ Step-by-Step Weather Data Example
 
 .. code:: scala
 
-    val predictions = model.transform(joinedHf)
+    val predictions = model.transform(joined)
 
 
 .. Links to the examples

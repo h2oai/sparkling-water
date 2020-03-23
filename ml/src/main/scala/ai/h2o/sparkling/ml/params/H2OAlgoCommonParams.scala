@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
-import hex.genmodel.utils.DistributionFamily
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 
 /**
  * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
@@ -72,7 +72,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
 
   def setDistribution(value: String): this.type = {
-    set(distribution, getValidatedEnumValue[DistributionFamily](value))
+    set(distribution, getValidatedEnumValue[Activation](value))
   }
 
   private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
