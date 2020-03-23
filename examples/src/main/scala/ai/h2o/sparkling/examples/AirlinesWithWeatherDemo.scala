@@ -35,7 +35,7 @@ object AirlinesWithWeatherDemo {
     val weatherTable = spark.read.option("header", "true")
       .option("inferSchema", "true")
       .csv(weatherDataFile)
-      .withColumn("Date", to_date('Date, "MM/dd/yyyy"))
+      .withColumn("Date", to_date(regexp_replace('Date, "(\\d+)/(\\d+)/(\\d+)", "$3-$2-$1")))
       .withColumn("Year", year('Date))
       .withColumn("Month", month('Date))
       .withColumn("DayofMonth", dayofmonth('Date))
