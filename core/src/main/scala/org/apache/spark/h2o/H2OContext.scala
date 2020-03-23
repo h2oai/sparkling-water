@@ -457,27 +457,7 @@ object H2OContext extends Logging {
    * @return H2O Context
    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
-    val isExternalBackend = conf.runsInExternalClusterMode
-    if (isExternalBackend && !H2OClientUtils.isH2OClientBased(conf)) {
-      val existingContext = instantiatedContext.get()
-      if (existingContext != null) {
-        val startedManually = existingContext.conf.isManualClusterStartUsed
-        if (startedManually) {
-          if (conf.h2oCluster.isEmpty) {
-            throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
-          }
-          if (connectingToNewCluster(existingContext, conf)) {
-            val checkedConf = checkAndUpdateConf(conf)
-            instantiatedContext.set(new H2OContext(checkedConf))
-            logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
-          }
-        }
-
-      } else {
-        val checkedConf = checkAndUpdateConf(conf)
-        instantiatedContext.set(new H2OContext(checkedConf))
-      }
-    } else {
+    if (H2OClientUtils.isH2OClientBased(conf)) {
       if (instantiatedContext.get() == null)
         if (H2O.API_PORT == 0) { // api port different than 0 means that client is already running
           val checkedConf = checkAndUpdateConf(conf)
@@ -490,6 +470,25 @@ object H2OContext extends Logging {
               |please restart your job or spark session and create new H2O context with new configuration.")
           """.stripMargin)
         }
+    } else {
+      val existingContext = instantiatedContext.get()
+      if (existingContext != null) {
+        val isExternalBackend = conf.runsInExternalClusterMode
+        val startedManually = existingContext.conf.isManualClusterStartUsed
+        if (isExternalBackend && startedManually) {
+          if (conf.h2oCluster.isEmpty) {
+            throw new IllegalArgumentException("H2O Cluster endpoint has to be specified!")
+          }
+          if (connectingToNewCluster(existingContext, conf)) {
+            val checkedConf = checkAndUpdateConf(conf)
+            instantiatedContext.set(new H2OContext(checkedConf))
+            logWarning(s"Connecting to a new external H2O cluster : ${checkedConf.h2oCluster.get}")
+          }
+        }
+      } else {
+        val checkedConf = checkAndUpdateConf(conf)
+        instantiatedContext.set(new H2OContext(checkedConf))
+      }
     }
     instantiatedContext.get()
   }
