@@ -32,7 +32,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
 
   var scalaCodeHandler: ScalaCodeHandler = _
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getName,
     conf = defaultSparkConf
       .set("spark.ext.h2o.repl.enabled", "true")
       .set("spark.ext.scala.int.default.num", "2"))
@@ -97,34 +97,14 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
   }
 
   test("ScalaCodeHandler.interpret() method, printing") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-
-    val req = new ScalaCodeV3
-    req.session_id = reqSession.session_id
-    req.code = "println(\"text\")"
-    val result = scalaCodeHandler.interpret(3, req)
-
+    val result = testCode("println(\"text\")", CodeResults.Success)
     assert(result.output.equals("text\n"), "Printed output should be equal to \"text\"")
-    assert(result.status.equals("Success"), "Status should be Success")
     assert(result.response.equals(""), "Response should be empty")
   }
 
   test("ScalaCodeHandler.interpret() method, using unknown function") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-
-    val req = new ScalaCodeV3
-    req.session_id = reqSession.session_id
-    req.code = "foo"
-    val result = scalaCodeHandler.interpret(3, req)
-
+    val result = testCode("foo", CodeResults.Error)
     assert(result.output.equals(""), "Printed output should be empty")
-    assert(result.status.equals("Error"), "Status should be Error")
     assert(result.response.contains(" error: not found: value foo"), s"Response was: ${result.response}")
   }
 
@@ -194,7 +174,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
     testCode("val num = 42", CodeResults.Success)
   }
 
-
   test("Test successful call after exception occurred") {
     testCode("throw new Exception(\"Exception Message\")", CodeResults.Exception)
     testCode("val num = 42", CodeResults.Success)
@@ -220,7 +199,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
       """.stripMargin, CodeResults.Success)
   }
 
-  private def testCode(code: String, expectedResult: CodeResults.Value): Unit = {
+  private def testCode(code: String, expectedResult: CodeResults.Value): ScalaCodeV3 = {
     val reqSession = new ScalaSessionIdV3
     scalaCodeHandler.initSession(3, reqSession)
     val req = new ScalaCodeV3
@@ -228,5 +207,6 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
     req.code = code
     val result = scalaCodeHandler.interpret(3, req)
     assert(result.status == expectedResult.toString)
+    result
   }
 }
