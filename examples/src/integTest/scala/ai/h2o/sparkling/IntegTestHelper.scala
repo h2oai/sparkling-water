@@ -2,7 +2,7 @@ package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import org.scalatest.{BeforeAndAfterEach, Suite, Tag}
+import org.scalatest.{BeforeAndAfterEach, FunSuite, Suite, Tag}
 import water.init.NetworkInit
 
 import scala.collection.mutable
@@ -10,8 +10,10 @@ import scala.collection.mutable
 /**
  * Integration test support to be run on top of Spark.
  */
-trait IntegTestHelper extends BeforeAndAfterEach {
+trait IntegTestHelper extends FunSuite with BeforeAndAfterEach {
   self: Suite =>
+
+  protected def testClassName(obj: Any): String = obj.getClass.getName.replace("$", "")
 
   private var testEnv: IntegTestEnv = _
 
