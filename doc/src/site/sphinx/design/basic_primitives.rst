@@ -15,20 +15,3 @@ classes used by Spark components:
 |                   |                                      | primitives such as ``SparkSession``, |
 |                   |                                      | ``SparkContext`` and ``SQLContext``. |
 +-------------------+--------------------------------------+--------------------------------------+
-| H2O entry point   | ``water.H2O``                        | Represents the entry point for       |
-|                   |                                      | for accessing H2O services. It holds |
-|                   |                                      | information about the actual H2O     |
-|                   |                                      | cluster, including a list of nodes   |
-|                   |                                      | and the status  of distributed K/V   |
-|                   |                                      | datastore.                           |
-+-------------------+--------------------------------------+--------------------------------------+
-| H2O H2OFrame      | ``water.fvec.H2OFrame``              | H2OFrame is the H2O data structure   |
-|                   |                                      | that represents a table of values.   |
-|                   |                                      | The table is column-based and        |
-|                   |                                      | provides column and row accessors.   |
-+-------------------+--------------------------------------+--------------------------------------+
-| H2O Algorithms    | package ``hex``                      | Represents the H2O machine learning  |
-|                   |                                      | algorithms library, including, for   |
-|                   |                                      | example, DeepLearning, GBM or        |
-|                   |                                      | RandomForest.                        |
-+-------------------+--------------------------------------+--------------------------------------+
