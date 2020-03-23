@@ -209,7 +209,8 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
         |""".stripMargin, CodeResults.Success)
   }
 
-  test("[SW-386] Test Spark API exposed implicit conversions (https://issues.scala-lang.org/browse/SI-9734 and https://issues.apache.org/jira/browse/SPARK-13456)") {
+  test("[SW-386] Test Spark API exposed implicit conversions " +
+    "(https://issues.scala-lang.org/browse/SI-9734 and https://issues.apache.org/jira/browse/SPARK-13456)") {
     testCode(
       """
         |import spark.implicits._
