@@ -85,7 +85,6 @@ Step-by-Step Weather Data Example
 
     import org.apache.spark.h2o._
     val hc = H2OContext.getOrCreate()
-    import hc.implicits._
     import spark.implicits._
 
 4.  Load weather data for Chicago international airport (ORD):
@@ -96,24 +95,25 @@ Step-by-Step Weather Data Example
     val weatherTable = spark.read.option("header", "true")
       .option("inferSchema", "true")
       .csv(weatherDataFile)
-      .withColumn("Date", to_date('Date, "MM/dd/yyyy"))
+      .withColumn("Date", to_date(regexp_replace('Date, "(\\d+)/(\\d+)/(\\d+)", "$3-$2-$1")))
       .withColumn("Year", year('Date))
       .withColumn("Month", month('Date))
       .withColumn("DayofMonth", dayofmonth('Date))
 
-5.  Load airlines data using the H2O parser:
+5.  Load airlines data:
 
 .. code:: scala
 
-    import java.io.File
-    val dataFile = "examples/smalldata/airlines/allyears2k_headers.zip"
-    val airlinesH2OFrame = new H2OFrame(new File(dataFile))
+    val airlinesDataFile = "examples/smalldata/airlines/allyears2k_headers.csv"
+    val airlinesTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .option("nullValue", "NA")
+      .csv(airlinesDataFile)
 
 6.  Select flights destined for Chicago (ORD):
 
 .. code:: scala
 
-    val airlinesTable = hc.asDataFrame(airlinesH2OFrame)
     val flightsToORD = airlinesTable.filter('Dest === "ORD")
 
 7.  Compute the number of these flights:
@@ -126,48 +126,27 @@ Step-by-Step Weather Data Example
 
 .. code:: scala
 
-    val joinedDf = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
+    val joined = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
-9. Transform the columns containing date information into enum columns:
-
-.. code:: scala
-
-    import water.support.H2OFrameSupport._
-    val joinedHf = columnsToCategorical(hc.asH2OFrame(joinedDf), Array("Year", "Month", "DayofMonth"))
-
-10. Run deep learning to produce a model estimating arrival delay:
+9. Run deep learning to produce a model estimating arrival delay:
 
 .. code:: scala
 
-    import _root_.hex.deeplearning.DeepLearning
-    import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters
-    import _root_.hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-    val dlParams = new DeepLearningParameters()
-    dlParams._train = joinedHf
-    dlParams._response_column = "ArrDelay"
-    dlParams._epochs = 5
-    dlParams._activation = Activation.RectifierWithDropout
-    dlParams._hidden = Array[Int](100, 100)
+    import ai.h2o.sparkling.ml.algos.H2ODeepLearning
+    val dl = new H2ODeepLearning()
+        .setLabelCol("ArrDelay")
+        .setColumnsToCategorical(Array("Year", "Month", "DayofMonth"))
+        .setEpochs(5)
+        .setActivation("RectifierWithDropout")
+        .setHidden(Array(100, 100))
 
-    // Create a job
-    val dl = new DeepLearning(dlParams)
-    val dlModel = dl.trainModel.get
+    val model = dl.fit(joined)
 
 11. Use the model to estimate the delay on the training data:
 
 .. code:: scala
 
-    val predictionsHf = dlModel.score(joinedHf)
-    val predictionsDf = hc.asDataFrame(predictionsHf)
-
-12. Generate an R-code producing residual plot:
-
-The generated code can be run in RStudio to produce residual plots.
-
-.. code:: scala
-
-    import org.apache.spark.examples.h2o.AirlinesWithWeatherDemo2.residualPlotRCode
-    residualPlotRCode(predictionsHf, "predict", joinedDf, "ArrDelay", hc)
+    val predictions = model.transform(joined)
 
 
 .. Links to the examples
@@ -187,5 +166,5 @@ The generated code can be run in RStudio to produce residual plots.
 .. |CityBikeSharingScript| replace:: `CityBikeSharing.script.scala <scripts/CityBikeSharing.script.scala>`__
 .. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
 .. |ProstateDataset| replace:: `prostate dataset <smalldata/prostate/prostate.csv>`__
-.. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.zip>`__
+.. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.csv>`__
 .. |ChicagoDataset| replace:: `chicago datasets <smalldata/chicago/>`__
