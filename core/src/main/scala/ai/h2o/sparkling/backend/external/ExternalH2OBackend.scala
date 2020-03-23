@@ -113,7 +113,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-baseport", conf.nodeBasePort)
       .add("-timeout", conf.clusterStartTimeout)
       .add("-disown")
-      .add(H2OClientUtils.getH2OCommonArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
+      .add(H2OClientUtils.getExtraExternalBackendArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
       .add("-run_as_user", conf.runAsUser)
       .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)

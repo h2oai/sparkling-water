@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend.utils
 
-import java.net.{InetAddress, NetworkInterface}
+import java.net.NetworkInterface
 
 import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.api.RestAPIManager
@@ -53,17 +53,17 @@ object H2OClientUtils extends SharedBackendUtils {
   }
 
   def getH2OCommonArgsWhenClientBased(conf: H2OConf): Seq[String] = {
-    if (conf.runsInInternalClusterMode) {
-      new ArgumentBuilder()
-        .add("-allow_clients")
-        .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
-        .buildArgs()
-    } else {
-      new ArgumentBuilder()
-        .add("-sw_ext_backend")
-        .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString))
-        .buildArgs()
-    }
+    new ArgumentBuilder()
+      .add("-allow_clients")
+      .add("-client_disconnect_timeout", conf.clientCheckRetryTimeout)
+      .buildArgs()
+  }
+
+  def getExtraExternalBackendArgsWhenClientBased(conf: H2OConf): Seq[String] = {
+    new ArgumentBuilder()
+      .add("-sw_ext_backend")
+      .add(Seq("-J", "-client_disconnect_timeout", "-J", conf.clientCheckRetryTimeout.toString))
+      .buildArgs()
   }
 
   def startH2OClient(hc: H2OContext, conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
@@ -133,9 +133,9 @@ object H2OClientUtils extends SharedBackendUtils {
       interface.getInterfaceAddresses.asScala.foreach { address =>
         val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
         val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
-          return Some(address.getAddress.getHostAddress)
-        }
+        //if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
+        //  return Some(address.getAddress.getHostAddress)
+        //}
       }
     }
     None
