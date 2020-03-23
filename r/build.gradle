@@ -67,7 +67,6 @@ task test(type: Exec, dependsOn: distR) {
     // ensure that nightly tests can be run
     environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
-    environment["H2O_CLIENT_IP"] = InetAddress.getLocalHost().hostAddress
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
     workingDir file("src/tests")

@@ -16,7 +16,6 @@
 #
 
 import os
-import socket
 from random import randrange
 import subprocess
 
@@ -33,14 +32,3 @@ def locate(file_name):
         return os.path.abspath("/home/0xdiag/" + file_name)
     else:
         return os.path.abspath("../examples/" + file_name)
-
-
-def local_ip():
-    return os.getenv("H2O_CLIENT_IP", get_local_non_loopback_ipv4_address())
-
-
-def get_local_non_loopback_ipv4_address():
-    ips1 = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1]
-    ips2 = [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in
-             [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]
-    return [l for l in (ips1, ips2) if l][0][0]
