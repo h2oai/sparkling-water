@@ -16,6 +16,7 @@
 */
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
+import ai.h2o.sparkling.repl.CodeResults
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
@@ -31,7 +32,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
 
   var scalaCodeHandler: ScalaCodeHandler = _
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local",
+  override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getName,
     conf = defaultSparkConf
       .set("spark.ext.h2o.repl.enabled", "true")
       .set("spark.ext.scala.int.default.num", "2"))
@@ -53,7 +54,7 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
     // new interpreter is automatically created, so the last ID used should be equal to 2
     assert(scalaCodeHandler.mapIntr.size == 1, "Number of currently used interpreters should be equal to 1")
     assert(scalaCodeHandler.mapIntr.get(1).nonEmpty, "The value in the interpreters hash map with the key 1 should not be empty")
-    assert(scalaCodeHandler.mapIntr.get(1).get.sessionId == 1, "ID attached to the interpreter should be equal to 1")
+    assert(scalaCodeHandler.mapIntr(1).sessionId == 1, "ID attached to the interpreter should be equal to 1")
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy existing session") {
@@ -96,34 +97,14 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
   }
 
   test("ScalaCodeHandler.interpret() method, printing") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-
-    val req = new ScalaCodeV3
-    req.session_id = reqSession.session_id
-    req.code = "println(\"text\")"
-    val result = scalaCodeHandler.interpret(3, req)
-
+    val result = testCode("println(\"text\")", CodeResults.Success)
     assert(result.output.equals("text\n"), "Printed output should be equal to \"text\"")
-    assert(result.status.equals("Success"), "Status should be Success")
     assert(result.response.equals(""), "Response should be empty")
   }
 
   test("ScalaCodeHandler.interpret() method, using unknown function") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-
-    val req = new ScalaCodeV3
-    req.session_id = reqSession.session_id
-    req.code = "foo"
-    val result = scalaCodeHandler.interpret(3, req)
-
+    val result = testCode("foo", CodeResults.Error)
     assert(result.output.equals(""), "Printed output should be empty")
-    assert(result.status.equals("Error"), "Status should be Error")
     assert(result.response.contains(" error: not found: value foo"), s"Response was: ${result.response}")
   }
 
@@ -181,4 +162,51 @@ class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with Befo
     assert(!result3.response.equals(""), "Response should not be empty")
   }
 
+  test("Code with exception") {
+    testCode("throw new Exception(\"Exception Message\")", CodeResults.Exception)
+  }
+
+  test("Incomplete code") {
+    testCode("val num = ", CodeResults.Incomplete)
+  }
+
+  test("Simple script which ends successfully") {
+    testCode("val num = 42", CodeResults.Success)
+  }
+
+  test("Test successful call after exception occurred") {
+    testCode("throw new Exception(\"Exception Message\")", CodeResults.Exception)
+    testCode("val num = 42", CodeResults.Success)
+  }
+
+  test("Test Spark API call via interpreter") {
+    testCode(
+      """
+        |val list = Seq(('A', 1), ('B', 2), ('A', 3))
+        |val num1 = sc.parallelize(list, 3).groupByKey.count
+        |val num2 = sc.parallelize(list, 3).reduceByKey(_ + _).count
+        |""".stripMargin, CodeResults.Success)
+  }
+
+  test("[SW-386] Test Spark API exposed implicit conversions " +
+    "(https://issues.scala-lang.org/browse/SI-9734 and https://issues.apache.org/jira/browse/SPARK-13456)") {
+    testCode(
+      """
+        |import spark.implicits._
+        |case class Person(id: Long)
+        |val ds = Seq(Person(0), Person(1)).toDS
+        |val count = ds.count
+      """.stripMargin, CodeResults.Success)
+  }
+
+  private def testCode(code: String, expectedResult: CodeResults.Value): ScalaCodeV3 = {
+    val reqSession = new ScalaSessionIdV3
+    scalaCodeHandler.initSession(3, reqSession)
+    val req = new ScalaCodeV3
+    req.session_id = reqSession.session_id
+    req.code = code
+    val result = scalaCodeHandler.interpret(3, req)
+    assert(result.status == expectedResult.toString)
+    result
+  }
 }

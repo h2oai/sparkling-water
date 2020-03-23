@@ -4,82 +4,9 @@
 
 package ai.h2o.sparkling
 
-import ai.h2o.sparkling.repl.{CodeResults, H2OInterpreter}
+import ai.h2o.sparkling.repl.CodeResults
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-@RunWith(classOf[JUnitRunner])
-class BasicInterpreterTests extends ScriptsTestHelper {
-
-  override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf
-      .setMaster("local[*]")
-      .set("spark.driver.memory", "2G")
-      .set("spark.executor.memory", "2G")
-    super.beforeAll()
-  }
-
-  test("Code with exception") {
-    val result = launchCode("throw new Exception(\"Exception Message\")")
-    assert(result.codeExecutionStatus == CodeResults.Exception, "Problem during interpreting the script!")
-  }
-
-  test("Incomplete code") {
-    val result = launchCode("val num = ")
-    assert(result.codeExecutionStatus == CodeResults.Incomplete, "Code execution status should be Incomplete!")
-  }
-
-  test("Simple script which ends successfully") {
-    val inspections = new ScriptInspections()
-    inspections.addTermToCheck("num")
-
-    val result = launchCode("val num = 42", inspections)
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-    assert(result.realTermValues.get("num").get == "42", "Value of term \"num\" should be 42")
-  }
-
-
-  test("Test successful call after exception occurred") {
-    val loop = new H2OInterpreter(sc, sessionId = 1)
-    val result = launchCodeWithIntp("throw new Exception(\"Exception Message\")", loop)
-    assert(result.codeExecutionStatus == CodeResults.Exception, "Problem during interpreting the script!")
-
-    val result2 = launchCodeWithIntp("val a = 42", loop)
-    assert(result2.codeExecutionStatus == CodeResults.Success, "Now it should end up as Success!")
-
-    loop.closeInterpreter()
-  }
-
-  test("Test Spark API call via interpreter") {
-    val inspections = new ScriptInspections()
-    inspections.addTermToCheck("num1")
-    inspections.addTermToCheck("num2")
-    // FAILING: val num2 = sc.parallelize(Seq('A', 'B', 'A', 'C')).map(n => (n, 1)).reduceByKey(_ + _).count
-    val result = launchCode(
-      """
-        |val list = Seq(('A', 1), ('B', 2), ('A', 3))
-        |val num1 = sc.parallelize(list, 3).groupByKey.count
-        |val num2 = sc.parallelize(list, 3).reduceByKey(_ + _).count
-        |""".stripMargin, inspections)
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-    assert(result.realTermValues.get("num1").get == "2", "Value of term \"num\" should be 2")
-    assert(result.realTermValues.get("num2").get == "2", "Value of term \"num\" should be 3")
-  }
-
-  test("[SW-386] Test Spark API exposed implicit conversions (https://issues.scala-lang.org/browse/SI-9734 and https://issues.apache.org/jira/browse/SPARK-13456)") {
-    val inspections = new ScriptInspections()
-    inspections.addTermToCheck("count")
-    val result = launchCode(
-      """
-        |import spark.implicits._
-        |case class Person(id: Long)
-        |val ds = Seq(Person(0), Person(1)).toDS
-        |val count = ds.count
-      """.stripMargin, inspections)
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-    assert(result.realTermValues.get("count").get == "2", "Value of term \"count\" should be 2")
-  }
-}
 
 @RunWith(classOf[JUnitRunner])
 class ScriptChicagoCrimeAppSmall extends ScriptsTestHelper {
@@ -251,22 +178,9 @@ object HamOrSpamTester {
     inspections.addSnippet("val answer2 = isSpam(\"We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?\", loadedModel)")
     inspections.addTermToCheck("answer2")
 
-    val result = scriptsTestHelper.launchScript(fileName, inspections, "pipelines", "val algo=\"" + algo + "\"")
+    val result = scriptsTestHelper.launchScript(fileName, inspections, "val algo=\"" + algo + "\"")
     assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
     assert(result.realTermValues.get("answer1").get == "false", "Value of term \"answer1\" should be false")
     assert(result.realTermValues.get("answer2").get == "true", "Value of term \"answer2\" should be true")
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
-class TestSparkApiViaScript extends ScriptsTestHelper {
-  override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local[*]")
-    super.beforeAll()
-  }
-
-  test("tests/sparkApiTest.script.scala") {
-    val result = launchScript("tests/sparkApiTest.script.scala")
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
   }
 }
