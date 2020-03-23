@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.examples
 
+import java.io.File
+
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
@@ -30,8 +32,8 @@ object AirlinesWithWeatherDemo {
       .appName("Sparkling Water: Join of Airlines with Weather Data")
       .getOrCreate()
     import spark.implicits._
-
-    val weatherDataFile = TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv")
+    val weatherDataPath = "./examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
+    val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
     val weatherTable = spark.read.option("header", "true")
       .option("inferSchema", "true")
       .csv(weatherDataFile)
@@ -40,7 +42,8 @@ object AirlinesWithWeatherDemo {
       .withColumn("Month", month('Date))
       .withColumn("DayofMonth", dayofmonth('Date))
 
-    val airlinesDataFile = TestUtils.locate("smalldata/airlines/allyears2k_headers.csv")
+    val airlinesDataPath = "./examples/smalldata/airlines/allyears2k_headers.csv"
+    val airlinesDataFile = s"file://${new File(airlinesDataPath).getAbsolutePath}"
     val airlinesTable = spark.read.option("header", "true")
       .option("inferSchema", "true")
       .option("nullValue", "NA")
