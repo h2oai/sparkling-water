@@ -34,13 +34,17 @@ private[backend] object DataTypeConverter {
       if field.dataType == StringType
     } yield index
 
-    val preview = rdd
-      .mapPartitions[CategoricalPreviewWriter](createPartitionPreview(_, stringTypeIndices))
-      .reduce((a, b) => PreviewParseWriter.unifyColumnPreviews(a, b).asInstanceOf[CategoricalPreviewWriter])
+    val types = if (rdd.getNumPartitions > 0) {
+      val preview = rdd
+        .mapPartitions[CategoricalPreviewWriter](createPartitionPreview(_, stringTypeIndices))
+        .reduce((a, b) => PreviewParseWriter.unifyColumnPreviews(a, b).asInstanceOf[CategoricalPreviewWriter])
 
-    val types = preview.guessTypes().map {
-      case Vec.T_STR => ChunkSerdeConstants.EXPECTED_STRING
-      case Vec.T_CAT => ChunkSerdeConstants.EXPECTED_CATEGORICAL
+      preview.guessTypes().map {
+        case Vec.T_CAT => ChunkSerdeConstants.EXPECTED_CATEGORICAL
+        case _ => ChunkSerdeConstants.EXPECTED_STRING
+      }
+    } else {
+      stringTypeIndices.map(_ => Vec.T_STR)
     }
 
     stringTypeIndices.zip(types).toMap
@@ -56,8 +60,13 @@ private[backend] object DataTypeConverter {
       var i = 0
       while (i < stringTypeIndices.length) {
         val colId = stringTypeIndices(i)
-        bufferedString.set(row.getString(colId))
-        previewParseWriter.addStrCol(i, bufferedString)
+        val string = row.getString(colId)
+        if (string == null) {
+          previewParseWriter.addInvalidCol(i)
+        } else {
+          bufferedString.set(string)
+          previewParseWriter.addStrCol(i, bufferedString)
+        }
         i += 1
       }
       rowId += 1

@@ -134,7 +134,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     var vecCount = 0
     expectedTypes.map {
       case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_TIMESTAMP =>
+          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_CATEGORICAL | EXPECTED_TIMESTAMP =>
         1
       case EXPECTED_VECTOR =>
         val result = vecElemSizes(vecCount)

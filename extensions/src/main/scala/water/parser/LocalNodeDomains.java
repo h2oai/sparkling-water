@@ -28,11 +28,20 @@ public final class LocalNodeDomains {
     private static NonBlockingHashMap<Key, ArrayList<String>>  frameKeyToChunkKeys = new NonBlockingHashMap<>();
 
     public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
-        ArrayList<Categorical[]> nodeDomains = domainsMap.putIfAbsent(frameKey, new ArrayList<>());
+        ArrayList<Categorical[]> nodeDomains = domainsMap.get(frameKey);
+        if (nodeDomains == null) {
+            nodeDomains = new ArrayList<>();
+            domainsMap.put(frameKey, nodeDomains);
+        }
         Categorical[] categoricalDomains = domainsToCategoricals(domains);
         nodeDomains.add(categoricalDomains);
 
-        ArrayList<String> chunkKeys = frameKeyToChunkKeys.putIfAbsent(frameKey, new ArrayList<>());
+
+        ArrayList<String> chunkKeys = frameKeyToChunkKeys.get(frameKey);
+        if (chunkKeys == null) {
+            chunkKeys = new ArrayList<>();
+            frameKeyToChunkKeys.put(frameKey, chunkKeys);
+        }
         String chunkKey = createChunkKey(frameKey, chunkId);
         chunkKeys.add(chunkKey);
 

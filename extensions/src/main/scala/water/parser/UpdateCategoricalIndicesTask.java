@@ -51,7 +51,7 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
         Categorical[] localDomains = LocalNodeDomains.getDomains(frameKey, chunkId);
         for (int catColIdx = 0; catColIdx < categoricalColumns.length; catColIdx++) {
             int colId = categoricalColumns[catColIdx];
-            Chunk chunk = chunks[chunkId];
+            Chunk chunk = chunks[colId];
             BufferedString[] localDomain = localDomains[catColIdx].getColumnDomain();
             Categorical globalDomain = domainToCategorical(frame.vec(colId).domain());
             if (chunk instanceof CStrChunk) continue;
@@ -59,7 +59,7 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
                 if (chunk.isNA(valIdx)) continue;
                 final int oldValue = (int) chunk.at8(valIdx);
                 final BufferedString category = localDomain[oldValue];
-                final int newValue = globalDomain.getTokenId(category);
+                final int newValue = globalDomain.getTokenId(category) - 1; // Starts from 1
                 chunk.set(valIdx, newValue);
             }
             chunk.close(chunkId , _fs);

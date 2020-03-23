@@ -111,32 +111,36 @@ private[backend] object Writer {
       partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val numRows = partitionSizes(context.partitionId())
-    withResource(new Writer(uploadPlan(chunkIdx), metadata, numRows, chunkIdx)) { writer =>
-      val domainBuilder = new CategoricalDomainBuilder()
+    val domainBuilder = new CategoricalDomainBuilder()
+    val h2oNode = uploadPlan(chunkIdx)
+    withResource(new Writer(h2oNode, metadata, numRows, chunkIdx)) { writer =>
       it.foreach { row =>
         sparkRowToH2ORow(row, writer, metadata, domainBuilder)
       }
     }
+    H2OChunk.putChunkCategoricalDomains(h2oNode, metadata.conf, metadata.frameId, chunkIdx, domainBuilder.getDomains())
     (chunkIdx, numRows)
   }
 
   private def sparkRowToH2ORow(row: Row, con: Writer, metadata: WriterMetadata, domainBuilder: CategoricalDomainBuilder): Unit = {
     val timeZoneConverter = new TimeZoneConverter(metadata.timezone)
-    row.schema.fields.zipWithIndex.foreach {
-      case (entry, idxField) =>
-        if (row.isNullAt(idxField)) {
-          con.putNA(idxField)
-        } else {
-          entry.dataType match {
-            case BooleanType => con.put(row.getBoolean(idxField))
-            case ByteType => con.put(row.getByte(idxField))
-            case ShortType => con.put(row.getShort(idxField))
-            case IntegerType => con.put(row.getInt(idxField))
-            case LongType => con.put(row.getLong(idxField))
-            case FloatType => con.put(row.getFloat(idxField))
-            case _: DecimalType => con.put(row.getDecimal(idxField).doubleValue())
-            case DoubleType => con.put(row.getDouble(idxField))
-            case StringType => metadata.expectedTypes(idxField) match {
+    row.schema.fields.zipWithIndex.foreach { case (entry, idxField) =>
+      if (row.isNullAt(idxField)) {
+        con.putNA(idxField)
+        if (metadata.expectedTypes(idxField) == ChunkSerdeConstants.EXPECTED_CATEGORICAL) {
+          domainBuilder.markNA(idxField)
+        }
+      } else {
+        entry.dataType match {
+          case BooleanType => con.put(row.getBoolean(idxField))
+          case ByteType => con.put(row.getByte(idxField))
+          case ShortType => con.put(row.getShort(idxField))
+          case IntegerType => con.put(row.getInt(idxField))
+          case LongType => con.put(row.getLong(idxField))
+          case FloatType => con.put(row.getFloat(idxField))
+          case _: DecimalType => con.put(row.getDecimal(idxField).doubleValue())
+          case DoubleType => con.put(row.getDouble(idxField))
+          case StringType => metadata.expectedTypes(idxField) match {
             case ChunkSerdeConstants.EXPECTED_STRING => con.put(row.getString(idxField))
             case ChunkSerdeConstants.EXPECTED_CATEGORICAL =>
               val valueIndex = domainBuilder.addStringToDomain(row.getString(idxField), idxField)
