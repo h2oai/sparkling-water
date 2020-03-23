@@ -19,10 +19,10 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net.{InetAddress, NetworkInterface}
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.api.RestAPIManager
 import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.init.HostnameGuesser
 import water.{H2O, H2OStarter, Paxos}
 
@@ -133,9 +133,9 @@ object H2OClientUtils extends SharedBackendUtils {
       interface.getInterfaceAddresses.asScala.foreach { address =>
         val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
         val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
-          return Some(address.getAddress.getHostAddress)
-        }
+        //if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
+        //  return Some(address.getAddress.getHostAddress)
+        //}
       }
     }
     None

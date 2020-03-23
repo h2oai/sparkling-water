@@ -17,38 +17,22 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.utils.ConversionUtils.expectedTypesFromClasses
 import ai.h2o.sparkling.backend.utils.ReflectionUtils
 import ai.h2o.sparkling.backend.utils.SupportedTypes.Double
 import ai.h2o.sparkling.backend.{H2OAwareRDD, H2OFrameRelation, Writer, WriterMetadata}
 import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.ExposeUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.{DataType, DecimalType}
-import water.fvec.{Frame, H2OFrame}
-import water.{DKV, Key}
+
+import scala.util.Random
 
 object SparkDataFrameConverter extends Logging {
-
-  /**
-   * Create a Spark DataFrame from given H2O frame.
-   *
-   * @param hc           an instance of H2O context
-   * @param fr           an instance of H2O frame
-   * @param copyMetadata copy H2O metadata into Spark DataFrame
-   * @tparam T type of H2O frame
-   * @return a new DataFrame definition using given H2OFrame as data source
-   */
-
-  def toDataFrame[T <: Frame](hc: H2OContext, fr: T, copyMetadata: Boolean): DataFrame = {
-    DKV.put(fr)
-    toDataFrame(hc, ai.h2o.sparkling.H2OFrame(fr._key.toString), copyMetadata)
-  }
 
   /**
    * Create a Spark DataFrame from a given REST-based H2O frame.
@@ -67,11 +51,6 @@ object SparkDataFrameConverter extends Logging {
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName)
-    new H2OFrame(DKV.getGet[Frame](key))
-  }
-
-  def toH2OFrameKeyString(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): String = {
     val flatDataFrame = flattenDataFrame(dataFrame)
 
     val elemMaxSizes = collectMaxElementSizes(flatDataFrame)
@@ -82,10 +61,12 @@ object SparkDataFrameConverter extends Logging {
     val expectedTypes = determineExpectedTypes(flatDataFrame)
 
     val rdd = flatDataFrame.rdd
-    val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
+    val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + randomAlphaNumericString)
     val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
     Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
   }
+
+  private def randomAlphaNumericString: String = Random.alphanumeric.take(20).mkString("")
 
   private def determineExpectedTypes(flatDataFrame: DataFrame): Array[Byte] = {
     val internalJavaClasses = flatDataFrame.schema.map { f =>

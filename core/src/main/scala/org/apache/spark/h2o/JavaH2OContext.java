@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o;
 
+import ai.h2o.sparkling.H2OConf;
+import ai.h2o.sparkling.H2OContext;
 import ai.h2o.sparkling.backend.converters.SupportedRDD$;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;

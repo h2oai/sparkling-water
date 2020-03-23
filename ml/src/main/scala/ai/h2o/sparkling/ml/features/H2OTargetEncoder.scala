@@ -17,13 +17,13 @@
 
 package ai.h2o.sparkling.ml.features
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.targetencoding._
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}

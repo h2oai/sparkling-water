@@ -20,9 +20,9 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{File, FileOutputStream, InputStreamReader}
 import java.lang.reflect.Modifier
 
+import ai.h2o.sparkling.H2OContext
 import com.google.common.reflect.ClassPath
 import org.apache.spark.SparkConf
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 import org.json4s._
 import org.json4s.jackson.Serialization._

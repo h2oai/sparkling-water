@@ -18,7 +18,7 @@ package ai.h2o.sparkling.backend
 
 import java.util.TimeZone
 
-import org.apache.spark.h2o.H2OConf
+import ai.h2o.sparkling.H2OConf
 
 case class WriterMetadata(conf: H2OConf,
                           frameId: String,

@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils

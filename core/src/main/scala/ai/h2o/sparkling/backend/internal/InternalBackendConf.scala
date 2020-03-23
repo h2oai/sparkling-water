@@ -19,12 +19,12 @@ package ai.h2o.sparkling.backend.internal
 
 import java.io.{File, FileWriter}
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Utils
-import org.apache.spark.h2o.H2OConf
 
 /**
  * Internal backend configuration

@@ -16,11 +16,11 @@
 */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.kmeans.KMeans
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.h2o.H2OContext
 
 trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 

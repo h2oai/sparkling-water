@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.backend
 
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.sparkling.H2OContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{OneToOneDependency, Partition, SparkContext}
 

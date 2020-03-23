@@ -18,6 +18,7 @@
 package ai.h2o.demo
 
 import ai.h2o.RandomEvent
+import ai.h2o.sparkling.H2OContext
 import org.apache.spark.streaming._
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession

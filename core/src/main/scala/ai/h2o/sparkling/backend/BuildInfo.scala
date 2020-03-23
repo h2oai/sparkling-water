@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend
 
-import org.apache.spark.h2o.WrongSparkVersion
+import ai.h2o.sparkling.backend.exceptions.WrongSparkVersion
 
 /**
  * Store information about H2O & Sparkling Water versions so they are available at run-time

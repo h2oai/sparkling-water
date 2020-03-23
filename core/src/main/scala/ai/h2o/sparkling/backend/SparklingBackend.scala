@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend
 
-import org.apache.spark.h2o.H2OConf
+import ai.h2o.sparkling.H2OConf
 
 trait SparklingBackend {
 

@@ -14,19 +14,8 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package ai.h2o.sparkling.backend.exceptions
 
-package ai.h2o.sparkling.backend.converters
+import scala.util.control.NoStackTrace
 
-import ai.h2o.sparkling.H2OContext
-import org.apache.spark.expose.Logging
-import org.apache.spark.sql.Dataset
-
-import scala.language.{implicitConversions, postfixOps}
-import scala.reflect.runtime.universe._
-
-object DatasetConverter extends Logging {
-
-  def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(implicit ttag: TypeTag[T]) = {
-    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF(), frameKeyName)
-  }
-}
+class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace

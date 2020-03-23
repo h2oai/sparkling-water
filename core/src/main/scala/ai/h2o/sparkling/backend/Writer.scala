@@ -20,12 +20,12 @@ package ai.h2o.sparkling.backend
 import java.io.Closeable
 import java.util.TimeZone
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.converters.TimeZoneConverter
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.{H2OContext, RDD}
+import org.apache.spark.h2o.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
@@ -87,7 +87,7 @@ private[backend] object Writer {
   type SparkJob = (TaskContext, Iterator[Row]) => (Int, Long)
   type UploadPlan = Map[Int, NodeDesc]
 
-  def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): String = {
+  def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
@@ -99,7 +99,7 @@ private[backend] object Writer {
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
     H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)
-    metadata.frameId
+    H2OFrame(metadata.frameId)
   }
 
   private def perDataFramePartition(metadata: WriterMetadata,

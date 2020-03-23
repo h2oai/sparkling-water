@@ -16,10 +16,10 @@
 */
 package ai.h2o.sparkling.ml.utils
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.H2OJob
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import hex.schemas.ModelBuilderSchema
-import org.apache.spark.h2o.H2OContext
 
 trait EstimatorCommonUtils extends RestCommunication {
   protected def trainAndGetDestinationKey(endpointSuffix: String,

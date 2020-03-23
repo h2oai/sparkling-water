@@ -19,11 +19,11 @@ package ai.h2o.sparkling.backend
 
 import java.util.TimeZone
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.converters.TimeZoneConversions
 import ai.h2o.sparkling.backend.utils.SupportedTypes
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
-import org.apache.spark.h2o.H2OConf
 import org.apache.spark.unsafe.types.UTF8String
 
 private[backend] class Reader(keyName: String,

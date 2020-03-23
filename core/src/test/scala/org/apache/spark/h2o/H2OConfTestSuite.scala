@@ -16,6 +16,7 @@
 */
 package org.apache.spark.h2o
 
+import ai.h2o.sparkling.H2OConf
 import org.apache.spark.SparkConf
 import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.sql.SparkSession

@@ -18,9 +18,9 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.repl.H2OInterpreter
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OContext
 import water.H2O.H2OCountedCompleter
 import water._
 import water.api._

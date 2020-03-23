@@ -21,6 +21,7 @@ import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
 import java.security.Permission
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.SparkSession

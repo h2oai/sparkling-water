@@ -18,8 +18,7 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.backend.utils.ReflectionUtils
-import ai.h2o.sparkling.{H2OColumn, H2OColumnType, H2OFrame}
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.sparkling.{H2OColumn, H2OColumnType, H2OContext, H2OFrame}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{Metadata, MetadataBuilder, StructField, StructType}

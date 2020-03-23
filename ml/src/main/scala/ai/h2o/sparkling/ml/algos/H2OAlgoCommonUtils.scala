@@ -16,10 +16,9 @@
 */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 

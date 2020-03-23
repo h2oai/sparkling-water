@@ -19,9 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.io.FileNotFoundException
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OConf
 
 object AzureDatabricksUtils extends Logging {
   private val externalFlowPort = 9009 // This port is exposed in Azure DBC

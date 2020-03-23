@@ -16,9 +16,10 @@
  */
 package ai.h2o.sparkling.local
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

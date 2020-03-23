@@ -16,7 +16,7 @@
 */
 package ai.h2o.sparkling.backend.api
 
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.sparkling.H2OContext
 import water.api.RestApiContext
 
 trait RestApi {

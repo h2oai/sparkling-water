@@ -16,9 +16,10 @@
 */
 package ai.h2o.sparkling.backend.api.h2oframes
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
+import org.apache.spark.h2o.H2OFrame
 import water.DKV
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException

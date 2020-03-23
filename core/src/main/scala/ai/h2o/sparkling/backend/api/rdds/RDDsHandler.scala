@@ -16,9 +16,9 @@
 */
 package ai.h2o.sparkling.backend.api.rdds
 
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -83,7 +83,7 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
       throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!"))
 
     val h2oFrame = convertToH2OFrame(rdd, Option(s.h2oframe_id) map (_.toLowerCase))
-    s.h2oframe_id = h2oFrame._key.toString
+    s.h2oframe_id = h2oFrame.frameId
     s
   }
 }

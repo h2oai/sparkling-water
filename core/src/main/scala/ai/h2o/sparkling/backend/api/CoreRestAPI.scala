@@ -16,11 +16,11 @@
 */
 package ai.h2o.sparkling.backend.api
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.api.dataframes.DataFramesHandler
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesHandler
 import ai.h2o.sparkling.backend.api.rdds.RDDsHandler
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaCodeHandler
-import org.apache.spark.h2o.H2OContext
 import water.api.RestApiContext
 
 /**

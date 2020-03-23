@@ -17,8 +17,12 @@
 
 package org.apache.spark
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.scheduler.SparkListenerEvent
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, UserDefinedType}
+import org.apache.spark.util.ShutdownHookManager
+import org.apache.spark.util.ShutdownHookManager.shutdownHooks
 
 object ExposeUtils {
   def classForName(className: String): Class[_] = {
@@ -50,4 +54,16 @@ object ExposeUtils {
   def hiveClassesArePresent: Boolean = {
     SparkSession.hiveClassesArePresent
   }
+
+  def addShutdownHook(priority: Int)(hook: () => Unit): AnyRef = {
+    ShutdownHookManager.addShutdownHook(priority)(hook)
+  }
+
+  def sparkUIAvailable(): Boolean = SparkSessionUtils.active.sparkContext.ui.isDefined
+
+  def sparkHome(): Option[String] = SparkSessionUtils.active.sparkContext.getSparkHome()
+
+  def removeShutdownHook(ref: AnyRef): Boolean = ShutdownHookManager.removeShutdownHook(ref)
+
+  def postEventToListenerBus(event: SparkListenerEvent): Unit = SparkSessionUtils.active.sparkContext.listenerBus.post(event)
 }

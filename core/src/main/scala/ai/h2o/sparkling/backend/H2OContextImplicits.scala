@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.backend
 
+import ai.h2o.sparkling.H2OContext
 import org.apache.spark._
 import org.apache.spark.h2o.{Dataset, Frame, H2OContext, H2OFrame, RDD}
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Implicit transformations available on [[org.apache.spark.h2o.H2OContext]]
+ * Implicit transformations available on [[H2OContext]]
  */
 abstract class H2OContextImplicits {
 

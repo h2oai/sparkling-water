@@ -19,9 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
+import ai.h2o.sparkling.H2OConf
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OConf
 import org.spark_project.jetty.client.HttpClient
 import org.spark_project.jetty.proxy.ProxyServlet.Transparent
 import org.spark_project.jetty.server.{HttpConnectionFactory, Server, ServerConnector}

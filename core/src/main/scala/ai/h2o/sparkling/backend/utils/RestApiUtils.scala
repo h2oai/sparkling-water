@@ -19,9 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net.URI
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.NodeDesc
 import org.apache.http.client.utils.URIBuilder
-import org.apache.spark.h2o.H2OConf
 import water.api.schemas3._
 
 trait RestApiUtils extends RestCommunication {

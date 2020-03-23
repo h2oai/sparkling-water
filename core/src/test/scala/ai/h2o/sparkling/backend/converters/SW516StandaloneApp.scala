@@ -16,7 +16,8 @@
 */
 package ai.h2o.sparkling.backend.converters
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import ai.h2o.sparkling.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 
 object SW516StandaloneApp {

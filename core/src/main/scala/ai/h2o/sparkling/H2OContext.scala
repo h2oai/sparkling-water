@@ -24,22 +24,19 @@ import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConv
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException, WrongSparkVersion}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark._
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
 import org.apache.spark.h2o.{Dataset, Frame, RDD, SparkSpecificUtils}
-import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.util.ShutdownHookManager
+import org.apache.spark.sql.DataFrame
 import water._
 import water.util.PrettyPrint
 
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-import scala.util.control.NoStackTrace
 
 /**
  * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
@@ -63,10 +60,9 @@ import scala.util.control.NoStackTrace
  *
  * @param conf H2O configuration
  */
-class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions {
+private[sparkling] class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions {
   self =>
-  val sparkSession = SparkSessionUtils.active
-  val sparkContext = sparkSession.sparkContext
+  val sparkContext: SparkContext = SparkSessionUtils.active.sparkContext
   private val backendHeartbeatThread = createHeartBeatEventThread()
 
   private var stopped = false
@@ -123,9 +119,8 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
     val swPropertiesInfo = conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
     val swHeartBeatEvent = getSparklingWaterHeartbeatEvent()
-    SparkSessionUtils.active.sparkContext.listenerBus.post(swHeartBeatEvent)
-    val listenerBus = SparkSessionUtils.active.sparkContext.listenerBus
-    listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
+    ExposeUtils.postEventToListenerBus(swHeartBeatEvent)
+    ExposeUtils.postEventToListenerBus(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
 
 
@@ -153,8 +148,7 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", {
-      val key = SupportedRDDConverter.toH2OFrame(this, rdd, frameName)
-      new H2OFrame(DKV.getGet[Frame](key))
+      SupportedRDDConverter.toH2OFrame(this, rdd, frameName)
     })
 
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
@@ -277,7 +271,7 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
 
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
     if (!inShutdownHook) {
-      ShutdownHookManager.removeShutdownHook(shutdownHookRef)
+      ExposeUtils.removeShutdownHook(shutdownHookRef)
     }
     if (!stopped) {
       backendHeartbeatThread.interrupt()
@@ -369,11 +363,7 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
 
   private def connectToH2OCluster(): Array[NodeDesc] = {
     logInfo("Connecting to H2O cluster.")
-    val nodes = getAndVerifyWorkerNodes(conf)
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      H2OClientUtils.startH2OClient(this, conf, nodes)
-    }
-    nodes
+    getAndVerifyWorkerNodes(conf)
   }
 
   private def createHeartBeatEventThread(): Thread = {
@@ -389,15 +379,11 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
                 logError("External H2O cluster not healthy!")
                 if (conf.isKillOnUnhealthyClusterEnabled) {
                   logError("Stopping external H2O cluster as it is not healthy.")
-                  if (H2OClientUtils.isH2OClientBased(conf)) {
-                    H2OContext.this.stop(true)
-                  } else {
                     H2OContext.this.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
-                  }
                 }
               }
             }
-            sparkContext.listenerBus.post(swHeartBeatInfo)
+            ExposeUtils.postEventToListenerBus(swHeartBeatInfo)
           } catch {
             case cause: RestApiException =>
               H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
@@ -406,7 +392,6 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
                    |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
                    |external H2O cluster.""".stripMargin, cause)
           }
-
           try {
             Thread.sleep(conf.backendHeartbeatInterval)
           } catch {
@@ -504,26 +489,6 @@ object H2OContext extends Logging {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
 
-  @DeprecatedMethod("getOrCreate(conf: H2OConf)", "3.32")
-  def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = {
-    getOrCreate(conf)
-  }
-
-  @DeprecatedMethod("getOrCreate(conf: H2OConf)", "3.32")
-  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = {
-    getOrCreate(conf)
-  }
-
-  @DeprecatedMethod("getOrCreate()", "3.32")
-  def getOrCreate(sparkSession: SparkSession): H2OContext = {
-    getOrCreate()
-  }
-
-  @DeprecatedMethod("getOrCreate()", "3.32")
-  def getOrCreate(sc: SparkContext): H2OContext = {
-    getOrCreate()
-  }
-
   private def logStartingInfo(conf: H2OConf): Unit = {
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
     logInfo("Spark version: " + SparkSessionUtils.active.version)
@@ -541,7 +506,7 @@ object H2OContext extends Logging {
     val runningOnCorrectSpark = sc.version.startsWith(BuildInfo.buildSparkMajorVersion)
     if (!runningOnCorrectSpark) {
       throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
-        s" but your $$SPARK_HOME(=${sc.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
+        s" but your $$SPARK_HOME(=${ExposeUtils.sparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
         s" points to Spark of version ${sc.version}. Please ensure correct Spark is provided and" +
         s" re-run Sparkling Water.")
     }

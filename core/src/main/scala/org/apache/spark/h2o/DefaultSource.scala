@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.H2OFrameRelation
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType

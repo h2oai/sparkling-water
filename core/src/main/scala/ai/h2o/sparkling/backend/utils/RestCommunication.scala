@@ -20,13 +20,13 @@ package ai.h2o.sparkling.backend.utils
 import java.io._
 import java.net.{HttpURLConnection, URI, URL}
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.exceptions._
 import ai.h2o.sparkling.utils.FinalizingOutputStream
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OConf
 
 import scala.collection.immutable.Map
 import scala.reflect.{ClassTag, classTag}
