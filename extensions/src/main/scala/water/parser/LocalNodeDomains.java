@@ -71,10 +71,12 @@ public final class LocalNodeDomains {
     }
 
     public synchronized static void remove(Key frameKey) {
-        domainsMap.remove(frameKey);
-        ArrayList<String> chunkKeys = frameKeyToChunkKeys.remove(frameKey);
-        for (String chunkKey : chunkKeys) {
-            domainsMapByChunk.remove(chunkKey);
+        if (domainsMap.remove(frameKey) != null) {
+            ArrayList<String> chunkKeys = frameKeyToChunkKeys.remove(frameKey);
+            for (String chunkKey : chunkKeys) {
+                domainsMapByChunk.remove(chunkKey);
+            }
+            frameKeyToChunkKeys.remove(frameKey);
         }
     }
 

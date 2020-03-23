@@ -20,6 +20,14 @@ package ai.h2o.sparkling.backend.converters;
 import water.parser.PreviewParseWriter;
 
 class CategoricalPreviewWriter extends PreviewParseWriter {
+    public CategoricalPreviewWriter() {
+        super();
+    }
+
+    public CategoricalPreviewWriter(int numberOfColumns) {
+        super(numberOfColumns);
+    }
+
     // This number is the same as ParquetParser.MAX_PREVIEW_RECORDS in H2O-3.
     static final int MAX_PREVIEW_RECORDS = 1000;
 }
