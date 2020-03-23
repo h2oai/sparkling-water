@@ -101,19 +101,19 @@ Step-by-Step Weather Data Example
       .withColumn("Month", month('Date))
       .withColumn("DayofMonth", dayofmonth('Date))
 
-5.  Load airlines data using the H2O parser:
+5.  Load airlines data:
 
 .. code:: scala
 
-    import java.io.File
-    val dataFile = "examples/smalldata/airlines/allyears2k_headers.zip"
-    val airlinesH2OFrame = new H2OFrame(new File(dataFile))
+    val airlinesDataFile = "examples/smalldata/airlines/allyears2k_headers.csv"
+    val airlinesTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .csv(airlinesDataFile)
 
 6.  Select flights destined for Chicago (ORD):
 
 .. code:: scala
 
-    val airlinesTable = hc.asDataFrame(airlinesH2OFrame)
     val flightsToORD = airlinesTable.filter('Dest === "ORD")
 
 7.  Compute the number of these flights:
@@ -163,5 +163,5 @@ Step-by-Step Weather Data Example
 .. |CityBikeSharingScript| replace:: `CityBikeSharing.script.scala <scripts/CityBikeSharing.script.scala>`__
 .. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
 .. |ProstateDataset| replace:: `prostate dataset <smalldata/prostate/prostate.csv>`__
-.. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.zip>`__
+.. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.csv>`__
 .. |ChicagoDataset| replace:: `chicago datasets <smalldata/chicago/>`__
