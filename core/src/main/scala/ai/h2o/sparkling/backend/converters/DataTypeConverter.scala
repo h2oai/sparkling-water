@@ -48,7 +48,7 @@ private[backend] object DataTypeConverter {
 
   private def createPartitionPreview(rows: Iterator[Row],
                                      stringTypeIndices: Array[Int]): Iterator[CategoricalPreviewWriter] = {
-    val previewParseWriter = new CategoricalPreviewWriter()
+    val previewParseWriter = new CategoricalPreviewWriter(stringTypeIndices.length)
     val bufferedString = new BufferedString()
     var rowId = 0
     while (rows.hasNext && rowId < CategoricalPreviewWriter.MAX_PREVIEW_RECORDS) {
@@ -57,7 +57,7 @@ private[backend] object DataTypeConverter {
       while (i < stringTypeIndices.length) {
         val colId = stringTypeIndices(i)
         bufferedString.set(row.getString(colId))
-        previewParseWriter.addStrCol(colId, bufferedString)
+        previewParseWriter.addStrCol(i, bufferedString)
         i += 1
       }
       rowId += 1
