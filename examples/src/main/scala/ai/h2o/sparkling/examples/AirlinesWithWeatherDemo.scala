@@ -17,107 +17,62 @@
 
 package ai.h2o.sparkling.examples
 
-import java.io.File
-
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
-import org.apache.spark.SparkConf
-import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
+import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
-import water.support.SparkContextSupport
+import org.apache.spark.sql.functions._
 
-object AirlinesWithWeatherDemo extends SparkContextSupport {
+object AirlinesWithWeatherDemo {
 
   def main(args: Array[String]): Unit = {
-    // Configure this application
-    val conf: SparkConf = configure("Sparkling Water: Join of Airlines with Weather Data")
-    // Create SparkContext to execute application on Spark cluster
-    val spark = SparkSession.builder().config(conf).getOrCreate()
-    val sc = spark.sparkContext
-    import spark.implicits._ // import implicit conversions
+    val spark = SparkSession
+      .builder()
+      .appName("Sparkling Water: Join of Airlines with Weather Data")
+      .getOrCreate()
+    import spark.implicits._
 
-    @transient val h2oContext = H2OContext.getOrCreate()
-    import h2oContext._
-    import h2oContext.implicits._
-    // Setup environment
-    addFiles(sc, TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv"))
+    val weatherDataFile = TestUtils.locate("smalldata/chicago/Chicago_Ohare_International_Airport.csv")
+    val weatherTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .csv(weatherDataFile)
+      .withColumn("Date", to_date(regexp_replace('Date, "(\\d+)/(\\d+)/(\\d+)", "$3-$2-$1")))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("DayofMonth", dayofmonth('Date))
 
-    //val weatherDataFile = "examples/smalldata/Chicago_Ohare_International_Airport.csv"
-    val wrawdata = sc.textFile(enforceLocalSparkFile("Chicago_Ohare_International_Airport.csv"), 3).cache()
-    val weatherTable = wrawdata.map(_.split(",")).map(row => WeatherParse(row)).filter(!_.isWrongRow())
+    val airlinesDataFile = TestUtils.locate("smalldata/airlines/allyears2k_headers.csv")
+    val airlinesTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .option("nullValue", "NA")
+      .csv(airlinesDataFile)
 
-    //
-    // Load H2O from CSV file (i.e., access directly H2O cloud)
-    // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip")))
+    val flightsToORD = airlinesTable.filter('Dest === "ORD")
 
-    val airlinesTable = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
-    // Select flights only to ORD
-    val flightsToORD = airlinesTable.filter(f => f.Dest == Some("ORD"))
-
-    flightsToORD.count
     println(s"\nFlights to ORD: ${flightsToORD.count}\n")
 
-    flightsToORD.toDF.createOrReplaceTempView("FlightsToORD")
-    weatherTable.toDF.createOrReplaceTempView("WeatherORD")
-    //
-    // -- Join both tables and select interesting columns
-    //
-    val bigTable = spark.sql(
-      """SELECT
-        |f.Year,f.Month,f.DayofMonth,
-        |f.CRSDepTime,f.CRSArrTime,f.CRSElapsedTime,
-        |f.UniqueCarrier,f.FlightNum,f.TailNum,
-        |f.Origin,f.Distance,
-        |w.TmaxF,w.TminF,w.TmeanF,w.PrcpIn,w.SnowIn,w.CDD,w.HDD,w.GDD,
-        |f.ArrDelay
-        |FROM FlightsToORD f
-        |JOIN WeatherORD w
-        |ON f.Year=w.Year AND f.Month=w.Month AND f.DayofMonth=w.Day
-        |WHERE f.ArrDelay IS NOT NULL""".stripMargin)
+    val joined = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
-    val train: H2OFrame = bigTable.repartition(4) // This is trick to handle PUBDEV-928 - DeepLearning is failing on empty chunks
+    val hc = H2OContext.getOrCreate()
+    val dl = new H2ODeepLearning()
+      .setLabelCol("ArrDelay")
+      .setSplitRatio(0.8)
+      .setEpochs(5)
+      .setHidden(Array(100, 100))
+      .setActivation("RectifierWithDropout")
+    val deepLearningModel = dl.fit(joined)
 
-    //
-    // -- Run DeepLearning
-    //
-    val dlParams = new DeepLearningParameters()
-    dlParams._train = train
-    dlParams._response_column = 'ArrDelay
-    dlParams._epochs = 5
-    dlParams._activation = Activation.RectifierWithDropout
-    dlParams._hidden = Array[Int](100, 100)
+    val predictionsFromDL = deepLearningModel.transform(joined).select("prediction").collect()
+    println(predictionsFromDL.mkString("\n===> Model predictions from DL: ", ", ", ", ...\n"))
 
-    val dl = new DeepLearning(dlParams)
-    val dlModel = dl.trainModel.get
+    val gbm = new H2OGBM()
+      .setLabelCol("ArrDelay")
+      .setSplitRatio(0.8)
+      .setNtrees(100)
+    val gbmModel = gbm.fit(joined)
 
-    val predictionH2OFrame = dlModel.score(bigTable)('predict)
-    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse(Double.NaN))
-    println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
+    val predictionsFromGBM = gbmModel.transform(joined).select("prediction").collect()
+    println(predictionsFromGBM.mkString("\n===> Model predictions from GBM: ", ", ", ", ...\n"))
 
-    println(
-      s"""# R script for residual plot
-         |library(h2o)
-         |h = h2o.init()
-         |
-         |pred = h2o.getFrame(h, "${predictionH2OFrame._key}")
-         |act = h2o.getFrame (h, "${bigTable._key}")
-         |
-         |predDelay = pred$$predict
-         |actDelay = act$$ArrDelay
-         |
-         |nrow(actDelay) == nrow(predDelay)
-         |
-         |residuals = predDelay - actDelay
-         |
-         |compare = cbind (as.data.frame(actDelay$$ArrDelay), as.data.frame(residuals$$predict))
-         |nrow(compare)
-         |plot( compare[,1:2] )
-         |
-      """.stripMargin)
-
-    // Shutdown Spark cluster and H2O
-    h2oContext.stop(stopSparkContext = true)
+    hc.stop(stopSparkContext = true)
   }
 }

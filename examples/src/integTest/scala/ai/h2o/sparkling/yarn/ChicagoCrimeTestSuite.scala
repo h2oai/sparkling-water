@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.yarn
 
+import ai.h2o.sparkling.YARNIntegrationTest
 import ai.h2o.sparkling.examples.{ChicagoCrimeApp, Crime}
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper}
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.support.SparkContextSupport
 
@@ -30,28 +29,16 @@ import water.support.SparkContextSupport
  * Test following Alex's chicago crime demo.
  */
 @RunWith(classOf[JUnitRunner])
-class ChicagoCrimeTestSuite extends FunSuite with IntegTestHelper {
+class ChicagoCrimeTestSuite extends YARNIntegrationTest {
 
   test("Chicago Crime Demo") {
-    launch(ChicagoCrimeTest.getClass.getName.replace("$", ""),
-      env {
-        sparkMaster("yarn-client")
-        // Configure YARN environment
-        conf("spark.yarn.max.executor.failures", 1) // In fail of executor, fail the test
-        conf("spark.executor.instances", 3)
-        conf("spark.executor.memory", "8g")
-        conf("spark.ext.h2o.port.base", 63331)
-        conf("spark.driver.memory", "8g")
-        conf("spark.ext.h2o.hadoop.memory", "20G")
-        isYarnIntegTest()
-      }
-    )
+    launch(ChicagoCrimeTest)
   }
 }
 
-object ChicagoCrimeTest extends SparkContextSupport with IntegTestStopper {
+object ChicagoCrimeTest extends SparkContextSupport {
 
-  def main(args: Array[String]): Unit = exitOnException {
+  def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder().appName("ChicagoCrimeTest").getOrCreate()
     // Start H2O services
     val hc = H2OContext.getOrCreate()

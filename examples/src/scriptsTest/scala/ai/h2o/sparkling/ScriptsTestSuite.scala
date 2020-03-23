@@ -85,21 +85,6 @@ class CityBikeSharing extends ScriptsTestHelper {
 }
 
 @RunWith(classOf[JUnitRunner])
-class ScriptStrataAirlines extends ScriptsTestHelper {
-  override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local[*]")
-      .set("spark.driver.memory", "2G")
-      .set("spark.executor.memory", "2G")
-    super.beforeAll()
-  }
-
-  test("StrataAirlines.script.scala") {
-    val result = launchScript("StrataAirlines.script.scala")
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
 class ScriptPipelineHamOrSpamGBM extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
     sparkConf = defaultConf.setMaster("local[*]")

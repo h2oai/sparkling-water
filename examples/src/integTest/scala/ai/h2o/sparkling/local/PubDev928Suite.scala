@@ -1,9 +1,26 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package ai.h2o.sparkling.local
 
 import java.io.File
 
+import ai.h2o.sparkling.LocalIntegrationTest
 import ai.h2o.sparkling.examples.{Airlines, TestUtils}
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import hex.deeplearning.DeepLearning
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import org.apache.spark.SparkContext
@@ -11,7 +28,6 @@ import org.apache.spark.h2o.H2OContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
 import water.support.{H2OFrameSupport, SparkContextSupport}
@@ -23,22 +39,16 @@ import water.support.{H2OFrameSupport, SparkContextSupport}
  * Verifies that DL can be run on 0-length chunks.
  */
 @RunWith(classOf[JUnitRunner])
-class PubDev928Suite extends FunSuite with IntegTestHelper {
+class PubDev928Suite extends LocalIntegrationTest {
 
-  test("Verify scoring on 0-length chunks", LocalTest) {
-    launch(PubDev928Test.getClass.getName.replace("$", ""),
-      env {
-        sparkMaster("local[*]")
-        conf("spark.executor.memory", "2g")
-        conf("spark.driver.memory", "2g")
-      }
-    )
+  test("Verify scoring on 0-length chunks") {
+    launch(PubDev928Test)
   }
 }
 
-object PubDev928Test extends SparkContextSupport with IntegTestStopper {
+object PubDev928Test extends SparkContextSupport {
 
-  def main(args: Array[String]): Unit = exitOnException {
+  def main(args: Array[String]): Unit = {
     val conf = configure("PUBDEV-928")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()
