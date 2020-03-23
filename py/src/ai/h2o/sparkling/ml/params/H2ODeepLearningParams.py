@@ -63,7 +63,7 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     activation = Param(
         Params._dummy(),
         "activation",
-        "The activation function (non-linearity) to be used the neurons in the hidden layers.",
+        "The activation function (non-linearity) applied on neurons of hidden layers.",
         H2OTypeConverters.toEnumString("hex.deeplearning.DeepLearningModel$DeepLearningParameters$Activation"))
 
     ##
