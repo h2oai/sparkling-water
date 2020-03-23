@@ -107,6 +107,7 @@ Step-by-Step Weather Data Example
     val airlinesDataFile = "examples/smalldata/airlines/allyears2k_headers.csv"
     val airlinesTable = spark.read.option("header", "true")
       .option("inferSchema", "true")
+      .option("nullValue", "NA")
       .csv(airlinesDataFile)
 
 6.  Select flights destined for Chicago (ORD):
@@ -125,12 +126,13 @@ Step-by-Step Weather Data Example
 
 .. code:: scala
 
-    val joinedDf = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
+    val joined = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
 9. Run deep learning to produce a model estimating arrival delay:
 
 .. code:: scala
-    import ai.h2o.sparkling.algos.H2ODeepLearning
+
+    import ai.h2o.sparkling.ml.algos.H2ODeepLearning
     val dl = new H2ODeepLearning()
         .setLabelCol("ArrDelay")
         .setColumnsToCategorical(Array("Year", "Month", "DayofMonth"))
@@ -138,11 +140,13 @@ Step-by-Step Weather Data Example
         .setActivation("RectifierWithDropout")
         .setHidden(Array(100, 100))
 
+    val model = dl.fit(joined)
+
 11. Use the model to estimate the delay on the training data:
 
 .. code:: scala
 
-    val predictions = model.transform(joinedHf)
+    val predictions = model.transform(joined)
 
 
 .. Links to the examples
