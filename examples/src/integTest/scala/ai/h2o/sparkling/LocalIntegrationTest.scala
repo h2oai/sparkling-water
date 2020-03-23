@@ -15,17 +15,16 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling
 
-import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.DeepLearningDemoWithoutExtension
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+trait LocalIntegrationTest extends IntegrationTest {
+  def launch(obj: Any): Unit = super.launch(obj, new IntegrationTestEnv {
+    override def conf: Map[String, String] = super.conf ++ Map(
+      "spark.executor.memory" -> "3G",
+      "spark.driver.memory" -> "3G",
+      "spark.ext.h2o.external.cluster.size" -> "1"
+    )
 
-@RunWith(classOf[JUnitRunner])
-class DeepLearningDemoWithoutExtSuite extends LocalIntegrationTest {
-
-  test("Launch DeepLearningDemoWithoutExtension") {
-    launch(DeepLearningDemoWithoutExtension)
-  }
+    override val sparkMaster: String = "local[*]"
+  })
 }

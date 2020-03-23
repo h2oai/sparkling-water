@@ -17,28 +17,15 @@
 
 package ai.h2o.sparkling.local
 
+import ai.h2o.sparkling.LocalIntegrationTest
 import ai.h2o.sparkling.examples.ChicagoCrimeAppSmall
-import ai.h2o.sparkling.{IntegTestHelper, IntegTestStopper, LocalTest}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ChicagoCrimeAppSmallSuite extends FunSuite with IntegTestHelper {
+class ChicagoCrimeAppSmallSuite extends LocalIntegrationTest {
 
-  test("Launch Chicago Crime Demo", LocalTest) {
-    launch(ChicagoCrimeAppSmall.getClass.getName.replace("$", ""),
-      env {
-        sparkMaster("local[*]")
-        conf("spark.executor.memory", "3g")
-        conf("spark.driver.memory", "3g")
-      }
-    )
-  }
-}
-
-object ChicagoCrimeAppSmallTest extends IntegTestStopper {
-  def main(args: Array[String]): Unit = exitOnException {
-    ChicagoCrimeAppSmall.main(args)
+  test("Launch Chicago Crime Demo") {
+    launch(ChicagoCrimeAppSmall)
   }
 }

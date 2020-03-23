@@ -18,14 +18,14 @@
 package ai.h2o.sparkling.local
 
 import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.DeepLearningDemoWithoutExtension
+import ai.h2o.sparkling.examples.HamOrSpamDemo
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DeepLearningDemoWithoutExtSuite extends LocalIntegrationTest {
+class HamOrSpamDemoSuite extends LocalIntegrationTest {
 
-  test("Launch DeepLearningDemoWithoutExtension") {
-    launch(DeepLearningDemoWithoutExtension)
+  test("Launch HamOrSpamDemo") {
+    launch(HamOrSpamDemo)
   }
 }

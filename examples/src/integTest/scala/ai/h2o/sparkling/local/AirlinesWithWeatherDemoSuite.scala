@@ -17,22 +17,15 @@
 
 package ai.h2o.sparkling.local
 
-import ai.h2o.sparkling.IntegTestHelper
+import ai.h2o.sparkling.LocalIntegrationTest
 import ai.h2o.sparkling.examples.AirlinesWithWeatherDemo
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-
 @RunWith(classOf[JUnitRunner])
-class AirlinesWithWeatherDemoSuite extends IntegTestHelper {
+class AirlinesWithWeatherDemoSuite extends LocalIntegrationTest {
 
   test("Launch AirlinesWithWeatherDemo") {
-    launch(testClassName(AirlinesWithWeatherDemo),
-      env {
-        sparkMaster("local[*]")
-        conf("spark.executor.memory", "2g")
-        conf("spark.driver.memory", "2g")
-      }
-    )
+    launch(AirlinesWithWeatherDemo)
   }
 }

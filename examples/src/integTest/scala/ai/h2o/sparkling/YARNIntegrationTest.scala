@@ -15,17 +15,20 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling
 
-import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.DeepLearningDemoWithoutExtension
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+trait YARNIntegrationTest extends IntegrationTest {
+  def launch(obj: Any): Unit = super.launch(obj, new IntegrationTestEnv {
+    override def conf: Map[String, String] = super.conf ++ Map(
+      "spark.yarn.max.executor.failures" -> "1", // In fail of executor, fail the test
+      "spark.executor.instances" -> "6",
+      "spark.executor.memory" -> "8G",
+      "spark.driver.memory" -> "8G",
+      "spark.executor.cores" -> "32",
+      "spark.ext.h2o.hadoop.memory" -> "20G",
+      "spark.ext.h2o.external.cluster.size" -> "2"
+    )
 
-@RunWith(classOf[JUnitRunner])
-class DeepLearningDemoWithoutExtSuite extends LocalIntegrationTest {
-
-  test("Launch DeepLearningDemoWithoutExtension") {
-    launch(DeepLearningDemoWithoutExtension)
-  }
+    override val sparkMaster: String = "yarn-client"
+  })
 }
