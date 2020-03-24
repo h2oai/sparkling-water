@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
+import ai.h2o.sparkling.utils.Base64Encoding
 import water.api.Handler
 import water.fvec.ChunkUtils
 
