@@ -76,7 +76,5 @@ object AirlinesWithWeatherDemo {
 
     val predictionsFromGBM = gbmModel.transform(joined).select("prediction").collect()
     println(predictionsFromGBM.mkString("\n===> Model predictions from GBM: ", ", ", ", ...\n"))
-
-    hc.stop(stopSparkContext = true)
   }
 }
