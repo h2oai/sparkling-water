@@ -14,18 +14,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package ai.h2o.sparkling.examples
 
-package ai.h2o.sparkling.local
-
-import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.AirlinesWithWeatherDemo
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class AirlinesWithWeatherDemoSuite extends LocalIntegrationTest {
+class CraigslistJobTitlesAppSuite extends LocalIntegrationTest {
 
-  test("Airlines with Weather Demo") {
-    launch(AirlinesWithWeatherDemo)
+  test("Craigslist Job Titles Demo") {
+    launch(CraigslistJobTitlesApp)
   }
 }

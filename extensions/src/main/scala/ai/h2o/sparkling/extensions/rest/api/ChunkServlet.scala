@@ -18,8 +18,6 @@
 package ai.h2o.sparkling.extensions.rest.api
 
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
-import ai.h2o.sparkling.utils.ScalaUtils._
-import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 import water.DKV
 import water.fvec.Frame

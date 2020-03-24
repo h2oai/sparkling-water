@@ -15,9 +15,10 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.yarn
+package ai.h2o.sparkling.examples
 
-import ai.h2o.sparkling.YARNIntegrationTest
+import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
 import hex.kmeans.KMeansModel.KMeansParameters
 import org.apache.spark.h2o._
 import org.apache.spark.mllib.clustering.KMeans
@@ -29,7 +30,7 @@ import org.scalatest.junit.JUnitRunner
 import water.util.Timer
 
 @RunWith(classOf[JUnitRunner])
-class KMeansITestSuite extends YARNIntegrationTest {
+class KMeansITestSuite extends LocalIntegrationTest {
 
   ignore("MLlib KMeans on airlines_all data") {
     launch(KMeansITest)
@@ -47,7 +48,6 @@ object KMeansITest {
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
-    import h2oContext.implicits._
 
     // Import all year airlines into H2O
     val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"

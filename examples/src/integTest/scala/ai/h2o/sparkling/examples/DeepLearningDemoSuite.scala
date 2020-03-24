@@ -15,17 +15,16 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling.examples
 
-import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.DeepLearningDemoWithoutExtension
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DeepLearningDemoWithoutExtSuite extends LocalIntegrationTest {
+class DeepLearningDemoSuite extends LocalIntegrationTest {
 
-  test("Deep Learning Demo without Extension") {
-    launch(DeepLearningDemoWithoutExtension)
+  test("Deep Learning Demo") {
+    launch(DeepLearningDemo)
   }
 }

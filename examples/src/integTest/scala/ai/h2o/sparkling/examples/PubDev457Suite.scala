@@ -15,9 +15,10 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling.examples
 
-import ai.h2o.sparkling.LocalIntegrationTest
+import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.ml.Pipeline
@@ -45,7 +46,6 @@ object PubDev457Test extends SparkContextSupport {
     val conf = configure("PUBDEV-457")
     val sc = new SparkContext(conf)
     val h2oContext = H2OContext.getOrCreate()
-    import h2oContext.implicits._
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     import sqlContext.implicits._
 

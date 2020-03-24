@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling
+package ai.h2o.sparkling.examples.utils
 
 import org.scalatest.FunSuite
 

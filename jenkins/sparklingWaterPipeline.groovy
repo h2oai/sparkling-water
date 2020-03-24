@@ -149,21 +149,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     scriptsTest()(config)
                     pysparklingIntegTest()(config)
                 }
-                // Run Integration on real Hadoop Cluster
-                node("dX-hadoop") {
-                    ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                        def customEnvNew = [
-                                "SPARK_HOME=${env.WORKSPACE}/spark",
-                                "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                                "MASTER=yarn-client",
-                                "H2O_DRIVER_JAR=${config.driverJarPath}",
-                                "JAVA_HOME=/usr/lib/jvm/java-8-oracle/",
-                                "PATH=/usr/lib/jvm/java-8-oracle/bin:${PATH}"]
-                        withEnv(customEnvNew) {
-                            integTest()(config)
-                        }
-                    }
-                }
             }
         }
     }
@@ -405,26 +390,6 @@ def scriptsTest() {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
                     junit 'examples/build/test-results/scriptsTest/*.xml'
                     testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
-                }
-            }
-        }
-    }
-}
-
-def integTest() {
-    return { config ->
-        stage('QA: Integration Tests - ' + config.backendMode) {
-            if (config.runIntegTests.toBoolean()) {
-                try {
-                    cleanWs()
-                    unstash "sw-build-${config.sparkMajorVersion}"
-                    sh """
-                    ${getGradleCommand(config)} integTest -PbackendMode=${config.backendMode} -PsparklingTestEnv=yarn -PsparkMaster=${env.MASTER} -PsparkHome=${env.SPARK_HOME} -x check -x :sparkling-water-py:integTest
-                    """
-                } finally {
-                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*,**/build/reports/'
-                    junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', "Integration tests"
                 }
             }
         }

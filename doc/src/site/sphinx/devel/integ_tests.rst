@@ -68,7 +68,7 @@ The following code reflects the use cases listed above. The code is executed in 
         val h2oContext = H2OContext.getOrCreate()
 
         import java.io.File
-        val df: H2OFrame = new H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.zip"))
+        val df: H2OFrame = new H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.csv"))
 
     **Note**: The file must be present on all nodes. Specifically in the case of the Sparkling Water internal backend, this must be present on all nodes with Spark. In the case of the Sparkling Water external backend, this must be present on all nodes with H2O.
      

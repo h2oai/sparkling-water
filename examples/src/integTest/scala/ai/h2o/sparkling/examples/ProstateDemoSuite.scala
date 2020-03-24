@@ -15,20 +15,16 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling
+package ai.h2o.sparkling.examples
 
-trait YARNIntegrationTest extends IntegrationTest {
-  def launch(obj: Any): Unit = super.launch(obj, new IntegrationTestEnv {
-    override def conf: Map[String, String] = super.conf ++ Map(
-      "spark.yarn.max.executor.failures" -> "1", // In fail of executor, fail the test
-      "spark.executor.instances" -> "6",
-      "spark.executor.memory" -> "8G",
-      "spark.driver.memory" -> "8G",
-      "spark.executor.cores" -> "32",
-      "spark.ext.h2o.hadoop.memory" -> "20G",
-      "spark.ext.h2o.external.cluster.size" -> "2"
-    )
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-    override val sparkMaster: String = "yarn-client"
-  })
+@RunWith(classOf[JUnitRunner])
+class ProstateDemoSuite extends LocalIntegrationTest {
+
+  test("Prostate Demo") {
+    launch(ProstateDemo)
+  }
 }

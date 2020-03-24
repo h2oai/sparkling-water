@@ -27,7 +27,6 @@ pipeline(params) { p ->
     runLocalIntegTests = "true"
     runLocalPyIntegTests = "true"
     runScriptTests = "true"
-    runIntegTests = "false"
     runPySparklingIntegTests = "true"
     buildAgainstH2OBranch = "true"
     h2oBranch = "master"
