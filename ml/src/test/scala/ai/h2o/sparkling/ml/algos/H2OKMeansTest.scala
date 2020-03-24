@@ -66,41 +66,12 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
     assert(model.transform(dataset).select("prediction").head() == Row(0))
   }
 
-  test("H2OKMeans single string column input without converting to categorical") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setFeaturesCols("class")
-      .setAllStringColumnsToCategorical(false)
-
-    val thrown = intercept[IllegalArgumentException] {
-      algo.fit(dataset)
-    }
-    assert(thrown.getMessage.startsWith("Following columns are of type string: 'class'"))
-  }
-
-  test("H2OKMeans string column input with other non-string column") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setFeaturesCols("class", "sepal_wid")
-      .setAllStringColumnsToCategorical(false)
-
-    val thrown = intercept[IllegalArgumentException] {
-      algo.fit(dataset)
-    }
-    assert(thrown.getMessage.startsWith("Following columns are of type string: 'class'"))
-  }
-
   test("H2OKMeans input feature which is not in the dataset") {
     val algo = new H2OKMeans()
       .setSplitRatio(0.8)
       .setSeed(1)
       .setK(3)
       .setFeaturesCols("not_exist_1", "not_exist_2")
-      .setAllStringColumnsToCategorical(false)
 
     val thrown = intercept[IllegalArgumentException] {
       algo.fit(dataset)
@@ -117,7 +88,6 @@ class H2OKMeansTest extends FunSuite with Matchers with SharedH2OTestContext {
       .setSeed(1)
       .setK(3)
       .setFeaturesCols("constant")
-      .setAllStringColumnsToCategorical(false)
 
     val thrown = intercept[IllegalArgumentException] {
       algo.fit(datasetWithConst)
