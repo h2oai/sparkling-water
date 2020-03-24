@@ -19,40 +19,17 @@ Available Demos And Applications
 +-----------------------------------+--------------------------------------------------------------------------+
 | |CitiBikeSharingDemo|             | Predicts occupancy of Citi bike stations in NYC.                         |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's DeepLearning.                   |
+| |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's algorithms.                     |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |ProstateDemo|                    | Running K-means on |ProstateDataset|.                                    |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |DeepLearningDemo|                | Running DeepLearning on a subset of |AirlinesDataset|.                   |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |AirlinesWithWeatherDemo|         | Joining flights data with weather data and running Deep Learning.        |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |AirlinesWithWeatherDemo2|        | New iteration of ``AirlinesWithWeatherDemo``.                            |
+| |AirlinesWithWeatherDemo|         | Join flights data with weather data and running Deep Learning and GBM.   |
 +-----------------------------------+--------------------------------------------------------------------------+
 
-    Run examples by typing ``bin/run-example.sh <name of demo>`` or follow text below.
+You can run examples by typing ``./bin/run-example.sh <name of demo>`` or follow text below.
 
-Available Demos for Sparkling Shell
------------------------------------
-
-+-----------------------------------+--------------------------------------------------------------------------+
-| Example                           | Description                                                              |
-+===================================+==========================================================================+
-| |ChicagoCrimeAppSmallScript|      | Demo showing full source code of predicting arrest probability for a     |
-|                                   | given crime. It covers whole machine learning process from loading and   |
-|                                   | transforming data, building models, scoring incoming events.             |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |hamOrSpamScript|                 | HamOrSpam application which detects Spam messages. Presented at          |
-|                                   | MLConf 2015 NYC.                                                         |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |CityBikeSharingScript|           | NYC Bike Sharing Demo.                                                   |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |StrataAirlinesScript|            | Example of using flights and weather data to predict delay of a flight.  |
-+-----------------------------------+--------------------------------------------------------------------------+
-
-    Run examples by typing ``bin/sparkling-shell -i <path to file with demo script>``
-
---------------
 
 Building and Running Examples
 -----------------------------
@@ -160,11 +137,6 @@ Step-by-Step Weather Data Example
 .. |ProstateDemo| replace:: `ProstateDemo <src/main/scala/ai/h2o/sparkling/examples/ProstateDemo.scala>`__
 .. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/ai/h2o/sparkling/examples/DeepLearningDemo.scala>`__
 .. |AirlinesWithWeatherDemo| replace:: `AirlinesWithWeatherDemo <src/main/scala/ai/h2o/sparkling/examples/AirlinesWithWeatherDemo.scala>`__
-.. |AirlinesWithWeatherDemo2| replace:: `AirlinesWithWeatherDemo2 <src/main/scala/ai/h2o/sparkling/examples/AirlinesWithWeatherDemo2.scala>`__
-.. |ChicagoCrimeAppSmallScript| replace:: `ChicagoCrimeAppSmall.script.scala <scripts/ChicagoCrimeAppSmall.script.scala>`__
-.. |hamOrSpamScript| replace:: `hamOrSpam.script.scala <scripts/hamOrSpam.script.scala>`__
-.. |CityBikeSharingScript| replace:: `CityBikeSharing.script.scala <scripts/CityBikeSharing.script.scala>`__
-.. |StrataAirlinesScript| replace:: `StrataAirlines.script.scala <scripts/StrataAirlines.script.scala>`__
 .. |ProstateDataset| replace:: `prostate dataset <smalldata/prostate/prostate.csv>`__
 .. |AirlinesDataset| replace:: `airlines dataset <smalldata/airlines/allyears2k_headers.csv>`__
 .. |ChicagoDataset| replace:: `chicago datasets <smalldata/chicago/>`__
