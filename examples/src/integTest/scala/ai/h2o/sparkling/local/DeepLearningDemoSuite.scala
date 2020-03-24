@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class DeepLearningDemoSuite extends LocalIntegrationTest {
 
-  test("Launch DeepLearnigDemo") {
+  test("Deep Learning Demo") {
     launch(DeepLearningDemo)
   }
 }

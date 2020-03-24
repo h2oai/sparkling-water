@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class HamOrSpamDemoSuite extends LocalIntegrationTest {
 
-  test("Launch HamOrSpamDemo") {
+  test("Ham or Spam Demo") {
     launch(HamOrSpamDemo)
   }
 }

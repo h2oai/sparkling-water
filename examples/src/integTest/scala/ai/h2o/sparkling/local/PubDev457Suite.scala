@@ -30,7 +30,7 @@ import water.support.SparkContextSupport
 @RunWith(classOf[JUnitRunner])
 class PubDev457Suite extends LocalIntegrationTest {
 
-  test("Launch simple ML pipeline using H2O") {
+  test("Simple ML pipeline using H2O") {
     launch(PubDev457Test)
   }
 }

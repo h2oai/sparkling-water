@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ProstateDemoSuite extends LocalIntegrationTest {
 
-  test("Launch ProstateDemo") {
+  test("Prostate Demo") {
     launch(ProstateDemo)
   }
 }

@@ -24,7 +24,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class CraigslistJobTitlesAppSuite extends LocalIntegrationTest {
 
-  test("Launch Craigslist App Demo") {
+  test("Craigslist Job Titles Demo") {
     launch(CraigslistJobTitlesApp)
   }
 }

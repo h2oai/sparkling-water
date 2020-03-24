@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class AirlinesWithWeatherDemoSuite extends LocalIntegrationTest {
 
-  test("Launch AirlinesWithWeatherDemo") {
+  test("Airlines with Weather Demo") {
     launch(AirlinesWithWeatherDemo)
   }
 }
