@@ -48,17 +48,17 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
             throw new H2OIllegalArgumentException(
                 String.format("No local domain found for the chunk '{0}' on the node '{1}'.", chunkId, H2O.SELF.toString()));
         }
-        Categorical[] localDomains = LocalNodeDomains.getDomains(frameKey, chunkId);
+        String[][] localDomains = LocalNodeDomains.getDomains(frameKey, chunkId);
         for (int catColIdx = 0; catColIdx < categoricalColumns.length; catColIdx++) {
             int colId = categoricalColumns[catColIdx];
             Chunk chunk = chunks[colId];
-            BufferedString[] localDomain = localDomains[catColIdx].getColumnDomain();
+            String[] localDomain = localDomains[catColIdx];
             Categorical globalDomain = domainToCategorical(frame.vec(colId).domain());
             if (chunk instanceof CStrChunk) continue;
             for (int valIdx = 0; valIdx < chunk._len; ++valIdx) {
                 if (chunk.isNA(valIdx)) continue;
                 final int oldValue = (int) chunk.at8(valIdx);
-                final BufferedString category = localDomain[oldValue];
+                final BufferedString category = new BufferedString(localDomain[oldValue]);
                 final int newValue = globalDomain.getTokenId(category) - 1; // Starts from 1
                 chunk.set(valIdx, newValue);
             }
