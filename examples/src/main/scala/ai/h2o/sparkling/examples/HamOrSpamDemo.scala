@@ -17,179 +17,160 @@
 
 package ai.h2o.sparkling.examples
 
-import hex.ModelMetricsBinomial
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.deeplearning.{DeepLearning, DeepLearningModel}
-import org.apache.spark.h2o._
-import org.apache.spark.mllib.feature.{HashingTF, IDF, IDFModel}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext, mllib}
-import water.support.{H2OFrameSupport, ModelMetricsSupport, SparkContextSupport}
+import java.io.File
 
-/**
- * Demo for NYC meetup and MLConf 2015.
- *
- * It predicts spam text messages.
- * Training dataset is available in the file smalldata/smsData.txt.
- */
-object HamOrSpamDemo extends SparkContextSupport with ModelMetricsSupport with H2OFrameSupport {
+import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.ml.features.ColumnPruner
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.ml.feature.{HashingTF, IDF, _}
+import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-  val DATAFILE = "smsData.txt"
-  val TEST_MSGS = Seq(
-    "Michal, beer tonight in MV?",
-    "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?")
+import scala.collection.mutable
+
+object HamOrSpamDemo {
 
   def main(args: Array[String]) {
-    val conf: SparkConf = configure("Sparkling Water Meetup: Ham or Spam (spam text messages detector)")
-    // Create SparkContext to execute application on Spark cluster
-    val sc = new SparkContext(conf)
-    // Register input file as Spark file
-    addFiles(sc, TestUtils.locate("smalldata/" + DATAFILE))
-    // Initialize H2O context
-    implicit val h2oContext = H2OContext.getOrCreate()
-    import h2oContext.implicits._
-    // Initialize SQL context
-    implicit val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-    import sqlContext.implicits._
+    val spark = SparkSession
+      .builder()
+      .appName("Ham or Spam Pipeline Demo")
+      .getOrCreate()
 
-    // Data load
-    val data = load(sc, DATAFILE)
-    // Extract response spam or ham
-    val hamSpam = data.map(r => r(0))
-    val message = data.map(r => r(1))
-    // Tokenize message content
-    val tokens = tokenize(message)
-
-    // Build IDF model
-    val (hashingTF, idfModel, tfidf) = buildIDFModel(tokens)
-
-    // Merge response with extracted vectors
-    val resultRDD: DataFrame = hamSpam.zip(tfidf).map(v => SMS(v._1, v._2)).toDF
-
-    val table: H2OFrame = resultRDD
-    // Transform target column into categorical
-    H2OFrameSupport.withLockAndUpdate(table) { fr =>
-      fr.replace(fr.find("target"), fr.vec("target").toCategoricalVec).remove()
+    val tokenizer = createTokenizer()
+    val stopWordsRemover = createStopWordsRemover(tokenizer)
+    val hashingTF = createHashingTF(stopWordsRemover)
+    val idf = createIDF(hashingTF)
+    val columnPruner = createColumnPruner(idf, hashingTF, stopWordsRemover, tokenizer)
+    val estimators = Array(gbm(), deepLearning(), autoML(), gridSearch(), xgboost())
+    estimators.foreach { estimator =>
+      val stages = Array(tokenizer, stopWordsRemover, hashingTF, idf, estimator, columnPruner)
+      val pipeline = createPipeline(stages)
+      val model = trainPipeline(spark, pipeline)
+      assertPredictions(spark, model)
     }
-    // Split table
-    val keys = Array[String]("train.hex", "valid.hex")
-    val ratios = Array[Double](0.8)
-    val frs = split(table, keys, ratios)
-    val (train, valid) = (frs(0), frs(1))
-    table.delete()
-
-    // Build a model
-    val dlModel = buildDLModel(train, valid)
-
-    // Collect model metrics
-    val trainMetrics = modelMetrics[ModelMetricsBinomial](dlModel, train)
-    val validMetrics = modelMetrics[ModelMetricsBinomial](dlModel, valid)
-    println(
-      s"""
-         |AUC on train data = ${trainMetrics.auc}
-         |AUC on valid data = ${validMetrics.auc}
-       """.stripMargin)
-
-    // Detect spam messages
-    TEST_MSGS.foreach(msg => {
-      println(
-        s"""
-           |"$msg" is ${if (isSpam(msg, sc, dlModel, hashingTF, idfModel)) "SPAM" else "HAM"}
-       """.stripMargin)
-    })
-
-    // Shutdown Spark cluster and H2O
-    h2oContext.stop(stopSparkContext = true)
   }
 
-  /** Data loader */
-  def load(sc: SparkContext, dataFile: String): RDD[Array[String]] = {
-    sc.textFile(enforceLocalSparkFile(dataFile)).map(l => l.split("\t", 2)).filter(r => !r(0).isEmpty)
+  def createPipeline(stages: Array[_ <: PipelineStage]): Pipeline = {
+    val pipeline = new Pipeline().setStages(stages)
+    // Test exporting and importing the pipeline
+    pipeline.write.overwrite.save("examples/build/pipeline")
+    Pipeline.load("examples/build/pipeline")
   }
 
-  /** Text message tokenizer.
-   *
-   * Produce a bag of word representing given message.
-   *
-   * @param data RDD of text messages
-   * @return RDD of bag of words
-   */
-  def tokenize(data: RDD[String]): RDD[Seq[String]] = {
-    val ignoredWords = Seq("the", "a", "", "in", "on", "at", "as", "not", "for")
-    val ignoredChars = Seq(',', ':', ';', '/', '<', '>', '"', '.', '(', ')', '?', '-', '\'', '!', '0', '1')
-
-    val texts = data.map(r => {
-      var smsText = r.toLowerCase
-      for (c <- ignoredChars) {
-        smsText = smsText.replace(c, ' ')
-      }
-
-      val words = smsText.split(" ").filter(w => !ignoredWords.contains(w) && w.length > 2).distinct
-
-      words.toSeq
-    })
-    texts
+  def isSpam(spark: SparkSession, smsText: String, model: PipelineModel): Boolean = {
+    val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
+    val smsTextRowRDD = spark.sparkContext.parallelize(Seq(smsText)).map(Row(_))
+    val smsTextDF = spark.createDataFrame(smsTextRowRDD, smsTextSchema)
+    val prediction = model.transform(smsTextDF)
+    prediction.select("prediction").first.getString(0) == "spam"
   }
 
-  /** Buil tf-idf model representing a text message. */
-  def buildIDFModel(tokens: RDD[Seq[String]],
-                    minDocFreq: Int = 4,
-                    hashSpaceSize: Int = 1 << 10): (HashingTF, IDFModel, RDD[mllib.linalg.Vector]) = {
-    // Hash strings into the given space
-    val hashingTF = new HashingTF(hashSpaceSize)
-    val tf = hashingTF.transform(tokens)
-    // Build term frequency-inverse document frequency
-    val idfModel = new IDF(minDocFreq = minDocFreq).fit(tf)
-    val expandedText = idfModel.transform(tf)
-    (hashingTF, idfModel, expandedText)
+  def assertPredictions(spark: SparkSession, model: PipelineModel): Unit = {
+    assert(!isSpam(spark, "Michal, h2oworld party tonight in MV?", model))
+    assert(isSpam(spark, "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
   }
 
-  /** Builds DeepLearning model. */
-  def buildDLModel(train: Frame, valid: Frame,
-                   epochs: Int = 10, l1: Double = 0.001, l2: Double = 0.0,
-                   hidden: Array[Int] = Array[Int](200, 200))
-                  (implicit h2oContext: H2OContext): DeepLearningModel = {
-    import h2oContext.implicits._
-    // Build a model
-    val dlParams = new DeepLearningParameters()
-    dlParams._train = train
-    dlParams._valid = valid
-    dlParams._response_column = 'target
-    dlParams._epochs = epochs
-    dlParams._l1 = l1
-    dlParams._hidden = hidden
-
-    // Create a job
-    val dl = new DeepLearning(dlParams, water.Key.make("dlModel.hex"))
-    dl.trainModel.get
+  def load(spark: SparkSession, dataFile: String): DataFrame = {
+    val smsSchema = StructType(Array(
+      StructField("label", StringType, nullable = false),
+      StructField("text", StringType, nullable = false)))
+    val rowRDD = spark.sparkContext.textFile(dataFile).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
+    spark.createDataFrame(rowRDD, smsSchema)
   }
 
-  /** Spam detector */
-  def isSpam(msg: String,
-             sc: SparkContext,
-             dlModel: DeepLearningModel,
-             hashingTF: HashingTF,
-             idfModel: IDFModel,
-             hamThreshold: Double = 0.5)
-            (implicit sqlContext: SQLContext, h2oContext: H2OContext): Boolean = {
-    import h2oContext.implicits._
-    import sqlContext.implicits._
-    val msgRdd = sc.parallelize(Seq(msg))
-    val msgVector: DataFrame = idfModel.transform(
-      hashingTF.transform(
-        tokenize(msgRdd))).map(v => SMS("?", v)).toDF
-    val msgTable: H2OFrame = msgVector
-    H2OFrameSupport.withLockAndUpdate(msgTable) {
-      _.remove(0) // remove first column
-    }
-    val prediction = dlModel.score(msgTable)
-    //println(prediction)
-    prediction.vecs()(1).at(0) < hamThreshold
+  def createTokenizer(): RegexTokenizer = {
+    new RegexTokenizer().
+      setInputCol("text").
+      setOutputCol("words").
+      setMinTokenLength(3).
+      setGaps(false).
+      setPattern("[a-zA-Z]+")
   }
 
+  def createStopWordsRemover(tokenizer: RegexTokenizer): StopWordsRemover = {
+    new StopWordsRemover().
+      setInputCol(tokenizer.getOutputCol).
+      setOutputCol("filtered").
+      setStopWords(Array("the", "a", "", "in", "on", "at", "as", "not", "for")).
+      setCaseSensitive(false)
+  }
+
+  def createHashingTF(stopWordsRemover: StopWordsRemover): HashingTF = {
+    new HashingTF().
+      setNumFeatures(1 << 10).
+      setInputCol(stopWordsRemover.getOutputCol).
+      setOutputCol("wordToIndex")
+  }
+
+  def createIDF(hashingTF: HashingTF): IDF = {
+    new IDF().
+      setMinDocFreq(4).
+      setInputCol(hashingTF.getOutputCol).
+      setOutputCol("tf_idf")
+  }
+
+  def createColumnPruner(idf: IDF, hashingTF: HashingTF, stopWordsRemover: StopWordsRemover, tokenizer: RegexTokenizer): ColumnPruner = {
+    new ColumnPruner().
+      setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
+  }
+
+  def trainPipeline(spark: SparkSession, pipeline: Pipeline): PipelineModel = {
+    val smsDataPath = "./examples/smalldata/smsData.txt"
+    val smsDataFile = s"file://${new File(smsDataPath).getAbsolutePath}"
+    val data = load(spark, smsDataFile)
+
+    H2OContext.getOrCreate()
+    // Train the pipeline model
+    val model = pipeline.fit(data)
+    // Test exporting and importing pipeline model
+    model.write.overwrite.save("examples/build/model")
+    PipelineModel.load("examples/build/model")
+  }
+
+  def gbm(): H2OGBM = {
+    new H2OGBM().
+      setSplitRatio(0.8).
+      setSeed(1).
+      setFeaturesCols("tf_idf").
+      setLabelCol("label")
+  }
+
+  def deepLearning(): H2ODeepLearning = {
+    new H2ODeepLearning().
+      setEpochs(10).
+      setL1(0.001).
+      setL2(0.0).
+      setSeed(1).
+      setHidden(Array[Int](200, 200)).
+      setFeaturesCols("tf_idf").
+      setLabelCol("label")
+  }
+
+  def autoML(): H2OAutoML = {
+    new H2OAutoML().
+      setLabelCol("label").
+      setSeed(1).
+      setMaxRuntimeSecs(60 * 100).
+      setMaxModels(3).
+      setConvertUnknownCategoricalLevelsToNa(true)
+  }
+
+  def gridSearch(): H2OGridSearch = {
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
+    new H2OGridSearch().
+      setLabelCol("label").
+      setHyperParameters(hyperParams).
+      setFeaturesCols("tf_idf").
+      setConvertUnknownCategoricalLevelsToNa(true).
+      setAlgo(new H2OGBM().setMaxDepth(30).setSeed(1))
+  }
+
+  def xgboost(): H2OXGBoost = {
+    new H2OXGBoost().
+      setFeaturesCols("tf_idf").
+      setLabelCol("label").
+      setConvertUnknownCategoricalLevelsToNa(true)
+  }
 }
-
-/** Training message representation. */
-case class SMS(target: String, fv: mllib.linalg.Vector)
-

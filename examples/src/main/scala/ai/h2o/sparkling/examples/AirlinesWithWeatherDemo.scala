@@ -29,9 +29,10 @@ object AirlinesWithWeatherDemo {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
-      .appName("Sparkling Water: Join of Airlines with Weather Data")
+      .appName("Join of Airlines with Weather Data")
       .getOrCreate()
     import spark.implicits._
+
     val weatherDataPath = "./examples/smalldata/chicago/Chicago_Ohare_International_Airport.csv"
     val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
     val weatherTable = spark.read.option("header", "true")
