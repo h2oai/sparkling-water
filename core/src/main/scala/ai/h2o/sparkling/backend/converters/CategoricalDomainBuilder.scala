@@ -17,10 +17,7 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import org.apache.parquet.format.ColumnIndex
-
 import scala.collection.mutable
-import scala.reflect.internal.util.TableDef.Column
 
 /**
  * This class is not thread safe.
