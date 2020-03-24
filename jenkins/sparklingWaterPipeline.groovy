@@ -252,7 +252,7 @@ def buildAndLint() {
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
                 sh "${getGradleCommand(config)} clean build -x check scalaStyle"
-                if (config.runIntegTests.toBoolean() || config.uploadNightly.toBoolean()) {
+                if (config.uploadNightly.toBoolean()) {
                     stash "sw-build-${config.sparkMajorVersion}"
                 }
             } finally {
