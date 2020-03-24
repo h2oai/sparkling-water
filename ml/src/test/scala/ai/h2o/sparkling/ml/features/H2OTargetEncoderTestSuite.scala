@@ -239,17 +239,17 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .withColumn("DPROS", 'DPROS cast StringType)
       .withColumn("DCAPS", 'DCAPS cast StringType)
       .withColumn("CAPSULE", 'CAPSULE cast StringType)
-    val Array(trainingDataset, testingDateset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
+    val Array(trainingDataset, testingDataset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
     val model = targetEncoder.fit(trainingDataset)
 
     val transformedByModel = model.transformTrainingDataset(testingDataset)
-    val transformedByMOJOModel = model.transform(testingDateset)
+    val transformedByMOJOModel = model.transform(testingDataset)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
     TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
   }
 
-  test("The target encoder can work with arbitrary label categories") {
+  test("The target encoder can work withttps://h2o-release.s3.amazonaws.com/h2o/masterh arbitrary label categories") {
     val trainingDatasetWithLabel = trainingDataset.withColumn(
       "LABEL",
       when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))

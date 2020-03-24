@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public final class LocalNodeDomains {
     private static NonBlockingHashMap<Key, ArrayList<Categorical[]>> domainsMap = new NonBlockingHashMap<>();
-    private static NonBlockingHashMap<String, Categorical[]> domainsMapByChunk = new NonBlockingHashMap<>();
+    private static NonBlockingHashMap<String, String[][]> domainsMapByChunk = new NonBlockingHashMap<>();
     private static NonBlockingHashMap<Key, ArrayList<String>>  frameKeyToChunkKeys = new NonBlockingHashMap<>();
 
     public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
@@ -45,7 +45,7 @@ public final class LocalNodeDomains {
         String chunkKey = createChunkKey(frameKey, chunkId);
         chunkKeys.add(chunkKey);
 
-        domainsMapByChunk.putIfAbsent(chunkKey, categoricalDomains);
+        domainsMapByChunk.putIfAbsent(chunkKey, domains);
     }
 
     private static Categorical[] domainsToCategoricals(String[][] domains) {
@@ -74,7 +74,7 @@ public final class LocalNodeDomains {
         return domainsMap.get(frameKey).toArray(new Categorical[0][]);
     }
 
-    public synchronized static Categorical[] getDomains(Key frameKey, int chunkId) {
+    public synchronized static String[][] getDomains(Key frameKey, int chunkId) {
         String chunkKey = createChunkKey(frameKey, chunkId);
         return domainsMapByChunk.get(chunkKey);
     }
