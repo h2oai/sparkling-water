@@ -21,7 +21,7 @@ Available Demos And Applications
 +-----------------------------------+--------------------------------------------------------------------------+
 | |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's algorithms.                     |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |ProstateDemo|                    | Running K-means on |ProstateDataset|.                                    |
+| |ProstateDemo|                    | Run H2O's K-means on |ProstateDataset|.                                  |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |DeepLearningDemo|                | Running DeepLearning on a subset of |AirlinesDataset|.                   |
 +-----------------------------------+--------------------------------------------------------------------------+

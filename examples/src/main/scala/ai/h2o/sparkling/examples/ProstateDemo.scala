@@ -17,69 +17,34 @@
 
 package ai.h2o.sparkling.examples
 
-import hex.kmeans.KMeansModel.KMeansParameters
-import hex.kmeans.{KMeans, KMeansModel}
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import org.apache.spark.sql.SparkSession
-import water._
-import water.support.SparkContextSupport
+import java.io.File
 
-/* Demonstrates:
-   - data transfer from RDD into H2O
-   - algorithm call
- */
-object ProstateDemo extends SparkContextSupport {
+import ai.h2o.sparkling.ml.algos.H2OKMeans
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.sql.SparkSession
+
+object ProstateDemo {
 
   def main(args: Array[String]) {
+    val spark = SparkSession
+      .builder()
+      .appName("Prostate Demo")
+      .getOrCreate()
+    import spark.implicits._
+    val prostateDataPath = "./examples/smalldata/prostate/prostate.csv"
+    val prostateDataFile = s"file://${new File(prostateDataPath).getAbsolutePath}"
 
-    // Create Spark context which will drive computation
-    val conf = configure("Sparkling Water: Prostate demo")
-    val sc = new SparkContext(conf)
-    // Add a file to be available for cluster mode
-    addFiles(sc, TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val prostateTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .csv(prostateDataFile)
 
-    // Run H2O cluster inside Spark cluster
-    val h2oContext = H2OContext.getOrCreate()
-    import h2oContext.implicits._
+    // Select a subsample
+    val train = prostateTable.filter('CAPSULE === 1)
 
-    // We do not need to wait for H2O cloud since it will be launched by backend
-
-    // Load raw data
-    val parse = ProstateParse
-    val rawdata = sc.textFile(enforceLocalSparkFile("prostate.csv"), 2)
-    // Parse data into plain RDD[Prostate]
-    val table = rawdata.map(_.split(",")).map(line => parse(line))
-
-    // Convert to SQL type RDD
-    val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-    import sqlContext.implicits._ // import implicit conversions
-    table.toDF.createOrReplaceTempView("prostate_table")
-
-    // Invoke query on data; select a subsample
-    val query = "SELECT * FROM prostate_table WHERE CAPSULE=1"
-    val result = sqlContext.sql(query) // Using a registered context and tables
-
-    // Build a KMeans model, setting model parameters via a Properties
-    val model = runKmeans(result)
-    println(model)
-
-    // Shutdown Spark cluster and H2O
-    h2oContext.stop(stopSparkContext = true)
-  }
-
-  private def runKmeans[T](trainDataFrame: H2OFrame): KMeansModel = {
-    val params = new KMeansParameters
-    params._train = trainDataFrame._key
-    params._k = 3
-    // Create a builder
-    val job = new KMeans(params)
-    // Launch a job and wait for the end.
-    val kmm = job.trainModel.get
-    // Print the JSON model
-    println(new String(kmm._output.writeJSON(new AutoBuffer()).buf()))
-    // Return a model
-    kmm
+    H2OContext.getOrCreate()
+    val kmeans = new H2OKMeans().setK(3)
+    val model = kmeans.fit(train)
+    val prediction = model.transform(train).select("prediction").collect()
+    println(prediction.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
   }
 }
-
