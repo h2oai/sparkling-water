@@ -22,9 +22,9 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ChicagoCrimeAppSmallSuite extends LocalIntegrationTest {
+class ChicagoCrimeAppSuite extends LocalIntegrationTest {
 
   test("Chicago Crime Demo") {
-    launch(ChicagoCrimeAppSmall)
+    launch(ChicagoCrimeApp)
   }
 }

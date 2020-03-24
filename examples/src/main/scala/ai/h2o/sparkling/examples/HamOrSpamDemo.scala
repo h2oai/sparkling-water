@@ -27,8 +27,6 @@ import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-import scala.collection.mutable
-
 object HamOrSpamDemo {
 
   def main(args: Array[String]) {
@@ -157,8 +155,7 @@ object HamOrSpamDemo {
   }
 
   def gridSearch(): H2OGridSearch = {
-    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
+    val hyperParams = Map("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
     new H2OGridSearch().
       setLabelCol("label").
       setHyperParameters(hyperParams).
