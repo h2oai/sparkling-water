@@ -21,13 +21,7 @@ jar {
     }
 }
 
-configurations {
-    sparklingWaterAssemblyJar
-}
-
 dependencies {
-    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
-
     api(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
     api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
         // Cannot use here: transitive = false since Gradle is producing wrong POM file
@@ -54,23 +48,6 @@ dependencies {
     scriptsTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
     scriptsTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
     scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
-}
-
-integTest {
-    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-    systemProperty "spark.testing", "true"
-    systemProperty "spark.test.home", "${sparkHome}"
-    systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
-
-    // Pass list of jars required for testing
-    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
-    systemProperty "sparkling.itest.jar", "${integTestJar.getArchiveFile().get().asFile.toString()}"
-    systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-    systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-    systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-
-    // Show standard out and standard error of the test JVM(s) on the console
-    testLogging.showStandardStreams = true
 }
 
 // Setup test environment for scripts test

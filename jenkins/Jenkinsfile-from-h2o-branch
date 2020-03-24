@@ -12,7 +12,6 @@ properties(
                                 booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
                                 booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
                                 booleanParam(name: 'runScriptTests', defaultValue: true, description: 'Run script tests'),
-                                booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run integration tests'),
                                 booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
                                 choice(
                                         choices: 'hdp2.2\nhdp2.3\nhdp2.4\nhdp2.5\nhdp2.6\ncdh5.4\ncdh5.5\ncdh5.6\ncdh5.7\ncdh5.8\ncdh5.10\nmapr4.0\nmapr5.0\nmapr5.1\nmapr5.2\niop4.2',
@@ -57,7 +56,6 @@ pipeline(params) { p ->
     runLocalIntegTests = "${p.runLocalIntegTests}"
     runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
     runScriptTests = "${p.runScriptTests}"
-    runIntegTests = "${p.runIntegTests}"
     runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
     buildAgainstH2OBranch = "true"
     h2oBranch = "master"

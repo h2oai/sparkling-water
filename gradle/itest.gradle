@@ -1,7 +1,4 @@
-//
-// Integration tests support
-//
-
+apply from: "$rootDir/gradle/utils.gradle"
 
 sourceSets {
     integTest {
@@ -20,8 +17,21 @@ sourceSets {
 configurations {
     integTestImplementation.extendsFrom testImplementation
     integTestRuntimeOnly.extendsFrom testRuntimeOnly
+    sparklingWaterAssemblyJar
 }
 
+dependencies {
+    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
+}
+
+// Create jar containing integration test classes
+task integTestJar(type: Jar, dependsOn: integTestClasses) {
+    group = "Build"
+    description = "Assembles a jar archive with integration test classes."
+    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+    archiveAppendix = 'itest'
+    from sourceSets.integTest.output
+}
 
 task integTest(type: Test) {
     group = 'Verification'
@@ -42,58 +52,31 @@ task integTest(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    def testEnv = detectEnvironment()
-    // Decide which tests should be launch here based on environment
-    switch (testEnv) {
-        case "yarn":
-            systemProperty "sparkling.test.environment", "${testEnv}"
-            systemProperty "spark.ext.h2o.node.log.dir", "h2ologs-itest-${testEnv}/nodes"
-            systemProperty "spark.ext.h2o.client.log.dir", "h2ologs-itest-${testEnv}/client"
-            systemProperty "spark.ext.h2o.external.disable.version.check", "true"
+    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest/nodes")
+    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest/client")
+    systemProperty "spark.ext.h2o.external.disable.version.check", "true"
+    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
+    systemProperty "spark.testing", "true"
+    systemProperty "spark.test.home", "${sparkHome}"
+    systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
+    systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
+    systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
+    systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
 
-            include "ai/h2o/sparkling/yarn/**"
-            break
-        
-        case "local":
-            systemProperty "sparkling.test.environment", "${testEnv}"
-            systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/nodes")
-            systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest-${testEnv}/client")
-            systemProperty "spark.ext.h2o.external.disable.version.check", "true"
+    // Pass list of jars required for testing
+    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
+    systemProperty "sparkling.itest.jar", "${integTestJar.getArchiveFile().get().asFile.toString()}"
 
-            include "ai/h2o/sparkling/local/**"
-            break
-    }
+    // Show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
+
     // Also setup expected Scala version for Spark launcher
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 }
 
-// Create jar containing integration test classes
-task integTestJar(type: Jar, dependsOn: integTestClasses) {
-    group = "Build"
-    description = "Assembles a jar archive with integration test classes."
-    archiveBaseName = "${project.name}_${scalaBaseVersion}"
-    archiveAppendix = 'itest'
-    from sourceSets.integTest.output
-}
 
 // Run integration tests as part of build
 check.dependsOn integTest
 
 // Dependencies
 integTest.dependsOn integTestJar
-integTest.dependsOn ":sparkling-water-assembly:shadowJar"
-
-// Setup properties
-ext {
-    integTestEnvironment = detectEnvironment()
-}
-
-String detectEnvironment(String defaultEnv = "local") {
-    String denv = [project.hasProperty("sparklingTestEnv") ? project["sparklingTestEnv"] : null,
-                   System.properties["sparklingTestEnv"],
-                   defaultEnv
-    ].find { h -> h != null } // first match
-    // Return env
-    logger.info("* Detected '$denv' Sparkling test environment (configure via property 'sparklingTestEnv')")
-    denv
-}

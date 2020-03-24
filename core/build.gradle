@@ -142,20 +142,6 @@ processResources.dependsOn createH2OVersionFile
 processResources.dependsOn createSparklingWaterVersionFile
 processResources.dependsOn ':sparkling-water-assembly-extensions:embeddedAssemblyJar'
 
-integTest {
-    // Pass references to libraries to test launcher
-    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-
-    systemProperty "spark.testing", "true"
-    systemProperty "spark.test.home", "${sparkHome}"
-    systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
-
-    // Pass list of jars required for testing
-    systemProperty "sparkling.assembly.jar", "${project(":sparkling-water-assembly").configurations.shadow.artifacts.file.join(',')}"
-    systemProperty "sparkling.itest.jar", "${integTestJar.archivePath}"
-
-    // testLogging.showStandardStreams = true
-}
 
 bench {
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()

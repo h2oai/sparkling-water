@@ -19,83 +19,45 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
-import hex.deeplearning.DeepLearning
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.h2o.{DoubleHolder, H2OContext, H2OFrame}
-import org.apache.spark.sql.{Dataset, SparkSession}
-import water.support.{H2OFrameSupport, SparkContextSupport}
+import ai.h2o.sparkling.ml.algos.H2ODeepLearning
+import org.apache.spark.h2o.H2OContext
+import org.apache.spark.sql.SparkSession
 
-
-object DeepLearningDemo extends SparkContextSupport {
+object DeepLearningDemo {
 
   def main(args: Array[String]): Unit = {
-    // Create Spark context which will drive computation.
-    val conf = configure("Sparkling Water: Deep Learning on Airlines data")
-    val spark = SparkSession.builder().config(conf).getOrCreate()
-    val sc = spark.sparkContext
-    import spark.implicits._ // import implicit conversions
+    val spark = SparkSession
+      .builder()
+      .appName("Deep Learning Demo on Airlines Data")
+      .getOrCreate()
+    import spark.implicits._
 
-    // Run H2O cluster inside Spark cluster
-    val h2oContext = H2OContext.getOrCreate()
-    import h2oContext._
-    import h2oContext.implicits._
+    val airlinesDataPath = "./examples/smalldata/airlines/allyears2k_headers.csv"
+    val airlinesDataFile = s"file://${new File(airlinesDataPath).getAbsolutePath}"
+    val airlinesTable = spark.read.option("header", "true")
+      .option("inferSchema", "true")
+      .option("nullValue", "NA")
+      .csv(airlinesDataFile)
 
-    //
-    // Load H2O from CSV file (i.e., access directly H2O cloud)
-    // Use super-fast advanced H2O CSV parser !!!
-    val airlinesData = new H2OFrame(new File(TestUtils.locate("smalldata/airlines/allyears2k_headers.zip")))
+    println(s"\n===> Number of all flights: ${airlinesTable.count()}\n")
 
-    //
-    // Use H2O to RDD transformation
-    //
-    val airlinesTable: Dataset[Airlines] = h2oContext.asDataFrame(airlinesData).map(row => AirlinesParse(row))
-    println(s"\n===> Number of all flights via RDD#count call: ${airlinesTable.count()}\n")
-    println(s"\n===> Number of all flights via H2O#Frame#count: ${airlinesData.numRows()}\n")
+    val airlinesSFO = airlinesTable.filter('Dest === "SFO")
+    println(s"\n===> Number of flights with destination in SFO: ${airlinesSFO.count()}\n")
 
-    //
-    // Filter data with help of Spark SQL
-    //
-    airlinesTable.toDF.createOrReplaceTempView("airlinesTable")
+    println("\n====> Running DeepLearning in the prepared data frame\n")
 
-    // Select only interesting columns and flights with destination in SFO
-    val query = "SELECT * FROM airlinesTable WHERE Dest LIKE 'SFO'"
-    val result: H2OFrame = spark.sql(query) // Using a registered context and tables
-    println(s"\n===> Number of flights with destination in SFO: ${result.numRows()}\n")
-
-    //
-    // Run Deep Learning
-    //
-
-    println("\n====> Running DeepLearning on the result of SQL query\n")
-    // Training data
-    val train = result('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
+    val train = airlinesSFO.select('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,
       'Distance, 'IsDepDelayed)
-    H2OFrameSupport.withLockAndUpdate(train) { fr =>
-      fr.replace(fr.numCols() - 1, fr.lastVec().toCategoricalVec)
-    }
-    // Configure Deep Learning algorithm
-    val dlParams = new DeepLearningParameters()
-    dlParams._train = train
-    dlParams._response_column = 'IsDepDelayed
 
-    val dl = new DeepLearning(dlParams)
-    val dlModel = dl.trainModel.get
+    H2OContext.getOrCreate()
+    val dl = new H2ODeepLearning()
+      .setLabelCol("IsDepDelayed")
+      .setConvertUnknownCategoricalLevelsToNa(true)
+    val count = train.count()
+    val model = dl.fit(train.repartition(count.toInt + 10)) // verify also fitting on empty partitions
 
-    //
-    // Use model for scoring
-    //
-    println("\n====> Making prediction with help of DeepLearning model\n")
-    val predictionH2OFrame = dlModel.score(result)('predict)
-    val predictionsFromModel = asRDD[DoubleHolder](predictionH2OFrame).collect.map(_.result.getOrElse("NaN"))
-    println(predictionsFromModel.mkString("\n===> Model predictions: ", ", ", ", ...\n"))
-
-    // Stop Spark cluster and destroy all executors
-    if (System.getProperty("spark.ext.h2o.preserve.executors") == null) {
-      sc.stop()
-    }
-    // Shutdown H2O
-    h2oContext.stop()
+    val predictions = model.transform(airlinesSFO).select("prediction").collect()
+    println(predictions.mkString("\n===> Model predictions from DL: ", ", ", ", ...\n"))
   }
-
 }

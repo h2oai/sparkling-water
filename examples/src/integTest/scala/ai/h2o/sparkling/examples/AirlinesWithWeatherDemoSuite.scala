@@ -15,17 +15,16 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling.examples
 
-import ai.h2o.sparkling.LocalIntegrationTest
-import ai.h2o.sparkling.examples.HamOrSpamDemo
+import ai.h2o.sparkling.examples.utils.LocalIntegrationTest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class HamOrSpamDemoSuite extends LocalIntegrationTest {
+class AirlinesWithWeatherDemoSuite extends LocalIntegrationTest {
 
-  test("Ham or Spam Demo") {
-    launch(HamOrSpamDemo)
+  test("Airlines with Weather Demo") {
+    launch(AirlinesWithWeatherDemo)
   }
 }
