@@ -72,19 +72,6 @@ trait H2OFrameSupport extends JoinSupport with Logging {
   }
 
   /**
-    * Convert all strings to categorical/enum values inside the given Frame.
-    *
-    * @param fr frame to update
-    * @tparam T H2O Frame type
-    * @return frame with string columns replaced by categoricals
-    */
-  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).convertAllStringColumnsToCategorical(ratios)", "3.32")
-  def allStringVecToCategorical[T <: Frame](fr: T): T = {
-    val restFrame = ai.h2o.sparkling.H2OFrame(fr._key.toString).convertAllStringColumnsToCategorical()
-    new H2OFrame(restFrame.frameId).asInstanceOf[T]
-  }
-
-  /**
     * Convert specific columns to categoricals
     *
     * @param fr         frame to update

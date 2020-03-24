@@ -32,9 +32,8 @@ class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMean
     if (stringCols.nonEmpty) {
       throw new IllegalArgumentException(
         s"Following columns are of type string: '${stringCols.mkString(", ")}', but" +
-          s" H2OKMeans does not accept string columns. However, you can use the `allStringColumnsToCategorical`" +
-          s" or 'columnsToCategorical' methods on H2OKMeans. These methods ensure that string columns are " +
-          s" converted to representation H2O-3 understands.")
+          " H2OKMeans does not accept string columns. However, you can use the 'columnsToCategorical' methods on H2OKMeans." +
+          " These methods ensure that string columns are converted to representation H2O-3 understands.")
     }
   }
 

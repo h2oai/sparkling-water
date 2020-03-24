@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
 
 /**
@@ -34,9 +35,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   protected final val seed = new LongParam(this, "seed", "Used to specify seed to reproduce the model run")
   protected final val nfolds = new IntParam(this, "nfolds", "Number of fold columns")
 
-  protected final val allStringColumnsToCategorical =
-    new BooleanParam(this, "allStringColumnsToCategorical", "Transform all strings columns to categorical")
-
   protected final val columnsToCategorical =
     new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categorical before modelling")
 
@@ -49,7 +47,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
     splitRatio -> 1.0, // Use whole frame as training frame
     seed -> -1,
     nfolds -> 0,
-    allStringColumnsToCategorical -> true,
     columnsToCategorical -> Array.empty[String])
 
   //
@@ -70,7 +67,8 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def getNfolds(): Int = $(nfolds)
 
-  def getAllStringColumnsToCategorical(): Boolean = $(allStringColumnsToCategorical)
+  @DeprecatedMethod(version = "3.32")
+  def getAllStringColumnsToCategorical(): Boolean = false
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
@@ -87,7 +85,8 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def setNfolds(value: Int): this.type = set(nfolds, value)
 
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = set(allStringColumnsToCategorical, value)
+  @DeprecatedMethod(version = "3.32")
+  def setAllStringColumnsToCategorical(value: Boolean): this.type = this
 
   def setColumnsToCategorical(first: String, others: String*): this.type =
     set(columnsToCategorical, Array(first) ++ others)

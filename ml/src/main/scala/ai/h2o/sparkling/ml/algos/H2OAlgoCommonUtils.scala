@@ -51,9 +51,6 @@ trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(featureColumns: _*)).columns
-    if (getAllStringColumnsToCategorical()) {
-      trainFrame.convertAllStringColumnsToCategorical()
-    }
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
     if (getSplitRatio() < 1.0) {
