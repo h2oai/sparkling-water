@@ -12,10 +12,8 @@ Available Demos And Applications
 +-----------------------------------+--------------------------------------------------------------------------+
 | |CraigslistJobTitlesApp|          | Predict job category based on posted job description.                    |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |ChicagoCrimeAppSmall|            | Builds a model predicting a probability of arrest for given crime in     |
+| |ChicagoCrimeApp|                 | Builds a model predicting a probability of arrest for given crime in     |
 |                                   | Chicago using data in |ChicagoDataset|.                                  |
-+-----------------------------------+--------------------------------------------------------------------------+
-| |ChicagoCrimeApp|                 | Implementation of Chicago Crime demo with setup for data stored on HDFS. |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |CitiBikeSharingDemo|             | Predicts occupancy of Citi bike stations in NYC.                         |
 +-----------------------------------+--------------------------------------------------------------------------+
@@ -130,7 +128,6 @@ Step-by-Step Weather Data Example
 
 .. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesStreamingApp.scala>`__
 .. |CraigslistJobTitlesApp| replace:: `CraigslistJobTitlesApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesApp.scala>`__
-.. |ChicagoCrimeAppSmall| replace:: `ChicagoCrimeAppSmall <src/main/scala/ai/h2o/sparkling/examples/ChicagoCrimeAppSmall.scala>`__
 .. |ChicagoCrimeApp| replace:: `ChicagoCrimeApp <src/main/scala/ai/h2o/sparkling/examples/ChicagoCrimeApp.scala>`__
 .. |CitiBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/ai/h2o/sparkling/examples/CitiBikeSharingDemo.scala>`__
 .. |HamOrSpamDemo| replace:: `HamOrSpamDemo <src/main/scala/ai/h2o/sparkling/examples/HamOrSpamDemo.scala>`__

@@ -9,21 +9,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ScriptChicagoCrimeAppSmall extends ScriptsTestHelper {
-  override protected def beforeAll(): Unit = {
-    sparkConf = defaultConf.setMaster("local[*]")
-      .set("spark.driver.memory", "2G")
-      .set("spark.executor.memory", "2G")
-    super.beforeAll()
-  }
-
-  test("ChicagoCrimeAppSmall.script.scala") {
-    val result = launchScript("ChicagoCrimeAppSmall.script.scala")
-    assert(result.codeExecutionStatus == CodeResults.Success, "Problem during interpreting the script!")
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
 class ScriptCraigListJobTitles extends ScriptsTestHelper {
   override protected def beforeAll(): Unit = {
     sparkConf = defaultConf.setMaster("local[*]")

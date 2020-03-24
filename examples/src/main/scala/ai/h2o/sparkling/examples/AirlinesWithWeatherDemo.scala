@@ -56,7 +56,7 @@ object AirlinesWithWeatherDemo {
 
     val joined = flightsToORD.join(weatherTable, Seq("Year", "Month", "DayofMonth"))
 
-    val hc = H2OContext.getOrCreate()
+    H2OContext.getOrCreate()
     val dl = new H2ODeepLearning()
       .setLabelCol("ArrDelay")
       .setSplitRatio(0.8)
