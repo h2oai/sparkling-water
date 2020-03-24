@@ -198,10 +198,16 @@ def testConvertEmptyRDD(spark, hc):
             id="double"
         ),
         pytest.param(
-            ["a", "b", "c", "d", "c", "b", "a"],
+            ["a", "b", "c", "d", "e", "f", "g"],
             StringType(),
             "string",
             id="string"
+        ),
+        pytest.param(
+            ["a", "b", "c", "d", "c", "b", "a"],
+            StringType(),
+            "categorical",
+            id="categorical"
         ),
     ],
 )
