@@ -53,7 +53,8 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
   hf <- hc$asH2OFrame(sdf)
 
   expect_equal(hf[1, 1], 2)
-  expect_equal(hf[1, 2], "aa")
+  expect_equal(is.factor(hf[1, 2]), TRUE)
+  expect_equal(as.character(hf[1, 2]), "aa")
   expect_equal(hf[1, 3], 1)
 })
 
@@ -88,9 +89,12 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
   hc <- H2OContext.getOrCreate()
   hf <- hc$asH2OFrame(sdf)
 
-  expect_equal(hf[1, 1], "A")
-  expect_equal(hf[1, 2], "B")
-  expect_equal(hf[1, 3], "C")
+  expect_equal(is.factor(hf[1, 1]), TRUE)
+  expect_equal(is.factor(hf[1, 2]), TRUE)
+  expect_equal(is.factor(hf[1, 3]), TRUE)
+  expect_equal(as.character(hf[1, 1]), "A")
+  expect_equal(as.character(hf[1, 2]), "B")
+  expect_equal(as.character(hf[1, 3]), "C")
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
