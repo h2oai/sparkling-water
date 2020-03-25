@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
@@ -64,8 +65,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def isKillOnUnhealthyClusterEnabled: Boolean =
     sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
 
+  @DeprecatedMethod("""getOption("spark.yarn.principal")""", "3.32")
   def kerberosPrincipal: Option[String] = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
 
+  @DeprecatedMethod("""getOption("spark.yarn.keytab")""", "3.32")
   def kerberosKeytab: Option[String] = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
 
   def runAsUser: Option[String] = sparkConf.getOption(PROP_EXTERNAL_RUN_AS_USER._1)
@@ -150,8 +153,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setKillOnUnhealthyClusterDisabled(): H2OConf = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, value = false)
 
+  @DeprecatedMethod("""set("spark.yarn.principal", principal)""", "3.32")
   def setKerberosPrincipal(principal: String): H2OConf = set(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, principal)
 
+  @DeprecatedMethod("""set("spark.yarn.keytab", path)""", "3.32")
   def setKerberosKeytab(path: String): H2OConf = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
 
   def setRunAsUser(user: String): H2OConf = set(PROP_EXTERNAL_RUN_AS_USER._1, user)

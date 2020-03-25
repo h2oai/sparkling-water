@@ -1,19 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package ai.h2o.sparkling.backend.external
 
@@ -39,9 +39,10 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
   }
 
   override def backendUIInfo: Seq[(String, String)] = {
-    Seq(("External backend YARN AppID", yarnAppId), ("External IP", hc.getConf.h2oCluster)).filter(_._2.nonEmpty).map {
-      case (k, v) => (k, v.get)
-    }
+    Seq(
+      ("External backend YARN AppID", yarnAppId),
+      ("External IP", hc.getConf.h2oCluster)
+    ).filter(_._2.nonEmpty).map { case (k, v) => (k, v.get) }
   }
 
   override def epilog: String =
@@ -66,7 +67,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
 
     val notifyFile = new File(conf.clusterInfoFile.get)
     if (!notifyFile.exists()) {
-      throw new RuntimeException(s"""
+      throw new RuntimeException(
+        s"""
            |Cluster notification file ${notifyFile.getAbsolutePath} could not be created. The possible causes are:
            |
            |1) External H2O cluster did not cloud within the pre-defined timeout. In that case, please try
@@ -74,7 +76,8 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
            |
            |   H2OContext.getOrCrete(H2OConf().setClusterStartTimeout(timeout))
            |
-           |2) The file could not be created because of missing write rights.""".stripMargin)
+           |2) The file could not be created because of missing write rights.""".stripMargin
+      )
     }
     // get ip port
     val clusterInfo = Source.fromFile(conf.clusterInfoFile.get).getLines()
@@ -92,8 +95,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
 
   private def getExternalH2ONodesArguments(conf: H2OConf): Seq[String] = {
     // Application tags shown in Yarn Resource Manager UI
-    val yarnAppTags =
-      s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
+    val yarnAppTags = s"${ExternalH2OBackend.TAG_EXTERNAL_H2O},${ExternalH2OBackend.TAG_SPARK_APP.format(hc.sparkContext.applicationId)}"
     new ArgumentBuilder()
       .add(Seq(conf.externalHadoopExecutable, "jar", conf.h2oDriverPath.get))
       .add("-libjars", getExtensionsAssemblyJar().getAbsolutePath + conf.externalExtraJars.map("," + _).getOrElse(""))
@@ -114,9 +116,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add(H2OClientUtils.getExtraExternalBackendArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))
       .add(Seq("-J", "-rest_api_ping_timeout", "-J", conf.clientCheckRetryTimeout.toString))
       .add("-run_as_user", conf.runAsUser)
-      .add(
-        Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString),
-        conf.stacktraceCollectorInterval != -1)
+      .add(Seq("-J", "-stacktrace_collector_interval", "-J", conf.stacktraceCollectorInterval.toString), conf.stacktraceCollectorInterval != -1)
       .add("-output", conf.HDFSOutputDir)
       .add("-context_path", conf.contextPath)
       .add("-network", conf.nodeNetworkMask)
@@ -127,6 +127,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-driverport", conf.externalH2ODriverPort)
       .add("-driverportrange", conf.externalH2ODriverPortRange)
       .add("-extramempercent", conf.externalExtraMemoryPercent)
+      .addIf("-hiveHost", conf.hiveHost, conf.isHiveSupportEnabled)
+      .addIf("-hivePrincipal", conf.hivePrincipal, conf.isHiveSupportEnabled)
+      .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isHiveSupportEnabled)
       .add(conf.nodeExtraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
@@ -150,8 +153,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
         // In External Backend, auto mode we need distribute the keystore files to the H2O cluster
         val props = new Properties()
         props.load(new FileInputStream(internalSecurityConf))
-        val keyStoreFiles = Array(props.get("h2o_ssl_jks_internal"), props.get("h2o_ssl_jts")).map(f =>
-          SparkFiles.get(f.asInstanceOf[String]))
+        val keyStoreFiles = Array(props.get("h2o_ssl_jks_internal"), props.get("h2o_ssl_jts")).map(f => SparkFiles.get(f.asInstanceOf[String]))
         logInfo(s"Starting external H2O cluster in encrypted mode with config: $internalSecurityConf")
         Some(keyStoreFiles.mkString(","))
       case _ =>
@@ -171,7 +173,7 @@ object ExternalH2OBackend extends SharedBackendUtils {
     }
 
     if (conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_MANUAL_MODE &&
-        conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
+      conf.clusterStartMode != ExternalBackendConf.EXTERNAL_BACKEND_AUTO_MODE) {
 
       throw new IllegalArgumentException(
         s"""'${ExternalBackendConf.PROP_EXTERNAL_CLUSTER_START_MODE._1}' property is set to ${conf.clusterStartMode}.
@@ -192,23 +194,23 @@ object ExternalH2OBackend extends SharedBackendUtils {
       }
 
       if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
-        logInfo(s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
+        logInfo(
+          s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
              |Specified path is: ${driverPath.get}""".stripMargin)
         conf.setH2ODriverPath(driverPath.get)
       }
 
       if (conf.clientCheckRetryTimeout < conf.backendHeartbeatInterval) {
-        logWarning(
-          s"%s needs to be larger than %s, increasing the value to %d".format(
-            SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
-            SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
-            conf.backendHeartbeatInterval * 6))
+        logWarning(s"%s needs to be larger than %s, increasing the value to %d".format(
+          SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
+          SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
+          conf.backendHeartbeatInterval * 6
+        ))
         conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
       }
 
       if (conf.clusterSize.isEmpty) {
-        throw new IllegalArgumentException(
-          "Cluster size of external H2O cluster has to be specified in automatic mode of external H2O backend!")
+        throw new IllegalArgumentException("Cluster size of external H2O cluster has to be specified in automatic mode of external H2O backend!")
       }
 
       if (conf.cloudName.isEmpty) {
@@ -219,34 +221,53 @@ object ExternalH2OBackend extends SharedBackendUtils {
         conf.setClusterInfoFile("notify_" + conf.cloudName.get)
       }
 
+      if (conf.getOption("spark.ext.h2o.external.kerberos.principal").isDefined && conf.kerberosPrincipal.isEmpty) {
+        logWarning(s"The option 'spark.ext.h2o.external.kerberos.principal' is deprecated and will be removed in version 3.32." +
+          s" Use '${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}' instead.")
+        conf.setKerberosPrincipal(conf.get("spark.ext.h2o.external.kerberos.principal"))
+      }
+
+      if (conf.getOption("spark.ext.h2o.external.kerberos.keytab").isDefined && conf.kerberosKeytab.isEmpty) {
+        logWarning(s"The option 'spark.ext.h2o.external.kerberos.keytab' is deprecated and will be removed in version 3.32." +
+          s" Use '${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}' instead.")
+        conf.setKerberosKeytab(conf.get("spark.ext.h2o.external.kerberos.keytab"))
+      }
+
       if (conf.getOption("spark.yarn.principal").isDefined &&
-          conf.kerberosPrincipal.isEmpty) {
-        logInfo(
-          s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
-            s" not set. Passing the configuration to H2O.")
-        conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
+        conf.kerberosPrincipal.isEmpty) {
+        logInfo(s"spark.yarn.principal provided and ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.set(SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1, conf.get("spark.yarn.principal"))
       }
 
       if (conf.getOption("spark.yarn.keytab").isDefined &&
-          conf.kerberosKeytab.isEmpty) {
-        logInfo(
-          s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
-            s" not set. Passing the configuration to H2O.")
-        conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
+        conf.kerberosKeytab.isEmpty) {
+        logInfo(s"spark.yarn.keytab provided and ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} is" +
+          s" not set. Passing the configuration to H2O.")
+        conf.set(SharedBackendConf.PROP_KERBEROS_KEYTAB._1, conf.get("spark.yarn.keytab"))
       }
 
       if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
-        throw new IllegalArgumentException(s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
+             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}
           """.stripMargin)
       } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
-        throw new IllegalArgumentException(s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
+        throw new IllegalArgumentException(
+          s"""
+             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
+             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}
           """.stripMargin)
+      }
+
+      if (conf.isHiveSupportEnabled && conf.runAsUser.isEmpty) {
+        val sparkUser = SparkSessionUtils.active.sparkContext.sparkUser
+        logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
+          " since hive support is enabled and the property wasn't defined.")
+        conf.setRunAsUser(sparkUser)
       }
     } else {
       if (conf.cloudName.isEmpty) {

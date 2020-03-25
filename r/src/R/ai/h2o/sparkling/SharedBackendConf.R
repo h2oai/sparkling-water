@@ -121,6 +121,14 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     verifySslCertificates = function() { invoke(jconf, "verifySslCertificates") },
 
+    isHiveSupportEnabled = function() { invoke(jconf, "isHiveSupportEnabled") },
+
+    hiveHost = function() { invoke(jconf, "hiveHost") },
+
+    hivePrincipal = function() { invoke(jconf, "hivePrincipal") },
+
+    hiveJdbcUrlPattern = function() { invoke(jconf, "hiveJdbcUrlPattern") },
+
 #
 # Setters
 #
@@ -240,5 +248,15 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientExtraProperties = function(extraProperties) { invoke(jconf, "setClientExtraProperties", extraProperties); .self },
 
-    setVerifySslCertificates = function(verify) { invoke(jconf, "setVerifySslCertificates", verify); .self }
+    setVerifySslCertificates = function(verify) { invoke(jconf, "setVerifySslCertificates", verify); .self },
+
+    setHiveSupportEnabled = function() { invoke(jconf, "setHiveSupportEnabled"); .self },
+
+    setHiveSupportDisabled = function() { invoke(jconf, "setHiveSupportDisabled"); .self },
+
+    setHiveHost = function(host) { invoke(jconf, "setHiveHost", host); .self },
+
+    setHivePrincipal = function(principal) { invoke(jconf, "setHivePrincipal", principal); .self },
+
+    setHiveJdbcUrlPattern = function(pattern) { invoke(jconf, "setHiveJdbcUrlPattern", pattern); .self }
 ))
