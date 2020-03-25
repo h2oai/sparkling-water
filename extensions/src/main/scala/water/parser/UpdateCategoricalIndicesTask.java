@@ -46,7 +46,7 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
         int chunkId = chunks[0].cidx();
         if (!LocalNodeDomains.containsDomains(frameKey, chunkId)) {
             throw new H2OIllegalArgumentException(
-                String.format("No local domain found for the chunk '{0}' on the node '{1}'.", chunkId, H2O.SELF.toString()));
+                String.format("No local domain found for the chunk '%d' on the node '%s'.", chunkId, H2O.SELF.getIpPortString()));
         }
         String[][] localDomains = LocalNodeDomains.getDomains(frameKey, chunkId);
         for (int catColIdx = 0; catColIdx < categoricalColumns.length; catColIdx++) {
