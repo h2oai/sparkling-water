@@ -9,4 +9,4 @@ To invoke unit tests from gradle, run:
 
 .. code:: shell
 
-    ./gradlew build -x integTest -x scriptTest
+    ./gradlew build -x integTest

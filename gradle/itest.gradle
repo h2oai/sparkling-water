@@ -17,20 +17,6 @@ sourceSets {
 configurations {
     integTestImplementation.extendsFrom testImplementation
     integTestRuntimeOnly.extendsFrom testRuntimeOnly
-    sparklingWaterAssemblyJar
-}
-
-dependencies {
-    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
-}
-
-// Create jar containing integration test classes
-task integTestJar(type: Jar, dependsOn: integTestClasses) {
-    group = "Build"
-    description = "Assembles a jar archive with integration test classes."
-    archiveBaseName = "${project.name}_${scalaBaseVersion}"
-    archiveAppendix = 'itest'
-    from sourceSets.integTest.output
 }
 
 task integTest(type: Test) {
@@ -38,10 +24,6 @@ task integTest(type: Test) {
     description = 'Runs all integration tests'
     testClassesDirs = sourceSets.integTest.output.classesDirs
     classpath = sourceSets.integTest.runtimeClasspath
-
-    //
-    // Defaults shared by all integration tests
-    //
 
     // Run with assertions ON
     enableAssertions = true
@@ -56,16 +38,13 @@ task integTest(type: Test) {
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest/client")
     systemProperty "spark.ext.h2o.external.disable.version.check", "true"
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
+    systemProperty "spark.ext.h2o.rest.api.based.client", "true"
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
     systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
     systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
     systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-
-    // Pass list of jars required for testing
-    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
-    systemProperty "sparkling.itest.jar", "${integTestJar.getArchiveFile().get().asFile.toString()}"
 
     // Show standard out and standard error of the test JVM(s) on the console
     testLogging.showStandardStreams = true
@@ -77,6 +56,3 @@ task integTest(type: Test) {
 
 // Run integration tests as part of build
 check.dependsOn integTest
-
-// Dependencies
-integTest.dependsOn integTestJar

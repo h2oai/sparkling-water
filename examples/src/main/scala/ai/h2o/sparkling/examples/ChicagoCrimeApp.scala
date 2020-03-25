@@ -28,13 +28,16 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object ChicagoCrimeApp {
 
+  private val seasonUdf = udf(getSeason _)
+  private val weekendUdf = udf(isWeekend _)
+
   def main(args: Array[String]) {
     val spark = SparkSession
       .builder()
       .appName("Chicago Crime App")
       .getOrCreate()
 
-    val weatherDataPath = "./examples/smalldata//chicago/chicagoAllWeather.csv"
+    val weatherDataPath = "./examples/smalldata/chicago/chicagoAllWeather.csv"
     val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
     val weatherTable = createWeatherTable(spark, weatherDataFile)
     weatherTable.createOrReplaceTempView("chicagoWeather")
@@ -114,6 +117,17 @@ object ChicagoCrimeApp {
     }
   }
 
+  def scoreEvent(spark: SparkSession, crime: Crime, model: H2OMOJOModel, censusTable: DataFrame): Boolean = {
+    // Create Spark DataFrame from a single row
+    import spark.implicits._
+    val df = addAdditionalDateColumns(spark, spark.sparkContext.parallelize(Seq(crime)).toDF)
+      .withColumn("Domestic", 'Domestic.cast(DoubleType))
+    // Join table with census data
+    val row = censusTable.join(df).where('Community_Area === 'Community_Area_Number)
+    val predictTable = model.transform(row)
+    predictTable.select("prediction").head().get(0).toString == "1"
+  }
+
   def createWeatherTable(spark: SparkSession, datafile: String): DataFrame = {
     val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
     df.drop(df.columns(0))
@@ -126,6 +140,15 @@ object ChicagoCrimeApp {
       df(col).as(name)
     }
     df.select(renamedColumns: _*)
+  }
+
+  def createCrimeTable(spark: SparkSession, datafile: String): DataFrame = {
+    val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
+    val renamedColumns = df.columns.map { col =>
+      val name = col.trim.replace(' ', '_').replace('+', '_')
+      df(col).as(name)
+    }
+    addAdditionalDateColumns(spark, df.select(renamedColumns: _*))
   }
 
   def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
@@ -144,31 +167,6 @@ object ChicagoCrimeApp {
       .drop('Date)
   }
 
-  def createCrimeTable(spark: SparkSession, datafile: String): DataFrame = {
-    val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
-    val renamedColumns = df.columns.map { col =>
-      val name = col.trim.replace(' ', '_').replace('+', '_')
-      df(col).as(name)
-    }
-    addAdditionalDateColumns(spark, df.select(renamedColumns: _*))
-  }
-
-  def scoreEvent(spark: SparkSession, crime: Crime, model: H2OMOJOModel, censusTable: DataFrame): Boolean = {
-    // Create Spark DataFrame from a single row
-    import spark.implicits._
-    val df = addAdditionalDateColumns(spark, spark.sparkContext.parallelize(Seq(crime)).toDF)
-      .withColumn("Domestic", 'Domestic.cast(DoubleType))
-    // Join table with census data
-    val row = censusTable.join(df).where('Community_Area === 'Community_Area_Number)
-    val predictTable = model.transform(row)
-    predictTable.select("prediction").head().get(0).toString == "1"
-  }
-
-  private val seasonUdf = udf(getSeason _)
-  private val weekendUdf = udf(isWeekend _)
-
-  private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
-
   private def getSeason(month: Int): String = {
     val seasonNum =
       if (month >= 3 && month <= 5) 0 // Spring
@@ -177,6 +175,8 @@ object ChicagoCrimeApp {
       else 3 // Winter
     SEASONS(seasonNum)
   }
+
+  private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
 
   private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 

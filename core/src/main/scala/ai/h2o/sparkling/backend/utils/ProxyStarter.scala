@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
@@ -30,10 +31,10 @@ import org.spark_project.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorS
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
-    var port = conf.clientBasePort
+    var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
-        port = findNextFreeFlowPort(conf.clientWebPort, port + 1)
+        port = findNextFreeFlowPort(conf.clientWebPort, port)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         val server = new Server(pool)
@@ -53,6 +54,35 @@ object ProxyStarter extends Logging {
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
   }
 
+  /**
+   * In several scenarios we know that the port is likely to be occupied by H2O, so we can
+   * start from higher port number right away
+   */
+  private def findFlowProxyBasePort(conf: H2OConf): Int = {
+    // Regular expression used for local[N] and local[*] master formats
+    val LOCAL_N_REGEX = """local\[([0-9]+|\*)\]""".r
+    // Regular expression for local[N, maxRetries], used in tests with failing tasks
+    val LOCAL_N_FAILURES_REGEX = """local\[([0-9]+|\*)\s*,\s*([0-9]+)\]""".r
+    // Regular expression for simulating a Spark cluster of [N, cores, memory] locally
+    val LOCAL_CLUSTER_REGEX = """local-cluster\[\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*]""".r
+    val LOCAL = "master"
+    val master = SparkSessionUtils.active.sparkContext.master
+    val numSkipped = if (conf.runsInInternalClusterMode && conf.internalPortOffset == 1) {
+      master match {
+        // In local mode of internal backend, we always run H2O in Spark driver and the base port is
+        // always occupied by that node. In local-cluster mode of internal backend, we always run
+        // several H2O nodes on the same machine and the ports are always occupied
+        case LOCAL => 2
+        case LOCAL_N_REGEX(_) => 2
+        case LOCAL_N_FAILURES_REGEX(_, _) => 2
+        case LOCAL_CLUSTER_REGEX(nodes, _, _) => nodes.toInt * 2
+        case _ => 1
+      }
+    } else {
+      1
+    }
+    conf.clientBasePort + numSkipped
+  }
 
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)

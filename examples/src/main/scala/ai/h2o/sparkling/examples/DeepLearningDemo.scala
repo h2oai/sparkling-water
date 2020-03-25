@@ -44,7 +44,7 @@ object DeepLearningDemo {
     val airlinesSFO = airlinesTable.filter('Dest === "SFO")
     println(s"\n===> Number of flights with destination in SFO: ${airlinesSFO.count()}\n")
 
-    println("\n====> Running DeepLearning in the prepared data frame\n")
+    println("\n====> Running DeepLearning on the prepared data frame\n")
 
     val train = airlinesSFO.select('Year, 'Month, 'DayofMonth, 'DayOfWeek, 'CRSDepTime, 'CRSArrTime,
       'UniqueCarrier, 'FlightNum, 'TailNum, 'CRSElapsedTime, 'Origin, 'Dest,

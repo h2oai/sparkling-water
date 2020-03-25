@@ -92,13 +92,13 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   if (sparkContext.ui.isDefined) {
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
-  logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
-  updateUIAfterStart() // updates the spark UI
-  backendHeartbeatThread.start() // start backend heartbeats
   private val (flowIp, flowPort) = {
     val uri = ProxyStarter.startFlowProxy(conf)
     (uri.getHost, uri.getPort)
   }
+  updateUIAfterStart() // updates the spark UI
+  backendHeartbeatThread.start() // start backend heartbeats
+  logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
 
   def getH2ONodes(): Array[NodeDesc] = nodes
 

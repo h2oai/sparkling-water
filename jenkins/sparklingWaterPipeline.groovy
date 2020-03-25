@@ -80,7 +80,7 @@ def withDocker(config, code) {
             sh "docker pull harbor.h2o.ai/${image}"
         }
     })
-    docker.image(image).inside("--init --privileged --dns 172.16.0.200 -v /home/0xdiag:/home/0xdiag") {
+    docker.image(image).inside("--init --privileged --dns 172.16.0.200") {
         sh "activate_java_8"
         code()
     }
@@ -146,7 +146,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     rUnitTests()(config)
                     localIntegTest()(config)
                     localPyIntegTest()(config)
-                    scriptsTest()(config)
                     pysparklingIntegTest()(config)
                 }
             }
@@ -372,24 +371,6 @@ def localPyIntegTest() {
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                }
-            }
-        }
-    }
-}
-
-def scriptsTest() {
-    return { config ->
-        stage('QA: Script Tests - ' + config.backendMode) {
-            if (config.runScriptTests.toBoolean()) {
-                try {
-                    sh """
-                    ${getGradleCommand(config)} scriptTest -PbackendMode=${config.backendMode}
-                    """
-                } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/stdout, **/stderr,**/build/**/*log*, **/build/reports/'
-                    junit 'examples/build/test-results/scriptsTest/*.xml'
-                    testReport 'examples/build/reports/tests/scriptsTest', 'Script Tests'
                 }
             }
         }
