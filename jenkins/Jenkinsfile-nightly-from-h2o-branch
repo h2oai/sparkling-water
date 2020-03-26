@@ -29,8 +29,6 @@ pipeline(params) { p ->
     runPySparklingIntegTests = "true"
     buildAgainstH2OBranch = "true"
     h2oBranch = "master"
-    hadoopVersion = "2.7"
     backendMode = "both"
-    driverHadoopVersion = "hdp2.2"
     uploadNightly = "true"
 }

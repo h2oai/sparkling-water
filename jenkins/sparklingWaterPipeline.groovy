@@ -102,13 +102,13 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 config.put("sparkVersion", getSparkVersion(config))
 
                 if (config.buildAgainstH2OBranch.toBoolean()) {
-                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-hdp2.2-assembly/build/libs/h2odriver.jar")
                 } else {
                     def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
                     def majorVersion = majorVersionLine.split("=")[1]
                     def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
                     def buildVersion = buildVersionLine.split("=")[1]
-                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-hdp2.2.jar")
                 }
 
                 config.put("sparkHome", "/home/jenkins/spark-${getSparkVersion(config)}-bin-hadoop2.7")
@@ -219,14 +219,14 @@ def prepareSparklingWaterEnvironment() {
                         git checkout ${config.h2oBranch}
                         . /envs/h2o_env_python2.7/bin/activate
                         export BUILD_HADOOP=true
-                        export H2O_TARGET=${config.driverHadoopVersion}
+                        export H2O_TARGET=hdp2.2
                         ./gradlew build -x check
                         ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2
                         ./gradlew :h2o-r:buildPKG
                         cd ..
                     """
             } else {
-                sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+                sh "${getGradleCommand(config)} -PhadoopDist=hdp2.2 downloadH2ODriverJar"
             }
         }
     }
