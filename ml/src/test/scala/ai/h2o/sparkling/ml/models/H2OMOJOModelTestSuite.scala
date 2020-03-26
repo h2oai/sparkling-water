@@ -230,7 +230,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   lazy val irisDataFrame = {
-    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/iris/iris_wheader.csv")
+    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/iris/iris_wheader.csv")
   }
 
   lazy val prostateDataFrame = {

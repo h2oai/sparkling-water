@@ -166,8 +166,8 @@ To start an H2O cluster and connect to it, run:
 
 When specifying the queue, we recommend that this queue has YARN preemption off in order to have stable a H2O cluster.
 
-It can also happen that we might need to explicitly set the client's IP or network. To see how this can be configured, please
-see `Specifying the Client Network`_.
+In case of Scala, it can also happen that we might need to explicitly set the client's IP or network. To see how this can be configured, please
+see `Specifying the Client Network in Scala`_.
 
 Manual Mode of External Backend on Hadoop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -300,8 +300,8 @@ To connect to this external cluster, run the following commands:
 The ``representant_ip`` and ``representant_port`` are ip and port of any node in the external cluster to which Sparkling
 Water should connect.
 
-Specifying the Client Network
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Specifying the Client Network in Scala
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible that Spark driver, in which we are running H2O client which is connecting to the external H2O cluster, is
 connected to multiple networks.
@@ -310,7 +310,8 @@ In this case, it can happen that external H2O cluster decides to use addresses f
 addresses for its executors and driver from network B. When we start ``H2OContext``, the H2O
 client running inside of the Spark Driver can get the same IP address as the Spark driver, and, thus, the rest
 of the H2O cluster can't see it. This shouldn't happen in environments where the nodes are connected to only one
-network; however we provide a configuration for how to deal with this case as well.
+network; however we provide a configuration for how to deal with this case as well. This problem exists only in
+Sparkling Water Scala client.
 
 Let's assume we have two H2O nodes on addresses 192.168.0.1 and 192.168.0.2. Let's also assume that the Spark driver
 is available on 172.16.1.1, and the only executor is available on 172.16.1.2. The node with the Spark driver
@@ -321,45 +322,18 @@ of the 192.168.0.x one, which can lead to the problem that the H2O cluster and H
 
 We can force the client to use the correct network or address using the following configuration:
 
-.. content-tabs::
+.. code:: scala
 
-    .. tab-container:: Scala
-        :title: Scala
+    import org.apache.spark.h2o._
+    val conf = new H2OConf()
+                .setExternalClusterMode()
+                .useManualClusterStart()
+                .setH2OCluster("ip", port)
+                .setClientNetworkMask("192.168.0.0/24")
+                .setClusterSize(2)
+                .setCloudName("test")
+    val hc = H2OContext.getOrCreate(conf)
 
-         .. code:: scala
-
-            import org.apache.spark.h2o._
-            val conf = new H2OConf()
-                        .setExternalClusterMode()
-                        .useManualClusterStart()
-                        .setH2OCluster("representant_ip", representant_port)
-                        .setClientNetworkMask("192.168.0.0/24")
-                        .setClusterSize(2)
-                        .setCloudName("test")
-            val hc = H2OContext.getOrCreate(conf)
-
-        Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
-        ``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
-        the same network as the rest of the H2O worker nodes.
-
-    .. tab-container:: Python
-        :title: Python
-
-
-         .. code:: python
-
-            from pysparkling import *
-            conf = H2OConf()
-                    .setExternalClusterMode()
-                    .useManualClusterStart()
-                    .setH2OCluster("representant_ip", representant_port)
-                    .setClientNetworkMask("192.168.0.0/24")
-                    .setClusterSize(2)
-                    .setCloudName("test")
-            hc = H2OContext.getOrCreate(conf)
-
-        Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
-        ``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
-        the same network as the rest of the H2O worker nodes.
-
-The same configuration can be applied when the H2O cluster has been started via multicast discovery.
+Instead of ``setClientNetworkMask``, we can also use more strict variant and specify the IP address directly using
+``setClientIp("192.168.0.3")``. This IP address needs to be one of the IP address of the Spark driver and in
+the same network as the rest of the H2O worker nodes.
