@@ -18,6 +18,7 @@ sourceSets {
 }
 
 jar {
+    duplicatesStrategy = 'include'
     eachFile { f ->
         if (new File(cssResources, f.file.name).exists()) {
             f.path = "www/flow/css/$f.name"
