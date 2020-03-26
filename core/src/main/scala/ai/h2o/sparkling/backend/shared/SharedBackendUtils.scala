@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.shared
 
 import java.io.File
 
-import ai.h2o.sparkling.backend.external.RestApiUtils
+import ai.h2o.sparkling.backend.external.{ExternalBackendConf, RestApiUtils}
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -112,13 +112,13 @@ trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.isHiveSupportEnabled) {
-      if (conf.getOption("spark.yarn.principal").isEmpty) {
+      if (conf.kerberosPrincipal.isEmpty) {
         throw new IllegalArgumentException(
-          "When Hive support is enabled, the Spark option 'spark.yarn.principal' must be defined.")
+          s"When Hive support is enabled, the option '${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL}' must be defined.")
       }
-      if (conf.getOption("spark.yarn.keytab").isEmpty) {
+      if (conf.kerberosKeytab.isEmpty) {
         throw new IllegalArgumentException(
-          "When Hive support is enabled, the Spark option 'spark.yarn.keytab' must be defined.")
+          s"When Hive support is enabled, the option '${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB}' must be defined.")
       }
       if (conf.hiveHost.isEmpty) {
         throw new IllegalArgumentException(
