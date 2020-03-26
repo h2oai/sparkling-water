@@ -101,9 +101,9 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val sparsity = 0.2
     val numberOfRows = 3 * 1000
     val partitions = 4
-
+    import water.api.TestUtils.sparseVector
     val elementsPerRow = (sparsity * numberOfCols).toInt
-    val rowGenerator = (row: Int) => new SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
+    val rowGenerator = (_: Int) => SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
@@ -117,7 +117,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val numberOfRows = 3 * 1000
     val partitions = 4
 
-    val rowGenerator = (row: Int) => new DenseVectorHolder(new DenseVector(Array.fill[Double](numberOfCols)(row)))
+    val rowGenerator = (row: Int) => DenseVectorHolder(new DenseVector(Array.fill[Double](numberOfCols)(row)))
 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
@@ -132,7 +132,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val numberOfCols = 11
     val partitions = 2
     val rowGenerator = (row: Int) => {
-      new SparseVectorHolder(new SparseVector(numberOfCols, Array(row), Array[Double](row)))
+      SparseVectorHolder(new SparseVector(numberOfCols, Array(row), Array[Double](row)))
     }
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
