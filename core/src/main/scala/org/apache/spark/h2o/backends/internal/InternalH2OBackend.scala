@@ -183,8 +183,8 @@ object InternalH2OBackend extends InternalBackendUtils {
         conf.hivePrincipal.get)
       configuration.set(DelegationTokenRefresher.H2O_HIVE_JDBC_URL, jdbcUrl)
       configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, conf.hivePrincipal.get)
-      configuration.set(DelegationTokenRefresher.H2O_AUTH_KEYTAB, conf.get("spark.yarn.keytab"))
-      configuration.set(DelegationTokenRefresher.H2O_AUTH_PRINCIPAL, conf.get("spark.yarn.principal"))
+      configuration.set(DelegationTokenRefresher.H2O_AUTH_KEYTAB, conf.kerberosKeytab.get)
+      configuration.set(DelegationTokenRefresher.H2O_AUTH_PRINCIPAL, conf.kerberosPrincipal.get)
       configuration.set(DelegationTokenRefresher.H2O_AUTH_USER, user)
 
       DelegationTokenRefresher.setup(configuration, tmpDir.getAbsolutePath)
