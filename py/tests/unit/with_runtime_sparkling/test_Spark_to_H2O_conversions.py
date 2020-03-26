@@ -114,6 +114,7 @@ def testLongRDDToH2OFrame(spark, hc):
     unit_test_utils.asert_h2o_frame(h2o_frame, rdd)
 
 
+@pytest.mark.filterwarnings("ignore:Maximal or minimal number in RDD is too big to convert to Java.")
 def testNumericRDDtoH2OFrameWithValueTooBig(spark, hc):
     min = _jvm().Long.MIN_VALUE - 1
     max = _jvm().Long.MAX_VALUE + 1
