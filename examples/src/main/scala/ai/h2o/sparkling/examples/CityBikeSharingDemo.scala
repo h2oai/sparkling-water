@@ -93,8 +93,8 @@ object CityBikeSharingDemo {
       .withColumn("MonthLocal", format_string("%02d", 'MonthLocal.cast(IntegerType)))
       .withColumn("YearLocal", format_string("%04d", 'YearLocal.cast(IntegerType)))
       .filter('HourLocal === 12)
-        .withColumn("Date", concat('YearLocal, 'MonthLocal, 'DayLocal, 'HourLocal))
-        .withColumn("Days", numberOfDaysSinceEpochUdf(unix_timestamp('Date, "yyyyMMddHH")))
+      .withColumn("Date", concat('YearLocal, 'MonthLocal, 'DayLocal, 'HourLocal))
+      .withColumn("Days", numberOfDaysSinceEpochUdf(unix_timestamp('Date, "yyyyMMddHH")))
 
     bikesPerDay.join(weatherTable, Seq("Days"))
   }
@@ -118,5 +118,3 @@ object CityBikeSharingDemo {
 
   def numberOfDaysSinceEpoch(timestamp: Long): Long = timestamp / (60 * 60 * 24)
 }
-
-
