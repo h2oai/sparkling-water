@@ -17,11 +17,8 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.File
-
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.H2OFrame
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -233,11 +230,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   lazy val irisDataFrame = {
-    hc.asDataFrame(new H2OFrame(new File(TestUtils.locate("smalldata/iris/iris_wheader.csv"))))
+    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/iris/iris_wheader.csv")
   }
 
   lazy val prostateDataFrame = {
-    hc.asDataFrame(new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv"))))
+    spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/prostate/prostate.csv")
   }
 
   def binomialModelFixture() = {
