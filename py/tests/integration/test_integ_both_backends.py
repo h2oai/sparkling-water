@@ -15,8 +15,18 @@
 # limitations under the License.
 #
 
-from tests.integ_test_utils import *
+from tests.integration.integ_test_utils import *
 
-def test_import_pysparkling_standalone_app(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/scripts/tests/pysparkling_ml_import_overrides_spark_test.py")
+def testHamOrSpamPipelineAlgos(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/HamOrSpamMultiAlgorithmDemo.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
+
+
+def testChicagoCrime(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/ChicagoCrimeDemo.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
+
+
+def testImportPysparklingStandaloneApp(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/tests/pysparkling_ml_import_overrides_spark_test.py")
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)

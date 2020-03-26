@@ -14,20 +14,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import pytest
-from pyspark.sql import SparkSession
+import subprocess
 from pysparkling.conf import H2OConf
-from pysparkling.context import H2OContext
-
-from tests import unit_test_utils
 
 
-@pytest.fixture(scope="module")
-def spark(spark_conf):
-    conf = unit_test_utils.get_default_spark_conf(spark_conf)
-    return SparkSession.builder.config(conf=conf).setMaster("yarn-client").getOrCreate()
+def createH2OConf():
+    conf = H2OConf()
+    conf.setClusterSize(1)
+    conf.useAutoClusterStart()
+    conf.setExternalClusterMode()
+    return conf
 
 
-@pytest.fixture(scope="module")
-def hc(spark):
-    return H2OContext.getOrCreate(H2OConf().setClusterSize(1))
+def listYarnApps():
+    return str(subprocess.check_output("yarn application -list", shell=True))
+
+
+def yarnLogs(appId):
+    return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
+
+
+def getYarnAppIdFromNotifyFile(path):
+    with open(path, 'r') as f:
+        return f.readlines()[1].replace("job", "application").strip()
+
+
+def getIpPortFromNotifyFile(path):
+    with open(path, 'r') as f:
+        return f.readlines()[0].strip()

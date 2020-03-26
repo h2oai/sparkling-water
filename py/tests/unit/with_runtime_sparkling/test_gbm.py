@@ -53,9 +53,9 @@ def testLoadAndTrainMojo(prostateDataset):
 
 
 @pytest.fixture(scope="module")
-def dataset(spark):
+def dataset(spark, insuranceDatasetPath):
     return spark \
-        .read.csv("file://" + unit_test_utils.locate("smalldata/insurance.csv"), header=True, inferSchema=True) \
+        .read.csv(insuranceDatasetPath, header=True, inferSchema=True) \
         .withColumn("Offset", log(col("Holders")))
 
 

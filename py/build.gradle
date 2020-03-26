@@ -46,15 +46,11 @@ python {
 }
 
 configurations {
-    s3deps
     sparklingWaterAssemblyJar
 }
 
 dependencies {
     sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
-
-    s3deps "com.amazonaws:aws-java-sdk:1.7.4"
-    s3deps "org.apache.hadoop:hadoop-aws:2.7.3"
 }
 
 //
@@ -278,28 +274,20 @@ artifacts {
 }
 
 def createUnitTestArgs() {
-    def args = [
+    return [
             "${distPython.archiveFile.get()}",
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
             "spark.ext.h2o.external.disable.version.check=true"
     ]
-
-    gradle.taskGraph.whenReady {
-        if (gradle.taskGraph.hasTask(":${project.name}:hadoopSmokeTests")) {
-            args.add("spark.jars=${configurations.s3deps.resolve().join(",")}")
-        }
-    }
-    return args
 }
 
-def createIntegTestArgs(String integTestKind) {
+def createIntegTestArgs() {
     return [
             "${distPython.archiveFile.get()}",
             "spark.testing=true",
             "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
             "spark.test.home=${sparkHome}",
-            "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/nodes",
-            "spark.ext.h2o.client.log.dir=${buildDir}/h2ologs-itest-${integTestKind}/client",
+            "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest",
             "spark.driver.extraJavaOptions=-Dhdp.version=${hdpVersion}",
             "spark.executor.extraJavaOptions=-Dhdp.version=${hdpVersion}",
             "spark.yarn.am.extraJavaOptions=-Dhdp.version=${hdpVersion}",
@@ -312,36 +300,26 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
     command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
 }
 
-task testPythonExternal(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/test_runner.py 'tests/unit/with_runtime_sparkling_external'"
-}
-
 task testPython(type: PythonTask, dependsOn: distPython) {
     extraArgs(*createUnitTestArgs())
-    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py --ignore=tests/unit/with_runtime_sparkling_external'"
-}
-
-task hadoopSmokeTests(type: PythonTask, dependsOn: distPython) {
-    extraArgs(*createUnitTestArgs())
-    command = "tests/test_runner.py tests/hadoop_smoke"
+    command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
 }
 
 if (project.property("testMojoPipeline") == "true") {
     testPython.dependsOn testPythonMojoPipeline
 }
 
-task localIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
-    extraArgs(*createIntegTestArgs("local"))
-    command = "tests/test_runner.py tests/integration_local"
+task integTestPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+    extraArgs(*createIntegTestArgs())
+    command = "tests/test_runner.py 'tests/integration --ignore=tests/integration/external_only'"
 }
 
-task yarnIntegTestsPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
-    extraArgs(*createIntegTestArgs("yarn"))
-    command = "tests/test_runner.py tests/integration_yarn"
+task integTestPythonExternal(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+    extraArgs(*createIntegTestArgs())
+    command = "tests/test_runner.py tests/integration/external_only"
 }
 
-task integTestPython(dependsOn: localIntegTestsPython)
+
 //
 // Just print location of H2O Python Wheel package with respect to a configured version of H2O dependency
 //
@@ -370,6 +348,6 @@ build.dependsOn distPython
 test.dependsOn testPython
 
 if (detectBackendClusterMode() == "external") {
-    test.dependsOn testPythonExternal
+    integTest.dependsOn integTestPythonExternal
 }
 integTest.dependsOn integTestPython

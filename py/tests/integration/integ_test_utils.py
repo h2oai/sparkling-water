@@ -18,13 +18,11 @@
 
 import subprocess
 import sys
-
-from tests.generic_test_utils import *
+import os
 
 
 def get_default_spark_conf(additional_conf=None):
     conf = {
-        "spark.master": "local[*]",
         "spark.ext.h2o.external.start.mode": "auto",
         # Need to disable timeline service which requires Jersey libraries v1, but which are not available in Spark2.0
         # See: https://www.hackingnote.com/en/spark/trouble-shooting/NoClassDefFoundError-ClientConfig/
@@ -34,19 +32,18 @@ def get_default_spark_conf(additional_conf=None):
         "spark.ext.h2o.hadoop.memory": "2G",
         "spark.ext.h2o.port.base": "63331",
         "spark.executor.memory": "2g",
-        "spark.driver.memory": "2g"
+        "spark.driver.memory": "2g",
+        "spark.ext.h2o.node.log.dir": "build/h2ologs-pyIntegTest",
+        "spark.ext.h2o.external.cluster.size": "1"
     }
 
     for key in additional_conf:
         conf[key] = additional_conf[key]
 
-    if conf["spark.ext.h2o.backend.cluster.mode"] == "external":
-        conf["spark.ext.h2o.external.cluster.size"] = "1"
-
     return conf
 
 
-def launch(conf, script_name, param=None):
+def launch(conf, script_name):
     cmd_line = [
         get_submit_script(conf["spark.test.home"]),
         "--verbose",
@@ -58,9 +55,8 @@ def launch(conf, script_name, param=None):
     # Add path to test script
     cmd_line.append(script_name)
 
-    # Add parameter to the test script, if any specified
-    if param is not None:
-        cmd_line.append(param)
+    # Add current dir to script as parameter
+    cmd_line.append( os.getcwd())
 
     # Launch it via command line
     return_code = subprocess.call(cmd_line)

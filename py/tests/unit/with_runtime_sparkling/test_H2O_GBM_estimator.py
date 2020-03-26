@@ -25,26 +25,25 @@ from pysparkling.ml import H2OMOJOModel
 from tests import unit_test_utils
 
 
-def testLoadAndTrainMojo(hc, spark):
+def testLoadAndTrainMojo(hc, spark, prostateDataset):
     referenceMojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
-    df = spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True, inferSchema=True)
-    frame = hc.asH2OFrame(df)
+    frame = hc.asH2OFrame(prostateDataset)
     frame["CAPSULE"] = frame["CAPSULE"].asfactor()
     gbm = H2OGradientBoostingEstimator(distribution="bernoulli", ntrees=2, seed=42)
     gbm.train(y="CAPSULE", training_frame=frame)
     mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
     trainedMojo = H2OMOJOModel.createFromMojo("file://" + mojoFile)
 
-    expect = referenceMojo.transform(df)
-    result = trainedMojo.transform(df)
+    expect = referenceMojo.transform(prostateDataset)
+    result = trainedMojo.transform(prostateDataset)
 
     unit_test_utils.assert_data_frames_are_identical(expect, result)
 
 
 @pytest.fixture(scope="module")
-def insuranceFrame(hc, spark):
+def insuranceFrame(hc, spark, insuranceDatasetPath):
     df = spark \
-        .read.csv("file://" + unit_test_utils.locate("smalldata/insurance.csv"), header=True, inferSchema=True) \
+        .read.csv(insuranceDatasetPath, header=True, inferSchema=True) \
         .withColumn("Offset", log(col("Holders")))
     frame = hc.asH2OFrame(df)
     frame["Group"] = frame["Group"].asfactor()

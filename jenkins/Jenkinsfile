@@ -6,12 +6,11 @@ properties(
         [
                 parameters(
                         [
-                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run unit tests'),
-                                booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run PyUnit tests'),
-                                booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run PyRUnit tests'),
-                                booleanParam(name: 'runLocalIntegTests', defaultValue: true, description: 'Run local integration tests'),
-                                booleanParam(name: 'runLocalPyIntegTests', defaultValue: true, description: 'Run local Python integration tests'),
-                                booleanParam(name: 'runPySparklingIntegTests', defaultValue: true, description: 'Run pySparkling integration tests'),
+                                booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run Scala unit tests'),
+                                booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run Python unit tests'),
+                                booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
+                                booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run Scala integration tests'),
+                                booleanParam(name: 'runPyIntegTests', defaultValue: true, description: 'Run Python integration tests'),
                                 choice(
                                         choices: 'hdp2.2\nhdp2.3\nhdp2.4\nhdp2.5\nhdp2.6\ncdh5.4\ncdh5.5\ncdh5.6\ncdh5.7\ncdh5.8\ncdh5.10\nmapr4.0\nmapr5.0\nmapr5.1\nmapr5.2\niop4.2',
                                         description: 'Hadoop version for which H2O driver is obtained, used only in external mode',
@@ -49,9 +48,8 @@ pipeline(params) { p ->
     runUnitTests = "${p.runUnitTests}"
     runPyUnitTests = "${p.runPyUnitTests}"
     runRUnitTests = "${p.runRUnitTests}"
-    runLocalIntegTests = "${p.runLocalIntegTests}"
-    runLocalPyIntegTests = "${p.runLocalPyIntegTests}"
-    runPySparklingIntegTests = "${p.runPySparklingIntegTests}"
+    runIntegTests = "${p.runIntegTests}"
+    runPyIntegTests = "${p.runPyIntegTests}"
     buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
     h2oBranch = "${p.h2oBranch}"
     hadoopVersion = "2.7"

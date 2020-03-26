@@ -30,9 +30,8 @@ from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
 @pytest.fixture(scope="module")
-def dataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/iris/iris_wheader.csv"),
-                          header=True, inferSchema=True)
+def dataset(spark, irisDatasetPath):
+    return spark.read.csv(irisDatasetPath, header=True, inferSchema=True)
 
 
 def testParamsPassedByConstructor():
