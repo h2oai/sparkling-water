@@ -360,6 +360,18 @@ class SharedBackendConf(SharedBackendConfUtils):
     def verifySslCertificates(self):
         return self._jconf.verifySslCertificates()
 
+    def isHiveSupportEnabled(self):
+        return self._jconf.isHiveSupportEnabled()
+
+    def hiveHost(self):
+        return self._get_option(self._jconf.hiveHost())
+
+    def hivePrincipal(self):
+        return self._get_option(self._jconf.hivePrincipal())
+
+    def hiveJdbcUrlPattern(self):
+        return self._get_option(self._jconf.hiveJdbcUrlPattern())
+
     #
     # Setters
     #
@@ -854,4 +866,24 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setVerifySslCertificates(self, verify):
         self._jconf.setVerifySslCertificates(verify)
+        return self
+
+    def setHiveSupportEnabled(self):
+        self._jconf.setHiveSupportEnabled()
+        return self
+
+    def setHiveSupportDisabled(self):
+        self._jconf.setHiveSupportDisabled()
+        return self
+
+    def setHiveHost(self, host):
+        self._jconf.setHiveHost(host)
+        return self
+
+    def setHivePrincipal(self, principal):
+        self._jconf.setHivePrincipal(principal)
+        return self
+
+    def setHiveJdbcUrlPattern(self, pattern):
+        self._jconf.setHiveJdbcUrlPattern(pattern)
         return self

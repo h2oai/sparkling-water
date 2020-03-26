@@ -144,6 +144,9 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .add("-driverport", conf.externalH2ODriverPort)
       .add("-driverportrange", conf.externalH2ODriverPortRange)
       .add("-extramempercent", conf.externalExtraMemoryPercent)
+      .addIf("-hiveHost", conf.hiveHost, conf.isHiveSupportEnabled)
+      .addIf("-hivePrincipal", conf.hivePrincipal, conf.isHiveSupportEnabled)
+      .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isHiveSupportEnabled)
       .add(conf.nodeExtraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
@@ -319,14 +322,14 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         conf.kerberosPrincipal.isEmpty) {
         logInfo(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
+        conf.set(ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, conf.get("spark.yarn.principal"))
       }
 
       if (conf.getOption("spark.yarn.keytab").isDefined &&
         conf.kerberosKeytab.isEmpty) {
         logInfo(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
+        conf.set(ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1, conf.get("spark.yarn.keytab"))
       }
 
       if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {

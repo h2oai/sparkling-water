@@ -17,8 +17,11 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import java.nio.file.Files
+
 import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -30,6 +33,7 @@ import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
 import water.util.{Log, PrettyPrint}
 import water.{H2O, H2OStarter}
+import water.hive.{HiveTokenGenerator, DelegationTokenRefresher}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 
@@ -96,12 +100,14 @@ object InternalH2OBackend extends InternalBackendUtils {
 
   private def startH2OCluster(hc: H2OContext): Array[NodeDesc] = {
     val conf = hc.getConf
+    val user = hc.sparkContext.sparkUser
     if (hc.sparkContext.isLocal) {
-      Array(startH2OWorkerAsClient(conf))
+      Array(startH2OWorkerAsClient(conf, user))
     } else {
       val endpoints = registerEndpoints(hc)
-      val workerNodes = startH2OWorkers(endpoints, conf)
-      val clientNode = startH2OClient(conf, workerNodes)
+
+      val workerNodes = startH2OWorkers(endpoints, conf, user)
+      val clientNode = startH2OClient(conf, workerNodes, user)
       distributeFlatFile(endpoints, conf, workerNodes, clientNode)
       tearDownEndpoints(endpoints)
 
@@ -116,27 +122,27 @@ object InternalH2OBackend extends InternalBackendUtils {
    * Used in local mode where we start directly one H2O worker node
    * without additional client
    */
-  private def startH2OWorkerAsClient(conf: H2OConf): NodeDesc = {
+  private def startH2OWorkerAsClient(conf: H2OConf, user: String): NodeDesc = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
-
+    initializeH2OHiveSupport(conf, user)
     H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
 
-  def startH2OWorker(conf: H2OConf): NodeDesc = {
+  def startH2OWorker(conf: H2OConf, user: String): NodeDesc = {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
-
+    initializeH2OHiveSupport(conf, user)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
 
-  private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc]): NodeDesc = {
+  private def startH2OClient(conf: H2OConf, nodes: Array[NodeDesc], user: String): NodeDesc = {
     val args = getH2OClientArgs(conf)
     val launcherArgs = toH2OArgs(args, nodes)
-
+    initializeH2OHiveSupport(conf, user)
     H2OStarter.start(launcherArgs, false)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
@@ -163,10 +169,10 @@ object InternalH2OBackend extends InternalBackendUtils {
     endpointsFinal.map(ref => SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name))
   }
 
-  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf): Array[NodeDesc] = {
+  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf, user: String): Array[NodeDesc] = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     endpoints.map { ref =>
-      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf))
+      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf, user))
       val node = askTimeout.awaitResult(future)
       Log.info(s"H2O's worker node $node started.")
       node
@@ -182,4 +188,22 @@ object InternalH2OBackend extends InternalBackendUtils {
     }
   }
 
+  private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
+    if (conf.isHiveSupportEnabled) {
+      val tmpDir = Files.createTempDirectory("sparkling_water_hive_support").toFile
+      tmpDir.deleteOnExit()
+      val configuration = new Configuration()
+      val jdbcUrl = HiveTokenGenerator.makeHiveJdbcUrl(
+        conf.hiveJdbcUrlPattern.get,
+        conf.hiveHost.get,
+        conf.hivePrincipal.get)
+      configuration.set(DelegationTokenRefresher.H2O_HIVE_JDBC_URL, jdbcUrl)
+      configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, conf.hivePrincipal.get)
+      configuration.set(DelegationTokenRefresher.H2O_AUTH_KEYTAB, conf.get("spark.yarn.keytab"))
+      configuration.set(DelegationTokenRefresher.H2O_AUTH_PRINCIPAL, conf.get("spark.yarn.principal"))
+      configuration.set(DelegationTokenRefresher.H2O_AUTH_USER, user)
+
+      DelegationTokenRefresher.setup(configuration, tmpDir.getAbsolutePath)
+    }
+  }
 }

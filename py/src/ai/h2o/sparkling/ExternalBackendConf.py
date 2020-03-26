@@ -128,6 +128,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self.kerberosPrincipal()
 
     def kerberosPrincipal(self):
+        warnings.warn("The method 'kerberosPrincipal' is deprecated and will be removed in the version 3.32."
+                      "Please use the generic 'get' method with the spark option 'spark.yarn.principal'.")
         return self._get_option(self._jconf.kerberosPrincipal())
 
     def kerberos_keytab(self):
@@ -135,6 +137,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self.kerberosKeytab()
 
     def kerberosKeytab(self):
+        warnings.warn("The method 'kerberosKeytab' is deprecated and will be removed in the version 3.32."
+                      "Please use the generic 'get' method with the spark option 'spark.yarn.keytab'.")
         return self._get_option(self._jconf.kerberosKeytab())
 
     def run_as_user(self):
@@ -281,6 +285,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self.setKerberosPrincipal(principal)
 
     def setKerberosPrincipal(self, principal):
+        warnings.warn("The method 'setKerberosPrincipal' is deprecated and will be removed in the version 3.32."
+                      "Please use the generic 'set' method with the spark option 'spark.yarn.principal'.")
         self._jconf.setKerberosPrincipal(principal)
         return self
 
@@ -289,6 +295,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self.setKerberosKeytab(path)
 
     def setKerberosKeytab(self, path):
+        warnings.warn("The method 'setKerberosKeytab' is deprecated and will be removed in the version 3.32."
+                      "Please use the generic 'set' method with the spark option 'spark.yarn.keytab'.")
         self._jconf.setKerberosKeytab(path)
         return self
 
