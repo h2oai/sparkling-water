@@ -146,6 +146,7 @@ processResources.dependsOn ':sparkling-water-assembly-extensions:embeddedAssembl
 
 bench {
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
+    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
 
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
