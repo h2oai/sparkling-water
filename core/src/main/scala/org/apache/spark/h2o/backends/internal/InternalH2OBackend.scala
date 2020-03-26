@@ -189,21 +189,19 @@ object InternalH2OBackend extends InternalBackendUtils {
   }
 
   private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
-    if (conf.isHiveSupportEnabled) {
-      val tmpDir = Files.createTempDirectory("sparkling_water_hive_support").toFile
-      tmpDir.deleteOnExit()
-      val configuration = new Configuration()
+    if (conf.isHiveSupportEnabled && HiveTokenGenerator.isHiveDriverPresent()) {
       val jdbcUrl = HiveTokenGenerator.makeHiveJdbcUrl(
         conf.hiveJdbcUrlPattern.get,
         conf.hiveHost.get,
         conf.hivePrincipal.get)
+
+      val principal = conf.kerberosPrincipal.get
+      val keytabPath = conf.kerberosKeytab.get
+      val configuration = new Configuration()
       configuration.set(DelegationTokenRefresher.H2O_HIVE_JDBC_URL, jdbcUrl)
       configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, conf.hivePrincipal.get)
-      configuration.set(DelegationTokenRefresher.H2O_AUTH_KEYTAB, conf.kerberosKeytab.get)
-      configuration.set(DelegationTokenRefresher.H2O_AUTH_PRINCIPAL, conf.kerberosPrincipal.get)
-      configuration.set(DelegationTokenRefresher.H2O_AUTH_USER, user)
-
-      DelegationTokenRefresher.setup(configuration, tmpDir.getAbsolutePath)
+      val options = HiveTokenGenerator.HiveOptions.make(configuration)
+      new DelegationTokenRefresher(principal, keytabPath, user, options).start()
     }
   }
 }
