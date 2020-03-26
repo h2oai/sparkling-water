@@ -143,8 +143,8 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     unitTests()(config)
                     pyUnitTests()(config)
                     rUnitTests()(config)
-                    integTest()(config)
-                    pyIntegTest()(config)
+                    integTests()(config)
+                    pyIntegTests()(config)
                 }
             }
         }
