@@ -111,8 +111,10 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
 
+                config.put("sparkHome", "/home/jenkins/spark-${getSparkVersion(config)}-bin-hadoop2.7")
+
                 def customEnv = [
-                        "SPARK_HOME=${env.WORKSPACE}/spark",
+                        "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "MASTER=yarn-client",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
@@ -138,7 +140,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
             withSharedSetup(sparkMajorVersion, config, true) {
                 withDocker(config) {
                     sh "sudo -E /usr/sbin/startup.sh"
-                    prepareSparkEnvironment()(config)
                     prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
@@ -206,21 +207,6 @@ def call(params, body) {
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
-}
-
-def prepareSparkEnvironment() {
-    return { config ->
-        stage('Prepare Spark Environment - ' + config.backendMode) {
-            sh """
-                cp -R \${SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}} ${env.SPARK_HOME}
-                
-                echo "spark.driver.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                echo "spark.yarn.am.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                echo "spark.executor.extraJavaOptions -Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/spark-defaults.conf
-                echo "-Dhdp.version="${config.hdpVersion}"" >> ${env.SPARK_HOME}/conf/java-opts
-                """
-        }
-    }
 }
 
 def prepareSparklingWaterEnvironment() {
