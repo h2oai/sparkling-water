@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
+import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3, UploadPlanV3}
 import ai.h2o.sparkling.utils.Base64Encoding
 import water.api.Handler
-import water.fvec.ChunkUtils
+import water.fvec.{ChunkUtils, Vec}
 
 class ImportFrameHandler extends Handler {
   def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
@@ -32,6 +32,16 @@ class ImportFrameHandler extends Handler {
     val rowsPerChunk = Base64Encoding.decodeToLongArray(request.rows_per_chunk)
     val columnTypes = Base64Encoding.decode(request.column_types)
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, null)
+    request
+  }
+
+  def getUploadPlan(version: Int, request: UploadPlanV3): UploadPlanV3 = {
+    val key = new Vec.VectorGroup().addVec()
+    val layout = (0 to request.number_of_chunks).map { chunkId =>
+      val h2oNode = Vec.chunkKey(key, chunkId).home_node
+      new UploadPlanV3.ChunkAssigmentV3(chunkId, h2oNode)
+    }.toArray
+    request.layout = layout
     request
   }
 }

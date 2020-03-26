@@ -21,15 +21,18 @@ import java.io.Closeable
 import java.util.TimeZone
 
 import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.H2OFrame.query
 import ai.h2o.sparkling.backend.converters.TimeZoneConverter
+import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
+import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.{H2OContext, RDD}
+import org.apache.spark.h2o.{H2OConf, RDD}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
-import water.H2O
 
 private[backend] class Writer(nodeDesc: NodeDesc,
                               metadata: WriterMetadata,
@@ -92,7 +95,7 @@ private[backend] object Writer {
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
 
-    val uploadPlan = scheduleUpload(nonEmptyPartitions.size, rdd)
+    val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
     val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
     val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, nonEmptyPartitions)
     val res = new Array[Long](nonEmptyPartitions.size)
@@ -142,27 +145,6 @@ private[backend] object Writer {
     }
   }
 
-  private def scheduleUpload[T](numPartitions: Int, rdd: H2OAwareRDD[T]): UploadPlan = {
-    val hc = H2OContext.ensure("H2OContext needs to be running")
-    val nodes = hc.getH2ONodes()
-    if (hc.getConf.runsInInternalClusterMode) {
-      val mapping = rdd.mapPartitionsWithIndex { case (idx, _) =>
-        val self = H2O.SELF
-        if (self != null) {
-          Iterator.single((idx, Some(NodeDesc(self))))
-        } else {
-          Iterator.single((idx, None))
-        }
-      }.collect()
-      val withoutH2O = mapping.filter(_._2.isEmpty).map(_._1).zip(Stream.continually(nodes).flatten).toMap
-      val withH2O = mapping.filter(_._2.isDefined).map { case (idx, node) => idx -> node.get }.toMap
-      withoutH2O ++ withH2O
-    } else {
-      val uploadPlan = (0 until numPartitions).zip(Stream.continually(nodes).flatten).toMap
-      uploadPlan
-    }
-  }
-
   private def getNonEmptyPartitionSizes[T](rdd: RDD[T]): Map[Int, Int] = {
     rdd.mapPartitionsWithIndex {
       case (idx, it) => if (it.nonEmpty) {
@@ -175,5 +157,12 @@ private[backend] object Writer {
 
   private def getNonEmptyPartitions(partitionSizes: Map[Int, Int]): Seq[Int] = {
     partitionSizes.keys.toSeq.sorted
+  }
+
+  private def getUploadPlan(conf: H2OConf, numberOfPartitions: Int): UploadPlan = {
+    val endpoint = getClusterEndpoint(conf)
+    val parameters = Map("number_of_chunks" -> numberOfPartitions)
+    val rawPlan = query[UploadPlanV3](endpoint, Paths.UPLOAD_PLAN, conf, parameters)
+    rawPlan.layout.map(ca => ca.chunk_id -> NodeDesc(ca.node_idx.toString, ca.ip, ca.port)).toMap
   }
 }
