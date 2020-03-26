@@ -37,7 +37,7 @@ class ImportFrameHandler extends Handler {
 
   def getUploadPlan(version: Int, request: UploadPlanV3): UploadPlanV3 = {
     val key = new Vec.VectorGroup().addVec()
-    val layout = (0 to request.number_of_chunks).map { chunkId =>
+    val layout = (0 until request.number_of_chunks).map { chunkId =>
       val h2oNode = Vec.chunkKey(key, chunkId).home_node
       new UploadPlanV3.ChunkAssigmentV3(chunkId, h2oNode)
     }.toArray
