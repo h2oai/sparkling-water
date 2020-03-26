@@ -131,10 +131,11 @@ task createSparklingWaterVersionFile {
 test.dependsOn testJar
 
 test {
-    if (detectBackendClusterMode() == "internal") {
-        exclude 'ai/h2o/sparkling/FrameRestApiTestSuite.class'
-        exclude 'ai/h2o/sparkling/backend/external/RestApiUtilsTestSuite.class'
-    }
+    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
+}
+
+integTest {
+    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
 }
 
 processResources.dependsOn createSparkVersionFile

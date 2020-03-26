@@ -23,7 +23,6 @@ import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf}
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
-import water.support.SparkContextSupport
 
 /**
  * Shared functions which can be used by both backends
@@ -108,13 +107,20 @@ trait SharedBackendUtils extends Logging with Serializable {
   def distributeFiles(conf: H2OConf, sc: SparkContext): Unit = {
     for (fileProperty <- conf.getFileProperties) {
       for (filePath <- conf.getOption(fileProperty._1)) {
-        if (!SparkContextSupport.isFileDistributed(sc, filePath)) {
+        if (!isFileDistributed(sc, filePath)) {
           sc.addFile(filePath)
         }
       }
     }
   }
 
+  /**
+   * Returns true if the file has already been added to Spark files
+   */
+  private def isFileDistributed(sc: SparkContext, filePath: String): Boolean = {
+    val fileName = new File(filePath).getName
+    sc.listFiles().exists(new File(_).getName == fileName)
+  }
 
   def defaultLogDir(appId: String): String = {
     System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId

@@ -110,15 +110,14 @@ object InternalH2OBackend extends InternalBackendUtils {
    * Used in local mode where we start directly one H2O worker node
    * without additional client
    */
-  private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): NodeDesc = {
+  private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): Unit = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
 
     H2OStarter.start(launcherArgs, false)
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
-    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.SELF.getIpPortString)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
+    conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
 
   def startH2OWorker(conf: H2OConf): NodeDesc = {

@@ -11,8 +11,7 @@ Add the data to Spark:
 .. code:: scala
 
     import org.apache.spark.SparkFiles
-    import water.support.SparkContextSupport
-    SparkContextSupport.addFiles(sc, "/path/to/smsData.txt")
+    sc.addFile("/path/to/smsData.txt")
 
 
 Prepare the method for loading the data:

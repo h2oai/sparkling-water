@@ -1,7 +1,6 @@
 description = "Sparkling Water Examples"
 
 apply from: "$rootDir/gradle/utils.gradle"
-apply from: "$rootDir/gradle/scriptsTest.gradle"
 
 project.ext.exampleResources = project.file("flows")
 
@@ -22,60 +21,25 @@ jar {
 }
 
 dependencies {
-    api(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
-    api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
-        // Cannot use here: transitive = false since Gradle is producing wrong POM file
-        // Hence the exclusions are listed manually
-        exclude(group: "org.apache.hadoop", module: "hadoop-client")
-        exclude(group: "org.apache.hadoop", module: "hadoop-hdfs-client")
-        exclude(group: "org.apache.hadoop", module: "hadoop-aws")
-    }
+    api(project(":sparkling-water-ml"))
 
     compileOnly("org.scala-lang:scala-library:${scalaVersion}")
     compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
     compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
+    integTestImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+    integTestImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
+    integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+    integTestImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
     integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
     integTestImplementation("junit:junit:4.11")
     integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
-    integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    integTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-    integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
 
-    scriptsTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    scriptsTestImplementation("junit:junit:4.11")
-    scriptsTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
-    scriptsTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    scriptsTestCompileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-    scriptsTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "jars/"), include: '*.jar'))
+    // For test purposes, force newer client as the tests are modifying classpath and we get errors which
+    // we do not get during normal production usage
+    integTestImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
+    integTestImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
+    integTestImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
 }
-
-// Setup test environment for scripts test
-scriptsTest {
-    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-    systemProperty "spark.testing", "true"
-    systemProperty "spark.test.home", "${sparkHome}"
-    systemProperty "sparkling.test.log.dir", new File(project.getBuildDir(), "h2ologs-test")
-    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-stest/nodes")
-    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-stest/client")
-
-    // Set sparkling water assembly jar location
-    systemProperty "sparkling.assembly.jar", "${configurations.sparklingWaterAssemblyJar.singleFile}"
-    // Run with assertions ON
-    enableAssertions = true
-    // For a new JVM for each test class
-    forkEvery = 1
-
-    // Increase test runner memory
-    maxHeapSize = "4g"
-    // Working dir will be root project
-    workingDir = rootDir
-
-    // Show standard out and standard error of the test JVM(s) on the console
-    testLogging.showStandardStreams = true
-}
-
-integTest.dependsOn checkSparkVersionTask
-scriptsTest.dependsOn checkSparkVersionTask
 
 defineStandardPublication().call()

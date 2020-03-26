@@ -14,27 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling.examples
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
-/**
- * Testing creation of H2O cloud in distributed environment.
- */
 @RunWith(classOf[JUnitRunner])
-class H2OContextLocalClusterSuite extends FunSuite with SharedH2OTestContext {
+class ExamplesTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local", "test-local-cluster", defaultSparkConf)
-  
-  test("verify H2O cloud building on local cluster") {
-    // For distributed testing we need to pass around jar containing all implementation classes plus test classes
-    val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
-    assert(water.H2O.CLOUD.members().length == 1, "H2O cloud should have 1 member")
+  override def createSparkContext: SparkContext = new SparkContext(
+    "local-cluster[2,1,2024]", this.getClass.getName,
+    conf = defaultSparkConf)
+
+  test("Prostate Demo") {
+    ProstateDemo.main(Array.empty)
   }
 
+  test("Ham or Spam Demo") {
+    HamOrSpamDemo.main(Array.empty)
+  }
+
+  test("Deep Learning Demo") {
+    DeepLearningDemo.main(Array.empty)
+  }
+
+  test("Craigslist Job Titles Demo") {
+    CraigslistJobTitlesApp.main(Array.empty)
+  }
+
+  test("City Bike Sharing Demo") {
+    CityBikeSharingDemo.main(Array.empty)
+  }
+
+  test("Chicago Crime Demo") {
+    ChicagoCrimeApp.main(Array.empty)
+  }
+
+  test("Airlines with Weather Demo") {
+    AirlinesWithWeatherDemo.main(Array.empty)
+  }
 }

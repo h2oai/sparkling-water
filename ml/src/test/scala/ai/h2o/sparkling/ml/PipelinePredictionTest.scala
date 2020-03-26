@@ -32,7 +32,6 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
-import water.support.SparkContextSupport
 
 abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
@@ -120,7 +119,7 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     //
     val smsDataFileName = "smsData.txt"
     val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
-    SparkContextSupport.addFiles(sc, smsDataFilePath)
+    sc.addFile(smsDataFilePath)
 
     val inputDataStream = load(sc, "smsData.txt")
 
@@ -153,8 +152,7 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     //
     val smsDataFileName = "smsData.txt"
     val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
-    SparkContextSupport.addFiles(sc, smsDataFilePath)
-
+    sc.addFile(smsDataFilePath)
 
     val tmpPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
     val tmpDir = tmpPath.toFile

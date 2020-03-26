@@ -18,12 +18,12 @@
 package ai.h2o.demo
 
 import ai.h2o.RandomEvent
-import org.apache.spark.streaming._
+import org.apache.spark.SparkConf
 import org.apache.spark.h2o._
 import org.apache.spark.sql.SparkSession
-import water.support.SparkContextSupport
+import org.apache.spark.streaming._
 
-object PipelineDemo extends SparkContextSupport {
+object PipelineDemo {
 
   def main(args: Array[String]) {
     if (args.length < 1) {
@@ -32,16 +32,13 @@ object PipelineDemo extends SparkContextSupport {
     }
     val port = args(0).toInt
 
-    val sparkConf = configure("PipelineDemo")
+    val conf = new SparkConf().setAppName("PipelineDemo")
     // Create the context
-    val ssc = new StreamingContext(sparkConf, Seconds(1))
+    val ssc = new StreamingContext(conf, Seconds(1))
     val hc = H2OContext.getOrCreate()
     val sqlContext = SparkSession.builder().getOrCreate().sqlContext
     // this is used to implicitly convert an RDD to a DataFrame.
     import sqlContext.implicits._
-
-    import hc._
-    import hc.implicits._
 
     val lines = ssc.socketTextStream("localhost", port)
     lines.print() // useful to see some of the data stream for debugging

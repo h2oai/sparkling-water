@@ -99,9 +99,7 @@ def configurationsToResolve = [
         "testCompileClasspath",
         "testRuntimeClasspath",
         "integTestCompileClasspath",
-        "integTestRuntimeClasspath",
-        "scriptsTestCompileClasspath",
-        "scriptsTestRuntimeClasspath"]
+        "integTestRuntimeClasspath"]
 
 task resolveDependencies {
     doLast {

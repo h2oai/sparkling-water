@@ -15,7 +15,7 @@ Available Demos And Applications
 | |ChicagoCrimeApp|                 | Builds a model predicting a probability of arrest for given crime in     |
 |                                   | Chicago using data in |ChicagoDataset|.                                  |
 +-----------------------------------+--------------------------------------------------------------------------+
-| |CitiBikeSharingDemo|             | Predicts occupancy of Citi bike stations in NYC.                         |
+| |CityBikeSharingDemo|             | Predicts occupancy of City bike stations in NYC.                         |
 +-----------------------------------+--------------------------------------------------------------------------+
 | |HamOrSpamDemo|                   | Shows Spam detector with Spark and H2O's algorithms.                     |
 +-----------------------------------+--------------------------------------------------------------------------+
@@ -129,7 +129,7 @@ Step-by-Step Weather Data Example
 .. |CraigslistJobTitlesStreamingApp| replace:: `CraigslistJobTitlesStreamingApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesStreamingApp.scala>`__
 .. |CraigslistJobTitlesApp| replace:: `CraigslistJobTitlesApp <src/main/scala/ai/h2o/sparkling/examples/CraigslistJobTitlesApp.scala>`__
 .. |ChicagoCrimeApp| replace:: `ChicagoCrimeApp <src/main/scala/ai/h2o/sparkling/examples/ChicagoCrimeApp.scala>`__
-.. |CitiBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/ai/h2o/sparkling/examples/CitiBikeSharingDemo.scala>`__
+.. |CityBikeSharingDemo| replace:: `CitiBikeSharingDemo <src/main/scala/ai/h2o/sparkling/examples/CitiBikeSharingDemo.scala>`__
 .. |HamOrSpamDemo| replace:: `HamOrSpamDemo <src/main/scala/ai/h2o/sparkling/examples/HamOrSpamDemo.scala>`__
 .. |ProstateDemo| replace:: `ProstateDemo <src/main/scala/ai/h2o/sparkling/examples/ProstateDemo.scala>`__
 .. |DeepLearningDemo| replace:: `DeepLearningDemo <src/main/scala/ai/h2o/sparkling/examples/DeepLearningDemo.scala>`__

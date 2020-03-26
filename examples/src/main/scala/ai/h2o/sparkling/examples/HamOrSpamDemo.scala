@@ -35,6 +35,10 @@ object HamOrSpamDemo {
       .appName("Ham or Spam Pipeline Demo")
       .getOrCreate()
 
+    val smsDataPath = "./examples/smalldata/smsData.txt"
+    val smsDataFile = s"file://${new File(smsDataPath).getAbsolutePath}"
+    val data = load(spark, smsDataFile)
+    H2OContext.getOrCreate()
     val tokenizer = createTokenizer()
     val stopWordsRemover = createStopWordsRemover(tokenizer)
     val hashingTF = createHashingTF(stopWordsRemover)
@@ -44,7 +48,7 @@ object HamOrSpamDemo {
     estimators.foreach { estimator =>
       val stages = Array(tokenizer, stopWordsRemover, hashingTF, idf, estimator, columnPruner)
       val pipeline = createPipeline(stages)
-      val model = trainPipeline(spark, pipeline)
+      val model = trainPipeline(spark, pipeline, data)
       assertPredictions(spark, model)
     }
   }
@@ -56,17 +60,17 @@ object HamOrSpamDemo {
     Pipeline.load("examples/build/pipeline")
   }
 
+  def assertPredictions(spark: SparkSession, model: PipelineModel): Unit = {
+    assert(!isSpam(spark, "Michal, h2oworld party tonight in MV?", model))
+    assert(isSpam(spark, "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
+  }
+
   def isSpam(spark: SparkSession, smsText: String, model: PipelineModel): Boolean = {
     val smsTextSchema = StructType(Array(StructField("text", StringType, nullable = false)))
     val smsTextRowRDD = spark.sparkContext.parallelize(Seq(smsText)).map(Row(_))
     val smsTextDF = spark.createDataFrame(smsTextRowRDD, smsTextSchema)
     val prediction = model.transform(smsTextDF)
     prediction.select("prediction").first.getString(0) == "spam"
-  }
-
-  def assertPredictions(spark: SparkSession, model: PipelineModel): Unit = {
-    assert(!isSpam(spark, "Michal, h2oworld party tonight in MV?", model))
-    assert(isSpam(spark, "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
   }
 
   def load(spark: SparkSession, dataFile: String): DataFrame = {
@@ -113,17 +117,11 @@ object HamOrSpamDemo {
       setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
   }
 
-  def trainPipeline(spark: SparkSession, pipeline: Pipeline): PipelineModel = {
-    val smsDataPath = "./examples/smalldata/smsData.txt"
-    val smsDataFile = s"file://${new File(smsDataPath).getAbsolutePath}"
-    val data = load(spark, smsDataFile)
-
-    H2OContext.getOrCreate()
-    // Train the pipeline model
+  def trainPipeline(spark: SparkSession, pipeline: Pipeline, data: DataFrame): PipelineModel = {
     val model = pipeline.fit(data)
     // Test exporting and importing pipeline model
-    model.write.overwrite.save("examples/build/model")
-    PipelineModel.load("examples/build/model")
+    model.write.overwrite.save("build/examples/model")
+    PipelineModel.load("build/examples/model")
   }
 
   def gbm(): H2OGBM = {
@@ -161,7 +159,7 @@ object HamOrSpamDemo {
       setHyperParameters(hyperParams).
       setFeaturesCols("tf_idf").
       setConvertUnknownCategoricalLevelsToNa(true).
-      setAlgo(new H2OGBM().setMaxDepth(30).setSeed(1))
+      setAlgo(new H2OGBM().setMaxDepth(6).setSeed(1))
   }
 
   def xgboost(): H2OXGBoost = {
