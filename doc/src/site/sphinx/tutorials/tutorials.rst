@@ -7,7 +7,6 @@ How to...
 .. toctree::
    :maxdepth: 1
 
-   calling_h2o_algos
    run_sparkling_water
    change_default_port
    hive_support
@@ -30,7 +29,6 @@ How to...
 
    spark_h2o_conversions
    h2oframe_as_data_source
-   h2o_frame_from_key
    import_export_s3
 
 **Modelling**
