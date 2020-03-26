@@ -43,7 +43,7 @@ def testLoadAndTrainMojo(hc, spark, prostateDataset):
 @pytest.fixture(scope="module")
 def insuranceFrame(hc, spark, insuranceDatasetPath):
     df = spark \
-        .read.csv( insuranceDatasetPath, header=True, inferSchema=True) \
+        .read.csv(insuranceDatasetPath, header=True, inferSchema=True) \
         .withColumn("Offset", log(col("Holders")))
     frame = hc.asH2OFrame(df)
     frame["Group"] = frame["Group"].asfactor()
