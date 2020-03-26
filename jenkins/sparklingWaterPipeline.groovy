@@ -283,7 +283,7 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
-        stage('QA: Python Unit Tests 3.6 - ' + config.backendMode) {
+        stage('QA: PyUnit Tests 3.6 - ' + config.backendMode) {
             if (config.runPyUnitTests.toBoolean()) {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -297,7 +297,7 @@ def pyUnitTests() {
             }
         }
 
-        stage('QA: Python Unit Tests 2.7 - ' + config.backendMode) {
+        stage('QA: PyUnit Tests 2.7 - ' + config.backendMode) {
             if (config.runPyUnitTests.toBoolean()) {
                 try {
                     withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
@@ -341,7 +341,7 @@ def rUnitTests() {
 
 def integTests() {
     return { config ->
-        stage('QA: Local Integration Tests - ' + config.backendMode) {
+        stage('QA: Integration Tests - ' + config.backendMode) {
             if (config.runIntegTests.toBoolean()) {
                 try {
                     sh """
@@ -361,7 +361,7 @@ def integTests() {
 
 def pyIntegTests() {
     return { config ->
-        stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
+        stage('QA: Py Integration Tests 3.6 - ' + config.backendMode) {
             if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
