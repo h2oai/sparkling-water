@@ -1,9 +1,9 @@
-Using the MOJO Scoring Pipeline with Spark/Sparkling Water
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using the MOJO Scoring Pipeline (from Driverless AI) with Spark/Sparkling Water
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-MOJO scoring pipeline artifacts can be used in Spark to carry out predictions in parallel
-using the Sparkling Water API. This section shows how to load and run predictions on the
-MOJO scoring pipeline in Spark using Scala and the Python API.
+MOJO scoring pipeline, created in Driverless AI, artifacts can be used in Spark to carry out predictions in parallel
+using the Sparkling Water API. This section shows how to load and run predictions on the MOJO scoring pipeline in
+Spark using Scala and the Python API.
 
 **Note**: Sparkling Water is backwards compatible with MOJO versions produced by different Driverless AI versions.
 
@@ -18,7 +18,7 @@ This is because the scoring is independent of the H2O run-time.
 
 Preparing Your Environment
 ''''''''''''''''''''''''''
-In order use the MOJO scoring pipeline, Driverless AI license has to be passed to Spark.
+In order to use the MOJO scoring pipeline, Driverless AI license has to be passed to Spark.
 This can be achieved via ``--jars`` argument of the Spark launcher scripts.
 
 **Note**: In Local Spark mode, please use ``--driver-class-path`` to specify path to the license file.
