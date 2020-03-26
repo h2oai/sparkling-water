@@ -39,9 +39,9 @@ def testParamsPassedBySetters():
 
 
 @pytest.fixture(scope="module")
-def dataset(spark):
+def dataset(spark, prostateDatasetPath):
     return spark \
-        .read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"), header=True, inferSchema=True) \
+        .read.csv(prostateDatasetPath, header=True, inferSchema=True) \
         .withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
 

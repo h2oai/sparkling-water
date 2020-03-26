@@ -53,6 +53,12 @@ spark-tfidf-data/
 # RStudio file
 rsparkling.Rproj
 
+# PySparkling
+py/build
+py/__pycache__/
+*.py[cod]
+py/.pytest_cache
+
 # Terraform
 templates/src/terraform/aws/.terraform/
 templates/src/terraform/aws/.terraform.tfstate.lock.info

@@ -114,7 +114,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 def customEnv = [
                         "SPARK_HOME=${env.WORKSPACE}/spark",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                        "MASTER=yarn-client",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
 
@@ -144,9 +143,8 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                     unitTests()(config)
                     pyUnitTests()(config)
                     rUnitTests()(config)
-                    localIntegTest()(config)
-                    localPyIntegTest()(config)
-                    pysparklingIntegTest()(config)
+                    integTest()(config)
+                    pyIntegTest()(config)
                 }
             }
         }
@@ -294,7 +292,7 @@ def pyUnitTests() {
                         """
                     }
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
+                    arch '**/build/h2ologs-test/*.log'
                 }
             }
         }
@@ -308,7 +306,7 @@ def pyUnitTests() {
                         """
                     }
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    arch '**/build/h2ologs-test/*.log'
                 }
             }
         }
@@ -341,10 +339,10 @@ def rUnitTests() {
     }
 }
 
-def localIntegTest() {
+def integTests() {
     return { config ->
         stage('QA: Local Integration Tests - ' + config.backendMode) {
-            if (config.runLocalIntegTests.toBoolean()) {
+            if (config.runIntegTests.toBoolean()) {
                 try {
                     sh """
                     ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
@@ -352,41 +350,25 @@ def localIntegTest() {
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
                     junit 'core/build/test-results/integTest/*.xml'
-                    testReport 'core/build/reports/tests/integTest', 'Local Core Integration tests'
+                    testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
                     junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', 'Local Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
                 }
             }
         }
     }
 }
 
-def localPyIntegTest() {
+def pyIntegTests() {
     return { config ->
         stage('QA: Local Py Integration Tests 3.6 - ' + config.backendMode) {
-            if (config.runLocalPyIntegTests.toBoolean()) {
+            if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
                     ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
-                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
-                }
-            }
-        }
-    }
-}
-
-def pysparklingIntegTest() {
-    return { config ->
-        stage('QA: PySparkling Integration Tests 3.6 HDP 2.2 - ' + config.backendMode) {
-            if (config.runPySparklingIntegTests.toBoolean()) {
-                try {
-                    sh """
-                     ${getGradleCommand(config)} sparkling-water-py:yarnIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PbackendMode=${config.backendMode} -PsparkHome=${env.SPARK_HOME}
-                    """
-                } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    arch '**/build/h2ologs-itest/*.log'
                 }
             }
         }

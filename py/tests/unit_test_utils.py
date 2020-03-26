@@ -16,14 +16,17 @@
 #
 
 from pyspark import SparkConf
-
-from tests.generic_test_utils import *
+from random import randrange
 
 
 def asert_h2o_frame(h2o_frame, rdd):
     assert h2o_frame.nrow == rdd.count(), "Number of rows should match"
     assert h2o_frame.ncol == 1, "Number of columns should equal 1"
     assert h2o_frame.names == ["value"], "Column should be name values"
+
+
+def unique_cloud_name(script_name):
+    return str(script_name[:-3].replace("/", "_")) + str(randrange(65536))
 
 
 def get_default_spark_conf(additional_conf=None):
@@ -34,7 +37,6 @@ def get_default_spark_conf(additional_conf=None):
         setMaster("local[*]"). \
         set("spark.driver.memory", "2g"). \
         set("spark.executor.memory", "2g"). \
-        set("spark.ext.h2o.client.log.level", "DEBUG"). \
         set("spark.ext.h2o.repl.enabled", "false"). \
         set("spark.task.maxFailures", "1"). \
         set("spark.rpc.numRetries", "1"). \
@@ -43,14 +45,11 @@ def get_default_spark_conf(additional_conf=None):
         set("spark.worker.timeout", "360"). \
         set("spark.ext.h2o.cloud.name", unique_cloud_name("test")). \
         set("spark.ext.h2o.external.start.mode", "auto"). \
-        set("spark.ext.h2o.node.log.dir", "build/h2ologs-pyunit/workers"). \
-        set("spark.ext.h2o.client.log.dir", "build/h2ologs-pyunit/client")
+        set("spark.ext.h2o.client.log.dir", "build/h2ologs-test"). \
+        set("spark.ext.h2o.external.cluster.size", "1")
 
     for key in additional_conf:
         conf.set(key, additional_conf[key])
-
-    if conf.get("spark.ext.h2o.backend.cluster.mode") == "external":
-        conf.set("spark.ext.h2o.external.cluster.size", "1")
 
     return conf
 
@@ -62,23 +61,23 @@ def assert_data_frames_are_identical(expected, produced):
     expectedCount = expected.count()
     producedCount = produced.count()
 
-    assert expectedCount == producedCount,\
-        'The expected data frame has %s rows whereas the produced data frame has %s rows.'\
+    assert expectedCount == producedCount, \
+        'The expected data frame has %s rows whereas the produced data frame has %s rows.' \
         % (expectedCount, producedCount)
 
     expectedDistinctCount = expected.distinct().count()
     producedDistinctCount = produced.distinct().count()
 
-    assert expectedDistinctCount == producedDistinctCount,\
-        'The expected data frame has %s distinct rows whereas the produced data frame has %s distinct rows.'\
+    assert expectedDistinctCount == producedDistinctCount, \
+        'The expected data frame has %s distinct rows whereas the produced data frame has %s distinct rows.' \
         % (expectedDistinctCount, producedDistinctCount)
 
     numberOfExtraRowsInExpected = expected.subtract(produced).count()
     numberOfExtraRowsInProduced = produced.subtract(expected).count()
 
-    assert numberOfExtraRowsInExpected == 0 and numberOfExtraRowsInProduced == 0,\
+    assert numberOfExtraRowsInExpected == 0 and numberOfExtraRowsInProduced == 0, \
         """The expected data frame contains %s distinct rows that are not in the produced data frame.
-        The produced data frame contains %s distinct rows that are not in the expected data frame."""\
+        The produced data frame contains %s distinct rows that are not in the expected data frame.""" \
         % (numberOfExtraRowsInExpected, numberOfExtraRowsInProduced)
 
 

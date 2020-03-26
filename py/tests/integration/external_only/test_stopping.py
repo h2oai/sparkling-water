@@ -15,18 +15,20 @@
 # limitations under the License.
 #
 
-"""
-Integration tests for pySparkling for Spark running in YARN mode
-"""
+import time
 
-from tests.integ_test_utils import *
+from tests.integration.integ_test_utils import *
 
 
-def test_xgboost_medium(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/scripts/tests/xgboost_test_medium.py")
+def testStoppingWithoutExplicitStop(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/tests/H2OContextWithoutExplicitStop.py")
+    time.sleep(10)
+    assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
 
 
-def test_chicago_crime(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/scripts/ChicagoCrimeDemo.py")
+def testStoppingWithExplicitStop(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/tests/H2OContextWithExplicitStop.py")
+    time.sleep(10)
+    assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
     assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)

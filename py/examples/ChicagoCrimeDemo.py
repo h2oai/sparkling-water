@@ -1,10 +1,11 @@
 import h2o
 from datetime import datetime
 from pytz import timezone
-from pyspark import SparkConf, SparkFiles
 from pyspark.sql import Row, SparkSession
 import os
 from pysparkling import *
+import sys
+
 
 # Refine date column
 def refine_date_col(data, col):
@@ -79,10 +80,8 @@ def crime(date,
 
 # This is just helper function returning path to data-files
 def _locate(file_name):
-    if os.path.isfile("/home/0xdiag/smalldata/chicago/" + file_name):
-        return "/home/0xdiag/smalldata/chicago/" + file_name
-    else:
-        return "../examples/smalldata/chicago/" + file_name
+        basedir = sys.argv[1]
+        return os.path.abspath(basedir + "./../examples/smalldata/chicago/" + file_name)
 
 spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services
@@ -90,7 +89,7 @@ h2oContext = H2OContext.getOrCreate()
 # Define file names
 chicagoAllWeather = "chicagoAllWeather.csv"
 chicagoCensus = "chicagoCensus.csv"
-chicagoCrimes10k = "chicagoCrimes10k.csv.zip"
+chicagoCrimes10k = "chicagoCrimes10k.csv"
 
 
 # h2o.import_file expects cluster-relative path

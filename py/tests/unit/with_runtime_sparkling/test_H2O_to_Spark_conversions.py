@@ -20,19 +20,18 @@ import pytest
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 
-from tests import generic_test_utils
 from tests import unit_test_utils
 
 
 def testH2OFrameToDataframe(hc):
-    frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
+    frame = h2o.upload_file("../examples/smalldata/prostate/prostate.csv")
     df = hc.asSparkFrame(frame)
     assert df.count() == frame.nrow, "Number of rows should match"
     assert len(df.columns) == frame.ncol, "Number of columns should match"
     assert df.columns == frame.names, "Column names should match"
 
 def testH2OFrameToDataframeWithSecondConversion(hc):
-    frame = h2o.upload_file(generic_test_utils.locate("smalldata/prostate/prostate.csv"))
+    frame = h2o.upload_file("../examples/smalldata/prostate/prostate.csv")
     df1 = hc.asSparkFrame(frame)
     df2 = hc.asSparkFrame(frame)
     assert df1.count() == df2.count(), "Number of rows should match"

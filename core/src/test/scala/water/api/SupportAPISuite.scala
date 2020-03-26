@@ -91,12 +91,7 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 object TestUtils {
 
   def locate(name: String): String = {
-    val abs = new File("/home/0xdiag/" + name)
-    if (abs.exists()) {
-      abs.getAbsolutePath
-    } else {
       new File("./examples/" + name).getAbsolutePath
-    }
   }
 
   // Note: this comparision expects implicit ordering of spark DataFrames which is not ensured!

@@ -16,8 +16,6 @@
 import h2o
 from h2o.estimators import H2OGradientBoostingEstimator
 
-from tests import unit_test_utils
-
 
 class WeightedFalseNegativeLossMetric:
     def map(self, predicted, actual, weight, offset, model):
@@ -40,9 +38,8 @@ class WeightedFalseNegativeLossMetric:
         return last[0] / last[1]
 
 
-def testCustomMetric():
-    trainPath = "file://" + unit_test_utils.locate("smalldata/loan.csv")
-    train = h2o.import_file(trainPath, destination_frame="loan_train")
+def testCustomMetric(loanDatasetPath):
+    train = h2o.import_file(loanDatasetPath, destination_frame="loan_train")
     train["bad_loan"] = train["bad_loan"].asfactor()
 
     y = "bad_loan"

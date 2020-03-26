@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import pytest
 from pyspark.sql import SparkSession
 from pysparkling.conf import H2OConf
@@ -34,6 +35,25 @@ def hc(spark):
 
 
 @pytest.fixture(scope="module")
-def prostateDataset(spark):
-    return spark.read.csv("file://" + unit_test_utils.locate("smalldata/prostate/prostate.csv"),
-                          header=True, inferSchema=True)
+def prostateDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/prostate/prostate.csv")
+
+
+@pytest.fixture(scope="module")
+def loanDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/loan.csv")
+
+
+@pytest.fixture(scope="module")
+def insuranceDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/insurance.csv")
+
+
+@pytest.fixture(scope="module")
+def irisDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/iris/iris_wheader.csv")
+
+
+@pytest.fixture(scope="module")
+def prostateDataset(spark, prostateDatasetPath):
+    return spark.read.csv(prostateDatasetPath, header=True, inferSchema=True)
