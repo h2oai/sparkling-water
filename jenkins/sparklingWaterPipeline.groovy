@@ -292,7 +292,7 @@ def pyUnitTests() {
                         """
                     }
                 } finally {
-                    arch '**/build/h2ologs-test/*.log'
+                    arch '**/build/**/*log*'
                 }
             }
         }
@@ -306,7 +306,7 @@ def pyUnitTests() {
                         """
                     }
                 } finally {
-                    arch '**/build/h2ologs-test/*.log'
+                    arch '**/build/**/*log*'
                 }
             }
         }
@@ -368,7 +368,7 @@ def pyIntegTests() {
                     ${getGradleCommand(config)} sparkling-water-py:localIntegTestsPython -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
-                    arch '**/build/h2ologs-itest/*.log'
+                    arch '**/build/**/*log*'
                 }
             }
         }
