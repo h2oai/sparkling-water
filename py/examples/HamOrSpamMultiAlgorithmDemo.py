@@ -1,5 +1,4 @@
 import os
-import sys
 
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.feature import HashingTF, RegexTokenizer, StopWordsRemover, IDF
@@ -15,8 +14,7 @@ hc = H2OContext.getOrCreate()
 
 ## This method loads the data, perform some basic filtering and create Spark's dataframe
 def load():
-    basedir = sys.argv[1]
-    dataPath = "file://" + os.path.abspath(basedir + "./../examples/smalldata/smsData.txt")
+    dataPath = "file://" + os.path.abspath("../examples/smalldata/smsData.txt")
     row_rdd = spark.sparkContext.textFile(dataPath).map(lambda x: x.split("\t", 1)).filter(lambda r: r[0].strip())
     return spark.createDataFrame(row_rdd, ["label", "text"])
 
@@ -82,13 +80,13 @@ def trainPipelineModel(idf, hashingTF, stopWordsRemover, tokenizer, algoStage, d
     ## Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
     ## to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
     ## directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
-    pipeline.write().overwrite().save("../../build/pipeline")
-    loaded_pipeline = Pipeline.load("../../build/pipeline")
+    pipeline.write().overwrite().save("../build/pipeline")
+    loaded_pipeline = Pipeline.load("../build/pipeline")
 
     ## Train the pipeline model
     model = loaded_pipeline.fit(data)
-    model.write().overwrite().save("../../build/model")
-    return PipelineModel.load("../../build/model")
+    model.write().overwrite().save("../build/model")
+    return PipelineModel.load("../build/model")
 
 
 def isSpam(smsText, model):

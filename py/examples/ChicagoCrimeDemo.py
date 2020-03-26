@@ -4,7 +4,6 @@ from pytz import timezone
 from pyspark.sql import Row, SparkSession
 import os
 from pysparkling import *
-import sys
 
 
 # Refine date column
@@ -80,8 +79,7 @@ def crime(date,
 
 # This is just helper function returning path to data-files
 def _locate(file_name):
-        basedir = sys.argv[1]
-        return os.path.abspath(basedir + "./../examples/smalldata/chicago/" + file_name)
+        return os.path.abspath("../examples/smalldata/chicago/" + file_name)
 
 spark = SparkSession.builder.appName("ChicagoCrimeTest").getOrCreate()
 # Start H2O services

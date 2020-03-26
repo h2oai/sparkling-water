@@ -18,7 +18,6 @@
 
 import subprocess
 import sys
-import os
 
 
 def get_default_spark_conf(additional_conf=None):
@@ -54,9 +53,6 @@ def launch(conf, script_name):
 
     # Add path to test script
     cmd_line.append(script_name)
-
-    # Add current dir to script as parameter
-    cmd_line.append( os.getcwd())
 
     # Launch it via command line
     return_code = subprocess.call(cmd_line)
