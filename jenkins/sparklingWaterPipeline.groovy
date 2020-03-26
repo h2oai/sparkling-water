@@ -116,7 +116,6 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                 def customEnv = [
                         "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                        "MASTER=yarn-client",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
 
