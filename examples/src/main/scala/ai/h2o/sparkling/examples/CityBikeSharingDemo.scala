@@ -22,13 +22,14 @@ import java.io.File
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import org.apache.spark.h2o.H2OContext
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{udf, _}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object CityBikeSharingDemo {
 
-  private val daysToTimestampUdf = udf(daysToTimestamp _)
-  private val numberOfDaysSinceEpochUdf = udf(numberOfDaysSinceEpoch _)
+  val daysToTimestampUdf: UserDefinedFunction = udf(daysToTimestamp _)
+  val numberOfDaysSinceEpochUdf: UserDefinedFunction = udf(numberOfDaysSinceEpoch _)
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
@@ -54,6 +55,7 @@ object CityBikeSharingDemo {
     removeSpacesFromColumnNames(bikesTable)
       .withColumn("Days", numberOfDaysSinceEpochUdf(unix_timestamp('starttime)))
       .groupBy("Days", "start_station_id").count()
+      .withColumnRenamed("count", "bikes")
       .withColumn("date", from_unixtime(daysToTimestampUdf('Days)))
       .withColumn("Month", month('date))
       .withColumn("DayOfweek", date_format('date, "u"))
@@ -76,7 +78,6 @@ object CityBikeSharingDemo {
       .csv(weatherDataFile)
       .filter('HourLocal === 12)
 
-    weatherTable.createOrReplaceTempView("weatherRdd")
     bikesPerDay.join(weatherTable, Seq("Days"))
   }
 
@@ -95,9 +96,9 @@ object CityBikeSharingDemo {
     println(predictions.mkString("\n===> Model predictions from GBM: ", ", ", ", ...\n"))
   }
 
-  private def daysToTimestamp(days: Int): String = (days * (60 * 60 * 24)).toString
+  def daysToTimestamp(days: Int): String = (days * (60 * 60 * 24)).toString
 
-  private def numberOfDaysSinceEpoch(timestamp: Long): Long = timestamp / (60 * 60 * 24)
+  def numberOfDaysSinceEpoch(timestamp: Long): Long = timestamp / (60 * 60 * 24)
 }
 
 

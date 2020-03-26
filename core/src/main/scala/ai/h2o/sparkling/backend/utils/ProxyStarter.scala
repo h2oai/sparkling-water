@@ -65,7 +65,7 @@ object ProxyStarter extends Logging {
     val LOCAL_N_FAILURES_REGEX = """local\[([0-9]+|\*)\s*,\s*([0-9]+)\]""".r
     // Regular expression for simulating a Spark cluster of [N, cores, memory] locally
     val LOCAL_CLUSTER_REGEX = """local-cluster\[\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*]""".r
-    val LOCAL = "master"
+    val LOCAL = "local"
     val master = SparkSessionUtils.active.sparkContext.master
     val numSkipped = if (conf.runsInInternalClusterMode && conf.internalPortOffset == 1) {
       master match {

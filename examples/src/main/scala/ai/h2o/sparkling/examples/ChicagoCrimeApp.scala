@@ -128,6 +128,22 @@ object ChicagoCrimeApp {
     predictTable.select("prediction").head().get(0).toString == "1"
   }
 
+  def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
+    import org.apache.spark.sql.functions._
+    import spark.implicits._
+    df
+      .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
+      .withColumn("Year", year('Date))
+      .withColumn("Month", month('Date))
+      .withColumn("Day", dayofmonth('Date))
+      .withColumn("WeekNum", weekofyear('Date))
+      .withColumn("HourOfDay", hour('Date))
+      .withColumn("Season", seasonUdf('Month))
+      .withColumn("WeekDay", date_format('Date, "u"))
+      .withColumn("Weekend", weekendUdf('WeekDay))
+      .drop('Date)
+  }
+
   def createWeatherTable(spark: SparkSession, datafile: String): DataFrame = {
     val df = spark.read.option("header", "true").option("inferSchema", "true").csv(datafile)
     df.drop(df.columns(0))
@@ -149,22 +165,6 @@ object ChicagoCrimeApp {
       df(col).as(name)
     }
     addAdditionalDateColumns(spark, df.select(renamedColumns: _*))
-  }
-
-  def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
-    import org.apache.spark.sql.functions._
-    import spark.implicits._
-    df
-      .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
-      .withColumn("Year", year('Date))
-      .withColumn("Month", month('Date))
-      .withColumn("Day", dayofmonth('Date))
-      .withColumn("WeekNum", weekofyear('Date))
-      .withColumn("HourOfDay", hour('Date))
-      .withColumn("Season", seasonUdf('Month))
-      .withColumn("WeekDay", date_format('Date, "u"))
-      .withColumn("Weekend", weekendUdf('WeekDay))
-      .drop('Date)
   }
 
   private def getSeason(month: Int): String = {
