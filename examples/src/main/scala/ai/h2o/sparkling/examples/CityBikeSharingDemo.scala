@@ -24,6 +24,7 @@ import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{udf, _}
+import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object CityBikeSharingDemo {
@@ -76,7 +77,24 @@ object CityBikeSharingDemo {
     val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
     val weatherTable = spark.read.option("header", "true").option("inferSchema", "true")
       .csv(weatherDataFile)
+      .select("Hour Local", "Year Local", "Month Local", "Day Local", "Dew Point (C)", "Humidity Fraction",
+        "Precipitation One Hour (mm)", "Weather Code 1", "Temperature (C)")
+      .withColumnRenamed("Hour Local", "HourLocal")
+      .withColumnRenamed("Year Local", "YearLocal")
+      .withColumnRenamed("Day Local", "DayLocal")
+      .withColumnRenamed("Month Local", "MonthLocal")
+      .withColumnRenamed("Dew Point (C)", "DewPoint")
+      .withColumnRenamed("Humidity Fraction", "HumidityFraction")
+      .withColumnRenamed("Precipitation One Hour (mm)", "Prcp1Hour")
+      .withColumnRenamed("Weather Code 1", "WeatherCode1")
+      .withColumnRenamed("Temperature (C)", "Temperature")
+      .withColumn("HourLocal", format_string("%02d", 'HourLocal.cast(IntegerType)))
+      .withColumn("DayLocal", format_string("%02d", 'DayLocal.cast(IntegerType)))
+      .withColumn("MonthLocal", format_string("%02d", 'MonthLocal.cast(IntegerType)))
+      .withColumn("YearLocal", format_string("%04d", 'YearLocal.cast(IntegerType)))
       .filter('HourLocal === 12)
+        .withColumn("Date", concat('YearLocal, 'MonthLocal, 'DayLocal, 'HourLocal))
+        .withColumn("Days", numberOfDaysSinceEpochUdf(unix_timestamp('Date, "yyyyMMddHH")))
 
     bikesPerDay.join(weatherTable, Seq("Days"))
   }
