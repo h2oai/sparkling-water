@@ -29,7 +29,7 @@ import org.scalatest.junit.JUnitRunner
 import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
-class IntegTestSuite extends FunSuite with SharedH2OTestContext {
+class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
 
