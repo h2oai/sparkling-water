@@ -182,6 +182,12 @@ class SharedBackendConf(SharedBackendConfUtils):
     def hiveJdbcUrlPattern(self):
         return self._get_option(self._jconf.hiveJdbcUrlPattern())
 
+    def kerberosPrincipal(self):
+        return self._get_option(self._jconf.kerberosPrincipal())
+
+    def kerberosKeytab(self):
+        return self._get_option(self._jconf.kerberosKeytab())
+
     #
     # Setters
     #
@@ -440,4 +446,12 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setHiveJdbcUrlPattern(self, pattern):
         self._jconf.setHiveJdbcUrlPattern(pattern)
+        return self
+
+    def setKerberosPrincipal(self, principal):
+        self._jconf.setKerberosPrincipal(principal)
+        return self
+
+    def setKerberosKeytab(self, path):
+        self._jconf.setKerberosKeytab(path)
         return self

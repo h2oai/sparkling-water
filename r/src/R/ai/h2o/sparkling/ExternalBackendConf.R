@@ -51,18 +51,6 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     isKillOnUnhealthyClusterEnabled = function() { invoke(jconf, "isKillOnUnhealthyClusterEnabled") },
 
-    kerberosPrincipal = function() {
-        warning("The method 'kerberosPrincipal' is deprecated and will be removed in the version 3.32.
-        Please use the generic 'get' method with the spark option 'spark.yarn.principal'.");
-        ConfUtils.getOption(invoke(jconf, "kerberosPrincipal"))
-    },
-
-    kerberosKeytab = function() {
-        warning("The method 'kerberosKeytab' is deprecated and will be removed in the version 3.32.
-        Please use the generic 'get' method with the spark option 'spark.yarn.keytab'.");
-        ConfUtils.getOption(invoke(jconf, "kerberosKeytab"))
-    },
-
     runAsUser = function() { ConfUtils.getOption(invoke(jconf, "runAsUser")) },
 
     externalH2ODriverIf = function() { ConfUtils.getOption(invoke(jconf, "externalH2ODriverIf")) },
@@ -111,18 +99,6 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
     setKillOnUnhealthyClusterEnabled = function() { invoke(jconf, "setKillOnUnhealthyClusterEnabled"); .self },
 
     setKillOnUnhealthyClusterDisabled = function() { invoke(jconf, "setKillOnUnhealthyClusterDisabled"); .self },
-
-    setKerberosPrincipal = function(principal) {
-        warning("The method 'setKerberosPrincipal' is deprecated and will be removed in the version 3.32.
-        Please use the generic 'set' method with the spark option 'spark.yarn.principal'.")
-        invoke(jconf, "setKerberosPrincipal", principal); .self
-    },
-
-    setKerberosKeytab = function(path) {
-        warning("The method 'setKerberosKeytab' is deprecated and will be removed in the version 3.32.
-        Please use the generic 'set' method with the spark option 'spark.yarn.keytab'.")
-        invoke(jconf, "setKerberosKeytab", path); .self
-    },
 
     setRunAsUser = function(user) { invoke(jconf, "setRunAsUser", user); .self },
 

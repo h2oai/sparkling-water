@@ -67,16 +67,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def isKillOnUnhealthyClusterEnabled(self):
         return self._jconf.isKillOnUnhealthyClusterEnabled()
 
-    def kerberosPrincipal(self):
-        warnings.warn("The method 'kerberosPrincipal' is deprecated and will be removed in the version 3.32."
-                      "Please use the generic 'get' method with the spark option 'spark.yarn.principal'.")
-        return self._get_option(self._jconf.kerberosPrincipal())
-
-    def kerberosKeytab(self):
-        warnings.warn("The method 'kerberosKeytab' is deprecated and will be removed in the version 3.32."
-                      "Please use the generic 'get' method with the spark option 'spark.yarn.keytab'.")
-        return self._get_option(self._jconf.kerberosKeytab())
-
     def runAsUser(self):
         return self._get_option(self._jconf.runAsUser())
 
@@ -156,18 +146,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setKillOnUnhealthyClusterDisabled(self):
         self._jconf.setKillOnUnhealthyClusterDisabled()
-        return self
-
-    def setKerberosPrincipal(self, principal):
-        warnings.warn("The method 'setKerberosPrincipal' is deprecated and will be removed in the version 3.32."
-                      "Please use the generic 'set' method with the spark option 'spark.yarn.principal'.")
-        self._jconf.setKerberosPrincipal(principal)
-        return self
-
-    def setKerberosKeytab(self, path):
-        warnings.warn("The method 'setKerberosKeytab' is deprecated and will be removed in the version 3.32."
-                      "Please use the generic 'set' method with the spark option 'spark.yarn.keytab'.")
-        self._jconf.setKerberosKeytab(path)
         return self
 
     def setRunAsUser(self, user):

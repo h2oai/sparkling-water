@@ -17,6 +17,7 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import java.io.File
 import java.nio.file.Files
 
 import ai.h2o.sparkling.backend.api.RestAPIManager
@@ -31,10 +32,10 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
-import org.apache.spark.{SparkContext, SparkEnv}
+import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 import water.util.Log
 import water.{H2O, H2OStarter}
-import water.hive.{HiveTokenGenerator, DelegationTokenRefresher}
+import water.hive.{DelegationTokenRefresher, HiveTokenGenerator}
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 
@@ -174,17 +175,15 @@ object InternalH2OBackend extends InternalBackendUtils {
 
   private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
     if (conf.isHiveSupportEnabled && HiveTokenGenerator.isHiveDriverPresent()) {
+      val hivePrincipal = conf.hivePrincipal.get
       val jdbcUrl = HiveTokenGenerator.makeHiveJdbcUrl(
         conf.hiveJdbcUrlPattern.get,
         conf.hiveHost.get,
-        conf.hivePrincipal.get)
+        hivePrincipal)
 
       val principal = conf.kerberosPrincipal.get
-      val keytabPath = conf.kerberosKeytab.get
-      val configuration = new Configuration()
-      configuration.set(DelegationTokenRefresher.H2O_HIVE_JDBC_URL, jdbcUrl)
-      configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, conf.hivePrincipal.get)
-      val options = HiveTokenGenerator.HiveOptions.make(configuration)
+      val keytabPath = SparkFiles.get(new File(conf.kerberosKeytab.get).getName)
+      val options = HiveTokenGenerator.HiveOptions.make(jdbcUrl, hivePrincipal)
       new DelegationTokenRefresher(principal, keytabPath, user, options).start()
     }
   }
