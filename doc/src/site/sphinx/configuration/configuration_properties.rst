@@ -166,6 +166,25 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | master/h2o-docs/src/product/           |
 |                                                    |                |                                                 | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.enabled``                     | ``false``      | ``setHiveSupportEnabled()``                     | If enabled, H2O instances will create  |
+|                                                    |                |                                                 | JDBC connections to Hive so that H2O   |
+|                                                    |                | ``setHiveSupportDisabled()``                    | Python & R API will be able to read    |
+|                                                    |                |                                                 | data from HiveServer2. Don't forget to |
+|                                                    |                |                                                 | put a jar with Hive driver on Spark    |
+|                                                    |                |                                                 | classpath if the internal backend is   |
+|                                                    |                |                                                 | used.                                  |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.host``                        | ``None``       | ``setHiveHost(String)``                         | The full address of HiveServer2,       |
+|                                                    |                |                                                 | for example hostname:10000             |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.principal``                   | ``None``       | ``setHivePrincipal(String)``                    | Hiveserver2 Kerberos principal,        |
+|                                                    |                |                                                 | for example hive/hostname@DOMAIN.COM   |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.jdbc_url_pattern``            | |jdbcUrl|      | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for         |
+|                                                    |                |                                                 | connecting to Hiveserver2. The pattern |
+|                                                    |                |                                                 | should have place holder for *host*    |
+|                                                    |                |                                                 | and *principal*.                       |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.kerberos.principal``               | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                    |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.kerberos.keytab``                  | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                       |
@@ -373,3 +392,4 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |hadoopConfig| replace:: ``sc.hadoopConfig``
 .. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
 .. |yarnDir| replace:: YARN container dir
+.. |jdbcUrl| replace:: ``jdbc:hive2://{{host}}/;principal={{principal}}``

@@ -119,10 +119,6 @@ trait SharedBackendUtils extends Logging with Serializable {
         throw new IllegalArgumentException(
           s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_PRINCIPAL}' must be defined.")
       }
-      if (conf.hiveJdbcUrlPattern.isEmpty) {
-        throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_JDBC_URL_PATTERN}' must be defined.")
-      }
     }
 
     conf

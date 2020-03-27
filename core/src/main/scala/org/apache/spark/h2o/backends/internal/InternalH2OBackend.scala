@@ -177,7 +177,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     if (conf.isHiveSupportEnabled && HiveTokenGenerator.isHiveDriverPresent()) {
       val hivePrincipal = conf.hivePrincipal.get
       val jdbcUrl = HiveTokenGenerator.makeHiveJdbcUrl(
-        conf.hiveJdbcUrlPattern.get,
+        conf.hiveJdbcUrlPattern,
         conf.hiveHost.get,
         hivePrincipal)
 
