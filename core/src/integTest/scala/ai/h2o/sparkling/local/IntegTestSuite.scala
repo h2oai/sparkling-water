@@ -20,20 +20,64 @@ package ai.h2o.sparkling.local
 import ai.h2o.sparkling.ml.utils.{ComplexSchema, SchemaUtils}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.h2o.{DoubleHolder, H2OConf, H2OContext}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
-class SchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
-  private val conf = defaultSparkConf
-    .set("spark.executor.memory", "1g")
-    .set("spark.driver.memory", "2g")
+class IntegTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", this.getClass.getSimpleName, conf)
+  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
+
+  test("verify H2O cloud building on local cluster") {
+    val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
+    if (hc.getConf.runsInInternalClusterMode) {
+      assert(hc.getH2ONodes().length == 2)
+    } else {
+      assert(hc.getH2ONodes().length == 1)
+    }
+  }
+
+  test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV") {
+    val rdd = sc.parallelize(1 to 100, 2)
+    val h2oFrame = hc.asH2OFrame(rdd)
+    assert(h2oFrame.anyVec().nChunks() == 2)
+    val updatedFrame = h2oFrame.add(h2oFrame)
+
+    val convertedDf = hc.asDataFrame(updatedFrame)
+    convertedDf.collect() // trigger materialization
+
+    assert(convertedDf.count() == h2oFrame.numRows())
+    assert(convertedDf.columns.length == h2oFrame.names().length)
+  }
+
+  test("Task killed but frame still converted successfully") {
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v))).map { d =>
+      import org.apache.spark.TaskContext
+      val tc = TaskContext.get()
+      if (tc.attemptNumber == 0) {
+        throw new Exception("Failing first attempt")
+      } else {
+        d
+      }
+    }
+
+    val h2oFrame = hc.asH2OFrame(rdd)
+
+    TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+      val nextRowIdx = rowIdx + 1
+      val value = vec.at(rowIdx) // value stored at rowIdx-th
+      // Using == since int should be mapped strictly to doubles
+      assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
+    })
+
+    // Clean up
+    h2oFrame.delete()
+  }
 
   test("flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
@@ -53,7 +97,7 @@ class SchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with Shared
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
-  def testFlatteningOnComplexType(settings: TestFrameUtils.GenerateDataFrameSettings, expectedNumberOfColumns: Int) = {
+  private def testFlatteningOnComplexType(settings: TestFrameUtils.GenerateDataFrameSettings, expectedNumberOfColumns: Int): Unit = {
     trackTime {
       val complexDF = TestFrameUtils.generateDataFrame(spark, ComplexSchema, settings)
       val flattened = SchemaUtils.flattenDataFrame(complexDF)
@@ -61,9 +105,8 @@ class SchemaUtilsIntegrationTestSuite extends FunSuite with Matchers with Shared
       val fieldTypeNames = flattened.schema.fields.map(_.dataType.typeName)
       val numberOfFields = fieldTypeNames.length
       println(s"Number of columns: $numberOfFields")
-      numberOfFields shouldBe >(expectedNumberOfColumns)
-
-      fieldTypeNames should contain noneOf("struct", "array", "map")
+      assert(numberOfFields > expectedNumberOfColumns)
+      assert(fieldTypeNames.intersect(Array("struct", "array", "map")).isEmpty)
       flattened.foreach((r: Row) => r.toSeq.length)
     }
   }

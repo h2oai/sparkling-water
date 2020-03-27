@@ -44,7 +44,6 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
 
-    // Clean up
     h2oFrame.delete()
   }
 

@@ -17,7 +17,7 @@
 package ai.h2o.sparkling.local
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.SparkTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -26,10 +26,10 @@ import org.scalatest.junit.JUnitRunner
  * Tests for known Spark issues and our workaround which doesn't fit to any category in other tests
  */
 @RunWith(classOf[JUnitRunner])
-class KnownSparkIssues extends FunSuite with SharedH2OTestContext {
+class KnownSparkIssues extends FunSuite with SparkTestContext {
 
   // we use local-cluster since the non-determinism isn't reproducible in local mode
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,1024]", "test-local-cluster", conf = defaultSparkConf)
+  sc = new SparkContext("local-cluster[2,1,1024]", getClass.getName, conf = defaultSparkConf)
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
 
