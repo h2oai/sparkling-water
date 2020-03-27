@@ -29,6 +29,12 @@ From 3.30 to 3.32
   use ``H2OGBM`` instead. The classes wrapping these methods are removed as well. This removal affects only Scala API
   as other APIs don't have such functionality.
 
+- The configuration option ``spark.ext.h2o.external.kerberos.principal`` was replaced
+  with the option ``spark.ext.h2o.kerberos.principal``.
+
+- The configuration option ``spark.ext.h2o.external.kerberos.keytab`` was replaced
+  with the option ``spark.ext.h2o.kerberos.keytab``.
+
 From 3.28.1 to 3.30
 -------------------
 

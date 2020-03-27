@@ -166,6 +166,10 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | master/h2o-docs/src/product/           |
 |                                                    |                |                                                 | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.kerberos.principal``               | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                    |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.kerberos.keytab``                  | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                       |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |
@@ -315,10 +319,6 @@ External backend configuration properties
 |                                                       |                |                                                 | kill the cluster and then itself in |
 |                                                       |                | ``setKillOnUnhealthyClusterDisabled()``         | case some nodes in the cluster      |
 |                                                       |                |                                                 | report unhealthy status.            |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                 |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.kerberos.keytab``            | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                    |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.run.as.user``                | ``None``       | ``setRunAsUser(String)``                        | Impersonated Hadoop user.           |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+

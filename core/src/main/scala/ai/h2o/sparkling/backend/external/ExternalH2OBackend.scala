@@ -255,16 +255,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
 object ExternalH2OBackend extends ExternalBackendUtils {
 
-  def checkAndUpdateConf(conf: H2OConf, sparkUser: String): H2OConf = {
-    val updatedConf = checkAndUpdateConf(conf)
-    if (updatedConf.isAutoClusterStartUsed && updatedConf.isHiveSupportEnabled && updatedConf.runAsUser.isEmpty) {
-      logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
-        " since hive support is enabled and the property wasn't defined.")
-      updatedConf.setRunAsUser(sparkUser)
-    }
-    updatedConf
-  }
-
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
 
@@ -328,6 +318,18 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         conf.setClusterInfoFile("notify_" + conf.cloudName.get)
       }
 
+      if (conf.getOption("spark.ext.h2o.external.kerberos.principal").isDefined && conf.kerberosPrincipal.isEmpty) {
+        logWarning(s"The option 'spark.ext.h2o.external.kerberos.principal' is deprecated and will be removed in version 3.32." +
+          s" Use '${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}' instead.")
+        conf.setKerberosPrincipal(conf.get("spark.ext.h2o.external.kerberos.principal"))
+      }
+
+      if (conf.getOption("spark.ext.h2o.external.kerberos.keytab").isDefined && conf.kerberosKeytab.isEmpty) {
+        logWarning(s"The option 'spark.ext.h2o.external.kerberos.keytab' is deprecated and will be removed in version 3.32." +
+          s" Use '${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}' instead.")
+        conf.setKerberosKeytab(conf.get("spark.ext.h2o.external.kerberos.keytab"))
+      }
+
       if (conf.getOption("spark.yarn.principal").isDefined &&
         conf.kerberosPrincipal.isEmpty) {
         logInfo(s"spark.yarn.principal provided and ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} is" +
@@ -356,6 +358,13 @@ object ExternalH2OBackend extends ExternalBackendUtils {
              |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
              |  been just ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}
           """.stripMargin)
+      }
+
+      if (conf.isHiveSupportEnabled && conf.runAsUser.isEmpty) {
+        val sparkUser = SparkSessionUtils.active.sparkContext.sparkUser
+        logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
+          " since hive support is enabled and the property wasn't defined.")
+        conf.setRunAsUser(sparkUser)
       }
     } else {
       if (conf.cloudName.isEmpty) {
