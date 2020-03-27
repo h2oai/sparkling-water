@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkContext

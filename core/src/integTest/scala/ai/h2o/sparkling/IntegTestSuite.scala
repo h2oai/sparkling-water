@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling
 
 import ai.h2o.sparkling.ml.utils.{ComplexSchema, SchemaUtils}
 import org.apache.spark.SparkContext
