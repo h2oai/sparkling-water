@@ -39,8 +39,7 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
     TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
-      val value = vec.at(rowIdx) // value stored at rowIdx-th
-      // Using == since int should be mapped strictly to doubles
+      val value = vec.at(rowIdx)
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
 
