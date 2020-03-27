@@ -97,6 +97,39 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
+  test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
+    val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
+    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+
+    val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
+    val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
+
+    // give it 10 attempts to observe the buggy behaviour
+    val mismatch = (0 until 10).exists { _ =>
+      val counts = (0 until 5).map(_ => sampleA.except(sampleB).count)
+      // The elements shouldn't be the same in this case
+      val first = counts.head
+      counts.exists(c => c != first)
+    }
+    assert(mismatch, "The non-deterministic behaviour should be observable when BroadcastHashJoins are allowed")
+  }
+
+  test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Positive test") {
+    val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
+    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+
+    // disable BroadcastHashJoins
+    sqlContext.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
+    val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
+    val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
+
+    val counts = (0 until 5).map(_ => sampleA.except(sampleB).count)
+    // check whether all elements are the same
+    val first = counts.head
+    val mismatch = counts.exists(c => c != first)
+    assert(!mismatch, "Number of elements in all samples should be the same since BroadcastHashJoins aren't used")
+  }
+
   private def testFlatteningOnComplexType(settings: TestFrameUtils.GenerateDataFrameSettings, expectedNumberOfColumns: Int): Unit = {
     trackTime {
       val complexDF = TestFrameUtils.generateDataFrame(spark, ComplexSchema, settings)
@@ -111,7 +144,7 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
-  def trackTime[R](block: => R): R = {
+  private def trackTime[R](block: => R): R = {
     val t0 = System.nanoTime()
     val result = block // evaluate block
     val t1 = System.nanoTime()
