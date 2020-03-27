@@ -163,6 +163,8 @@ private[backend] object Writer {
     val endpoint = getClusterEndpoint(conf)
     val parameters = Map("number_of_chunks" -> numberOfPartitions)
     val rawPlan = query[UploadPlanV3](endpoint, Paths.UPLOAD_PLAN, conf, parameters)
-    rawPlan.layout.map(ca => ca.chunk_id -> NodeDesc(ca.node_idx.toString, ca.ip, ca.port)).toMap
+    rawPlan.layout.map { chunkAssignment =>
+      chunkAssignment.chunk_id -> NodeDesc(chunkAssignment.node_idx.toString, chunkAssignment.ip, chunkAssignment.port)
+    }.toMap
   }
 }
