@@ -17,8 +17,11 @@
 
 package ai.h2o.sparkling.backend.utils
 
+import java.io.File
+
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 import water.network.SecurityUtils.SSLCredentials
@@ -51,8 +54,8 @@ private[backend] object SecurityUtils {
 
   private def generateSSLPair(namePrefix: String): SSLCredentials = {
     val nanoTime = System.nanoTime
-    val temp = Utils.createTempDir(s"h2o-internal-jks-$nanoTime")
+    val tmpDir = new File(Utils.getLocalDir(SparkEnv.get.conf))
     val name = s"$namePrefix-$nanoTime.jks"
-    H2OSecurityUtils.generateSSLPair(H2OSecurityUtils.passwordGenerator(16), name, temp.toPath.toAbsolutePath.toString)
+    H2OSecurityUtils.generateSSLPair(H2OSecurityUtils.passwordGenerator(16), name, tmpDir.toPath.toAbsolutePath.toString)
   }
 }

@@ -28,7 +28,7 @@ import pytest
 
 def testZombieExternalH2OCluster():
     jarPath = os.environ['H2O_DRIVER_JAR']
-    notifyFile = "notify.txt"
+    notifyFile = "build/notify.txt"
     subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
     ipPort = getIpPortFromNotifyFile(notifyFile)
     appId = getYarnAppIdFromNotifyFile(notifyFile)

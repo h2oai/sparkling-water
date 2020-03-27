@@ -7,9 +7,8 @@
 
 import pytest
 from pysparkling.context import H2OContext
-from tests.integration.external_only.external_backend_test_utils import *
 
-from tests.unit_test_utils import *
+from tests.integration.external_only.external_backend_test_utils import *
 
 
 def testSSL(spark):
@@ -52,7 +51,7 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     conf = createH2OConf()
     conf.setHashLoginEnabled()
     conf.setCloudName("test-cluster")
-    conf.setClusterInfoFile("notify_file.txt")
+    conf.setClusterInfoFile("build/notify_file.txt")
     conf.setLoginConf("build/login.conf")
 
     with pytest.raises(Exception):

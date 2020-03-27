@@ -17,6 +17,7 @@
 
 import time
 
+from tests.integration.external_only.external_backend_test_utils import *
 from tests.integration.integ_test_utils import *
 
 
