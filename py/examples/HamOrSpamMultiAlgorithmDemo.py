@@ -80,13 +80,15 @@ def trainPipelineModel(idf, hashingTF, stopWordsRemover, tokenizer, algoStage, d
     ## Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
     ## to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
     ## directory for the current user. Absolute paths can be used as wells. The same holds for the model import/export bellow.
-    pipeline.write().overwrite().save("../build/pipeline")
-    loaded_pipeline = Pipeline.load("../build/pipeline")
+    pipelinePath = "file://" + os.path.abspath("../build/pipeline")
+    pipeline.write().overwrite().save(pipelinePath)
+    loaded_pipeline = Pipeline.load(pipelinePath)
 
     ## Train the pipeline model
+    modelPath = "file://" + os.path.abspath("../build/model")
     model = loaded_pipeline.fit(data)
-    model.write().overwrite().save("../build/model")
-    return PipelineModel.load("../build/model")
+    model.write().overwrite().save(modelPath)
+    return PipelineModel.load(modelPath)
 
 
 def isSpam(smsText, model):

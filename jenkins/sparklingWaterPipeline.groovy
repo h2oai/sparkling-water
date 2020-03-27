@@ -74,7 +74,7 @@ String getDockerImageVersion() {
 
 def withDocker(config, code) {
     def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
-    retryWithDelay(3, 120,{
+    retryWithDelay(3, 120, {
         withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
             sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
             sh "docker pull harbor.h2o.ai/${image}"
@@ -225,8 +225,10 @@ def prepareSparklingWaterEnvironment() {
     return { config ->
         stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
             if (config.buildAgainstH2OBranch.toBoolean()) {
+                retryWithDelay(3, 60, {
+                sh "git clone https://github.com/h2oai/h2o-3.git"
+                })
                 sh """
-                        git clone https://github.com/h2oai/h2o-3.git
                         cd h2o-3
                         git checkout ${config.h2oBranch}
                         . /envs/h2o_env_python2.7/bin/activate
