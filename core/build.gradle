@@ -137,6 +137,10 @@ test {
 
 integTest {
     systemProperty "spark.ext.h2o.rest.api.based.client", "false"
+
+    if (detectBackendClusterMode() == "external") {
+        exclude 'ai/h2o/sparkling/internal/**'
+    }
 }
 
 processResources.dependsOn createSparkVersionFile
