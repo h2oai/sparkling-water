@@ -82,16 +82,6 @@ String getSystemSparkVersion() {
     return version_line.replaceAll(".*version ", "")
 }
 
-
-String getHdpVersion() {
-    String sh =
-            [project.hasProperty("hdpVersion") ? project["hdpVersion"] : null,
-             System.properties['HDP_VERSION'],
-             System.env['HDP_VERSION']
-            ].find { h -> h != null }
-    return sh
-}
-
 void checkSparkVersion() {
     String systemSparkVersion = getSystemSparkVersion()
     String majorSparkVersion = systemSparkVersion.count(".") == 1 ? systemSparkVersion : systemSparkVersion.substring(0, systemSparkVersion.lastIndexOf('.'))
@@ -102,7 +92,6 @@ void checkSparkVersion() {
 
 ext.sparkHome = getSparkHome()
 ext.sparkMaster = getSparkMaster()
-ext.hdpVersion = getHdpVersion()
 ext.checkSparkVersion = this.&checkSparkVersion
 
 // Run the check but not at configuration time!

@@ -41,10 +41,6 @@ task integTest(type: Test) {
     systemProperty "spark.ext.h2o.rest.api.based.client", "true"
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
-    systemProperty "sparkling.test.hdp.version", "${hdpVersion}"
-    systemProperty "spark.driver.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-    systemProperty "spark.yarn.am.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
-    systemProperty "spark.executor.extraJavaOptions", "-Dhdp.version=${hdpVersion}"
 
     // Show standard out and standard error of the test JVM(s) on the console
     testLogging.showStandardStreams = true
