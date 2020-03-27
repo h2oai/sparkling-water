@@ -30,14 +30,8 @@ config <- c(config, list(
 ))
 
 locate <- function(fileName) {
-  firstPath <- file.path("/home/0xdiag/", fileName)
-  if (file.exists(firstPath)) {
-    firstPath
-  } else {
-    normalizePath(file.path("../../../../examples/", fileName))
-  }
+  normalizePath(file.path("../../../../examples/", fileName))
 }
-
 
 test_that("test MOJO predictions", {
   sc <- spark_connect(master = "local[*]", config = config)
