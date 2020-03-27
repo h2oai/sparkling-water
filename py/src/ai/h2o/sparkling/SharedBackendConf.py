@@ -370,7 +370,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.hivePrincipal())
 
     def hiveJdbcUrlPattern(self):
-        return self._get_option(self._jconf.hiveJdbcUrlPattern())
+        return self._jconf.hiveJdbcUrlPattern()
 
     def kerberosPrincipal(self):
         return self._get_option(self._jconf.kerberosPrincipal())

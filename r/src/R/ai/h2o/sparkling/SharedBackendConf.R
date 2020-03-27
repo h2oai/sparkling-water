@@ -128,9 +128,9 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     isHiveSupportEnabled = function() { invoke(jconf, "isHiveSupportEnabled") },
 
-    hiveHost = function() { invoke(jconf, "hiveHost") },
+    hiveHost = function() { ConfUtils.getOption(invoke(jconf, "hiveHost")) },
 
-    hivePrincipal = function() { invoke(jconf, "hivePrincipal") },
+    hivePrincipal = function() { ConfUtils.getOption(invoke(jconf, "hivePrincipal")) },
 
     hiveJdbcUrlPattern = function() { invoke(jconf, "hiveJdbcUrlPattern") },
 

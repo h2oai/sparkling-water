@@ -145,7 +145,7 @@ trait SharedBackendConf {
 
   def hivePrincipal: Option[String] = sparkConf.getOption(PROP_HIVE_PRINCIPAL._1)
 
-  def hiveJdbcUrlPattern: Option[String] = sparkConf.getOption(PROP_HIVE_JDBC_URL_PATTERN._1)
+  def hiveJdbcUrlPattern: String = sparkConf.get(PROP_HIVE_JDBC_URL_PATTERN._1, PROP_HIVE_JDBC_URL_PATTERN._2)
 
   def kerberosPrincipal: Option[String] = sparkConf.getOption(PROP_KERBEROS_PRINCIPAL._1)
 
@@ -504,11 +504,15 @@ object SharedBackendConf {
    */
   val PROP_HIVE_SUPPORT_ENABLED: (String, Boolean) = ("spark.ext.h2o.hive.enabled", false)
 
+  /** The full address of HiveServer2, for example hostname:10000 */
   val PROP_HIVE_HOST: (String, None.type) = ("spark.ext.h2o.hive.host", None)
 
+  /** Hiveserver2 Kerberos principal, for example hive/hostname@DOMAIN.COM */
   val PROP_HIVE_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.hive.principal", None)
 
-  val PROP_HIVE_JDBC_URL_PATTERN: (String, None.type) = ("spark.ext.h2o.hive.jdbc_url_pattern", None)
+  /** Can be used to further customize the way the driver constructs the Hive JDBC URL */
+  val PROP_HIVE_JDBC_URL_PATTERN: (String, String) =
+    ("spark.ext.h2o.hive.jdbc_url_pattern", "jdbc:hive2://{{host}}/;principal={{principal}}")
 
   /** Kerberos principal */
   val PROP_KERBEROS_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.kerberos.principal", None)
