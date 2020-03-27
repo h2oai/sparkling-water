@@ -33,7 +33,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
 
-  test("verify H2O cloud building on local cluster") {
+  test("Verify H2O cluster builds on local cluster") {
     val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
     if (hc.getConf.runsInInternalClusterMode) {
       assert(hc.getH2ONodes().length == 2)
@@ -42,7 +42,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
-  test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV") {
+  test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV in distributed environment") {
     val rdd = sc.parallelize(1 to 100, 2)
     val h2oFrame = hc.asH2OFrame(rdd)
     assert(h2oFrame.anyVec().nChunks() == 2)
@@ -55,12 +55,12 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     assert(convertedDf.columns.length == h2oFrame.names().length)
   }
 
-  test("Task killed but frame still converted successfully") {
+  test("H2OFrame High Availability: Task killed but frame still converted successfully") {
     val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v))).map { d =>
       import org.apache.spark.TaskContext
       val tc = TaskContext.get()
       if (tc.attemptNumber == 0) {
-        throw new Exception("Failing first attempt")
+        throw new Exception("Failing first attempt!")
       } else {
         d
       }
@@ -77,7 +77,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
-  test("flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
+  test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
     val settings = TestFrameUtils.GenerateDataFrameSettings(
       numberOfRows = 200,
@@ -86,7 +86,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
-  test("flattenDataFrame should process a complex data frame with 100k rows and 2k columns") {
+  test("SchemaUtils: flattenDataFrame should process a complex data frame with 100k rows and 2k columns") {
     val expectedNumberOfColumns = 2000
     val settings = TestFrameUtils.GenerateDataFrameSettings(
       numberOfRows = 100000,
@@ -95,7 +95,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
-  test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
+  test("Spark Known Issues: PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
     val df = spark.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
@@ -112,7 +112,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     assert(mismatch, "The non-deterministic behaviour should be observable when BroadcastHashJoins are allowed")
   }
 
-  test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Positive test") {
+  test("Spark Known Issues: PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Positive test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
     val df = spark.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
