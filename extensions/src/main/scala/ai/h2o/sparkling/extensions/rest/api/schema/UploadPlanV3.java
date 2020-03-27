@@ -20,17 +20,15 @@ package ai.h2o.sparkling.extensions.rest.api.schema;
 import water.H2ONode;
 import water.Iced;
 import water.api.API;
-import water.api.schemas3.FrameChunksV3;
 import water.api.schemas3.RequestSchemaV3;
 import water.api.schemas3.SchemaV3;
-import water.fvec.Vec;
 
 public class UploadPlanV3 extends RequestSchemaV3<Iced, UploadPlanV3> {
 
-    @API(help = "Required number of chunks", direction = API.Direction.INOUT)
+    @API(help = "Required number of chunks", direction = API.Direction.INPUT)
     public int number_of_chunks = -1;
 
-    @API(help = "Column Names", direction = API.Direction.INPUT)
+    @API(help = "Column Names", direction = API.Direction.OUTPUT)
     public ChunkAssigmentV3[] layout = null;
 
     public static class ChunkAssigmentV3 extends SchemaV3<Iced, UploadPlanV3.ChunkAssigmentV3> {
