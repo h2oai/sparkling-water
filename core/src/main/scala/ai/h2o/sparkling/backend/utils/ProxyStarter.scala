@@ -34,7 +34,7 @@ object ProxyStarter extends Logging {
     var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
-        port = findNextFreeFlowPort(conf.clientWebPort, port)
+        port = findNextFreeFlowPort(conf.clientWebPort, port + 1)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         val server = new Server(pool)

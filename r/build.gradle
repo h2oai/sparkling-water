@@ -64,8 +64,6 @@ task cleanR(type: Delete) {
 
 task test(type: Exec, dependsOn: distR) {
     environment["spark.version"] = sparkVersion
-    // ensure that nightly tests can be run
-    environment["NOT_CRAN"] = "true"
     environment["SPARK_HOME"] = sparkHome
     environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
