@@ -11,10 +11,6 @@ properties(
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run Scala integration tests'),
                                 booleanParam(name: 'runPyIntegTests', defaultValue: true, description: 'Run Python integration tests'),
-                                choice(
-                                        choices: 'hdp2.2\nhdp2.3\nhdp2.4\nhdp2.5\nhdp2.6\ncdh5.4\ncdh5.5\ncdh5.6\ncdh5.7\ncdh5.8\ncdh5.10\nmapr4.0\nmapr5.0\nmapr5.1\nmapr5.2\niop4.2',
-                                        description: 'Hadoop version for which H2O driver is obtained, used only in external mode',
-                                        name: 'driverHadoopVersion'),
                                 booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.'),
                                 string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true'),
                                 choice(
@@ -52,7 +48,7 @@ pipeline(params) { p ->
     buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
     h2oBranch = "${p.h2oBranch}"
     hadoopVersion = "2.7"
-    driverHadoopVersion = "${p.driverHadoopVersion}"
+    driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
     backendMode = "${p.backendMode}"
 }
