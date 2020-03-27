@@ -164,16 +164,6 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
 
 object ExternalH2OBackend extends SharedBackendUtils {
 
-  def checkAndUpdateConf(conf: H2OConf, sparkUser: String): H2OConf = {
-    val updatedConf = checkAndUpdateConf(conf)
-    if (updatedConf.isAutoClusterStartUsed && updatedConf.isHiveSupportEnabled && updatedConf.runAsUser.isEmpty) {
-      logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
-        " since hive support is enabled and the property wasn't defined.")
-      updatedConf.setRunAsUser(sparkUser)
-    }
-    updatedConf
-  }
-
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
     // Increase locality timeout since h2o-specific tasks can be long computing

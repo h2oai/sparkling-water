@@ -29,6 +29,7 @@ From 3.30 to 3.32
   use ``H2OGBM`` instead. The classes wrapping these methods are removed as well. This removal affects only Scala API
   as other APIs don't have such functionality.
 
+<<<<<<< HEAD
 - The method ``splitFrame`` and ``split`` in ``water.support.H2OFrameSupport`` is removed. Please use
   ``ai.h2o.sparkling.H2OFrame(frameKeyString).split(ratios)`` instead.
 
@@ -95,12 +96,11 @@ From 3.30 to 3.32
 
   The ``JoinMethod`` enum is removed as it is no longer required.
 
-- The methods ``setKerberosPrincipal`` and ``kerberosPrincipal`` on ``H2OConf`` were removed in all Sparkling Water APIs.
-  Their role is now fulfilled by the generic methods ``get`` and ``set`` and the Spark option ``spark.yarn.principal``.
+- The configuration option ``spark.ext.h2o.external.kerberos.principal`` was replaced
+  with the option ``spark.ext.h2o.kerberos.principal``.
 
-- The methods ``setKerberosKeytab`` and ``kerberosKeytab`` on ``H2OConf`` were removed in all Sparkling Water APIs.
-  Their role is now fulfilled by the generic methods ``get`` and ``set`` and the Spark option ``spark.yarn.keytab``.
-
+- The configuration option ``spark.ext.h2o.external.kerberos.keytab`` was replaced
+  with the option ``spark.ext.h2o.kerberos.keytab``.
 
 From 3.28.1 to 3.30
 -------------------
