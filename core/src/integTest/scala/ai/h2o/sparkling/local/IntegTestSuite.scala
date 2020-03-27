@@ -49,7 +49,7 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
     val updatedFrame = h2oFrame.add(h2oFrame)
 
     val convertedDf = hc.asDataFrame(updatedFrame)
-    convertedDf.collect() // trigger materialization
+    convertedDf.collect()
 
     assert(convertedDf.count() == h2oFrame.numRows())
     assert(convertedDf.columns.length == h2oFrame.names().length)
@@ -70,12 +70,10 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
 
     TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
-      val value = vec.at(rowIdx) // value stored at rowIdx-th
-      // Using == since int should be mapped strictly to doubles
+      val value = vec.at(rowIdx)
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
 
-    // Clean up
     h2oFrame.delete()
   }
 
@@ -99,7 +97,7 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
-    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+    val df = spark.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
@@ -116,10 +114,10 @@ class IntegTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Positive test") {
     val dataFile = getClass.getResource("/PUBDEV-3808_one_nullable_column.parquet").getFile
-    val df = sqlContext.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
+    val df = spark.read.parquet(dataFile).repartition(1).select("id", "strfeat0")
 
     // disable BroadcastHashJoins
-    sqlContext.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
+    spark.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
     val sampleA = df.sample(withReplacement = false, 0.1, seed = 0)
     val sampleB = df.sample(withReplacement = false, 0.1, seed = 0)
 
