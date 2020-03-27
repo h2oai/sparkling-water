@@ -114,11 +114,11 @@ trait SharedBackendUtils extends Logging with Serializable {
     if (conf.isHiveSupportEnabled) {
       if (conf.kerberosPrincipal.isEmpty) {
         throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL}' must be defined.")
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_KERBEROS_PRINCIPAL}' must be defined.")
       }
       if (conf.kerberosKeytab.isEmpty) {
         throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB}' must be defined.")
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_KERBEROS_KEYTAB}' must be defined.")
       }
       if (conf.hiveHost.isEmpty) {
         throw new IllegalArgumentException(

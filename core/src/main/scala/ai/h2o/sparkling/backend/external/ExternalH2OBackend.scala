@@ -255,6 +255,16 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
 
 object ExternalH2OBackend extends ExternalBackendUtils {
 
+  def checkAndUpdateConf(conf: H2OConf, sparkUser: String): H2OConf = {
+    val updatedConf = checkAndUpdateConf(conf)
+    if (updatedConf.isAutoClusterStartUsed && updatedConf.isHiveSupportEnabled && updatedConf.runAsUser.isEmpty) {
+      logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
+        " since hive support is enabled and the property wasn't defined.")
+      updatedConf.setRunAsUser(sparkUser)
+    }
+    updatedConf
+  }
+
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     super.checkAndUpdateConf(conf)
 
@@ -320,31 +330,31 @@ object ExternalH2OBackend extends ExternalBackendUtils {
 
       if (conf.getOption("spark.yarn.principal").isDefined &&
         conf.kerberosPrincipal.isEmpty) {
-        logInfo(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
+        logInfo(s"spark.yarn.principal provided and ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.set(ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, conf.get("spark.yarn.principal"))
+        conf.set(SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1, conf.get("spark.yarn.principal"))
       }
 
       if (conf.getOption("spark.yarn.keytab").isDefined &&
         conf.kerberosKeytab.isEmpty) {
-        logInfo(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
+        logInfo(s"spark.yarn.keytab provided and ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.set(ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1, conf.get("spark.yarn.keytab"))
+        conf.set(SharedBackendConf.PROP_KERBEROS_KEYTAB._1, conf.get("spark.yarn.keytab"))
       }
 
       if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
         throw new IllegalArgumentException(
           s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
+             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
+             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}
           """.stripMargin)
       } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
         throw new IllegalArgumentException(
           s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
+             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
+             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}
           """.stripMargin)
       }
     } else {
