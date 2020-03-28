@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.local
+package ai.h2o.sparkling.internal
 
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkContext
@@ -24,6 +24,10 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
+/**
+ * This test is being run only in internal backend mode as it does not make sense
+ * to verify this functionality on external backend where we run H2O outside of Spark
+ */
 @RunWith(classOf[JUnitRunner])
 class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestContext {
 
@@ -39,12 +43,10 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
     TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
-      val value = vec.at(rowIdx) // value stored at rowIdx-th
-      // Using == since int should be mapped strictly to doubles
+      val value = vec.at(rowIdx)
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
 
-    // Clean up
     h2oFrame.delete()
   }
 
