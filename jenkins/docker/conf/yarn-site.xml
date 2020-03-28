@@ -35,14 +35,14 @@
         <name>yarn.application.classpath</name>
         <value>
             ${HADOOP_CONF_DIR},
-            /usr/hdp/2.2.6.3-1/hadoop-yarn/*,
-            /usr/hdp/2.2.6.3-1/hadoop-yarn/lib/*,
-            /usr/hdp/2.2.6.3-1/hadoop/*,
-            /usr/hdp/2.2.6.3-1/hadoop/lib/*,
-            /usr/hdp/2.2.6.3-1/hadoop-hdfs/*,
-            /usr/hdp/2.2.6.3-1/hadoop-hdfs/lib/*,
-            /usr/hdp/2.2.6.3-1/hadoop-mapreduce/*,
-            /usr/hdp/2.2.6.3-1/hadoop-mapreduce/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-yarn/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-yarn/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop/*,
+            /usr/hdp/${HDP_VERSION}/hadoop/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-hdfs/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-hdfs/lib/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-mapreduce/*,
+            /usr/hdp/${HDP_VERSION}/hadoop-mapreduce/lib/*,
             ${HIVE_HOME}/conf,
             ${HIVE_HOME}/lib/*
         </value>
