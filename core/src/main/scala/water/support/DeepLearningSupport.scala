@@ -26,6 +26,7 @@ import org.apache.spark.h2o._
 /**
  * Support class to create and train Deep Learning Model
  */
+@Deprecated
 trait DeepLearningSupport extends Logging {
 
   /**
@@ -73,5 +74,5 @@ trait DeepLearningSupport extends Logging {
   }
 }
 
-// Create companion object
+@Deprecated
 object DeepLearningSupport extends DeepLearningSupport
