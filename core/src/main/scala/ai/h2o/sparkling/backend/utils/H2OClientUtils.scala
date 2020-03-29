@@ -23,6 +23,7 @@ import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.api.RestAPIManager
 import org.apache.spark.SparkEnv
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import water.fvec.Frame
 import water.init.HostnameGuesser
 import water.{H2O, H2OStarter, Paxos}
 
@@ -140,4 +141,23 @@ object H2OClientUtils extends SharedBackendUtils {
     }
     None
   }
+
+  /**
+    * This method should be used whenever the Frame needs to be updated. This method ensures to use proper
+    * locking mechanism.
+    *
+    * @param fr frame to update
+    * @param f  function to run on the frame
+    * @tparam T H2O Frame Type
+    * @return returns the updated frame
+    */
+  def withLockAndUpdate[T <: Frame](fr: T)(f: T => Any): T = {
+    fr.write_lock()
+    f(fr)
+    // Update frame in DKV
+    fr.update()
+    fr.unlock()
+    fr
+  }
+
 }

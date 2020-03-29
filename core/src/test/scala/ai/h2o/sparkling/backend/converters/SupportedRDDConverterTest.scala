@@ -20,6 +20,7 @@ import java.io.File
 import java.sql.Timestamp
 
 import ai.h2o.sparkling.SparkTimeZone
+import ai.h2o.sparkling.backend.utils.H2OClientUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
 import org.apache.spark.h2o.testdata._
@@ -35,7 +36,6 @@ import org.scalatest.junit.JUnitRunner
 import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
-import water.support.H2OFrameSupport
 
 /**
   * Testing schema for rdd  to h2o frame transformations.
@@ -594,7 +594,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
 
   test("H2OFrame with categorical column into RDD") {
     val hf = hc.asH2OFrame(sc.parallelize(1 to 100).map(_.toString))
-    H2OFrameSupport.withLockAndUpdate(hf) {
+    H2OClientUtils.withLockAndUpdate(hf) {
       _.replace(0, hf.vec(0).toCategoricalVec).remove()
     }
     val rdd = hc.asRDD[StringHolder](hf)

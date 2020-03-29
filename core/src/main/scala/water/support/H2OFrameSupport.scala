@@ -16,19 +16,20 @@
  */
 package water.support
 
-import hex.FrameSplitter
-import hex.splitframe.ShuffleSplitFrame
-import water.Key
-import water.fvec.Frame
+import ai.h2o.sparkling.backend.utils.H2OClientUtils
+import ai.h2o.sparkling.macros.DeprecatedMethod
+import org.apache.spark.expose.Logging
+import water.fvec.{Frame, H2OFrame}
 
 /**
   * Support class to ease work with H2O Frames
   */
-trait H2OFrameSupport extends JoinSupport {
+@Deprecated
+trait H2OFrameSupport extends JoinSupport with Logging {
 
   /**
     * Split & Shuffle H2O Frame into multiple frames according to specified ratios. The output keys need to be specified
-    * in advance. The order of the data is not kept.
+    * in advance.
     *
     * @param fr     frame to split
     * @param keys   output keys
@@ -36,15 +37,14 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame Type
     * @return array of frames
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).split(ratios)", "3.32")
   def splitFrame[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    val ks = keys.map(Key.make[Frame](_)).toArray
-    val frs = ShuffleSplitFrame.shuffleSplitFrame(fr, ks, ratios.toArray, 1234567689L)
-    frs
+    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios.toArray).map(fr => new H2OFrame(fr.frameId))
   }
 
   /**
     * Split H2O Frame into multiple frames according to specified ratios. The output keys need to be specified
-    * in advance. This method keeps the order of the data
+    * in advance.
     *
     * @param fr     frame to split
     * @param keys   output keys
@@ -52,12 +52,9 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame Type
     * @return array of frames
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).split(ratios)", "3.32")
   def split[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    val ks = keys.map(Key.make[Frame](_)).toArray
-    val splitter = new FrameSplitter(fr, ratios.toArray, ks, null)
-    water.H2O.submitTask(splitter)
-    // return results
-    splitter.getResult
+    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios.toArray).map(fr => new H2OFrame(fr.frameId))
   }
 
   /**
@@ -69,27 +66,9 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame Type
     * @return returns the updated frame
     */
+  @DeprecatedMethod("ai.h2o.sparkling.backend.utils.H2OClientUtils.withLockAndUpdate", "3.32")
   def withLockAndUpdate[T <: Frame](fr: T)(f: T => Any): T = {
-    fr.write_lock()
-    f(fr)
-    // Update frame in DKV
-    fr.update()
-    fr.unlock()
-    fr
-  }
-
-  /**
-    * Update the frame in DKV
-    *
-    * @param fr frame to update
-    * @tparam T type of H2O frame
-    * @return returns updated frame
-    */
-  def lockAndUpdate[T <: Frame](fr: T): T = {
-    fr.write_lock()
-    fr.update()
-    fr.unlock()
-    fr
+    H2OClientUtils.withLockAndUpdate(fr)(f)
   }
 
   /**
@@ -102,13 +81,10 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame type
     * @return frame with string columns replaced by categoricals
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).convertAllStringColumnsToCategorical(ratios)", "3.32")
   def allStringVecToCategorical[T <: Frame](fr: T): T = {
-    withLockAndUpdate(fr) { fr =>
-      fr.vecs()
-        .indices
-        .filter(idx => fr.vec(idx).isString)
-        .foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
-    }
+    val restFrame = ai.h2o.sparkling.H2OFrame(fr._key.toString).convertAllStringColumnsToCategorical()
+    new H2OFrame(restFrame.frameId).asInstanceOf[T]
   }
 
   /**
@@ -119,10 +95,10 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame type
     * @return frame with specified columns replaced by categoricals
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).convertColumnsToCategorical(ratios)", "3.32")
   def columnsToCategorical[T <: Frame](fr: T, colIndices: Array[Int]): T = {
-    withLockAndUpdate(fr) { fr =>
-      colIndices.foreach(idx => fr.replace(idx, fr.vec(idx).toCategoricalVec).remove())
-    }
+    val restFrame = ai.h2o.sparkling.H2OFrame(fr._key.toString).convertColumnsToCategorical(colIndices)
+    new H2OFrame(restFrame.frameId).asInstanceOf[T]
   }
 
   /**
@@ -133,9 +109,12 @@ trait H2OFrameSupport extends JoinSupport {
     * @tparam T H2O Frame type
     * @return frame with specified columns replaced by categoricals
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).convertColumnsToCategorical(ratios)", "3.32")
   def columnsToCategorical[T <: Frame](fr: T, colNames: Array[String]): T = {
-    columnsToCategorical(fr, colNames.map(fr.names().indexOf(_)))
+    val restFrame = ai.h2o.sparkling.H2OFrame(fr._key.toString).convertColumnsToCategorical(colNames)
+    new H2OFrame(restFrame.frameId).asInstanceOf[T]
   }
 }
 
+@Deprecated
 object H2OFrameSupport extends H2OFrameSupport

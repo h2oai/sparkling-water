@@ -52,7 +52,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
-  test("convertColumnsToCategorical") {
+  test("convertColumnsToCategorical with column names") {
     val originalFrame = uploadH2OFrame()
     val columnsToConvert = Array("ID", "AGE")
     val alteredFrame = originalFrame.convertColumnsToCategorical(columnsToConvert)
@@ -67,22 +67,36 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
-  test("splitFrameToTrainAndValidationFrames with ratio 1.0") {
+  test("convertColumnsToCategorical with column indices") {
+    val originalFrame = uploadH2OFrame()
+    val columnsToConvert = Array(0, 1)
+    val alteredFrame = originalFrame.convertColumnsToCategorical(columnsToConvert)
+    val convertedColumns =
+      alteredFrame.columns.zipWithIndex.filter(colInfo => columnsToConvert.contains(colInfo._2)).map(_._1)
+    // Verify that columns we asked to convert to categorical has been converted
+    convertedColumns.foreach { col =>
+      assert(col.dataType == H2OColumnType.`enum`)
+    }
+    // Check that all other columns remained unchanged
+    alteredFrame.columns.diff(convertedColumns) foreach { col =>
+      assert(col.dataType == originalFrame.columns.find(_.name == col.name).get.dataType)
+    }
+  }
+
+  test("split with ratio 1.0") {
     val originalFrame = uploadH2OFrame()
     val thrown = intercept[IllegalArgumentException] {
-      originalFrame.splitToTrainAndValidationFrames(1.0)
+      originalFrame.split(1.0)
     }
     assert(thrown.getMessage == "Split ratio must be lower than 1.0")
   }
 
-  test("splitFrameToTrainAndValidationFrames with ratio lower than 1.0") {
+  test("split with ratio lower than 1.0") {
     val originalFrame = uploadH2OFrame()
-    val splitFrames = originalFrame.splitToTrainAndValidationFrames(0.9)
+    val splitFrames = originalFrame.split(0.9)
     assert(splitFrames.length == 2)
     val train = splitFrames(0)
     val valid = splitFrames(1)
-    assert(train.frameId == s"${originalFrame.frameId}_train")
-    assert(valid.frameId == s"${originalFrame.frameId}_valid")
     assert(train.numberOfRows == 342)
     assert(valid.numberOfRows == 38)
   }

@@ -29,6 +29,19 @@ From 3.30 to 3.32
   use ``H2OGBM`` instead. The classes wrapping these methods are removed as well. This removal affects only Scala API
   as other APIs don't have such functionality.
 
+- The method ``splitFrame`` and ``split`` in ``water.support.H2OFrameSupport`` is removed. Please use
+  ``ai.h2o.sparkling.H2OFrame(frameKeyString).split(ratios)`` instead.
+
+- The method ``withLockAndUpdate`` in ``water.support.H2OFrameSupport`` is removed. Please use
+  ``ai.h2o.sparkling.backend.utils.H2OClientUtils.withLockAndUpdate`` instead.
+
+- The method ``allStringVecToCategorical`` and ``split`` in ``water.support.H2OFrameSupport`` is removed. Please use
+  ``ai.h2o.sparkling.H2OFrame(frameKeyString).convertAllStringColumnsToCategorical`` instead.
+
+- The methods ``columnsToCategorical`` with both indices and column names argument in ``water.support.H2OFrameSupport`` are removed. Please use
+  ``ai.h2o.sparkling.H2OFrame(frameKeyString).convertColumnsToCategorical`` instead.
+
+
 From 3.28.1 to 3.30
 -------------------
 

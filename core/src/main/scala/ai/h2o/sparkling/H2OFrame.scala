@@ -51,33 +51,48 @@ class H2OFrame private (
   }
 
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
-    val endpoint = getClusterEndpoint(conf)
     val indices = columnNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>
       indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
     }
-    if (selectedIndices.isEmpty) {
+    convertColumnsToCategorical(selectedIndices)
+  }
+
+  def convertColumnsToCategorical(columnIndices: Array[Int]): H2OFrame = {
+    val nonExisting = columnNames.indices.intersect(columnIndices)
+    if (nonExisting.nonEmpty) {
+      throw new IllegalArgumentException(
+        s"Columns with indices ${nonExisting.mkString} are not in the frame $frameId." +
+          s" The frame has ${columnNames.length} columns.")
+    }
+    val endpoint = getClusterEndpoint(conf)
+    if (columnIndices.isEmpty) {
       this
     } else {
-      val params = Map("ast" -> MessageFormat
-        .format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, stringifyArray(selectedIndices)))
+      val params = Map(
+        "ast" -> MessageFormat
+          .format(s"( assign {0} (:= {0} (as.factor (cols {0} {1})) {1} []))", frameId, stringifyArray(columnIndices)))
       val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
       H2OFrame(rapidsFrameV3.key.name)
     }
   }
 
-  def splitToTrainAndValidationFrames(splitRatio: Double): Array[H2OFrame] = {
-    if (splitRatio >= 1.0) {
-      throw new IllegalArgumentException("Split ratio must be lower than 1.0")
+  def split(splitRatios: Array[Double]): Array[H2OFrame] = {
+    if (splitRatios.sum >= 1.0) {
+      throw new IllegalArgumentException("Split ratios must be lower than 1.0")
     }
     val endpoint = getClusterEndpoint(conf)
-    val params = Map(
-      "ratios" -> Array(splitRatio),
-      "dataset" -> frameId,
-      "destination_frames" -> Array(s"${frameId}_train", s"${frameId}_valid"))
+    val params = Map("ratios" -> Array(splitRatios), "dataset" -> frameId)
     val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf, params)
     H2OJob(splitFrameV3.key.name).waitForFinish()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
+  }
+
+  def split(splitRatio: Double): Array[H2OFrame] = {
+    if (splitRatio >= 1.0) {
+      throw new IllegalArgumentException("Split ratios must be lower than 1.0")
+    }
+    split(Array(splitRatio))
   }
 
   def subframe(columns: Array[String]): H2OFrame = {
