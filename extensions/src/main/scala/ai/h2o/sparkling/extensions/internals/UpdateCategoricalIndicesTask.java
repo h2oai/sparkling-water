@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-package water.parser;
+package ai.h2o.sparkling.extensions.internals;
 
 import water.*;
 import water.exceptions.H2OIllegalArgumentException;
 import water.fvec.CStrChunk;
 import water.fvec.Chunk;
 import water.fvec.Frame;
+import water.parser.BufferedString;
+import water.util.IcedHashMap;
 
 public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndicesTask> {
     private final Key frameKey;
@@ -32,12 +34,12 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
         this.categoricalColumns = categoricalColumns;
     }
 
-    private static Categorical domainToCategorical(String[] domain) {
-        Categorical categorical = new Categorical();
+    private static IcedHashMap<BufferedString, Integer> domainToCategoricalMap(String[] domain) {
+        IcedHashMap<BufferedString, Integer> categoricalMap = new IcedHashMap<>();
         for (int j = 0; j < domain.length; j++) {
-            categorical.addKey(new BufferedString(domain[j]));
+            categoricalMap.put(new BufferedString(domain[j]), j);
         }
-        return categorical;
+        return categoricalMap;
     }
 
     @Override
@@ -53,13 +55,13 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
             int colId = categoricalColumns[catColIdx];
             Chunk chunk = chunks[colId];
             String[] localDomain = localDomains[catColIdx];
-            Categorical globalDomain = domainToCategorical(frame.vec(colId).domain());
+            IcedHashMap<BufferedString, Integer> categoricalMap = domainToCategoricalMap(frame.vec(colId).domain());
             if (chunk instanceof CStrChunk) continue;
             for (int valIdx = 0; valIdx < chunk._len; ++valIdx) {
                 if (chunk.isNA(valIdx)) continue;
                 final int oldValue = (int) chunk.at8(valIdx);
                 final BufferedString category = new BufferedString(localDomain[oldValue]);
-                final int newValue = globalDomain.getTokenId(category) - 1; // Starts from 1
+                final int newValue = categoricalMap.get(category);
                 chunk.set(valIdx, newValue);
             }
             chunk.close(chunkId , _fs);

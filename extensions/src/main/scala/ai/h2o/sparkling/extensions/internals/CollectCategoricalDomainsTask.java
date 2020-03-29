@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package water.parser;
+package ai.h2o.sparkling.extensions.internals;
 
 import jsr166y.ForkJoinTask;
 import water.H2O;
 import water.Key;
 import water.MRTask;
+import water.parser.BufferedString;
+import water.parser.PackedDomains;
 import water.util.Log;
 
 import java.util.Arrays;
@@ -36,7 +38,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     @Override
     public void setupLocal() {
         if (!LocalNodeDomains.containsDomains(frameKey)) return;
-        final Categorical[][] localDomains = LocalNodeDomains.getDomains(frameKey);
+        final String[][][] localDomains = LocalNodeDomains.getDomains(frameKey);
         if (localDomains.length == 0) return;
         packedDomains = chunkDomainsToPackedDomains(localDomains[0]);
         for (int i = 1; i < localDomains.length; i++) {
@@ -46,12 +48,11 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
         Log.trace("Done locally collecting domains on each node.");
     }
 
-    private byte[][] chunkDomainsToPackedDomains(Categorical[] domains) {
+    private byte[][] chunkDomainsToPackedDomains(String[][] domains) {
         byte[][] result = new byte[domains.length][];
         for(int i = 0; i < domains.length; i++) {
-            Categorical columnDomain = domains[i];
-            columnDomain.convertToUTF8(-1);
-            BufferedString[] values = columnDomain.getColumnDomain();
+            String[] columnDomain = domains[i];
+            BufferedString[] values = BufferedString.toBufferedString(columnDomain);
             Arrays.sort(values);
             result[i] = PackedDomains.pack(values);
         }
