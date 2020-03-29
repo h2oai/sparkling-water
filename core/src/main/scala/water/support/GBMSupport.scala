@@ -25,6 +25,7 @@ import org.apache.spark.h2o._
 /**
   * Support class to create and train GBM
   */
+@Deprecated
 trait GBMSupport extends Logging {
 
   /**
@@ -68,7 +69,6 @@ trait GBMSupport extends Logging {
   }
 }
 
-
-// Create companion object
+@Deprecated
 object GBMSupport extends GBMSupport
 
