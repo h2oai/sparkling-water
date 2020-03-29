@@ -17,12 +17,12 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
+import ai.h2o.sparkling.extensions.internals.LocalNodeDomains
 import ai.h2o.sparkling.utils.Compression
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.{AutoBuffer, DKV, Key}
 import water.fvec.Frame
-import water.parser.LocalNodeDomains
 import water.server.ServletUtils
 
 /**

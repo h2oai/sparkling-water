@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package water.parser;
+package ai.h2o.sparkling.extensions.internals;
 
 import water.Key;
 import water.nbhm.NonBlockingHashMap;
@@ -23,19 +23,17 @@ import water.nbhm.NonBlockingHashMap;
 import java.util.ArrayList;
 
 public final class LocalNodeDomains {
-    private static NonBlockingHashMap<Key, ArrayList<Categorical[]>> domainsMap = new NonBlockingHashMap<>();
+    private static NonBlockingHashMap<Key, ArrayList<String[][]>> domainsMap = new NonBlockingHashMap<>();
     private static NonBlockingHashMap<String, String[][]> domainsMapByChunk = new NonBlockingHashMap<>();
     private static NonBlockingHashMap<Key, ArrayList<String>>  frameKeyToChunkKeys = new NonBlockingHashMap<>();
 
     public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
-        ArrayList<Categorical[]> nodeDomains = domainsMap.get(frameKey);
+        ArrayList<String[][]> nodeDomains = domainsMap.get(frameKey);
         if (nodeDomains == null) {
             nodeDomains = new ArrayList<>();
             domainsMap.put(frameKey, nodeDomains);
         }
-        Categorical[] categoricalDomains = domainsToCategoricals(domains);
-        nodeDomains.add(categoricalDomains);
-
+        nodeDomains.add(domains);
 
         ArrayList<String> chunkKeys = frameKeyToChunkKeys.get(frameKey);
         if (chunkKeys == null) {
@@ -48,19 +46,6 @@ public final class LocalNodeDomains {
         domainsMapByChunk.putIfAbsent(chunkKey, domains);
     }
 
-    private static Categorical[] domainsToCategoricals(String[][] domains) {
-        Categorical[] result = new Categorical[domains.length];
-        for (int i = 0; i < domains.length; i++) {
-            String[] domain = domains[i];
-            Categorical categorical = new Categorical();
-            for (int j = 0; j < domain.length; j++) {
-                categorical.addKey(new BufferedString(domain[j]));
-            }
-            result[i] = categorical;
-        }
-        return result;
-    }
-
     public synchronized static boolean containsDomains(Key frameKey) {
         return domainsMap.containsKey(frameKey);
     }
@@ -70,8 +55,12 @@ public final class LocalNodeDomains {
         return domainsMapByChunk.containsKey(chunkKey);
     }
 
-    public synchronized static Categorical[][] getDomains(Key frameKey) {
-        return domainsMap.get(frameKey).toArray(new Categorical[0][]);
+    /**
+     * The method returns domains for all chunks on the H2O node. The first array level identifies chunks,
+     * the second columns, the third column values.
+     */
+    public synchronized static String[][][] getDomains(Key frameKey) {
+        return domainsMap.get(frameKey).toArray(new String[0][][]);
     }
 
     public synchronized static String[][] getDomains(Key frameKey, int chunkId) {

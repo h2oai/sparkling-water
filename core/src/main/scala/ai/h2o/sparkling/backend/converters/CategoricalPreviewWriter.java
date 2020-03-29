@@ -28,6 +28,5 @@ class CategoricalPreviewWriter extends PreviewParseWriter {
         super(numberOfColumns);
     }
 
-    // This number is the same as ParquetParser.MAX_PREVIEW_RECORDS in H2O-3.
-    static final int MAX_PREVIEW_RECORDS = 1000;
+    static final int MAX_PREVIEW_RECORDS = 100;
 }

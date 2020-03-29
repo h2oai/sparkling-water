@@ -17,12 +17,13 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
+import ai.h2o.sparkling.extensions.internals.{CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3, UploadPlanV3}
 import ai.h2o.sparkling.utils.Base64Encoding
 import water.{DKV, Key}
 import water.api.Handler
-import water.fvec.{Vec, ChunkUtils, Frame}
-import water.parser.{Categorical, CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
+import water.fvec.{ChunkUtils, Frame, Vec}
+import water.parser.Categorical
 import water.util.Log
 
 class ImportFrameHandler extends Handler {
