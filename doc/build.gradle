@@ -11,6 +11,8 @@ task createVersionFile {
         if (!buildDir.exists()) {
             buildDir.mkdir()
         }
+        file("${buildDir}/site/.doctrees").mkdirs()
+
         File version_file = new File(buildDir, "project_version")
         def version_txt = version
         version_file.write(version_txt)
@@ -45,6 +47,9 @@ task substitute() {
     }
 }
 
+sphinx {
+    environments = ["PYTHONWARNINGS" : ""]
+}
 
 task docJar(type: Jar) {
     from "${buildDir}"
