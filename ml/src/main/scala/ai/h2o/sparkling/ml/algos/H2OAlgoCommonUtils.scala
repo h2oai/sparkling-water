@@ -57,7 +57,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
     if (getSplitRatio() < 1.0) {
-      val frames = trainFrame.splitToTrainAndValidationFrames(getSplitRatio())
+      val frames = trainFrame.split(getSplitRatio())
       if (frames.length > 1) {
         (frames(0), Some(frames(1)), internalFeatureCols)
       } else {
