@@ -37,7 +37,7 @@ private[backend] object DataTypeConverter {
     val types = if (rdd.getNumPartitions > 0) {
       val preview = rdd
         .mapPartitions[CategoricalPreviewWriter](createPartitionPreview(_, stringTypeIndices))
-        .reduce((a, b) => PreviewParseWriter.unifyColumnPreviews(a, b).asInstanceOf[CategoricalPreviewWriter])
+        .reduce((a, b) => CategoricalPreviewWriter.unifyColumnPreviews(a, b))
 
       preview.guessTypes().map {
         case Vec.T_CAT => ChunkSerdeConstants.EXPECTED_CATEGORICAL
