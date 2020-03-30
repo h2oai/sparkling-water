@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.examples
 
@@ -55,7 +55,8 @@ object CityBikeSharingDemo {
 
     removeSpacesFromColumnNames(bikesTable)
       .withColumn("Days", numberOfDaysSinceEpochUdf(unix_timestamp('starttime)))
-      .groupBy("Days", "start_station_id").count()
+      .groupBy("Days", "start_station_id")
+      .count()
       .withColumnRenamed("count", "bikes")
       .withColumn("date", from_unixtime(daysToTimestampUdf('Days)))
       .withColumn("Month", month('date))
@@ -75,10 +76,20 @@ object CityBikeSharingDemo {
     import spark.implicits._
     val weatherDataPath = "./examples/smalldata/citybike-nyc/New_York_City_Hourly_Weather_2013.csv"
     val weatherDataFile = s"file://${new File(weatherDataPath).getAbsolutePath}"
-    val weatherTable = spark.read.option("header", "true").option("inferSchema", "true")
+    val weatherTable = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
       .csv(weatherDataFile)
-      .select("Hour Local", "Year Local", "Month Local", "Day Local", "Dew Point (C)", "Humidity Fraction",
-        "Precipitation One Hour (mm)", "Weather Code 1", "Temperature (C)")
+      .select(
+        "Hour Local",
+        "Year Local",
+        "Month Local",
+        "Day Local",
+        "Dew Point (C)",
+        "Humidity Fraction",
+        "Precipitation One Hour (mm)",
+        "Weather Code 1",
+        "Temperature (C)")
       .withColumnRenamed("Hour Local", "HourLocal")
       .withColumnRenamed("Year Local", "YearLocal")
       .withColumnRenamed("Day Local", "DayLocal")

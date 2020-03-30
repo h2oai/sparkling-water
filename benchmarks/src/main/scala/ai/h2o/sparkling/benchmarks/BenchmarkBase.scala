@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.benchmarks
 
@@ -70,8 +70,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   }
 
   private def loadRegularDataFrame(): DataFrame = {
-    context.spark
-      .read
+    context.spark.read
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(context.datasetDetails.url.get)
@@ -175,8 +174,8 @@ object AlgorithmBenchmarkBase {
 }
 
 case class AlgorithmBundle(
-                            swAlgorithm: H2OSupervisedAlgorithm[_ <: Model.Parameters],
-                            h2oAlgorithm: ModelBuilder[_, _ <: Model.Parameters, _]) {
+    swAlgorithm: H2OSupervisedAlgorithm[_ <: Model.Parameters],
+    h2oAlgorithm: ModelBuilder[_, _ <: Model.Parameters, _]) {
   def newInstance(): AlgorithmBundle = {
     val clonedSwAlgorithm = swAlgorithm.copy(ParamMap.empty)
     val clonedH2OParams = h2oAlgorithm._parms.clone()
@@ -190,14 +189,14 @@ case class AlgorithmBundle(
 case class Measurement(id: Int, name: String, value: Any)
 
 case class DatasetDetails(
-                           name: String,
-                           isVirtual: Boolean,
-                           labelCol: String,
-                           url: Option[String],
-                           nCols: Option[Int],
-                           nRows: Option[Int],
-                           nPartitions: Option[Int],
-                           minValue: Option[Int],
-                           maxValue: Option[Int])
+    name: String,
+    isVirtual: Boolean,
+    labelCol: String,
+    url: Option[String],
+    nCols: Option[Int],
+    nRows: Option[Int],
+    nPartitions: Option[Int],
+    minValue: Option[Int],
+    maxValue: Option[Int])
 
 case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails)

@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o.backends.internal
 
@@ -76,14 +76,16 @@ object InternalH2OBackend extends InternalBackendUtils {
     super.checkAndUpdateConf(conf)
 
     // Always wait for the local node - H2O node
-    logWarning(s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
+    logWarning(
+      s"Increasing 'spark.locality.wait' to value 0 (Infinitive) as we need to ensure we run on the nodes with H2O")
     conf.set("spark.locality.wait", "0")
 
     conf.getOption("spark.executor.instances").foreach(v => conf.set("spark.ext.h2o.cluster.size", v))
 
     if (!conf.contains("spark.scheduler.minRegisteredResourcesRatio") && !SparkSessionUtils.active.sparkContext.isLocal) {
-      logWarning("The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
-        "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
+      logWarning(
+        "The property 'spark.scheduler.minRegisteredResourcesRatio' is not specified!\n" +
+          "We recommend to pass `--conf spark.scheduler.minRegisteredResourcesRatio=1`")
       // Setup the property but at this point it does not make good sense
       conf.set("spark.scheduler.minRegisteredResourcesRatio", "1")
     }
@@ -102,14 +104,13 @@ object InternalH2OBackend extends InternalBackendUtils {
     conf
   }
 
-  val UNSUPPORTED_SPARK_OPTIONS: Seq[(String, String)] = Seq(
-    ("spark.dynamicAllocation.enabled", "true"),
-    ("spark.speculation", "true"))
+  val UNSUPPORTED_SPARK_OPTIONS: Seq[(String, String)] =
+    Seq(("spark.dynamicAllocation.enabled", "true"), ("spark.speculation", "true"))
 
   /**
-   * Used in local mode where we start directly one H2O worker node
-   * without additional client
-   */
+    * Used in local mode where we start directly one H2O worker node
+    * without additional client
+    */
   private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): Unit = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
@@ -159,7 +160,6 @@ object InternalH2OBackend extends InternalBackendUtils {
       node
     }
   }
-
 
   private def distributeFlatFile(endpoints: Array[RpcEndpointRef], conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
     Log.info(s"Distributing worker nodes locations: ${nodes.mkString(",")}")

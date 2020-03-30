@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling
 
@@ -31,7 +31,8 @@ import scala.concurrent.duration.Duration
 @RunWith(classOf[JUnitRunner])
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
+  override def createSparkContext: SparkContext =
+    new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
 
   test("Verify H2O cluster builds on local cluster") {
     val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
@@ -79,19 +80,15 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
-    val settings = TestFrameUtils.GenerateDataFrameSettings(
-      numberOfRows = 200,
-      rowsPerPartition = 50,
-      maxCollectionSize = 100)
+    val settings =
+      TestFrameUtils.GenerateDataFrameSettings(numberOfRows = 200, rowsPerPartition = 50, maxCollectionSize = 100)
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
   test("SchemaUtils: flattenDataFrame should process a complex data frame with 100k rows and 2k columns") {
     val expectedNumberOfColumns = 2000
-    val settings = TestFrameUtils.GenerateDataFrameSettings(
-      numberOfRows = 100000,
-      rowsPerPartition = 10000,
-      maxCollectionSize = 10)
+    val settings =
+      TestFrameUtils.GenerateDataFrameSettings(numberOfRows = 100000, rowsPerPartition = 10000, maxCollectionSize = 10)
     testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
@@ -128,7 +125,9 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     assert(!mismatch, "Number of elements in all samples should be the same since BroadcastHashJoins aren't used")
   }
 
-  private def testFlatteningOnComplexType(settings: TestFrameUtils.GenerateDataFrameSettings, expectedNumberOfColumns: Int): Unit = {
+  private def testFlatteningOnComplexType(
+      settings: TestFrameUtils.GenerateDataFrameSettings,
+      expectedNumberOfColumns: Int): Unit = {
     trackTime {
       val complexDF = TestFrameUtils.generateDataFrame(spark, ComplexSchema, settings)
       val flattened = SchemaUtils.flattenDataFrame(complexDF)

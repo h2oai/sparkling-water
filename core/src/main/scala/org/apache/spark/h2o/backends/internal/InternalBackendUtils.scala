@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o.backends.internal
 
@@ -26,26 +26,26 @@ import org.apache.spark.{SparkContext, SparkEnv}
 private[backends] trait InternalBackendUtils extends SharedBackendUtils {
 
   def checkUnsupportedSparkOptions(unsupportedSparkOptions: Seq[(String, String)], conf: H2OConf): Unit = {
-    unsupportedSparkOptions.foreach(opt => if (conf.contains(opt._1) && (opt._2 == "" || conf.get(opt._1) == opt._2)) {
-      logWarning(s"Unsupported options ${opt._1} detected!")
-      if (conf.isFailOnUnsupportedSparkParamEnabled) {
-        logWarning(
-          s"""
+    unsupportedSparkOptions.foreach(opt =>
+      if (conf.contains(opt._1) && (opt._2 == "" || conf.get(opt._1) == opt._2)) {
+        logWarning(s"Unsupported options ${opt._1} detected!")
+        if (conf.isFailOnUnsupportedSparkParamEnabled) {
+          logWarning(s"""
              |The application is going down, since the parameter ${SharedBackendConf.PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM} is true!
              |If you would like to skip the fail call, please, specify the value of the parameter to false.
         """.stripMargin)
-        throw new IllegalArgumentException(s"Unsupported argument: $opt")
-      }
-    })
+          throw new IllegalArgumentException(s"Unsupported argument: $opt")
+        }
+      })
   }
 
   /**
-   * Produce arguments for H2O node based on provided configuration and environment
-   *
-   * It is expected to run on the executor machine
-   *
-   * @return array of H2O launcher command line arguments
-   */
+    * Produce arguments for H2O node based on provided configuration and environment
+    *
+    * It is expected to run on the executor machine
+    *
+    * @return array of H2O launcher command line arguments
+    */
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
     val ip = {
       val hostname = getHostname(SparkEnv.get)
@@ -72,7 +72,8 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
   }
 
   private[spark] def guessTotalExecutorSize(sc: SparkContext): Option[Int] = {
-    sc.conf.getOption("spark.executor.instances")
+    sc.conf
+      .getOption("spark.executor.instances")
       .map(_.toInt)
       .orElse(getCommandArg("--num-executors").map(_.toInt))
       .orElse({
@@ -81,7 +82,8 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
         val num = sb match {
           case _: LocalSchedulerBackend => Some(1)
           // Use text reference to yarn backend to avoid having dependency on Spark's Yarn module
-          case b if b.getClass.getSimpleName == "YarnSchedulerBackend" => Some(ReflectionUtils.reflector(b).getV[Int]("totalExpectedExecutors"))
+          case b if b.getClass.getSimpleName == "YarnSchedulerBackend" =>
+            Some(ReflectionUtils.reflector(b).getV[Int]("totalExpectedExecutors"))
           //case b: CoarseGrainedSchedulerBackend => b.numExistingExecutors
           case _ => None
         }

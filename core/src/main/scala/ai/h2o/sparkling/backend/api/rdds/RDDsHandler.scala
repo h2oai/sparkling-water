@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -28,8 +28,8 @@ import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
- * Handler for all RDD related queries
- */
+  * Handler for all RDD related queries
+  */
 class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
   def list(version: Int, s: RDDsV3): RDDsV3 = {
@@ -43,8 +43,8 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
     sc.getPersistentRDDs.values.map(IcedRDD.fromRdd).toArray
 
   def getRDD(version: Int, s: RDDV3): RDDV3 = {
-    val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
-      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist!"))
+    val rdd = sc.getPersistentRDDs
+      .getOrElse(s.rdd_id, throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist!"))
 
     s.name = Option(rdd.name).getOrElse(rdd.id.toString)
     s.partitions = rdd.partitions.length
@@ -71,7 +71,8 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
             val schema = ScalaReflection.schemaFor(v._2)
             StructField(v._1, schema.dataType, schema.nullable)
           }
-          val df = SparkSessionUtils.active.createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
+          val df = SparkSessionUtils.active
+            .createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
           h2oContext.asH2OFrame(df, name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
@@ -79,8 +80,10 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
   }
 
   def toH2OFrame(version: Int, s: RDD2H2OFrameIDV3): RDD2H2OFrameIDV3 = {
-    val rdd = sc.getPersistentRDDs.getOrElse(s.rdd_id,
-      throw new H2ONotFoundArgumentException(s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!"))
+    val rdd = sc.getPersistentRDDs.getOrElse(
+      s.rdd_id,
+      throw new H2ONotFoundArgumentException(
+        s"RDD with ID '${s.rdd_id}' does not exist, can not proceed with the transformation!"))
 
     val h2oFrame = convertToH2OFrame(rdd, Option(s.h2oframe_id) map (_.toLowerCase))
     s.h2oframe_id = h2oFrame._key.toString
@@ -97,13 +100,31 @@ object RDDsHandler {
       override def create(aClass: Class[_ <: Handler]): Handler = rddsHandler
     }
 
-    context.registerEndpoint("listRDDs", "GET", "/3/RDDs", classOf[RDDsHandler], "list",
-      "Return all RDDs within Spark cloud", rddsFactory)
+    context.registerEndpoint(
+      "listRDDs",
+      "GET",
+      "/3/RDDs",
+      classOf[RDDsHandler],
+      "list",
+      "Return all RDDs within Spark cloud",
+      rddsFactory)
 
-    context.registerEndpoint("getRDD", "POST", "/3/RDDs/{rdd_id}", classOf[RDDsHandler],
-      "getRDD", "Get RDD with the given ID from Spark cloud", rddsFactory)
+    context.registerEndpoint(
+      "getRDD",
+      "POST",
+      "/3/RDDs/{rdd_id}",
+      classOf[RDDsHandler],
+      "getRDD",
+      "Get RDD with the given ID from Spark cloud",
+      rddsFactory)
 
-    context.registerEndpoint("rddToH2OFrame", "POST", "/3/RDDs/{rdd_id}/h2oframe",
-      classOf[RDDsHandler], "toH2OFrame", "Transform RDD with the given ID to H2OFrame", rddsFactory)
+    context.registerEndpoint(
+      "rddToH2OFrame",
+      "POST",
+      "/3/RDDs/{rdd_id}/h2oframe",
+      classOf[RDDsHandler],
+      "toH2OFrame",
+      "Transform RDD with the given ID to H2OFrame",
+      rddsFactory)
   }
 }

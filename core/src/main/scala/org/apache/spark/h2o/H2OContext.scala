@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o
 
@@ -41,36 +41,38 @@ import scala.reflect.runtime.universe._
 import scala.util.control.NoStackTrace
 
 /**
- * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
- * to operate with it.
- *
- * H2O Context provides conversion methods from RDD/DataFrame to H2OFrame and back and also provides implicits
- * conversions for desired transformations
- *
- * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
- * mode, it tries to connect to existing H2O cluster using the provided spark
- * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
- * that each Spark executor will have one h2o instance running in it.  This mode is not
- * recommended for big clusters and clusters where Spark executors are not stable.
- *
- * Cluster mode can be set using the spark configuration
- * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
- * can be set in H2O configuration class H2OConf
- */
+  * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
+  * to operate with it.
+  *
+  * H2O Context provides conversion methods from RDD/DataFrame to H2OFrame and back and also provides implicits
+  * conversions for desired transformations
+  *
+  * Sparkling Water can run in two modes. External cluster mode and internal cluster mode. When using external cluster
+  * mode, it tries to connect to existing H2O cluster using the provided spark
+  * configuration properties. In the case of internal cluster mode,it creates H2O cluster living in Spark - that means
+  * that each Spark executor will have one h2o instance running in it.  This mode is not
+  * recommended for big clusters and clusters where Spark executors are not stable.
+  *
+  * Cluster mode can be set using the spark configuration
+  * property spark.ext.h2o.mode which can be set in script starting sparkling-water or
+  * can be set in H2O configuration class H2OConf
+  */
 /**
- * Create new H2OContext based on provided H2O configuration
- *
- * @param conf H2O configuration
- */
-class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions {
+  * Create new H2OContext based on provided H2O configuration
+  *
+  * @param conf H2O configuration
+  */
+class H2OContext private (private val conf: H2OConf) extends H2OContextExtensions {
   self =>
   val sparkSession = SparkSessionUtils.active
   val sparkContext = sparkSession.sparkContext
   private val backendHeartbeatThread = createHeartBeatEventThread()
 
   private var stopped = false
+
   /** Here the client means Python or R H2O client */
   private var clientConnected = false
+
   /** Used backend */
   protected val backend: SparklingBackend = if (conf.runsInExternalClusterMode) {
     new ExternalH2OBackend(this)
@@ -110,8 +112,7 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
       cloudV3.last_commit_hash,
       cloudV3.describe,
       cloudV3.compiled_by,
-      cloudV3.compiled_on
-    )
+      cloudV3.compiled_on)
     val h2oClusterInfo = H2OClusterInfo(
       s"$flowIp:$flowPort",
       cloudV3.cloud_healthy,
@@ -127,18 +128,17 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
     listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
 
-
   /**
-   * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
-   */
+    * Return a copy of this H2OContext's configuration. The configuration ''cannot'' be changed at runtime.
+    */
   def getConf: H2OConf = conf.clone()
 
   /**
-   * The method transforms RDD to H2OFrame and returns String representation of its key.
-   *
-   * @param rdd Input RDD
-   * @return String representation of H2O Frame Key
-   */
+    * The method transforms RDD to H2OFrame and returns String representation of its key.
+    *
+    * @param rdd Input RDD
+    * @return String representation of H2O Frame Key
+    */
   def asH2OFrameKeyString(rdd: SupportedRDD): String = asH2OFrameKeyString(rdd, None)
 
   def asH2OFrameKeyString(rdd: SupportedRDD, frameName: String): String = asH2OFrameKeyString(rdd, Some(frameName))
@@ -158,7 +158,6 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
 
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
 
-
   /** Transforms RDD[Supported type] to H2OFrame key */
   def toH2OFrameKey(rdd: SupportedRDD): Key[_] = toH2OFrameKey(rdd, None)
 
@@ -175,11 +174,11 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
   /**
-   * The method transforms Spark DataFrame to H2OFrame and returns String representation of its key.
-   *
-   * @param df Input data frame
-   * @return String representation of H2O Frame Key
-   */
+    * The method transforms Spark DataFrame to H2OFrame and returns String representation of its key.
+    *
+    * @param df Input data frame
+    * @return String representation of H2O Frame Key
+    */
   def asH2OFrameKeyString(df: DataFrame): String = asH2OFrameKeyString(df, None)
 
   def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
@@ -196,19 +195,21 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   def toH2OFrameKey(df: DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame */
-  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
+  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
 
-  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
+  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "Dataset", DatasetConverter.toH2OFrame(this, ds, frameName))
 
-  def asH2OFrame[T <: Product : TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame key */
-  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
+  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
 
-  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] = asH2OFrame(ds, frameName)._key
+  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] =
+    asH2OFrame(ds, frameName)._key
 
-  def toH2OFrameKey[T <: Product : TypeTag](ds: Dataset[T], frameName: String): Key[Frame] = toH2OFrameKey(ds, Option(frameName))
+  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T], frameName: String): Key[Frame] =
+    toH2OFrameKey(ds, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key. */
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
@@ -217,31 +218,30 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   def asH2OFrame(fr: Frame): H2OFrame = new H2OFrame(fr)
 
   /** Convert given H2O frame into a Product RDD type
-   *
-   * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
-   * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
-   * and we are not able to create instance of class T without outer scope - which is impossible to get.
-   * */
-  def asRDD[A <: Product : TypeTag : ClassTag](fr: H2OFrame): RDD[A] = SupportedRDDConverter.toRDD[A, H2OFrame](this, fr)
+    *
+    * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
+    * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
+    * and we are not able to create instance of class T without outer scope - which is impossible to get.
+    * */
+  def asRDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = SupportedRDDConverter.toRDD[A, H2OFrame](this, fr)
 
   /** A generic convert of Frame into Product RDD type
-   *
-   * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
-   * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
-   * and we are not able to create instance of class T without outer scope - which is impossible to get.
-   *
-   * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
-   */
-  def asRDD[A <: Product : TypeTag : ClassTag] = new {
+    *
+    * Consider using asH2OFrame since asRDD has several limitations such as that asRDD can't be used in Spark REPL
+    * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
+    * and we are not able to create instance of class T without outer scope - which is impossible to get.
+    *
+    * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
+    */
+  def asRDD[A <: Product: TypeTag: ClassTag] = new {
     def apply[T <: Frame](fr: T): RDD[A] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
   }
 
-  def asRDD[A <: Product : TypeTag : ClassTag](fr: ai.h2o.sparkling.H2OFrame): org.apache.spark.rdd.RDD[A] = {
+  def asRDD[A <: Product: TypeTag: ClassTag](fr: ai.h2o.sparkling.H2OFrame): org.apache.spark.rdd.RDD[A] = {
     SupportedRDDConverter.toRDD[A](this, fr)
   }
 
   /** Convert given H2O frame into DataFrame type */
-
   def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
   }
@@ -304,9 +304,9 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
   }
 
   /** Stops H2O context.
-   *
-   * @param stopSparkContext stop also spark context
-   */
+    *
+    * @param stopSparkContext stop also spark context
+    */
   def stop(stopSparkContext: Boolean = false): Unit = {
     stop(stopSparkContext, stopJvm = true, inShutdownHook = false)
   }
@@ -401,9 +401,11 @@ class H2OContext private(private val conf: H2OConf) extends H2OContextExtensions
             case cause: RestApiException =>
               H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
               throw new H2OClusterNotReachableException(
-                s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath.getOrElse("")} - ${conf.cloudName.get} is not reachable,
+                s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath
+                     .getOrElse("")} - ${conf.cloudName.get} is not reachable,
                    |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
-                   |external H2O cluster.""".stripMargin, cause)
+                   |external H2O cluster.""".stripMargin,
+                cause)
           }
 
           try {
@@ -451,11 +453,11 @@ object H2OContext extends Logging {
   }
 
   /**
-   * Get existing or create new H2OContext
-   *
-   * @param conf H2O configuration
-   * @return H2O Context
-   */
+    * Get existing or create new H2OContext
+    *
+    * @param conf H2O configuration
+    * @return H2O Context
+    */
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
     if (H2OClientUtils.isH2OClientBased(conf)) {
       if (instantiatedContext.get() == null)
@@ -494,10 +496,10 @@ object H2OContext extends Logging {
   }
 
   /**
-   * Get existing or create new H2OContext
-   *
-   * @return H2O Context
-   */
+    * Get existing or create new H2OContext
+    *
+    * @return H2O Context
+    */
   def getOrCreate(): H2OContext = {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
@@ -530,18 +532,19 @@ object H2OContext extends Logging {
   }
 
   /** Checks whether version of provided Spark is the same as Spark's version designated for this Sparkling Water version.
-   * We check for correct version in shell scripts and during the build but we need to do the check also in the code in cases when the user
-   * executes for example spark-shell command with sparkling water assembly jar passed as --jars and initiates H2OContext.
-   * (Because in that case no check for correct Spark version has been done so far.)
-   */
+    * We check for correct version in shell scripts and during the build but we need to do the check also in the code in cases when the user
+    * executes for example spark-shell command with sparkling water assembly jar passed as --jars and initiates H2OContext.
+    * (Because in that case no check for correct Spark version has been done so far.)
+    */
   private def verifySparkVersion(): Unit = {
     val sc = SparkSessionUtils.active.sparkContext
     val runningOnCorrectSpark = sc.version.startsWith(BuildInfo.buildSparkMajorVersion)
     if (!runningOnCorrectSpark) {
-      throw new WrongSparkVersion(s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
-        s" but your $$SPARK_HOME(=${sc.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
-        s" points to Spark of version ${sc.version}. Please ensure correct Spark is provided and" +
-        s" re-run Sparkling Water.")
+      throw new WrongSparkVersion(
+        s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
+          s" but your $$SPARK_HOME(=${sc.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
+          s" points to Spark of version ${sc.version}. Please ensure correct Spark is provided and" +
+          s" re-run Sparkling Water.")
     }
   }
 }

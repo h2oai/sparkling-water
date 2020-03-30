@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.benchmarks
 
@@ -121,10 +121,10 @@ object Runner {
   }
 
   private def filterCollection[T](
-                                   entity: String,
-                                   filter: Option[String],
-                                   collection: Seq[T],
-                                   nameGetter: T => String): Seq[T] = filter match {
+      entity: String,
+      filter: Option[String],
+      collection: Seq[T],
+      nameGetter: T => String): Seq[T] = filter match {
     case None => collection
     case Some(name) =>
       val result = collection.filter(nameGetter(_) == name)
@@ -133,9 +133,9 @@ object Runner {
   }
 
   private def createBatches(
-                             datasetDetails: Seq[DatasetDetails],
-                             benchmarkClasses: Seq[Class[_]],
-                             algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch] = {
+      datasetDetails: Seq[DatasetDetails],
+      benchmarkClasses: Seq[Class[_]],
+      algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch] = {
     def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_]].isAssignableFrom(clazz)
 
     val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _))
@@ -174,10 +174,10 @@ object Runner {
   private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
 
   private case class Settings(
-                               datasetSpecificationsFile: String,
-                               benchmark: Option[String],
-                               dataset: Option[String],
-                               algorithm: Option[String],
-                               outputDir: Option[String])
+      datasetSpecificationsFile: String,
+      benchmark: Option[String],
+      dataset: Option[String],
+      algorithm: Option[String],
+      outputDir: Option[String])
 
 }

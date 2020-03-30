@@ -137,5 +137,10 @@ scaladoc {
 
 check.dependsOn(checkScalaTestEnv)
 
-// Enable scalastyle
-apply from: "$rootDir/gradle/scalastyle.gradle"
+apply plugin: "com.diffplug.gradle.spotless"
+
+spotless {
+    scala {
+        scalafmt().configFile("$rootDir/.scalafmt.conf")
+    }
+}

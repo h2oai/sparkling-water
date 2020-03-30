@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o
 
@@ -27,15 +27,19 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
- * Configuration holder which is representing
- * properties passed from user to Sparkling Water.
- */
-class H2OConf private(val sparkConf: SparkConf, deprecatedClassName: String) extends Logging
-  with InternalBackendConf with ExternalBackendConf with Serializable {
+  * Configuration holder which is representing
+  * properties passed from user to Sparkling Water.
+  */
+class H2OConf private (val sparkConf: SparkConf, deprecatedClassName: String)
+  extends Logging
+  with InternalBackendConf
+  with ExternalBackendConf
+  with Serializable {
 
   private def deprecationWarning(oldParams: String): Unit = {
-    logWarning(s"The constructor 'new H2OConf($oldParams)' is deprecated. " +
-      s"Use 'new H2OConf()' instead! This method will be removed in release 3.32.")
+    logWarning(
+      s"The constructor 'new H2OConf($oldParams)' is deprecated. " +
+        s"Use 'new H2OConf()' instead! This method will be removed in release 3.32.")
   }
 
   deprecatedClassName match {
@@ -50,7 +54,8 @@ class H2OConf private(val sparkConf: SparkConf, deprecatedClassName: String) ext
 
   def this() = this(SparkSessionUtils.active.sparkContext.getConf, "")
 
-  private def this(deprecatedClassName: String) = this(SparkSessionUtils.active.sparkContext.getConf, deprecatedClassName)
+  private def this(deprecatedClassName: String) =
+    this(SparkSessionUtils.active.sparkContext.getConf, deprecatedClassName)
 
   /** Support for creating H2OConf in Java environments */
   def this(jsc: JavaSparkContext) = this("JavaSparkContext")
@@ -120,7 +125,6 @@ class H2OConf private(val sparkConf: SparkConf, deprecatedClassName: String) ext
   /** Get a parameter as a boolean, falling back to a default if not set */
   def getBoolean(key: String, defaultValue: Boolean): Boolean = sparkConf.getBoolean(key, defaultValue)
 
-
   override def toString: String = {
     if (runsInExternalClusterMode) {
       externalConfString
@@ -152,16 +156,17 @@ object H2OConf extends Logging {
         if (deprecatedValue.isDefined) {
           val currentValue = sparkConf.getOption(current)
           if (currentValue.isDefined) {
-            logWarning(s"Both options '$deprecated' and '$current' are specified. " +
-              s"Using value '${currentValue.get}' of '$current' as the later one is deprecated.")
+            logWarning(
+              s"Both options '$deprecated' and '$current' are specified. " +
+                s"Using value '${currentValue.get}' of '$current' as the later one is deprecated.")
           } else {
-            logWarning(s"Please use '$current' as '$deprecated' is deprecated. Passing the value '${deprecatedValue.get}' to '$current'.")
+            logWarning(
+              s"Please use '$current' as '$deprecated' is deprecated. Passing the value '${deprecatedValue.get}' to '$current'.")
             sparkConf.set(current, deprecatedValue.get)
           }
         }
     }
   }
-
 
   private var _sparkConfChecked = false
 

@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.utils
 
@@ -48,8 +48,11 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     file.getAbsolutePath
   }
 
-  def importHiveTable(database: String = HiveTableImporter.DEFAULT_DATABASE, table: String,
-                      partitions: Array[Array[String]] = null, allowMultiFormat: Boolean = false): Frame = {
+  def importHiveTable(
+      database: String = HiveTableImporter.DEFAULT_DATABASE,
+      table: String,
+      partitions: Array[Array[String]] = null,
+      allowMultiFormat: Boolean = false): Frame = {
     val hiveTableHandler = new ImportHiveTableHandler
     val method = hiveTableHandler.getClass.getDeclaredMethod("getImporter")
     method.setAccessible(true)
@@ -58,8 +61,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     if (importer != null) {
       try {
         importer.loadHiveTable(database, table, partitions, allowMultiFormat).get()
-      }
-      catch {
+      } catch {
         case e: NoClassDefFoundError =>
           throw new IllegalStateException("Hive Metastore client classes not available on classpath.", e)
       }
@@ -76,7 +78,8 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       val t0 = System.nanoTime()
       val result = block
       val t1 = System.nanoTime()
-      logInfo(s"Elapsed time of the $conversionName conversion into H2OFrame ${result._key}: " + (t1 - t0) / 1000 + " millis")
+      logInfo(
+        s"Elapsed time of the $conversionName conversion into H2OFrame ${result._key}: " + (t1 - t0) / 1000 + " millis")
       result
     } else {
       block
@@ -84,10 +87,10 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
   }
 
   /**
-   * Open browser for given address.
-   *
-   * @param uri address to open in browser, e.g., http://example.com
-   */
+    * Open browser for given address.
+    *
+    * @param uri address to open in browser, e.g., http://example.com
+    */
   protected def openURI(uri: String): Unit = {
     import java.awt.Desktop
     if (Desktop.isDesktopSupported) {
@@ -120,7 +123,9 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       }
       val leaderIpPort = RestApiUtils.getLeaderNode(conf).ipPort()
       if (conf.h2oCluster.get != leaderIpPort) {
-        logInfo(s"Updating %s to H2O's leader node %s".format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
+        logInfo(
+          s"Updating %s to H2O's leader node %s"
+            .format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
         conf.setH2OCluster(leaderIpPort)
       }
       nodes
@@ -132,7 +137,8 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
         }
         throw new H2OClusterNotReachableException(
           s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
-             |H2OContext has not been created.""".stripMargin, cause)
+             |H2OContext has not been created.""".stripMargin,
+          cause)
     }
   }
 
@@ -156,7 +162,8 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     The following worker nodes are not reachable, but belong to the cluster:
     ${conf.h2oCluster.get} - ${conf.cloudName.get}:
     ----------------------------------------------
-    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""", nodesWithoutWeb.head._2)
+    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""",
+        nodesWithoutWeb.head._2)
     }
   }
 
@@ -168,8 +175,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
-        throw new RuntimeException(
-          s"""The H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
+        throw new RuntimeException(s"""The H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
              |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
       }
     }

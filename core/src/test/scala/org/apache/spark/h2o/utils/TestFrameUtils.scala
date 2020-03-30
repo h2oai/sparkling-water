@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o.utils
 
@@ -34,16 +34,26 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 /**
- * Various helpers to help with working with Frames during tests
- */
+  * Various helpers to help with working with Frames during tests
+  */
 object TestFrameUtils extends Matchers {
-  def makeH2OFrame[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
-                                data: Array[Array[T]], h2oType: Byte, colDomains: Array[Array[String]] = null): H2OFrame = {
+  def makeH2OFrame[T: ClassTag](
+      fname: String,
+      colNames: Array[String],
+      chunkLayout: Array[Long],
+      data: Array[Array[T]],
+      h2oType: Byte,
+      colDomains: Array[Array[String]] = null): H2OFrame = {
     makeH2OFrame2(fname, colNames, chunkLayout, data.map(_.map(value => Array(value))), Array(h2oType), colDomains)
   }
 
-  def makeH2OFrame2[T: ClassTag](fname: String, colNames: Array[String], chunkLayout: Array[Long],
-                                 data: Array[Array[Array[T]]], h2oTypes: Array[Byte], colDomains: Array[Array[String]] = null): H2OFrame = {
+  def makeH2OFrame2[T: ClassTag](
+      fname: String,
+      colNames: Array[String],
+      chunkLayout: Array[Long],
+      data: Array[Array[Array[T]]],
+      h2oTypes: Array[Byte],
+      colDomains: Array[Array[String]] = null): H2OFrame = {
     ChunkUtils.initFrame(fname, colNames)
 
     for (i <- chunkLayout.indices) {
@@ -53,7 +63,11 @@ object TestFrameUtils extends Matchers {
     new H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, h2oTypes, colDomains))
   }
 
-  def buildChunks[T: ClassTag](fname: String, data: Array[Array[T]], cidx: Integer, h2oType: Array[Byte]): Array[_ <: Chunk] = {
+  def buildChunks[T: ClassTag](
+      fname: String,
+      data: Array[Array[T]],
+      cidx: Integer,
+      h2oType: Array[Byte]): Array[_ <: Chunk] = {
     val nchunks: Array[NewChunk] = ChunkUtils.createNewChunks(fname, h2oType, cidx)
 
     data.foreach { values =>
@@ -142,7 +156,8 @@ object TestFrameUtils extends Matchers {
   private def assertRDDHolderProperties(df: H2OFrame): Unit = {
     assert(df.numCols() == 1, "H2OFrame should contain single column")
     assert(df.names().length == 1, "H2OFrame column names should have single value")
-    assert(df.names()(0).equals("result"),
+    assert(
+      df.names()(0).equals("result"),
       "H2OFrame column name should be 'result' since Holder object was used to define RDD")
   }
 
@@ -151,13 +166,20 @@ object TestFrameUtils extends Matchers {
     val numCols = names.length
     assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
     assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
-    assert(actualNames.equals(names),
+    assert(
+      actualNames.equals(names),
       s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
   }
 
-  def assertBasicInvariants[T <: Product](ds: Dataset[T], df: H2OFrame, rowAssert: RowValueAssert, names: List[String]): Unit = {
+  def assertBasicInvariants[T <: Product](
+      ds: Dataset[T],
+      df: H2OFrame,
+      rowAssert: RowValueAssert,
+      names: List[String]): Unit = {
     assertDatasetHolderProperties(df, names)
-    assert(ds.count == df.numRows(), s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
+    assert(
+      ds.count == df.numRows(),
+      s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
 
     val vec = df.vec(0)
     for (row <- Range(0, df.numRows().toInt)) {
@@ -165,22 +187,21 @@ object TestFrameUtils extends Matchers {
     }
   }
 
-
   case class GenerateDataFrameSettings(
-                                        numberOfRows: Int,
-                                        rowsPerPartition: Int,
-                                        maxCollectionSize: Int,
-                                        nullProbability: Double = 0.1,
-                                        seed: Long = 1234L)
+      numberOfRows: Int,
+      rowsPerPartition: Int,
+      maxCollectionSize: Int,
+      nullProbability: Double = 0.1,
+      seed: Long = 1234L)
 
   trait SchemaHolder {
     def schema: StructType
   }
 
   def generateDataFrame(
-                         spark: SparkSession,
-                         schemaHolder: SchemaHolder,
-                         settings: GenerateDataFrameSettings): DataFrame = {
+      spark: SparkSession,
+      schemaHolder: SchemaHolder,
+      settings: GenerateDataFrameSettings): DataFrame = {
     implicit val encoder = RowEncoder(schemaHolder.schema)
     val numberOfPartitions = Math.max(1, settings.numberOfRows / settings.rowsPerPartition)
     spark
@@ -196,10 +217,10 @@ object TestFrameUtils extends Matchers {
   }
 
   private def generateValueForField(
-                                     random: Random,
-                                     field: StructField,
-                                     settings: GenerateDataFrameSettings,
-                                     prefix: Option[String] = None): Any = {
+      random: Random,
+      field: StructField,
+      settings: GenerateDataFrameSettings,
+      prefix: Option[String] = None): Any = {
     val StructField(name, dataType, nullable, _) = field
     val nameWithPrefix = prefix match {
       case None => name
@@ -223,12 +244,13 @@ object TestFrameUtils extends Matchers {
           generateArray(random, settings, ByteType, false, nameWithPrefix)
         case MapType(keyType, valueType, valueContainsNull) =>
           val array = generateArray(random, settings, valueType, valueContainsNull, nameWithPrefix)
-          array.zipWithIndex.map { case (a, i) =>
-            val keyField = StructField(i.toString, keyType, valueContainsNull)
-            val key = generateValueForField(random, keyField, settings, Some(nameWithPrefix))
-            key -> a
+          array.zipWithIndex.map {
+            case (a, i) =>
+              val keyField = StructField(i.toString, keyType, valueContainsNull)
+              val key = generateValueForField(random, keyField, settings, Some(nameWithPrefix))
+              key -> a
           }.toMap
-        case struct@StructType(fields) =>
+        case struct @ StructType(fields) =>
           val values = fields.map(f => generateValueForField(random, f, settings, Some(nameWithPrefix)))
           new GenericRowWithSchema(values, struct)
       }
@@ -236,11 +258,11 @@ object TestFrameUtils extends Matchers {
   }
 
   private def generateArray(
-                             random: Random,
-                             settings: GenerateDataFrameSettings,
-                             elementType: DataType,
-                             containsNull: Boolean,
-                             nameWithPrefix: String): Seq[Any] = {
+      random: Random,
+      settings: GenerateDataFrameSettings,
+      elementType: DataType,
+      containsNull: Boolean,
+      nameWithPrefix: String): Seq[Any] = {
     (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
       val arrayField = StructField(idx.toString, elementType, containsNull)
       generateValueForField(random, arrayField, settings, Some(nameWithPrefix))

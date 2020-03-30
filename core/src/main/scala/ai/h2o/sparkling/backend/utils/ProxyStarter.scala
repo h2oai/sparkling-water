@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.utils
 
@@ -46,7 +46,8 @@ object ProxyStarter extends Logging {
         server.setConnectors(Array(connector))
         // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
         server.start()
-        return new URI(s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
+        return new URI(
+          s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
         case _: BindException =>
       }
@@ -55,9 +56,9 @@ object ProxyStarter extends Logging {
   }
 
   /**
-   * In several scenarios we know that the port is likely to be occupied by H2O, so we can
-   * start from higher port number right away
-   */
+    * In several scenarios we know that the port is likely to be occupied by H2O, so we can
+    * start from higher port number right away
+    */
   private def findFlowProxyBasePort(conf: H2OConf): Int = {
     // Regular expression used for local[N] and local[*] master formats
     val LOCAL_N_REGEX = """local\[([0-9]+|\*)\]""".r
@@ -106,15 +107,17 @@ object ProxyStarter extends Logging {
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
-    scala.util.Try {
-      val serverSocket = new ServerSocket()
-      serverSocket.setReuseAddress(false)
-      val host = SparkEnv.get.blockManager.blockManagerId.host
-      val socketAddress = new InetSocketAddress(InetAddress.getByName(host), port)
-      serverSocket.bind(socketAddress, 1)
-      serverSocket.close()
-      true
-    }.getOrElse(false)
+    scala.util
+      .Try {
+        val serverSocket = new ServerSocket()
+        serverSocket.setReuseAddress(false)
+        val host = SparkEnv.get.blockManager.blockManagerId.host
+        val socketAddress = new InetSocketAddress(InetAddress.getByName(host), port)
+        serverSocket.bind(socketAddress, 1)
+        serverSocket.close()
+        true
+      }
+      .getOrElse(false)
   }
 
   private def findNextFreeFlowPort(clientWebPort: Int, clientBasePort: Int): Int = {
@@ -128,7 +131,8 @@ object ProxyStarter extends Logging {
     } else {
       val port = clientWebPort
       if (!isTcpPortAvailable(port)) {
-        throw new RuntimeException(s"Explicitly specified client web port $port is already occupied, please specify a free port!")
+        throw new RuntimeException(
+          s"Explicitly specified client web port $port is already occupied, please specify a free port!")
       } else {
         port
       }

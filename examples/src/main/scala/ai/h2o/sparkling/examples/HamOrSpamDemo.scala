@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.examples
 
@@ -62,7 +62,11 @@ object HamOrSpamDemo {
 
   def assertPredictions(spark: SparkSession, model: PipelineModel): Unit = {
     assert(!isSpam(spark, "Michal, h2oworld party tonight in MV?", model))
-    assert(isSpam(spark, "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?", model))
+    assert(
+      isSpam(
+        spark,
+        "We tried to contact you re your reply to our offer of a Video Handset? 750 anytime any networks mins? UNLIMITED TEXT?",
+        model))
   }
 
   def isSpam(spark: SparkSession, smsText: String, model: PipelineModel): Boolean = {
@@ -74,47 +78,45 @@ object HamOrSpamDemo {
   }
 
   def load(spark: SparkSession, dataFile: String): DataFrame = {
-    val smsSchema = StructType(Array(
-      StructField("label", StringType, nullable = false),
-      StructField("text", StringType, nullable = false)))
-    val rowRDD = spark.sparkContext.textFile(dataFile).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
+    val smsSchema = StructType(
+      Array(StructField("label", StringType, nullable = false), StructField("text", StringType, nullable = false)))
+    val rowRDD =
+      spark.sparkContext.textFile(dataFile).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
     spark.createDataFrame(rowRDD, smsSchema)
   }
 
   def createTokenizer(): RegexTokenizer = {
-    new RegexTokenizer().
-      setInputCol("text").
-      setOutputCol("words").
-      setMinTokenLength(3).
-      setGaps(false).
-      setPattern("[a-zA-Z]+")
+    new RegexTokenizer()
+      .setInputCol("text")
+      .setOutputCol("words")
+      .setMinTokenLength(3)
+      .setGaps(false)
+      .setPattern("[a-zA-Z]+")
   }
 
   def createStopWordsRemover(tokenizer: RegexTokenizer): StopWordsRemover = {
-    new StopWordsRemover().
-      setInputCol(tokenizer.getOutputCol).
-      setOutputCol("filtered").
-      setStopWords(Array("the", "a", "", "in", "on", "at", "as", "not", "for")).
-      setCaseSensitive(false)
+    new StopWordsRemover()
+      .setInputCol(tokenizer.getOutputCol)
+      .setOutputCol("filtered")
+      .setStopWords(Array("the", "a", "", "in", "on", "at", "as", "not", "for"))
+      .setCaseSensitive(false)
   }
 
   def createHashingTF(stopWordsRemover: StopWordsRemover): HashingTF = {
-    new HashingTF().
-      setNumFeatures(1 << 10).
-      setInputCol(stopWordsRemover.getOutputCol).
-      setOutputCol("wordToIndex")
+    new HashingTF().setNumFeatures(1 << 10).setInputCol(stopWordsRemover.getOutputCol).setOutputCol("wordToIndex")
   }
 
   def createIDF(hashingTF: HashingTF): IDF = {
-    new IDF().
-      setMinDocFreq(4).
-      setInputCol(hashingTF.getOutputCol).
-      setOutputCol("tf_idf")
+    new IDF().setMinDocFreq(4).setInputCol(hashingTF.getOutputCol).setOutputCol("tf_idf")
   }
 
-  def createColumnPruner(idf: IDF, hashingTF: HashingTF, stopWordsRemover: StopWordsRemover, tokenizer: RegexTokenizer): ColumnPruner = {
-    new ColumnPruner().
-      setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
+  def createColumnPruner(
+      idf: IDF,
+      hashingTF: HashingTF,
+      stopWordsRemover: StopWordsRemover,
+      tokenizer: RegexTokenizer): ColumnPruner = {
+    new ColumnPruner().setColumns(
+      Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
   }
 
   def trainPipeline(spark: SparkSession, pipeline: Pipeline, data: DataFrame): PipelineModel = {
@@ -125,47 +127,40 @@ object HamOrSpamDemo {
   }
 
   def gbm(): H2OGBM = {
-    new H2OGBM().
-      setSplitRatio(0.8).
-      setSeed(1).
-      setFeaturesCols("tf_idf").
-      setLabelCol("label")
+    new H2OGBM().setSplitRatio(0.8).setSeed(1).setFeaturesCols("tf_idf").setLabelCol("label")
   }
 
   def deepLearning(): H2ODeepLearning = {
-    new H2ODeepLearning().
-      setEpochs(10).
-      setL1(0.001).
-      setL2(0.0).
-      setSeed(1).
-      setHidden(Array[Int](200, 200)).
-      setFeaturesCols("tf_idf").
-      setLabelCol("label")
+    new H2ODeepLearning()
+      .setEpochs(10)
+      .setL1(0.001)
+      .setL2(0.0)
+      .setSeed(1)
+      .setHidden(Array[Int](200, 200))
+      .setFeaturesCols("tf_idf")
+      .setLabelCol("label")
   }
 
   def autoML(): H2OAutoML = {
-    new H2OAutoML().
-      setLabelCol("label").
-      setSeed(1).
-      setMaxRuntimeSecs(60 * 100).
-      setMaxModels(3).
-      setConvertUnknownCategoricalLevelsToNa(true)
+    new H2OAutoML()
+      .setLabelCol("label")
+      .setSeed(1)
+      .setMaxRuntimeSecs(60 * 100)
+      .setMaxModels(3)
+      .setConvertUnknownCategoricalLevelsToNa(true)
   }
 
   def gridSearch(): H2OGridSearch = {
     val hyperParams = Map("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
-    new H2OGridSearch().
-      setLabelCol("label").
-      setHyperParameters(hyperParams).
-      setFeaturesCols("tf_idf").
-      setConvertUnknownCategoricalLevelsToNa(true).
-      setAlgo(new H2OGBM().setMaxDepth(6).setSeed(1))
+    new H2OGridSearch()
+      .setLabelCol("label")
+      .setHyperParameters(hyperParams)
+      .setFeaturesCols("tf_idf")
+      .setConvertUnknownCategoricalLevelsToNa(true)
+      .setAlgo(new H2OGBM().setMaxDepth(6).setSeed(1))
   }
 
   def xgboost(): H2OXGBoost = {
-    new H2OXGBoost().
-      setFeaturesCols("tf_idf").
-      setLabelCol("label").
-      setConvertUnknownCategoricalLevelsToNa(true)
+    new H2OXGBoost().setFeaturesCols("tf_idf").setLabelCol("label").setConvertUnknownCategoricalLevelsToNa(true)
   }
 }

@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.backend.converters
 
 import java.io.File
@@ -38,8 +38,8 @@ import water.parser.{BufferedString, Categorical}
 import water.support.H2OFrameSupport
 
 /**
- * Testing schema for rdd  to h2o frame transformations.
- */
+  * Testing schema for rdd  to h2o frame transformations.
+  */
 @RunWith(classOf[JUnitRunner])
 class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
@@ -178,9 +178,10 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     val h2oFrame: H2OFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
-    assert(h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
-      h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
-      & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
+    assert(
+      h2oFrame.vec(0).isNumeric & h2oFrame.vec(1).isNumeric & h2oFrame.vec(2).isNumeric &
+        h2oFrame.vec(3).isNumeric & h2oFrame.vec(4).isNumeric & h2oFrame.vec(5).isNumeric & h2oFrame.vec(6).isNumeric
+        & h2oFrame.vec(7).isNumeric & h2oFrame.vec(8).isNumeric)
     val rdd = hc.asRDD[Prostate](h2oFrame)
 
     def @@(i: Int) = rdd.take(i + 1)(i)
@@ -215,16 +216,19 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(almostDefined(v)))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
-    assertInvariantsWithNulls(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowIdx = rowIdx + 1
-      almostDefined(nextRowIdx) match {
-        case Some(r) =>
-          val value = vec.at8(rowIdx) // value stored at rowIdx-th
-          assert(r == value, s"The H2OFrame values should match row numbers+1 = $r")
-        case None =>
-          assert(vec.isNA(rowIdx), s"Row at $rowIdx must be NA")
-      }
-    })
+    assertInvariantsWithNulls(
+      rdd,
+      h2oFrame,
+      (rowIdx, vec) => {
+        val nextRowIdx = rowIdx + 1
+        almostDefined(nextRowIdx) match {
+          case Some(r) =>
+            val value = vec.at8(rowIdx) // value stored at rowIdx-th
+            assert(r == value, s"The H2OFrame values should match row numbers+1 = $r")
+          case None =>
+            assert(vec.isNA(rowIdx), s"Row at $rowIdx must be NA")
+        }
+      })
     // Clean up
     h2oFrame.delete()
     rdd.unpersist()
@@ -342,10 +346,10 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(back2rdd.count == h2oFrame.numRows(), "Number of rows should match")
 
     back2rdd.foreach {
-      case OptionAndNot(x, xOpt) => if (xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
+      case OptionAndNot(x, xOpt) =>
+        if (xOpt != x.flatMap(i => almostDefined(i))) throw new IllegalStateException(s"Failed at $x/$xOpt")
     }
   }
-
 
   test("RDD[ByteField] to H2OFrame[Numeric]") {
     val rdd = sc.parallelize(-127 to 127).map(v => ByteField(v.asInstanceOf[Byte]))
@@ -408,7 +412,6 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")
     h2oFrame.delete()
   }
-
 
   // PUBDEV-1173
   test("RDD[Float] to H2OFrame[Numeric]") {
@@ -547,8 +550,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val data = Seq(
       org.apache.spark.mllib.linalg.Vectors.dense(1),
       org.apache.spark.mllib.linalg.Vectors.dense(1, 2),
-      org.apache.spark.mllib.linalg.Vectors.dense(1, 2, 3)
-    )
+      org.apache.spark.mllib.linalg.Vectors.dense(1, 2, 3))
     val rdd = sc.parallelize(data)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
@@ -558,10 +560,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   }
 
   test("RDD[mllib.linalg.Vector](Sparse - same length, one vector empty) to H2OFrame") {
-    val data = Seq(
-      Vectors.sparse(2, Array(0), Array(1)),
-      Vectors.sparse(2, Array(1), Array(0))
-    )
+    val data = Seq(Vectors.sparse(2, Array(0), Array(1)), Vectors.sparse(2, Array(1), Array(0)))
     val rdd = sc.parallelize(data, 1)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
@@ -570,12 +569,8 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(1), Seq(0, 0))
   }
 
-
   test("RDD[mllib.linalg.Vector](Sparse - same length) to H2OFrame") {
-    val data = Seq(
-      Vectors.sparse(2, Array(0), Array(1)),
-      Vectors.sparse(2, Array(1), Array(2))
-    )
+    val data = Seq(Vectors.sparse(2, Array(0), Array(1)), Vectors.sparse(2, Array(1), Array(2)))
     val rdd = sc.parallelize(data, 1)
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
     assertRDDH2OFrameInvariants(rdd, h2oFrame)
@@ -620,11 +615,17 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
       case x if x.take(1)(0).isInstanceOf[FloatField] =>
         assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[FloatField].productArity, "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[DoubleField] =>
-        assert(df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity, "Number columns should match")
+        assert(
+          df.numCols() == inputRDD.take(1)(0).asInstanceOf[DoubleField].productArity,
+          "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[org.apache.spark.ml.linalg.Vector] =>
-        assert(df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.ml.linalg.Vector]].map(v => v.size).max(), "Number columns should match")
+        assert(
+          df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.ml.linalg.Vector]].map(v => v.size).max(),
+          "Number columns should match")
       case x if x.take(1)(0).isInstanceOf[org.apache.spark.mllib.linalg.Vector] =>
-        assert(df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.mllib.linalg.Vector]].map(v => v.size).max(), "Number columns should match")
+        assert(
+          df.numCols() == inputRDD.asInstanceOf[RDD[org.apache.spark.mllib.linalg.Vector]].map(v => v.size).max(),
+          "Number columns should match")
       case x => fail(s"Bad data $x")
     }
   }

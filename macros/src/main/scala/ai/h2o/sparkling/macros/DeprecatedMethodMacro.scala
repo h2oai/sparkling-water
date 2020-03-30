@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.macros
 
@@ -22,28 +22,28 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox.Context
 
 /**
- * The class represents an annotation specifying deprecated methods of Sparkling Water API
- *
- * @param replacement Name of a method replacing the deprecated method
- * @param version     Version when this method will be removed
- */
+  * The class represents an annotation specifying deprecated methods of Sparkling Water API
+  *
+  * @param replacement Name of a method replacing the deprecated method
+  * @param version     Version when this method will be removed
+  */
 class DeprecatedMethod(replacement: String = "", version: String = "") extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro DeprecatedMethodMacro.impl
 }
 
 /**
- * The object contains all the logic for expanding the [[DeprecatedMethod]] annotation.
- */
+  * The object contains all the logic for expanding the [[DeprecatedMethod]] annotation.
+  */
 object DeprecatedMethodMacro {
 
   /**
-   * The method replaces the [[DeprecatedMethod]] annotation with the standard [[deprecated]] annotation and injects
-   * a logging logic into an annotated method.
-   *
-   * @param c         A reflection white-box context
-   * @param annottees An expression annotated by [[DeprecatedMethod]]
-   * @return An expression that is result of the annotation expansion
-   */
+    * The method replaces the [[DeprecatedMethod]] annotation with the standard [[deprecated]] annotation and injects
+    * a logging logic into an annotated method.
+    *
+    * @param c         A reflection white-box context
+    * @param annottees An expression annotated by [[DeprecatedMethod]]
+    * @return An expression that is result of the annotation expansion
+    */
   def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 

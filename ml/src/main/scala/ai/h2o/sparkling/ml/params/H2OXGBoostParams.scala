@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
@@ -21,7 +21,8 @@ import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 
-trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
+trait H2OXGBoostParams
+  extends H2OAlgoSupervisedParams[XGBoostParameters]
   with H2OTreeBasedSupervisedMOJOParams
   with HasMonotoneConstraints
   with HasStoppingCriteria[XGBoostParameters] {
@@ -109,8 +110,7 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     oneDrop -> false,
     skipDrop -> 0,
     gpuId -> 0, // which GPU to use
-    backend -> Backend.auto.name()
-  )
+    backend -> Backend.auto.name())
 
   //
   // Getters
@@ -249,7 +249,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
     set(booster, validated)
   }
 
-
   def setDmatrixType(value: String): this.type = {
     val validated = getValidatedEnumValue[DMatrixType](value)
     set(dmatrixType, validated)
@@ -324,7 +323,6 @@ trait H2OXGBoostParams extends H2OAlgoSupervisedParams[XGBoostParameters]
         "monotone_constraints" -> getMonotoneConstraints(),
         "stopping_rounds" -> getStoppingRounds(),
         "stopping_metric" -> getStoppingMetric(),
-        "stopping_tolerance" -> getStoppingTolerance()
-      )
+        "stopping_tolerance" -> getStoppingTolerance())
   }
 }

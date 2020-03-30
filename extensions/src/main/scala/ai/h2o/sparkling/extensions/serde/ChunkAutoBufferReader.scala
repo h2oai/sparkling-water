@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.extensions.serde
 
@@ -28,7 +28,12 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   private val buffer = new AutoBuffer(inputStream)
   private var isLastNAVar: Boolean = false
 
-  def readChunk(frameName: String, numRows: Int, chunkId: Int, expectedTypes: Array[Byte], maxVecSizes: Array[Int]): Unit = {
+  def readChunk(
+      frameName: String,
+      numRows: Int,
+      chunkId: Int,
+      expectedTypes: Array[Byte],
+      maxVecSizes: Array[Int]): Unit = {
     val vecTypes = SerdeUtils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
     val startPositions = getStartPositions(elementSizes)
@@ -129,7 +134,8 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     var vecCount = 0
     expectedTypes.map {
       case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-           EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_TIMESTAMP => 1
+          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_TIMESTAMP =>
+        1
       case EXPECTED_VECTOR =>
         val result = vecElemSizes(vecCount)
         vecCount += 1
@@ -210,8 +216,8 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   }
 
   /**
-   * This method is used to check if the last received value was marked as NA by H2O backend
-   */
+    * This method is used to check if the last received value was marked as NA by H2O backend
+    */
   def isLastNA: Boolean = isLastNAVar
 
   override def close(): Unit = buffer.close()

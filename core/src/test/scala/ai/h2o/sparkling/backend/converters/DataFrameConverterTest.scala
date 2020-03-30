@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.converters
 
@@ -43,8 +43,8 @@ import water.fvec._
 import water.parser.BufferedString
 
 /**
- * Testing Conversions between H2OFrame and Spark DataFrame
- */
+  * Testing Conversions between H2OFrame and Spark DataFrame
+  */
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
@@ -58,7 +58,9 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
     val dataFrame = hc.asDataFrame(h2oFrame)
 
-    assert(h2oFrame.numRows() == dataFrame.count(), "Number of lines in H2O Frame and in Spark DataFrame has to be same")
+    assert(
+      h2oFrame.numRows() == dataFrame.count(),
+      "Number of lines in H2O Frame and in Spark DataFrame has to be same")
     h2oFrame.delete()
   }
 
@@ -130,8 +132,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val fname: String = "testByte.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 5L)
-    val data: Array[Array[Byte]] = Array(Array(-1, 2, -3) map (_.toByte),
-      Array(4, -5, 6, -7, 8) map (_.toByte))
+    val data: Array[Array[Byte]] = Array(Array(-1, 2, -3) map (_.toByte), Array(4, -5, 6, -7, 8) map (_.toByte))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 8)
@@ -153,8 +154,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val fname: String = "testShort.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 5L)
-    val data: Array[Array[Short]] = Array(Array(-200, 201, -202) map (_.toShort),
-      Array(204, -205, 206, -207, 208) map (_.toShort))
+    val data: Array[Array[Short]] =
+      Array(Array(-200, 201, -202) map (_.toShort), Array(204, -205, 206, -207, 208) map (_.toShort))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 208)
@@ -176,8 +177,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val fname: String = "testInteger.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 5L)
-    val data: Array[Array[Integer]] = Array(Array(-100000, 100001, -100002),
-      Array(100004, -100005, 100006, -100007, 100008))
+    val data: Array[Array[Integer]] =
+      Array(Array(-100000, 100001, -100002), Array(100004, -100005, 100006, -100007, 100008))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
 
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 100008)
@@ -243,9 +244,8 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
     val fname: String = "testString.hex"
     val colNames: Array[String] = Array("C0")
     val chunkLayout: Array[Long] = Array(3L, 3L, 2L)
-    val data: Array[Array[String]] = Array(Array("string1", "string2", "string3"),
-      Array("string4", "string5", "string6"),
-      Array("string7", "string8"))
+    val data: Array[Array[String]] =
+      Array(Array("string1", "string2", "string3"), Array("string4", "string5", "string6"), Array("string7", "string8"))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_STR)
 
     assert(h2oFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(), 1).toString.equals("string8"))
@@ -278,10 +278,11 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
         UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3f")))
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_UUID)
 
-    assert(UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getLeastSignificantBits ==
-      h2oFrame.vec(0).chunkForChunkIdx(0).at16l(0) &
-      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getMostSignificantBits ==
-        h2oFrame.vec(0).chunkForChunkIdx(0).at16h(0))
+    assert(
+      UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getLeastSignificantBits ==
+        h2oFrame.vec(0).chunkForChunkIdx(0).at16l(0) &
+        UUID.fromString("6870f256-e145-4d75-adb0-99ccb77d5d3a").getMostSignificantBits ==
+          h2oFrame.vec(0).chunkForChunkIdx(0).at16h(0))
     assert(h2oFrame.vec(0).isUUID)
 
     val dataFrame = hc.asDataFrame(h2oFrame)
@@ -408,11 +409,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
   test("DataFrame[Struct(TimeStampField)] to H2OFrame[Time]") {
     val num = 20
-    val values = (1 to num).map(v =>
-      ComposedWithTimestamp(
-        PrimitiveA(v, v.toString),
-        TimestampField(new Timestamp(v))
-      ))
+    val values = (1 to num).map(v => ComposedWithTimestamp(PrimitiveA(v, v.toString), TimestampField(new Timestamp(v))))
     val df = sc.parallelize(values).toDF
     val h2oFrame = hc.asH2OFrame(df)
 
@@ -447,21 +444,24 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
     val h2oFrame = hc.asH2OFrame(df)
 
-    ShuffleSplitFrame.shuffleSplitFrame(h2oFrame,
+    ShuffleSplitFrame.shuffleSplitFrame(
+      h2oFrame,
       Array[String]("train.hex", "test.hex", "hold.hex") map Key.make[Frame],
-      Array[Double](0.5, 0.3, 0.2), 1234567689L)
+      Array[Double](0.5, 0.3, 0.2),
+      1234567689L)
   }
 
   test("Expand composed schema of DataFrame") {
     val num = 2
     val rdd = sc.parallelize(1 to num).map(x => Row(Row(x, "name=" + x), x * 1.0))
-    val schema = StructType(Seq(
-      StructField("a", StructType(Seq(
-        StructField("n", IntegerType, nullable = false),
-        StructField("name", StringType, nullable = true))),
-        nullable = false),
-      StructField("weight", DoubleType, nullable = false)
-    ))
+    val schema = StructType(
+      Seq(
+        StructField(
+          "a",
+          StructType(
+            Seq(StructField("n", IntegerType, nullable = false), StructField("name", StringType, nullable = true))),
+          nullable = false),
+        StructField("weight", DoubleType, nullable = false)))
     val df = spark.createDataFrame(rdd, schema)
 
     val flattenDF = SchemaUtils.flattenDataFrame(df)
@@ -473,7 +473,7 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
       StructField("weight", DoubleType, nullable = false))
     Assertions.assertResult(expected.length)(expandedSchema.length)
 
-    for {i <- expected.indices} {
+    for { i <- expected.indices } {
       assertResult(expected(i), s"@$i")(expandedSchema(i))
     }
 
@@ -499,12 +499,13 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
     val metadatas = expandedSchema.map(f => f.metadata)
 
-    assert(expandedSchema === Array(
-      (StructField("f.0", IntegerType, nullable = false, metadatas.head)),
-      (StructField("f.1", IntegerType, nullable = true, metadatas(1))),
-      (StructField("f.2", IntegerType, nullable = true, metadatas(2))),
-      (StructField("f.3", IntegerType, nullable = true, metadatas(3))),
-      (StructField("f.4", IntegerType, nullable = true, metadatas(4)))))
+    assert(
+      expandedSchema === Array(
+        (StructField("f.0", IntegerType, nullable = false, metadatas.head)),
+        (StructField("f.1", IntegerType, nullable = true, metadatas(1))),
+        (StructField("f.2", IntegerType, nullable = true, metadatas(2))),
+        (StructField("f.3", IntegerType, nullable = true, metadatas(3))),
+        (StructField("f.4", IntegerType, nullable = true, metadatas(4)))))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -528,10 +529,11 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType),
-      StructField("f2", DoubleType)))
+    assert(
+      expandedSchema === Vector(
+        StructField("f0", DoubleType),
+        StructField("f1", DoubleType),
+        StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -547,18 +549,16 @@ class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
   test("Expand schema with MLLIB sparse vectors") {
     import spark.implicits._
     val num = 3
-    val values = (0 until num).map(x =>
-      PrimitiveMllibFixture(
-        Vectors.sparse(num, Seq((x, 1.0)))
-      ))
+    val values = (0 until num).map(x => PrimitiveMllibFixture(Vectors.sparse(num, Seq((x, 1.0)))))
     val df = sc.parallelize(values).toDF()
 
     val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType),
-      StructField("f2", DoubleType)))
+    assert(
+      expandedSchema === Vector(
+        StructField("f0", DoubleType),
+        StructField("f1", DoubleType),
+        StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)

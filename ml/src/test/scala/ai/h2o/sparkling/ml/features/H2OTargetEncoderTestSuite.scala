@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.features
 
@@ -51,7 +51,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
-  private lazy val expectedTestingDataset = loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed.csv").cache()
+  private lazy val expectedTestingDataset =
+    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed.csv").cache()
 
   test("A pipeline with a target encoder transform training and testing dataset without an exception") {
     val targetEncoder = new H2OTargetEncoder()
@@ -250,9 +251,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
   }
 
   test("The target encoder can work with arbitrary label categories") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val trainingDatasetWithLabel =
+      trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
@@ -284,13 +284,11 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     assert(thrown.getMessage == "The label column can not contain more than two unique values.")
   }
 
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
-    val testingDatasetWithLabel = testingDataset.withColumn(
-      "LABEL",
-      lit("c"))
+  test(
+    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
+    val trainingDatasetWithLabel =
+      trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("c"))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
@@ -304,13 +302,11 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
-    val testingDatasetWithLabel = testingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
+  test(
+    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
+    val trainingDatasetWithLabel =
+      trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
@@ -381,7 +377,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transformTrainingDataset(testingSubDataset)
 
-    val result = model.transformTrainingDataset(testingSubDataset.select(originalOrder.reverse: _*))
+    val result = model
+      .transformTrainingDataset(testingSubDataset.select(originalOrder.reverse: _*))
       .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
@@ -402,7 +399,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transform(testingSubDataset)
 
-    val result = model.transform(testingSubDataset.select(originalOrder.reverse: _*))
+    val result = model
+      .transform(testingSubDataset.select(originalOrder.reverse: _*))
       .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
     TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
@@ -420,7 +418,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setNoise(0.0)
 
     val model = targetEncoder.fit(trainingDataset)
-    val expectedResult = model.transformTrainingDataset(testingSubDataset)
+    val expectedResult = model
+      .transformTrainingDataset(testingSubDataset)
       .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
     val result = model.transformTrainingDataset(testingSubDataset)
@@ -440,7 +439,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setNoise(0.0)
 
     val model = targetEncoder.fit(trainingDataset)
-    val expectedResult = model.transform(testingDataset)
+    val expectedResult = model
+      .transform(testingDataset)
       .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
     val result = model.transform(testingSubDataset)
@@ -458,9 +458,12 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setHoldoutStrategy("None")
       .setNoise(0.0)
     val expected = expectedTestingDataset
-      .withColumn("DPROS_out", 'DPROS_te).drop('DPROS_te)
-      .withColumn("DCAPS_out", 'DCAPS_te).drop('DCAPS_te)
-      .withColumn("RACE_out", 'RACE_te).drop('RACE_te)
+      .withColumn("DPROS_out", 'DPROS_te)
+      .drop('DPROS_te)
+      .withColumn("DCAPS_out", 'DCAPS_te)
+      .drop('DCAPS_te)
+      .withColumn("RACE_out", 'RACE_te)
+      .drop('RACE_te)
 
     val model = targetEncoder.fit(trainingDataset)
     val transformedTestingDataset = model.transformTrainingDataset(testingDataset)
@@ -478,9 +481,12 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setHoldoutStrategy("None")
       .setNoise(0.0)
     val expected = expectedTestingDataset
-      .withColumn("DPROS_out", 'DPROS_te).drop('DPROS_te)
-      .withColumn("DCAPS_out", 'DCAPS_te).drop('DCAPS_te)
-      .withColumn("RACE_out", 'RACE_te).drop('RACE_te)
+      .withColumn("DPROS_out", 'DPROS_te)
+      .drop('DPROS_te)
+      .withColumn("DCAPS_out", 'DCAPS_te)
+      .drop('DCAPS_te)
+      .withColumn("RACE_out", 'RACE_te)
+      .drop('RACE_te)
 
     val model = targetEncoder.fit(trainingDataset)
     val transformedTestingDataset = model.transform(testingDataset)

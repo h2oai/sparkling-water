@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.utils
 
@@ -28,8 +28,8 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Work with reflection only inside this helper.
- */
+  * Work with reflection only inside this helper.
+  */
 object ReflectionUtils {
   type NameOfType = String
 
@@ -58,9 +58,7 @@ object ReflectionUtils {
     val attr = st.members.sorted
       .filter(!_.isMethod)
       .filter(s => names.contains(s.name.toString.trim))
-      .map(s =>
-        s.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs)
-      )
+      .map(s => s.typeSignature.substituteTypes(formalTypeArgs, actualTypeArgs))
     attr
   }
 
@@ -81,16 +79,17 @@ object ReflectionUtils {
   def reflector(ref: AnyRef) = new {
     def getV[T](name: String): T = ref.getClass.getMethods.find(_.getName == name).get.invoke(ref).asInstanceOf[T]
 
-    def setV(name: String, value: Any): Unit = ref.getClass.getMethods.find(_.getName == name + "_$eq").get.invoke(ref, value.asInstanceOf[AnyRef])
+    def setV(name: String, value: Any): Unit =
+      ref.getClass.getMethods.find(_.getName == name + "_$eq").get.invoke(ref, value.asInstanceOf[AnyRef])
   }
 
   /** Return API annotation assigned with the given field
-   * or null.
-   *
-   * @param klazz     class to query
-   * @param fieldName field name to query
-   * @return instance of API annotation assigned with the field or null
-   */
+    * or null.
+    *
+    * @param klazz     class to query
+    * @param fieldName field name to query
+    * @return instance of API annotation assigned with the field or null
+    */
   def api(klazz: Class[_], fieldName: String): API = {
     klazz.getField(fieldName).getAnnotation(classOf[API])
   }
@@ -115,7 +114,6 @@ object ReflectionUtils {
   }
 
   def javaClassOf[T](implicit ttag: TypeTag[T]) = supportedTypeFor(typeOf[T]).javaClass
-
 
   def javaClassOf(dt: DataType): Class[_] = {
     dt match {
@@ -144,13 +142,13 @@ object ReflectionUtils {
   import SupportedTypes._
 
   /**
-   * Return catalyst structural type for given H2O vector.
-   *
-   * The mapping of type is flat.
-   *
-   * @param v H2O vector
-   * @return catalyst data type
-   */
+    * Return catalyst structural type for given H2O vector.
+    *
+    * The mapping of type is flat.
+    *
+    * @param v H2O vector
+    * @return catalyst data type
+    */
   def dataTypeFor(v: Vec): DataType = supportedType(v).sparkType
 
   def dataTypeFor(columnType: H2OColumn): DataType = supportedType(columnType).sparkType
@@ -170,11 +168,11 @@ object ReflectionUtils {
   }
 
   /**
-   * This method converts a REST column entity to a data type supported by Spark.
-   *
-   * @param column A column entity obtained via H2O REST API
-   * @return A data type supported by Spark
-   */
+    * This method converts a REST column entity to a data type supported by Spark.
+    *
+    * @param column A column entity obtained via H2O REST API
+    * @return A data type supported by Spark
+    */
   def supportedType(column: H2OColumn): SupportedType = column.dataType match {
     case H2OColumnType.`enum` | H2OColumnType.string | H2OColumnType.uuid => String
     case H2OColumnType.int =>
@@ -231,7 +229,7 @@ case class ProductType(members: Array[ProductMember]) {
 }
 
 object ProductType {
-  def create[A <: Product : TypeTag : ClassTag]: ProductType = {
+  def create[A <: Product: TypeTag: ClassTag]: ProductType = {
     val members = productMembers[A]
     new ProductType(members)
   }

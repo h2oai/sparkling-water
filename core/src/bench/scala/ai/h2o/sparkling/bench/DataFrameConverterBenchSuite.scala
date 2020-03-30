@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.bench
 
@@ -35,8 +35,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     numberOfRows = 8000,
     rowsPerPartition = 500,
     maxCollectionSize = 100,
-    nullProbability = 0.0
-  )
+    nullProbability = 0.0)
 
   benchTest("Measure performance of conversion to H2OFrame on a flat data frame") {
     testPerSchema(FlatSchema)
@@ -125,7 +124,9 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     hf.remove()
   }
 
-  benchTest("Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors", iterations = 10) {
+  benchTest(
+    "Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors",
+    iterations = 10) {
     import sqlContext.implicits._
 
     val numberOfRows = 10

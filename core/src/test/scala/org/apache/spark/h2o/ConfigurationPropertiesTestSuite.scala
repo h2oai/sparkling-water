@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o
 
@@ -30,7 +30,6 @@ import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 import scala.collection.JavaConverters._
-
 
 abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers with SparkTestContext {
 
@@ -90,9 +89,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
   def testExtraHTTPHeadersArePropagated(master: String, urlProvider: H2OContext => String): Unit = {
     val spark = createSparkSession(master)
     val h2oConf = new H2OConf()
-    val extraHttpHeaders = Map(
-      "X-MyCustomHeaderA" -> "A",
-      "X-MyCustomHeaderB" -> "B")
+    val extraHttpHeaders = Map("X-MyCustomHeaderA" -> "A", "X-MyCustomHeaderB" -> "B")
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
       .setClusterSize(1)
@@ -103,8 +100,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
     try {
       val flowHeaders = connection.getHeaderFields.asScala.filterKeys(key => extraHttpHeaders.contains(key)).toMap
       flowHeaders shouldEqual extraHttpHeaders.mapValues(List(_).asJava)
-    }
-    finally {
+    } finally {
       connection.disconnect()
     }
   }
@@ -120,7 +116,9 @@ class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends Configuration
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
   test("test extra HTTP headers are propagated to FLOW UI") {
-    testExtraHTTPHeadersArePropagated("local-cluster[1,1,1024]", (hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
+    testExtraHTTPHeadersArePropagated(
+      "local-cluster[1,1,1024]",
+      (hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
   }
 }
 
@@ -146,11 +144,13 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
     assert(file.exists(), s"H2O process didn't create a file on the path '$filePath'.")
   }
 
-  def setExtraClientProperties(conf: H2OConf, filePath: Path): H2OConf = conf.setClientExtraProperties(s"-notify_local $filePath")
+  def setExtraClientProperties(conf: H2OConf, filePath: Path): H2OConf =
+    conf.setClientExtraProperties(s"-notify_local $filePath")
 }
 
 @RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Local extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Local
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
     testNotifyLocalPropertyCreatesFile("local[*]", setExtraClientProperties)
@@ -158,7 +158,8 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
 }
 
 @RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_LocalCluster extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_LocalCluster
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
     testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraClientProperties)
@@ -166,7 +167,8 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
 }
 
 @RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   def setExtraNodeProperties(conf: H2OConf, filePath: Path): H2OConf = {
     val properties = if (conf.backendClusterMode == "external") {

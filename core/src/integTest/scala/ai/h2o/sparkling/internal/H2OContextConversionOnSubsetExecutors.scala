@@ -25,16 +25,17 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 /**
- * This test is being run only in internal backend mode as it does not make sense
- * to verify this functionality on external backend where we run H2O outside of Spark
- */
+  * This test is being run only in internal backend mode as it does not make sense
+  * to verify this functionality on external backend where we run H2O outside of Spark
+  */
 @RunWith(classOf[JUnitRunner])
 class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext(
-    "local-cluster[3,1,1024]",
-    this.getClass.getName,
-    conf = defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
+  override def createSparkContext: SparkContext =
+    new SparkContext(
+      "local-cluster[3,1,1024]",
+      this.getClass.getName,
+      conf = defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)

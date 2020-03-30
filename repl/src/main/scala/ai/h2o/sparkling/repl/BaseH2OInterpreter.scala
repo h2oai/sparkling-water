@@ -1,25 +1,24 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-/**
- * This code is based on code org.apache.spark.repl.SparkILoop released under Apache 2.0"
- * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.11/src/main/scala/org/apache/spark/repl/SparkILoop.scala
- * Author: Alexander Spoon
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
+/**
+  * This code is based on code org.apache.spark.repl.SparkILoop released under Apache 2.0"
+  * Link on Github: https://github.com/apache/spark/blob/master/repl/scala-2.11/src/main/scala/org/apache/spark/repl/SparkILoop.scala
+  * Author: Alexander Spoon
+  */
 package ai.h2o.sparkling.repl
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -34,11 +33,11 @@ import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 
 /**
- * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter
- *
- * @param sparkContext spark context
- * @param sessionId    session ID for interpreter
- */
+  * H2O Interpreter which is use to interpret scala code. This class is base class for H2O Interpreter
+  *
+  * @param sparkContext spark context
+  * @param sessionId    session ID for interpreter
+  */
 private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, var sessionId: Int) extends Logging {
   private val valuesExtractor = new ValuesExtractor
   private val ContinueString = "     | "
@@ -64,19 +63,19 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   /**
-   * Get response of interpreter
-   *
-   * @return
-   */
+    * Get response of interpreter
+    *
+    * @return
+    */
   def interpreterResponse: String = {
     responseWriter.content
   }
 
   /**
-   * Redirected printed output coming from commands written in the interpreter
-   *
-   * @return
-   */
+    * Redirected printed output coming from commands written in the interpreter
+    *
+    * @return
+    */
   def consoleOutput: String = {
     consoleStream.content
   }
@@ -86,11 +85,11 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   /**
-   * Run scala code in a string
-   *
-   * @param code Code to be compiled end executed
-   * @return
-   */
+    * Run scala code in a string
+    *
+    * @param code Code to be compiled end executed
+    * @return
+    */
   def runCode(code: String): CodeResults.Value = BaseH2OInterpreter.savingContextClassloader {
     initBeforeRunningCode(code)
     // Redirect output from console to our own stream
@@ -110,14 +109,12 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     settings = createSettings()
     intp = createInterpreter()
     val spark = SparkSessionUtils.active
-    addThunk(
-      intp.beQuietDuring {
-        intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
-        intp.bind("spark", "org.apache.spark.sql.SparkSession", spark, List("@transient"))
-        intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", spark.sqlContext, List("@transient", "implicit"))
-        intp.bind("_valuesExtractor", "ai.h2o.sparkling.repl.ValuesExtractor", valuesExtractor, List("@transient"))
-        command(
-          """
+    addThunk(intp.beQuietDuring {
+      intp.bind("sc", "org.apache.spark.SparkContext", sparkContext, List("@transient"))
+      intp.bind("spark", "org.apache.spark.sql.SparkSession", spark, List("@transient"))
+      intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", spark.sqlContext, List("@transient", "implicit"))
+      intp.bind("_valuesExtractor", "ai.h2o.sparkling.repl.ValuesExtractor", valuesExtractor, List("@transient"))
+      command("""
             @transient val h2oContext = {
               val _h2oContext = org.apache.spark.h2o.H2OContext.get().getOrElse(throw new RuntimeException(
               "H2OContext has to be started in order to use H2O REPL"))
@@ -125,16 +122,16 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
             }
           """)
 
-        command("import org.apache.spark.SparkContext._")
-        command("import org.apache.spark.sql.{DataFrame, Row, SQLContext}")
-        command("import sqlContext.implicits._")
-        command("import sqlContext.sql")
-        command("import org.apache.spark.sql._")
-        command("import org.apache.spark.sql.functions._")
-        command("import org.apache.spark.h2o._")
-        command("import org.apache.spark._")
+      command("import org.apache.spark.SparkContext._")
+      command("import org.apache.spark.sql.{DataFrame, Row, SQLContext}")
+      command("import sqlContext.implicits._")
+      command("import sqlContext.sql")
+      command("import org.apache.spark.sql._")
+      command("import org.apache.spark.sql.functions._")
+      command("import org.apache.spark.h2o._")
+      command("import org.apache.spark._")
 
-      })
+    })
 
     if (intp.reporter.hasErrors) {
       throw new RuntimeException("Could not initialize the interpreter")
@@ -147,13 +144,13 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   protected def createInterpreter(): H2OIMain
 
   /**
-   * Initialize the compiler settings
-   */
+    * Initialize the compiler settings
+    */
   protected def createSettings(): Settings
 
   /**
-   * Run all thunks after the interpreter has been initialized and throw exception if anything went wrong
-   */
+    * Run all thunks after the interpreter has been initialized and throw exception if anything went wrong
+    */
   private[repl] def postInitialization(): Unit = BaseH2OInterpreter.savingContextClassloader {
     try {
       runThunks()
@@ -217,9 +214,9 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   /** The main read-eval-print loop for the repl.  It calls
-   * command() for each line of input, and stops when
-   * command() returns false.
-   */
+    * command() for each line of input, and stops when
+    * command() returns false.
+    */
   private def loop() {
     def readOneLine() = {
       responseWriter.flush()
@@ -253,8 +250,8 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   /** Run one command submitted by the user.  Two values are returned:
-   * (1) whether to keep running, (2) the line to record for replay,
-   * if any. */
+    * (1) whether to keep running, (2) the line to record for replay,
+    * if any. */
   private[repl] def command(line: String): Boolean = {
     if (intp.global == null) false // Notice failure to create compiler
     else {
@@ -264,11 +261,11 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   /** Interpret expressions starting with the first line.
-   * Read lines until a complete compilation unit is available
-   * or until a syntax error has been seen.  If a full unit is
-   * read, go ahead and interpret it.  Return the full string
-   * to be recorded for replay, if any.
-   */
+    * Read lines until a complete compilation unit is available
+    * or until a syntax error has been seen.  If a full unit is
+    * read, go ahead and interpret it.  Return the full string
+    * to be recorded for replay, if any.
+    */
   @tailrec
   private def interpretStartingWith(code: String): Unit = {
 
@@ -279,7 +276,6 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
       case IR.Success =>
         setSuccess()
       case IR.Incomplete =>
-
         in.readLine(ContinueString) match {
           case null =>
             // we know compilation is going to fail since we're at EOF and the
@@ -310,19 +306,18 @@ object BaseH2OInterpreter {
     val classloader = Thread.currentThread().getContextClassLoader
     try {
       body
-    }
-    finally Thread.currentThread().setContextClassLoader(classloader)
+    } finally Thread.currentThread().setContextClassLoader(classloader)
   }
 
 }
 
 /**
- * Due to a bug in the scala interpreter under scala 2.11 (SI-8935) (Fixed in Scala 2.12) with IMain.valueOfTerm
- * returning None we can hack around it by
- * binding an instance of valuesExtractor into iMain and interpret the "_valuesExtractor.values.put(termName, termValue)".
- * This makes it possible to extract value in IMain in cross-Scala way even though non necessary in Scala 2.12
- *
- */
+  * Due to a bug in the scala interpreter under scala 2.11 (SI-8935) (Fixed in Scala 2.12) with IMain.valueOfTerm
+  * returning None we can hack around it by
+  * binding an instance of valuesExtractor into iMain and interpret the "_valuesExtractor.values.put(termName, termValue)".
+  * This makes it possible to extract value in IMain in cross-Scala way even though non necessary in Scala 2.12
+  *
+  */
 class ValuesExtractor {
   val values = mutable.Map.empty[String, Any]
 }

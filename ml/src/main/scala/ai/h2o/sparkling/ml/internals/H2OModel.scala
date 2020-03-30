@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.internals
 
@@ -30,11 +30,11 @@ import water.api.schemas3.ModelsV3
 
 import scala.collection.JavaConverters._
 
-
-private[sparkling] class H2OModel private(val modelId: String,
-                                          val modelCategory: H2OModelCategory.Value,
-                                          val metrics: H2OMetricsHolder,
-                                          val trainingParams: Map[String, String])
+private[sparkling] class H2OModel private (
+    val modelId: String,
+    val modelCategory: H2OModelCategory.Value,
+    val metrics: H2OMetricsHolder,
+    val trainingParams: Map[String, String])
   extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
@@ -82,7 +82,8 @@ private[sparkling] object H2OModel extends RestCommunication {
       IOUtils.toString(response)
     }
     val gson = new Gson()
-    val modelJson = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("models").getAsJsonArray.get(0).getAsJsonObject
+    val modelJson =
+      gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("models").getAsJsonArray.get(0).getAsJsonObject
     val modelCategory = extractModelCategory(modelJson)
     val metrics = extractAllMetrics(modelJson)
     val params = extractParams(modelJson)
@@ -121,12 +122,15 @@ private[sparkling] object H2OModel extends RestCommunication {
 
   protected def extractParams(modelJson: JsonObject): Map[String, String] = {
     val parameters = modelJson.get("parameters").getAsJsonArray.asScala.toArray
-    parameters.flatMap { param =>
-      val name = param.getAsJsonObject.get("name").getAsString
-      val value = param.getAsJsonObject.get("actual_value")
-      val stringValue = stringifyJSON(value)
-      stringValue.map(name -> _)
-    }.sorted.toMap
+    parameters
+      .flatMap { param =>
+        val name = param.getAsJsonObject.get("name").getAsString
+        val value = param.getAsJsonObject.get("actual_value")
+        val stringValue = stringifyJSON(value)
+        stringValue.map(name -> _)
+      }
+      .sorted
+      .toMap
   }
 
   private def extractMetrics(json: JsonObject, metricType: String): Map[H2OMetric, Double] = {

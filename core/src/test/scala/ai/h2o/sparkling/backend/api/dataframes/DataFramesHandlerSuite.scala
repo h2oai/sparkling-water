@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.backend.api.dataframes
 
 import java.io.File
@@ -31,8 +31,8 @@ import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
 
 /**
- * Test suite for DataFrames handler
- */
+  * Test suite for DataFrames handler
+  */
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
@@ -54,16 +54,17 @@ class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
     assert(result.dataframes(0).dataframe_id == rid, "IDs should match")
 
     val schema = parseSchema(result.dataframes(0).schema)
-    assert(schema.length == df.schema.length,
-      "Number of fields in schemas should be the same")
-    assert(schema.fields(0).name.equals(df.schema.fields(0).name),
+    assert(schema.length == df.schema.length, "Number of fields in schemas should be the same")
+    assert(
+      schema.fields(0).name.equals(df.schema.fields(0).name),
       "Name of the first field in StructType should be the same")
-    assert(schema.fields(0).nullable == df.schema.fields(0).nullable,
+    assert(
+      schema.fields(0).nullable == df.schema.fields(0).nullable,
       "Nullable attribute of the first field in StructType should be the same")
-    assert(schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+    assert(
+      schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
       "DataType attribute of the first field in StructType should be the same")
-    assert(schema.fields(0).metadata == Metadata.empty,
-      "Metadata should be empty")
+    assert(schema.fields(0).metadata == Metadata.empty, "Metadata should be empty")
   }
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
@@ -82,15 +83,18 @@ class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
 
     assert(result.dataframe_id == name, "IDs should match")
     val schema = parseSchema(result.schema)
-    assert(schema.length == df.schema.length,
-      "Number of fields in schemas should be the same")
-    assert(schema.fields(0).name.equals(df.schema.fields(0).name),
+    assert(schema.length == df.schema.length, "Number of fields in schemas should be the same")
+    assert(
+      schema.fields(0).name.equals(df.schema.fields(0).name),
       "Name of the first field in StructType should be the same")
-    assert(schema.fields(0).nullable == df.schema.fields(0).nullable,
+    assert(
+      schema.fields(0).nullable == df.schema.fields(0).nullable,
       "Nullable attribute of the first field in StructType should be the same")
-    assert(schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
+    assert(
+      schema.fields(0).dataType.typeName.equals(df.schema.fields(0).dataType.typeName),
       "DataType attribute of the first field in StructType should be the same")
-    assert(schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles),
+    assert(
+      schema.fields(0).metadata.getDoubleArray("percentiles").sameElements(percentiles),
       "Metadata should match, comparing percentiles")
   }
 
@@ -118,7 +122,6 @@ class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.names().sameElements(df.columns), "Column names should match")
     assert(h2oFrame.numRows() == df.count(), "Number of rows should match")
   }
-
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame") {
     val dataFramesHandler = new DataFramesHandler(sc, hc)

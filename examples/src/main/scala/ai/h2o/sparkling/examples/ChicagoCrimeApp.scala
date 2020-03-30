@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.examples
 
@@ -53,8 +53,7 @@ object ChicagoCrimeApp {
     crimesTable.createOrReplaceTempView("chicagoCrime")
 
     // Join crimes and weather tables
-    val crimeWeather = spark.sql(
-      """SELECT
+    val crimeWeather = spark.sql("""SELECT
         |a.Year, a.Month, a.Day, a.WeekNum, a.HourOfDay, a.Weekend, a.Season, a.WeekDay,
         |a.IUCR, a.Primary_Type, a.Location_Description, a.Community_Area, a.District,
         |a.Arrest, a.Domestic, a.Beat, a.Ward, a.FBI_Code,
@@ -103,12 +102,16 @@ object ChicagoCrimeApp {
     dl.fit(train)
   }
 
-  def score(spark: SparkSession, crimes: Seq[Crime], gbmModel: H2OMOJOModel, dlModel: H2OMOJOModel, censusTable: DataFrame): Unit = {
+  def score(
+      spark: SparkSession,
+      crimes: Seq[Crime],
+      gbmModel: H2OMOJOModel,
+      dlModel: H2OMOJOModel,
+      censusTable: DataFrame): Unit = {
     crimes.foreach { crime =>
       val arrestGBM = scoreEvent(spark, crime, gbmModel, censusTable)
       val arrestDL = scoreEvent(spark, crime, dlModel, censusTable)
-      println(
-        s"""
+      println(s"""
            |Crime: $crime
            |  Will be arrested based on DeepLearning: $arrestDL
            |  Will be arrested based on GBM: $arrestGBM
@@ -154,8 +157,7 @@ object ChicagoCrimeApp {
   def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions._
     import spark.implicits._
-    df
-      .withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
+    df.withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
       .withColumn("Year", year('Date))
       .withColumn("Month", month('Date))
       .withColumn("Day", dayofmonth('Date))
@@ -180,15 +182,16 @@ object ChicagoCrimeApp {
 
   private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
 
-  case class Crime(date: String,
-                   IUCR: Short,
-                   Primary_Type: String,
-                   Location_Description: String,
-                   Domestic: Boolean,
-                   Beat: Short,
-                   District: Byte,
-                   Ward: Byte,
-                   Community_Area: Byte,
-                   FBI_Code: Byte)
+  case class Crime(
+      date: String,
+      IUCR: Short,
+      Primary_Type: String,
+      Location_Description: String,
+      Domestic: Boolean,
+      Beat: Short,
+      District: Byte,
+      Ward: Byte,
+      Community_Area: Byte,
+      FBI_Code: Byte)
 
 }

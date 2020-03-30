@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.H2OFrame
@@ -39,10 +39,14 @@ import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
 
 /**
- * H2O AutoML algorithm exposed via Spark ML pipelines.
- */
-class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
-  with H2OAlgoCommonUtils with DefaultParamsWritable with H2OAutoMLParams with RestCommunication {
+  * H2O AutoML algorithm exposed via Spark ML pipelines.
+  */
+class H2OAutoML(override val uid: String)
+  extends Estimator[H2OMOJOModel]
+  with H2OAlgoCommonUtils
+  with DefaultParamsWritable
+  with H2OAutoMLParams
+  with RestCommunication {
 
   // Override default values
   setDefault(nfolds, 5)
@@ -58,8 +62,11 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "weights_column" -> getWeightCol(),
       "ignored_columns" -> getIgnoredCols(),
       "sort_metric" -> getSortMetric(),
-      "training_frame" -> train.frameId
-    ) ++ valid.map { fr => Map("validation_frame" -> fr.frameId) }.getOrElse(Map())
+      "training_frame" -> train.frameId) ++ valid
+      .map { fr =>
+        Map("validation_frame" -> fr.frameId)
+      }
+      .getOrElse(Map())
   }
 
   private def getBuildModels(): Map[String, Any] = {
@@ -69,10 +76,10 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     } else {
       Map()
     }
-    Map(
-      "include_algos" -> determineIncludedAlgos(),
-      "exclude_algos" -> null
-    ) ++ (if (algoParameters.nonEmpty) Map("algo_parameters" -> algoParameters) else Map())
+    Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ (if (algoParameters.nonEmpty)
+                                                                                    Map(
+                                                                                      "algo_parameters" -> algoParameters)
+                                                                                  else Map())
   }
 
   private def getBuildControl(): Map[String, Any] = {
@@ -82,8 +89,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "stopping_rounds" -> getStoppingRounds(),
       "stopping_tolerance" -> getStoppingTolerance(),
       "stopping_metric" -> getStoppingMetric(),
-      "max_models" -> getMaxModels()
-    )
+      "max_models" -> getMaxModels())
     Map(
       "project_name" -> getProjectName(),
       "nfolds" -> getNfolds(),
@@ -92,8 +98,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
       "max_after_balance_size" -> getMaxAfterBalanceSize(),
       "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
       "keep_cross_validation_models" -> getKeepCrossValidationModels(),
-      "stopping_criteria" -> stoppingCriteria
-    )
+      "stopping_criteria" -> stoppingCriteria)
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -102,11 +107,7 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val inputSpec = getInputSpec(trainKey, validKey)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
-    val params = Map(
-      "input_spec" -> inputSpec,
-      "build_models" -> buildModels,
-      "build_control" -> buildControl
-    )
+    val params = Map("input_spec" -> inputSpec, "build_models" -> buildModels, "build_control" -> buildControl)
     val autoMLId = trainAndGetDestinationKey(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
     amlKeyOption = Some(autoMLId)
     val model = H2OModel(getLeaderModelId(autoMLId))
@@ -122,8 +123,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   private def determineIncludedAlgos(): Array[String] = {
     val bothIncludedExcluded = getIncludeAlgos().intersect(getExcludeAlgos())
     bothIncludedExcluded.foreach { algo =>
-      logWarning(s"Algorithm '$algo' was specified in both include and exclude parameters. " +
-        s"Excluding the algorithm.")
+      logWarning(
+        s"Algorithm '$algo' was specified in both include and exclude parameters. " +
+          s"Excluding the algorithm.")
     }
     getIncludeAlgos().diff(bothIncludedExcluded)
   }
@@ -148,8 +150,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val params = Map("extensions" -> extraColumns)
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) { response =>
-      IOUtils.toString(response)
+    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) {
+      response =>
+        IOUtils.toString(response)
     }
     val gson = new Gson()
     val table = gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonObject("table")
@@ -157,7 +160,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
     val colNames = colNamesIterator.toArray.map(_.getAsJsonObject.get("name").getAsString)
     val colsData = table.getAsJsonArray("data").iterator().asScala.toArray.map(_.getAsJsonArray)
     val numRows = table.get("rowcount").getAsInt
-    val rows = (0 until numRows).map { idx => Row(colsData.map(_.get(idx).getAsString): _*) }
+    val rows = (0 until numRows).map { idx =>
+      Row(colsData.map(_.get(idx).getAsString): _*)
+    }
     val spark = SparkSessionUtils.active
     val rdd = spark.sparkContext.parallelize(rows)
     val schema = StructType(colNames.map(name => StructField(name, StringType)))
@@ -167,8 +172,9 @@ class H2OAutoML(override val uid: String) extends Estimator[H2OMOJOModel]
   private def getLeaderModelId(automlId: String): String = {
     val leaderBoard = getLeaderboard(automlId).select("model_id")
     if (leaderBoard.count() == 0) {
-      throw new RuntimeException("No model returned from H2O AutoML. For example, try to ease" +
-        " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
+      throw new RuntimeException(
+        "No model returned from H2O AutoML. For example, try to ease" +
+          " your 'excludeAlgo', 'maxModels' or 'maxRuntimeSecs' properties.") with NoStackTrace
     } else {}
     leaderBoard.head().getString(0)
   }

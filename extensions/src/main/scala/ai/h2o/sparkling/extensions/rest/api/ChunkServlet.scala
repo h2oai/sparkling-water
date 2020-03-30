@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.extensions.rest.api
 
@@ -26,17 +26,17 @@ import water.fvec.Frame
 import water.server.ServletUtils
 
 /**
- * This servlet class handles GET and PUT requests for the path /3/Chunk
- */
+  * This servlet class handles GET and PUT requests for the path /3/Chunk
+  */
 final class ChunkServlet extends HttpServlet {
 
   private case class POSTRequestParameters(
-                                            frameName: String,
-                                            numRows: Int,
-                                            chunkId: Int,
-                                            expectedTypes: Array[Byte],
-                                            selectedColumnIndices: Array[Int],
-                                            compression: String) {
+      frameName: String,
+      numRows: Int,
+      chunkId: Int,
+      expectedTypes: Array[Byte],
+      selectedColumnIndices: Array[Int],
+      compression: String) {
 
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
@@ -121,7 +121,8 @@ final class ChunkServlet extends HttpServlet {
     result
   }
 
-  private def processRequest[R](request: HttpServletRequest, response: HttpServletResponse)(processor: => Unit): Unit = {
+  private def processRequest[R](request: HttpServletRequest, response: HttpServletResponse)(
+      processor: => Unit): Unit = {
     val uri = ServletUtils.getDecodedUri(request)
     try {
       processor
@@ -166,12 +167,12 @@ final class ChunkServlet extends HttpServlet {
   }
 
   private case class PUTRequestParameters(
-                                           frameName: String,
-                                           numRows: Int,
-                                           chunkId: Int,
-                                           expectedTypes: Array[Byte],
-                                           maxVecSizes: Array[Int],
-                                           compression: String) {
+      frameName: String,
+      numRows: Int,
+      chunkId: Int,
+      expectedTypes: Array[Byte],
+      maxVecSizes: Array[Int],
+      compression: String) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName")

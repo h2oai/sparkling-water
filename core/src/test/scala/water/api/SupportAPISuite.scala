@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package water.api
 
 import java.io.File
@@ -51,20 +51,24 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
     val NA = null.asInstanceOf[Int]
 
     val testSpace: Array[(String, JOIN_TYPE, Array[(JoinMethod, Boolean)], Array[(String, Int, Int)])] =
-    // Join type, join method, enabled, expected result
-      Array(("LEFT", leftJoin _,
-        Array((RADIX, true), (HASH, true)),
-        Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000))),
-        ("RIGHT", rightJoin _,
+      // Join type, join method, enabled, expected result
+      Array(
+        (
+          "LEFT",
+          leftJoin _,
+          Array((RADIX, true), (HASH, true)),
+          Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000))),
+        (
+          "RIGHT",
+          rightJoin _,
           Array((RADIX, false), (HASH, true)),
           Array(("Y", NA, 10000), ("B", 13, 20000), ("X", NA, 10000), ("D", 15, 40000))),
-        ("INNER", innerJoin _,
-          Array((RADIX, true), (HASH, true)),
-          Array(("B", 13, 20000), ("D", 15, 40000))),
-        ("OUTER", outerJoin _,
+        ("INNER", innerJoin _, Array((RADIX, true), (HASH, true)), Array(("B", 13, 20000), ("D", 15, 40000))),
+        (
+          "OUTER",
+          outerJoin _,
           Array((RADIX, false), (HASH, false)),
-          Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000), ("X", NA, 10000), ("Y", NA, 10000)))
-      )
+          Array(("A", 12, NA), ("B", 13, 20000), ("C", 14, NA), ("D", 15, 40000), ("X", NA, 10000), ("Y", NA, 10000))))
     println(testSpace.mkString("\n"))
 
     try {
@@ -91,7 +95,7 @@ class SupportAPISuite extends FunSuite with SharedH2OTestContext {
 object TestUtils {
 
   def locate(name: String): String = {
-      new File("./examples/" + name).getAbsolutePath
+    new File("./examples/" + name).getAbsolutePath
   }
 
   // Note: this comparision expects implicit ordering of spark DataFrames which is not ensured!
@@ -99,8 +103,9 @@ object TestUtils {
     val l1 = df1.repartition(1).collect()
     val l2 = df2.repartition(1).collect()
 
-    assert(l1.zip(l2).forall { case (row1, row2) =>
-      row1.equals(row2)
+    assert(l1.zip(l2).forall {
+      case (row1, row2) =>
+        row1.equals(row2)
     }, "DataFrames are not same!")
   }
 
@@ -134,8 +139,7 @@ object TestUtils {
 
   implicit object TestJoinSupportConverter extends ((Frame, Int) => (String, Int, Int)) {
 
-    override def apply(f: Frame,
-                       idx: Int): (String, Int, Int) = {
+    override def apply(f: Frame, idx: Int): (String, Int, Int) = {
       val (fName, fAge, fSalary) = (f.vec("name"), f.vec("age"), f.vec("salary"))
       val v1: String = if (fName.isNA(idx)) null else fName.domain()(fName.at8(idx).asInstanceOf[Int])
       val v2: Int = if (fAge.isNA(idx)) null.asInstanceOf[Int] else fAge.at8(idx).toInt
@@ -156,8 +160,9 @@ object TestUtils {
       assert(expected.length == actual.numRows(), s"${msg}: Numer of rows has to match")
       val actualData = frameTo[(String, Int, Int)](actual).sortBy(_._1)
       val expectedData = expected.sortBy(_._1)
-      expectedData.zip(actualData).foreach { case (exp, act) =>
-        assert(exp == act, s"The rows have to match: ${expectedData.mkString(",")}\n!=\n${actualData.mkString(",")}")
+      expectedData.zip(actualData).foreach {
+        case (exp, act) =>
+          assert(exp == act, s"The rows have to match: ${expectedData.mkString(",")}\n!=\n${actualData.mkString(",")}")
       }
     }
   }
