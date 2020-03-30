@@ -78,7 +78,7 @@ class H2OFrame private (
   }
 
   def split(splitRatios: Double*): Array[H2OFrame] = {
-    if (splitRatios.sum > 1.0) {
+    if (splitRatios.sum >= 1.0) {
       throw new IllegalArgumentException("Split ratios must be lower than 1.0")
     }
     val endpoint = getClusterEndpoint(conf)

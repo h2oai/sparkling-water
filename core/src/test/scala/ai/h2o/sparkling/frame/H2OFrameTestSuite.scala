@@ -30,7 +30,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
-    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
     H2OFrame(hc.asH2OFrameKeyString(df))
   }
 
@@ -88,7 +88,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     val thrown = intercept[IllegalArgumentException] {
       originalFrame.split(1.0)
     }
-    assert(thrown.getMessage == "Split ratio must be lower than 1.0")
+    assert(thrown.getMessage == "Split ratios must be lower than 1.0")
   }
 
   test("split with ratio lower than 1.0") {
