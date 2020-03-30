@@ -22,10 +22,10 @@ import hex.tree.SharedTreeModel.SharedTreeParameters.HistogramType
 import org.apache.spark.expose.Logging
 
 trait H2OAlgoSharedTreeParams[P <: SharedTreeParameters]
-    extends H2OAlgoSupervisedParams[P]
-    with H2OTreeBasedSupervisedMOJOParams
-    with HasStoppingCriteria[P]
-    with Logging {
+  extends H2OAlgoSupervisedParams[P]
+  with H2OTreeBasedSupervisedMOJOParams
+  with HasStoppingCriteria[P]
+  with Logging {
 
   //
   // Param definitions

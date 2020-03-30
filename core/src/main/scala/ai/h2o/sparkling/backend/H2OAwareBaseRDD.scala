@@ -26,7 +26,7 @@ private[backend] abstract class H2OAwareBaseRDD[U: ClassTag] private (
     sc: SparkContext,
     nodes: Array[NodeDesc],
     prev: Option[RDD[U]])
-    extends RDD[U](sc, Seq(prev.map(new OneToOneDependency(_))).flatten) {
+  extends RDD[U](sc, Seq(prev.map(new OneToOneDependency(_))).flatten) {
 
   def this(nodes: Array[NodeDesc], prev: RDD[U]) = this(prev.sparkContext, nodes, Some(prev))
 

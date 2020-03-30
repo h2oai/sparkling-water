@@ -22,10 +22,10 @@ import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters._
 
 trait H2OXGBoostParams
-    extends H2OAlgoSupervisedParams[XGBoostParameters]
-    with H2OTreeBasedSupervisedMOJOParams
-    with HasMonotoneConstraints
-    with HasStoppingCriteria[XGBoostParameters] {
+  extends H2OAlgoSupervisedParams[XGBoostParameters]
+  with H2OTreeBasedSupervisedMOJOParams
+  with HasMonotoneConstraints
+  with HasStoppingCriteria[XGBoostParameters] {
 
   type H2O_SCHEMA = XGBoostParametersV3
 

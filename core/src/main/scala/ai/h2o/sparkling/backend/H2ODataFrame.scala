@@ -34,8 +34,8 @@ import org.apache.spark.{Partition, TaskContext}
   */
 private[backend] class H2ODataFrame(val frame: H2OFrame, val requiredColumns: Array[String])(
     @transient val hc: H2OContext)
-    extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes())
-    with H2OSparkEntity {
+  extends H2OAwareEmptyRDD[InternalRow](hc.sparkContext, hc.getH2ONodes())
+  with H2OSparkEntity {
 
   private val h2oConf = hc.getConf
   private val sparkTimeZone = SparkTimeZone.current()

@@ -22,9 +22,9 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation
 import hex.schemas.DeepLearningV3.DeepLearningParametersV3
 
 trait H2ODeepLearningParams
-    extends H2OAlgoSupervisedParams[DeepLearningParameters]
-    with HasStoppingCriteria[DeepLearningParameters]
-    with HasQuantileAlpha {
+  extends H2OAlgoSupervisedParams[DeepLearningParameters]
+  with HasStoppingCriteria[DeepLearningParameters]
+  with HasQuantileAlpha {
 
   type H2O_SCHEMA = DeepLearningParametersV3
 

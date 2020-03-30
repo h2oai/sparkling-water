@@ -35,7 +35,7 @@ private[sparkling] class H2OModel private (
     val modelCategory: H2OModelCategory.Value,
     val metrics: H2OMetricsHolder,
     val trainingParams: Map[String, String])
-    extends RestCommunication {
+  extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
   private[sparkling] def downloadMojoData(): Array[Byte] = {

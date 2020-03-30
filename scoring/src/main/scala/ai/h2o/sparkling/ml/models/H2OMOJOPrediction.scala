@@ -23,15 +23,15 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.types.StructField
 
 trait H2OMOJOPrediction
-    extends H2OMOJOPredictionRegression
-    with H2OMOJOPredictionWordEmbedding
-    with H2OMOJOPredictionAnomaly
-    with H2OMOJOPredictionAutoEncoder
-    with H2OMOJOPredictionMultinomial
-    with H2OMOJOPredictionDimReduction
-    with H2OMOJOPredictionClustering
-    with H2OMOJOPredictionBinomial
-    with H2OMOJOPredictionOrdinal {
+  extends H2OMOJOPredictionRegression
+  with H2OMOJOPredictionWordEmbedding
+  with H2OMOJOPredictionAnomaly
+  with H2OMOJOPredictionAutoEncoder
+  with H2OMOJOPredictionMultinomial
+  with H2OMOJOPredictionDimReduction
+  with H2OMOJOPredictionClustering
+  with H2OMOJOPredictionBinomial
+  with H2OMOJOPredictionOrdinal {
   self: H2OMOJOModel =>
 
   def extractPredictionColContent(): Column = {

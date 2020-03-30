@@ -42,11 +42,11 @@ import scala.util.control.NoStackTrace
   * H2O AutoML algorithm exposed via Spark ML pipelines.
   */
 class H2OAutoML(override val uid: String)
-    extends Estimator[H2OMOJOModel]
-    with H2OAlgoCommonUtils
-    with DefaultParamsWritable
-    with H2OAutoMLParams
-    with RestCommunication {
+  extends Estimator[H2OMOJOModel]
+  with H2OAlgoCommonUtils
+  with DefaultParamsWritable
+  with H2OAutoMLParams
+  with RestCommunication {
 
   // Override default values
   setDefault(nfolds, 5)

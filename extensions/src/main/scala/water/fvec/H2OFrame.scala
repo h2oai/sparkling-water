@@ -34,8 +34,8 @@ import water.util.FrameUtils
   * @param vecs     vectors composing new frame
   */
 class H2OFrame private (frameKey: Key[Frame], names: Array[String], vecs: Array[Vec])
-    extends Frame(frameKey, names, vecs)
-    with FrameOps {
+  extends Frame(frameKey, names, vecs)
+  with FrameOps {
 
   /** Create a new H2OFrame based on existing Java Frame.
     *

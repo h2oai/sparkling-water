@@ -20,7 +20,7 @@ package ai.h2o.sparkling.benchmarks
 import org.apache.spark.h2o.H2OFrame
 
 class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-    extends AlgorithmBenchmarkBase[H2OFrame](context, algorithmBundle) {
+  extends AlgorithmBenchmarkBase[H2OFrame](context, algorithmBundle) {
 
   override protected def initialize(): H2OFrame = loadDataToH2OFrame()
 

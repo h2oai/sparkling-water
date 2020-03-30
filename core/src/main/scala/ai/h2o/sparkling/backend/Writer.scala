@@ -35,7 +35,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
 
 private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numRows: Int, chunkId: Int)
-    extends Closeable {
+  extends Closeable {
 
   private val outputStream = H2OChunk.putChunk(
     nodeDesc,

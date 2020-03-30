@@ -29,7 +29,7 @@ class AlgoParam(
     name: String,
     doc: String,
     isValid: H2OSupervisedAlgorithm[_ <: Model.Parameters] => Boolean)
-    extends Param[H2OSupervisedAlgorithm[_ <: Model.Parameters]](parent, name, doc, isValid) {
+  extends Param[H2OSupervisedAlgorithm[_ <: Model.Parameters]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

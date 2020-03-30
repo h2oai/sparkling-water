@@ -31,11 +31,11 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 import water.api.schemas3.KeyV3.FrameKeyV3
 
 class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
-    extends Model[H2OTargetEncoderModel]
-    with H2OTargetEncoderBase
-    with MLWritable
-    with H2OTargetEncoderModelUtils
-    with RestCommunication {
+  extends Model[H2OTargetEncoderModel]
+  with H2OTargetEncoderBase
+  with MLWritable
+  with H2OTargetEncoderModelUtils
+  with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojoData = targetEncoderModel.downloadMojoData()

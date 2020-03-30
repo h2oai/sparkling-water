@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.api.dataframes
 import water.Iced
 
 private[api] class IcedDataFrame(val dataframe_id: String, val partitions: Int, val schema: String)
-    extends Iced[IcedDataFrame] {
+  extends Iced[IcedDataFrame] {
   def this() = this(null, -1, null) // initialize with empty values, this is used by the createImpl method in the
   //RequestServer, as it calls constructor without any arguments
 }

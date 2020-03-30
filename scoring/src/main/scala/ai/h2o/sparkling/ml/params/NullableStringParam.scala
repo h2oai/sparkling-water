@@ -21,7 +21,7 @@ import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.{JNull, JString, JValue}
 
 class NullableStringParam(parent: Params, name: String, doc: String, isValid: String => Boolean)
-    extends Param[String](parent, name, doc, isValid) {
+  extends Param[String](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

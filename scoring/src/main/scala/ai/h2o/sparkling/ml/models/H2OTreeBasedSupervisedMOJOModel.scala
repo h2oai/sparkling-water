@@ -23,8 +23,8 @@ import hex.genmodel.algos.tree.SharedTreeMojoModel
 import hex.genmodel.algos.xgboost.XGBoostMojoModel
 
 class H2OTreeBasedSupervisedMOJOModel(override val uid: String)
-    extends H2OSupervisedMOJOModel(uid)
-    with H2OTreeBasedSupervisedMOJOParams {
+  extends H2OSupervisedMOJOModel(uid)
+  with H2OTreeBasedSupervisedMOJOParams {
 
   override def setSpecificParams(mojoModel: MojoModel): H2OTreeBasedSupervisedMOJOModel = {
     super.setSpecificParams(mojoModel)

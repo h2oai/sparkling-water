@@ -26,8 +26,8 @@ import org.apache.spark.status.{ElementTrackingStore, LiveEntity}
   * Listener processing Sparkling Water events
   */
 class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Boolean)
-    extends SparkListener
-    with Logging {
+  extends SparkListener
+  with Logging {
 
   private def onSparklingWaterStart(event: H2OContextStartedEvent): Unit = {
     val H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swProperties) = event
@@ -51,14 +51,14 @@ class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Bool
       h2oClusterInfo: H2OClusterInfo,
       h2oBuildInfo: H2OBuildInfo,
       swProperties: Array[(String, String)])
-      extends LiveEntity {
+    extends LiveEntity {
     override protected def doUpdate(): Any = {
       new SparklingWaterStartedInfo(h2oClusterInfo, h2oBuildInfo, swProperties)
     }
   }
 
   private class SparklingWaterUpdate(cloudHealthy: Boolean, timeInMillis: Long, val memoryInfo: Array[(String, String)])
-      extends LiveEntity {
+    extends LiveEntity {
     override protected def doUpdate(): Any = {
       new SparklingWaterUpdateInfo(cloudHealthy, timeInMillis, memoryInfo)
     }

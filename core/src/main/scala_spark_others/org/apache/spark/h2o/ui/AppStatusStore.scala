@@ -24,7 +24,7 @@ import org.apache.spark.util.kvstore.KVStore
   * Sparkling Water accessors into general Spark KVStore
   */
 class AppStatusStore(store: KVStore, val listener: Option[AppStatusListener] = None)
-    extends SparklingWaterInfoProvider {
+  extends SparklingWaterInfoProvider {
 
   private def getStartedInfo(): SparklingWaterStartedInfo = {
     val klass = classOf[SparklingWaterStartedInfo]

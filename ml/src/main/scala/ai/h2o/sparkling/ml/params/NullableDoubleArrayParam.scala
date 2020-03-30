@@ -24,7 +24,7 @@ import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import scala.collection.JavaConverters._
 
 class NullableDoubleArrayParam(parent: Params, name: String, doc: String, isValid: Array[Double] => Boolean)
-    extends Param[Array[Double]](parent, name, doc, isValid) {
+  extends Param[Array[Double]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

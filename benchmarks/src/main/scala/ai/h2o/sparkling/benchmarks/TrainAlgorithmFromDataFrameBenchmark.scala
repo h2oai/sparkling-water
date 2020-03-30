@@ -20,7 +20,7 @@ package ai.h2o.sparkling.benchmarks
 import org.apache.spark.sql.DataFrame
 
 class TrainAlgorithmFromDataFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-    extends AlgorithmBenchmarkBase[DataFrame](context, algorithmBundle) {
+  extends AlgorithmBenchmarkBase[DataFrame](context, algorithmBundle) {
 
   override protected def initialize(): DataFrame = loadDataToDataFrame()
 

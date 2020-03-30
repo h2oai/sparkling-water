@@ -36,11 +36,11 @@ import scala.reflect.ClassTag
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
 abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
-    extends Estimator[H2OMOJOModel]
-    with H2OAlgoCommonUtils
-    with DefaultParamsWritable
-    with H2OAlgoCommonParams[P]
-    with RestCommunication {
+  extends Estimator[H2OMOJOModel]
+  with H2OAlgoCommonUtils
+  with DefaultParamsWritable
+  with H2OAlgoCommonParams[P]
+  with RestCommunication {
 
   protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 

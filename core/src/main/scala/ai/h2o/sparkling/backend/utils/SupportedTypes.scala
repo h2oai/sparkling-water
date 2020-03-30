@@ -52,8 +52,8 @@ private[backend] object SupportedTypes extends Enumeration {
       javaClass: Class[_], // note, not always T, since T is scala class
       ifMissing: String => T,
       private val extraTypes: Type*)
-      extends Val
-      with SupportedType {
+    extends Val
+    with SupportedType {
     val matches = (tpe: Type) => (extraTypes.toSet + typeForClass(javaClass)).exists(_ =:= tpe)
   }
 

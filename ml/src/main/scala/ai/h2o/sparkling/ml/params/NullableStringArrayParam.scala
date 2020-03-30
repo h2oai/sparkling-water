@@ -24,7 +24,7 @@ import org.json4s.{JNull, JString}
 import scala.collection.JavaConverters._
 
 class NullableStringArrayParam(parent: Params, name: String, doc: String, isValid: Array[String] => Boolean)
-    extends Param[Array[String]](parent, name, doc, isValid) {
+  extends Param[Array[String]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

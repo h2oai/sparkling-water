@@ -28,10 +28,10 @@ import water.DKV
   * JDBC server).
   */
 class DefaultSource
-    extends RelationProvider
-    with SchemaRelationProvider
-    with CreatableRelationProvider
-    with DataSourceRegister {
+  extends RelationProvider
+  with SchemaRelationProvider
+  with CreatableRelationProvider
+  with DataSourceRegister {
 
   /**
     * Short alias for spark-csv data source.

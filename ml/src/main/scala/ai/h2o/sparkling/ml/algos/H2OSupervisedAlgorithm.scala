@@ -28,8 +28,8 @@ import org.apache.spark.sql.types.StructType
 import scala.reflect.ClassTag
 
 abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag]
-    extends H2OAlgorithm[P]
-    with H2OAlgoSupervisedParams[P] {
+  extends H2OAlgorithm[P]
+  with H2OAlgoSupervisedParams[P] {
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {

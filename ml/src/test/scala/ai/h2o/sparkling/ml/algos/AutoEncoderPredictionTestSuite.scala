@@ -25,10 +25,10 @@ import org.scalatest.{FunSuite, Matchers}
 import water.api.TestUtils
 
 class AutoEncoderPredictionTestSuite
-    extends FunSuite
-    with Matchers
-    with SharedH2OTestContext
-    with TransformSchemaTestSuite {
+  extends FunSuite
+  with Matchers
+  with SharedH2OTestContext
+  with TransformSchemaTestSuite {
 
   override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 

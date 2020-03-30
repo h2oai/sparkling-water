@@ -31,10 +31,10 @@ import org.apache.spark.{SparkConf, SparkContext}
   * properties passed from user to Sparkling Water.
   */
 class H2OConf private (val sparkConf: SparkConf, deprecatedClassName: String)
-    extends Logging
-    with InternalBackendConf
-    with ExternalBackendConf
-    with Serializable {
+  extends Logging
+  with InternalBackendConf
+  with ExternalBackendConf
+  with Serializable {
 
   private def deprecationWarning(oldParams: String): Unit = {
     logWarning(

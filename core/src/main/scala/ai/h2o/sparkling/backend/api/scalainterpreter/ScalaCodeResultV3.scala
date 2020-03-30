@@ -20,6 +20,6 @@ import water.api.schemas3.KeyV3
 import water.{Iced, Key}
 
 class ScalaCodeResultV3(key: Key[ScalaCodeResult])
-    extends KeyV3[Iced[ScalaCodeResult], ScalaCodeResultV3, ScalaCodeResult](key) {
+  extends KeyV3[Iced[ScalaCodeResult], ScalaCodeResultV3, ScalaCodeResult](key) {
   def this() = this(null)
 }

@@ -150,7 +150,7 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Local
-    extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
     testNotifyLocalPropertyCreatesFile("local[*]", setExtraClientProperties)
@@ -159,7 +159,7 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_LocalCluster
-    extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
     testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraClientProperties)
@@ -168,7 +168,7 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
-    extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
+  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   def setExtraNodeProperties(conf: H2OConf, filePath: Path): H2OConf = {
     val properties = if (conf.backendClusterMode == "external") {
@@ -185,7 +185,7 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
 }
 
 abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
-    extends ConfigurationPropertiesTestSuite {
+  extends ConfigurationPropertiesTestSuite {
 
   val sparkSession = createSparkSession("local[*]")
 
@@ -210,16 +210,16 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_NONE
-    extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("NONE")
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("NONE")
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_SNAPPY
-    extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("SNAPPY")
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("SNAPPY")
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_DEFLATE
-    extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("DEFLATE")
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("DEFLATE")
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression_GZIP
-    extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("GZIP")
+  extends ConfigurationPropertiesTestSuite_ExternalCommunicationCompression("GZIP")

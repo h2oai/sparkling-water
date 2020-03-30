@@ -29,8 +29,8 @@ import scala.tools.nsc.interpreter.IMain
   * is wrapped in a package which name contains current session id
   */
 private[repl] class H2OIMain private (initialSettings: Settings, interpreterWriter: IntpResponseWriter, sessionId: Int)
-    extends IMain(initialSettings, interpreterWriter)
-    with H2OIMainHelper {
+  extends IMain(initialSettings, interpreterWriter)
+  with H2OIMainHelper {
 
   setupClassNames(naming, sessionId)
 }

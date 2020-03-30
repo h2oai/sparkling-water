@@ -27,10 +27,10 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 class H2OTargetEncoderMOJOModel(override val uid: String)
-    extends Model[H2OTargetEncoderMOJOModel]
-    with H2OTargetEncoderBase
-    with H2OMOJOWritable
-    with H2OMOJOFlattenedInput {
+  extends Model[H2OTargetEncoderMOJOModel]
+  with H2OTargetEncoderBase
+  with H2OMOJOWritable
+  with H2OMOJOFlattenedInput {
 
   override protected def inputColumnNames: Array[String] = getInputCols()
 

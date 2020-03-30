@@ -44,12 +44,12 @@ import scala.collection.JavaConverters._
   *
   */
 class H2OGridSearch(override val uid: String)
-    extends Estimator[H2OMOJOModel]
-    with H2OAlgoCommonUtils
-    with DefaultParamsWritable
-    with H2OGridSearchParams
-    with RestCommunication
-    with RestEncodingUtils {
+  extends Estimator[H2OMOJOModel]
+  with H2OAlgoCommonUtils
+  with DefaultParamsWritable
+  with H2OGridSearchParams
+  with RestCommunication
+  with RestEncodingUtils {
 
   def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 

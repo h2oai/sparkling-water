@@ -30,12 +30,12 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, I
 import org.apache.spark.sql.Dataset
 
 class H2OTargetEncoder(override val uid: String)
-    extends Estimator[H2OTargetEncoderModel]
-    with H2OTargetEncoderBase
-    with DefaultParamsWritable
-    with H2OTargetEncoderModelUtils
-    with RestCommunication
-    with EstimatorCommonUtils {
+  extends Estimator[H2OTargetEncoderModel]
+  with H2OTargetEncoderBase
+  with DefaultParamsWritable
+  with H2OTargetEncoderModelUtils
+  with RestCommunication
+  with EstimatorCommonUtils {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 

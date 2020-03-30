@@ -32,7 +32,7 @@ import scala.annotation.tailrec
   * H2O on remote executors.
   */
 private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, numExecutorHint: Option[Int] = None)
-    extends Logging {
+  extends Logging {
   @transient private val sc = hc.sparkContext
   private val conf = hc.getConf
   private val isLocal = sc.isLocal

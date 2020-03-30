@@ -24,8 +24,8 @@ import org.apache.spark.sql.Dataset
 import scala.reflect.ClassTag
 
 abstract class H2OUnsupervisedAlgorithm[P <: Model.Parameters: ClassTag]
-    extends H2OAlgorithm[P]
-    with H2OAlgoUnsupervisedParams[P] {
+  extends H2OAlgorithm[P]
+  with H2OAlgoUnsupervisedParams[P] {
 
   override def fit(dataset: Dataset[_]): H2OUnsupervisedMOJOModel = {
     super.fit(dataset).asInstanceOf[H2OUnsupervisedMOJOModel]

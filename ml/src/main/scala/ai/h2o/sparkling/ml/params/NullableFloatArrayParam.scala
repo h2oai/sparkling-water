@@ -24,7 +24,7 @@ import org.json4s.{JDouble, JNull, JString}
 import scala.collection.JavaConverters._
 
 class NullableFloatArrayParam(parent: Params, name: String, doc: String, isValid: Array[Float] => Boolean)
-    extends Param[Array[Float]](parent, name, doc, isValid) {
+  extends Param[Array[Float]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

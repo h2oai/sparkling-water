@@ -163,8 +163,8 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 }
 
 abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData: ClassTag]
-    extends H2OMOJOReadable[T]
-    with H2OMOJOLoader[T] {
+  extends H2OMOJOReadable[T]
+  with H2OMOJOLoader[T] {
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T = {
     val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)

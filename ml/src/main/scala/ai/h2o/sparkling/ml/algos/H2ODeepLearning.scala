@@ -25,8 +25,8 @@ import org.apache.spark.ml.util._
   * H2O DeepLearning algorithm exposed via Spark ML pipelines.
   */
 class H2ODeepLearning(override val uid: String)
-    extends H2OSupervisedAlgorithm[DeepLearningParameters]
-    with H2ODeepLearningParams {
+  extends H2OSupervisedAlgorithm[DeepLearningParameters]
+  with H2ODeepLearningParams {
 
   def this() = this(Identifiable.randomUID(classOf[H2ODeepLearning].getSimpleName))
 }

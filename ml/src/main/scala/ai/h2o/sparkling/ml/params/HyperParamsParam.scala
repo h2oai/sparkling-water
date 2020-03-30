@@ -31,7 +31,7 @@ class HyperParamsParam(
     name: String,
     doc: String,
     isValid: java.util.Map[String, Array[AnyRef]] => Boolean)
-    extends Param[java.util.Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
+  extends Param[java.util.Map[String, Array[AnyRef]]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)

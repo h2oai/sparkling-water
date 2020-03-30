@@ -37,8 +37,8 @@ class H2OFrame private (
     val frameId: String,
     val columns: Array[H2OColumn],
     private[sparkling] val chunks: Array[H2OChunk])
-    extends Serializable
-    with RestEncodingUtils {
+  extends Serializable
+  with RestEncodingUtils {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
   val columnNames: Array[String] = columns.map(_.name)
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)

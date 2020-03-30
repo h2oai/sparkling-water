@@ -158,7 +158,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 }
 
 abstract class AlgorithmBenchmarkBase[TInput](context: BenchmarkContext, algorithm: AlgorithmBundle)
-    extends BenchmarkBase[TInput](context) {
+  extends BenchmarkBase[TInput](context) {
 
   override protected def getResultHeader(): String = {
     s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm.getClass.getSimpleName}'"
