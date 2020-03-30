@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.backend.utils
 
 import ai.h2o.sparkling.backend.utils.ReflectionUtils.NameOfType
@@ -24,8 +24,8 @@ import water.fvec.Vec
 import scala.reflect.runtime.universe._
 
 /**
- * All type associations are gathered in this file.
- */
+  * All type associations are gathered in this file.
+  */
 private[backend] object SupportedTypes extends Enumeration {
 
   type VecType = Byte
@@ -47,12 +47,13 @@ private[backend] object SupportedTypes extends Enumeration {
   def typeForClass[T](clazz: Class[T])(implicit runtimeMirror: Mirror) = runtimeMirror.classSymbol(clazz).toType
 
   final case class SimpleType[T: TypeTag](
-                                           vecType: VecType,
-                                           sparkType: DataType,
-                                           javaClass: Class[_], // note, not always T, since T is scala class
-                                           ifMissing: String => T,
-                                           private val extraTypes: Type*
-                                         ) extends Val with SupportedType {
+      vecType: VecType,
+      sparkType: DataType,
+      javaClass: Class[_], // note, not always T, since T is scala class
+      ifMissing: String => T,
+      private val extraTypes: Type*)
+      extends Val
+      with SupportedType {
     val matches = (tpe: Type) => (extraTypes.toSet + typeForClass(javaClass)).exists(_ =:= tpe)
   }
 
@@ -79,13 +80,16 @@ private[backend] object SupportedTypes extends Enumeration {
 
   private def onNAreturn[T](value: T)(what: String) = value
 
-  val Boolean = SimpleType[scala.Boolean](Vec.T_NUM, BooleanType, classOf[jl.Boolean], onNAreturn(false), typeOf[Boolean])
+  val Boolean =
+    SimpleType[scala.Boolean](Vec.T_NUM, BooleanType, classOf[jl.Boolean], onNAreturn(false), typeOf[Boolean])
   val Byte = SimpleType[scala.Byte](Vec.T_NUM, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
   val Short = SimpleType[scala.Short](Vec.T_NUM, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
   val Integer = SimpleType[scala.Int](Vec.T_NUM, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
   val Long = SimpleType[scala.Long](Vec.T_NUM, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
-  val Float = SimpleType[scala.Float](Vec.T_NUM, FloatType, classOf[jl.Float], onNAreturn(scala.Float.NaN), typeOf[Float])
-  val Double = SimpleType[scala.Double](Vec.T_NUM, DoubleType, classOf[jl.Double], onNAreturn(scala.Double.NaN), typeOf[Double])
+  val Float =
+    SimpleType[scala.Float](Vec.T_NUM, FloatType, classOf[jl.Float], onNAreturn(scala.Float.NaN), typeOf[Float])
+  val Double =
+    SimpleType[scala.Double](Vec.T_NUM, DoubleType, classOf[jl.Double], onNAreturn(scala.Double.NaN), typeOf[Double])
   val Timestamp = SimpleType[js.Timestamp](Vec.T_TIME, TimestampType, classOf[js.Timestamp], onNAthrow)
   val Date = SimpleType[js.Date](Vec.T_TIME, DateType, classOf[js.Date], onNAthrow)
   val String = SimpleType[String](Vec.T_STR, StringType, classOf[String], onNAreturn(null), typeOf[String])

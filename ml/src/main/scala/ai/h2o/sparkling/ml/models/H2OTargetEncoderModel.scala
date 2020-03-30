@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.models
 
@@ -31,7 +31,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 import water.api.schemas3.KeyV3.FrameKeyV3
 
 class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
-  extends Model[H2OTargetEncoderModel]
+    extends Model[H2OTargetEncoderModel]
     with H2OTargetEncoderBase
     with MLWritable
     with H2OTargetEncoderModelUtils
@@ -54,7 +54,8 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val hc = H2OContext.ensure("H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+    val hc = H2OContext.ensure(
+      "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
@@ -74,8 +75,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
       "blending" -> getBlendedAvgEnabled(),
       "inflection_point" -> getBlendedAvgInflectionPoint(),
       "smoothing" -> getBlendedAvgSmoothing(),
-      "seed" -> getNoiseSeed()
-    )
+      "seed" -> getNoiseSeed())
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
     val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name).subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asDataFrame(outputColumnsOnlyFrame.frameId)

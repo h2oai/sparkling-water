@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.automl.Algo
@@ -29,9 +29,13 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   private val ignoredCols = new StringArrayParam(this, "ignoredCols", "Ignored column names")
   private val includeAlgos = new StringArrayParam(this, "includeAlgos", "Algorithms to include when using automl")
   private val excludeAlgos = new StringArrayParam(this, "excludeAlgos", "Algorithms to exclude when using automl")
-  private val projectName = new NullableStringParam(this, "projectName", "Identifier for models that should be grouped together in the leaderboard" +
-    " (e.g., airlines and iris)")
-  private val maxRuntimeSecs = new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
+  private val projectName = new NullableStringParam(
+    this,
+    "projectName",
+    "Identifier for models that should be grouped together in the leaderboard" +
+      " (e.g., airlines and iris)")
+  private val maxRuntimeSecs =
+    new DoubleParam(this, "maxRuntimeSecs", "Maximum time in seconds for automl to be running")
   private val stoppingRounds = new IntParam(this, "stoppingRounds", "Stopping rounds")
   private val stoppingTolerance = new DoubleParam(this, "stoppingTolerance", "Stopping tolerance")
   private val stoppingMetric = new Param[String](this, "stoppingMetric", "Stopping metric")
@@ -39,8 +43,10 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   private val balanceClasses = new BooleanParam(this, "balanceClasses", "Ballance classes")
   private val classSamplingFactors = new NullableFloatArrayParam(this, "classSamplingFactors", "Class sampling factors")
   private val maxAfterBalanceSize = new FloatParam(this, "maxAfterBalanceSize", "Max after balance size")
-  private val keepCrossValidationPredictions = new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
-  private val keepCrossValidationModels = new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
+  private val keepCrossValidationPredictions =
+    new BooleanParam(this, "keepCrossValidationPredictions", "Keep cross Validation predictions")
+  private val keepCrossValidationModels =
+    new BooleanParam(this, "keepCrossValidationModels", "Keep cross validation models")
   private val maxModels = new IntParam(this, "maxModels", "Maximal number of models to be trained in AutoML")
 
   //
@@ -61,8 +67,7 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
     maxAfterBalanceSize -> 5.0f,
     keepCrossValidationPredictions -> false,
     keepCrossValidationModels -> false,
-    maxModels -> 0
-  )
+    maxModels -> 0)
 
   //
   // Getters

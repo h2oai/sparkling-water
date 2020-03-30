@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.internal
 
@@ -27,8 +27,8 @@ import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OConf
 
 /**
- * Internal backend configuration
- */
+  * Internal backend configuration
+  */
 trait InternalBackendConf extends SharedBackendConf {
   self: H2OConf =>
 
@@ -56,7 +56,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def setNumRddRetries(retries: Int): H2OConf = set(PROP_SPREADRDD_RETRIES._1, retries.toString)
 
-  def setDefaultCloudSize(defaultClusterSize: Int): H2OConf = set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
+  def setDefaultCloudSize(defaultClusterSize: Int): H2OConf =
+    set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
 
   def setSubseqTries(subseqTriesNum: Int): H2OConf = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
 
@@ -78,7 +79,8 @@ trait InternalBackendConf extends SharedBackendConf {
     s"""Sparkling Water configuration:
        |  backend cluster mode : $backendClusterMode
        |  workers              : $numH2OWorkers
-       |  cloudName            : ${cloudName.getOrElse("Not set yet, it will be set automatically before starting H2OContext.")}
+       |  cloudName            : ${cloudName.getOrElse(
+         "Not set yet, it will be set automatically before starting H2OContext.")}
        |  clientBasePort       : $clientBasePort
        |  nodeBasePort         : $nodeBasePort
        |  cloudTimeout         : $cloudTimeout
@@ -91,13 +93,14 @@ trait InternalBackendConf extends SharedBackendConf {
 }
 
 object InternalBackendConf {
+
   /** Configuration property - expected number of workers of H2O cloud.
-   * Value None means automatic detection of cluster size.
-   */
+    * Value None means automatic detection of cluster size.
+    */
   val PROP_CLUSTER_SIZE: (String, None.type) = ("spark.ext.h2o.cluster.size", None)
 
   /** Configuration property - multiplication factor for dummy RDD generation.
-   * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
+    * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
   val PROP_DUMMY_RDD_MUL_FACTOR: (String, Int) = ("spark.ext.h2o.dummy.rdd.mul.factor", 10)
 
   /** Configuration property - number of retries to create an RDD spread over all executors */

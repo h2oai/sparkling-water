@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o.ui
 
@@ -24,8 +24,8 @@ import org.apache.spark.ui.{UIUtils, WebUIPage}
 import scala.xml.Node
 
 /**
- * Sparkling Water info page.
- */
+  * Sparkling Water info page.
+  */
 case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage("") {
 
   private val provider = parent.provider
@@ -38,8 +38,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       ("H2O Git SHA", h2oBuildInfo.h2oGitSha),
       ("H2O Git Describe", h2oBuildInfo.h2oGitDescribe),
       ("H2O Build By", h2oBuildInfo.h2oBuildBy),
-      ("H2O Build On", h2oBuildInfo.h2oBuildOn)
-    )
+      ("H2O Build On", h2oBuildInfo.h2oBuildOn))
   }
 
   private def flowUrl(): String = s"http://${provider.localIpPort}"
@@ -48,12 +47,8 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
 
   private def swInfo(): Seq[(String, String)] = {
     val cloudInfo = provider.H2OClusterInfo
-    Seq(
-      ("Flow UI", flowUrl()),
-      ("Nodes", cloudInfo.cloudNodes.mkString(","))
-    ) ++ cloudInfo.extraBackendInfo
+    Seq(("Flow UI", flowUrl()), ("Nodes", cloudInfo.cloudNodes.mkString(","))) ++ cloudInfo.extraBackendInfo
   }
-
 
   override def render(request: HttpServletRequest): Seq[Node] = {
     val helpText =
@@ -63,21 +58,21 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
 
     val content = if (provider.isSparklingWaterStarted) {
 
-      val swInfoTable = UIUtils.listingTable(
-        propertyHeader, h2oRow, swInfo(), fixedWidth = true)
-      val swPropertiesTable = UIUtils.listingTable(
-        propertyHeader, h2oRow, swProperties(), fixedWidth = true)
-      val h2oInfoTable = UIUtils.listingTable(
-        propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
-      val memoryInfo = UIUtils.listingTable(
-        propertyHeader, h2oRow, provider.memoryInfo.map { case (n, m) => (n, "Free: " + m) }, fixedWidth = true)
+      val swInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, swInfo(), fixedWidth = true)
+      val swPropertiesTable = UIUtils.listingTable(propertyHeader, h2oRow, swProperties(), fixedWidth = true)
+      val h2oInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
+      val memoryInfo = UIUtils.listingTable(propertyHeader, h2oRow, provider.memoryInfo.map {
+        case (n, m) => (n, "Free: " + m)
+      }, fixedWidth = true)
       <div>
         <ul class="unstyled">
           <li>
             <strong>User:</strong>{parent.getSparkUser}
           </li>
           <li>
-            <strong>Uptime:</strong>{UIUtils.formatDuration(provider.timeInMillis - provider.H2OClusterInfo.h2oStartTime)}
+            <strong>Uptime:</strong>{
+        UIUtils.formatDuration(provider.timeInMillis - provider.H2OClusterInfo.h2oStartTime)
+      }
           </li>
           <li>
             <strong>Health:</strong>{if (provider.isCloudHealthy) "\u2714" else "\u2716"}
@@ -99,7 +94,9 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
         </ul>
       </div>
         <span>
-          <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>{h2oInfoTable}
+          <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>{
+        h2oInfoTable
+      }
         </span>
 
     } else {

@@ -1,28 +1,28 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package water.fvec
 
 import water.Futures
 
 /**
- * High-level DSL proving user-friendly operations
- * on top of H2O Frame.
- */
+  * High-level DSL proving user-friendly operations
+  * on top of H2O Frame.
+  */
 trait FrameOps {
   self: H2OFrame =>
 
@@ -33,17 +33,17 @@ trait FrameOps {
   type VecSelector = (String, Vec) => Boolean
 
   /** Create a sub-frame based on the list of column names.
-   *
-   * @param columnNames name of columns which will compose a new frame
-   * @return a new H2O Frame composed of selected vectors
-   */
+    *
+    * @param columnNames name of columns which will compose a new frame
+    * @return a new H2O Frame composed of selected vectors
+    */
   def apply(columnNames: Array[String]): H2OFrame = new H2OFrame(subframe(columnNames))
 
   /** Create a sub-frame based on the list of column names.
-   *
-   * @param columnNames name of columns which will compose a new frame
-   * @return a new H2O Frame composed of selected vectors
-   */
+    *
+    * @param columnNames name of columns which will compose a new frame
+    * @return a new H2O Frame composed of selected vectors
+    */
   def apply(columnNames: Symbol*): H2OFrame = apply(columnNames.map(_.name).toArray)
 
   def apply(transformation: VecTransformation, colNames: Symbol*): H2OFrame =
@@ -55,15 +55,16 @@ trait FrameOps {
 
   def apply(transformation: VecTransformation, selector: VecSelector, removeVec: Boolean = true): H2OFrame = {
     val futures = new Futures()
-    self.names().zipWithIndex.foreach { case (name, idx) =>
-      val vec = self.vec(name)
-      if (selector(name, vec)) {
-        val newVec = transformation(name, vec)
-        val oldVec = self.replace(idx, newVec)
-        if (removeVec) {
-          oldVec.remove(futures)
+    self.names().zipWithIndex.foreach {
+      case (name, idx) =>
+        val vec = self.vec(name)
+        if (selector(name, vec)) {
+          val newVec = transformation(name, vec)
+          val oldVec = self.replace(idx, newVec)
+          if (removeVec) {
+            oldVec.remove(futures)
+          }
         }
-      }
     }
     // Block for all fired deletes
     futures.blockForPending()
@@ -71,10 +72,10 @@ trait FrameOps {
   }
 
   /**
-   * Transform columns in enum columns
-   *
-   * @param cols : Array[String] containing all the names of enum columns
-   */
+    * Transform columns in enum columns
+    *
+    * @param cols : Array[String] containing all the names of enum columns
+    */
   def colToEnum(cols: Array[String]): Unit = {
     if (cols.diff(this.names()).isEmpty) {
       val colIndices = this.find(cols)
@@ -86,32 +87,32 @@ trait FrameOps {
   }
 
   /**
-   * Transform columns in enum columns
-   *
-   * @param cols : Array[Int] containing all the indexes of enum columns
-   */
+    * Transform columns in enum columns
+    *
+    * @param cols : Array[Int] containing all the indexes of enum columns
+    */
   def colToEnum(cols: Array[Int]): Unit = {
     val names = cols.map(i => this.name(i))
     colToEnum(names)
   }
 
   /**
-   * Rename a column of your DataFrame
-   *
-   * @param index   : Index of the column to rename
-   * @param newName : New name
-   */
+    * Rename a column of your DataFrame
+    *
+    * @param index   : Index of the column to rename
+    * @param newName : New name
+    */
   def rename(index: Int, newName: String): Unit = {
     val tmp = this.names
     this._names = tmp
   }
 
   /**
-   * Rename a column of your DataFrame
-   *
-   * @param oldName : Old name
-   * @param newName : New name
-   */
+    * Rename a column of your DataFrame
+    *
+    * @param oldName : Old name
+    * @param newName : New name
+    */
   def rename(oldName: String, newName: String): Unit = {
     val index = this.find(oldName)
     if (index != -1) {

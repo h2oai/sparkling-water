@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.models
 
@@ -40,7 +40,8 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   test("Test columns names and numbers") {
-    val df = spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
+    val df =
+      spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
 
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
@@ -51,11 +52,19 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val dfTypes = df.dtypes.filter(_._1 != "AGE").map { case (_, typ) => sparkTypeToMojoType(typ) }.toSeq
 
     assert(8 == df.columns.length - 1) // response column is not on the input
-    assert(Seq("ID", "CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON") == df.columns.filter(_ != "AGE").toSeq)
-    assert(Seq(MojoColumn.Type.Int32, MojoColumn.Type.Int32, MojoColumn.Type.Int32, MojoColumn.Type.Int32, MojoColumn.Type.Int32,
-      MojoColumn.Type.Float64, MojoColumn.Type.Float64, MojoColumn.Type.Int32) == dfTypes)
+    assert(
+      Seq("ID", "CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON") == df.columns.filter(_ != "AGE").toSeq)
+    assert(
+      Seq(
+        MojoColumn.Type.Int32,
+        MojoColumn.Type.Int32,
+        MojoColumn.Type.Int32,
+        MojoColumn.Type.Int32,
+        MojoColumn.Type.Int32,
+        MojoColumn.Type.Float64,
+        MojoColumn.Type.Float64,
+        MojoColumn.Type.Int32) == dfTypes)
   }
-
 
   private def sparkTypeToMojoType(sparkType: String): MojoColumn.Type = {
     sparkType match {
@@ -159,7 +168,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     }
   }
 
-
   test("Testing dataset is missing one of feature columns") {
     val schema = spark.read
       .option("header", "true")
@@ -197,8 +205,8 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   /**
-   * The purpose of this test is to simply pass and don't throw NullPointerException
-   */
+    * The purpose of this test is to simply pass and don't throw NullPointerException
+    */
   test("Prediction with null as row element") {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
@@ -212,15 +220,11 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     preds.collect()
   }
 
-
   test("Date column conversion from Spark to Mojo") {
     val data = List(Date.valueOf("2016-09-30"))
 
-    val sparkDf = spark.createDataFrame(
-      sc.parallelize(data).map(Row(_)),
-      StructType(Seq(StructField("date", DataTypes.DateType)))
-    )
-
+    val sparkDf =
+      spark.createDataFrame(sc.parallelize(data).map(Row(_)), StructType(Seq(StructField("date", DataTypes.DateType))))
 
     val r = sparkDf.first()
     val dt = MojoDateTime.parse(r.getDate(0).toString)
@@ -240,9 +244,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     val sparkDf = spark.createDataFrame(
       sc.parallelize(data).map(Row(_)),
-      StructType(Seq(StructField("timestamp", DataTypes.TimestampType)))
-    )
-
+      StructType(Seq(StructField("timestamp", DataTypes.TimestampType))))
 
     val r = sparkDf.first()
     val dt = MojoDateTime.parse(r.getTimestamp(0).toString)

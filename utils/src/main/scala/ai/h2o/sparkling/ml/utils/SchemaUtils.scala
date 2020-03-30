@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.utils
 
@@ -28,8 +28,8 @@ import org.apache.spark.{ExposeUtils, ml, mllib}
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Utilities for working with Spark SQL component.
- */
+  * Utilities for working with Spark SQL component.
+  */
 object SchemaUtils {
 
   def flattenDataFrame(df: DataFrame): DataFrame = DatasetShape.getDatasetShape(df.schema) match {
@@ -64,9 +64,9 @@ object SchemaUtils {
     }
   }
 
-  private def fillBuffer
-  (flatSchemaIndexes: Map[String, Int], buffer: ArrayBuffer[Any])
-  (qualifiedName: String, dataType: DataType, data: Any) = {
+  private def fillBuffer(
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any])(qualifiedName: String, dataType: DataType, data: Any) = {
     if (data != null) {
       dataType match {
         case BinaryType => fillBinary(qualifiedName, ByteType, flatSchemaIndexes, buffer, data)
@@ -79,11 +79,11 @@ object SchemaUtils {
   }
 
   private def fillBinary(
-                          qualifiedName: String,
-                          elementType: DataType,
-                          flatSchemaIndexes: Map[String, Int],
-                          buffer: ArrayBuffer[Any],
-                          data: Any): Unit = {
+      qualifiedName: String,
+      elementType: DataType,
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any): Unit = {
     val array = data.asInstanceOf[Array[Byte]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     var idx = 0
@@ -95,11 +95,11 @@ object SchemaUtils {
   }
 
   private def fillArray(
-                         qualifiedName: String,
-                         elementType: DataType,
-                         flatSchemaIndexes: Map[String, Int],
-                         buffer: ArrayBuffer[Any],
-                         data: Any): Unit = {
+      qualifiedName: String,
+      elementType: DataType,
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any): Unit = {
     val seq = data.asInstanceOf[Seq[Any]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
     var idx = 0
@@ -111,30 +111,32 @@ object SchemaUtils {
   }
 
   private def fillMap(
-                       qualifiedName: String,
-                       valueType: DataType,
-                       flatSchemaIndexes: Map[String, Int],
-                       buffer: ArrayBuffer[Any],
-                       data: Any): Unit = {
+      qualifiedName: String,
+      valueType: DataType,
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any): Unit = {
     val map = data.asInstanceOf[Map[Any, Any]]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
-    map.foreach { case (key, value) =>
-      val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
-      fillBufferPartiallyApplied(fieldQualifiedName, valueType, value)
+    map.foreach {
+      case (key, value) =>
+        val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
+        fillBufferPartiallyApplied(fieldQualifiedName, valueType, value)
     }
   }
 
   private def fillStruct(
-                          qualifiedName: String,
-                          fields: Seq[StructField],
-                          flatSchemaIndexes: Map[String, Int],
-                          buffer: ArrayBuffer[Any],
-                          data: Any): Unit = {
+      qualifiedName: String,
+      fields: Seq[StructField],
+      flatSchemaIndexes: Map[String, Int],
+      buffer: ArrayBuffer[Any],
+      data: Any): Unit = {
     val subRow = data.asInstanceOf[Row]
     val fillBufferPartiallyApplied = fillBuffer(flatSchemaIndexes, buffer) _
-    fields.zip(subRow.toSeq).foreach { case (subField, value) =>
-      val fieldQualifiedName = getQualifiedName(qualifiedName, subField.name)
-      fillBufferPartiallyApplied(fieldQualifiedName, subField.dataType, value)
+    fields.zip(subRow.toSeq).foreach {
+      case (subField, value) =>
+        val fieldQualifiedName = getQualifiedName(qualifiedName, subField.name)
+        fillBufferPartiallyApplied(fieldQualifiedName, subField.dataType, value)
     }
   }
 
@@ -176,8 +178,7 @@ object SchemaUtils {
           idxForSecond = idxForSecond + 1
         } else {
           result += itemFromFirst.copy(
-            field = itemFromFirst.field.copy(
-              nullable = itemFromFirst.field.nullable || itemFromSecond.field.nullable))
+            field = itemFromFirst.field.copy(nullable = itemFromFirst.field.nullable || itemFromSecond.field.nullable))
           idxForFirst = idxForFirst + 1
           idxForSecond = idxForSecond + 1
         }
@@ -210,12 +211,12 @@ object SchemaUtils {
   private def getQualifiedName(prefix: String, name: String): String = prefix + "." + name
 
   private def flattenField(
-                            qualifiedName: String,
-                            dataType: DataType,
-                            nullable: Boolean,
-                            metadata: Metadata,
-                            data: Any,
-                            path: List[Any]): Seq[FieldWithOrder] = {
+      qualifiedName: String,
+      dataType: DataType,
+      nullable: Boolean,
+      metadata: Metadata,
+      data: Any,
+      path: List[Any]): Seq[FieldWithOrder] = {
     if (data != null) {
       dataType match {
         case BinaryType =>
@@ -237,12 +238,12 @@ object SchemaUtils {
   case class FieldWithOrder(field: StructField, order: Iterable[Any])
 
   private def flattenBinaryType(
-                                 qualifiedName: String,
-                                 elementType: DataType,
-                                 nullable: Boolean,
-                                 metadata: Metadata,
-                                 data: Any,
-                                 path: List[Any]) = {
+      qualifiedName: String,
+      elementType: DataType,
+      nullable: Boolean,
+      metadata: Metadata,
+      data: Any,
+      path: List[Any]) = {
     val values = data.asInstanceOf[Array[Byte]]
     val result = new ArrayBuffer[FieldWithOrder]()
     var idx = 0
@@ -255,12 +256,12 @@ object SchemaUtils {
   }
 
   private def flattenArrayType(
-                                qualifiedName: String,
-                                elementType: DataType,
-                                nullable: Boolean,
-                                metadata: Metadata,
-                                data: Any,
-                                path: List[Any]) = {
+      qualifiedName: String,
+      elementType: DataType,
+      nullable: Boolean,
+      metadata: Metadata,
+      data: Any,
+      path: List[Any]) = {
     val values = data.asInstanceOf[Seq[Any]]
     val result = new ArrayBuffer[FieldWithOrder]()
     var idx = 0
@@ -273,45 +274,47 @@ object SchemaUtils {
   }
 
   private def flattenMapType(
-                              qualifiedName: String,
-                              valueType: DataType,
-                              nullable: Boolean,
-                              metadata: Metadata,
-                              data: Any,
-                              path: List[Any]) = {
+      qualifiedName: String,
+      valueType: DataType,
+      nullable: Boolean,
+      metadata: Metadata,
+      data: Any,
+      path: List[Any]) = {
     val map = data.asInstanceOf[Map[Any, Any]]
     val result = new ArrayBuffer[FieldWithOrder]()
-    map.foreach { case (key, value) =>
-      val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
-      result ++= flattenField(fieldQualifiedName, valueType, nullable, metadata, value, key :: path)
+    map.foreach {
+      case (key, value) =>
+        val fieldQualifiedName = getQualifiedName(qualifiedName, key.toString)
+        result ++= flattenField(fieldQualifiedName, valueType, nullable, metadata, value, key :: path)
     }
     result
   }
 
   private def flattenStructType(
-                                 qualifiedName: String,
-                                 nullableParent: Boolean,
-                                 metadata: Metadata,
-                                 fields: Seq[StructField],
-                                 data: Any,
-                                 path: List[Any]) = {
+      qualifiedName: String,
+      nullableParent: Boolean,
+      metadata: Metadata,
+      fields: Seq[StructField],
+      data: Any,
+      path: List[Any]) = {
     val subRow = data.asInstanceOf[Row]
-    fields.zipWithIndex.flatMap { case (subField, idx) =>
-      val StructField(name, dataType, nullable, fieldMetadata) = subField
-      val metadataBuilder = new MetadataBuilder()
-      metadataBuilder.withMetadata(metadata)
-      metadataBuilder.withMetadata(fieldMetadata)
-      val mergedMetadata = metadataBuilder.build()
-      val fieldQualifiedName = getQualifiedName(qualifiedName, name)
-      flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetadata, subRow(idx), idx :: path)
+    fields.zipWithIndex.flatMap {
+      case (subField, idx) =>
+        val StructField(name, dataType, nullable, fieldMetadata) = subField
+        val metadataBuilder = new MetadataBuilder()
+        metadataBuilder.withMetadata(metadata)
+        metadataBuilder.withMetadata(fieldMetadata)
+        val mergedMetadata = metadataBuilder.build()
+        val fieldQualifiedName = getQualifiedName(qualifiedName, name)
+        flattenField(fieldQualifiedName, dataType, nullable || nullableParent, mergedMetadata, subRow(idx), idx :: path)
     }
   }
 
   def flattenStructsInSchema(
-                              schema: StructType,
-                              sourceColPrefix: Option[String] = None,
-                              targetColPrefix: Option[String] = None,
-                              nullable: Boolean = false): Seq[(StructField, String)] = {
+      schema: StructType,
+      sourceColPrefix: Option[String] = None,
+      targetColPrefix: Option[String] = None,
+      nullable: Boolean = false): Seq[(StructField, String)] = {
 
     val flattened = schema.fields.flatMap { f =>
       val escaped = if (f.name.contains(".")) "`" + f.name + "`" else f.name
@@ -338,30 +341,33 @@ object SchemaUtils {
     import org.apache.spark.sql.DatasetExtensions._
     val structsOnlySchema = StructType(df.schema.fields.filter(_.dataType.isInstanceOf[StructType]))
     val flatten = flattenStructsInSchema(structsOnlySchema, targetColPrefix = Some(prefixForNewColumns))
-    flatten.foldLeft(df) { case (tempDF, (field, colName)) =>
-      tempDF.withColumn(field.name, col(colName), field.metadata)
+    flatten.foldLeft(df) {
+      case (tempDF, (field, colName)) =>
+        tempDF.withColumn(field.name, col(colName), field.metadata)
     }
   }
 
   /** Returns expanded schema
-   *  - schema is represented as list of types
-   *  - all arrays are expanded into columns based on the longest one
-   *  - all vectors are expanded into columns based on the longest one
-   *
-   * @param flatSchema flat schema of spark data frame
-   * @return list of types with their positions
-   */
+    *  - schema is represented as list of types
+    *  - all arrays are expanded into columns based on the longest one
+    *  - all vectors are expanded into columns based on the longest one
+    *
+    * @param flatSchema flat schema of spark data frame
+    * @return list of types with their positions
+    */
   def expandedSchema(flatSchema: StructType, elemMaxSizes: Array[Int]): Seq[StructField] = {
 
-    val expandedSchema = flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case v if ExposeUtils.isAnyVectorUDT(v) =>
-          (0 until elemMaxSizes(idx)).map { arrIdx =>
-            StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
-          }
-        case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
-        case _ => Seq(field)
-      }
+    val expandedSchema = flatSchema.fields.zipWithIndex.flatMap {
+      case (field, idx) =>
+        field.dataType match {
+          case v if ExposeUtils.isAnyVectorUDT(v) =>
+            (0 until elemMaxSizes(idx)).map { arrIdx =>
+              StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
+            }
+          case udt if ExposeUtils.isUDT(udt) =>
+            throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+          case _ => Seq(field)
+        }
     }
     expandedSchema
   }
@@ -375,13 +381,13 @@ object SchemaUtils {
   }
 
   /**
-   * Collect max size of each element in DataFrame.
-   * For array -> max array size
-   * For vectors -> max vector size
-   * For simple types -> 1
-   *
-   * @return array containing size of each element
-   */
+    * Collect max size of each element in DataFrame.
+    * For array -> max array size
+    * For vectors -> max vector size
+    * For simple types -> 1
+    *
+    * @return array containing size of each element
+    */
   def collectMaxElementSizes(flatDataFrame: DataFrame): Array[Int] = {
     val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
     val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
@@ -391,7 +397,9 @@ object SchemaUtils {
       sizeFromMetadata.map(_.get).toArray
     } else {
       val sizes = flatDataFrame.rdd.map { row =>
-        vectorIndices.map { idx => getCollectionSize(row, idx) }
+        vectorIndices.map { idx =>
+          getCollectionSize(row, idx)
+        }
       }
       if (sizes.isEmpty) {
         Array(0)
@@ -409,40 +417,42 @@ object SchemaUtils {
   }
 
   def collectVectorLikeTypes(flatSchema: StructType): Seq[Int] = {
-    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case v if ExposeUtils.isMLVectorUDT(v) => Some(idx)
-        case _: mllib.linalg.VectorUDT => Some(idx)
-        case _ => None
-      }
+    flatSchema.fields.zipWithIndex.flatMap {
+      case (field, idx) =>
+        field.dataType match {
+          case v if ExposeUtils.isMLVectorUDT(v) => Some(idx)
+          case _: mllib.linalg.VectorUDT => Some(idx)
+          case _ => None
+        }
     }
   }
 
   private def collectSimpleLikeTypes(flatSchema: StructType): Seq[Int] = {
-    flatSchema.fields.zipWithIndex.flatMap { case (field, idx) =>
-      field.dataType match {
-        case BooleanType => Some(idx)
-        case ByteType => Some(idx)
-        case ShortType => Some(idx)
-        case IntegerType => Some(idx)
-        case LongType => Some(idx)
-        case FloatType => Some(idx)
-        case _: DecimalType => Some(idx)
-        case DoubleType => Some(idx)
-        case StringType => Some(idx)
-        case TimestampType => Some(idx)
-        case DateType => Some(idx)
-        case _ => None
-      }
+    flatSchema.fields.zipWithIndex.flatMap {
+      case (field, idx) =>
+        field.dataType match {
+          case BooleanType => Some(idx)
+          case ByteType => Some(idx)
+          case ShortType => Some(idx)
+          case IntegerType => Some(idx)
+          case LongType => Some(idx)
+          case FloatType => Some(idx)
+          case _: DecimalType => Some(idx)
+          case DoubleType => Some(idx)
+          case StringType => Some(idx)
+          case TimestampType => Some(idx)
+          case DateType => Some(idx)
+          case _ => None
+        }
     }
   }
 
   /**
-   * Get size of Array or Vector type. Expects already flattened DataFrame
-   *
-   * @param row current row
-   * @param idx index of the element
-   */
+    * Get size of Array or Vector type. Expects already flattened DataFrame
+    *
+    * @param row current row
+    * @param idx index of the element
+    */
   private def getCollectionSize(row: Row, idx: Int): Int = {
     if (row.schema == null || row.isNullAt(idx)) {
       0
@@ -451,7 +461,8 @@ object SchemaUtils {
       dataType match {
         case v if ExposeUtils.isMLVectorUDT(v) => row.getAs[ml.linalg.Vector](idx).size
         case _: mllib.linalg.VectorUDT => row.getAs[mllib.linalg.Vector](idx).size
-        case udt if ExposeUtils.isUDT(udt) => throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
+        case udt if ExposeUtils.isUDT(udt) =>
+          throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")
       }
     }
   }

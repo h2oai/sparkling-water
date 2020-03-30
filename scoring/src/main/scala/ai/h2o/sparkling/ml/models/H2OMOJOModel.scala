@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml.models
 
@@ -38,11 +38,10 @@ import scala.reflect.ClassTag
 
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
   H2OMOJOCache.startCleanupThread()
-  protected final val modelDetails: NullableStringParam = new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+  protected final val modelDetails: NullableStringParam =
+    new NullableStringParam(this, "modelDetails", "Raw details of this model.")
 
-  setDefault(
-    modelDetails -> null
-  )
+  setDefault(modelDetails -> null)
 
   def getModelDetails(): String = $(modelDetails)
 
@@ -71,9 +70,9 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   }
 
   protected override def applyPredictionUdfToFlatDataFrame(
-                                                            flatDataFrame: DataFrame,
-                                                            udfConstructor: Array[String] => UserDefinedFunction,
-                                                            inputs: Array[String]): DataFrame = {
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      inputs: Array[String]): DataFrame = {
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
@@ -91,7 +90,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   }
 }
 
-
 trait H2OMOJOModelUtils {
 
   private def removeMetaField(json: JsonElement): JsonElement = {
@@ -105,11 +103,9 @@ trait H2OMOJOModelUtils {
     json
   }
 
-
   protected def getModelDetails(mojoData: Array[Byte]): String = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
-
 
     val modelOutputJson = ModelJsonReader.parseModelJson(reader).getAsJsonObject("output")
     if (modelOutputJson == null) {
@@ -154,8 +150,11 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   // Internal method used only within Sparkling Water pipelines.
   // When H2OMOJOModel is created from existing mojo created in H2O-3, we set features names as features stored in mojo
   // (they are not nested and structured), but as in Spark, data frames can be nested, we need to handle it
-  private[h2o] def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings,
-                                  originalFeatures: Array[String]): H2OMOJOModel = {
+  private[h2o] def createFromMojo(
+      mojoData: Array[Byte],
+      uid: String,
+      settings: H2OMOJOSettings,
+      originalFeatures: Array[String]): H2OMOJOModel = {
     val model = createFromMojo(mojoData, uid, settings)
     // Override the feature cols with the original features as Spark sees them.
     // Internally, we expand the arrays and vectors
@@ -163,15 +162,18 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   }
 }
 
-abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData : ClassTag]
-  extends H2OMOJOReadable[T] with H2OMOJOLoader[T] {
+abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData: ClassTag]
+    extends H2OMOJOReadable[T]
+    with H2OMOJOLoader[T] {
 
   override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T = {
     val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)
     mojoModel match {
       case specificModel: T => specificModel
-      case unexpectedModel => throw new RuntimeException(s"The MOJO model can't be loaded " +
-        s"as ${this.getClass.getSimpleName}. Use ${unexpectedModel.getClass.getSimpleName} instead!")
+      case unexpectedModel =>
+        throw new RuntimeException(
+          s"The MOJO model can't be loaded " +
+            s"as ${this.getClass.getSimpleName}. Use ${unexpectedModel.getClass.getSimpleName} instead!")
     }
   }
 }

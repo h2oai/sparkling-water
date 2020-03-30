@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend
 
@@ -22,15 +22,14 @@ import org.apache.spark.h2o.H2OConf
 import scala.collection.JavaConverters._
 
 /**
- * Shared configuration independent on used backend
- */
+  * Shared configuration independent on used backend
+  */
 trait SharedBackendConf {
   self: H2OConf =>
 
   import SharedBackendConf._
 
   /** Getters */
-
   /** Generic parameters */
   def backendClusterMode: String = sparkConf.get(PROP_BACKEND_CLUSTER_MODE._1, PROP_BACKEND_CLUSTER_MODE._2)
 
@@ -42,11 +41,14 @@ trait SharedBackendConf {
 
   def scalaIntDefaultNum: Int = sparkConf.getInt(PROP_SCALA_INT_DEFAULT_NUM._1, PROP_SCALA_INT_DEFAULT_NUM._2)
 
-  def isClusterTopologyListenerEnabled: Boolean = sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
+  def isClusterTopologyListenerEnabled: Boolean =
+    sparkConf.getBoolean(PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._1, PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED._2)
 
-  def isSparkVersionCheckEnabled: Boolean = sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1, PROP_SPARK_VERSION_CHECK_ENABLED._2)
+  def isSparkVersionCheckEnabled: Boolean =
+    sparkConf.getBoolean(PROP_SPARK_VERSION_CHECK_ENABLED._1, PROP_SPARK_VERSION_CHECK_ENABLED._2)
 
-  def isFailOnUnsupportedSparkParamEnabled: Boolean = sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
+  def isFailOnUnsupportedSparkParamEnabled: Boolean =
+    sparkConf.getBoolean(PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._1, PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM._2)
 
   def jks: Option[String] = sparkConf.getOption(PROP_JKS._1)
 
@@ -74,19 +76,22 @@ trait SharedBackendConf {
 
   def h2oNodeLogDir: Option[String] = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
 
-  def backendHeartbeatInterval: Int = sparkConf.getInt(PROP_BACKEND_HEARTBEAT_INTERVAL._1, PROP_BACKEND_HEARTBEAT_INTERVAL._2)
+  def backendHeartbeatInterval: Int =
+    sparkConf.getInt(PROP_BACKEND_HEARTBEAT_INTERVAL._1, PROP_BACKEND_HEARTBEAT_INTERVAL._2)
 
   def cloudTimeout: Int = sparkConf.getInt(PROP_CLOUD_TIMEOUT._1, PROP_CLOUD_TIMEOUT._2)
 
   def nodeNetworkMask: Option[String] = sparkConf.getOption(PROP_NODE_NETWORK_MASK._1)
 
-  def stacktraceCollectorInterval: Int = sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
+  def stacktraceCollectorInterval: Int =
+    sparkConf.getInt(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._2)
 
   def contextPath: Option[String] = sparkConf.getOption(PROP_CONTEXT_PATH._1)
 
   def flowScalaCellAsync: Boolean = sparkConf.getBoolean(PROP_FLOW_SCALA_CELL_ASYNC._1, PROP_FLOW_SCALA_CELL_ASYNC._2)
 
-  def maxParallelScalaCellJobs: Int = sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
+  def maxParallelScalaCellJobs: Int =
+    sparkConf.getInt(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, PROP_FLOW_SCALA_CELL_MAX_PARALLEL._2)
 
   def internalPortOffset: Int = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
 
@@ -98,8 +103,8 @@ trait SharedBackendConf {
 
   def flowExtraHttpHeaders: Option[String] = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
 
-  def isInternalSecureConnectionsEnabled: Boolean = sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1,
-    PROP_INTERNAL_SECURE_CONNECTIONS._2)
+  def isInternalSecureConnectionsEnabled: Boolean =
+    sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1, PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
   /** H2O Client parameters */
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
@@ -128,12 +133,13 @@ trait SharedBackendConf {
 
   def runsInInternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_INTERNAL
 
-  def clientCheckRetryTimeout: Int = sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
+  def clientCheckRetryTimeout: Int =
+    sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
 
-  def verifySslCertificates: Boolean = sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
+  def verifySslCertificates: Boolean =
+    sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
   /** Setters */
-
   /** Generic parameters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
@@ -211,7 +217,8 @@ trait SharedBackendConf {
 
   def setNodeNetworkMask(mask: String): H2OConf = set(PROP_NODE_NETWORK_MASK._1, mask)
 
-  def setStacktraceCollectorInterval(interval: Int): H2OConf = set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
+  def setStacktraceCollectorInterval(interval: Int): H2OConf =
+    set(PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL._1, interval.toString)
 
   def setContextPath(contextPath: String): H2OConf = set(PROP_CONTEXT_PATH._1, contextPath)
 
@@ -225,7 +232,8 @@ trait SharedBackendConf {
 
   def setNodeBasePort(port: Int): H2OConf = set(PROP_NODE_PORT_BASE._1, port.toString)
 
-  def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf = set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
+  def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf =
+    set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
   def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
 
@@ -288,11 +296,11 @@ object SharedBackendConf {
   val BACKEND_MODE_EXTERNAL: String = "external"
 
   /**
-   * This option can be set either to "internal" or "external"
-   * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
-   * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
-   * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
-   */
+    * This option can be set either to "internal" or "external"
+    * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
+    * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
+    * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
+    */
   val PROP_BACKEND_CLUSTER_MODE: (String, String) = ("spark.ext.h2o.backend.cluster.mode", BACKEND_MODE_INTERNAL)
 
   /** Configuration property - name of H2O cloud */
@@ -308,7 +316,8 @@ object SharedBackendConf {
   val PROP_SCALA_INT_DEFAULT_NUM: (String, Int) = ("spark.ext.scala.int.default.num", 1)
 
   /** Enable/Disable listener which kills H2O when there is a change in underlying cluster's topology **/
-  val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED: (String, Boolean) = ("spark.ext.h2o.topology.change.listener.enabled", true)
+  val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED: (String, Boolean) =
+    ("spark.ext.h2o.topology.change.listener.enabled", true)
 
   /** Enable/Disable check for Spark version. */
   val PROP_SPARK_VERSION_CHECK_ENABLED: (String, Boolean) = ("spark.ext.h2o.spark.version.check.enabled", true)
@@ -383,9 +392,9 @@ object SharedBackendConf {
   val PROP_NODE_PORT_BASE: (String, Int) = ("spark.ext.h2o.node.port.base", 54321)
 
   /**
-   * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
-   * it's evicted from executor's cache.
-   */
+    * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
+    * it's evicted from executor's cache.
+    */
   val PROP_MOJO_DESTROY_TIMEOUT: (String, Int) = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
 
   /** Extra properties passed to H2O nodes during startup. */
@@ -416,7 +425,7 @@ object SharedBackendConf {
   val PROP_CLIENT_PORT_BASE: (String, Int) = ("spark.ext.h2o.client.port.base", 54321)
 
   /** Exact client port to access web UI.
-   * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
+    * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
   val PROP_CLIENT_WEB_PORT: (String, Int) = ("spark.ext.h2o.client.web.port", -1)
 
   /** Print detailed messages to client stdout */
@@ -426,15 +435,16 @@ object SharedBackendConf {
   val PROP_CLIENT_NETWORK_MASK: (String, None.type) = ("spark.ext.h2o.client.network.mask", None)
 
   /**
-   * Allows to override the base URL address of Flow UI, including the scheme, which is showed
-   * to the user.
-   */
+    * Allows to override the base URL address of Flow UI, including the scheme, which is showed
+    * to the user.
+    */
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE: (String, None.type) = ("spark.ext.h2o.client.flow.baseurl.override", None)
 
   /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-   * client (either H2O client or REST) is connected
-   */
-  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) = ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
+    * client (either H2O client or REST) is connected
+    */
+  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) =
+    ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
 
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.client.extra", None)

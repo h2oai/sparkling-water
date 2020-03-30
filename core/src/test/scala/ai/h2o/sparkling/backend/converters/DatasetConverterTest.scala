@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.converters
 
@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Testing schema for h2o schema spark dataset transformation.
- */
+  * Testing schema for h2o schema spark dataset transformation.
+  */
 @RunWith(classOf[JUnitRunner])
 class DatasetConverterTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
@@ -46,21 +46,23 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
 
   val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
 
-  val samplePartialPeople: List[PartialPerson] = dataSource flatMap { case (n, a, e) =>
-    PartialPerson(Some(n), Some(a), Some(e)) ::
-      PartialPerson(Some(n), Some(a), None) ::
-      PartialPerson(Some(n), None, Some(e)) ::
-      PartialPerson(None, Some(a), Some(e)) ::
-      PartialPerson(Some(n), None, None) ::
-      PartialPerson(None, None, Some(e)) ::
-      Nil
+  val samplePartialPeople: List[PartialPerson] = dataSource flatMap {
+    case (n, a, e) =>
+      PartialPerson(Some(n), Some(a), Some(e)) ::
+        PartialPerson(Some(n), Some(a), None) ::
+        PartialPerson(Some(n), None, Some(e)) ::
+        PartialPerson(None, Some(a), Some(e)) ::
+        PartialPerson(Some(n), None, None) ::
+        PartialPerson(None, None, Some(e)) ::
+        Nil
   }
 
-  val samplePartialPeopleWithAges: List[PartialPerson] = dataSource flatMap { case (n, a, e) =>
-    PartialPerson(Some(n), Some(a), Some(e)) ::
-      PartialPerson(Some(n), Some(a), None) ::
-      PartialPerson(None, Some(a), Some(e)) ::
-      Nil
+  val samplePartialPeopleWithAges: List[PartialPerson] = dataSource flatMap {
+    case (n, a, e) =>
+      PartialPerson(Some(n), Some(a), Some(e)) ::
+        PartialPerson(Some(n), Some(a), None) ::
+        PartialPerson(None, Some(a), Some(e)) ::
+        Nil
   }
 
   val samplePeopleWithPartialData: List[SamplePerson] = samplePartialPeople map (pp =>
@@ -137,7 +139,9 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
 
     val extracted = readWholeFrame[PartialPerson](testH2oFrametWithPartialData)
 
-    assert(testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(), "Number of rows should match")
+    assert(
+      testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(),
+      "Number of rows should match")
 
     matchData(extracted, samplePartialPeople)
   }
@@ -158,7 +162,8 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
     try {
       lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
 
-      val expected: List[SamplePerson] = samplePartialPeopleWithAges map (p => SamplePerson(p.name.orNull, p.age.get, p.email.orNull))
+      val expected: List[SamplePerson] = samplePartialPeopleWithAges map (p =>
+        SamplePerson(p.name.orNull, p.age.get, p.email.orNull))
       val extracted = readWholeFrame[SamplePerson](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
 
       matchData(extracted, expected)
@@ -208,7 +213,7 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
 
   lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
 
-  def readWholeFrame[T <: Product : TypeTag : ClassTag](frame: H2OFrame) = {
+  def readWholeFrame[T <: Product: TypeTag: ClassTag](frame: H2OFrame) = {
 
     import sqlContext.implicits._
 
@@ -225,7 +230,7 @@ class DatasetConverterTest extends FunSuite with SharedH2OTestContext with Befor
     assert(missing.isEmpty, s"Not found: $missing")
   }
 
-  def checkWith[T <: Product : TypeTag : ClassTag](constructor: (String, Int, String) => T): Unit = {
+  def checkWith[T <: Product: TypeTag: ClassTag](constructor: (String, Int, String) => T): Unit = {
     val samples = dataSource map { case (n, a, e) => constructor(n, a, e) }
     val extracted = readWholeFrame[T](testH2oFrame)
     matchData(extracted, samples)

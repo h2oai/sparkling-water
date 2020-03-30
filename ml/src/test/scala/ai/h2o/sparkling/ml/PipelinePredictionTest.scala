@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.ml
 
@@ -39,18 +39,18 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
   def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
-    val smsSchema = StructType(Array(
-      StructField("label", StringType, nullable = false),
-      StructField("text", StringType, nullable = false)))
-    val rowRDD = sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
+    val smsSchema = StructType(
+      Array(StructField("label", StringType, nullable = false), StructField("text", StringType, nullable = false)))
+    val rowRDD =
+      sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
     sqlContext.createDataFrame(rowRDD, smsSchema)
   }
 
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {
 
     /**
-     * Define the pipeline stages
-     */
+      * Define the pipeline stages
+      */
     // Tokenize the messages
     val tokenizer = new RegexTokenizer()
       .setInputCol("text")
@@ -87,7 +87,8 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
 
     // Remove all intermediate columns
     val colPruner = new ColumnPruner()
-      .setColumns(Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
+      .setColumns(
+        Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
 
     // Create the pipeline by defining all the stages
     val pipeline = new Pipeline()
@@ -104,8 +105,8 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
 class PipelinePredictionTest extends PipelinePredictionTestBase {
 
   /**
-   * This test is not using H2O runtime since we are testing deployment of the pipeline
-   */
+    * This test is not using H2O runtime since we are testing deployment of the pipeline
+    */
   test("Run predictions on Spark pipeline model containing H2O Mojo") {
 
     //
@@ -163,10 +164,11 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
 
     val data = load(sc, "smsData.txt")
     // Create data for streaming input
-    data.select("text").collect().zipWithIndex.foreach { case (r, idx) =>
-      val printer = new PrintWriter(new File(tmpDir, s"$idx.txt"))
-      printer.write(r.getString(0))
-      printer.close()
+    data.select("text").collect().zipWithIndex.foreach {
+      case (r, idx) =>
+        val printer = new PrintWriter(new File(tmpDir, s"$idx.txt"))
+        printer.write(r.getString(0))
+        printer.close()
     }
     val schema = StructType(Seq(StructField("text", StringType)))
     val inputDataStream = spark.readStream.schema(schema).text(tmpDir.getAbsolutePath)

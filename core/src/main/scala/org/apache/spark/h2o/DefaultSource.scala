@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.spark.h2o
 
@@ -24,15 +24,18 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import water.DKV
 
 /**
- * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
- * JDBC server).
- */
-class DefaultSource extends RelationProvider
-  with SchemaRelationProvider with CreatableRelationProvider with DataSourceRegister {
+  * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
+  * JDBC server).
+  */
+class DefaultSource
+    extends RelationProvider
+    with SchemaRelationProvider
+    with CreatableRelationProvider
+    with DataSourceRegister {
 
   /**
-   * Short alias for spark-csv data source.
-   */
+    * Short alias for spark-csv data source.
+    */
   override def shortName(): String = "h2o"
 
   private def checkKey(parameters: Map[String, String]): String = {
@@ -45,30 +48,31 @@ class DefaultSource extends RelationProvider
   }
 
   /**
-   * Creates a new relation for data store in H2OFrame given parameters.
-   * Parameters have to include 'key'
-   */
-  override def createRelation(sqlContext: SQLContext,
-                              parameters: Map[String, String]): BaseRelation = {
+    * Creates a new relation for data store in H2OFrame given parameters.
+    * Parameters have to include 'key'
+    */
+  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
     createRelation(sqlContext, parameters, null)
   }
 
   /**
-   * Creates a new relation for data store in H2OFrame given parameters.
-   * Parameters have to include 'key'
-   */
-  override def createRelation(sqlContext: SQLContext,
-                              parameters: Map[String, String],
-                              schema: StructType): H2OFrameRelation = {
+    * Creates a new relation for data store in H2OFrame given parameters.
+    * Parameters have to include 'key'
+    */
+  override def createRelation(
+      sqlContext: SQLContext,
+      parameters: Map[String, String],
+      schema: StructType): H2OFrameRelation = {
     val key = checkKey(parameters)
 
     H2OFrameRelation(ai.h2o.sparkling.H2OFrame(key), copyMetadata = true)(sqlContext)
   }
 
-  override def createRelation(sqlContext: SQLContext,
-                              mode: SaveMode,
-                              parameters: Map[String, String],
-                              data: DataFrame): BaseRelation = {
+  override def createRelation(
+      sqlContext: SQLContext,
+      mode: SaveMode,
+      parameters: Map[String, String],
+      data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
     val originalFrame = DKV.getGet[Frame](key)
     implicit val h2oContext: H2OContext =

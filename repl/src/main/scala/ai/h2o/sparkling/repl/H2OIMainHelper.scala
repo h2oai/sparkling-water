@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.repl
 
@@ -26,15 +26,15 @@ import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import scala.tools.nsc.interpreter.Naming
 
 /**
- * Helper methods for H2OIMain on both scala versions
- */
+  * Helper methods for H2OIMain on both scala versions
+  */
 trait H2OIMainHelper {
 
   private var _initialized = false
 
   /**
-   * Ensure that each class defined in REPL is in a package containing number of repl session
-   */
+    * Ensure that each class defined in REPL is in a package containing number of repl session
+    */
   def setupClassNames(naming: Naming, sessionId: Int): Unit = {
     import naming._
     // sessionNames is lazy val and needs to be accessed first in order to be then set again to our desired value

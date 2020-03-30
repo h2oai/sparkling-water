@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.models.H2OMOJOPredictionBinomial._
@@ -41,28 +41,20 @@ trait H2OMOJOPredictionBinomial {
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
           val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
           val calibratedProbabilities = model.getResponseDomainValues.zip(pred.calibratedClassProbabilities).toMap
-          DetailedWithCalibration(
-            pred.label,
-            probabilities,
-            pred.contributions,
-            calibratedProbabilities
-          )
+          DetailedWithCalibration(pred.label, probabilities, pred.contributions, calibratedProbabilities)
         }
       } else {
         udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
           val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-          Detailed(
-            pred.label,
-            probabilities,
-            pred.contributions
-          )
+          Detailed(pred.label, probabilities, pred.contributions)
         }
       }
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+        val pred = H2OMOJOCache
+          .getMojoBackend(uid, getMojoData, this)
           .predictBinomial(RowConverter.toH2ORowData(r), offset)
         Base(pred.label)
       }
@@ -80,10 +72,14 @@ trait H2OMOJOPredictionBinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField = StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+      val probabilitiesField =
+        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
-        val calibratedProbabilitiesField = StructField("calibratedProbabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = false)
+        val calibratedProbabilitiesField = StructField(
+          "calibratedProbabilities",
+          MapType(StringType, DoubleType, valueContainsNull = false),
+          nullable = false)
         labelField :: probabilitiesField :: contributionsField :: calibratedProbabilitiesField :: Nil
       } else {
         labelField :: probabilitiesField :: contributionsField :: Nil
@@ -104,14 +100,12 @@ object H2OMOJOPredictionBinomial {
 
   case class Base(label: String)
 
-  case class Detailed(label: String,
-                      probabilities: Map[String, Double],
-                      contributions: Array[Float])
+  case class Detailed(label: String, probabilities: Map[String, Double], contributions: Array[Float])
 
   case class DetailedWithCalibration(
-                                      label: String,
-                                      probabilities: Map[String, Double],
-                                      contributions: Array[Float],
-                                      calibratedProbabilities: Map[String, Double])
+      label: String,
+      probabilities: Map[String, Double],
+      contributions: Array[Float],
+      calibratedProbabilities: Map[String, Double])
 
 }

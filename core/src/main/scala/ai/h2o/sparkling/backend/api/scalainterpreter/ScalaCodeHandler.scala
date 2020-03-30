@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -30,8 +30,8 @@ import water.exceptions.H2ONotFoundArgumentException
 import scala.collection.concurrent.TrieMap
 
 /**
- * Handler for all Scala related endpoints
- */
+  * Handler for all Scala related endpoints
+  */
 class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
 
   val intrPoolSize = h2oContext.getConf.scalaIntDefaultNum
@@ -51,7 +51,8 @@ class ScalaCodeHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
 
     this.synchronized {
       jobCount.incrementAndGet()
-      while (h2oContext.getConf.maxParallelScalaCellJobs != -1 && jobCount.intValue() > h2oContext.getConf.maxParallelScalaCellJobs) {
+      while (h2oContext.getConf.maxParallelScalaCellJobs != -1 && jobCount
+               .intValue() > h2oContext.getConf.maxParallelScalaCellJobs) {
         Thread.sleep(1000)
       }
     }
@@ -158,22 +159,49 @@ object ScalaCodeHandler {
       override def create(aClass: Class[_ <: Handler]): Handler = scalaCodeHandler
     }
 
-    context.registerEndpoint("interpretScalaCode", "POST", "/3/scalaint/{session_id}",
-      classOf[ScalaCodeHandler], "interpret", "Interpret the code and return the result",
+    context.registerEndpoint(
+      "interpretScalaCode",
+      "POST",
+      "/3/scalaint/{session_id}",
+      classOf[ScalaCodeHandler],
+      "interpret",
+      "Interpret the code and return the result",
       scalaCodeFactory)
 
-    context.registerEndpoint("initScalaSession", "POST", "/3/scalaint",
-      classOf[ScalaCodeHandler], "initSession", "Return session id for communication with scala interpreter",
+    context.registerEndpoint(
+      "initScalaSession",
+      "POST",
+      "/3/scalaint",
+      classOf[ScalaCodeHandler],
+      "initSession",
+      "Return session id for communication with scala interpreter",
       scalaCodeFactory)
 
-    context.registerEndpoint("getScalaSessions", "GET", "/3/scalaint",
-      classOf[ScalaCodeHandler], "getSessions", "Return all active session IDs", scalaCodeFactory)
-
-    context.registerEndpoint("destroyScalaSession", "DELETE", "/3/scalaint/{session_id}",
-      classOf[ScalaCodeHandler], "destroySession", "Return session id for communication with scala interpreter",
+    context.registerEndpoint(
+      "getScalaSessions",
+      "GET",
+      "/3/scalaint",
+      classOf[ScalaCodeHandler],
+      "getSessions",
+      "Return all active session IDs",
       scalaCodeFactory)
 
-    context.registerEndpoint("getScalaCodeResult", "POST", "/3/scalaint/result/{result_key}",
-      classOf[ScalaCodeHandler], "getScalaCodeResult", "Get Scala code result for desired job", scalaCodeFactory)
+    context.registerEndpoint(
+      "destroyScalaSession",
+      "DELETE",
+      "/3/scalaint/{session_id}",
+      classOf[ScalaCodeHandler],
+      "destroySession",
+      "Return session id for communication with scala interpreter",
+      scalaCodeFactory)
+
+    context.registerEndpoint(
+      "getScalaCodeResult",
+      "POST",
+      "/3/scalaint/result/{result_key}",
+      classOf[ScalaCodeHandler],
+      "getScalaCodeResult",
+      "Get Scala code result for desired job",
+      scalaCodeFactory)
   }
 }
