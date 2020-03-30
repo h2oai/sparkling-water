@@ -245,7 +245,7 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                sh "${getGradleCommand(config)} clean build -x check scalaStyle"
+                sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
                 if (config.uploadNightly.toBoolean()) {
                     stash "sw-build-${config.sparkMajorVersion}"
                 }
