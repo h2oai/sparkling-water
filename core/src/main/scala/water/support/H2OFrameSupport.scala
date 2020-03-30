@@ -72,9 +72,6 @@ trait H2OFrameSupport extends JoinSupport with Logging {
   }
 
   /**
-    * This method updates the frame locally.
-    */
-  /**
     * Convert all strings to categorical/enum values inside the given Frame.
     *
     * @param fr frame to update
