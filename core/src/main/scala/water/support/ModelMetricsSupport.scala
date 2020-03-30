@@ -17,15 +17,19 @@
 
 package water.support
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.{Model, ModelMetrics}
+import org.apache.spark.expose.Logging
 import water.fvec.Frame
 
 /**
   * Trait to access different model metrics provided by H2O model.
   */
-trait ModelMetricsSupport {
+@Deprecated
+trait ModelMetricsSupport extends Logging {
 
   /** Helper class to have nice API. The purpose of this class is to fetch model metrics from the specified model */
+  @Deprecated
   class ModelMetricsExtractor[T <: ModelMetrics] {
     def apply[M <: Model[M, P, O], P <: hex.Model.Parameters, O <: hex.Model.Output](
         model: Model[M, P, O],
@@ -44,8 +48,10 @@ trait ModelMetricsSupport {
     * @tparam T Model Metrics Type
     * @return model metrics
     */
+  @DeprecatedMethod("getTrainingMetrics, getValidationMetrics or getCrossValidationMetrics on H2OMOJOModel", "3.32")
   def modelMetrics[T <: ModelMetrics] = new ModelMetricsExtractor[T]
 }
 
 // Create companion object
+@Deprecated
 object ModelMetricsSupport extends ModelMetricsSupport

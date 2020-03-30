@@ -283,8 +283,9 @@ class H2OTypeConverters(object):
 
         return convert
 
+
     @staticmethod
-    def scalaMapToDictStringToArrayString(value):
+    def scalaMapStringDictStringToStringDictString(value):
         if value is None:
             raise TypeError("None is not allowed.")
         elif isinstance(value, JavaObject):
@@ -297,6 +298,20 @@ class H2OTypeConverters(object):
                     map[pair._1()] = None
                 else:
                     map[pair._1()] = [v for v in arr]
+            return map
+        else:
+            raise TypeError("Invalid type.")
+
+    @staticmethod
+    def scalaMapStringStringToDictStringAny(value):
+        if value is None:
+            raise TypeError("None is not allowed.")
+        elif isinstance(value, JavaObject):
+            it = value.toIterator()
+            map = {}
+            while it.hasNext():
+                pair = it.next()
+                map[pair._1()] = pair._2()
             return map
         else:
             raise TypeError("Invalid type.")

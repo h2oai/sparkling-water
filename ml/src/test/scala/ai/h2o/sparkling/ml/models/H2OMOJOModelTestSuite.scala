@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
+import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.functions._
@@ -305,5 +305,65 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
       "deep_learning_prostate.mojo")
     (prostateDataFrame, mojo)
+  }
+
+  test("getCurrentMetrics when trained with just training frame") {
+    val estimator = new H2OGLM()
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = estimator.fit(prostateDataFrame)
+
+    assert(model.getTrainingMetrics().nonEmpty)
+    assert(model.getValidationMetrics().isEmpty)
+    assert(model.getCrossValidationMetrics().isEmpty)
+    assert(model.getCurrentMetrics().nonEmpty)
+    assert(model.getTrainingMetrics() == model.getCurrentMetrics())
+  }
+
+  test("getCurrentMetrics when trained with validation frame") {
+    val estimator = new H2OGLM()
+      .setSeed(1)
+      .setSplitRatio(0.8)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = estimator.fit(prostateDataFrame)
+
+    assert(model.getTrainingMetrics().nonEmpty)
+    assert(model.getValidationMetrics().nonEmpty)
+    assert(model.getCrossValidationMetrics().isEmpty)
+    assert(model.getCurrentMetrics().nonEmpty)
+    assert(model.getValidationMetrics() == model.getCurrentMetrics())
+  }
+
+  test("getCurrentMetrics when trained with cross-validation") {
+    val estimator = new H2OGLM()
+      .setSeed(1)
+      .setNfolds(3)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = estimator.fit(prostateDataFrame)
+
+    assert(model.getTrainingMetrics().nonEmpty)
+    assert(model.getValidationMetrics().isEmpty)
+    assert(model.getCrossValidationMetrics().nonEmpty)
+    assert(model.getCurrentMetrics().nonEmpty)
+    assert(model.getCrossValidationMetrics() == model.getCurrentMetrics())
+  }
+
+  test("getCurrentMetrics when trained with validation frame and cross-validation") {
+    val estimator = new H2OGLM()
+      .setSeed(1)
+      .setNfolds(3)
+      .setSplitRatio(0.8)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = estimator.fit(prostateDataFrame)
+
+    assert(model.getTrainingMetrics().nonEmpty)
+    assert(model.getValidationMetrics().nonEmpty)
+    assert(model.getCrossValidationMetrics().nonEmpty)
+    assert(model.getCurrentMetrics().nonEmpty)
+    assert(model.getCrossValidationMetrics() == model.getCurrentMetrics())
   }
 }

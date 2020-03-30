@@ -45,7 +45,25 @@ class H2OMOJOModel(H2OMOJOModelBase):
         return self._java_obj.getModelDetails()
 
     def getDomainValues(self):
-        return H2OTypeConverters.scalaMapToDictStringToArrayString(self._java_obj.getDomainValues())
+        return H2OTypeConverters.scalaMapStringDictStringToStringDictString(self._java_obj.getDomainValues())
+
+    def getTrainingMetrics(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingMetrics())
+
+    def getValidationMetrics(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getValidationMetrics())
+
+    def getCrossValidationMetrics(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCrossValidationMetrics())
+
+    def getCurrentMetrics(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCurrentMetrics())
+
+    def getTrainingParams(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingParams())
+
+    def getModelCategory(self):
+        return self._java_obj.getModelCategory()
 
 
 class H2OSupervisedMOJOModel(H2OMOJOModel):

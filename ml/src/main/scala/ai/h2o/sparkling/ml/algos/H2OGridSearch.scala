@@ -53,8 +53,7 @@ class H2OGridSearch(override val uid: String)
 
   def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 
-  private var gridModels: Array[H2OModel] = _
-  private var gridMojoModels: Array[H2OMOJOModel] = _
+  private var gridModels: Array[H2OMOJOModel] = _
 
   private def getSearchCriteria(): String = {
     val criteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
@@ -126,12 +125,19 @@ class H2OGridSearch(override val uid: String)
       .mkString("{", ",", "}")
   }
 
-  private def getGridModels(gridId: String): Array[H2OModel] = {
+  private def getGridModels(
+      gridId: String,
+      algoName: String,
+      internalFeatureCols: Array[String]): Array[H2OMOJOModel] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq((classOf[GridSchemaV99], "summary_table"), (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
-    grid.model_ids.map(modelId => H2OModel(modelId.name))
+    val modelSettings = H2OMOJOSettings.createFromModelParams(this)
+    grid.model_ids.map { modelId =>
+      val mojoData = H2OModel(modelId.name).downloadMojoData()
+      H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
+    }
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -161,27 +167,18 @@ class H2OGridSearch(override val uid: String)
           case _ => throw e
         }
     }
-    val unsortedGridModels = getGridModels(gridId)
+    val unsortedGridModels = getGridModels(gridId, algoName, internalFeatureCols)
     if (unsortedGridModels.isEmpty) {
-      throw new IllegalArgumentException("No Model returned.")
+      throw new IllegalArgumentException("No model returned.")
     }
     gridModels = sortGridModels(unsortedGridModels)
-    gridMojoModels = gridModels.map { m =>
-      val data = m.downloadMojoData()
-      H2OMOJOModel.createFromMojo(data, Identifiable.randomUID(s"${algoName}_mojoModel"))
-    }
-    val firstModel = extractFirstModelFromGrid()
-    val modelSettings = H2OMOJOSettings.createFromModelParams(this)
-    H2OMOJOModel.createFromMojo(
-      firstModel.downloadMojoData(),
-      Identifiable.randomUID(algoName),
-      modelSettings,
-      internalFeatureCols)
+    gridModels.head
   }
 
-  private def sortGridModels(gridModels: Array[H2OModel]): Array[H2OModel] = {
+  private def sortGridModels(gridModels: Array[H2OMOJOModel]): Array[H2OMOJOModel] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
-      gridModels(0).modelCategory match {
+      val category = H2OModelCategory.fromString(gridModels(0).getModelCategory())
+      category match {
         case H2OModelCategory.Regression => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
@@ -191,29 +188,29 @@ class H2OGridSearch(override val uid: String)
     }
 
     val modelMetricPair = gridModels.map { model =>
-      (model, model.currentMetrics.find(_._1 == metric).get._2)
+      (model, model.getCurrentMetrics().find(_._1 == metric.name()).get._2)
     }
 
     val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
   }
 
-  private def extractFirstModelFromGrid(): H2OModel = {
-    if (gridModels.isEmpty) {
-      throw new IllegalArgumentException("No model returned.")
-    }
-    gridModels.head
-  }
-
   private def ensureGridSearchIsFitted(): Unit = {
+    <<<<<<< HEAD
+      require(
+        gridMojoModels != null,
+        "The fit method of the grid search must be called first to be able to obtain a list of models.")
+    =======
     require(
-      gridMojoModels != null,
+      gridModels != null,
       "The fit method of the grid search must be called first to be able to obtain a list of models.")
+    >>>>>>>[SW - 2087] Deprecate MetricsSupport and make it possible to obtain training metrics on H2OMojoModel
   }
 
   def getGridModelsParams(): DataFrame = {
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
+    <<<<<<< HEAD
     val rowValues = gridModels.zip(gridMojoModels.map(_.uid)).map {
       case (model, id) =>
         val outputParams = model.trainingParams.filter { case (key, _) => hyperParamNames.contains("_" + key) }
@@ -226,6 +223,21 @@ class H2OGridSearch(override val uid: String)
         outputParams.keys.map(name => StructField(s"_$name", StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
+    =======
+    val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
+      case (model, id) =>
+        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
+        Row(Seq(id) ++ outputParams.values: _*)
+    }
+
+    val colNames = gridModels.headOption
+      .map { model =>
+        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
+        outputParams.keys.map(name => StructField(s"_$name", StringType, nullable = false)).toList
+      }
+      .getOrElse(List.empty)
+
+    >>>>>>>[SW - 2087] Deprecate MetricsSupport and make it possible to obtain training metrics on H2OMojoModel
 
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
     val spark = SparkSessionUtils.active
@@ -234,6 +246,7 @@ class H2OGridSearch(override val uid: String)
 
   def getGridModelsMetrics(): DataFrame = {
     ensureGridSearchIsFitted()
+    <<<<<<< HEAD
     val rowValues = gridModels.zip(gridMojoModels.map(_.uid)).map {
       case (model, id) =>
         Row(Seq(id) ++ model.currentMetrics.values: _*)
@@ -243,6 +256,17 @@ class H2OGridSearch(override val uid: String)
         model.currentMetrics.map(_._1.toString).map(StructField(_, DoubleType, nullable = false)).toList
       }
       .getOrElse(List.empty)
+    =======
+    val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
+      case (model, id) =>
+        Row(Seq(id) ++ model.getCurrentMetrics().values: _*)
+    }
+    val colNames = gridModels.headOption
+      .map { model =>
+        model.getCurrentMetrics().map(_._1).map(StructField(_, DoubleType, nullable = false)).toList
+      }
+      .getOrElse(List.empty)
+    >>>>>>>[SW - 2087] Deprecate MetricsSupport and make it possible to obtain training metrics on H2OMojoModel
 
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
     val spark = SparkSessionUtils.active
@@ -251,7 +275,7 @@ class H2OGridSearch(override val uid: String)
 
   def getGridModels(): Array[H2OMOJOModel] = {
     ensureGridSearchIsFitted()
-    gridMojoModels
+    gridModels
   }
 
   @DeveloperApi

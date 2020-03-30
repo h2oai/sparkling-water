@@ -21,21 +21,11 @@ import java.io.File
 import java.nio.file.Files
 
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import com.google.gson._
-import org.apache.commons.io.IOUtils
 import org.apache.spark.expose.Utils
-import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.h2o.H2OContext
 import water.api.schemas3.ModelsV3
 
-import scala.collection.JavaConverters._
-
-private[sparkling] class H2OModel private (
-    val modelId: String,
-    val modelCategory: H2OModelCategory.Value,
-    val metrics: H2OMetricsHolder,
-    val trainingParams: Map[String, String])
-  extends RestCommunication {
+private[sparkling] class H2OModel private (val modelId: String) extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
   private[sparkling] def downloadMojoData(): Array[Byte] = {
@@ -44,18 +34,6 @@ private[sparkling] class H2OModel private (
     val target = new File(sparkTmpDir, this.modelId)
     downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
     Files.readAllBytes(target.toPath)
-  }
-
-  def currentMetrics: Map[H2OMetric, Double] = {
-    val nfolds = trainingParams.get("nfolds")
-    val validationFrame = trainingParams.get("validation_frame")
-    if (nfolds.isDefined && nfolds.get.toInt > 1) {
-      metrics.crossValidationMetrics
-    } else if (validationFrame.isDefined) {
-      metrics.validationMetrics
-    } else {
-      metrics.trainingMetrics
-    }
   }
 }
 
@@ -70,90 +48,5 @@ private[sparkling] object H2OModel extends RestCommunication {
 
   private[sparkling] def modelExists(modelId: String): Boolean = listAllModels().contains(modelId)
 
-  def apply(modelId: String): H2OModel = {
-    val conf = H2OContext.ensure().getConf
-    getModel(conf, modelId)
-  }
-
-  private def getModel(conf: H2OConf, modelId: String): H2OModel = {
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-
-    val content = withResource(readURLContent(endpoint, "GET", s"/3/Models/$modelId", conf)) { response =>
-      IOUtils.toString(response)
-    }
-    val gson = new Gson()
-    val modelJson =
-      gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.get("models").getAsJsonArray.get(0).getAsJsonObject
-    val modelCategory = extractModelCategory(modelJson)
-    val metrics = extractAllMetrics(modelJson)
-    val params = extractParams(modelJson)
-    new H2OModel(modelId, modelCategory, metrics, params)
-  }
-
-  protected def extractModelCategory(modelJson: JsonObject): H2OModelCategory.Value = {
-    val json = modelJson.get("output").getAsJsonObject
-    H2OModelCategory.fromString(json.get("model_category").getAsString)
-  }
-
-  protected def extractAllMetrics(modelJson: JsonObject): H2OMetricsHolder = {
-    val json = modelJson.get("output").getAsJsonObject
-    val trainingMetrics = extractMetrics(json, "training_metrics")
-    val validationMetrics = extractMetrics(json, "validation_metrics")
-    val crossValidationMetrics = extractMetrics(json, "cross_validation_metrics")
-    H2OMetricsHolder(trainingMetrics, validationMetrics, crossValidationMetrics)
-  }
-
-  private def stringifyJSON(value: JsonElement): Option[String] = {
-    value match {
-      case v: JsonPrimitive => Some(v.getAsString)
-      case v: JsonArray =>
-        val stringElements = v.asScala.flatMap(stringifyJSON)
-        val arrayAsString = stringElements.mkString("[", ", ", "]")
-        Some(arrayAsString)
-      case _: JsonNull => None
-      case v: JsonObject =>
-        if (v.has("name")) {
-          stringifyJSON(v.get("name"))
-        } else {
-          None
-        }
-    }
-  }
-
-  protected def extractParams(modelJson: JsonObject): Map[String, String] = {
-    val parameters = modelJson.get("parameters").getAsJsonArray.asScala.toArray
-    parameters
-      .flatMap { param =>
-        val name = param.getAsJsonObject.get("name").getAsString
-        val value = param.getAsJsonObject.get("actual_value")
-        val stringValue = stringifyJSON(value)
-        stringValue.map(name -> _)
-      }
-      .sorted
-      .toMap
-  }
-
-  private def extractMetrics(json: JsonObject, metricType: String): Map[H2OMetric, Double] = {
-    if (json.get(metricType).isJsonNull) {
-      Map.empty
-    } else {
-      val metricGroup = json.getAsJsonObject(metricType)
-      val fields = metricGroup.entrySet().asScala.map(_.getKey)
-      val metrics = H2OMetric.values().flatMap { metric =>
-        val metricName = metric.toString
-        val fieldName = fields.find(field => field.replaceAll("_", "").equalsIgnoreCase(metricName))
-        if (fieldName.isDefined) {
-          Some(metric -> metricGroup.get(fieldName.get).getAsDouble)
-        } else {
-          None
-        }
-      }
-      metrics.sorted(H2OMetricOrdering).toMap
-    }
-  }
-
-  private object H2OMetricOrdering extends Ordering[(H2OMetric, Double)] {
-    def compare(a: (H2OMetric, Double), b: (H2OMetric, Double)): Int = a._1.name().compare(b._1.name())
-  }
-
+  def apply(modelId: String): H2OModel = new H2OModel(modelId)
 }

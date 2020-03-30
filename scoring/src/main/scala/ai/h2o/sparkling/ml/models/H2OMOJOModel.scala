@@ -24,9 +24,10 @@ import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
-import ai.h2o.sparkling.ml.params.NullableStringParam
+import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
+import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
 import ai.h2o.sparkling.ml.utils.Utils
-import com.google.gson.{GsonBuilder, JsonElement}
+import com.google.gson._
 import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
@@ -40,8 +41,44 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
     new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+  protected final val trainingMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "trainingMetrics", "Training metrics.")
+  protected final val validationMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "validationMetrics", "Validation metrics.")
+  protected final val crossValidationMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics.")
+  protected final val trainingParams: MapStringStringParam =
+    new MapStringStringParam(this, "trainingParams", "Training params")
+  protected final val modelCategory: NullableStringParam =
+    new NullableStringParam(this, "modelCategory", "H2O's model category")
+  setDefault(
+    modelDetails -> null,
+    trainingMetrics -> Map.empty[String, Double],
+    validationMetrics -> Map.empty[String, Double],
+    crossValidationMetrics -> Map.empty[String, Double],
+    trainingParams -> Map.empty[String, String],
+    modelCategory -> null)
 
-  setDefault(modelDetails -> null)
+  def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
+
+  def getValidationMetrics(): Map[String, Double] = $(validationMetrics)
+
+  def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
+
+  def getCurrentMetrics(): Map[String, Double] = {
+    val nfolds = $(trainingParams).get("nfolds")
+    val validationFrame = $(trainingParams).get("validation_frame")
+    if (nfolds.isDefined && nfolds.get.toInt > 1) {
+      getCrossValidationMetrics()
+    } else if (validationFrame.isDefined) {
+      getValidationMetrics()
+    } else {
+      getTrainingMetrics()
+    }
+  }
+  def getTrainingParams(): Map[String, String] = $(trainingParams)
+
+  def getModelCategory(): String = $(modelCategory)
 
   def getModelDetails(): String = $(modelDetails)
 
@@ -103,21 +140,92 @@ trait H2OMOJOModelUtils {
     json
   }
 
-  protected def getModelDetails(mojoData: Array[Byte]): String = {
+  protected def getModelJson(mojoData: Array[Byte]): JsonObject = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    ModelJsonReader.parseModelJson(reader)
+  }
 
-    val modelOutputJson = ModelJsonReader.parseModelJson(reader).getAsJsonObject("output")
-    if (modelOutputJson == null) {
+  protected def getModelDetails(modelJson: JsonObject): String = {
+    val json = modelJson.get("output").getAsJsonObject
+
+    if (json == null) {
       "Model details not available!"
     } else {
-      removeMetaField(modelOutputJson)
-      modelOutputJson.remove("domains")
-      modelOutputJson.remove("help")
+      removeMetaField(json)
+      json.remove("domains")
+      json.remove("help")
       val gson = new GsonBuilder().setPrettyPrinting().create
-      val prettyJson = gson.toJson(modelOutputJson)
+      val prettyJson = gson.toJson(json)
       prettyJson
     }
+  }
+
+  protected def extractMetrics(json: JsonObject, metricType: String): Map[String, Double] = {
+    if (json.get(metricType).isJsonNull) {
+      Map.empty
+    } else {
+      val metricGroup = json.getAsJsonObject(metricType)
+      val fields = metricGroup.entrySet().asScala.map(_.getKey)
+      val metrics = H2OMetric.values().flatMap { metric =>
+        val metricName = metric.toString
+        val fieldName = fields.find(field => field.replaceAll("_", "").equalsIgnoreCase(metricName))
+        if (fieldName.isDefined) {
+          Some(metric -> metricGroup.get(fieldName.get).getAsDouble)
+        } else {
+          None
+        }
+      }
+      metrics.sorted(H2OMetricOrdering).map(pair => (pair._1.name(), pair._2)).toMap
+    }
+  }
+
+  protected def extractAllMetrics(
+      modelJson: JsonObject): (Map[String, Double], Map[String, Double], Map[String, Double]) = {
+    val json = modelJson.get("output").getAsJsonObject
+    val trainingMetrics = extractMetrics(json, "training_metrics")
+    val validationMetrics = extractMetrics(json, "validation_metrics")
+    val crossValidationMetrics = extractMetrics(json, "cross_validation_metrics")
+    (trainingMetrics, validationMetrics, crossValidationMetrics)
+  }
+
+  protected def extractParams(modelJson: JsonObject): Map[String, String] = {
+    val parameters = modelJson.get("parameters").getAsJsonArray.asScala.toArray
+    parameters
+      .flatMap { param =>
+        val name = param.getAsJsonObject.get("name").getAsString
+        val value = param.getAsJsonObject.get("actual_value")
+        val stringValue = stringifyJSON(value)
+        stringValue.map(name -> _)
+      }
+      .sorted
+      .toMap
+  }
+
+  protected def extractModelCategory(modelJson: JsonObject): H2OModelCategory.Value = {
+    val json = modelJson.get("output").getAsJsonObject
+    H2OModelCategory.fromString(json.get("model_category").getAsString)
+  }
+
+  private def stringifyJSON(value: JsonElement): Option[String] = {
+    value match {
+      case v: JsonPrimitive => Some(v.getAsString)
+      case v: JsonArray =>
+        val stringElements = v.asScala.flatMap(stringifyJSON)
+        val arrayAsString = stringElements.mkString("[", ", ", "]")
+        Some(arrayAsString)
+      case _: JsonNull => None
+      case v: JsonObject =>
+        if (v.has("name")) {
+          stringifyJSON(v.get("name"))
+        } else {
+          None
+        }
+    }
+  }
+
+  private object H2OMetricOrdering extends Ordering[(H2OMetric, Double)] {
+    def compare(a: (H2OMetric, Double), b: (H2OMetric, Double)): Int = a._1.name().compare(b._1.name())
   }
 
 }
@@ -134,13 +242,23 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 
     model.setSpecificParams(mojoModel)
 
+    val modelJson = getModelJson(mojoData)
+    val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
+    val modelDetails = getModelDetails(modelJson)
+    val modelCategory = extractModelCategory(modelJson)
+    val trainingParams = extractParams(modelJson)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.set(model.modelDetails -> getModelDetails(mojoData))
+    model.set(model.modelDetails -> modelDetails)
     model.set(model.predictionCol -> settings.predictionCol)
+    model.set(model.trainingMetrics -> trainingMetrics)
+    model.set(model.validationMetrics -> validationMetrics)
+    model.set(model.crossValidationMetrics -> crossValidationMetrics)
+    model.set(model.trainingParams -> trainingParams)
+    model.set(model.modelCategory -> modelCategory.toString)
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
     model.setMojoData(mojoData)

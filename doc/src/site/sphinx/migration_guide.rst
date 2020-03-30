@@ -41,6 +41,12 @@ From 3.30 to 3.32
 - The methods ``columnsToCategorical`` with both indices and column names argument in ``water.support.H2OFrameSupport`` are removed. Please use
   ``ai.h2o.sparkling.H2OFrame(frameKeyString).convertColumnsToCategorical`` instead.
 
+- Method ``modelMetrics`` in ``water.support.ModelMetricsSupport`` is removed. Please use methods
+  ``getTrainingMetrics``, ``getValidationMetrics`` or ``getCrossValidationMetrics`` on the ``H2OMOJOModel``.
+  You can also use method ``getCurrentMetrics``, which returns cross validation metrics if nfolds was specified and higher
+  than 0, validation metrics if validation frame has been specified ( splitRatio was set and lower than 1 ) and nfolds was 0
+  and training metrics otherwise ( splitRatio is 1 and nfolds is 0).
+
 
 From 3.28.1 to 3.30
 -------------------
