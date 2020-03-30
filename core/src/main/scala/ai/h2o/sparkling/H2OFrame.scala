@@ -59,10 +59,10 @@ class H2OFrame private (
   }
 
   def convertColumnsToCategorical(columnIndices: Array[Int]): H2OFrame = {
-    val nonExisting = columnNames.indices.intersect(columnIndices)
+    val nonExisting = columnIndices.filterNot(columns.indices.contains(_))
     if (nonExisting.nonEmpty) {
       throw new IllegalArgumentException(
-        s"Columns with indices ${nonExisting.mkString} are not in the frame $frameId." +
+        s"Columns with indices ${nonExisting.mkString("[", ",", "]")} are not in the frame $frameId." +
           s" The frame has ${columnNames.length} columns.")
     }
     val endpoint = getClusterEndpoint(conf)
