@@ -39,7 +39,7 @@ trait H2OFrameSupport extends JoinSupport with Logging {
     */
   @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).split(ratios)", "3.32")
   def splitFrame[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios.toArray).map(fr => new H2OFrame(fr.frameId))
+    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios: _*).map(fr => new H2OFrame(fr.frameId))
   }
 
   /**
@@ -54,7 +54,7 @@ trait H2OFrameSupport extends JoinSupport with Logging {
     */
   @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).split(ratios)", "3.32")
   def split[T <: Frame](fr: T, keys: Seq[String], ratios: Seq[Double]): Array[Frame] = {
-    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios.toArray).map(fr => new H2OFrame(fr.frameId))
+    ai.h2o.sparkling.H2OFrame(fr._key.toString).split(ratios: _*).map(fr => new H2OFrame(fr.frameId))
   }
 
   /**

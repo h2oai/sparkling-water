@@ -77,22 +77,15 @@ class H2OFrame private (
     }
   }
 
-  def split(splitRatios: Array[Double]): Array[H2OFrame] = {
-    if (splitRatios.sum >= 1.0) {
+  def split(splitRatios: Double*): Array[H2OFrame] = {
+    if (splitRatios.sum > 1.0) {
       throw new IllegalArgumentException("Split ratios must be lower than 1.0")
     }
     val endpoint = getClusterEndpoint(conf)
-    val params = Map("ratios" -> Array(splitRatios), "dataset" -> frameId)
+    val params = Map("ratios" -> splitRatios.toArray, "dataset" -> frameId)
     val splitFrameV3 = update[SplitFrameV3](endpoint, "3/SplitFrame", conf, params)
     H2OJob(splitFrameV3.key.name).waitForFinish()
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
-  }
-
-  def split(splitRatio: Double): Array[H2OFrame] = {
-    if (splitRatio >= 1.0) {
-      throw new IllegalArgumentException("Split ratios must be lower than 1.0")
-    }
-    split(Array(splitRatio))
   }
 
   def subframe(columns: Array[String]): H2OFrame = {
