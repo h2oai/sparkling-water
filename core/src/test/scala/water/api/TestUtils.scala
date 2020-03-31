@@ -21,6 +21,12 @@ import java.io.File
 object TestUtils {
 
   def locate(name: String): String = {
-    new File("./examples/" + name).getAbsolutePath
+    val file = new File("./examples/" + name)
+    if (file.exists()) {
+      file.getAbsolutePath
+    } else {
+      // testing from IDEA
+      new File("../examples/" + name).getAbsolutePath
+    }
   }
 }
