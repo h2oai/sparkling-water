@@ -1,5 +1,5 @@
-Importing H2O MOJOs
--------------------
+Importing H2O MOJOs from H2O-3
+------------------------------
 
 H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
@@ -222,16 +222,16 @@ call the ``createFromMojo`` method on the specific MOJO model type.
     val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
     println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
 
-Exporting the trained MOJO model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Exporting the loaded MOJO model using Sparkling Water
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To export the trained MOJO model, call ``model.write.save(path)``. In case of Hadoop enabled system, the command by default
+To export the MOJO model, call ``model.write.save(path)``. In case of Hadoop enabled system, the command by default
 uses HDFS.
 
-Importing the trained MOJO model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Importing the previously exported MOJO model from Sparkling Water
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To import the trained MOJO model, call ``H2OMOJOModel.read.load(path)``. In case of Hadoop enabled system, the command by default
+To import the MOJO model, call ``H2OMOJOModel.read.load(path)``. In case of Hadoop enabled system, the command by default
 uses HDFS.
 
 Methods available on MOJO Model
