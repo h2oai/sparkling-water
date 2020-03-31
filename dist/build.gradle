@@ -117,23 +117,23 @@ def createSupportedHadoopFile(String where) {
 }
 
 def distTaskDependencies = [
-        ":sparkling-water-doc:site",
-        ":sparkling-water-r:distR",
-        ":sparkling-water-assembly:shadowJar",
-        ":sparkling-water-assembly-extensions:shadowJar",
-        ":sparkling-water-templates:build",
-        ":sparkling-water-py:distPython",
-        ":sparkling-water-r:createCranRepo",
-        ":sparkling-water-core:publish",
-        ":sparkling-water-doc:publish",
-        ":sparkling-water-repl:publish",
-        ":sparkling-water-ml:publish",
-        ":sparkling-water-examples:publish",
-        ":sparkling-water-package:publish",
-        ":sparkling-water-scoring:publish",
-        ":sparkling-water-extensions:publish",
-        ":sparkling-water-utils:publish",
-        ":sparkling-water-kubernetes:buildDockerfiles"
+    ":sparkling-water-doc:site",
+    ":sparkling-water-r:distR",
+    ":sparkling-water-assembly:shadowJar",
+    ":sparkling-water-assembly-extensions:shadowJar",
+    ":sparkling-water-templates:build",
+    ":sparkling-water-py:distPython",
+    ":sparkling-water-r:createCranRepo",
+    ":sparkling-water-core:publish",
+    ":sparkling-water-doc:publish",
+    ":sparkling-water-repl:publish",
+    ":sparkling-water-ml:publish",
+    ":sparkling-water-examples:publish",
+    ":sparkling-water-package:publish",
+    ":sparkling-water-scoring:publish",
+    ":sparkling-water-extensions:publish",
+    ":sparkling-water-utils:publish",
+    ":sparkling-water-kubernetes:buildDockerfiles"
 ]
 
 def copyAndSubstituteGradleProperties() {

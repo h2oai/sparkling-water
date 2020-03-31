@@ -73,12 +73,20 @@ task test(type: Exec, dependsOn: distR) {
 
 task installH2ORPackage(type: Exec) {
     def majorName = (h2oMajorName == "master") ? "master" : "rel-${h2oMajorName}"
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"])
+    commandLine getOsSpecificCommandLine([
+        "R",
+        "-e",
+        "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"
+    ])
 }
 
 task installRSparklingPackage(type: Exec, dependsOn: distR) {
     workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "install.packages(\"rsparkling_${version}.tar.gz\", type=\"source\", repos=NULL)"])
+    commandLine getOsSpecificCommandLine([
+        "R",
+        "-e",
+        "install.packages(\"rsparkling_${version}.tar.gz\", type=\"source\", repos=NULL)"
+    ])
 }
 
 task prepareRepoDir(dependsOn: distR) {
@@ -93,7 +101,11 @@ task prepareRepoDir(dependsOn: distR) {
 
 task createCranRepo(type: Exec, dependsOn: prepareRepoDir) {
     workingDir contribDir
-    commandLine getOsSpecificCommandLine(["R", "-e", "tools::write_PACKAGES()"])
+    commandLine getOsSpecificCommandLine([
+        "R",
+        "-e",
+        "tools::write_PACKAGES()"
+    ])
 }
 
 clean.dependsOn cleanR

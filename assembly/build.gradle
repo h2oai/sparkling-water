@@ -52,7 +52,9 @@ jar {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadowApi]
+    configurations = [
+        project.configurations.shadowApi
+    ]
     mergeServiceFiles()
 
     relocate 'javassist', 'ai.h2o.javassist'

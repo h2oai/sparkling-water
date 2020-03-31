@@ -27,7 +27,7 @@ task createDockerfile(type: Dockerfile) {
                 |   unzip terraform.zip -d /usr/local/bin/ && \\
                 |   rm -f terraform.zip
                """.stripMargin()
-    
+
     runCommand """\\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'

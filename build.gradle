@@ -36,52 +36,51 @@ if (project.hasProperty("doRelease")) {
 ext {
     // Published projects
     publishedProjects = [
-            project(':sparkling-water-repl'),
-            project(':sparkling-water-core'),
-            project(':sparkling-water-examples'),
-            project(':sparkling-water-ml'),
-            project(':sparkling-water-package'),
-            project(":sparkling-water-doc"),
-            project(':sparkling-water-utils'),
-            project(':sparkling-water-scoring'),
-            project(':sparkling-water-extensions')
+        project(':sparkling-water-repl'),
+        project(':sparkling-water-core'),
+        project(':sparkling-water-examples'),
+        project(':sparkling-water-ml'),
+        project(':sparkling-water-package'),
+        project(":sparkling-water-doc"),
+        project(':sparkling-water-utils'),
+        project(':sparkling-water-scoring'),
+        project(':sparkling-water-extensions')
     ]
     // Projects with integration tests
     integTestProjects = [
-            project(':sparkling-water-core'),
-            project(':sparkling-water-examples')
+        project(':sparkling-water-core'),
+        project(':sparkling-water-examples')
     ]
 
     // Projects with benchmarks
     benchProjects = [
-            project(':sparkling-water-core'),
-            project(':sparkling-water-benchmarks')
+        project(':sparkling-water-core'),
+        project(':sparkling-water-benchmarks')
     ]
 
     // Scala projects
     scalaProjects = [
-            project(':sparkling-water-repl'),
-            project(':sparkling-water-core'),
-            project(':sparkling-water-examples'),
-            project(':sparkling-water-ml'),
-            project(':sparkling-water-app-streaming'),
-            project(':sparkling-water-package'),
-            project(':sparkling-water-benchmarks'),
-            project(':sparkling-water-macros'),
-            project(':sparkling-water-utils'),
-            project(':sparkling-water-scoring'),
-            project(':sparkling-water-extensions')
-
+        project(':sparkling-water-repl'),
+        project(':sparkling-water-core'),
+        project(':sparkling-water-examples'),
+        project(':sparkling-water-ml'),
+        project(':sparkling-water-app-streaming'),
+        project(':sparkling-water-package'),
+        project(':sparkling-water-benchmarks'),
+        project(':sparkling-water-macros'),
+        project(':sparkling-water-utils'),
+        project(':sparkling-water-scoring'),
+        project(':sparkling-water-extensions')
     ]
     pythonProjects = [
-            project(':sparkling-water-py')
+        project(':sparkling-water-py')
     ]
     rProjects = [
-            project(':sparkling-water-r'),
-            project(':sparkling-water-r-cran')
+        project(':sparkling-water-r'),
+        project(':sparkling-water-r-cran')
     ]
     docProjects = [
-            project(':sparkling-water-doc')
+        project(':sparkling-water-doc')
     ]
 
     defaultScalaBaseVersion = '2.11'
@@ -130,6 +129,7 @@ configure(allprojects) { project ->
     apply plugin: 'idea'
     apply plugin: 'eclipse'
     apply from: "$rootDir/gradle/artifacts.gradle"
+    apply plugin: "com.diffplug.gradle.spotless"
     // Version of main components
     ext {
         scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
@@ -140,7 +140,7 @@ configure(allprojects) { project ->
         sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
         if (!sparkVersion.startsWith(spark)) {
             throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
-                    " with different major Apark versions.")
+            " with different major Apark versions.")
         }
         sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
         junitVersion = '4.11'
@@ -148,9 +148,15 @@ configure(allprojects) { project ->
         supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
         unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
     }
-
     // All project inherits the same versioning number
     version = loadedVersion
+    spotless {
+        groovyGradle {
+            greclipse()
+            indentWithSpaces(4)
+            endWithNewline()
+        }
+    }
 }
 
 //
@@ -229,17 +235,32 @@ clean.doFirst {
 }
 
 def createStagingId(def username, def password) {
-    def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
+    def proc = [
+        './createStagingId.sh',
+        username,
+        password
+    ].execute([], file("${rootDir.toString()}/gradle/publish"))
     return proc.text
 }
 
 def uploadFiles(def username, def password, def repoDir, def stagingId) {
-    def proc = ['./uploadToNexus.sh', username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    def proc = [
+        './uploadToNexus.sh',
+        username,
+        password,
+        repoDir,
+        stagingId
+    ].execute([], file("${rootDir.toString()}/gradle/publish"))
     proc.waitFor()
 }
 
 def closeBucket(def username, def password, def stagingId) {
-    def proc = ['./closeBucket.sh', username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+    def proc = [
+        './closeBucket.sh',
+        username,
+        password,
+        stagingId
+    ].execute([], file("${rootDir.toString()}/gradle/publish"))
     proc.waitFor()
 }
 

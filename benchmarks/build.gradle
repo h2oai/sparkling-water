@@ -42,19 +42,20 @@ task substituteTerraform(dependsOn: copyTerraform) {
         def tfScripts = [
             "${tfBaseDir}/variables.tf",
             "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
-            "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"]
+            "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"
+        ]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
-                .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
-                .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
-                .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
-                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
-                .replaceAll("SUBST_H2O_BUILD", h2oBuild)
-                .replaceAll("SUBST_SW_VERSION", version.toString())
-                .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
-                .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-            
+                    .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
+                    .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
+                    .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
+                    .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+                    .replaceAll("SUBST_H2O_BUILD", h2oBuild)
+                    .replaceAll("SUBST_SW_VERSION", version.toString())
+                    .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+                    .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+
             file(path).write(contents, 'UTF-8')
         }
     }
@@ -64,7 +65,11 @@ task cleanOutput(type: Delete) {
     delete "output"
 }
 
-task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBenchmarks(dependsOn: [
+    ":sparkling-water-assembly:shadowJar",
+    substituteTerraform,
+    cleanOutput
+]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -81,7 +86,11 @@ task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substitute
     }
 }
 
-task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [
+    ":sparkling-water-assembly:shadowJar",
+    substituteTerraform,
+    cleanOutput
+]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")
@@ -106,7 +115,11 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-asse
     }
 }
 
-task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
+task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [
+    ":sparkling-water-assembly:shadowJar",
+    substituteTerraform,
+    cleanOutput
+]) {
     doLast {
         exec {
             def accessKey = project.property("aws_access_key")

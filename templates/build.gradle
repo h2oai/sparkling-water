@@ -28,7 +28,8 @@ task substituteTerraform() {
         def tfScripts = [
             "${tfBaseDir}/variables.tf",
             "${tfBaseDir}/modules/emr_deployment/variables.tf",
-            "${tfBaseDir}/modules/emr_deployment/main.tf"]
+            "${tfBaseDir}/modules/emr_deployment/main.tf"
+        ]
         tfScripts.each { path ->
             def contents = file(path).getText('UTF-8')
             contents = contents
