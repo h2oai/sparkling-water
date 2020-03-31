@@ -142,7 +142,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     hf.remove()
   }
 
-  private def sparseVector(len: Int, elements: Int, rng: Random = Random): org.apache.spark.ml.linalg.SparseVector = {
+  private def sparseVector(len: Int, elements: Int, rng: Random = Random): SparseVector = {
     assert(elements < len)
     val data = (1 to elements).map(_ => rng.nextInt(len)).sortBy(identity).distinct.map(it => (it, rng.nextDouble()))
     Vectors.sparse(len, data).toSparse
