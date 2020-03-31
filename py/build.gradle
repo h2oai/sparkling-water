@@ -72,17 +72,24 @@ task createVersionFile {
 //
 // Represents a location of H2O Wheel Package
 //
-final String h2oPythonWheelPackageLocation = "http://h2o-release.s3.amazonaws.com/h2o/${h2oMajorName != "master" ? "rel-${h2oMajorName}" : "master"}/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
+def h2oPythonWheelPackageLocation() {
+  def suffix = "/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
+  def prefix = "http://h2o-release.s3.amazonaws.com/h2o/"
+  if (h2oMajorName == "master") {
+  } else {
+    return "${prefix}/rel-${h2oMajorName}/${suffix}"
+  }
+}
 
 
 static def downloadH2OWheel(String url, File out) {
-if (!out.parentFile.exists()) {
-  out.parentFile.mkdirs()
-}
+  if (!out.parentFile.exists()) {
+    out.parentFile.mkdirs()
+  }
 
-if (!out.exists()) {
-  new URL(url).withInputStream { i -> out.withOutputStream { it << i } }
-}
+  if (!out.exists()) {
+    new URL(url).withInputStream { i -> out.withOutputStream { it << i } }
+  }
 }
 
 //
@@ -90,102 +97,101 @@ if (!out.exists()) {
 // by Python build
 //
 task checkPythonEnv {
-doLast {
-  def H2O_HOME = System.getenv("H2O_HOME")
-  def H2O_DRIVER_JAR = System.getenv("H2O_DRIVER_JAR")
+  doLast {
+    def H2O_HOME = System.getenv("H2O_HOME")
+    def H2O_DRIVER_JAR = System.getenv("H2O_DRIVER_JAR")
 
-  if (H2O_HOME == null) {
-    downloadH2OWheel(h2oPythonWheelPackageLocation, wheelFile)
-  } else {
-    logger.info("Using \"H2O_HOME\" to specify H2O python package location!")
-  }
+    if (H2O_HOME == null) {
+      downloadH2OWheel(h2oPythonWheelPackageLocation(), wheelFile)
+    } else {
+      logger.info("Using \"H2O_HOME\" to specify H2O python package location!")
+    }
 
-  // if the spark.ext.h2o.backend.cluster.mode is set to external, then
-  // we need to have also H2O_DRIVER_JAR property set in order to be able to perform tests
-  if (detectBackendClusterMode() == "external" && H2O_DRIVER_JAR == null) {
-    throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_DRIVER_JAR property is required.
+    // if the spark.ext.h2o.backend.cluster.mode is set to external, then
+    // we need to have also H2O_DRIVER_JAR property set in order to be able to perform tests
+    if (detectBackendClusterMode() == "external" && H2O_DRIVER_JAR == null) {
+      throw new InvalidUserDataException("""When running tests on external H2O cluster, H2O_DRIVER_JAR property is required.
 Download H2O driver for the corresonding hadoop distribution via the shell script ``./bin/get-h2o-driver.sh`` and
 and please set it, for example as:
 
 export H2O_DRIVER_JAR=/path/to/h2o-driver.jar
                                   """)
+    }
   }
-
-}
 }
 
 def copyPySetup() {
 
-copy {
-  from("$projectDir/src") {
-    include 'setup.py'
+  copy {
+    from("$projectDir/src") {
+      include 'setup.py'
+    }
+    filter {
+      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+        .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+    }
+    into pkgDir
   }
-  filter {
-    it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-      .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-      .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
-      .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-  }
-  into pkgDir
-}
 
-copy {
-  from("$projectDir") {
-    include 'README.rst'
+  copy {
+    from("$projectDir") {
+      include 'README.rst'
+    }
+    into pkgDir
   }
-  into pkgDir
-}
 
-copy {
-  from("$projectDir/src") {
-    include 'MANIFEST.in'
-    include 'setup.cfg'
-    include 'pysparkling/**/*'
-    include 'ai/**/*'
-    exclude '**/*.pyc'
+  copy {
+    from("$projectDir/src") {
+      include 'MANIFEST.in'
+      include 'setup.cfg'
+      include 'pysparkling/**/*'
+      include 'ai/**/*'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
   }
-  into pkgDir
-}
 
-copy {
-  from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
-    include 'bld.bat'
-    include 'build.sh'
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
+      include 'bld.bat'
+      include 'build.sh'
+    }
+    into condaDir
   }
-  into condaDir
-}
 
-copy {
-  from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
-    include 'meta.yaml'
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
+      include 'meta.yaml'
+    }
+    filter {
+      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+        .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+    }
+    into condaDir
   }
-  filter {
-    it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-      .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-      .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
-  }
-  into condaDir
-}
 }
 
 
 def copyH2OFromH2OHome(String h2oHome) {
-copy {
-  from "${h2oHome}/h2o-py/h2o"
-  into file("${project.pkgDir}/h2o")
-  exclude '**/*.pyc'
-  exclude '**/h2o.jar'
-}
+  copy {
+    from "${h2oHome}/h2o-py/h2o"
+    into file("${project.pkgDir}/h2o")
+    exclude '**/*.pyc'
+    exclude '**/h2o.jar'
+  }
 }
 
 def copyH2OFromH2OWheel(File h2oPythonWheel) {
-copy {
-  from zipTree(h2oPythonWheel)
-  into file("${project.pkgDir}")
-  include 'h2o/**'
-  exclude '**/*.pyc'
-  exclude '**/h2o.jar'
-}
+  copy {
+    from zipTree(h2oPythonWheel)
+    into file("${project.pkgDir}")
+    include 'h2o/**'
+    exclude '**/*.pyc'
+    exclude '**/h2o.jar'
+  }
 }
 
 //
@@ -193,19 +199,19 @@ copy {
 //
 task distPython(type: Zip, dependsOn: [checkPythonEnv, configurations.sparklingWaterAssemblyJar]) {
 
-doFirst {
-  def H2O_HOME = System.getenv("H2O_HOME")
+  doFirst {
+    def H2O_HOME = System.getenv("H2O_HOME")
 
-  // if both properties are set, give precedence to H2O_HOME
-  if (H2O_HOME != null) {
-    copyH2OFromH2OHome(H2O_HOME)
-  } else {
-    copyH2OFromH2OWheel(wheelFile)
-  }
-  // Copy basic python setup
-  copyPySetup()
-  def replaceStr =
-    """
+    // if both properties are set, give precedence to H2O_HOME
+    if (H2O_HOME != null) {
+      copyH2OFromH2OHome(H2O_HOME)
+    } else {
+      copyH2OFromH2OWheel(wheelFile)
+    }
+    // Copy basic python setup
+    copyPySetup()
+    def replaceStr =
+      """
 import zipfile
 from os import path
 
@@ -236,84 +242,84 @@ else:
          __version__ = "0.0.local"
                 """
 
-  // Change __init__.py in H2O to be aware of being zipped
-  def initFile = file("${project.pkgDir}/h2o/__init__.py")
-  def initContent = initFile.readLines()
-  def lineStart = initContent.findIndexOf { it == "try:" }
-  def lineEnd = initContent.findIndexOf { it == "    __version__ = \"0.0.local\"" }
-  if (lineStart != -1 && lineEnd != -1) {
-    def before = initContent.subList(0, lineStart).join("\n")
-    def full = before + replaceStr + initContent.subList(lineEnd + 1, initContent.size()).join("\n")
-    initFile.write(full)
-  }
+    // Change __init__.py in H2O to be aware of being zipped
+    def initFile = file("${project.pkgDir}/h2o/__init__.py")
+    def initContent = initFile.readLines()
+    def lineStart = initContent.findIndexOf { it == "try:" }
+    def lineEnd = initContent.findIndexOf { it == "    __version__ = \"0.0.local\"" }
+    if (lineStart != -1 && lineEnd != -1) {
+      def before = initContent.subList(0, lineStart).join("\n")
+      def full = before + replaceStr + initContent.subList(lineEnd + 1, initContent.size()).join("\n")
+      initFile.write(full)
+    }
 
-  // Copy sparkling water assembly jar
-  def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
-  copy {
-    from fatJar
-    into file("${project.pkgDir}/sparkling_water")
-    rename ".*", "sparkling_water_assembly.jar"
+    // Copy sparkling water assembly jar
+    def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
+    copy {
+      from fatJar
+      into file("${project.pkgDir}/sparkling_water")
+      rename ".*", "sparkling_water_assembly.jar"
+    }
+    // Save comment into module file
+    file("${project.pkgDir}/sparkling_water/").mkdir()
+    file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
   }
-  // Save comment into module file
-  file("${project.pkgDir}/sparkling_water/").mkdir()
-  file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparkling module.")
-}
-// Configure proper name
-archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
+  // Configure proper name
+  archiveBaseName = "h2o_pysparkling_${sparkMajorVersion}"
 
-from pkgDir
-destinationDirectory = distDir
+  from pkgDir
+  destinationDirectory = distDir
 }
 
 configurations {
-sdist
+  sdist
 }
 
 artifacts {
-sdist distPython
+  sdist distPython
 }
 
 def createUnitTestArgs() {
-return [
-  "${distPython.archiveFile.get()}",
-  "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
-  "spark.ext.h2o.external.disable.version.check=true"
-]
+  return [
+    "${distPython.archiveFile.get()}",
+    "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
+    "spark.ext.h2o.external.disable.version.check=true"
+  ]
 }
 
 def createIntegTestArgs() {
-return [
-  "${distPython.archiveFile.get()}",
-  "spark.testing=true",
-  "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
-  "spark.test.home=${sparkHome}",
-  "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest",
-  "spark.ext.h2o.external.disable.version.check=true"
-]
+  return [
+    "${distPython.archiveFile.get()}",
+    "spark.testing=true",
+    "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
+    "spark.test.home=${sparkHome}",
+    "spark.ext.h2o.node.log.dir=${buildDir}/h2ologs-itest",
+    "spark.ext.h2o.external.disable.version.check=true"
+  ]
 }
 
 task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
-extraArgs(*createUnitTestArgs())
-command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+  extraArgs(*createUnitTestArgs())
+  command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
 }
 
 task testPython(type: PythonTask, dependsOn: distPython) {
-extraArgs(*createUnitTestArgs())
-command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
+  extraArgs(*createUnitTestArgs())
+  command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
 }
 
 if (project.property("testMojoPipeline") == "true") {
-testPython.dependsOn testPythonMojoPipeline
+  testPython.dependsOn testPythonMojoPipeline
 }
 
 task integTestPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
-extraArgs(*createIntegTestArgs())
-command = "tests/test_runner.py 'tests/integration --ignore=tests/integration/external_only'"
+  extraArgs(*createIntegTestArgs())
+  command = "tests/test_runner.py 'tests/integration --ignore=tests/integration/external_only'"
 }
 
 task integTestPythonExternal(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
-extraArgs(*createIntegTestArgs())
-command = "tests/test_runner.py tests/integration/external_only"
+  extraArgs(*createIntegTestArgs())
+  command = "tests/test_runner.py tests/integration/external_only"
 }
 
 
@@ -321,17 +327,17 @@ command = "tests/test_runner.py tests/integration/external_only"
 // Just print location of H2O Python Wheel package with respect to a configured version of H2O dependency
 //
 task printH2OWheelPackage {
-doLast {
-  description = "Print location of H2O Python Wheel package for download"
-  println(h2oPythonWheelPackageLocation)
-}
+  doLast {
+    description = "Print location of H2O Python Wheel package for download"
+    println(h2oPythonWheelPackageLocation())
+  }
 }
 
 //
 // Cleanup
 //
 task cleanPython(type: Delete) {
-delete getBuildDir()
+  delete getBuildDir()
 }
 
 //
@@ -345,6 +351,6 @@ build.dependsOn distPython
 test.dependsOn testPython
 
 if (detectBackendClusterMode() == "external") {
-integTest.dependsOn integTestPythonExternal
+  integTest.dependsOn integTestPythonExternal
 }
 integTest.dependsOn integTestPython
