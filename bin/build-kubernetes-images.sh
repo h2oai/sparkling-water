@@ -11,7 +11,6 @@ fi
 TOPDIR=$(cd "$(dirname "$0")/.." || exit; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
-export SPARK_VERSION=$(grep Spark  "$SPARK_HOME/RELEASE" | cut -d' ' -f2)
 
 ( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$SPARK_VERSION" build )
 
@@ -25,7 +24,7 @@ if [ "$1" = "scala" ]; then
   cp "$K8DIR/Dockerfile-Scala" "$WORKDIR"
   echo "Bulding Docker Image for Sparkling Water(Scala) ..."
   cp "$FAT_JAR_FILE" "$WORKDIR"
-  docker build -t "sparkling-water-scala:$VERSION" -f "$WORKDIR/Dockerfile-Scala" "$WORKDIR"
+  docker build --build-arg spark_version=$SPARK_VERSION -t "sparkling-water-scala:$VERSION" -f "$WORKDIR/Dockerfile-Scala" "$WORKDIR"
   echo "Done!"
 fi
 
@@ -33,7 +32,7 @@ if [ "$1" = "python" ]; then
   cp "$K8DIR/Dockerfile-Python" "$WORKDIR"
   echo "Bulding Docker Image for PySparkling(Python) ..."
   cp "$PY_ZIP_FILE" "$WORKDIR"
-  docker build -t "sparkling-water-python:$VERSION" -f "$WORKDIR/Dockerfile-Python" "$WORKDIR"
+  docker build --build-arg spark_version=$SPARK_VERSION -t "sparkling-water-python:$VERSION" -f "$WORKDIR/Dockerfile-Python" "$WORKDIR"
   echo "Done!"
 fi
 
@@ -41,7 +40,7 @@ if [ "$1" = "r" ]; then
   cp "$K8DIR/Dockerfile-R" "$WORKDIR"
   echo "Bulding Docker Image for RSparkling(R) ..."
   cp "$TOPDIR/rsparkling_$VERSION.tar.gz" "$WORKDIR"
-  docker build -t "sparkling-water-r:$VERSION" -f "$WORKDIR/Dockerfile-R" "$WORKDIR"
+  docker build --build-arg spark_version=$SPARK_VERSION -t "sparkling-water-r:$VERSION" -f "$WORKDIR/Dockerfile-R" "$WORKDIR"
   echo "Done!"
 fi
 
