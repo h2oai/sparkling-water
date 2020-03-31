@@ -29,11 +29,11 @@ import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
-  val conf = defaultSparkConf
 
-  override def createSparkContext = new SparkContext("local-cluster[2, 1, 2048]", this.getClass.getSimpleName, conf)
+  override def createSparkContext =
+    new SparkContext("local-cluster[2, 1, 2048]", getClass.getSimpleName, defaultSparkConf)
 
-  val settings = TestFrameUtils.GenerateDataFrameSettings(
+  private val settings = TestFrameUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
     rowsPerPartition = 500,
     maxCollectionSize = 100,
@@ -75,23 +75,23 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     rowToSchema(FlatArraysOnlySchema)
   }
 
-  def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
     hf.remove()
   }
 
-  def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenDataFrame(df).foreach(_ => {})
   }
 
-  def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenSchema(df)
   }
 
-  def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
