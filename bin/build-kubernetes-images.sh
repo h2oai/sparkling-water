@@ -11,6 +11,7 @@ fi
 TOPDIR=$(cd "$(dirname "$0")/.." || exit; pwd)
 
 source "$TOPDIR/bin/sparkling-env.sh"
+export SPARK_VERSION=$(grep Spark  "$SPARK_HOME/RELEASE" | cut -d' ' -f2)
 
 ( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$SPARK_VERSION" build )
 
