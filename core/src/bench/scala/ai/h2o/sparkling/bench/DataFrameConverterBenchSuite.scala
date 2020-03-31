@@ -21,17 +21,19 @@ import ai.h2o.sparkling.ml.utils.{FlatArraysOnlySchema, FlatSchema, SchemaUtils,
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vectors}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import scala.util.Random
+
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
-  val conf = defaultSparkConf
 
-  override def createSparkContext = new SparkContext("local-cluster[2, 1, 2048]", this.getClass.getSimpleName, conf)
+  override def createSparkContext =
+    new SparkContext("local-cluster[2, 1, 2048]", getClass.getSimpleName, defaultSparkConf)
 
-  val settings = TestFrameUtils.GenerateDataFrameSettings(
+  private val settings = TestFrameUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
     rowsPerPartition = 500,
     maxCollectionSize = 100,
@@ -73,23 +75,23 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     rowToSchema(FlatArraysOnlySchema)
   }
 
-  def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
     hf.remove()
   }
 
-  def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenDataFrame(df).foreach(_ => {})
   }
 
-  def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenSchema(df)
   }
 
-  def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
+  private def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
     val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
@@ -100,7 +102,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val sparsity = 0.2
     val numberOfRows = 3 * 1000
     val partitions = 4
-    import water.api.TestUtils.sparseVector
     val elementsPerRow = (sparsity * numberOfCols).toInt
     val rowGenerator = (_: Int) => SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
 
@@ -139,5 +140,11 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
 
     val hf = hc.asH2OFrame(df)
     hf.remove()
+  }
+
+  private def sparseVector(len: Int, elements: Int, rng: Random = Random): SparseVector = {
+    assert(elements < len)
+    val data = (1 to elements).map(_ => rng.nextInt(len)).sortBy(identity).distinct.map(it => (it, rng.nextDouble()))
+    Vectors.sparse(len, data).toSparse
   }
 }

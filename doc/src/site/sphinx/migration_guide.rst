@@ -84,6 +84,17 @@ From 3.30 to 3.32
     For additional information about how to load MOJO into Sparkling Water, please see
     `Loading MOJOs into Sparkling Water <http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/deployment/load_mojo.html>`_.
 
+- The methods ``join``, ``innerJoin``, ``outerJoin``, ``leftJoin`` and ``rightJoin`` in ``water.support.JoinSupport``
+  are removed together with their encapsulating class. The enum ``water.support.munging.JoinMethod`` is also removed.
+  In order to perform joins, please use the following methods:
+
+  - Inner join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).innerJoin(rightFrame)``
+  - Outer join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).outerJoin(rightFrame)``
+  - Left join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).leftJoin(rightFrame)``
+  - Right join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).rightJoin(rightFrame)``
+
+The ``JoinMethod`` enum is removed as it is no longer required.
+
 
 From 3.28.1 to 3.30
 -------------------

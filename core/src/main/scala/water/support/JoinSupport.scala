@@ -16,6 +16,8 @@
  */
 package water.support
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
+import org.apache.spark.expose.Logging
 import water.fvec.Frame
 import water.munging.JoinMethod
 import water.rapids.Rapids
@@ -23,7 +25,8 @@ import water.rapids.Rapids
 /**
   * Trait which contains methods for specific H2O join and merge operation.
   */
-trait JoinSupport {
+@Deprecated
+trait JoinSupport extends Logging {
 
   private val MERGE_RAPIDS: String = "(merge %s %s %s %s [] [] \"%s\")"
 
@@ -37,6 +40,7 @@ trait JoinSupport {
     * @param method joining method
     * @return
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).join", "3.32")
   def join[T <: Frame](
       left: T,
       right: T,
@@ -57,6 +61,7 @@ trait JoinSupport {
     * @param method joining method
     * @return new frame
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).leftJoin", "3.32")
   def leftJoin(left: Frame, right: Frame, method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = true, allY = false, method = method)
   }
@@ -69,6 +74,7 @@ trait JoinSupport {
     * @param method joining method
     * @return new frame
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).rightJoin", "3.32")
   def rightJoin(left: Frame, right: Frame, method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = false, allY = true, method = method)
   }
@@ -81,6 +87,7 @@ trait JoinSupport {
     * @param method joining method
     * @return new frame
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).innerJoin", "3.32")
   def innerJoin(left: Frame, right: Frame, method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = false, allY = false, method = method)
   }
@@ -93,6 +100,7 @@ trait JoinSupport {
     * @param method joining method
     * @return new frame
     */
+  @DeprecatedMethod("ai.h2o.sparkling.H2OFrame(frameKey).outerJoin", "3.32")
   def outerJoin(left: Frame, right: Frame, method: JoinMethod = JoinMethod.AUTO): Frame = {
     join(left, right, allX = true, allY = true, method = method)
   }
@@ -100,4 +108,5 @@ trait JoinSupport {
   private def toStr(b: Boolean): String = if (b) "1" else "0"
 }
 
+@Deprecated
 object JoinSupport extends JoinSupport {}

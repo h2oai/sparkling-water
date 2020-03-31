@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package water.munging;
+package water.api
 
-// FIXME: we need to put this into H2O !!!
+import java.io.File
 
-/** Enum which is used to specify the joining method */
-@Deprecated
-public enum JoinMethod {
-  AUTO("auto"),
-  RADIX("radix"),
-  HASH("hash");
+object TestUtils {
 
-  public final String name;
-
-  JoinMethod(String name) {
-    this.name = name;
+  def locate(name: String): String = {
+    val file = new File("./examples/" + name)
+    if (file.exists()) {
+      file.getAbsolutePath
+    } else {
+      // testing from IDEA
+      new File("../examples/" + name).getAbsolutePath
+    }
   }
 }
