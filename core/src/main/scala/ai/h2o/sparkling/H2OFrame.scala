@@ -24,7 +24,7 @@ import ai.h2o.sparkling.backend.utils.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.backend.{H2OChunk, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
-import ai.h2o.sparkling.utils.{Base64Encoding, SparkSessionUtils}
+import ai.h2o.sparkling.utils.Base64Encoding
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
