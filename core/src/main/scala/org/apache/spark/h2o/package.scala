@@ -17,7 +17,6 @@
 
 package org.apache.spark
 
-import hex.Model
 import org.apache.spark.sql._
 
 /** Type shortcuts to simplify work in Sparkling REPL */
@@ -32,8 +31,6 @@ package object h2o {
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
   type Dataset[X] = org.apache.spark.sql.Dataset[X]
-
-  type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
 
   /**
     * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
