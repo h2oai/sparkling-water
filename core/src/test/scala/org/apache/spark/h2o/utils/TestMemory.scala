@@ -19,10 +19,8 @@ package org.apache.spark.h2o.utils
 
 import java.util.concurrent.ConcurrentHashMap
 
-import org.apache.spark.h2o.Holder
-
 class TestMemory[T] extends ConcurrentHashMap[T, Unit] {
-  def put(xh: Holder[T]): Unit = xh.result foreach put
+  def put(xh: Option[T]): Unit = xh.foreach(put)
 
   def put(x: T): Unit = {
     if (this contains x) {

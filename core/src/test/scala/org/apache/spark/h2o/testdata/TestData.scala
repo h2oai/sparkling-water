@@ -108,3 +108,5 @@ case class DenseVectorHolder(v: org.apache.spark.ml.linalg.DenseVector)
 case class Name(given: String, family: String)
 
 case class Person(name: Name, age: Int)
+
+case class StringHolder(result: String)

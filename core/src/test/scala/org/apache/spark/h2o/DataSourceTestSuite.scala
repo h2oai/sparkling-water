@@ -32,11 +32,12 @@ import water.DKV
 class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", "test-data-sources", conf = defaultSparkConf)
+    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
+  import spark.implicits._
   test("Reading H2OFrame using short variant") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    val rdd = sc.parallelize(1 to 1000)
+    val h2oFrame = hc.asH2OFrame(rdd)
     val df = sqlContext.read.h2o(h2oFrame.key)
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
@@ -45,8 +46,8 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Reading H2OFrame using key option") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    val rdd = sc.parallelize(1 to 1000)
+    val h2oFrame = hc.asH2OFrame(rdd)
     val df = sqlContext.read.format("h2o").option("key", h2oFrame.key.toString).load()
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
@@ -55,8 +56,8 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Reading H2OFrame using key in load method ") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
+    val rdd = sc.parallelize(1 to 1000)
+    val h2oFrame = hc.asH2OFrame(rdd)
     val df = sqlContext.read.format("h2o").load(h2oFrame.key.toString)
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
@@ -65,8 +66,7 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Writing DataFrame to new H2O Frame ") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val df = sqlContext.createDataFrame(rdd)
+    val df = sc.parallelize(1 to 1000).toDF()
     df.write.h2o("new_key")
 
     val h2oFrame = DKV.getGet[Frame]("new_key")
@@ -77,12 +77,10 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Writing DataFrame to existing H2O Frame ") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val df = sqlContext.createDataFrame(rdd)
+    val df = sc.parallelize(1 to 1000).toDF()
     df.write.h2o("new_key")
 
-    val rddNew = sc.parallelize(1 to 1000).map(v => StringHolder(Some(v.toString)))
-    val dfNew = sqlContext.createDataFrame(rddNew)
+    val dfNew = sc.parallelize(1 to 1000).map(v => v.toString).toDF()
 
     val h2oFrame = DKV.getGet[Frame]("new_key")
     val thrown = intercept[RuntimeException] {
@@ -95,12 +93,10 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Overwriting existing H2O Frame ") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val df = sqlContext.createDataFrame(rdd)
+    val df = sc.parallelize(1 to 1000).toDF()
     df.write.h2o("new_key")
 
-    val rddNew = sc.parallelize(1 to 100).map(v => StringHolder(Some(v.toString)))
-    val dfNew = sqlContext.createDataFrame(rddNew)
+    val dfNew = sc.parallelize(1 to 100).map(v => v.toString).toDF()
 
     dfNew.write.format("h2o").mode(SaveMode.Overwrite).save("new_key")
     // load new H2O Frame
@@ -113,12 +109,10 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Writing to existing H2O Frame with ignore mode") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val df = sqlContext.createDataFrame(rdd)
+    val df = sc.parallelize(1 to 1000).toDF()
     df.write.h2o("new_key")
 
-    val rddNew = sc.parallelize(1 to 100).map(v => StringHolder(Some(v.toString)))
-    val dfNew = sqlContext.createDataFrame(rddNew)
+    val dfNew = sc.parallelize(1 to 100).map(v => v.toString).toDF()
     dfNew.write.format("h2o").mode(SaveMode.Ignore).save("new_key")
 
     // load new H2O Frame
@@ -131,11 +125,9 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Appending to existing H2O Frame ") {
-    val rdd = sc.parallelize(1 to 1000).map(v => IntHolder(Some(v)))
-    val df = sqlContext.createDataFrame(rdd)
+    val df = sc.parallelize(1 to 1000).toDF()
     df.write.h2o("new_key")
-    val rddNew = sc.parallelize(1 to 100).map(v => IntHolder(Some(v)))
-    val dfNew = sqlContext.createDataFrame(rddNew)
+    val dfNew = sc.parallelize(1 to 100).toDF()
 
     val thrown = intercept[RuntimeException] {
       dfNew.write.format("h2o").mode(SaveMode.Append).save("new_key")

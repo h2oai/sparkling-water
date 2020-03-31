@@ -18,7 +18,6 @@ package ai.h2o.sparkling.internal
 
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.DoubleHolder
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -34,12 +33,12 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
   override def createSparkContext: SparkContext =
     new SparkContext(
       "local-cluster[3,1,1024]",
-      this.getClass.getName,
+      getClass.getName,
       conf = defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val h2oFrame = hc.asH2OFrame(rdd)
 
     TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
@@ -53,7 +52,7 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
   test("asDataFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
-    val originalRdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
+    val originalRdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val hf = hc.asH2OFrame(originalRdd)
 
     val convertedDf = hc.asDataFrame(hf)
@@ -64,10 +63,10 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
   test("asRDD conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
     import spark.implicits._
-    val originalRdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
+    val originalRdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val hf = hc.asH2OFrame(originalRdd)
 
-    val convertedRdd = hc.asRDD[DoubleHolder](hf)
+    val convertedRdd = hc.asRDD[Option[Int]](hf)
 
     TestFrameUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedRdd.toDF())
   }

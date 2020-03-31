@@ -35,20 +35,6 @@ package object h2o {
 
   type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
 
-  trait Holder[T] {
-    def result: Option[T]
-  }
-
-  case class ByteHolder(result: Option[Byte]) extends Holder[Byte]
-
-  case class DoubleHolder(result: Option[Double]) extends Holder[Double]
-
-  case class IntHolder(result: Option[Int]) extends Holder[Int]
-
-  case class ShortHolder(result: Option[Short]) extends Holder[Short]
-
-  case class StringHolder(result: Option[String]) extends Holder[String]
-
   /**
     * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
     * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
