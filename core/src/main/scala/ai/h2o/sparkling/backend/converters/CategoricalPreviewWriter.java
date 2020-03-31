@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.converters;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import water.parser.ParseWriter;
 import water.parser.PreviewParseWriter;
 import water.util.IcedHashMap;
 
@@ -38,6 +39,7 @@ class CategoricalPreviewWriter extends PreviewParseWriter {
         Kryo kryo = new Kryo();
         kryo.register(CategoricalPreviewWriter.class);
         kryo.register(IcedHashMap.class);
+        kryo.register(ParseWriter.ParseErr.class);
         return kryo;
     }
 
