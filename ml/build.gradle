@@ -4,35 +4,35 @@ apply from: "$rootDir/gradle/sparkTest.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
 dependencies {
-    api(project(":sparkling-water-core")) { exclude group: "javax.servlet", module: "servlet-api" }
-    api(project(":sparkling-water-scoring"))
-    api("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
-    api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
-    api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
+  api(project(":sparkling-water-core")) { exclude group: "javax.servlet", module: "servlet-api" }
+  api(project(":sparkling-water-scoring"))
+  api("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
+  api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
+  api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
 
-    compileOnly(project(":sparkling-water-macros"))
-    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+  compileOnly(project(":sparkling-water-macros"))
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
-    testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
-    testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
-    testImplementation("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
-    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    testImplementation("junit:junit:4.11")
-    testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
-    // For test purposes, force newer client as the tests are modifying classpath and we get errors which
-    // we do not get during normal production usage
-    testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
-    testImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
-    testImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
+  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
+  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
+  testImplementation("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
+  testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  testImplementation("junit:junit:4.11")
+  testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+  // For test purposes, force newer client as the tests are modifying classpath and we get errors which
+  // we do not get during normal production usage
+  testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
+  testImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
+  testImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
 }
 
 test {
-    if (project.property("testMojoPipeline") != "true") {
-        exclude 'ai/h2o/sparkling/ml/models/H2OMOJOPipelineModelTest.class'
-    }
+  if (project.property("testMojoPipeline") != "true") {
+    exclude 'ai/h2o/sparkling/ml/models/H2OMOJOPipelineModelTest.class'
+  }
 }
 
 defineStandardPublication().call()

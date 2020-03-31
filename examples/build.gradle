@@ -5,41 +5,41 @@ apply from: "$rootDir/gradle/utils.gradle"
 project.ext.exampleResources = project.file("flows")
 
 sourceSets {
-    main {
-        resources {
-            srcDir("flows")
-        }
+  main {
+    resources {
+      srcDir("flows")
     }
+  }
 }
 
 jar {
-    eachFile { f ->
-        if (new File(exampleResources, f.file.name).exists()) {
-            f.path = "www/flow/packs/examples/$f.name"
-        }
+  eachFile { f ->
+    if (new File(exampleResources, f.file.name).exists()) {
+      f.path = "www/flow/packs/examples/$f.name"
     }
+  }
 }
 
 dependencies {
-    api(project(":sparkling-water-ml"))
+  api(project(":sparkling-water-ml"))
 
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-    compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+  compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
-    integTestImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-    integTestImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-    integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    integTestImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
-    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    integTestImplementation("junit:junit:4.11")
-    integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+  integTestImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+  integTestImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
+  integTestImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  integTestImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  integTestImplementation("junit:junit:4.11")
+  integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 
-    // For test purposes, force newer client as the tests are modifying classpath and we get errors which
-    // we do not get during normal production usage
-    integTestImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
-    integTestImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
-    integTestImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
+  // For test purposes, force newer client as the tests are modifying classpath and we get errors which
+  // we do not get during normal production usage
+  integTestImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
+  integTestImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
+  integTestImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
 }
 
 defineStandardPublication().call()

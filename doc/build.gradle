@@ -3,20 +3,20 @@ description = "Sparkling Water Documentation"
 import static groovy.io.FileType.FILES
 
 task cleanDoc(type: Delete) {
-    delete getBuildDir()
+  delete getBuildDir()
 }
 
 task createVersionFile {
-    doLast {
-        if (!buildDir.exists()) {
-            buildDir.mkdir()
-        }
-        file("${buildDir}/site/.doctrees").mkdirs()
-
-        File version_file = new File(buildDir, "project_version")
-        def version_txt = version
-        version_file.write(version_txt)
+  doLast {
+    if (!buildDir.exists()) {
+      buildDir.mkdir()
     }
+    file("${buildDir}/site/.doctrees").mkdirs()
+
+    File version_file = new File(buildDir, "project_version")
+    def version_txt = version
+    version_file.write(version_txt)
+  }
 }
 
 /**
@@ -24,66 +24,66 @@ task createVersionFile {
  * the generated files manually
  */
 task substitute() {
-    doLast {
-        def siteDir = "${buildDir}/site"
+  doLast {
+    def siteDir = "${buildDir}/site"
 
-        new File(siteDir).eachFileRecurse(FILES) {
-            if (it.name.endsWith('.html')) {
-                def contents = file(it).getText('UTF-8')
-                contents = contents
-                        .replaceAll("SUBST_SCALA_BASE_VERSION", scalaBaseVersion)
-                        .replaceAll("SUBST_SW_VERSION", version)
-                        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
-                        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                        .replaceAll("SUBST_H2O_VERSION", h2oVersion)
-                        .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
-                        .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
-                        .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
-                        .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-                        .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
-                file(it).write(contents, 'UTF-8')
-            }
-        }
+    new File(siteDir).eachFileRecurse(FILES) {
+      if (it.name.endsWith('.html')) {
+        def contents = file(it).getText('UTF-8')
+        contents = contents
+          .replaceAll("SUBST_SCALA_BASE_VERSION", scalaBaseVersion)
+          .replaceAll("SUBST_SW_VERSION", version)
+          .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+          .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+          .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+          .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
+          .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
+          .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
+          .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+          .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
+        file(it).write(contents, 'UTF-8')
+      }
     }
+  }
 }
 
 sphinx {
-    environments = ["PYTHONWARNINGS" : ""]
+  environments = ["PYTHONWARNINGS" : ""]
 }
 
 task docJar(type: Jar) {
-    from "${buildDir}"
-    archiveClassifier = "site"
-    include "site/**"
-    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+  from "${buildDir}"
+  archiveClassifier = "site"
+  include "site/**"
+  archiveBaseName = "${project.name}_${scalaBaseVersion}"
 }
 
 task sourcesDocJar(type: Jar) {
-    archiveClassifier = "site-sources"
-    from "${projectDir}"
-    include "src/**"
-    archiveBaseName = "${project.name}_${scalaBaseVersion}"
+  archiveClassifier = "site-sources"
+  from "${projectDir}"
+  include "src/**"
+  archiveBaseName = "${project.name}_${scalaBaseVersion}"
 
 
-    from "${projectDir}"
-    include "CHANGELOG.rst"
+  from "${projectDir}"
+  include "CHANGELOG.rst"
 }
 
 task openSite {
-    doFirst {
-        def sitePath = "file://" + project.buildDir.toString() + "/site/index.html"
-        if (file(sitePath).exists()) {
-            java.awt.Desktop.desktop.browse sitePath.toURI()
-        } else {
-            throw new IllegalArgumentException("Documentation is not available, please build it first by running ./gradlew site")
-        }
+  doFirst {
+    def sitePath = "file://" + project.buildDir.toString() + "/site/index.html"
+    if (file(sitePath).exists()) {
+      java.awt.Desktop.desktop.browse sitePath.toURI()
+    } else {
+      throw new IllegalArgumentException("Documentation is not available, please build it first by running ./gradlew site")
     }
+  }
 }
 
 
 artifacts {
-    publishArchives docJar
-    publishArchives sourcesDocJar
+  publishArchives docJar
+  publishArchives sourcesDocJar
 }
 
 publish.dependsOn site

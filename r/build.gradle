@@ -3,109 +3,99 @@ apply from: "$rootDir/gradle/utils.gradle"
 description = "RSparkling - Sparkling-Water R Package"
 
 configurations {
-    sparklingWaterAssemblyJar
+  sparklingWaterAssemblyJar
 }
 
 dependencies {
-    sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
 }
 
 ext {
-    contribDir = file("${project.buildDir}/repo/src/contrib")
+  contribDir = file("${project.buildDir}/repo/src/contrib")
 }
 
 def copyRSetup() {
-    file(project.buildDir).mkdir()
-    copy {
-        from file("src")
-        into new File(project.buildDir, "src")
+  file(project.buildDir).mkdir()
+  copy {
+    from file("src")
+    into new File(project.buildDir, "src")
 
-        filter {
-            it.replaceAll("SUBST_SW_VERSION", version)
-        }
-        exclude("R")
+    filter {
+      it.replaceAll("SUBST_SW_VERSION", version)
     }
+    exclude("R")
+  }
 
-    copy {
-        from fileTree("src/R").include("**/*.R").files
-        into file("${project.buildDir}/src/R")
-    }
+  copy {
+    from fileTree("src/R").include("**/*.R").files
+    into file("${project.buildDir}/src/R")
+  }
 
-    // Copy sparkling water assembly jar
-    def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
-    copy {
-        from fatJar
-        into file("${project.buildDir}/src/inst/java")
-        rename ".*", "sparkling_water_assembly.jar"
-    }
-    createBuildInfoFile("${project.buildDir}/src/inst/")
+  // Copy sparkling water assembly jar
+  def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
+  copy {
+    from fatJar
+    into file("${project.buildDir}/src/inst/java")
+    rename ".*", "sparkling_water_assembly.jar"
+  }
+  createBuildInfoFile("${project.buildDir}/src/inst/")
 }
 
 def createBuildInfoFile(String basePath) {
-    def f = file("${basePath}/buildinfo.txt")
-    f.write("${h2oVersion}\n")
-    f.append("${h2oMajorName}\n")
-    f.append("${h2oBuild}\n")
-    f.append("${version}")
+  def f = file("${basePath}/buildinfo.txt")
+  f.write("${h2oVersion}\n")
+  f.append("${h2oMajorName}\n")
+  f.append("${h2oBuild}\n")
+  f.append("${version}")
 }
 
 task distR(type: Exec, dependsOn: configurations.sparklingWaterAssemblyJar) {
-    doFirst {
-        copyRSetup()
-    }
-    workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
+  doFirst {
+    copyRSetup()
+  }
+  workingDir project.buildDir
+  commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
 }
 
 task cleanR(type: Delete) {
-    delete getBuildDir()
+  delete getBuildDir()
 }
 
 
 task test(type: Exec, dependsOn: distR) {
-    environment["spark.version"] = sparkVersion
-    environment["SPARK_HOME"] = sparkHome
-    environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
+  environment["spark.version"] = sparkVersion
+  environment["SPARK_HOME"] = sparkHome
+  environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
-    workingDir file("src/tests")
-    commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
+  workingDir file("src/tests")
+  commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
 }
 
 task installH2ORPackage(type: Exec) {
-    def majorName = (h2oMajorName == "master") ? "master" : "rel-${h2oMajorName}"
-    commandLine getOsSpecificCommandLine([
-        "R",
-        "-e",
-        "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"
-    ])
+  def majorName = (h2oMajorName == "master") ? "master" : "rel-${h2oMajorName}"
+  def installCmd = "install.packages(\"h2o\", type = \"source\", repos = \"http://h2o-release.s3.amazonaws.com/h2o/${majorName}/${h2oBuild}/R\")"
+  commandLine getOsSpecificCommandLine(["R", "-e", installCmd])
 }
 
 task installRSparklingPackage(type: Exec, dependsOn: distR) {
-    workingDir project.buildDir
-    commandLine getOsSpecificCommandLine([
-        "R",
-        "-e",
-        "install.packages(\"rsparkling_${version}.tar.gz\", type=\"source\", repos=NULL)"
-    ])
+  workingDir project.buildDir
+  def installCmd =  "install.packages(\"rsparkling_${version}.tar.gz\", type=\"source\", repos=NULL)"
+  commandLine getOsSpecificCommandLine(["R", "-e", installCmd])
 }
 
 task prepareRepoDir(dependsOn: distR) {
-    doLast {
-        contribDir.mkdirs()
-        copy {
-            from("${project.buildDir}/rsparkling_${version}.tar.gz")
-            into "$contribDir"
-        }
+  doLast {
+    contribDir.mkdirs()
+    copy {
+      from("${project.buildDir}/rsparkling_${version}.tar.gz")
+      into "$contribDir"
     }
+  }
 }
 
 task createCranRepo(type: Exec, dependsOn: prepareRepoDir) {
-    workingDir contribDir
-    commandLine getOsSpecificCommandLine([
-        "R",
-        "-e",
-        "tools::write_PACKAGES()"
-    ])
+  workingDir contribDir
+  commandLine getOsSpecificCommandLine(["R", "-e", "tools::write_PACKAGES()"])
 }
 
 clean.dependsOn cleanR

@@ -6,119 +6,106 @@
 // The build script settings to fetch plugins and put them on
 // classpath
 buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        gradlePluginPortal()
-    }
+  repositories {
+    mavenCentral()
+    jcenter()
+    gradlePluginPortal()
+  }
 
-    dependencies {
-        classpath "com.bmuschko:gradle-docker-plugin:6.4.0"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
-        classpath 'net.researchgate:gradle-release:2.6.0'
-        classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.7.2'
-        classpath 'ru.vyarus:gradle-use-python-plugin:2.1.0'
-        classpath 'com.github.jk1:gradle-license-report:1.13'
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.28.0"
-    }
+  dependencies {
+    classpath "com.bmuschko:gradle-docker-plugin:6.4.0"
+    classpath 'com.github.jengelman.gradle.plugins:shadow:5.2.0'
+    classpath 'net.researchgate:gradle-release:2.6.0'
+    classpath 'kr.motd.gradle:sphinx-gradle-plugin:2.7.2'
+    classpath 'ru.vyarus:gradle-use-python-plugin:2.1.0'
+    classpath 'com.github.jk1:gradle-license-report:1.13'
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.28.0"
+  }
 }
 
 apply plugin: 'base'
 
 // For multiproject setup we have to apply release plugin here (we share same release number cross all modules)
 if (project.hasProperty("doRelease")) {
-    apply from: 'gradle/release.gradle'
+  apply from: 'gradle/release.gradle'
 }
 
 //
 // Common configuration
 //
 ext {
-    // Published projects
-    publishedProjects = [
-        project(':sparkling-water-repl'),
-        project(':sparkling-water-core'),
-        project(':sparkling-water-examples'),
-        project(':sparkling-water-ml'),
-        project(':sparkling-water-package'),
-        project(":sparkling-water-doc"),
-        project(':sparkling-water-utils'),
-        project(':sparkling-water-scoring'),
-        project(':sparkling-water-extensions')
-    ]
-    // Projects with integration tests
-    integTestProjects = [
-        project(':sparkling-water-core'),
-        project(':sparkling-water-examples')
-    ]
+  // Published projects
+  publishedProjects = [
+    project(':sparkling-water-repl'),
+    project(':sparkling-water-core'),
+    project(':sparkling-water-examples'),
+    project(':sparkling-water-ml'),
+    project(':sparkling-water-package'),
+    project(":sparkling-water-doc"),
+    project(':sparkling-water-utils'),
+    project(':sparkling-water-scoring'),
+    project(':sparkling-water-extensions')
+  ]
+  // Projects with integration tests
+  integTestProjects = [project(':sparkling-water-core'), project(':sparkling-water-examples')]
 
-    // Projects with benchmarks
-    benchProjects = [
-        project(':sparkling-water-core'),
-        project(':sparkling-water-benchmarks')
-    ]
+  // Projects with benchmarks
+  benchProjects = [project(':sparkling-water-core'), project(':sparkling-water-benchmarks')]
 
-    // Scala projects
-    scalaProjects = [
-        project(':sparkling-water-repl'),
-        project(':sparkling-water-core'),
-        project(':sparkling-water-examples'),
-        project(':sparkling-water-ml'),
-        project(':sparkling-water-app-streaming'),
-        project(':sparkling-water-package'),
-        project(':sparkling-water-benchmarks'),
-        project(':sparkling-water-macros'),
-        project(':sparkling-water-utils'),
-        project(':sparkling-water-scoring'),
-        project(':sparkling-water-extensions')
-    ]
-    pythonProjects = [
-        project(':sparkling-water-py')
-    ]
-    rProjects = [
-        project(':sparkling-water-r'),
-        project(':sparkling-water-r-cran')
-    ]
-    docProjects = [
-        project(':sparkling-water-doc')
-    ]
+  // Scala projects
+  scalaProjects = [
+    project(':sparkling-water-repl'),
+    project(':sparkling-water-core'),
+    project(':sparkling-water-examples'),
+    project(':sparkling-water-ml'),
+    project(':sparkling-water-app-streaming'),
+    project(':sparkling-water-package'),
+    project(':sparkling-water-benchmarks'),
+    project(':sparkling-water-macros'),
+    project(':sparkling-water-utils'),
+    project(':sparkling-water-scoring'),
+    project(':sparkling-water-extensions')
+  ]
+  pythonProjects = [project(':sparkling-water-py')]
+  rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
+  docProjects = [project(':sparkling-water-doc')]
 
-    defaultScalaBaseVersion = '2.11'
-    supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
-    scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
+  defaultScalaBaseVersion = '2.11'
+  supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
+  scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
 }
 
 def versionSpecificProps = new Properties()
 file("$rootDir/gradle-spark${spark}.properties").withInputStream { versionSpecificProps.load(it) }
 
 def loadVersionSpecificProp(propName, versionSpecificProps) {
-    // first check if the property was specified/override via -P
-    if (project.hasProperty(propName)) {
-        return project.properties.get(propName)
-    } else {
-        return versionSpecificProps.getProperty(propName)
-    }
+  // first check if the property was specified/override via -P
+  if (project.hasProperty(propName)) {
+    return project.properties.get(propName)
+  } else {
+    return versionSpecificProps.getProperty(propName)
+  }
 }
 
 def loadVersion(versionSpecificProps) {
-    def version = project.properties.get("version")
-    def sparkMajorVersion = getSparkMajorVersion(versionSpecificProps)
-    if (version.endsWith("-${sparkMajorVersion}")) {
-        return version
-    } else {
-        supportedSparkVersions.split(" ").each { majorVersion ->
-            if (version.endsWith("-${majorVersion}")) {
-                throw new RuntimeException("You are specifying version suffix for Spark ${majorVersion}, but build is for Spark ${sparkMajorVersion} ")
-            }
-        }
-        return "${version}-${sparkMajorVersion}"
+  def version = project.properties.get("version")
+  def sparkMajorVersion = getSparkMajorVersion(versionSpecificProps)
+  if (version.endsWith("-${sparkMajorVersion}")) {
+    return version
+  } else {
+    supportedSparkVersions.split(" ").each { majorVersion ->
+      if (version.endsWith("-${majorVersion}")) {
+        throw new RuntimeException("You are specifying version suffix for Spark ${majorVersion}, but build is for Spark ${sparkMajorVersion} ")
+      }
     }
+    return "${version}-${sparkMajorVersion}"
+  }
 }
 
 
 def getSparkMajorVersion(versionSpecificProps) {
-    def sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
-    return sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
+  def sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
+  return sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
 }
 //
 // For all projects (this and all subprojects) specify common properties and tasks
@@ -126,148 +113,131 @@ def getSparkMajorVersion(versionSpecificProps) {
 def loadedVersion = loadVersion(versionSpecificProps).replace("-SNAPSHOT", "")
 
 configure(allprojects) { project ->
-    apply plugin: 'idea'
-    apply plugin: 'eclipse'
-    apply from: "$rootDir/gradle/artifacts.gradle"
-    apply plugin: "com.diffplug.gradle.spotless"
-    // Version of main components
-    ext {
-        scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
-        scalaVersion = supportedScalaBaseVersions[scalaBaseVersion]
-        scalaTestVersion = scalaTestVersions[scalaBaseVersion]
-        // h2oBuild property is defined in gradle.properties
-        h2oVersion = "$h2oMajorVersion.$h2oBuild"
-        sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
-        if (!sparkVersion.startsWith(spark)) {
-            throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
-            " with different major Apark versions.")
-        }
-        sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
-        junitVersion = '4.11'
-        minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
-        supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
-        unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
+  apply from: "$rootDir/gradle/artifacts.gradle"
+  apply plugin: "com.diffplug.gradle.spotless"
+  // Version of main components
+  ext {
+    scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
+    scalaVersion = supportedScalaBaseVersions[scalaBaseVersion]
+    scalaTestVersion = scalaTestVersions[scalaBaseVersion]
+    // h2oBuild property is defined in gradle.properties
+    h2oVersion = "$h2oMajorVersion.$h2oBuild"
+    sparkVersion = loadVersionSpecificProp("sparkVersion", versionSpecificProps)
+    if (!sparkVersion.startsWith(spark)) {
+      throw new IllegalArgumentException("Inconsistent Spark configuration. Both params spark and sparkVersion specified, but" +
+      " with different major Apark versions.")
     }
-    // All project inherits the same versioning number
-    version = loadedVersion
-    spotless {
-        groovyGradle {
-            greclipse()
-            indentWithSpaces(4)
-            endWithNewline()
-        }
+    sparkMajorVersion = sparkVersion.count(".") == 1 ? sparkVersion : sparkVersion.substring(0, sparkVersion.lastIndexOf('.'))
+    junitVersion = '4.11'
+    minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
+    supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
+    unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+  }
+  // All project inherits the same versioning number
+  version = loadedVersion
+  spotless {
+    groovyGradle {
+      greclipse().configFile("$rootDir/greclipse.properties")
     }
+  }
 }
 
 //
 // Common configuration for all subprojects
 //
 configure(subprojects) { project ->
-    repositories {
-        // Should be enabled only in development mode
-        if (project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
-            mavenLocal()
-        }
-
-        mavenCentral()
-        jcenter()
-
-        // Public Sonatype repository
-        maven {
-            url "https://oss.sonatype.org/content/repositories/releases/"
-        }
-
-        // Snapshot repository of H2O builds
-        maven {
-            url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
-        }
-
-        if (sparkVersion.endsWith("-SNAPSHOT")) {
-            maven {
-                url "https://repository.apache.org/content/repositories/snapshots/"
-            }
-        }
+  repositories {
+    // Should be enabled only in development mode
+    if (project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
+      mavenLocal()
     }
 
-    if (project in scalaProjects) {
-        apply from: "$rootDir/gradle/scala.gradle"
+    mavenCentral()
+    jcenter()
+
+    // Public Sonatype repository
+    maven {
+      url "https://oss.sonatype.org/content/repositories/releases/"
     }
 
-    if (project in pythonProjects) {
-        apply from: "$rootDir/gradle/python.gradle"
+    // Snapshot repository of H2O builds
+    maven {
+      url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
     }
 
-    if (project in rProjects) {
-        apply from: "$rootDir/gradle/r.gradle"
+    if (sparkVersion.endsWith("-SNAPSHOT")) {
+      maven {
+        url "https://repository.apache.org/content/repositories/snapshots/"
+      }
     }
+  }
 
-    // All subprojects needs Spark support
-    apply from: "$rootDir/gradle/spark.gradle"
+  if (project in scalaProjects) {
+    apply from: "$rootDir/gradle/scala.gradle"
+  }
 
-    if (project in docProjects) {
-        apply plugin: 'java'
-        apply plugin: 'kr.motd.sphinx'
+  if (project in pythonProjects) {
+    apply from: "$rootDir/gradle/python.gradle"
+  }
 
-        configurations {
-            publishArchives
-        }
+  if (project in rProjects) {
+    apply from: "$rootDir/gradle/r.gradle"
+  }
+
+  // All subprojects needs Spark support
+  apply from: "$rootDir/gradle/spark.gradle"
+
+  if (project in docProjects) {
+    apply plugin: 'java'
+    apply plugin: 'kr.motd.sphinx'
+
+    configurations {
+      publishArchives
     }
+  }
 
-    // Publish artifacts
-    if (project in publishedProjects) {
-        apply from: "$rootDir/gradle/publish.gradle"
-    }
+  // Publish artifacts
+  if (project in publishedProjects) {
+    apply from: "$rootDir/gradle/publish.gradle"
+  }
 
-    if (project in integTestProjects) {
-        apply from: "$rootDir/gradle/itest.gradle"
-    }
+  if (project in integTestProjects) {
+    apply from: "$rootDir/gradle/itest.gradle"
+  }
 
-    if (project in benchProjects) {
-        apply from: "$rootDir/gradle/bench.gradle"
-    }
+  if (project in benchProjects) {
+    apply from: "$rootDir/gradle/bench.gradle"
+  }
 }
 
 clean.doFirst {
-    delete file("build/")
-    delete file("h2ologs/")
-    delete file("null/")
-    delete file("metastore_db/")
+  delete file("build/")
+  delete file("h2ologs/")
+  delete file("null/")
+  delete file("metastore_db/")
 }
 
 def createStagingId(def username, def password) {
-    def proc = [
-        './createStagingId.sh',
-        username,
-        password
-    ].execute([], file("${rootDir.toString()}/gradle/publish"))
-    return proc.text
+  def proc = ['./createStagingId.sh', username, password].execute([], file("${rootDir.toString()}/gradle/publish"))
+  return proc.text
 }
 
 def uploadFiles(def username, def password, def repoDir, def stagingId) {
-    def proc = [
-        './uploadToNexus.sh',
-        username,
-        password,
-        repoDir,
-        stagingId
-    ].execute([], file("${rootDir.toString()}/gradle/publish"))
-    proc.waitFor()
+  def proc = ['./uploadToNexus.sh', username, password, repoDir, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  proc.waitFor()
 }
 
 def closeBucket(def username, def password, def stagingId) {
-    def proc = [
-        './closeBucket.sh',
-        username,
-        password,
-        stagingId
-    ].execute([], file("${rootDir.toString()}/gradle/publish"))
-    proc.waitFor()
+  def proc = ['./closeBucket.sh', username, password, stagingId].execute([], file("${rootDir.toString()}/gradle/publish"))
+  proc.waitFor()
 }
 
 task publishToNexus {
-    doLast {
-        def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
-        uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
-        closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
-    }
+  doLast {
+    def stagingId = createStagingId(project.findProperty('nexusUsername'), project.findProperty('nexusPassword')).replace('\n', '')
+    uploadFiles(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), "${rootDir}/dist/build/dist/maven/repo", stagingId)
+    closeBucket(project.findProperty('nexusUsername'), project.findProperty('nexusPassword'), stagingId)
+  }
 }

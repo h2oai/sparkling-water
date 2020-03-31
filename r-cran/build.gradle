@@ -3,23 +3,23 @@ apply from: "$rootDir/gradle/utils.gradle"
 description = "RSparkling - CRAN Dispatch"
 
 def copyRSetup() {
-    file(project.buildDir).mkdir()
-    copy {
-        from file("src")
-        into new File(project.buildDir, "src")
-    }
+  file(project.buildDir).mkdir()
+  copy {
+    from file("src")
+    into new File(project.buildDir, "src")
+  }
 }
 
 task distR(type: Exec) {
-    doFirst {
-        copyRSetup()
-    }
-    workingDir project.buildDir
-    commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
+  doFirst {
+    copyRSetup()
+  }
+  workingDir project.buildDir
+  commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
 }
 
 task cleanR(type: Delete) {
-    delete getBuildDir()
+  delete getBuildDir()
 }
 
 clean.dependsOn cleanR
