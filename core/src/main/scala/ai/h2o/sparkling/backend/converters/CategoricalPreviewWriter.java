@@ -39,6 +39,7 @@ class CategoricalPreviewWriter extends PreviewParseWriter {
         Kryo kryo = new Kryo();
         kryo.register(CategoricalPreviewWriter.class);
         kryo.register(IcedHashMap.class);
+        kryo.register(IcedHashMap[].class);
         kryo.register(ParseWriter.ParseErr.class);
         kryo.register(ParseWriter.ParseErr[].class);
         kryo.register(ParseWriter.UnsupportedTypeOverride.class);
