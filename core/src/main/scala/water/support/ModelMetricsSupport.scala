@@ -28,8 +28,6 @@ import water.fvec.Frame
 @Deprecated
 trait ModelMetricsSupport extends Logging {
 
-  type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
-
   /** Helper class to have nice API. The purpose of this class is to fetch model metrics from the specified model */
   @Deprecated
   class ModelMetricsExtractor[T <: ModelMetrics] {

@@ -23,7 +23,6 @@ import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OBaseModel
 import water.H2O
 import water.persist.Persist
 
@@ -32,6 +31,8 @@ import water.persist.Persist
   */
 @Deprecated
 trait ModelSerializationSupport extends Logging {
+
+  type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
 
   /**
     * Export binary model to specified directory

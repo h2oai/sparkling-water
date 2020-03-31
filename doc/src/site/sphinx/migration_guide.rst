@@ -47,6 +47,40 @@ From 3.30 to 3.32
   than 0, validation metrics if validation frame has been specified ( splitRatio was set and lower than 1 ) and nfolds was 0
   and training metrics otherwise ( splitRatio is 1 and nfolds is 0).
 
+- The whole trait ``ModelSerializationSupport`` in Scala is removed. The MOJO is a first class citizen in Sparkling Water and
+  most code works with our Spark MOJO wrapper. Please use the following approaches to migrate from previous methods
+  in the model serialization support:
+
+    To crete Spark MOJO wrapper in Sparkling Water, you can load it from H2O-3 as:
+
+    .. code-block:: scala
+
+        val mojoModel = H2OMOJOModel.createFromMojo(path)
+
+    or train model using Sparkling Water API, such as
+
+    .. code-block:: scala
+
+        val gbm = H2OGBM().setLabelCol("label")
+        val mojoModel = gbm.fit(data)
+
+    In this case the ``mojoModel`` is Spark wrapper around the H2O's mojo providing Spark friendly API. This also
+    means that the such model can be embedded into Spark pipelines without any additional work.
+
+    To export it as, please call:
+
+        .. code-block:: scala
+
+            mojoModel.write.save("path")
+
+    The advantage is that this variant is H2O-version independent and when such model is loaded, H2O run-time is not required.
+
+    You can load the exported model from Sparkling Water as:
+
+    .. code-block:: scala
+
+        val mojoModel = H2OMOJOModel.read.load("path")
+
 
 From 3.28.1 to 3.30
 -------------------
