@@ -9,54 +9,55 @@ apply from: "$rootDir/gradle/utils.gradle"
  * the generated files manually
  */
 task substituteAWS() {
-    doLast {
-        def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version}.sh"
-        def contents = file(aws_script).getText('UTF-8')
+  doLast {
+    def aws_script = "${project.buildDir.toString()}/aws/install_sparkling_water_${version}.sh"
+    def contents = file(aws_script).getText('UTF-8')
 
-        contents = contents
-                .replaceAll("SUBST_SW_VERSION", version.toString())
-                .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                .replaceAll("SUBST_S3_PATH", getS3Path())
+    contents = contents
+      .replaceAll("SUBST_SW_VERSION", version.toString())
+      .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+      .replaceAll("SUBST_S3_PATH", getS3Path())
 
-        file(aws_script).write(contents, 'UTF-8')
-    }
+    file(aws_script).write(contents, 'UTF-8')
+  }
 }
 
 task substituteTerraform() {
-    doLast {
-        def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
-        def tfScripts = [
-            "${tfBaseDir}/variables.tf",
-            "${tfBaseDir}/modules/emr_deployment/variables.tf",
-            "${tfBaseDir}/modules/emr_deployment/main.tf"]
-        tfScripts.each { path ->
-            def contents = file(path).getText('UTF-8')
-            contents = contents
-                    .replaceAll("SUBST_SW_VERSION", version.toString())
-                    .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-                    .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
-                    .replaceAll("SUBST_S3_PATH", getS3Path())
+  doLast {
+    def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
+    def tfScripts = [
+      "${tfBaseDir}/variables.tf",
+      "${tfBaseDir}/modules/emr_deployment/variables.tf",
+      "${tfBaseDir}/modules/emr_deployment/main.tf"
+    ]
+    tfScripts.each { path ->
+      def contents = file(path).getText('UTF-8')
+      contents = contents
+        .replaceAll("SUBST_SW_VERSION", version.toString())
+        .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_S3_PATH", getS3Path())
 
 
-            file(path).write(contents, 'UTF-8')
-        }
+      file(path).write(contents, 'UTF-8')
     }
+  }
 }
 
 task cleanTemplates(type: Delete) {
-    delete getBuildDir()
+  delete getBuildDir()
 }
 
 task copyAWS(type: Copy) {
-    from 'src/aws'
-    into "build/aws"
-    rename "install_sparkling_water.sh", "install_sparkling_water_${version}.sh"
+  from 'src/aws'
+  into "build/aws"
+  rename "install_sparkling_water.sh", "install_sparkling_water_${version}.sh"
 }
 
 task copyTerraform(type: Copy) {
-    from 'src/terraform'
-    include "**/*.tf"
-    into "build/terraform"
+  from 'src/terraform'
+  include "**/*.tf"
+  into "build/terraform"
 }
 
 copyTerraform.dependsOn cleanTemplates

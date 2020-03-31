@@ -4,131 +4,132 @@ apply from: "$rootDir/gradle/utils.gradle"
 apply plugin: 'java-library'
 
 configurations {
-    sparklingWaterAssemblyJar
+  sparklingWaterAssemblyJar
 }
 
 dependencies {
-    sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
+  sparklingWaterAssemblyJar(project(path: ':sparkling-water-assembly', configuration: 'shadow'))
 
-    api(project(":sparkling-water-ml"))
-    api(project(":sparkling-water-core"))
+  api(project(":sparkling-water-ml"))
+  api(project(":sparkling-water-core"))
 
-    compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 }
 
 task cleanTerraform(type: Delete) {
-    delete "build/terraform"
+  delete "build/terraform"
 }
 
 task copyTerraform(dependsOn: cleanTerraform) {
-    doLast {
-        copy {
-            from 'src/main/terraform'
-            include "**/*.tf"
-            into "build/terraform"
-        }
-        copy {
-            from '../templates/src/terraform/aws/modules'
-            include "emr_security/*.tf"
-            into "build/terraform/aws/modules"
-        }
+  doLast {
+    copy {
+      from 'src/main/terraform'
+      include "**/*.tf"
+      into "build/terraform"
     }
+    copy {
+      from '../templates/src/terraform/aws/modules'
+      include "emr_security/*.tf"
+      into "build/terraform/aws/modules"
+    }
+  }
 }
 
 task substituteTerraform(dependsOn: copyTerraform) {
-    doLast {
-        def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
-        def tfScripts = [
-            "${tfBaseDir}/variables.tf",
-            "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
-            "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"]
-        tfScripts.each { path ->
-            def contents = file(path).getText('UTF-8')
-            contents = contents
-                .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
-                .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
-                .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
-                .replaceAll("SUBST_H2O_VERSION", h2oVersion)
-                .replaceAll("SUBST_H2O_BUILD", h2oBuild)
-                .replaceAll("SUBST_SW_VERSION", version.toString())
-                .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
-                .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
-            
-            file(path).write(contents, 'UTF-8')
-        }
+  doLast {
+    def tfBaseDir = "${project.buildDir.toString()}/terraform/aws/"
+    def tfScripts = [
+      "${tfBaseDir}/variables.tf",
+      "${tfBaseDir}/modules/emr_benchmarks_deployment/variables.tf",
+      "${tfBaseDir}/modules/emr_benchmarks_deployment/main.tf"
+    ]
+    tfScripts.each { path ->
+      def contents = file(path).getText('UTF-8')
+      contents = contents
+        .replaceAll("SUBST_PACKAGE_FILE", "${configurations.sparklingWaterAssemblyJar.singleFile}")
+        .replaceAll("SUBST_BENCHMARKS_FILE", "$buildDir/libs/sparkling-water-benchmarks_$scalaBaseVersion-${version}.jar")
+        .replaceAll("SUBST_H2O_VERSION_NAME", h2oMajorName)
+        .replaceAll("SUBST_H2O_VERSION", h2oVersion)
+        .replaceAll("SUBST_H2O_BUILD", h2oBuild)
+        .replaceAll("SUBST_SW_VERSION", version.toString())
+        .replaceAll("SUBST_SCALA_VERSION", scalaBaseVersion)
+        .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
+
+      file(path).write(contents, 'UTF-8')
     }
+  }
 }
 
 task cleanOutput(type: Delete) {
-    delete "output"
+  delete "output"
 }
 
 task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
-    doLast {
-        exec {
-            def accessKey = project.property("aws_access_key")
-            def secretKey = project.property("aws_secret_key")
-            def publicKey = project.property("aws_ssh_public_key")
+  doLast {
+    exec {
+      def accessKey = project.property("aws_access_key")
+      def secretKey = project.property("aws_secret_key")
+      def publicKey = project.property("aws_ssh_public_key")
 
-            environment("aws_access_key", accessKey)
-            environment("aws_secret_key", secretKey)
-            environment("aws_ssh_public_key", publicKey)
-            environment("datasets", "datasets.json")
+      environment("aws_access_key", accessKey)
+      environment("aws_secret_key", secretKey)
+      environment("aws_ssh_public_key", publicKey)
+      environment("datasets", "datasets.json")
 
-            commandLine "./run_benchmarks.sh"
-        }
+      commandLine "./run_benchmarks.sh"
     }
+  }
 }
 
 task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
-    doLast {
-        exec {
-            def accessKey = project.property("aws_access_key")
-            def secretKey = project.property("aws_secret_key")
-            def publicKey = project.property("aws_ssh_public_key")
+  doLast {
+    exec {
+      def accessKey = project.property("aws_access_key")
+      def secretKey = project.property("aws_secret_key")
+      def publicKey = project.property("aws_ssh_public_key")
 
-            environment("aws_access_key", accessKey)
-            environment("aws_secret_key", secretKey)
-            environment("aws_ssh_public_key", publicKey)
-            environment("aws_instance_type", "m5.4xlarge")
-            environment("aws_core_instance_count", "10")
-            environment("datasets", "bigDatasets.json")
-            environment("other_arguments", "-b DataFrameToH2OFrameConversionBenchmark")
-            environment("driver_memory_gb", "8")
-            environment("executor_memory_gb", "32")
-            environment("run_yarn_internal", "false")
-            environment("run_yarn_external", "true")
-            environment("run_local_internal", "false")
+      environment("aws_access_key", accessKey)
+      environment("aws_secret_key", secretKey)
+      environment("aws_ssh_public_key", publicKey)
+      environment("aws_instance_type", "m5.4xlarge")
+      environment("aws_core_instance_count", "10")
+      environment("datasets", "bigDatasets.json")
+      environment("other_arguments", "-b DataFrameToH2OFrameConversionBenchmark")
+      environment("driver_memory_gb", "8")
+      environment("executor_memory_gb", "32")
+      environment("run_yarn_internal", "false")
+      environment("run_yarn_external", "true")
+      environment("run_local_internal", "false")
 
-            commandLine "./run_benchmarks.sh"
-        }
+      commandLine "./run_benchmarks.sh"
     }
+  }
 }
 
 task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substituteTerraform, cleanOutput]) {
-    doLast {
-        exec {
-            def accessKey = project.property("aws_access_key")
-            def secretKey = project.property("aws_secret_key")
-            def publicKey = project.property("aws_ssh_public_key")
+  doLast {
+    exec {
+      def accessKey = project.property("aws_access_key")
+      def secretKey = project.property("aws_secret_key")
+      def publicKey = project.property("aws_ssh_public_key")
 
-            environment("aws_access_key", accessKey)
-            environment("aws_secret_key", secretKey)
-            environment("aws_ssh_public_key", publicKey)
-            environment("aws_instance_type", "m5.4xlarge")
-            environment("aws_core_instance_count", "10")
-            environment("datasets", "bigDatasets.json")
-            environment("other_arguments", "-b H2OFrameToDataFrameConversionBenchmark")
-            environment("driver_memory_gb", "8")
-            environment("executor_memory_gb", "32")
-            environment("run_yarn_internal", "false")
-            environment("run_yarn_external", "true")
-            environment("run_local_internal", "false")
+      environment("aws_access_key", accessKey)
+      environment("aws_secret_key", secretKey)
+      environment("aws_ssh_public_key", publicKey)
+      environment("aws_instance_type", "m5.4xlarge")
+      environment("aws_core_instance_count", "10")
+      environment("datasets", "bigDatasets.json")
+      environment("other_arguments", "-b H2OFrameToDataFrameConversionBenchmark")
+      environment("driver_memory_gb", "8")
+      environment("executor_memory_gb", "32")
+      environment("run_yarn_internal", "false")
+      environment("run_yarn_external", "true")
+      environment("run_local_internal", "false")
 
-            commandLine "./run_benchmarks.sh"
-        }
+      commandLine "./run_benchmarks.sh"
     }
+  }
 }
 
 substituteTerraform.dependsOn build

@@ -1,6 +1,6 @@
 description = "Sparkling Water Pipelining"
 
-// Support local launch of application 
+// Support local launch of application
 apply plugin: 'application'
 mainClassName = "ai.h2o.demo.PipelineDemo"
 // Disable distribution tasks
@@ -18,4 +18,3 @@ dependencies {
   compileOnly("org.apache.spark:spark-streaming_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 }
-

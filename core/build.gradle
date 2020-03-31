@@ -6,141 +6,141 @@ apply from: "$rootDir/gradle/sparkTest.gradle"
 project.ext.cssResources = project.file("flow-css")
 
 sourceSets {
-    main {
-        scala {
-            srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
-        }
-        resources {
-            srcDirs += getSparkSpecificResourceDir(sparkMajorVersion) + ["${projectDir}/flow-css"]
-            srcDirs += "$rootDir/assembly-extensions/build/embedded"
-        }
+  main {
+    scala {
+      srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
     }
+    resources {
+      srcDirs += getSparkSpecificResourceDir(sparkMajorVersion) + ["${projectDir}/flow-css"]
+      srcDirs += "$rootDir/assembly-extensions/build/embedded"
+    }
+  }
 }
 
 jar {
-    duplicatesStrategy = 'include'
-    eachFile { f ->
-        if (new File(cssResources, f.file.name).exists()) {
-            f.path = "www/flow/css/$f.name"
-        }
+  duplicatesStrategy = 'include'
+  eachFile { f ->
+    if (new File(cssResources, f.file.name).exists()) {
+      f.path = "www/flow/css/$f.name"
     }
+  }
 }
 
 dependencies {
-    api(project(':sparkling-water-utils'))
-    api(project(':sparkling-water-extensions'))
-    api(project(':sparkling-water-repl'))
-    api("ai.h2o:h2o-ext-jython-cfunc:${h2oVersion}")
-    api("ai.h2o:h2o-genmodel:${h2oVersion}")
-    api("ai.h2o:h2o-security:${h2oVersion}")
-    api("ai.h2o:h2o-core:${h2oVersion}") {
-        //
-        // Exclude all dependencies provided by Spark environment already
-        // The motivation is to catch error at compile time
-        exclude(group: "net.java.dev.jets3t", module: "jets3t")
-        exclude(group: "commons-collections", module: "commons-collections")
-    }
-    api("ai.h2o:h2o-security:${h2oVersion}")
-    api("ai.h2o:h2o-hive:${h2oVersion}")
-    api("ai.h2o:h2o-algos:${h2oVersion}")
-    api("ai.h2o:h2o-web:${h2oVersion}")
-    api("ai.h2o:h2o-avro-parser:${h2oVersion}") {
-        exclude group: 'org.apache.avro', module: 'avro'
-        exclude group: 'ai.h2o', module: 'h2o-core'
-    }
-    api("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
-    api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
-    api("ai.h2o:h2o-parquet-parser:${h2oVersion}") {
-        exclude group: 'org.apache.hadoop', module: 'hadoop-common'
-        exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
-        exclude group: 'ai.h2o', module: 'h2o-core'
-        exclude group: 'org.apache.parquet', module: 'parquet-hadoop'
-    }
-    api("ai.h2o:h2o-orc-parser:${h2oVersion}") {
-        exclude group: 'org.apache.hive', module: 'hive-exec'
-        exclude group: 'org.apache.hadoop', module: 'hadoop-common'
-        exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
-        exclude group: 'ai.h2o', module: 'h2o-core'
-    }
-    api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
-        // Cannot use here: transitive = false since Gradle is producing wrong POM file
-        // Hence the exlusions are listed manually
-        exclude(group: "org.apache.hadoop", module: "hadoop-client")
-        exclude(group: "org.apache.hadoop", module: "hadoop-hdfs-client")
-        exclude(group: "org.apache.hadoop", module: "hadoop-aws")
-    }
-    api("ai.h2o:h2o-persist-s3:${h2oVersion}") {
-        exclude(group: "com.fasterxml.jackson.core")
-    }
-    api("ai.h2o:h2o-persist-gcs:${h2oVersion}")
-    api("ai.h2o:h2o-jetty-9:${h2oVersion}")
-    api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
-    api("ai.h2o:h2o-automl:${h2oVersion}")
+  api(project(':sparkling-water-utils'))
+  api(project(':sparkling-water-extensions'))
+  api(project(':sparkling-water-repl'))
+  api("ai.h2o:h2o-ext-jython-cfunc:${h2oVersion}")
+  api("ai.h2o:h2o-genmodel:${h2oVersion}")
+  api("ai.h2o:h2o-security:${h2oVersion}")
+  api("ai.h2o:h2o-core:${h2oVersion}") {
+    //
+    // Exclude all dependencies provided by Spark environment already
+    // The motivation is to catch error at compile time
+    exclude(group: "net.java.dev.jets3t", module: "jets3t")
+    exclude(group: "commons-collections", module: "commons-collections")
+  }
+  api("ai.h2o:h2o-security:${h2oVersion}")
+  api("ai.h2o:h2o-hive:${h2oVersion}")
+  api("ai.h2o:h2o-algos:${h2oVersion}")
+  api("ai.h2o:h2o-web:${h2oVersion}")
+  api("ai.h2o:h2o-avro-parser:${h2oVersion}") {
+    exclude group: 'org.apache.avro', module: 'avro'
+    exclude group: 'ai.h2o', module: 'h2o-core'
+  }
+  api("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
+  api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
+  api("ai.h2o:h2o-parquet-parser:${h2oVersion}") {
+    exclude group: 'org.apache.hadoop', module: 'hadoop-common'
+    exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
+    exclude group: 'ai.h2o', module: 'h2o-core'
+    exclude group: 'org.apache.parquet', module: 'parquet-hadoop'
+  }
+  api("ai.h2o:h2o-orc-parser:${h2oVersion}") {
+    exclude group: 'org.apache.hive', module: 'hive-exec'
+    exclude group: 'org.apache.hadoop', module: 'hadoop-common'
+    exclude group: 'ai.h2o', module: 'h2o-persist-hdfs'
+    exclude group: 'ai.h2o', module: 'h2o-core'
+  }
+  api("ai.h2o:h2o-persist-hdfs:${h2oVersion}") {
+    // Cannot use here: transitive = false since Gradle is producing wrong POM file
+    // Hence the exlusions are listed manually
+    exclude(group: "org.apache.hadoop", module: "hadoop-client")
+    exclude(group: "org.apache.hadoop", module: "hadoop-hdfs-client")
+    exclude(group: "org.apache.hadoop", module: "hadoop-aws")
+  }
+  api("ai.h2o:h2o-persist-s3:${h2oVersion}") {
+    exclude(group: "com.fasterxml.jackson.core")
+  }
+  api("ai.h2o:h2o-persist-gcs:${h2oVersion}")
+  api("ai.h2o:h2o-jetty-9:${h2oVersion}")
+  api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
+  api("ai.h2o:h2o-automl:${h2oVersion}")
 
-    compileOnly(project(':sparkling-water-macros'))
-    compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-    compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-    compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-    compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly(project(':sparkling-water-macros'))
+  compileOnly("org.scala-lang:scala-library:${scalaVersion}")
+  compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+  compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
-    testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
-    testImplementation(project(':sparkling-water-macros'))
-    testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    testImplementation("junit:junit:4.11")
+  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation(project(':sparkling-water-macros'))
+  testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  testImplementation("junit:junit:4.11")
 
-    integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    integTestImplementation("junit:junit:4.11")
+  integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  integTestImplementation("junit:junit:4.11")
 
-    benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
-    benchImplementation("junit:junit:4.11")
+  benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  benchImplementation("junit:junit:4.11")
 
-    // Put Spark Assembly on runtime path
-    integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
-    benchRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
+  // Put Spark Assembly on runtime path
+  integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
+  benchRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
 }
 
 task createSparkVersionFile {
-    doLast {
-        File version_file = file("src/main/resources/spark.version")
-        // Create parent directories if not created yet
-        version_file.getParentFile().mkdirs()
-        version_file.write(sparkVersion)
-    }
+  doLast {
+    File version_file = file("src/main/resources/spark.version")
+    // Create parent directories if not created yet
+    version_file.getParentFile().mkdirs()
+    version_file.write(sparkVersion)
+  }
 }
 
 task createH2OVersionFile {
-    doLast {
-        File version_file = file("src/main/resources/h2o.version")
-        // Create parent directories if not created yet
-        version_file.getParentFile().mkdirs()
-        version_file.write(h2oVersion)
-    }
+  doLast {
+    File version_file = file("src/main/resources/h2o.version")
+    // Create parent directories if not created yet
+    version_file.getParentFile().mkdirs()
+    version_file.write(h2oVersion)
+  }
 }
 
 task createSparklingWaterVersionFile {
-    doLast {
-        File version_file = file("src/main/resources/sw.version")
-        // Create parent directories if not created yet
-        version_file.getParentFile().mkdirs()
-        version_file.write(version)
-    }
+  doLast {
+    File version_file = file("src/main/resources/sw.version")
+    // Create parent directories if not created yet
+    version_file.getParentFile().mkdirs()
+    version_file.write(version)
+  }
 }
 test.dependsOn testJar
 
 test {
-    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
+  systemProperty "spark.ext.h2o.rest.api.based.client", "false"
 }
 
 integTest {
-    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
+  systemProperty "spark.ext.h2o.rest.api.based.client", "false"
 
-    if (detectBackendClusterMode() == "external") {
-        exclude 'ai/h2o/sparkling/internal/**'
-    }
+  if (detectBackendClusterMode() == "external") {
+    exclude 'ai/h2o/sparkling/internal/**'
+  }
 }
 
 processResources.dependsOn createSparkVersionFile
@@ -150,11 +150,11 @@ processResources.dependsOn ':sparkling-water-assembly-extensions:embeddedAssembl
 
 
 bench {
-    systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-    systemProperty "spark.ext.h2o.rest.api.based.client", "false"
+  systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
+  systemProperty "spark.ext.h2o.rest.api.based.client", "false"
 
-    systemProperty "spark.testing", "true"
-    systemProperty "spark.test.home", "${sparkHome}"
+  systemProperty "spark.testing", "true"
+  systemProperty "spark.test.home", "${sparkHome}"
 }
 
 defineStandardPublication().call()

@@ -7,34 +7,34 @@ defaultTasks 'createDockerFile'
 description = "Create a Docker file for jenkins tests"
 
 ext {
-    outputFile = file("$projectDir//docker/regular-tests/Dockerfile")
-    terraformDownloadUrl = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
+  outputFile = file("$projectDir//docker/regular-tests/Dockerfile")
+  terraformDownloadUrl = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
 }
 
 task createDockerfile(type: Dockerfile) {
-    destFile = outputFile
-    from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76'
+  destFile = outputFile
+  from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76'
 
-    environmentVariable("LANG", "'C.UTF-8'")
-    runCommand "locale"
-    runCommand "rm -rf /etc/hadoop/conf/yarn-site.xml"
-    copyFile("conf/yarn-site.xml", "/etc/hadoop/conf/yarn-site.xml")
-    runCommand "rm /etc/startup/70_start_slapd"
+  environmentVariable("LANG", "'C.UTF-8'")
+  runCommand "locale"
+  runCommand "rm -rf /etc/hadoop/conf/yarn-site.xml"
+  copyFile("conf/yarn-site.xml", "/etc/hadoop/conf/yarn-site.xml")
+  runCommand "rm /etc/startup/70_start_slapd"
 
-    // Install Terraform
-    runCommand """\\
+  // Install Terraform
+  runCommand """\\
                 |   curl -s ${terraformDownloadUrl} --output terraform.zip && \\
                 |   unzip terraform.zip -d /usr/local/bin/ && \\
                 |   rm -f terraform.zip
                """.stripMargin()
-    
-    runCommand """\\
+
+  runCommand """\\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
-    user("jenkins")
-    getAllFullSparkVersions().each { version ->
-        runCommand """\\
+  user("jenkins")
+  getAllFullSparkVersions().each { version ->
+    runCommand """\\
                     cd /home/jenkins && \\
                     wget http://archive.apache.org/dist/spark/spark-${version}/spark-${version}-bin-hadoop2.7.tgz  && \\
                     mkdir -p spark-${version}-bin-hadoop2.7 &&  \\
@@ -42,11 +42,11 @@ task createDockerfile(type: Dockerfile) {
                     rm -rf spark-${version}-bin-hadoop2.7.tgz
                     """
 
-        def first = version.split("\\.")[0]
-        def second = version.split("\\.")[1]
-        environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
-    }
-    runCommand """\\
+    def first = version.split("\\.")[0]
+    def second = version.split("\\.")[1]
+    environmentVariable("SPARK_HOME_${first}_${second}", "/home/jenkins/spark-${version}-bin-hadoop2.7")
+  }
+  runCommand """\\
                 cd /home/jenkins && \\
                 git clone https://github.com/h2oai/sparkling-water.git && \\
                 cd sparkling-water && \\
@@ -54,51 +54,51 @@ task createDockerfile(type: Dockerfile) {
                 cd ..
                 """
 
-    supportedSparkVersions.split(" ").each { majorVersion ->
-        runCommand """\\
+  supportedSparkVersions.split(" ").each { majorVersion ->
+    runCommand """\\
                     cd /home/jenkins/sparkling-water && \\
                     ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \\
                     ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin
                     """
-    }
-    runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
-    user("root")
+  }
+  runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
+  user("root")
 
-    runCommand """\\
+  runCommand """\\
                 sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
                """
-    runCommand "cd /home/jenkins && rm -rf sparkling-water"
+  runCommand "cd /home/jenkins && rm -rf sparkling-water"
 
-    user("jenkins")
-    environmentVariable("USER", "jenkins")
-    runCommand """\\
+  user("jenkins")
+  environmentVariable("USER", "jenkins")
+  runCommand """\\
                cd /home/jenkins && \\
                wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/jenkins/miniconda.sh && \\
                bash /home/jenkins/miniconda.sh -b -p /home/jenkins/miniconda && \\
                rm /home/jenkins/miniconda.sh
                 """
-    environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
-    runCommand """\\
+  environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
+  runCommand """\\
                 conda install anaconda anaconda-client conda-build -y && \\
                 conda update conda -y && \\
                 conda update anaconda anaconda-client conda-build -y && \\
                 conda config --add channels conda-forge
                 """
 
-    environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
-    runCommand "pip install awscli --upgrade --user"
+  environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
+  runCommand "pip install awscli --upgrade --user"
 }
 
 def getAllFullSparkVersions() {
-    return supportedSparkVersions.split(" ").collect { majorVersion ->
-        def props = new Properties()
-        file("$rootDir/gradle-spark${majorVersion}.properties").withInputStream { props.load(it) }
-        props.get("sparkVersion").toString()
-    }
+  return supportedSparkVersions.split(" ").collect { majorVersion ->
+    def props = new Properties()
+    file("$rootDir/gradle-spark${majorVersion}.properties").withInputStream { props.load(it) }
+    props.get("sparkVersion").toString()
+  }
 }
 
 task cleanDockerfile(type: Delete) {
-    delete outputFile
+  delete outputFile
 }
 
 clean.dependsOn cleanDockerfile

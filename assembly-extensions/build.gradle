@@ -5,29 +5,29 @@ apply plugin: 'java-library'
 description = "Sparkling Water Extensions Assembly"
 
 dependencies {
-    api("org.scala-lang:scala-library:${scalaVersion}")
-    api(project(":sparkling-water-extensions"))
-    api(project(":sparkling-water-utils")) { transitive = false }
+  api("org.scala-lang:scala-library:${scalaVersion}")
+  api(project(":sparkling-water-extensions"))
+  api(project(":sparkling-water-utils")) { transitive = false }
 }
 
 jar {
-    enabled = false // we do not need to generate jar file in this case
+  enabled = false // we do not need to generate jar file in this case
 }
 
 shadowJar {
-    mergeServiceFiles()
+  mergeServiceFiles()
 
-    archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
+  archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
 artifacts {
-    api shadowJar
+  api shadowJar
 }
 
 task embeddedAssemblyJar(type: Copy, dependsOn: shadowJar) {
-    from file("$buildDir/libs")
-    into file("$buildDir/embedded")
-    rename { _ -> 'assembly-extensions.jar.embedded' }
+  from file("$buildDir/libs")
+  into file("$buildDir/embedded")
+  rename { _ -> 'assembly-extensions.jar.embedded' }
 }
 
 build.dependsOn embeddedAssemblyJar
