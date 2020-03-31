@@ -20,7 +20,7 @@ package ai.h2o.sparkling
 import ai.h2o.sparkling.ml.utils.{ComplexSchema, SchemaUtils}
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.h2o.{DoubleHolder, H2OConf, H2OContext}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -32,7 +32,7 @@ import scala.concurrent.duration.Duration
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext =
-    new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
+    new SparkContext("local-cluster[2,1,2024]", getClass.getName, conf = defaultSparkConf)
 
   test("Verify H2O cluster builds on local cluster") {
     val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
@@ -57,7 +57,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("H2OFrame High Availability: Task killed but frame still converted successfully") {
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v))).map { d =>
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v)).map { d =>
       import org.apache.spark.TaskContext
       val tc = TaskContext.get()
       if (tc.attemptNumber == 0) {

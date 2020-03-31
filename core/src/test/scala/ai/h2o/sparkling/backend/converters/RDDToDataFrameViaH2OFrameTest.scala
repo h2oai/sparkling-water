@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.converters
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.IntHolder
 import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.MRTask
@@ -29,13 +28,14 @@ import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
   */
 class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext =
+    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
   test("Convert RDD to H2OFrame and back to DataFrame") {
     val h2oContext = hc
     import h2oContext.implicits._
 
-    val rdd = sc.parallelize(1 to 10000, 1000).map(i => IntHolder(Some(i)))
+    val rdd = sc.parallelize(1 to 10000, 1000).map(i => Some(i))
     val h2oFrame: H2OFrame = rdd
 
     val dataFrame = hc.asDataFrame(h2oFrame)
@@ -44,10 +44,9 @@ class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext w
     assert(rdd.count == dataFrame.count)
   }
 
-  // @formatter:off
   test("SW-559: Convert RDD to H2OFrame with 0-length chunks") {
     // Generate RDD which contains empty partitions
-    val rdd = sc.parallelize(1 to 10, 10).map(i => IntHolder(Some(i))).filter(x => x.result.get < 5)
+    val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i)).filter(x => x.get < 5)
     assert(rdd.partitions.length == 10, "Number of partitions after filtering should be 10")
 
     // The frame contains number of chunks == number of RDD partitions, but some of

@@ -22,7 +22,6 @@ import java.sql.Timestamp
 import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.utils.H2OClientUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o._
 import org.apache.spark.h2o.testdata._
 import org.apache.spark.h2o.utils.H2OAsserts._
 import org.apache.spark.h2o.utils.TestFrameUtils._
@@ -42,15 +41,16 @@ import water.parser.{BufferedString, Categorical}
   */
 @RunWith(classOf[JUnitRunner])
 class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkContext: SparkContext =
+    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
   test("int iterator does not get stuck") {
-    val rdd = sc.parallelize(1 to 10, 10).map(i => IntHolder(Some(i)))
+    val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i))
 
     import StaticStorage._
 
-    def dupChecker(iter: Iterator[IntHolder]): Unit = {
-      iter foreach intIteratorTestMemory.put
+    def dupChecker(iter: Iterator[Option[Int]]): Unit = {
+      iter.foreach(intIteratorTestMemory.put)
     }
 
     try {
@@ -65,7 +65,7 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
   test("product iterator does not get stuck") {
     val h2oContext = hc
     import h2oContext.implicits._
-    val rdd = sc.parallelize(1 to 10, 10).map(i => IntHolder(Some(i)))
+    val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i))
     val h2oFrame: H2OFrame = rdd
     val numRows = h2oFrame.numRows()
 
@@ -194,9 +194,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
-  test("RDD[IntHolder] to H2OFrame and back") {
+  test("RDD[Option[Int]] to H2OFrame and back") {
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
@@ -209,11 +209,11 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[IntHolder] with nulls, does it hold nulls?") {
+  test("RDD[Option[Int]] with nulls, does it hold nulls?") {
 
     def almostDefined(i: Long) = Some(i.toInt) filter (_ % 31 != 0)
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => IntHolder(almostDefined(v)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => almostDefined(v))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertInvariantsWithNulls(
@@ -234,9 +234,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[DoubleHolder] to H2OFrame and back") {
+  test("RDD[Option[Double]] to H2OFrame and back") {
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => DoubleHolder(Some(v)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
@@ -250,9 +250,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[ByteHolder] to H2OFrame and back") {
+  test("RDD[Option[Byte]] to H2OFrame and back") {
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => ByteHolder(Some(v.toByte)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v.toByte))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
@@ -266,9 +266,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[ShortHolder] to H2OFrame and back") {
+  test("RDD[Option[Short]] to H2OFrame and back") {
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => ShortHolder(Some(v.toShort)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v.toShort))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assertBasicInvariants(rdd, h2oFrame, (row, vec) => {
@@ -282,9 +282,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[StringHolder] to H2OFrame[Enum] and back") {
+  test("RDD[Option[String]] to H2OFrame[Enum] and back") {
 
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => StringHolder(Some(v.toString)))
+    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v.toString))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assert(h2oFrame.vec(0).isString, "The vector type should be of string type")
@@ -304,9 +304,9 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("RDD[StringHolder] to H2OFrame[String] and back") {
+  test("RDD[Option[String]] to H2OFrame[String] and back") {
 
-    val rdd = sc.parallelize(1 to (Categorical.MAX_CATEGORICAL_COUNT + 1), 100).map(v => StringHolder(Some(v.toString)))
+    val rdd = sc.parallelize(1 to (Categorical.MAX_CATEGORICAL_COUNT + 1), 100).map(v => Some(v.toString))
     val h2oFrame: H2OFrame = hc.asH2OFrame(rdd)
 
     assert(h2oFrame.vec(0).isString, "The vector type should be string")
@@ -323,10 +323,10 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     rdd.unpersist()
   }
 
-  test("PUBDEV-458 - from Rdd[IntHolder] to H2OFrame and back") {
+  test("PUBDEV-458 - from Rdd[Option[Int]] to H2OFrame and back") {
     val h2oContext = hc
     import h2oContext.implicits._
-    val rdd = sc.parallelize(1 to 1000000, 10).map(i => IntHolder(Some(i)))
+    val rdd = sc.parallelize(1 to 1000000, 10).map(i => Some(i))
     val h2oFrame: H2OFrame = rdd
     val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
     assert(rdd.count == h2oFrame.numRows(), "Number of rows should match")

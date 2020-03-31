@@ -157,8 +157,8 @@ object TestFrameUtils extends Matchers {
     assert(df.numCols() == 1, "H2OFrame should contain single column")
     assert(df.names().length == 1, "H2OFrame column names should have single value")
     assert(
-      df.names()(0).equals("result"),
-      "H2OFrame column name should be 'result' since Holder object was used to define RDD")
+      df.names()(0).equals("value"),
+      "H2OFrame column name should be 'value' since we define the value inside the Option.")
   }
 
   private def assertDatasetHolderProperties(df: H2OFrame, names: List[String]): Unit = {
