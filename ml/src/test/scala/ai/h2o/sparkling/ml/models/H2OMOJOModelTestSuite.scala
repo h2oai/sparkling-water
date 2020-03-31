@@ -30,7 +30,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
 
-  override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
+  override def createSparkContext = new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture
@@ -209,7 +209,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     model.write.overwrite.save(modelFolder)
     val reloadedModel = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
-    // Check if predictions are same
+
     TestFrameUtils.assertDataFramesAreIdentical(predBeforeSave, predAfterReload)
   }
 
