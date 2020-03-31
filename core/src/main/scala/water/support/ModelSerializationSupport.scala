@@ -19,16 +19,20 @@ package water.support
 import java.io._
 import java.net.URI
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import hex.Model
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
-import org.apache.spark.h2o.H2OBaseModel
+import org.apache.spark.expose.Logging
 import water.H2O
 import water.persist.Persist
 
 /**
   * Helper trait containing methods to export and import models from and to Sparkling Water
   */
-trait ModelSerializationSupport {
+@Deprecated
+trait ModelSerializationSupport extends Logging {
+
+  type H2OBaseModel = Model[_, _ <: Model.Parameters, _ <: Model.Output]
 
   /**
     * Export binary model to specified directory
@@ -38,6 +42,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportH2OModel(model: H2OBaseModel, destination: URI, force: Boolean = false): URI = {
     model.exportBinaryModel(destination.toString, force)
     destination
@@ -51,6 +56,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportH2OModel(model: H2OBaseModel, destination: String, force: Boolean): String = {
     exportH2OModel(model, new URI(destination), force).toString
   }
@@ -62,6 +68,7 @@ trait ModelSerializationSupport {
     * @tparam M Model Type
     * @return imported model
     */
+  @DeprecatedMethod("Export the model as mojo and read it using H2OMOJOModel.createFromMojo")
   def loadH2OModel[M <: H2OBaseModel](source: URI): M = {
     Model.importBinaryModel[M](source.toString)
   }
@@ -73,6 +80,7 @@ trait ModelSerializationSupport {
     * @tparam M Model Type
     * @return imported model
     */
+  @DeprecatedMethod("Export the model as mojo and read it using H2OMOJOModel.createFromMojo")
   def loadH2OModel[M <: H2OBaseModel](source: String): M = {
     Model.importBinaryModel[M](source)
   }
@@ -85,6 +93,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("POJOs are no longer supported in Sparkling Water. Please use MOJOs.")
   def exportPOJOModel(model: H2OBaseModel, destination: URI, force: Boolean = false): URI = {
     val p: Persist = H2O.getPM.getPersistForURI(destination)
     val os: OutputStream = p.create(destination.toString, force)
@@ -102,6 +111,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("POJOs are no longer supported in Sparkling Water. Please use MOJOs.")
   def exportPOJOModel(model: H2OBaseModel, destination: String, force: Boolean): String = {
     exportPOJOModel(model, new URI(destination), force).toString
   }
@@ -114,6 +124,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportMOJOModel(model: H2OBaseModel, destination: URI, force: Boolean = false): URI = {
     model.exportMojo(destination.toString, force)
     destination
@@ -127,6 +138,7 @@ trait ModelSerializationSupport {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportMOJOModel(model: H2OBaseModel, destination: String, force: Boolean): String = {
     exportMOJOModel(model, new URI(destination), force).toString
   }
@@ -137,11 +149,13 @@ trait ModelSerializationSupport {
     * @param source source URI
     * @return H2O's Mojo model
     */
+  @DeprecatedMethod("H2OMOJOModel.createFromMojo")
   def loadMOJOModel(source: URI): MojoModel = {
     hex.genmodel.MojoModel.load(source.getPath)
   }
 }
 
+@Deprecated
 object ModelSerializationSupport extends ModelSerializationSupport {
 
   /**
@@ -150,6 +164,9 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get MOJO from
     * @return tuple containing MOJO model and binary bytes representing the MOJO
     */
+  @DeprecatedMethod(
+    "Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+      " produces the MOJO model.")
   def getMojo(model: H2OBaseModel): (MojoModel, Array[Byte]) = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
@@ -163,6 +180,9 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get MOJO from
     * @return MOJO model
     */
+  @DeprecatedMethod(
+    "Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+      " produces the MOJO model.")
   def getMojoModel(model: H2OBaseModel): MojoModel = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
@@ -176,6 +196,9 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param mojoData data representing the MOJO model
     * @return MOJO model
     */
+  @DeprecatedMethod(
+    "Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+      " produces the MOJO model.")
   def getMojoModel(mojoData: Array[Byte]): MojoModel = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
@@ -188,6 +211,9 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get the binary representation of a MOJO from
     * @return byte array representing the MOJO
     */
+  @DeprecatedMethod(
+    "Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+      " produces the MOJO model.")
   def getMojoData(model: H2OBaseModel): Array[Byte] = {
     val baos = new ByteArrayOutputStream()
     model.getMojo.writeTo(baos)
