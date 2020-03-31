@@ -69,9 +69,9 @@ From 3.30 to 3.32
 
     To export it as, please call:
 
-        .. code-block:: scala
+    .. code-block:: scala
 
-            mojoModel.write.save("path")
+        mojoModel.write.save("path")
 
     The advantage is that this variant is H2O-version independent and when such model is loaded, H2O run-time is not required.
 
