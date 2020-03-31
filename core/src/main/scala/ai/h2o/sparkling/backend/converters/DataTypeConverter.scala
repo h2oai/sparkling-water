@@ -35,10 +35,11 @@ private[backend] object DataTypeConverter {
     } yield index
 
     val types = if (rdd.getNumPartitions > 0) {
-      val preview = rdd
-        .mapPartitions[CategoricalPreviewWriter](createPartitionPreview(_, stringTypeIndices))
-        .reduce((a, b) => CategoricalPreviewWriter.unifyColumnPreviews(a, b))
+      val serializedPreview = rdd
+        .mapPartitions[Array[Byte]](createPartitionPreview(_, stringTypeIndices))
+        .reduce(mergePartitionPreview)
 
+      val preview = CategoricalPreviewWriter.deserialize(serializedPreview)
       preview.guessTypes().map {
         case Vec.T_CAT => ChunkSerdeConstants.EXPECTED_CATEGORICAL
         case _ => ChunkSerdeConstants.EXPECTED_STRING
@@ -51,7 +52,7 @@ private[backend] object DataTypeConverter {
   }
 
   private def createPartitionPreview(rows: Iterator[Row],
-                                     stringTypeIndices: Array[Int]): Iterator[CategoricalPreviewWriter] = {
+                                     stringTypeIndices: Array[Int]): Iterator[Array[Byte]] = {
     val previewParseWriter = new CategoricalPreviewWriter(stringTypeIndices.length)
     val bufferedString = new BufferedString()
     var rowId = 0
@@ -71,7 +72,14 @@ private[backend] object DataTypeConverter {
       }
       rowId += 1
     }
-    Iterator.single(previewParseWriter)
+    Iterator.single(CategoricalPreviewWriter.serialize(previewParseWriter))
+  }
+
+  private def mergePartitionPreview(first: Array[Byte], second: Array[Byte]): Array[Byte] = {
+    val firstObject = CategoricalPreviewWriter.deserialize(first)
+    val secondObject = CategoricalPreviewWriter.deserialize(second)
+    val result = PreviewParseWriter.unifyColumnPreviews(firstObject, secondObject).asInstanceOf[CategoricalPreviewWriter]
+    CategoricalPreviewWriter.serialize(result)
   }
 
   def determineExpectedTypes(rdd: RDD[Row], schema: StructType): Array[Byte] = {
