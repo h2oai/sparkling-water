@@ -18,6 +18,7 @@ package ai.h2o.sparkling
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.sql.DataFrame
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +32,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   import spark.implicits._
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
-    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    val df = spark.read.option("header", "true").csv("../examples/smalldata/prostate/prostate.csv")
     H2OFrame(hc.asH2OFrameKeyString(df))
   }
 
@@ -128,7 +129,9 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   private lazy val leftFrame = {
-    val leftDf = sc.parallelize(Seq(("A", 12), ("B", 13), ("C", 14), ("D", 15))).toDF("name", "age")
+    val leftDf = sc
+      .parallelize(Seq(("A", 12, "NYC"), ("B", 13, "SF"), ("C", 14, "PRG"), ("D", 15, "SYD")))
+      .toDF("name", "age", "city")
     H2OFrame(hc.asH2OFrameKeyString(leftDf)).convertColumnsToCategorical(Array("name"))
   }
 
@@ -139,54 +142,58 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Left join") {
     val expected = sc
-      .parallelize(Seq(("A", 12, null), ("B", 13, 20000), ("C", 14, null), ("D", 15, 40000)))
-      .toDF("name", "age", "salary")
+      .parallelize(
+        Seq(
+          ("A", 12, "NYC", None),
+          ("B", 13, "SF", Some(20000)),
+          ("C", 14, "PRG", None),
+          ("D", 15, "SYD", Some(40000))))
+      .toDF("name", "age", "city", "salary")
 
-    val resultRadix = hc.asDataFrame(leftFrame.leftJoin(rightFrame, "radix").frameId)
-    val resultHash = hc.asDataFrame(leftFrame.leftJoin(rightFrame, "hash").frameId)
-    TestFrameUtils.assertDataFramesAreIdentical(resultRadix, expected)
-    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
+    val result = leftFrame.leftJoin(rightFrame)
+    assertAfterJoin(result, expected)
   }
 
   test("Right join") {
     val expected = sc
-      .parallelize(Seq(("Y", null, 10000), ("B", 13, 20000), ("X", null, 10000), ("D", 15, 40000)))
-      .toDF("name", "age", "salary")
+      .parallelize(
+        Seq(
+          ("Y", None, None, 10000),
+          ("B", Some(13), Some("SF"), 20000),
+          ("X", None, None, 30000),
+          ("D", Some(15), Some("SYD"), 40000)))
+      .toDF("name", "age", "city", "salary")
 
-    val resultHash = hc.asDataFrame(leftFrame.rightJoin(rightFrame, "hash").frameId)
-    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
+    val result = leftFrame.rightJoin(rightFrame)
+    assertAfterJoin(result, expected)
   }
 
   test("Inner join") {
-    val expected = sc.parallelize(Seq(("B", 13, 20000), ("D", 15, 40000))).toDF("name", "age", "salary")
+    val expected =
+      sc.parallelize(Seq(("B", 13, "SF", 20000), ("D", 15, "SYD", 40000))).toDF("name", "age", "city", "salary")
 
-    val resultRadix = hc.asDataFrame(leftFrame.innerJoin(rightFrame, "radix").frameId)
-    val resultHash = hc.asDataFrame(leftFrame.innerJoin(rightFrame, "hash").frameId)
-    TestFrameUtils.assertDataFramesAreIdentical(resultRadix, expected)
-    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
+    val result = leftFrame.innerJoin(rightFrame)
+    assertAfterJoin(result, expected)
   }
 
   test("Outer join") {
     val expected = sc
       .parallelize(
         Seq(
-          ("A", 12, null),
-          ("B", 13, 20000),
-          ("C", 14, null),
-          ("D", 15, 40000),
-          ("X", null, 10000),
-          ("Y", null, 10000)))
-      .toDF("name", "age", "salary")
+          ("A", Some(12), Some("NYC"), None),
+          ("B", Some(13), Some("SF"), Some(20000)),
+          ("C", Some(14), Some("PRG"), None),
+          ("D", Some(15), Some("SYD"), Some(40000)),
+          ("X", None, None, Some(30000)),
+          ("Y", None, None, Some(10000))))
+      .toDF("name", "age", "city", "salary")
 
+    val result = leftFrame.outerJoin(rightFrame)
+    assertAfterJoin(result, expected)
   }
 
-  test("Join without categorical column") {}
-
-  test("Join with unsupported join method") {
-    val thrown = intercept[RuntimeException] {
-      leftFrame.leftJoin(rightFrame, "unknown")
-    }
-    assert(thrown.getMessage == s"Possible join methods are [auto, radix, hash]. On the input was: unknown.")
+  private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
+    val resultDF = hc.asDataFrame(result.frameId).select("name", "age", "city", "salary")
+    TestFrameUtils.assertDataFramesAreIdentical(resultDF, expected)
   }
-
 }

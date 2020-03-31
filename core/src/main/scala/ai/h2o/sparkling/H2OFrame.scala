@@ -24,11 +24,13 @@ import ai.h2o.sparkling.backend.utils.{RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.backend.{H2OChunk, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
-import ai.h2o.sparkling.utils.Base64Encoding
+import ai.h2o.sparkling.utils.{Base64Encoding, SparkSessionUtils}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
+
+import scala.util.Random
 
 /**
   * H2OFrame representation via Rest API
@@ -111,43 +113,52 @@ class H2OFrame private (
     * Left join this frame with another frame
     *
     * @param another right frame
-    * @param method  joining method
     * @return new frame
     */
-  def leftJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
-    join(another, allFromCurrent = true, allFromAnother = false, method)
+  def leftJoin(another: H2OFrame): H2OFrame =
+    join(another, allFromCurrent = true, allFromAnother = false, "radix")
 
   /**
     * Right join this frame with another frame
     *
     * @param another right frame
-    * @param method  joining method
     * @return new frame
     */
-  def rightJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
-    join(another, allFromCurrent = false, allFromAnother = true, method)
+  def rightJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame = {
+    // Right join fails under "radix". The other variant is "hash" method
+    // but that method does not support strings in columns and does not work correctly if there are duplicate
+    // columns in the frame. Use Spark for now
+    joinUsingSpark(another, "right")
+  }
 
   /**
     * Inner join this frame with another frame
     *
     * @param another right frame
-    * @param method  joining method
     * @return new frame
     */
-  def innerJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
-    join(another, allFromCurrent = false, allFromAnother = false, method)
+  def innerJoin(another: H2OFrame): H2OFrame =
+    join(another, allFromCurrent = false, allFromAnother = false, "radix")
 
   /**
     * Outer join this frame with another frame
     *
     * @param another right frame
-    * @param method  joining method
     * @return new frame
     */
-  def outerJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
-    join(another, allFromCurrent = true, allFromAnother = true, method)
+  def outerJoin(another: H2OFrame): H2OFrame = {
+    // Outer join is broken in H2O, simulate H2O's join via Spark for now
+    joinUsingSpark(another, "outer")
+  }
 
-  private val H2OFrameJoinMethods = Array("auto", "radix", "hash")
+  private def joinUsingSpark(another: H2OFrame, method: String): H2OFrame = {
+    val hc = H2OContext.ensure()
+    val currentFrame = hc.asDataFrame(this.frameId)
+    val anotherFrame = hc.asDataFrame(another.frameId)
+    val sameCols = anotherFrame.columns.intersect(currentFrame.columns)
+    val joined = currentFrame.join(anotherFrame, sameCols, method)
+    H2OFrame(hc.asH2OFrameKeyString(joined))
+  }
 
   /**
     * Join this frame with another frame
@@ -163,16 +174,12 @@ class H2OFrame private (
       allFromCurrent: Boolean = false,
       allFromAnother: Boolean = false,
       method: String = "AUTO"): H2OFrame = {
-    if (!H2OFrameJoinMethods.contains(method.toLowerCase)) {
-      throw new IllegalArgumentException(
-        s"Possible join methods are ${H2OFrameJoinMethods.mkString("[", ", ", "]")}." +
-          s"  On the input was: ${method}")
-    }
     val endpoint = getClusterEndpoint(conf)
     val params = Map(
       "ast" -> MessageFormat.format(
         "( assign {0} (merge {1} {2} {3} {4} [] [] \"{5}\"))",
-        this.frameId + "_join_" + another.frameId,
+        s"${this.frameId}_join_${Random.alphanumeric.take(5).mkString("")}",
+        this.frameId,
         another.frameId,
         if (allFromCurrent) "1" else "0",
         if (allFromAnother) "1" else "0",
