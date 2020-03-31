@@ -41,7 +41,7 @@ trait ModelSerializationSupport extends Logging {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it as model.write.save.")
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportH2OModel(model: H2OBaseModel, destination: URI, force: Boolean = false): URI = {
     model.exportBinaryModel(destination.toString, force)
     destination
@@ -55,7 +55,7 @@ trait ModelSerializationSupport extends Logging {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it as model.write.save.")
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportH2OModel(model: H2OBaseModel, destination: String, force: Boolean): String = {
     exportH2OModel(model, new URI(destination), force).toString
   }
@@ -123,7 +123,7 @@ trait ModelSerializationSupport extends Logging {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it as model.write.save.")
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportMOJOModel(model: H2OBaseModel, destination: URI, force: Boolean = false): URI = {
     model.exportMojo(destination.toString, force)
     destination
@@ -137,7 +137,7 @@ trait ModelSerializationSupport extends Logging {
     * @param force       override the model if it already exist in the destination URI
     * @return destination URI
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it as model.write.save.")
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API and export it using model.write.save.")
   def exportMOJOModel(model: H2OBaseModel, destination: String, force: Boolean): String = {
     exportMOJOModel(model, new URI(destination), force).toString
   }

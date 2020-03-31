@@ -222,6 +222,18 @@ call the ``createFromMojo`` method on the specific MOJO model type.
     val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
     println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
 
+Exporting the trained MOJO model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To export the trained MOJO model, call ``model.write.save(path)``. In case of Hadoop enabled system, the command by default
+uses HDFS.
+
+Importing the trained MOJO model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To import the trained MOJO model, call ``H2OMOJOModel.read.load(path)``. In case of Hadoop enabled system, the command by default
+uses HDFS.
+
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
