@@ -106,6 +106,78 @@ class H2OFrame private (
       H2OFrame(rapidsFrameV3.key.name)
     }
   }
+
+  /**
+    * Left join this frame with another frame
+    *
+    * @param another right frame
+    * @param method  joining method
+    * @return new frame
+    */
+  def leftJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
+    join(another, allFromCurrent = true, allFromAnother = false, method)
+
+  /**
+    * Right join this frame with another frame
+    *
+    * @param another right frame
+    * @param method  joining method
+    * @return new frame
+    */
+  def rightJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
+    join(another, allFromCurrent = false, allFromAnother = true, method)
+
+  /**
+    * Inner join this frame with another frame
+    *
+    * @param another right frame
+    * @param method  joining method
+    * @return new frame
+    */
+  def innerJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
+    join(another, allFromCurrent = false, allFromAnother = false, method)
+
+  /**
+    * Outer join this frame with another frame
+    *
+    * @param another right frame
+    * @param method  joining method
+    * @return new frame
+    */
+  def outerJoin(another: H2OFrame, method: String = "AUTO"): H2OFrame =
+    join(another, allFromCurrent = true, allFromAnother = true, method)
+
+  private val H2OFrameJoinMethods = Array("auto", "radix", "hash")
+
+  /**
+    * Join this frame with another frame
+    *
+    * @param another        right frame
+    * @param allFromCurrent all values from current frame
+    * @param allFromAnother all values from another frame
+    * @param method         joining method
+    * @return
+    */
+  private def join(
+      another: H2OFrame,
+      allFromCurrent: Boolean = false,
+      allFromAnother: Boolean = false,
+      method: String = "AUTO"): H2OFrame = {
+    if (!H2OFrameJoinMethods.contains(method.toLowerCase)) {
+      throw new IllegalArgumentException(s"Possible join methods are ${H2OFrameJoinMethods.mkString("[", ",", "]")}")
+    }
+    val endpoint = getClusterEndpoint(conf)
+    val params = Map(
+      "ast" -> MessageFormat.format(
+        "( assign {0} (merge {1} {2} {3} {4} [] [] \"{5}\"))",
+        this.frameId + "_join_" + another.frameId,
+        another.frameId,
+        if (allFromCurrent) "1" else "0",
+        if (allFromAnother) "1" else "0",
+        method.toLowerCase()))
+    val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+    H2OFrame(rapidsFrameV3.key.name)
+  }
 }
 
 object H2OFrame extends RestCommunication {

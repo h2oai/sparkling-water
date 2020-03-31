@@ -19,14 +19,13 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
@@ -153,7 +152,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val model = configureGBMforProstateDF().fit(structuredDF)
     val predictionDF = model.transform(structuredDF).select('prediction)
 
-    TestUtils.assertEqual(expectedPredictionDF, predictionDF)
+    TestFrameUtils.assertDataFramesAreIdentical(expectedPredictionDF, predictionDF)
   }
 
   test("Testing dataset is missing one of feature columns") {
@@ -211,7 +210,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val reloadedModel = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
     // Check if predictions are same
-    TestUtils.assertEqual(predBeforeSave, predAfterReload)
+    TestFrameUtils.assertDataFramesAreIdentical(predBeforeSave, predAfterReload)
   }
 
 
@@ -219,7 +218,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val predMojo = m1.transform(df)
     val predModel = m2.transform(df)
 
-    TestUtils.assertEqual(predMojo, predModel)
+    TestFrameUtils.assertDataFramesAreIdentical(predMojo, predModel)
 
   }
 

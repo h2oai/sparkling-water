@@ -21,9 +21,11 @@ import ai.h2o.sparkling.ml.utils.{FlatArraysOnlySchema, FlatSchema, SchemaUtils,
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.ml.linalg.{DenseVector, SparseVector}
+import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vectors}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
+import scala.util.Random
 
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
@@ -100,7 +102,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val sparsity = 0.2
     val numberOfRows = 3 * 1000
     val partitions = 4
-    import water.api.TestUtils.sparseVector
     val elementsPerRow = (sparsity * numberOfCols).toInt
     val rowGenerator = (_: Int) => SparseVectorHolder(sparseVector(numberOfCols, elementsPerRow))
 
@@ -139,5 +140,11 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
 
     val hf = hc.asH2OFrame(df)
     hf.remove()
+  }
+
+  private def sparseVector(len: Int, elements: Int, rng: Random = Random): org.apache.spark.ml.linalg.SparseVector = {
+    assert(elements < len)
+    val data = (1 to elements).map(_ => rng.nextInt(len)).sortBy(identity).distinct.map(it => (it, rng.nextDouble()))
+    Vectors.sparse(len, data).toSparse
   }
 }
