@@ -19,16 +19,14 @@ package ai.h2o.sparkling.backend.api.dataframes;
 import water.api.API;
 import water.api.Schema;
 
-/**
- * Schema representing /3/dataframes/[dataframe_id] endpoint
- */
+/** Schema representing /3/dataframes/[dataframe_id] endpoint */
 public class DataFrameV3 extends Schema<IcedDataFrame, DataFrameV3> {
-    @API(help = "Data frame ID", direction = API.Direction.INOUT)
-    public String dataframe_id;
+  @API(help = "Data frame ID", direction = API.Direction.INOUT)
+  public String dataframe_id;
 
-    @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
-    public int partitions;
+  @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
+  public int partitions;
 
-    @API(help = "Schema of this DataFrame.", direction = API.Direction.OUTPUT)
-    public String schema;
+  @API(help = "Schema of this DataFrame.", direction = API.Direction.OUTPUT)
+  public String schema;
 }

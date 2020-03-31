@@ -19,13 +19,11 @@ package ai.h2o.sparkling.backend.api.scalainterpreter;
 import water.api.API;
 import water.api.Schema;
 
-/**
- * Schema representing [POST] and [DELETE] /3/scalaint endpoint
- */
+/** Schema representing [POST] and [DELETE] /3/scalaint endpoint */
 public class ScalaSessionIdV3 extends Schema<IcedSessionId, ScalaSessionIdV3> {
-    @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INOUT)
-    public int session_id;
+  @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INOUT)
+  public int session_id;
 
-    @API(help = "Is this session asynchronous or not", direction = API.Direction.INOUT)
-    public boolean async;
+  @API(help = "Is this session asynchronous or not", direction = API.Direction.INOUT)
+  public boolean async;
 }

@@ -18,17 +18,15 @@ package water.munging;
 
 // FIXME: we need to put this into H2O !!!
 
-/**
- * Enum which is used to specify the joining method
- */
+/** Enum which is used to specify the joining method */
 public enum JoinMethod {
-    AUTO("auto"),
-    RADIX("radix"),
-    HASH("hash");
+  AUTO("auto"),
+  RADIX("radix"),
+  HASH("hash");
 
-    public final String name;
+  public final String name;
 
-    JoinMethod(String name) {
-        this.name = name;
-    }
+  JoinMethod(String name) {
+    this.name = name;
+  }
 }

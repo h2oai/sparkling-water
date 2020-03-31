@@ -143,4 +143,7 @@ spotless {
     scala {
         scalafmt().configFile("$rootDir/.scalafmt.conf")
     }
+    java {
+        googleJavaFormat()
+    }
 }

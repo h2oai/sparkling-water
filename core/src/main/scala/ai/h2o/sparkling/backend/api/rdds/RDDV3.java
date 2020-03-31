@@ -19,16 +19,14 @@ package ai.h2o.sparkling.backend.api.rdds;
 import water.api.API;
 import water.api.Schema;
 
-/**
- * Schema representing [POST] /3/RDDs/[rdd_id] endpoint
- */
+/** Schema representing [POST] /3/RDDs/[rdd_id] endpoint */
 public class RDDV3 extends Schema<IcedRDD, RDDV3> {
-    @API(help = "RDD ID", direction = API.Direction.INOUT)
-    public int rdd_id;
+  @API(help = "RDD ID", direction = API.Direction.INOUT)
+  public int rdd_id;
 
-    @API(help = "RDD Name", direction = API.Direction.OUTPUT)
-    public String name;
+  @API(help = "RDD Name", direction = API.Direction.OUTPUT)
+  public String name;
 
-    @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
-    public int partitions;
+  @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
+  public int partitions;
 }

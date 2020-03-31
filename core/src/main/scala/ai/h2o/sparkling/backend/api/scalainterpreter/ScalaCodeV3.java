@@ -20,28 +20,28 @@ import water.api.API;
 import water.api.Schema;
 import water.api.schemas3.JobV3;
 
-/**
- * Schema representing [POST] /3/scalaint/[session_id] endpoint.
- */
+/** Schema representing [POST] /3/scalaint/[session_id] endpoint. */
 public class ScalaCodeV3 extends Schema<IcedCode, ScalaCodeV3> {
-    @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INPUT)
-    public int session_id;
+  @API(help = "Session id identifying the correct interpreter", direction = API.Direction.INPUT)
+  public int session_id;
 
-    @API(help = "Scala code to interpret", direction = API.Direction.INOUT)
-    public String code;
+  @API(help = "Scala code to interpret", direction = API.Direction.INOUT)
+  public String code;
 
-    @API(help = "Key of an ScalaCodeResult object in DKV", direction = API.Direction.INOUT)
-    public String result_key;
+  @API(help = "Key of an ScalaCodeResult object in DKV", direction = API.Direction.INOUT)
+  public String result_key;
 
-    @API(help = "Status of the code execution", direction = API.Direction.OUTPUT)
-    public String status;
+  @API(help = "Status of the code execution", direction = API.Direction.OUTPUT)
+  public String status;
 
-    @API(help = "Response of the interpreter", direction = API.Direction.OUTPUT)
-    public String response;
+  @API(help = "Response of the interpreter", direction = API.Direction.OUTPUT)
+  public String response;
 
-    @API(help = "Redirected console output, for example output of println is stored to this field", direction = API.Direction.OUTPUT)
-    public String output;
+  @API(
+      help = "Redirected console output, for example output of println is stored to this field",
+      direction = API.Direction.OUTPUT)
+  public String output;
 
-    @API(help = "Job responsible for executing the Scala code", direction = API.Direction.OUTPUT)
-    public JobV3 job;
+  @API(help = "Job responsible for executing the Scala code", direction = API.Direction.OUTPUT)
+  public JobV3 job;
 }

@@ -19,13 +19,11 @@ package ai.h2o.sparkling.backend.api.rdds;
 import water.api.API;
 import water.api.Schema;
 
-/**
- * Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint
- */
+/** Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint */
 public class RDD2H2OFrameIDV3 extends Schema<IcedRDD2H2OFrameID, RDD2H2OFrameIDV3> {
-    @API(help = "Id of RDD to be transformed", direction = API.Direction.INPUT)
-    public int rdd_id;
+  @API(help = "Id of RDD to be transformed", direction = API.Direction.INPUT)
+  public int rdd_id;
 
-    @API(help = "Id of transformed H2OFrame", direction = API.Direction.INOUT)
-    public String h2oframe_id;
+  @API(help = "Id of transformed H2OFrame", direction = API.Direction.INOUT)
+  public String h2oframe_id;
 }

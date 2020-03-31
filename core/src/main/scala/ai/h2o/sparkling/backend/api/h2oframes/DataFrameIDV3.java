@@ -19,13 +19,11 @@ package ai.h2o.sparkling.backend.api.h2oframes;
 import water.api.API;
 import water.api.Schema;
 
-/**
- * Schema representing /3/h2oframes/[h2oframe_id]/dataframe
- */
+/** Schema representing /3/h2oframes/[h2oframe_id]/dataframe */
 public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
-    @API(help = "ID of H2OFrame to be transformed", direction = API.Direction.INPUT)
-    public String h2oframe_id;
+  @API(help = "ID of H2OFrame to be transformed", direction = API.Direction.INPUT)
+  public String h2oframe_id;
 
-    @API(help = "ID of generated Spark's DataFrame", direction = API.Direction.INOUT)
-    public String dataframe_id;
+  @API(help = "ID of generated Spark's DataFrame", direction = API.Direction.INOUT)
+  public String dataframe_id;
 }
