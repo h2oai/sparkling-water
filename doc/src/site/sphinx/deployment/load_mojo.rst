@@ -204,10 +204,6 @@ To score the dataset using the loaded mojo, call:
 
             model$transform(dataset)
 
-
-To obtain domain values of the trained model, you can run ``getDomainValues()`` on the model. This call
-returns a mapping from a column name to it's domain in a form of array.
-
 In Scala, the ``createFromMojo`` method returns a mojo model instance casted as a base class ``H2OMOJOModel``. This class holds
 only properties that are shared accross all MOJO model types from the following type hierarchy:
 
@@ -225,3 +221,40 @@ call the ``createFromMojo`` method on the specific MOJO model type.
     import ai.h2o.sparkling.ml.models._
     val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
     println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
+
+Methods available on MOJO Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Obtaining Domain Values
+^^^^^^^^^^^^^^^^^^^^^^^
+
+To obtain domain values of the trained model, you can run ``getDomainValues()`` on the model. This call
+returns a mapping from a column name to it's domain in a form of array.
+
+Obtaining Model Category
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``getModelCategory`` can be used to get the model category (such as ``binomial``, ``multinomial`` etc).
+
+Obtaining Training Params
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``getTrainingParams`` can be used to get map containing all training parameters used in the H2O. It is a map
+from parameter name to the value. The parameters name use the H2O's naming structure.
+
+
+Obtaining Metrics
+^^^^^^^^^^^^^^^^^
+
+There are several methods to obtain metrics from the MOJO model. All return a map from metric name to its double value.
+
+- ``getTrainingMetrics`` - obtain training metrics
+- ``getValidationMetrics`` - obtain validation metrics
+- ``getCrossValidationMetrics`` - obtain cross validation metrics
+
+We also have method ``getCurrentMetrics`` which gets one of the metrics above based on the following algorithm:
+
+If cross validation was used, ie, ``setNfolds`` was called and value was higher than zero, this method returns cross validation
+metrics. If cross validation was not used, but validation frame was used, the method returns validation metrics. Validation
+frame is used if ``setSplitRatio`` was called with value lower than one. If neither cross validation or validation frame
+was used, this method returns the training metrics.
