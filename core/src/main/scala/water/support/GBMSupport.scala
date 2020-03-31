@@ -43,7 +43,7 @@ trait GBMSupport extends Logging {
     * @tparam T H2O Frame Type
     * @return Gradient Boosting Model
     */
-  @DeprecatedMethod("ai.h2o.sparkling.algos.H2OGBM", "3.32")
+  @DeprecatedMethod("ai.h2o.sparkling.ml.algos.H2OGBM", "3.32")
   def GBMModel[T <: Frame](
       train: T,
       test: T,

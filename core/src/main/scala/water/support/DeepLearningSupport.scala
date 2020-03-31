@@ -46,7 +46,7 @@ trait DeepLearningSupport extends Logging {
     * @tparam T H2O Frame Type
     * @return Deep Learning Model
     */
-  @DeprecatedMethod("ai.h2o.sparkling.algos.H2ODeepLearning", "3.32")
+  @DeprecatedMethod("ai.h2o.sparkling.ml.algos.H2ODeepLearning", "3.32")
   def DLModel[T <: Frame](
       train: T,
       valid: T,
