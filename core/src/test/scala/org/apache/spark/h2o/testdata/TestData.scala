@@ -110,3 +110,5 @@ case class Name(given: String, family: String)
 case class Person(name: Name, age: Int)
 
 case class StringHolder(result: String)
+
+case class DoubleHolder(result: Double)

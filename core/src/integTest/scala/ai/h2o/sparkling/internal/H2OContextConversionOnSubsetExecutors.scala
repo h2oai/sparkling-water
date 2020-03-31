@@ -19,6 +19,7 @@ package ai.h2o.sparkling.internal
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.h2o.testdata.DoubleHolder
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -66,7 +67,7 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
     val originalRdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val hf = hc.asH2OFrame(originalRdd)
 
-    val convertedRdd = hc.asRDD[Option[Int]](hf)
+    val convertedRdd = hc.asRDD[DoubleHolder](hf)
 
     TestFrameUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedRdd.toDF())
   }
