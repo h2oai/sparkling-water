@@ -17,68 +17,70 @@
 
 package ai.h2o.sparkling.extensions.internals;
 
+import java.util.ArrayList;
 import water.Key;
 import water.nbhm.NonBlockingHashMap;
 
-import java.util.ArrayList;
-
 public final class LocalNodeDomains {
-    private static NonBlockingHashMap<Key, ArrayList<String[][]>> domainsMap = new NonBlockingHashMap<>();
-    private static NonBlockingHashMap<String, String[][]> domainsMapByChunk = new NonBlockingHashMap<>();
-    private static NonBlockingHashMap<Key, ArrayList<String>>  frameKeyToChunkKeys = new NonBlockingHashMap<>();
+  private static NonBlockingHashMap<Key, ArrayList<String[][]>> domainsMap =
+      new NonBlockingHashMap<>();
+  private static NonBlockingHashMap<String, String[][]> domainsMapByChunk =
+      new NonBlockingHashMap<>();
+  private static NonBlockingHashMap<Key, ArrayList<String>> frameKeyToChunkKeys =
+      new NonBlockingHashMap<>();
 
-    public synchronized static void addDomains(Key frameKey, int chunkId, String[][] domains) {
-        ArrayList<String[][]> nodeDomains = domainsMap.get(frameKey);
-        if (nodeDomains == null) {
-            nodeDomains = new ArrayList<>();
-            domainsMap.put(frameKey, nodeDomains);
-        }
-        nodeDomains.add(domains);
-
-        ArrayList<String> chunkKeys = frameKeyToChunkKeys.get(frameKey);
-        if (chunkKeys == null) {
-            chunkKeys = new ArrayList<>();
-            frameKeyToChunkKeys.put(frameKey, chunkKeys);
-        }
-        String chunkKey = createChunkKey(frameKey, chunkId);
-        chunkKeys.add(chunkKey);
-
-        domainsMapByChunk.putIfAbsent(chunkKey, domains);
+  public static synchronized void addDomains(Key frameKey, int chunkId, String[][] domains) {
+    ArrayList<String[][]> nodeDomains = domainsMap.get(frameKey);
+    if (nodeDomains == null) {
+      nodeDomains = new ArrayList<>();
+      domainsMap.put(frameKey, nodeDomains);
     }
+    nodeDomains.add(domains);
 
-    public synchronized static boolean containsDomains(Key frameKey) {
-        return domainsMap.containsKey(frameKey);
+    ArrayList<String> chunkKeys = frameKeyToChunkKeys.get(frameKey);
+    if (chunkKeys == null) {
+      chunkKeys = new ArrayList<>();
+      frameKeyToChunkKeys.put(frameKey, chunkKeys);
     }
+    String chunkKey = createChunkKey(frameKey, chunkId);
+    chunkKeys.add(chunkKey);
 
-    public synchronized static boolean containsDomains(Key frameKey, int chunkId) {
-        String chunkKey = createChunkKey(frameKey, chunkId);
-        return domainsMapByChunk.containsKey(chunkKey);
-    }
+    domainsMapByChunk.putIfAbsent(chunkKey, domains);
+  }
 
-    /**
-     * The method returns domains for all chunks on the H2O node. The first array level identifies chunks,
-     * the second columns, the third column values.
-     */
-    public synchronized static String[][][] getDomains(Key frameKey) {
-        return domainsMap.get(frameKey).toArray(new String[0][][]);
-    }
+  public static synchronized boolean containsDomains(Key frameKey) {
+    return domainsMap.containsKey(frameKey);
+  }
 
-    public synchronized static String[][] getDomains(Key frameKey, int chunkId) {
-        String chunkKey = createChunkKey(frameKey, chunkId);
-        return domainsMapByChunk.get(chunkKey);
-    }
+  public static synchronized boolean containsDomains(Key frameKey, int chunkId) {
+    String chunkKey = createChunkKey(frameKey, chunkId);
+    return domainsMapByChunk.containsKey(chunkKey);
+  }
 
-    public synchronized static void remove(Key frameKey) {
-        if (domainsMap.remove(frameKey) != null) {
-            ArrayList<String> chunkKeys = frameKeyToChunkKeys.remove(frameKey);
-            for (String chunkKey : chunkKeys) {
-                domainsMapByChunk.remove(chunkKey);
-            }
-            frameKeyToChunkKeys.remove(frameKey);
-        }
-    }
+  /**
+   * The method returns domains for all chunks on the H2O node. The first array level identifies
+   * chunks, the second columns, the third column values.
+   */
+  public static synchronized String[][][] getDomains(Key frameKey) {
+    return domainsMap.get(frameKey).toArray(new String[0][][]);
+  }
 
-    private static String createChunkKey(Key frameKey, int chunkId) {
-        return frameKey.toString() + "_" + chunkId;
+  public static synchronized String[][] getDomains(Key frameKey, int chunkId) {
+    String chunkKey = createChunkKey(frameKey, chunkId);
+    return domainsMapByChunk.get(chunkKey);
+  }
+
+  public static synchronized void remove(Key frameKey) {
+    if (domainsMap.remove(frameKey) != null) {
+      ArrayList<String> chunkKeys = frameKeyToChunkKeys.remove(frameKey);
+      for (String chunkKey : chunkKeys) {
+        domainsMapByChunk.remove(chunkKey);
+      }
+      frameKeyToChunkKeys.remove(frameKey);
     }
+  }
+
+  private static String createChunkKey(Key frameKey, int chunkId) {
+    return frameKey.toString() + "_" + chunkId;
+  }
 }

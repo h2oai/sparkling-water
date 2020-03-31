@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.extensions.internals;
 
+import java.util.Arrays;
 import jsr166y.ForkJoinTask;
 import water.H2O;
 import water.Key;
@@ -25,78 +26,77 @@ import water.parser.BufferedString;
 import water.parser.PackedDomains;
 import water.util.Log;
 
-import java.util.Arrays;
-
 public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask> {
-    private final Key frameKey;
-    private byte[][] packedDomains;
+  private final Key frameKey;
+  private byte[][] packedDomains;
 
-    public CollectCategoricalDomainsTask(Key frameKey) {
-        this.frameKey = frameKey;
-    }
+  public CollectCategoricalDomainsTask(Key frameKey) {
+    this.frameKey = frameKey;
+  }
 
-    @Override
-    public void setupLocal() {
-        if (!LocalNodeDomains.containsDomains(frameKey)) return;
-        final String[][][] localDomains = LocalNodeDomains.getDomains(frameKey);
-        if (localDomains.length == 0) return;
-        packedDomains = chunkDomainsToPackedDomains(localDomains[0]);
-        for (int i = 1; i < localDomains.length; i++) {
-            byte[][] anotherPackedDomains = chunkDomainsToPackedDomains(localDomains[i]);
-            packedDomains = mergePackedDomains(packedDomains, anotherPackedDomains);
-        }
-        Log.trace("Done locally collecting domains on each node.");
+  @Override
+  public void setupLocal() {
+    if (!LocalNodeDomains.containsDomains(frameKey)) return;
+    final String[][][] localDomains = LocalNodeDomains.getDomains(frameKey);
+    if (localDomains.length == 0) return;
+    packedDomains = chunkDomainsToPackedDomains(localDomains[0]);
+    for (int i = 1; i < localDomains.length; i++) {
+      byte[][] anotherPackedDomains = chunkDomainsToPackedDomains(localDomains[i]);
+      packedDomains = mergePackedDomains(packedDomains, anotherPackedDomains);
     }
+    Log.trace("Done locally collecting domains on each node.");
+  }
 
-    private byte[][] chunkDomainsToPackedDomains(String[][] domains) {
-        byte[][] result = new byte[domains.length][];
-        for(int i = 0; i < domains.length; i++) {
-            String[] columnDomain = domains[i];
-            BufferedString[] values = BufferedString.toBufferedString(columnDomain);
-            Arrays.sort(values);
-            result[i] = PackedDomains.pack(values);
-        }
-        return result;
+  private byte[][] chunkDomainsToPackedDomains(String[][] domains) {
+    byte[][] result = new byte[domains.length][];
+    for (int i = 0; i < domains.length; i++) {
+      String[] columnDomain = domains[i];
+      BufferedString[] values = BufferedString.toBufferedString(columnDomain);
+      Arrays.sort(values);
+      result[i] = PackedDomains.pack(values);
     }
+    return result;
+  }
 
-    private byte[][] mergePackedDomains(byte[][] first, byte[][] second) {
-        for (int i = 0; i < first.length; i++) {
-            first[i] = PackedDomains.merge(first[i], second[i]);
-        }
-        return first;
+  private byte[][] mergePackedDomains(byte[][] first, byte[][] second) {
+    for (int i = 0; i < first.length; i++) {
+      first[i] = PackedDomains.merge(first[i], second[i]);
     }
+    return first;
+  }
 
-    @Override
-    public void reduce(final CollectCategoricalDomainsTask other) {
-        if (packedDomains == null) {
-            packedDomains = other.packedDomains;
-        } else if (other.packedDomains != null) { // merge two packed domains
-            H2O.H2OCountedCompleter[] tasks = new H2O.H2OCountedCompleter[packedDomains.length];
-            for (int i = 0; i < packedDomains.length; i++) {
-                final int fi = i;
-                tasks[i] = new H2O.H2OCountedCompleter(currThrPriority()) {
-                    @Override
-                    public void compute2() {
-                        packedDomains[fi] = PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
-                        tryComplete();
-                    }
-                };
-            }
-            ForkJoinTask.invokeAll(tasks);
-        }
-        Log.trace("Done merging domains.");
+  @Override
+  public void reduce(final CollectCategoricalDomainsTask other) {
+    if (packedDomains == null) {
+      packedDomains = other.packedDomains;
+    } else if (other.packedDomains != null) { // merge two packed domains
+      H2O.H2OCountedCompleter[] tasks = new H2O.H2OCountedCompleter[packedDomains.length];
+      for (int i = 0; i < packedDomains.length; i++) {
+        final int fi = i;
+        tasks[i] =
+            new H2O.H2OCountedCompleter(currThrPriority()) {
+              @Override
+              public void compute2() {
+                packedDomains[fi] = PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
+                tryComplete();
+              }
+            };
+      }
+      ForkJoinTask.invokeAll(tasks);
     }
+    Log.trace("Done merging domains.");
+  }
 
-    public String[] getDomain(int colIdx) {
-        return packedDomains == null ? null : PackedDomains.unpackToStrings(packedDomains[colIdx]);
-    }
+  public String[] getDomain(int colIdx) {
+    return packedDomains == null ? null : PackedDomains.unpackToStrings(packedDomains[colIdx]);
+  }
 
-    public String[][] getDomains() {
-        if (packedDomains == null) return null;
-        String[][] result = new String[packedDomains.length][];
-        for (int i = 0; i < packedDomains.length; i++) {
-            result[i] = PackedDomains.unpackToStrings(packedDomains[i]);
-        }
-        return result;
+  public String[][] getDomains() {
+    if (packedDomains == null) return null;
+    String[][] result = new String[packedDomains.length][];
+    for (int i = 0; i < packedDomains.length; i++) {
+      result[i] = PackedDomains.unpackToStrings(packedDomains[i]);
     }
+    return result;
+  }
 }

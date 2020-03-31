@@ -47,7 +47,7 @@ class ImportFrameHandler extends Handler {
 
     // Update categorical indexes for all chunks.
     val frame = DKV.getGet[Frame](frameKey)
-    val categoricalColumnIndices = for((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
+    val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
     updateCategoricalIndicesTask.doAll(frame)
 
@@ -55,8 +55,9 @@ class ImportFrameHandler extends Handler {
     categoricalColumnIndices.foreach { catColIdx =>
       val vector = frame.vec(catColIdx)
       if (vector.cardinality() > Categorical.MAX_CATEGORICAL_COUNT) {
-        Log.warn(s"Categorical column with index '$catColIdx' exceeded maximum number of categories. " +
-          "Converting it to a column of strings ...")
+        Log.warn(
+          s"Categorical column with index '$catColIdx' exceeded maximum number of categories. " +
+            "Converting it to a column of strings ...")
         frame.replace(catColIdx, vector.toStringVec())
       }
     }

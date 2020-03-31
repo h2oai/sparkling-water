@@ -78,15 +78,14 @@ private[sparkling] object H2OChunk extends RestCommunication {
     insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
   }
 
-  def putChunkCategoricalDomains(node: NodeDesc,
-                                 conf: H2OConf,
-                                 frameName: String,
-                                 chunkId: Int,
-                                 domains: Array[Array[String]]): Unit = {
-    val parameters = Map(
-      "frame_name" -> frameName,
-      "chunk_id" -> chunkId,
-      "compression" -> conf.externalCommunicationCompression)
+  def putChunkCategoricalDomains(
+      node: NodeDesc,
+      conf: H2OConf,
+      frameName: String,
+      chunkId: Int,
+      domains: Array[Array[String]]): Unit = {
+    val parameters =
+      Map("frame_name" -> frameName, "chunk_id" -> chunkId, "compression" -> conf.externalCommunicationCompression)
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
     val addCompression =
       (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)

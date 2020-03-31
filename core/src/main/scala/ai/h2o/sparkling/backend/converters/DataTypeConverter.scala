@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ai.h2o.sparkling.backend.converters
 
@@ -51,8 +51,7 @@ private[backend] object DataTypeConverter {
     stringTypeIndices.zip(types).toMap
   }
 
-  private def createPartitionPreview(rows: Iterator[Row],
-                                     stringTypeIndices: Array[Int]): Iterator[Array[Byte]] = {
+  private def createPartitionPreview(rows: Iterator[Row], stringTypeIndices: Array[Int]): Iterator[Array[Byte]] = {
     val previewParseWriter = new CategoricalPreviewWriter(stringTypeIndices.length)
     val bufferedString = new BufferedString()
     var rowId = 0
@@ -78,20 +77,22 @@ private[backend] object DataTypeConverter {
   private def mergePartitionPreview(first: Array[Byte], second: Array[Byte]): Array[Byte] = {
     val firstObject = CategoricalPreviewWriter.deserialize(first)
     val secondObject = CategoricalPreviewWriter.deserialize(second)
-    val result = PreviewParseWriter.unifyColumnPreviews(firstObject, secondObject).asInstanceOf[CategoricalPreviewWriter]
+    val result =
+      PreviewParseWriter.unifyColumnPreviews(firstObject, secondObject).asInstanceOf[CategoricalPreviewWriter]
     CategoricalPreviewWriter.serialize(result)
   }
 
   def determineExpectedTypes(rdd: RDD[Row], schema: StructType): Array[Byte] = {
     val stringTypes = stringTypesToExpectedTypes(rdd, schema)
-    schema.zipWithIndex.map { case (field, index) =>
-      field.dataType match {
-        case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>
-          ChunkSerdeConstants.EXPECTED_DOUBLE
-        case v if ExposeUtils.isAnyVectorUDT(v) => ChunkSerdeConstants.EXPECTED_VECTOR
-        case StringType => stringTypes(index)
-        case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
-      }
+    schema.zipWithIndex.map {
+      case (field, index) =>
+        field.dataType match {
+          case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>
+            ChunkSerdeConstants.EXPECTED_DOUBLE
+          case v if ExposeUtils.isAnyVectorUDT(v) => ChunkSerdeConstants.EXPECTED_VECTOR
+          case StringType => stringTypes(index)
+          case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
+        }
     }.toArray
   }
 
