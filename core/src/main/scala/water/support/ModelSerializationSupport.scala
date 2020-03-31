@@ -164,8 +164,8 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get MOJO from
     * @return tuple containing MOJO model and binary bytes representing the MOJO
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API which provides you with the MOJO model.")
-  def getMojo(model: H2OBaseModel): (MojoModel, Array[Byte]) = {
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+    " produces the MOJO model.")  def getMojo(model: H2OBaseModel): (MojoModel, Array[Byte]) = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
@@ -178,8 +178,8 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get MOJO from
     * @return MOJO model
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API which provides you with the MOJO model.")
-  def getMojoModel(model: H2OBaseModel): MojoModel = {
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+    " produces the MOJO model.")  def getMojoModel(model: H2OBaseModel): MojoModel = {
     val mojoData = getMojoData(model)
     val bais = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(bais, MojoReaderBackendFactory.CachingStrategy.MEMORY)
@@ -192,8 +192,8 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param mojoData data representing the MOJO model
     * @return MOJO model
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API which provides you with the MOJO model.")
-  def getMojoModel(mojoData: Array[Byte]): MojoModel = {
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+    " produces the MOJO model.")  def getMojoModel(mojoData: Array[Byte]): MojoModel = {
     val is = new ByteArrayInputStream(mojoData)
     val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
     ModelMojoReader.readFrom(reader)
@@ -205,7 +205,8 @@ object ModelSerializationSupport extends ModelSerializationSupport {
     * @param model model to get the binary representation of a MOJO from
     * @return byte array representing the MOJO
     */
-  @DeprecatedMethod("Train algorithm using the Sparkling Water API which provides you with the MOJO model.")
+  @DeprecatedMethod("Train algorithm using the Sparkling Water API. The output model for the fitted algorithm" +
+    " produces the MOJO model.")
   def getMojoData(model: H2OBaseModel): Array[Byte] = {
     val baos = new ByteArrayOutputStream()
     model.getMojo.writeTo(baos)

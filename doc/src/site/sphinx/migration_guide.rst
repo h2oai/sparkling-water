@@ -51,7 +51,7 @@ From 3.30 to 3.32
   most code works with our Spark MOJO wrapper. Please use the following approaches to migrate from previous methods
   in the model serialization support:
 
-    To crete Spark MOJO wrapper in Sparkling Water, you can load it from H2O-3 as:
+    To create Spark MOJO wrapper in Sparkling Water, you can load it from H2O-3 as:
 
     .. code-block:: scala
 
@@ -80,6 +80,9 @@ From 3.30 to 3.32
     .. code-block:: scala
 
         val mojoModel = H2OMOJOModel.read.load("path")
+
+    For additional information about how to load MOJO into Sparkling Water, please see
+    `Loading MOJOs into Sparkling Water <http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/deployment/load_mojo.html>`_.
 
 
 From 3.28.1 to 3.30
