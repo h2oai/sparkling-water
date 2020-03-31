@@ -18,6 +18,7 @@ package ai.h2o.sparkling
 
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import org.apache.spark.sql.SaveMode
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -28,6 +29,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext =
     new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
+  import spark.implicits._
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
     val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
@@ -126,60 +128,66 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     assert(subframe.frameId != originalFrame.frameId)
   }
 
-  test("joins") {
-    import spark.implicits._
+  private lazy val leftFrame = {
     val leftDf = sc.parallelize(Seq(("A", 12), ("B", 13), ("C", 14), ("D", 15))).toDF("name", "age")
+    H2OFrame(hc.asH2OFrameKeyString(leftDf)).convertColumnsToCategorical(Array("name"))
+  }
+
+  private lazy val rightFrame = {
     val rightDf = sc.parallelize(Seq(("Y", 10000), ("B", 20000), ("X", 30000), ("D", 40000))).toDF("name", "salary")
-    val left = H2OFrame(hc.asH2OFrameKeyString(leftDf)).convertColumnsToCategorical(Array("name"))
-    val right = H2OFrame(hc.asH2OFrameKeyString(rightDf)).convertColumnsToCategorical(Array("name"))
-
-    type JoinFunc = (H2OFrame, String) => H2OFrame
-
-    val testSpace: Array[(JoinFunc, Array[(String, Boolean)], Array[(String, Any, Any)])] =
-      Array(
-        (
-          left.leftJoin,
-          Array(("RADIX", true), ("HASH", true)),
-          Array(("A", 12, null), ("B", 13, 20000), ("C", 14, null), ("D", 15, 40000))),
-        (
-          left.rightJoin,
-          Array(("RADIX", false), ("HASH", true)),
-          Array(("Y", null, 10000), ("B", 13, 20000), ("X", null, 10000), ("D", 15, 40000))),
-        (left.innerJoin, Array(("RADIX", true), ("HASH", true)), Array(("B", 13, 20000), ("D", 15, 40000))),
-        (
-          left.outerJoin,
-          Array(("RADIX", false), ("HASH", false)),
-          Array(
-            ("A", 12, null),
-            ("B", 13, 20000),
-            ("C", 14, null),
-            ("D", 15, 40000),
-            ("X", null, 10000),
-            ("Y", null, 10000))))
-    println(testSpace.mkString("\n"))
-
-    for (testComb <- testSpace) {
-      val (joinFunc, methods, expected) = testComb
-      for (method <- methods) {
-        val (joinMethod, enabled) = method
-        if (enabled) {
-          val result = joinFunc(right, joinMethod)
-          assertFrameEqual("Data does not match", expected, result)
-        }
-      }
-    }
+    H2OFrame(hc.asH2OFrameKeyString(rightDf)).convertColumnsToCategorical(Array("name"))
   }
 
-  test("join without categorical column") {}
+  test("Left join") {
+    val expected = sc
+      .parallelize(Seq(("A", 12, null), ("B", 13, 20000), ("C", 14, null), ("D", 15, 40000)))
+      .toDF("name", "age", "salary")
 
-  def assertFrameEqual(msg: String, expected: Seq[(String, Any, Any)], actual: H2OFrame): Unit = {
-    assert(3 == actual.columns.length, s"""$msg: Number of columns has to match""")
-    if (expected != null) {
-      assert(expected.length == actual.numberOfRows, s"""$msg: Number of rows has to match""")
-      val actualDF = hc.asDataFrame(actual.frameId).sort("name")
-      import spark.implicits._
-      val expectedDf = sc.parallelize(expected).toDF("name", "age", "salary").sort("name")
-      TestFrameUtils.assertDataFramesAreIdentical(actualDF, expectedDf)
-    }
+    val resultRadix = hc.asDataFrame(leftFrame.leftJoin(rightFrame, "radix").frameId)
+    val resultHash = hc.asDataFrame(leftFrame.leftJoin(rightFrame, "hash").frameId)
+    TestFrameUtils.assertDataFramesAreIdentical(resultRadix, expected)
+    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
   }
+
+  test("Right join") {
+    val expected = sc
+      .parallelize(Seq(("Y", null, 10000), ("B", 13, 20000), ("X", null, 10000), ("D", 15, 40000)))
+      .toDF("name", "age", "salary")
+
+    val resultHash = hc.asDataFrame(leftFrame.rightJoin(rightFrame, "hash").frameId)
+    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
+  }
+
+  test("Inner join") {
+    val expected = sc.parallelize(Seq(("B", 13, 20000), ("D", 15, 40000))).toDF("name", "age", "salary")
+
+    val resultRadix = hc.asDataFrame(leftFrame.innerJoin(rightFrame, "radix").frameId)
+    val resultHash = hc.asDataFrame(leftFrame.innerJoin(rightFrame, "hash").frameId)
+    TestFrameUtils.assertDataFramesAreIdentical(resultRadix, expected)
+    TestFrameUtils.assertDataFramesAreIdentical(resultHash, expected)
+  }
+
+  test("Outer join") {
+    val expected = sc
+      .parallelize(
+        Seq(
+          ("A", 12, null),
+          ("B", 13, 20000),
+          ("C", 14, null),
+          ("D", 15, 40000),
+          ("X", null, 10000),
+          ("Y", null, 10000)))
+      .toDF("name", "age", "salary")
+
+  }
+
+  test("Join without categorical column") {}
+
+  test("Join with unsupported join method") {
+    val thrown = intercept[RuntimeException] {
+      leftFrame.leftJoin(rightFrame, "unknown")
+    }
+    assert(thrown.getMessage == s"Possible join methods are [auto, radix, hash]. On the input was: unknown.")
+  }
+
 }

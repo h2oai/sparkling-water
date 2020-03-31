@@ -164,7 +164,9 @@ class H2OFrame private (
       allFromAnother: Boolean = false,
       method: String = "AUTO"): H2OFrame = {
     if (!H2OFrameJoinMethods.contains(method.toLowerCase)) {
-      throw new IllegalArgumentException(s"Possible join methods are ${H2OFrameJoinMethods.mkString("[", ",", "]")}")
+      throw new IllegalArgumentException(
+        s"Possible join methods are ${H2OFrameJoinMethods.mkString("[", ", ", "]")}." +
+          s"  On the input was: ${method}")
     }
     val endpoint = getClusterEndpoint(conf)
     val params = Map(
