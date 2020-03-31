@@ -93,8 +93,7 @@ From 3.30 to 3.32
   - Left join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).leftJoin(rightFrame)``
   - Right join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).rightJoin(rightFrame)``
 
-
-The ``JoinMethod`` enum is no longer needed, but string is expected instead in ``method`` argument.
+The ``JoinMethod`` enum is removed as it is no longer required.
 
 
 From 3.28.1 to 3.30
