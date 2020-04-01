@@ -32,7 +32,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase
   extends FunSuite
   with BeforeAndAfterEach
   with Matchers
-  with SharedH2OTestContext {
+  with SparkTestContext {
 
   def testExtraHTTPHeadersArePropagated(urlProvider: H2OContext => String): Unit = {
     val h2oConf = new H2OConf()
@@ -40,7 +40,7 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase
     h2oConf
       .setFlowExtraHttpHeaders(extraHttpHeaders)
       .setClusterSize(1)
-    hc = H2OContext.getOrCreate(h2oConf)
+    val hc = H2OContext.getOrCreate(h2oConf)
 
     val url = new URL(urlProvider(hc))
     val connection = url.openConnection().asInstanceOf[HttpURLConnection]
