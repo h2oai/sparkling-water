@@ -267,7 +267,7 @@ def unitTests() {
                             """
                     }
                 } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
                     junit 'ml/build/test-results/test/*.xml'
@@ -351,11 +351,11 @@ def integTests() {
                     ${getGradleCommand(config)} integTest -x :sparkling-water-py:integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
-                    arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, examples/build/test-results/binary/integTest/*, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'
+                    arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                     junit 'core/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
                     junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', 'ML Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
                     junit 'ml/build/test-results/integTest/*.xml'
                     testReport 'ml/build/reports/tests/integTest', 'ML Integration tests'
                 }
