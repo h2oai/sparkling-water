@@ -28,7 +28,11 @@ import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
-abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
+abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase
+  extends FunSuite
+  with BeforeAndAfterEach
+  with Matchers
+  with SharedH2OTestContext {
 
   def testExtraHTTPHeadersArePropagated(urlProvider: H2OContext => String): Unit = {
     val h2oConf = new H2OConf()
@@ -67,7 +71,11 @@ class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPr
   override def createSparkSession(): SparkSession = sparkSession("local-cluster[1,1,1024]")
 }
 
-abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
+abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase
+  extends FunSuite
+  with BeforeAndAfterEach
+  with Matchers
+  with SharedH2OTestContext {
 
   def testNotifyLocalPropertyCreatesFile(propertySetter: (H2OConf, Path) => H2OConf): Unit = {
     val tmpDirPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
@@ -135,23 +143,26 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
 }
 
 abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
-  extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
+  extends FunSuite
+  with BeforeAndAfterEach
+  with Matchers
+  with SharedH2OTestContext {
 
-    test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
-      val h2oConf = new H2OConf()
-      h2oConf.setExternalCommunicationCompression(compressionType)
-      h2oConf.setClusterSize(1)
-      hc = H2OContext.getOrCreate(h2oConf)
-      val dataset = spark.read
-        .option("header", "true")
-        .option("inferSchema", "true")
-        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+  test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
+    val h2oConf = new H2OConf()
+    h2oConf.setExternalCommunicationCompression(compressionType)
+    h2oConf.setClusterSize(1)
+    hc = H2OContext.getOrCreate(h2oConf)
+    val dataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-      val frameKey = hc.asH2OFrameKeyString(dataset)
-      val result = hc.asDataFrame(frameKey)
+    val frameKey = hc.asH2OFrameKeyString(dataset)
+    val result = hc.asDataFrame(frameKey)
 
-      TestUtils.assertDataFramesAreIdentical(dataset, result)
-    }
+    TestUtils.assertDataFramesAreIdentical(dataset, result)
+  }
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 }

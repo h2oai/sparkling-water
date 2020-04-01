@@ -32,9 +32,12 @@ class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with 
 
   private var scalaCodeHandler: ScalaCodeHandler = _
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]", defaultSparkConf
-    .set("spark.ext.h2o.repl.enabled", "true")
-    .set("spark.ext.scala.int.default.num", "2"))
+  override def createSparkSession(): SparkSession =
+    sparkSession(
+      "local[*]",
+      defaultSparkConf
+        .set("spark.ext.h2o.repl.enabled", "true")
+        .set("spark.ext.scala.int.default.num", "2"))
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc, hc)

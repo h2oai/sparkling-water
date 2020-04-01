@@ -72,11 +72,9 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
     SemiPartialPerson(pp.name.orNull, pp.age, pp.email)
   }
 
-
   private lazy val testSourceDatasetWithPartialData = spark.createDataset(samplePartialPeople)
 
   private lazy val testH2oFrameWithPartialData: H2OFrame = hc.asH2OFrame(testSourceDatasetWithPartialData)
-
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
 
