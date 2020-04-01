@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.SharedBackendConf
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
@@ -35,7 +35,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 
   @transient var sc: SparkContext = _
-  @transient lazy val spark: SparkSession = SparkSession.builder().sparkContext(sc).getOrCreate()
+  @transient lazy val spark: SparkSession = SparkSession.builder().getOrCreate()
   @transient lazy implicit val sqlContext: SQLContext = spark.sqlContext
 
   override def beforeAll() {

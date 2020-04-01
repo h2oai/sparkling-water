@@ -22,13 +22,11 @@ import java.sql.Timestamp
 import java.util
 import java.util.{TimeZone, UUID}
 
+import ai.h2o.sparkling.TestUtils._
 import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.splitframe.ShuffleSplitFrame
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.testdata._
-import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
@@ -38,7 +36,6 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Assertions, FunSuite}
 import water.Key
-import water.api.TestUtils
 import water.fvec._
 import water.parser.BufferedString
 

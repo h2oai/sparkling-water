@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.backend.utils
 
+import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}

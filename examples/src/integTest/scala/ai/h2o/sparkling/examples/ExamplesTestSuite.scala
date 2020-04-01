@@ -16,8 +16,8 @@
  */
 package ai.h2o.sparkling.examples
 
+import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner

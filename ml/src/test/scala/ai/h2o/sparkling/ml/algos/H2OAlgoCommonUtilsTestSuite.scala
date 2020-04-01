@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.StructType

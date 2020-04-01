@@ -18,15 +18,14 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -102,7 +101,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     val originalResult = model.transform(testingDataset)
     val deserializedResult = model.transform(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(originalResult, deserializedResult)
+    TestUtils.assertDataFramesAreIdentical(originalResult, deserializedResult)
   }
 
   test("The original MOJO and deserialized MOJO return the same result - GBM") {

@@ -17,14 +17,13 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {

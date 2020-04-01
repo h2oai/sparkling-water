@@ -18,12 +18,11 @@ package ai.h2o.sparkling.backend.api.h2oframes
 
 import java.io.File
 
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 

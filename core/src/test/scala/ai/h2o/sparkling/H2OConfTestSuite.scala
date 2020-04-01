@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.h2o
+package ai.h2o.sparkling
 
 import org.apache.spark.SparkConf
-import org.apache.spark.h2o.utils.SparkTestContext
+import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

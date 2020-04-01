@@ -17,12 +17,10 @@
 package ai.h2o.sparkling
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.sql.DataFrame
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
@@ -194,6 +192,6 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
     val resultDF = hc.asDataFrame(result.frameId).select("name", "age", "city", "salary")
-    TestFrameUtils.assertDataFramesAreIdentical(resultDF, expected)
+    TestUtils.assertDataFramesAreIdentical(resultDF, expected)
   }
 }

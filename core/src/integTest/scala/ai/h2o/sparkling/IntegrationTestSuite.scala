@@ -17,16 +17,11 @@
 
 package ai.h2o.sparkling
 
-import ai.h2o.sparkling.ml.utils.{ComplexSchema, SchemaUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
-import org.apache.spark.sql.Row
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-
-import scala.concurrent.duration.Duration
 
 @RunWith(classOf[JUnitRunner])
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
@@ -69,27 +64,13 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
     val h2oFrame = hc.asH2OFrame(rdd)
 
-    TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+    TestUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
       val value = vec.at(rowIdx)
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
     })
 
     h2oFrame.delete()
-  }
-
-  test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
-    val expectedNumberOfColumns = 200000
-    val settings =
-      TestFrameUtils.GenerateDataFrameSettings(numberOfRows = 200, rowsPerPartition = 50, maxCollectionSize = 100)
-    testFlatteningOnComplexType(settings, expectedNumberOfColumns)
-  }
-
-  test("SchemaUtils: flattenDataFrame should process a complex data frame with 100k rows and 2k columns") {
-    val expectedNumberOfColumns = 2000
-    val settings =
-      TestFrameUtils.GenerateDataFrameSettings(numberOfRows = 100000, rowsPerPartition = 10000, maxCollectionSize = 10)
-    testFlatteningOnComplexType(settings, expectedNumberOfColumns)
   }
 
   test("Spark Known Issues: PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
@@ -123,30 +104,5 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     val first = counts.head
     val mismatch = counts.exists(c => c != first)
     assert(!mismatch, "Number of elements in all samples should be the same since BroadcastHashJoins aren't used")
-  }
-
-  private def testFlatteningOnComplexType(
-      settings: TestFrameUtils.GenerateDataFrameSettings,
-      expectedNumberOfColumns: Int): Unit = {
-    trackTime {
-      val complexDF = TestFrameUtils.generateDataFrame(spark, ComplexSchema, settings)
-      val flattened = SchemaUtils.flattenDataFrame(complexDF)
-
-      val fieldTypeNames = flattened.schema.fields.map(_.dataType.typeName)
-      val numberOfFields = fieldTypeNames.length
-      println(s"Number of columns: $numberOfFields")
-      assert(numberOfFields > expectedNumberOfColumns)
-      assert(fieldTypeNames.intersect(Array("struct", "array", "map")).isEmpty)
-      flattened.foreach((r: Row) => r.toSeq.length)
-    }
-  }
-
-  private def trackTime[R](block: => R): R = {
-    val t0 = System.nanoTime()
-    val result = block // evaluate block
-    val t1 = System.nanoTime()
-    val diff = Duration.fromNanos(t1 - t0)
-    println(s"Elapsed time: ${diff.toSeconds} seconds")
-    result
   }
 }

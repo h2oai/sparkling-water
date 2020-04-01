@@ -21,8 +21,8 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
+import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._

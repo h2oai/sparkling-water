@@ -16,8 +16,8 @@
  */
 package ai.h2o.sparkling.ml.utils
 
+import ai.h2o.sparkling.{SparkTestContext, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -25,13 +25,11 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
-/**
-  * Set of test for various DataFrame's schema-related methods.
-  */
 @RunWith(classOf[JUnitRunner])
 class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext {
 
   sc = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  import spark.implicits._
 
   "flattenStructsInSchema" should "flatten a simple schema" in {
     val expSchema = StructType(
@@ -66,7 +64,6 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
   }
 
   "flattenDataFrame" should "flatten an array of structs" in {
-    import spark.implicits._
 
     val input = Seq(Seq((1, 2), (3, 4)), Seq((1, 2), (3, 4), (5, 6))).toDF("arr")
     val expected = Seq[(Integer, Integer, Integer, Integer, Integer, Integer)](
@@ -75,12 +72,11 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenDataFrame" should "flatten a struct of arrays" in {
-    import spark.implicits._
 
     val input = Seq[(Seq[Integer], Seq[Integer], Seq[Integer])](
       (Seq[Integer](1, null), Seq[Integer](3, 4), Seq[Integer](5)),
@@ -93,12 +89,11 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenDataFrame" should "flatten an array of arrays" in {
-    import spark.implicits._
 
     val input = Seq((Seq(Seq(1), null, Seq(3, 4, 5)), "extra"), (Seq(Seq(1, 2), Seq(3, 4), Seq(5, 6)), "extra"))
       .toDF("arr", "extra")
@@ -116,12 +111,11 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenDataFrame" should "flatten a struct of structs" in {
-    import spark.implicits._
 
     val input = Seq[((Integer, Integer), (Integer, Integer))](((1, null), (3, 4)), ((1, 2), (null, 4)))
       .toDF("struct1", "struct2")
@@ -131,12 +125,11 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenDataFrame" should "flatten an array of maps" in {
-    import spark.implicits._
 
     val input = Seq((Seq(Map("a" -> 1, "b" -> 2)), "extra"), (Seq(Map("b" -> 2, "c" -> 3), Map("a" -> 4)), "extra"))
       .toDF("arr", "extra")
@@ -146,12 +139,11 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenDataFrame" should "flatten a map of arrays" in {
-    import spark.implicits._
 
     val input = Seq(
       (Map("a" -> Seq[Integer](1, 2), "b" -> Seq[Integer](3)), "extra"),
@@ -169,8 +161,8 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
     val result = SchemaUtils.flattenDataFrame(input)
 
-    TestFrameUtils.assertFieldNamesAreEqual(expected, result)
-    TestFrameUtils.assertDataFramesAreIdentical(expected, result)
+    TestUtils.assertFieldNamesAreEqual(expected, result)
+    TestUtils.assertDataFramesAreIdentical(expected, result)
   }
 
   "flattenSchema" should "flatten a schema with an array of structs" in {

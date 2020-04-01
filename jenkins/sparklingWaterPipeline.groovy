@@ -349,7 +349,9 @@ def integTests() {
                     junit 'core/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
                     junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', 'ML Integration tests'
+                    junit 'ml/build/test-results/integTest/*.xml'
+                    testReport 'ml/build/reports/tests/integTest', 'ML Integration tests'
                 }
             }
         }

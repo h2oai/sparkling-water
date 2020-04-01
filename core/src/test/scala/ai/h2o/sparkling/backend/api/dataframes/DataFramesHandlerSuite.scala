@@ -18,15 +18,14 @@ package ai.h2o.sparkling.backend.api.dataframes
 
 import java.io.File
 
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import com.google.gson.JsonParser
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
-import water.api.TestUtils
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
 

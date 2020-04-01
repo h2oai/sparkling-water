@@ -22,7 +22,7 @@ import java.nio.file.Files
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -31,7 +31,6 @@ import org.apache.spark.{SparkContext, SparkFiles}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 
 abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
@@ -136,7 +135,7 @@ class PipelinePredictionTest extends PipelinePredictionTestBase {
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
 
-    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
+    TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 }
 
@@ -193,7 +192,7 @@ class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(data).drop("label")
 
-    TestFrameUtils.assertDataFramesAreIdentical(predictions1, predictions2)
+    TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
 
 }

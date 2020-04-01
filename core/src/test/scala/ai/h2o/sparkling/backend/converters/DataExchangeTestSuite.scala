@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
@@ -118,7 +118,7 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
       val h2oFrame = hc.asH2OFrame(dataFrame)
       val result = hc.asDataFrame(h2oFrame)
 
-      TestFrameUtils.assertDataFramesAreIdentical(expectedDataFrame, result)
+      TestUtils.assertDataFramesAreIdentical(expectedDataFrame, result)
     }
   }
 

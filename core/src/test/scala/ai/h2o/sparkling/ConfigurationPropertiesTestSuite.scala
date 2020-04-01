@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.spark.h2o
+package ai.h2o.sparkling
 
 import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
 import java.security.Permission
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SparkTestContext, TestFrameUtils}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 import scala.collection.JavaConverters._
 
@@ -41,7 +40,7 @@ abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers w
       .set("spark.driver.extraClassPath", sys.props("java.class.path"))
       .set("spark.executor.extraClassPath", sys.props("java.class.path"))
     sc = new SparkContext(master, getClass.getSimpleName, conf)
-    SparkSession.builder().sparkContext(sc).getOrCreate()
+    SparkSession.builder().getOrCreate()
   }
 
   override def afterEach(): Unit = {
@@ -203,7 +202,7 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
       val frameKey = hc.asH2OFrameKeyString(dataset)
       val result = hc.asDataFrame(frameKey)
 
-      TestFrameUtils.assertDataFramesAreIdentical(dataset, result)
+      TestUtils.assertDataFramesAreIdentical(dataset, result)
     }
   }
 }

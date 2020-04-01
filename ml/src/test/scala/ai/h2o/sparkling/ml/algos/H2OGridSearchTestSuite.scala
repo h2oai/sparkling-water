@@ -18,15 +18,14 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.AlgoParam
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 import scala.collection.mutable
 

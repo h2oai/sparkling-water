@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.spark.h2o.utils
+package ai.h2o.sparkling
 
 import java.security.Permission
 

@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}

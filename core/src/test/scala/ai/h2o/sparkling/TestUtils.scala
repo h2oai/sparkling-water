@@ -14,36 +14,84 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package ai.h2o.sparkling
 
-package org.apache.spark.h2o.utils
-
+import java.io.File
+import java.sql.Timestamp
 import java.util.UUID
 
-import org.apache.spark.h2o.{Dataset, H2OFrame}
+import org.apache.spark.h2o.Dataset
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.{h2o, mllib}
 import org.scalatest.Matchers
-import water.fvec._
+import water.fvec.{Chunk, ChunkUtils, NewChunk, Vec}
 import water.parser.BufferedString
 
 import scala.reflect.ClassTag
 import scala.util.Random
 
-/**
-  * Various helpers to help with working with Frames during tests
-  */
-object TestFrameUtils extends Matchers {
+object TestUtils extends Matchers {
+
+  def locate(name: String): String = {
+    val file = new File("./examples/" + name)
+    if (file.exists()) {
+      file.getAbsolutePath
+    } else {
+      // testing from IDEA
+      new File("../examples/" + name).getAbsolutePath
+    }
+  }
+
+  def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
+    (0 until vec.length().toInt).foreach { rIdx =>
+      assert(
+        if (vec.isNA(rIdx)) -1 == values(rIdx)
+        else vec.at8(rIdx) == values(rIdx),
+        "Values stored in H2OFrame has to match specified values")
+    }
+  }
+
+  def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
+    (0 until vec.length().toInt).foreach { rIdx =>
+      assert(
+        if (vec.isNA(rIdx)) values(rIdx).equals(Double.NaN) // this is Scala i can do NaN comparision
+        else vec.at(rIdx) == values(rIdx),
+        "Values stored in H2OFrame has to match specified values")
+    }
+  }
+
+  def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
+    val valString = new BufferedString()
+    (0 until vec.length().toInt).foreach { rIdx =>
+      assert(vec.isNA(rIdx) || {
+        vec.atStr(valString, rIdx)
+        valString.toSanitizedString == values(rIdx)
+      }, "Values stored in H2OFrame has to match specified values")
+    }
+  }
+
+  def assertDoubleFrameValues(f: water.fvec.Frame, rows: Seq[Array[Double]]): Unit = {
+    val ncol = f.numCols()
+    val rowsIdx = (0 until f.numRows().toInt)
+    val columns = (0 until ncol).map(cidx => rowsIdx.map(rows(_)(cidx)))
+    f.vecs().zipWithIndex.foreach {
+      case (vec, idx: Int) =>
+        assertVectorDoubleValues(vec, columns(idx))
+    }
+  }
+
   def makeH2OFrame[T: ClassTag](
       fname: String,
       colNames: Array[String],
       chunkLayout: Array[Long],
       data: Array[Array[T]],
       h2oType: Byte,
-      colDomains: Array[Array[String]] = null): H2OFrame = {
+      colDomains: Array[Array[String]] = null): h2o.H2OFrame = {
     makeH2OFrame2(fname, colNames, chunkLayout, data.map(_.map(value => Array(value))), Array(h2oType), colDomains)
   }
 
@@ -53,14 +101,14 @@ object TestFrameUtils extends Matchers {
       chunkLayout: Array[Long],
       data: Array[Array[Array[T]]],
       h2oTypes: Array[Byte],
-      colDomains: Array[Array[String]] = null): H2OFrame = {
+      colDomains: Array[Array[String]] = null): h2o.H2OFrame = {
     ChunkUtils.initFrame(fname, colNames)
 
     for (i <- chunkLayout.indices) {
       buildChunks(fname, data(i), i, h2oTypes)
     }
 
-    new H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, h2oTypes, colDomains))
+    new h2o.H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, h2oTypes, colDomains))
   }
 
   def buildChunks[T: ClassTag](
@@ -128,7 +176,7 @@ object TestFrameUtils extends Matchers {
 
   private type RowValueAssert = (Long, Vec) => Unit
 
-  def assertBasicInvariants[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+  def assertBasicInvariants[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
     assertRDDHolderProperties(df)
     assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
     // Check numbering
@@ -141,7 +189,7 @@ object TestFrameUtils extends Matchers {
     }
   }
 
-  def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: H2OFrame, rowAssert: RowValueAssert): Unit = {
+  def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
     assertRDDHolderProperties(df)
     assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
     // Check numbering
@@ -153,7 +201,7 @@ object TestFrameUtils extends Matchers {
     }
   }
 
-  private def assertRDDHolderProperties(df: H2OFrame): Unit = {
+  private def assertRDDHolderProperties(df: h2o.H2OFrame): Unit = {
     assert(df.numCols() == 1, "H2OFrame should contain single column")
     assert(df.names().length == 1, "H2OFrame column names should have single value")
     assert(
@@ -161,7 +209,7 @@ object TestFrameUtils extends Matchers {
       "H2OFrame column name should be 'value' since we define the value inside the Option.")
   }
 
-  private def assertDatasetHolderProperties(df: H2OFrame, names: List[String]): Unit = {
+  private def assertDatasetHolderProperties(df: h2o.H2OFrame, names: List[String]): Unit = {
     val actualNames = df.names().toList
     val numCols = names.length
     assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
@@ -173,7 +221,7 @@ object TestFrameUtils extends Matchers {
 
   def assertBasicInvariants[T <: Product](
       ds: Dataset[T],
-      df: H2OFrame,
+      df: h2o.H2OFrame,
       rowAssert: RowValueAssert,
       names: List[String]): Unit = {
     assertDatasetHolderProperties(df, names)
@@ -268,4 +316,93 @@ object TestFrameUtils extends Matchers {
       generateValueForField(random, arrayField, settings, Some(nameWithPrefix))
     }
   }
+
+  case class ByteField(v: Byte)
+
+  case class ShortField(v: Short)
+
+  case class IntField(v: Int)
+
+  case class LongField(v: Long)
+
+  case class FloatField(v: Float)
+
+  case class DoubleField(v: Double)
+
+  case class StringField(v: String)
+
+  case class TimestampField(v: Timestamp)
+
+  case class DateField(d: java.sql.Date)
+
+  case class PrimitiveA(n: Int, name: String)
+
+  case class ComposedA(a: PrimitiveA, weight: Double)
+
+  case class ComposedWithTimestamp(a: PrimitiveA, v: TimestampField)
+
+  case class PrimitiveB(f: Seq[Int])
+
+  case class PrimitiveMllibFixture(f: mllib.linalg.Vector)
+
+  case class PrimitiveMlFixture(f: org.apache.spark.ml.linalg.Vector)
+
+  case class ComplexMlFixture(f1: org.apache.spark.ml.linalg.Vector, idx: Int, f2: org.apache.spark.ml.linalg.Vector)
+
+  case class Prostate(
+      ID: Option[Long],
+      CAPSULE: Option[Int],
+      AGE: Option[Int],
+      RACE: Option[Int],
+      DPROS: Option[Int],
+      DCAPS: Option[Int],
+      PSA: Option[Float],
+      VOL: Option[Float],
+      GLEASON: Option[Int]) {
+    def isWrongRow: Boolean = (0 until productArity).map(idx => productElement(idx)).forall(e => e == None)
+  }
+
+  class PUBDEV458Type(val result: Option[Int]) extends Product with Serializable {
+    override def canEqual(that: Any): Boolean = that.isInstanceOf[PUBDEV458Type]
+
+    override def productArity: Int = 1
+
+    override def productElement(n: Int) =
+      n match {
+        case 0 => result
+        case _ => throw new IndexOutOfBoundsException(n.toString)
+      }
+  }
+
+  case class OptionAndNot(val x: Option[Int], val y: Option[Int]) extends Serializable
+
+  case class SamplePerson(name: String, age: Int, email: String)
+
+  case class WeirdPerson(email: String, age: Int, name: String)
+
+  case class SampleCompany(officialName: String, count: Int, url: String)
+
+  case class SampleAccount(email: String, name: String, age: Int)
+
+  case class SampleCat(name: String, age: Int)
+
+  case class PartialPerson(name: Option[String], age: Option[Int], email: Option[String])
+
+  case class SemiPartialPerson(name: String, age: Option[Int], email: Option[String])
+
+  case class SampleString(x: String)
+
+  case class SampleAltString(y: String)
+
+  case class SparseVectorHolder(v: org.apache.spark.ml.linalg.SparseVector)
+
+  case class DenseVectorHolder(v: org.apache.spark.ml.linalg.DenseVector)
+
+  case class Name(given: String, family: String)
+
+  case class Person(name: Name, age: Int)
+
+  case class StringHolder(result: String)
+
+  case class DoubleHolder(result: Double)
 }

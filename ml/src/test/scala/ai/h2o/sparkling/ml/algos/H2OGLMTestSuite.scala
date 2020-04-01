@@ -18,14 +18,13 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.internals.H2OModel
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import water.Key
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {

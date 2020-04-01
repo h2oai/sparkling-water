@@ -16,9 +16,9 @@
  */
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
+import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.repl.CodeResults
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}

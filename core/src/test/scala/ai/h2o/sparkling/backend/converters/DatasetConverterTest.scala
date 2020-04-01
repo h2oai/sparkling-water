@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import ai.h2o.sparkling.SharedH2OTestContext
+import ai.h2o.sparkling.TestUtils._
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
-import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.h2o.utils.TestFrameUtils._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -35,8 +35,6 @@ import scala.reflect.runtime.universe._
   */
 @RunWith(classOf[JUnitRunner])
 class DatasetConverterTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
-
-  import testdata._
 
   val dataSource =
     ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::

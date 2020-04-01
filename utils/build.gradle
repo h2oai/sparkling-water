@@ -8,6 +8,12 @@ dependencies {
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
   implementation("org.xerial.snappy:snappy-java:1.1.7")
+
+  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
+  testImplementation("junit:junit:4.11")
+  testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 }
 
 defineStandardPublication().call()

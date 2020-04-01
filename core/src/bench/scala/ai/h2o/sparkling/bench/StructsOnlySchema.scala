@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package ai.h2o.sparkling.bench
 
-import org.apache.spark.h2o.utils.TestFrameUtils
+import ai.h2o.sparkling.TestUtils
 import org.apache.spark.sql.types._
 
-case object StructsOnlySchema extends TestFrameUtils.SchemaHolder {
+case object StructsOnlySchema extends TestUtils.SchemaHolder {
   @transient lazy val schema: StructType = {
     StructType(
       Seq(

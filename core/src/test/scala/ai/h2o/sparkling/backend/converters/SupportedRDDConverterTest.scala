@@ -18,21 +18,19 @@ package ai.h2o.sparkling.backend.converters
 
 import java.io.File
 import java.sql.Timestamp
+import java.util
 
-import ai.h2o.sparkling.SparkTimeZone
+import ai.h2o.sparkling.TestUtils._
 import ai.h2o.sparkling.backend.utils.H2OClientUtils
+import ai.h2o.sparkling.{SharedH2OTestContext, SparkTimeZone, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.testdata._
-import org.apache.spark.h2o.utils.H2OAsserts._
-import org.apache.spark.h2o.utils.TestFrameUtils._
-import org.apache.spark.h2o.utils._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
 
@@ -40,24 +38,19 @@ import water.parser.{BufferedString, Categorical}
   * Testing schema for rdd  to h2o frame transformations.
   */
 @RunWith(classOf[JUnitRunner])
-class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
+class SupportedRDDConverterTest extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext =
     new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
   test("int iterator does not get stuck") {
     val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i))
 
-    import StaticStorage._
-
+    val intIteratorTestMemory = new util.ArrayList[Int]
     def dupChecker(iter: Iterator[Option[Int]]): Unit = {
-      iter.foreach(intIteratorTestMemory.put)
+      iter.foreach(v => v.foreach(intIteratorTestMemory.add))
     }
 
-    try {
-      sc.runJob(rdd, dupChecker _)
-    } catch {
-      case x: Exception => abort(x)
-    }
+    sc.runJob(rdd, dupChecker _)
 
     assert(intIteratorTestMemory.size == 10)
   }
@@ -69,12 +62,11 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     val h2oFrame: H2OFrame = rdd
     val numRows = h2oFrame.numRows()
 
-    import StaticStorage._
-
+    val pubdev458TestMemory = new util.ArrayList[PUBDEV458Type]
     val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
 
-    def dupChecker(iterator: Iterator[PUBDEV458Type]) = {
-      iterator foreach pubdev458TestMemory.put
+    def dupChecker(iter: Iterator[PUBDEV458Type]) = {
+      iter.foreach(pubdev458TestMemory.add)
     }
 
     val c1 = rdd.count
@@ -630,9 +622,4 @@ class SupportedRDDConverterTest extends TestBase with SharedH2OTestContext {
     }
   }
 
-}
-
-object StaticStorage {
-  val intIteratorTestMemory = new TestMemory[Int]
-  val pubdev458TestMemory = new TestMemory[PUBDEV458Type]
 }

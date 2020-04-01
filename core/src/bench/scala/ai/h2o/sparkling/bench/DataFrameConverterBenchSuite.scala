@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.bench
 
-import ai.h2o.sparkling.ml.utils.{FlatArraysOnlySchema, FlatSchema, SchemaUtils, StructsOnlySchema}
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import ai.h2o.sparkling.TestUtils.{DenseVectorHolder, SparseVectorHolder}
+import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vectors}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -33,7 +33,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   override def createSparkContext =
     new SparkContext("local-cluster[2, 1, 2048]", getClass.getSimpleName, defaultSparkConf)
 
-  private val settings = TestFrameUtils.GenerateDataFrameSettings(
+  private val settings = TestUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
     rowsPerPartition = 500,
     maxCollectionSize = 100,
@@ -75,24 +75,24 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     rowToSchema(FlatArraysOnlySchema)
   }
 
-  private def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
     hf.remove()
   }
 
-  private def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testflattenOnlyPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenDataFrame(df).foreach(_ => {})
   }
 
-  private def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testflattenSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenSchema(df)
   }
 
-  private def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def rowToSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
 

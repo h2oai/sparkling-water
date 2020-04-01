@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.spark.h2o
+package ai.h2o.sparkling
 
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.h2o.Frame
 import org.apache.spark.sql.SaveMode
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
+import org.apache.spark.h2o._
 
 /**
   * Test using H2O Frame as Spark SQL data source

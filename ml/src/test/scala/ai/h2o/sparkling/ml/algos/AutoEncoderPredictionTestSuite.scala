@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 class AutoEncoderPredictionTestSuite
   extends FunSuite
