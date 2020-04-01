@@ -134,9 +134,9 @@ object H2OClientUtils extends SharedBackendUtils {
       interface.getInterfaceAddresses.asScala.foreach { address =>
         val ip = address.getAddress.getHostAddress + "/" + address.getNetworkPrefixLength
         val cidr = HostnameGuesser.CIDRBlock.parse(ip)
-      //if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
-      //  return Some(address.getAddress.getHostAddress)
-      //}
+        if (cidr != null && cidr.isInetAddressOnNetwork(InetAddress.getByName(remoteAddress))) {
+          return Some(address.getAddress.getHostAddress)
+        }
       }
     }
     None
