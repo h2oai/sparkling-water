@@ -42,43 +42,6 @@ class SupportedRDDConverterTest extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext =
     new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
-  test("int iterator does not get stuck") {
-    val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i))
-
-    val intIteratorTestMemory = new util.ArrayList[Int]
-    def dupChecker(iter: Iterator[Option[Int]]): Unit = {
-      iter.foreach(v => v.foreach(intIteratorTestMemory.add))
-    }
-
-    sc.runJob(rdd, dupChecker _)
-
-    assert(intIteratorTestMemory.size == 10)
-  }
-
-  test("product iterator does not get stuck") {
-    val h2oContext = hc
-    import h2oContext.implicits._
-    val rdd = sc.parallelize(1 to 10, 10).map(i => Some(i))
-    val h2oFrame: H2OFrame = rdd
-    val numRows = h2oFrame.numRows()
-
-    val pubdev458TestMemory = new util.ArrayList[PUBDEV458Type]
-    val back2rdd = hc.asRDD[PUBDEV458Type](h2oFrame)
-
-    def dupChecker(iter: Iterator[PUBDEV458Type]) = {
-      iter.foreach(pubdev458TestMemory.add)
-    }
-
-    val c1 = rdd.count
-    assert(c1 == numRows, "Number of rows should match")
-
-    sc.runJob(back2rdd, dupChecker _)
-
-    val c2 = back2rdd.count
-
-    assert(c2 == numRows, "Number of rows should match")
-  }
-
   test("Empty RDD to H2O frame, Byte type") {
     val rdd = sc.parallelize(Array.empty[Byte])
     val fr = hc.asH2OFrame(rdd)
