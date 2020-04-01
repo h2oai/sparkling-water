@@ -269,15 +269,15 @@ def unitTests() {
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
-                    testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                    testReport 'core/build/reports/tests/test', "Core Unit tests ${config.sparkMajorVersion}"
                     junit 'ml/build/test-results/test/*.xml'
-                    testReport 'ml/build/reports/tests/test', "ML Unit Tests"
+                    testReport 'ml/build/reports/tests/test', "ML Unit Tests ${config.sparkMajorVersion}"
                     junit 'repl/build/test-results/test/*.xml'
-                    testReport 'repl/build/reports/tests/test', "REPL Unit Tests"
+                    testReport 'repl/build/reports/tests/test', "REPL Unit Tests ${config.sparkMajorVersion}"
                     junit 'utils/build/test-results/test/*.xml'
-                    testReport 'utils/build/reports/tests/test', "Utils Unit Tests"
+                    testReport 'utils/build/reports/tests/test', "Utils Unit Tests ${config.sparkMajorVersion}"
                     junit 'macros/build/test-results/test/*.xml'
-                    testReport 'macros/build/reports/tests/test', "Macros Unit Tests"
+                    testReport 'macros/build/reports/tests/test', "Macros Unit Tests ${config.sparkMajorVersion}"
                 }
             }
         }
@@ -353,11 +353,11 @@ def integTests() {
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                     junit 'core/build/test-results/integTest/*.xml'
-                    testReport 'core/build/reports/tests/integTest', 'Core Integration tests'
+                    testReport 'core/build/reports/tests/integTest', "Core Integration tests ${config.sparkMajorVersion}"
                     junit 'examples/build/test-results/integTest/*.xml'
-                    testReport 'examples/build/reports/tests/integTest', 'Examples Integration tests'
+                    testReport 'examples/build/reports/tests/integTest', "Examples Integration tests ${config.sparkMajorVersion}"
                     junit 'ml/build/test-results/integTest/*.xml'
-                    testReport 'ml/build/reports/tests/integTest', 'ML Integration tests'
+                    testReport 'ml/build/reports/tests/integTest', "ML Integration tests ${config.sparkMajorVersion}"
                 }
             }
         }
