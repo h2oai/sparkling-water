@@ -24,6 +24,7 @@ from ai.h2o.sparkling.VersionComponents import VersionComponents
 from codecs import open
 from os import path
 from pyspark import SparkContext
+import tempfile
 
 """
 This class is used to load sparkling water JAR into spark environment - driver and executors.
@@ -43,7 +44,11 @@ class Initializer(object):
     @staticmethod
     def load_sparkling_jar():
         sc = SparkContext._active_spark_context
-        if Initializer.__sparklingWaterJarLoaded is not True and sc is not None:
+        if Initializer.__sparklingWaterJarLoaded is False and sc is None:
+            # Ensure that when we do import pysparkling, spark will put later the JAR file
+            # to the driver. This option has effect only when SparkContext has not been started before.
+            os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar() + " pyspark-shell"
+        elif Initializer.__sparklingWaterJarLoaded is False and sc is not None:
             jvm = sc._jvm
             stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
             if stream is None:
@@ -79,11 +84,11 @@ class Initializer(object):
         sc._jsc.addJar(sw_jar_file)
 
     @staticmethod
-    def __extracted_jar_path(sc):
+    def __extracted_jar_path():
 
         if Initializer.__extracted_jar_dir is None:
             zip_file = Initializer.__get_pysparkling_zip_path()
-            Initializer.__extracted_jar_dir = sc._temp_dir
+            Initializer.__extracted_jar_dir = tempfile.mkdtemp()
             import zipfile
             with zipfile.ZipFile(zip_file) as fzip:
                 fzip.extract('sparkling_water/sparkling_water_assembly.jar', path=Initializer.__extracted_jar_dir)
@@ -125,12 +130,12 @@ class Initializer(object):
             pass
 
     @staticmethod
-    def __get_sw_jar(sc):
+    def __get_sw_jar():
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         # Extract jar file from zip
         if '.zip' in sw_pkg_file:
-            return Initializer.__extracted_jar_path(sc)
+            return Initializer.__extracted_jar_path()
         else:
             from pkg_resources import resource_filename
             return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
