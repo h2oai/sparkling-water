@@ -269,9 +269,15 @@ def unitTests() {
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, py/build/py_*_report.txt, **/build/reports/'
                     junit 'core/build/test-results/test/*.xml'
-                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', 'Core Unit tests'
+                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'ml/build/reports/tests/test', "ML Unit Tests"
+                    junit 'repl/build/test-results/test/*.xml'
+                    testReport 'repl/build/reports/tests/test', "REPL Unit Tests"
+                    junit 'utils/build/test-results/test/*.xml'
+                    testReport 'utils/build/reports/tests/test', "Utils Unit Tests"
+                    junit 'macros/build/test-results/test/*.xml'
+                    testReport 'macros/build/reports/tests/test', "Macros Unit Tests"
                 }
             }
         }

@@ -1,4 +1,4 @@
-description = "Utilities shared accross Sparkling Water sub-modules. These utilities does not depend on H2O."
+description = "Utilities shared across Sparkling Water sub-modules. These utilities does not depend on H2O."
 
 apply from: "$rootDir/gradle/sparkTest.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
@@ -13,6 +13,8 @@ dependencies {
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")
+  testImplementation(project(":sparkling-water-core"))
+  testImplementation(project(":sparkling-water-repl"))
   testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
 }
 
