@@ -72,7 +72,7 @@ private[sparkling] object H2OChunk extends RestCommunication {
       "maximum_vector_sizes" -> maxVecSizesString,
       "compression" -> conf.externalCommunicationCompression)
 
-    insert(node, Paths.CHUNK, conf, parameters)
+    insertToNode(node, Paths.CHUNK, conf, parameters)
   }
 
   def putChunkCategoricalDomains(
@@ -86,7 +86,7 @@ private[sparkling] object H2OChunk extends RestCommunication {
       "chunk_id" -> chunkId,
       "compression" -> conf.externalCommunicationCompression)
 
-    withResource(insert(node, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, parameters)) { outputStream =>
+    withResource(insertToNode(node, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, parameters)) { outputStream =>
       val autoBuffer = new AutoBuffer(outputStream, false)
       autoBuffer.putAAStr(domains)
       autoBuffer.close()

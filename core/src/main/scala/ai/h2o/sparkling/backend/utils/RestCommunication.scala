@@ -83,7 +83,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     * @param params Query parameters
     * @return HttpUrlConnection facilitating the insertion and holding the outputStream
     */
-  def insert(
+  def insertToNode(
       node: NodeDesc,
       suffix: String,
       conf: H2OConf,
