@@ -33,7 +33,7 @@ import water.fvec.{Frame, H2OFrame}
   * Test suite for DataFrames handler
   */
 @RunWith(classOf[JUnitRunner])
-class DataFramesHandlerSuite extends FunSuite with SharedH2OTestContext {
+class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 

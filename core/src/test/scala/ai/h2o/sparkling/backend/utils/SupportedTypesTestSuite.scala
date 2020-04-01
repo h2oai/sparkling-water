@@ -29,7 +29,7 @@ import scala.reflect.runtime.universe._
   * Tests for type info handling
   */
 @RunWith(classOf[JUnitRunner])
-class SupportedTypesTest extends FunSuite {
+class SupportedTypesTestSuite extends FunSuite {
 
   test("Infer type from a value") {
     def mustBe[T](expected: SupportedType, value: T) = assert(supportedTypeOf(value) == expected)

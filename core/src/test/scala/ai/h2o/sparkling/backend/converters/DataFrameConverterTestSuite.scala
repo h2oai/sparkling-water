@@ -43,7 +43,7 @@ import water.parser.BufferedString
   * Testing Conversions between H2OFrame and Spark DataFrame
   */
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterTest extends FunSuite with SharedH2OTestContext {
+class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
 

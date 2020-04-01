@@ -34,7 +34,7 @@ import scala.reflect.runtime.universe._
   * Testing schema for h2o schema spark dataset transformation.
   */
 @RunWith(classOf[JUnitRunner])
-class DatasetConverterTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
+class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
   val dataSource =
     ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::

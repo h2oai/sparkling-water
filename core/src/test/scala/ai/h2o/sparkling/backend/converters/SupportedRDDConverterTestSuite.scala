@@ -38,7 +38,7 @@ import water.parser.{BufferedString, Categorical}
   * Testing schema for rdd  to h2o frame transformations.
   */
 @RunWith(classOf[JUnitRunner])
-class SupportedRDDConverterTest extends FunSuite with SharedH2OTestContext {
+class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkContext: SparkContext =
     new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 

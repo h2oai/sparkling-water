@@ -28,7 +28,7 @@ import water.exceptions.H2ONotFoundArgumentException
   * Test suite for ScalaCode handler
   */
 @RunWith(classOf[JUnitRunner])
-class ScalaCodeHandlerSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
+class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
 
   var scalaCodeHandler: ScalaCodeHandler = _
 

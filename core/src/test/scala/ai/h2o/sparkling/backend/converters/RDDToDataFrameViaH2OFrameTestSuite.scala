@@ -26,7 +26,7 @@ import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
 /**
   * Test conversion from RDD to DataFrame via H2OFrame
   */
-class RDDToDataFrameViaH2OFrameTest extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
+class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
   override def createSparkContext: SparkContext =
     new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
