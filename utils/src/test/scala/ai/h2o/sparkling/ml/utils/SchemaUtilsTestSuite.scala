@@ -28,7 +28,7 @@ import org.scalatest.{FlatSpec, Matchers}
 @RunWith(classOf[JUnitRunner])
 class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext {
 
-  sc = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  sc = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
   import spark.implicits._
 
   "flattenStructsInSchema" should "flatten a simple schema" in {
