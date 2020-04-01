@@ -23,6 +23,7 @@ import java.nio.file.Files
 import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.ui.SparklingWaterHeartbeatEvent
 import org.apache.spark.h2o.utils.NodeDesc
 import org.apache.spark.h2o.{H2OConf, H2OContext}
@@ -30,7 +31,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
-import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
+import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
 import water.util.{Log, PrettyPrint}
 import water.{H2O, H2OStarter}
@@ -106,7 +107,6 @@ object InternalH2OBackend extends InternalBackendUtils {
       Array(startH2OWorkerAsClient(conf, user))
     } else {
       val endpoints = registerEndpoints(hc)
-
       val workerNodes = startH2OWorkers(endpoints, conf, user)
       val clientNode = startH2OClient(conf, workerNodes, user)
       distributeFlatFile(endpoints, conf, workerNodes, clientNode)
@@ -190,17 +190,16 @@ object InternalH2OBackend extends InternalBackendUtils {
   }
 
   private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
-    if (conf.isHiveSupportEnabled && HiveTokenGenerator.isHiveDriverPresent()) {
-      val hivePrincipal = conf.hivePrincipal.get
-      val jdbcUrl = HiveTokenGenerator.makeHiveJdbcUrl(
-        conf.hiveJdbcUrlPattern,
-        conf.hiveHost.get,
-        hivePrincipal)
+    if (conf.isHiveSupportEnabled) {
+      val configuration = new Configuration()
+      conf.hiveHost.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_HOST, _))
+      conf.hivePrincipal.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, _))
+      conf.hiveJdbcUrlPattern.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_JDBC_URL_PATTERN, _))
+      conf.hiveToken.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_TOKEN, _))
 
-      val principal = conf.kerberosPrincipal.get
-      val keytabPath = SparkFiles.get(new File(conf.kerberosKeytab.get).getName)
-      val options = HiveTokenGenerator.HiveOptions.make(jdbcUrl, hivePrincipal)
-      new DelegationTokenRefresher(principal, keytabPath, user, options).start()
+      val sparkTmpDir = new File(Utils.getLocalDir(SparkEnv.get.conf))
+
+      DelegationTokenRefresher.setup(configuration, sparkTmpDir.getAbsolutePath)
     }
   }
 }

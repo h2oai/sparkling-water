@@ -147,6 +147,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .addIf("-hiveHost", conf.hiveHost, conf.isHiveSupportEnabled)
       .addIf("-hivePrincipal", conf.hivePrincipal, conf.isHiveSupportEnabled)
       .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isHiveSupportEnabled)
+      .addIf("-hiveToken", conf.hiveToken, conf.isHiveSupportEnabled)
       .add(conf.nodeExtraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
@@ -318,53 +319,34 @@ object ExternalH2OBackend extends ExternalBackendUtils {
         conf.setClusterInfoFile("notify_" + conf.cloudName.get)
       }
 
-      if (conf.getOption("spark.ext.h2o.external.kerberos.principal").isDefined && conf.kerberosPrincipal.isEmpty) {
-        logWarning(s"The option 'spark.ext.h2o.external.kerberos.principal' is deprecated and will be removed in version 3.32." +
-          s" Use '${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}' instead.")
-        conf.setKerberosPrincipal(conf.get("spark.ext.h2o.external.kerberos.principal"))
-      }
-
-      if (conf.getOption("spark.ext.h2o.external.kerberos.keytab").isDefined && conf.kerberosKeytab.isEmpty) {
-        logWarning(s"The option 'spark.ext.h2o.external.kerberos.keytab' is deprecated and will be removed in version 3.32." +
-          s" Use '${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}' instead.")
-        conf.setKerberosKeytab(conf.get("spark.ext.h2o.external.kerberos.keytab"))
-      }
-
       if (conf.getOption("spark.yarn.principal").isDefined &&
         conf.kerberosPrincipal.isEmpty) {
-        logInfo(s"spark.yarn.principal provided and ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} is" +
+        logInfo(s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.set(SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1, conf.get("spark.yarn.principal"))
+        conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
       }
 
       if (conf.getOption("spark.yarn.keytab").isDefined &&
         conf.kerberosKeytab.isEmpty) {
-        logInfo(s"spark.yarn.keytab provided and ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} is" +
+        logInfo(s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
           s" not set. Passing the configuration to H2O.")
-        conf.set(SharedBackendConf.PROP_KERBEROS_KEYTAB._1, conf.get("spark.yarn.keytab"))
+        conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
       }
 
       if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
         throw new IllegalArgumentException(
           s"""
-             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
-             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1}
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
           """.stripMargin)
       } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
         throw new IllegalArgumentException(
           s"""
-             |  Both options ${SharedBackendConf.PROP_KERBEROS_KEYTAB._1} and
-             |  ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${SharedBackendConf.PROP_KERBEROS_PRINCIPAL._1}
+             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
           """.stripMargin)
-      }
-
-      if (conf.isHiveSupportEnabled && conf.runAsUser.isEmpty) {
-        val sparkUser = SparkSessionUtils.active.sparkContext.sparkUser
-        logInfo(s"Setting property ${ExternalBackendConf.PROP_EXTERNAL_RUN_AS_USER._1} to the spark user '$sparkUser'" +
-          " since hive support is enabled and the property wasn't defined.")
-        conf.setRunAsUser(sparkUser)
       }
     } else {
       if (conf.cloudName.isEmpty) {

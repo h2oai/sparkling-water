@@ -134,9 +134,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     hiveJdbcUrlPattern = function() { invoke(jconf, "hiveJdbcUrlPattern") },
 
-    kerberosPrincipal = function() { ConfUtils.getOption(invoke(jconf, "kerberosPrincipal")) },
-
-    kerberosKeytab = function() { ConfUtils.getOption(invoke(jconf, "kerberosKeytab")) },
+    hiveToken = function() { invoke(jconf, "hiveToken") },
 
 #
 # Setters
@@ -278,7 +276,5 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveJdbcUrlPattern = function(pattern) { invoke(jconf, "setHiveJdbcUrlPattern", pattern); .self },
 
-    setKerberosPrincipal = function(principal) { invoke(jconf, "setKerberosPrincipal", principal); .self },
-
-    setKerberosKeytab = function(path) { invoke(jconf, "setKerberosKeytab", path); .self }
+    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self }
 ))

@@ -145,11 +145,9 @@ trait SharedBackendConf {
 
   def hivePrincipal: Option[String] = sparkConf.getOption(PROP_HIVE_PRINCIPAL._1)
 
-  def hiveJdbcUrlPattern: String = sparkConf.get(PROP_HIVE_JDBC_URL_PATTERN._1, PROP_HIVE_JDBC_URL_PATTERN._2)
+  def hiveJdbcUrlPattern: Option[String] = sparkConf.getOption(PROP_HIVE_JDBC_URL_PATTERN._1)
 
-  def kerberosPrincipal: Option[String] = sparkConf.getOption(PROP_KERBEROS_PRINCIPAL._1)
-
-  def kerberosKeytab: Option[String] = sparkConf.getOption(PROP_KERBEROS_KEYTAB._1)
+  def hiveToken: Option[String] = sparkConf.getOption(PROP_HIVE_TOKEN._1)
 
   /** Setters */
 
@@ -326,11 +324,9 @@ trait SharedBackendConf {
 
   def setHiveJdbcUrlPattern(pattern: String): H2OConf = set(PROP_HIVE_JDBC_URL_PATTERN._1, pattern)
 
-  def setKerberosPrincipal(principal: String): H2OConf = set(PROP_KERBEROS_PRINCIPAL._1, principal)
+  def setHiveToken(token: String): H2OConf = set(PROP_HIVE_TOKEN._1, token)
 
-  def setKerberosKeytab(path: String): H2OConf = set(PROP_KERBEROS_KEYTAB._1, path)
-
-  private[backend] def getFileProperties: Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_KERBEROS_KEYTAB)
+  private[backend] def getFileProperties: Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
 
 object SharedBackendConf {
@@ -511,12 +507,8 @@ object SharedBackendConf {
   val PROP_HIVE_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.hive.principal", None)
 
   /** Can be used to further customize the way the driver constructs the Hive JDBC URL */
-  val PROP_HIVE_JDBC_URL_PATTERN: (String, String) =
-    ("spark.ext.h2o.hive.jdbc_url_pattern", "jdbc:hive2://{{host}}/;principal={{principal}}")
+  val PROP_HIVE_JDBC_URL_PATTERN: (String, None.type) = ("spark.ext.h2o.hive.jdbc_url_pattern", None)
 
-  /** Kerberos principal */
-  val PROP_KERBEROS_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.kerberos.principal", None)
-
-  /** Path to Kerberos key tab */
-  val PROP_KERBEROS_KEYTAB: (String, None.type) = ("spark.ext.h2o.kerberos.keytab", None)
+  /** Authorization token to Hive */
+  val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
 }

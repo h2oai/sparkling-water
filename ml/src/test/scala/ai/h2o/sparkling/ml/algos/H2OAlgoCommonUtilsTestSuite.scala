@@ -52,6 +52,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     val dataset = spark.createDataFrame(
       sc.parallelize(1 to 5, 5).map(i => Row(i, 2.0 * i, i.toDouble)),
       datasetSchema)
+
     val utils = new DummyTestClass("43")
 
     // When: transform

@@ -63,6 +63,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def isKillOnUnhealthyClusterEnabled: Boolean = sparkConf.getBoolean(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._2)
 
+  def kerberosPrincipal: Option[String] = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1)
+
+  def kerberosKeytab: Option[String] = sparkConf.getOption(PROP_EXTERNAL_KERBEROS_KEYTAB._1)
+
   def runAsUser: Option[String] = sparkConf.getOption(PROP_EXTERNAL_RUN_AS_USER._1)
 
   def externalH2ODriverIf: Option[String] = sparkConf.getOption(PROP_EXTERNAL_DRIVER_IF._1)
@@ -140,6 +144,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def setKillOnUnhealthyClusterEnabled(): H2OConf = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, value = true)
 
   def setKillOnUnhealthyClusterDisabled(): H2OConf = set(PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY._1, value = false)
+
+  def setKerberosPrincipal(principal: String): H2OConf = set(PROP_EXTERNAL_KERBEROS_PRINCIPAL._1, principal)
+
+  def setKerberosKeytab(path: String): H2OConf = set(PROP_EXTERNAL_KERBEROS_KEYTAB._1, path)
 
   def setRunAsUser(user: String): H2OConf = set(PROP_EXTERNAL_RUN_AS_USER._1, user)
 
@@ -225,6 +233,16 @@ object ExternalBackendConf {
    * If true, the client will try to kill the cluster and then itself in case some nodes in the cluster report unhealthy status
    */
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY: (String, Boolean) = ("spark.ext.h2o.external.kill.on.unhealthy", true)
+
+  /**
+   * Kerberos principal
+   */
+  val PROP_EXTERNAL_KERBEROS_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.external.kerberos.principal", None)
+
+  /**
+   * Path to Kerberos key tab
+   */
+  val PROP_EXTERNAL_KERBEROS_KEYTAB: (String, None.type) = ("spark.ext.h2o.external.kerberos.keytab", None)
 
   /**
    * Impersonated Hadoop user

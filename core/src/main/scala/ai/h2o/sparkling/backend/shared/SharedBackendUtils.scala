@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.shared
 
 import java.io.File
 
-import ai.h2o.sparkling.backend.external.{ExternalBackendConf, RestApiUtils}
+import ai.h2o.sparkling.backend.external.RestApiUtils
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.h2o.utils.NodeDesc
@@ -112,21 +112,18 @@ trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.isHiveSupportEnabled) {
-      if (conf.kerberosPrincipal.isEmpty) {
+      if (conf.hiveHost.isEmpty && conf.hiveJdbcUrlPattern.isEmpty) {
         throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_KERBEROS_PRINCIPAL}' must be defined.")
-      }
-      if (conf.kerberosKeytab.isEmpty) {
-        throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_KERBEROS_KEYTAB}' must be defined.")
-      }
-      if (conf.hiveHost.isEmpty) {
-        throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_HOST}' must be defined.")
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_HOST._1}' " +
+            s"or '${SharedBackendConf.PROP_HIVE_JDBC_URL_PATTERN._1}' must be defined.")
       }
       if (conf.hivePrincipal.isEmpty) {
         throw new IllegalArgumentException(
-          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_PRINCIPAL}' must be defined.")
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_PRINCIPAL._1}' must be defined.")
+      }
+      if (conf.hiveToken.isEmpty) {
+        throw new IllegalArgumentException(
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_TOKEN._1}' must be defined.")
       }
     }
 

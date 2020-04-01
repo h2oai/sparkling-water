@@ -180,14 +180,11 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.hive.principal``                   | ``None``       | ``setHivePrincipal(String)``                    | Hiveserver2 Kerberos principal,        |
 |                                                    |                |                                                 | for example hive/hostname@DOMAIN.COM   |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.jdbc_url_pattern``            | |jdbcUrl|      | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for         |
-|                                                    |                |                                                 | connecting to Hiveserver2. The pattern |
-|                                                    |                |                                                 | should have place holder for *host*    |
-|                                                    |                |                                                 | and *principal*.                       |
+| ``spark.ext.h2o.hive.jdbc_url_pattern``            | ``None``       | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for         |
+|                                                    |                |                                                 | connecting to Hiveserver2. Example:    |
+|                                                    |                |                                                 | ``jdbc:hive2://{{host}}/;{{auth}}``    |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.kerberos.principal``               | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                    |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.kerberos.keytab``                  | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                       |
+| ``spark.ext.h2o.hive.token``                       | ``None``       | ``setHiveToken(String)``                        | An authorization token to Hive         |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
@@ -339,6 +336,10 @@ External backend configuration properties
 |                                                       |                | ``setKillOnUnhealthyClusterDisabled()``         | case some nodes in the cluster      |
 |                                                       |                |                                                 | report unhealthy status.            |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                 |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.kerberos.keytab``            | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                    |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.run.as.user``                | ``None``       | ``setRunAsUser(String)``                        | Impersonated Hadoop user.           |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.driver.if``                  | ``None``       | ``setExternalH2ODriverIf(String)``              | Ip address or network of            |
@@ -392,4 +393,3 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |hadoopConfig| replace:: ``sc.hadoopConfig``
 .. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
 .. |yarnDir| replace:: YARN container dir
-.. |jdbcUrl| replace:: ``jdbc:hive2://{{host}}/;principal={{principal}}``

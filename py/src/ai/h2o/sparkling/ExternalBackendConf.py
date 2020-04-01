@@ -127,9 +127,15 @@ class ExternalBackendConf(SharedBackendConfUtils):
         warnings.warn("Method 'kerberos_principal' is deprecated and will be removed in the next major release. Please use 'kerberosPrincipal'.")
         return self.kerberosPrincipal()
 
+    def kerberosPrincipal(self):
+        return self._get_option(self._jconf.kerberosPrincipal())
+
     def kerberos_keytab(self):
         warnings.warn("Method 'kerberos_keytab' is deprecated and will be removed in the next major release. Please use 'kerberosKeytab'.")
         return self.kerberosKeytab()
+
+    def kerberosKeytab(self):
+        return self._get_option(self._jconf.kerberosKeytab())
 
     def run_as_user(self):
         warnings.warn("Method 'run_as_user' is deprecated and will be removed in the next major release. Please use 'runAsUser'.")
@@ -274,9 +280,17 @@ class ExternalBackendConf(SharedBackendConfUtils):
         warnings.warn("Method 'set_kerberos_principal' is deprecated and will be removed in the next major release. Please use 'setKerberosPrincipal'.")
         return self.setKerberosPrincipal(principal)
 
+    def setKerberosPrincipal(self, principal):
+        self._jconf.setKerberosPrincipal(principal)
+        return self
+
     def set_kerberos_keytab(self, path):
         warnings.warn("Method 'set_kerberos_keytab' is deprecated and will be removed in the next major release. Please use 'setKerberosKeytab'.")
         return self.setKerberosKeytab(path)
+
+    def setKerberosKeytab(self, path):
+        self._jconf.setKerberosKeytab(path)
+        return self
 
     def set_run_as_user(self, user):
         warnings.warn("Method 'set_run_as_user' is deprecated and will be removed in the next major release. Please use 'setRunAsUser'.")
