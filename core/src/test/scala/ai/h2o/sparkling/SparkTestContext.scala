@@ -17,15 +17,12 @@
 
 package ai.h2o.sparkling
 
-import ai.h2o.sparkling.backend.SharedBackendConf
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import water.init.NetworkInit
-
-import scala.util.Random
 
 /**
   * Helper trait to simplify initialization and termination of Spark contexts.
@@ -34,7 +31,7 @@ trait SparkTestContext extends BeforeAndAfterAll {
   self: Suite =>
 
   def sparkSession(master: String, conf: SparkConf): SparkSession = {
-    SparkSession.builder().master(master).config(conf).appName(getClass.getName).getOrCreate()
+    SparkSession.builder().config(conf).master(master).appName(getClass.getName).getOrCreate()
   }
 
   def sparkSession(master: String): SparkSession = {
@@ -43,10 +40,12 @@ trait SparkTestContext extends BeforeAndAfterAll {
 
   def createSparkSession(): SparkSession
 
-  @transient lazy val spark: SparkSession = createSparkSession()
+  @transient private var sparkInternal: SparkSession = _
+  @transient lazy val spark: SparkSession = sparkInternal
   @transient lazy val sc: SparkContext = spark.sparkContext
 
   override def beforeAll() {
+    sparkInternal = createSparkSession()
     System.setProperty("spark.testing", "true")
     InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
     super.beforeAll()
@@ -55,12 +54,10 @@ trait SparkTestContext extends BeforeAndAfterAll {
   def defaultSparkConf: SparkConf =
     H2OConf.checkSparkConf({
       val conf = new SparkConf()
-        .set(
-          SharedBackendConf.PROP_CLOUD_NAME._1,
-          "sparkling-water-" + System.getProperty("user.name", "cluster") + "_" + Math.abs(Random.nextInt()))
+        .set("spark.ext.h2o.cloud.name", getClass.getSimpleName)
         .set("spark.driver.memory", "1G")
         .set("spark.executor.memory", "1G")
-        .set("spark.app.id", self.getClass.getSimpleName)
+        .set("spark.app.id", getClass.getSimpleName)
         .set("spark.ext.h2o.client.log.level", "DEBUG")
         .set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
         .set("spark.scheduler.minRegisteredResourcesRatio", "1")
