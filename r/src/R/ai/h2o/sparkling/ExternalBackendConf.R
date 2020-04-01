@@ -51,6 +51,10 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     isKillOnUnhealthyClusterEnabled = function() { invoke(jconf, "isKillOnUnhealthyClusterEnabled") },
 
+    kerberosPrincipal = function() { ConfUtils.getOption(invoke(jconf, "kerberosPrincipal")) },
+
+    kerberosKeytab = function() { ConfUtils.getOption(invoke(jconf, "kerberosKeytab")) },
+
     runAsUser = function() { ConfUtils.getOption(invoke(jconf, "runAsUser")) },
 
     externalH2ODriverIf = function() { ConfUtils.getOption(invoke(jconf, "externalH2ODriverIf")) },
@@ -99,6 +103,10 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
     setKillOnUnhealthyClusterEnabled = function() { invoke(jconf, "setKillOnUnhealthyClusterEnabled"); .self },
 
     setKillOnUnhealthyClusterDisabled = function() { invoke(jconf, "setKillOnUnhealthyClusterDisabled"); .self },
+
+    setKerberosPrincipal = function(principal) { invoke(jconf, "setKerberosPrincipal", principal); .self },
+
+    setKerberosKeytab = function(path) { invoke(jconf, "setKerberosKeytab", path); .self },
 
     setRunAsUser = function(user) { invoke(jconf, "setRunAsUser", user); .self },
 

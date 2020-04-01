@@ -95,12 +95,6 @@ From 3.30 to 3.32
 
   The ``JoinMethod`` enum is removed as it is no longer required.
 
-- The configuration option ``spark.ext.h2o.external.kerberos.principal`` was replaced
-  with the option ``spark.ext.h2o.kerberos.principal``.
-
-- The configuration option ``spark.ext.h2o.external.kerberos.keytab`` was replaced
-  with the option ``spark.ext.h2o.kerberos.keytab``.
-
 From 3.28.1 to 3.30
 -------------------
 
@@ -336,7 +330,6 @@ Removal of Deprecated Methods and Classes
 - The methods ``ignoreSparkPublicDNS``, ``setIgnoreSparkPublicDNSEnabled`` and ``setIgnoreSparkPublicDNSDisabled`` are
   removed without replacement as they are no longer required. Also the option ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``
   does not have any effect anymore.
-
 
 From 3.28.0 to 3.28.1
 ---------------------

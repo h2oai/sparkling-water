@@ -67,6 +67,12 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def isKillOnUnhealthyClusterEnabled(self):
         return self._jconf.isKillOnUnhealthyClusterEnabled()
 
+    def kerberosPrincipal(self):
+        return self._get_option(self._jconf.kerberosPrincipal())
+
+    def kerberosKeytab(self):
+        return self._get_option(self._jconf.kerberosKeytab())
+
     def runAsUser(self):
         return self._get_option(self._jconf.runAsUser())
 
@@ -146,6 +152,14 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setKillOnUnhealthyClusterDisabled(self):
         self._jconf.setKillOnUnhealthyClusterDisabled()
+        return self
+
+    def setKerberosPrincipal(self, principal):
+        self._jconf.setKerberosPrincipal(principal)
+        return self
+
+    def setKerberosKeytab(self, path):
+        self._jconf.setKerberosKeytab(path)
         return self
 
     def setRunAsUser(self, user):
