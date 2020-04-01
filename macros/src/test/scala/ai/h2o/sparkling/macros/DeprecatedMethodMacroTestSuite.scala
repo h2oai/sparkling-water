@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
-class DeprecatedMethodMacroSuite extends FunSuite with Logging {
+class DeprecatedMethodMacroTestSuite extends FunSuite with Logging {
 
   class VariousAnnotationUsages {
     @DeprecatedMethod(replacement = "replacing method")
@@ -57,7 +57,7 @@ class DeprecatedMethodMacroSuite extends FunSuite with Logging {
     def method3[T](parameter: T): T = parameter
 
     @DeprecatedMethod(replacement = "replacing method")
-    private[DeprecatedMethodMacroSuite] def method4: Unit = println("mehtod4")
+    private[DeprecatedMethodMacroTestSuite] def method4: Unit = println("mehtod4")
   }
 
   test("Various annotated methods") {
