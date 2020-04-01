@@ -25,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ExamplesTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
+  override def createSparkSession(): Any =
     new SparkContext("local-cluster[2,1,2024]", this.getClass.getName, conf = defaultSparkConf)
 
   test("Prostate Demo") {

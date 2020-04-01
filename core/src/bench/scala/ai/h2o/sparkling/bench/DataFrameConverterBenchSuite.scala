@@ -30,8 +30,10 @@ import scala.util.Random
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
 
-  override def createSparkContext =
+  override def createSparkSession(): Any =
     new SparkContext("local-cluster[2, 1, 2048]", getClass.getSimpleName, defaultSparkConf)
+
+  import spark.implicits._
 
   private val settings = TestUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
@@ -97,7 +99,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
-    import sqlContext.implicits._
     val numberOfCols = 50 * 1000
     val sparsity = 0.2
     val numberOfRows = 3 * 1000

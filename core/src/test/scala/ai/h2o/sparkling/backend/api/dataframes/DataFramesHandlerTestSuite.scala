@@ -20,7 +20,7 @@ import java.io.File
 
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import com.google.gson.JsonParser
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -35,12 +35,12 @@ import water.fvec.{Frame, H2OFrame}
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  import spark.implicits._
 
   test("DataFrameHandler.list() method") {
     val rdd = sc.parallelize(1 to 10)
     val rid = "df_" + rdd.id
-    import sqlContext.implicits._
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
 
@@ -98,7 +98,6 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFramesHandler.toH2OFrame() method") {
-    import sqlContext.implicits._
     val rdd = sc.parallelize(1 to 10)
     val name = "numbers"
     // create dataframe using method toDF, This is spark method which does not include any metadata
@@ -152,9 +151,8 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
       val nullable = field.get("nullable").getAsBoolean
       val dataType = DataType.fromJson(field.get("type").toString)
       val metadata = Metadata.fromJson(field.get("metadata").toString)
-      structFields(i) = new StructField(name, dataType, nullable, metadata)
+      structFields(i) = StructField(name, dataType, nullable, metadata)
     }
     new StructType(structFields)
   }
-
 }

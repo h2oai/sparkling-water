@@ -19,14 +19,13 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.TestUtils._
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o._
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.parser.BufferedString
 
-import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -34,17 +33,20 @@ import scala.reflect.runtime.universe._
   * Testing schema for h2o schema spark dataset transformation.
   */
 @RunWith(classOf[JUnitRunner])
-class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
+class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
-  val dataSource =
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  import spark.implicits._
+
+  private val dataSource =
     ("Hermione Granger", 15, "hgranger@griffindor.edu.uk") ::
       ("Ron Weasley", 14, "rweasley@griffindor.edu.uk") ::
       ("Harry Potter", 14, "hpotter@griffindor.edu.uk") ::
       ("Lucius Malfoy", 13, "lucius@slitherin.edu.uk") :: Nil
 
-  val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
+  private val samplePeople: List[SamplePerson] = dataSource map SamplePerson.tupled
 
-  val samplePartialPeople: List[PartialPerson] = dataSource flatMap {
+  private val samplePartialPeople: List[PartialPerson] = dataSource flatMap {
     case (n, a, e) =>
       PartialPerson(Some(n), Some(a), Some(e)) ::
         PartialPerson(Some(n), Some(a), None) ::
@@ -55,7 +57,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
         Nil
   }
 
-  val samplePartialPeopleWithAges: List[PartialPerson] = dataSource flatMap {
+  private val samplePartialPeopleWithAges: List[PartialPerson] = dataSource flatMap {
     case (n, a, e) =>
       PartialPerson(Some(n), Some(a), Some(e)) ::
         PartialPerson(Some(n), Some(a), None) ::
@@ -63,29 +65,18 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
         Nil
   }
 
-  val samplePeopleWithPartialData: List[SamplePerson] = samplePartialPeople map (pp =>
-    SamplePerson(pp.name orNull, pp.age getOrElse 0, pp.email orNull))
+  private val samplePeopleWithPartialData: List[SamplePerson] = samplePartialPeople map (pp =>
+    SamplePerson(pp.name orNull, pp.age getOrElse 0, pp.email.orNull))
 
-  val sampleSemiPartialPeople: List[SemiPartialPerson] = samplePartialPeople map { pp =>
-    SemiPartialPerson(pp.name orNull, pp.age, pp.email)
+  private val sampleSemiPartialPeople: List[SemiPartialPerson] = samplePartialPeople map { pp =>
+    SemiPartialPerson(pp.name.orNull, pp.age, pp.email)
   }
 
-  import sqlContext.implicits._
 
-  lazy val testSourceDatasetWithPartialData = sqlContext.createDataset(samplePartialPeople)
+  private lazy val testSourceDatasetWithPartialData = spark.createDataset(samplePartialPeople)
 
-  lazy val testH2oFrametWithPartialData: H2OFrame = {
-    hc.asH2OFrame(testSourceDatasetWithPartialData)
-  }
+  private lazy val testH2oFrameWithPartialData: H2OFrame = hc.asH2OFrame(testSourceDatasetWithPartialData)
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-
-  override def afterAll(): Unit = {
-    testH2oFrame.delete()
-    testH2oFrametWithPartialData.delete()
-    testSourceDataset.unpersist()
-    super.afterAll()
-  }
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
 
@@ -135,10 +126,10 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
 
   test("Dataset[PartialPerson] to H2OFrame and back") {
 
-    val extracted = readWholeFrame[PartialPerson](testH2oFrametWithPartialData)
+    val extracted = readWholeFrame[PartialPerson](testH2oFrameWithPartialData)
 
     assert(
-      testSourceDatasetWithPartialData.count == testH2oFrametWithPartialData.numRows(),
+      testSourceDatasetWithPartialData.count == testH2oFrameWithPartialData.numRows(),
       "Number of rows should match")
 
     matchData(extracted, samplePartialPeople)
@@ -146,7 +137,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
 
   test("Dataset[PartialPerson] - extracting SamplePersons with nulls") {
     try {
-      val extracted = readWholeFrame[SamplePerson](testH2oFrametWithPartialData)
+      val extracted = readWholeFrame[SamplePerson](testH2oFrameWithPartialData)
       println(extracted)
       matchData(extracted, samplePeopleWithPartialData)
       fail("Should have caught an error")
@@ -158,7 +149,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
 
   test("Dataset[PartialPerson] - extracting SamplePersons with nulls only in strings") {
     try {
-      lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
+      lazy val testSourceDatasetWithPartialDataAgesPresent = spark.createDataset(samplePartialPeopleWithAges)
 
       val expected: List[SamplePerson] = samplePartialPeopleWithAges map (p =>
         SamplePerson(p.name.orNull, p.age.get, p.email.orNull))
@@ -173,13 +164,13 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
   }
 
   test("Dataset[PartialPerson] - extracting SemiPartialPersons should give something") {
-    val rdd0 = hc.asRDD[PartialPerson](testH2oFrametWithPartialData)
+    val rdd0 = hc.asRDD[PartialPerson](testH2oFrameWithPartialData)
     val c0 = rdd0.count()
     assert(c0 == 24)
-    val rdd1 = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
+    val rdd1 = hc.asRDD[SemiPartialPerson](testH2oFrameWithPartialData)
     val c1 = rdd1.count()
     assert(c1 > 0)
-    val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrametWithPartialData)
+    val rdd2: RDD[SemiPartialPerson] = hc.asRDD[SemiPartialPerson](testH2oFrameWithPartialData)
     assert(rdd2.count() > 0)
     val asDS = rdd2.toDS()
     assert(asDS.count() > 0)
@@ -188,13 +179,13 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
   }
 
   test("Dataset[PartialPerson] - extracting SemiPartialPersons") {
-    val extracted = readWholeFrame[SemiPartialPerson](testH2oFrametWithPartialData)
+    val extracted = readWholeFrame[SemiPartialPerson](testH2oFrameWithPartialData)
 
     matchData(extracted, sampleSemiPartialPeople)
   }
 
   test("Dataset[PartialPerson] - extracting SampleCats") {
-    lazy val testSourceDatasetWithPartialDataAgesPresent = sqlContext.createDataset(samplePartialPeopleWithAges)
+    lazy val testSourceDatasetWithPartialDataAgesPresent = spark.createDataset(samplePartialPeopleWithAges)
 
     val sampleCats =
       samplePartialPeopleWithAges.flatMap(p =>
@@ -204,31 +195,25 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext with 
     matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored
   }
 
-  lazy val testSourceDataset = {
-    import sqlContext.implicits._
-    sqlContext.createDataset(samplePeople)
-  }
+  private lazy val testSourceDataset = spark.createDataset(samplePeople)
 
-  lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
+  private lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
 
-  def readWholeFrame[T <: Product: TypeTag: ClassTag](frame: H2OFrame) = {
-
-    import sqlContext.implicits._
-
+  private def readWholeFrame[T <: Product: TypeTag: ClassTag](frame: H2OFrame) = {
     val asrdd: RDD[T] = hc.asRDD[T](frame)
     val asDS = asrdd.toDS()
     val extracted = asDS.collect()
     extracted
   }
 
-  def matchData[T <: Product](actual: Seq[T], expected: Seq[T]): Unit = {
+  private def matchData[T <: Product](actual: Seq[T], expected: Seq[T]): Unit = {
     val extra = actual.diff(expected)
     assert(extra.isEmpty, s"Unexpected records: $extra")
     val missing = actual.diff(expected)
     assert(missing.isEmpty, s"Not found: $missing")
   }
 
-  def checkWith[T <: Product: TypeTag: ClassTag](constructor: (String, Int, String) => T): Unit = {
+  private def checkWith[T <: Product: TypeTag: ClassTag](constructor: (String, Int, String) => T): Unit = {
     val samples = dataSource map { case (n, a, e) => constructor(n, a, e) }
     val extracted = readWholeFrame[T](testH2oFrame)
     matchData(extracted, samples)

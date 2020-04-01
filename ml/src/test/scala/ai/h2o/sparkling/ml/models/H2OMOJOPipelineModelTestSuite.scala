@@ -22,11 +22,10 @@ import java.sql.{Date, Timestamp}
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.SparkTestContext
-import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -34,10 +33,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    super.beforeAll()
-  }
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("Test columns names and numbers") {
     val df =

@@ -29,7 +29,7 @@ import org.scalatest.FunSuite
 
 abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", getClass.getSimpleName, defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getSimpleName, defaultSparkConf)
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
   def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {

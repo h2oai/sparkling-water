@@ -18,18 +18,17 @@
 package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.ExposeUtils
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.{ExposeUtils, SparkContext}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   case class ColumnSpecification[T](field: StructField, valueGenerator: (Int) => Seq[Any])
 

@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend.api.h2oframes
 import java.io.File
 
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +31,8 @@ import water.fvec.H2OFrame
   */
 @RunWith(classOf[JUnitRunner])
 class H2OFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
+
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("H2OFramesHandler.toDataFrame() method") {
     // create H2OFrame which will be used for the transformation
@@ -44,15 +45,15 @@ class H2OFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val result = h2oFramesHandler.toDataFrame(3, req)
 
     // get the data frame using obtained id
-    val df = sqlContext.table(result.dataframe_id)
+    val df = spark.table(result.dataframe_id)
     assert(
-      sqlContext.tableNames().contains("requested_name"),
+      spark.sqlContext.tableNames().contains("requested_name"),
       "DataFrame should be stored in table named \"requested_name\"")
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")
     assert(df.count() == h2oFrame.numRows(), "Number of rows should match")
     // Note: We need to be careful here and clean SparkSession properly
-    assert(sqlContext.tableNames().length == 1, "Number of stored DataFrames should be 1")
+    assert(spark.sqlContext.tableNames().length == 1, "Number of stored DataFrames should be 1")
 
   }
 

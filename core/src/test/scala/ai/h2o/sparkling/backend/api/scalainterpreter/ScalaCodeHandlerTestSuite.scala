@@ -18,7 +18,7 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.repl.CodeResults
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
@@ -30,15 +30,11 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
 
-  var scalaCodeHandler: ScalaCodeHandler = _
+  private var scalaCodeHandler: ScalaCodeHandler = _
 
-  override def createSparkContext: SparkContext =
-    new SparkContext(
-      "local[*]",
-      getClass.getName,
-      conf = defaultSparkConf
-        .set("spark.ext.h2o.repl.enabled", "true")
-        .set("spark.ext.scala.int.default.num", "2"))
+  override def createSparkSession(): SparkSession = sparkSession("local[*]", defaultSparkConf
+    .set("spark.ext.h2o.repl.enabled", "true")
+    .set("spark.ext.scala.int.default.num", "2"))
 
   override protected def beforeEach(): Unit = {
     scalaCodeHandler = new ScalaCodeHandler(sc, hc)

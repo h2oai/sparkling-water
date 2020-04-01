@@ -25,7 +25,7 @@ import org.scalatest.{FunSuite, Matchers}
 
 class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestContext with TransformSchemaTestSuite {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
   import spark.implicits._
 

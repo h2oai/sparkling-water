@@ -27,7 +27,7 @@ import org.scalatest.{FunSuite, Matchers}
 
 class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
   val datasetSchema = (new StructType)
     .add("preds.probability", "int", true)

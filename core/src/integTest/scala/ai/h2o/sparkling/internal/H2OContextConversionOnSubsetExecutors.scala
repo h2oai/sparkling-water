@@ -19,7 +19,7 @@ package ai.h2o.sparkling.internal
 import ai.h2o.sparkling.TestUtils.DoubleHolder
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,11 +31,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext(
-      "local-cluster[3,1,1024]",
-      getClass.getName,
-      conf = defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[3,1,1024]",
+    defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)

@@ -29,31 +29,9 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OConfTestSuite extends FunSuite with SparkTestContext {
 
+  override def createSparkSession(): SparkSession = sparkSession("local[*]", createConf())
+
   test("test H2OConf parameters") {
-    val sparkConf = new SparkConf()
-      .set("spark.ext.h2o.cluster.size", "42")
-      .set("spark.ext.h2o.client.ip", "10.0.0.100")
-      .set("spark.ext.h2o.client.port.base", "1267")
-      .set("spark.ext.h2o.node.port.base", "32333")
-      .set("spark.ext.h2o.cloud.timeout", (10 * 1000).toString)
-      .set("spark.ext.h2o.spreadrdd.retries", "2")
-      .set("spark.ext.h2o.cloud.name", "test-sparkling-cloud-")
-      .set("spark.ext.h2o.node.log.level", "DEBUG")
-      .set("spark.ext.h2o.client.log.level", "DEBUG")
-      .set("spark.ext.h2o.client.log.level", "DEBUG")
-      .set("spark.ext.h2o.client.network.mask", "127.0.0.1/32")
-      .set("spark.ext.h2o.node.network.mask", "0.0.0.1/24")
-      .set("spark.ext.h2o.nthreads", "7")
-      .set("spark.ext.h2o.client.web.port", "13321")
-      .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
-
-    SparkSession
-      .builder()
-      .master("local")
-      .appName(this.getClass.getName)
-      .config(sparkConf)
-      .getOrCreate()
-
     val conf = new H2OConf().setClusterSize(1)
 
     // Test passed values
@@ -72,7 +50,24 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext {
     assert(conf.nthreads == 7)
     assert(conf.clientWebPort == 13321)
     assert(conf.drddMulFactor == 2)
+  }
 
-    resetSparkContext()
+  private def createConf() = {
+    new SparkConf()
+      .set("spark.ext.h2o.cluster.size", "42")
+      .set("spark.ext.h2o.client.ip", "10.0.0.100")
+      .set("spark.ext.h2o.client.port.base", "1267")
+      .set("spark.ext.h2o.node.port.base", "32333")
+      .set("spark.ext.h2o.cloud.timeout", (10 * 1000).toString)
+      .set("spark.ext.h2o.spreadrdd.retries", "2")
+      .set("spark.ext.h2o.cloud.name", "test-sparkling-cloud-")
+      .set("spark.ext.h2o.node.log.level", "DEBUG")
+      .set("spark.ext.h2o.client.log.level", "DEBUG")
+      .set("spark.ext.h2o.client.log.level", "DEBUG")
+      .set("spark.ext.h2o.client.network.mask", "127.0.0.1/32")
+      .set("spark.ext.h2o.node.network.mask", "0.0.0.1/24")
+      .set("spark.ext.h2o.nthreads", "7")
+      .set("spark.ext.h2o.client.web.port", "13321")
+      .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
   }
 }

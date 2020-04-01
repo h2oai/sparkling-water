@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling
 
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -26,8 +26,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext("local-cluster[2,1,2024]", getClass.getName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[2,1,2024]")
 
   test("Verify H2O cluster builds on local cluster") {
     val hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))

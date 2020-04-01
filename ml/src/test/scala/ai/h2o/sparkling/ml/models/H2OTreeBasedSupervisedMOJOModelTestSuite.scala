@@ -28,7 +28,7 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
 
   private lazy val dataset = spark.read
     .option("header", "true")

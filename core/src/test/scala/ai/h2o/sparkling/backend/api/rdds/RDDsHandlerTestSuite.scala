@@ -17,7 +17,7 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.SharedH2OTestContext
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -29,9 +29,7 @@ import water.exceptions.H2ONotFoundArgumentException
 @RunWith(classOf[JUnitRunner])
 class RDDsHandlerSuite extends FunSuite with SharedH2OTestContext {
 
-  val sparkConf = defaultSparkConf.setMaster("local[*]").setAppName("test-local")
-
-  override def createSparkContext: SparkContext = new SparkContext(sparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("RDDsHandler.list() method") {
     val rname = "Test"

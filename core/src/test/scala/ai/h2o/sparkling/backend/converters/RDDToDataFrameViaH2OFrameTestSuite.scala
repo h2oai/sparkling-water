@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SharedH2OTestContext
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
@@ -28,8 +28,7 @@ import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
   */
 class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("Convert RDD to H2OFrame and back to DataFrame") {
     val h2oContext = hc

@@ -29,7 +29,7 @@ import water.Key
 @RunWith(classOf[JUnitRunner])
 class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", "mojo-test-local", conf = defaultSparkConf)
 
   lazy val dataset = spark.read
     .option("header", "true")

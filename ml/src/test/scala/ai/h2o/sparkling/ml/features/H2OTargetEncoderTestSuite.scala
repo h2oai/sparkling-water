@@ -31,7 +31,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
 
   private def loadDataFrameFromCsv(path: String): DataFrame = {
     spark.read

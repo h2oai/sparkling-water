@@ -30,7 +30,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
 
-  override def createSparkContext = new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture

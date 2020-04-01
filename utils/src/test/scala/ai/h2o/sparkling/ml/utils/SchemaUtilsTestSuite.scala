@@ -17,19 +17,17 @@
 package ai.h2o.sparkling.ml.utils
 
 import ai.h2o.sparkling.{SparkTestContext, TestUtils}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FlatSpec, Matchers}
 
 @RunWith(classOf[JUnitRunner])
 class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext {
-
-  sc = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
   import spark.implicits._
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   "flattenStructsInSchema" should "flatten a simple schema" in {
     val expSchema = StructType(
@@ -77,7 +75,6 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
   }
 
   "flattenDataFrame" should "flatten a struct of arrays" in {
-
     val input = Seq[(Seq[Integer], Seq[Integer], Seq[Integer])](
       (Seq[Integer](1, null), Seq[Integer](3, 4), Seq[Integer](5)),
       (Seq[Integer](1, 2), null, Seq[Integer](5, 6)))

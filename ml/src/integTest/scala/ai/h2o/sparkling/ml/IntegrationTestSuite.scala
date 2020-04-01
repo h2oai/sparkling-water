@@ -30,7 +30,7 @@ import scala.concurrent.duration.Duration
 @RunWith(classOf[JUnitRunner])
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
+  override def createSparkSession(): Any =
     new SparkContext("local-cluster[2,1,2024]", getClass.getName, conf = defaultSparkConf)
 
   test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {

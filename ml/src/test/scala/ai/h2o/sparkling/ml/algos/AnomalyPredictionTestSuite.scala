@@ -29,7 +29,7 @@ class AnomalyPredictionTestSuite
   with SharedH2OTestContext
   with TransformSchemaTestSuite {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): Any = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
 
   override protected lazy val dataset: DataFrame = {
     spark.read

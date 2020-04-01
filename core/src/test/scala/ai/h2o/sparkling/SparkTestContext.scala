@@ -19,24 +19,32 @@ package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.SharedBackendConf
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.h2o.H2OConf
-import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.apache.spark.h2o.H2OConf
+import org.apache.spark.sql.SparkSession
+import org.scalatest.{BeforeAndAfterAll, Suite}
 import water.init.NetworkInit
 
 import scala.util.Random
 
 /**
   * Helper trait to simplify initialization and termination of Spark contexts.
-  *
   */
-trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
+trait SparkTestContext extends BeforeAndAfterAll {
   self: Suite =>
 
-  @transient var sc: SparkContext = _
-  @transient lazy val spark: SparkSession = SparkSession.builder().getOrCreate()
-  @transient lazy implicit val sqlContext: SQLContext = spark.sqlContext
+  def sparkSession(master: String, conf: SparkConf): SparkSession = {
+    SparkSession.builder().master(master).config(conf).appName(getClass.getName).getOrCreate()
+  }
+
+  def sparkSession(master: String): SparkSession = {
+    sparkSession(master, defaultSparkConf)
+  }
+
+  def createSparkSession(): SparkSession
+
+  @transient lazy val spark: SparkSession = createSparkSession()
+  @transient lazy val sc: SparkContext = spark.sparkContext
 
   override def beforeAll() {
     System.setProperty("spark.testing", "true")
@@ -44,12 +52,7 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
     super.beforeAll()
   }
 
-  def resetSparkContext() {
-    SparkTestContext.stop(sc)
-    sc = null
-  }
-
-  def defaultSparkConf =
+  def defaultSparkConf: SparkConf =
     H2OConf.checkSparkConf({
       val conf = new SparkConf()
         .set(
@@ -70,14 +73,4 @@ trait SparkTestContext extends BeforeAndAfterEach with BeforeAndAfterAll {
         .set("spark.ext.h2o.external.start.mode", "auto")
       conf
     })
-}
-
-object SparkTestContext {
-  def stop(sc: SparkContext) {
-    if (sc != null) {
-      sc.stop()
-    }
-    // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-    System.clearProperty("spark.driver.port")
-  }
 }

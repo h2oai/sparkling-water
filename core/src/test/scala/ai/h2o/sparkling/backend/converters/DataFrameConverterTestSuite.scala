@@ -26,12 +26,11 @@ import ai.h2o.sparkling.TestUtils._
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.splitframe.ShuffleSplitFrame
-import org.apache.spark.SparkContext
 import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Assertions, FunSuite}
@@ -45,12 +44,10 @@ import water.parser.BufferedString
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
 
   test("Creation of H2ODataFrame") {
-    // FIXME: create different shapes of frame
     val h2oFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
 
     val dataFrame = hc.asDataFrame(h2oFrame)
@@ -712,7 +709,6 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("SW-303 Decimal column conversion failure") {
-    import sqlContext.implicits._
     val df = sc.parallelize(Array("ok", "bad", "ok", "bad", "bad")).toDF("status")
     df.createOrReplaceTempView("responses")
     val dfDouble = spark.sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
@@ -722,8 +718,6 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("SW-304 DateType column conversion failure") {
     import java.sql.Date
-
-    import sqlContext.implicits._
     val df = sc.parallelize(Seq(DateField(Date.valueOf("2016-12-24")))).toDF("created_date")
     val hf = hc.asH2OFrame(df)
     assert(hf.numRows() == 1)
@@ -733,7 +727,6 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("SW-310 Decimal(2,1) not compatible in h2o frame") {
-    import sqlContext.implicits._
     val dfInput = sc.parallelize(1 to 6).map(v => (v, v * v)).toDF("single", "double")
     dfInput.createOrReplaceTempView("dfInput")
     val df = spark.sqlContext.sql("SELECT *, IF(double < 5, 1.0, 0.0) AS label FROM dfInput")
@@ -746,7 +739,6 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("SparkDataFrame with BinaryType to H2O Frame") {
-    import sqlContext.implicits._
     val df = sc.parallelize(1 to 3).map { v => (0 until v).map(_.toByte).toArray[Byte] }.toDF()
     // just verify that we are really testing the binary type case
     assert(df.schema.fields(0).dataType == BinaryType)

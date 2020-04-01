@@ -19,74 +19,18 @@ package ai.h2o.sparkling
 
 import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
-import java.security.Permission
 
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
-abstract class ConfigurationPropertiesTestSuite extends FunSuite with Matchers with SparkTestContext {
+abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
 
-  @transient var hc: H2OContext = _
-
-  def createSparkSession(master: String): SparkSession = {
-    System.setProperty("spark.test.home", System.getenv("SPARK_HOME"))
-    val conf = defaultSparkConf
-      .set("spark.driver.extraClassPath", sys.props("java.class.path"))
-      .set("spark.executor.extraClassPath", sys.props("java.class.path"))
-    sc = new SparkContext(master, getClass.getSimpleName, conf)
-    SparkSession.builder().getOrCreate()
-  }
-
-  override def afterEach(): Unit = {
-    // The method H2O.exit calls System.exit which confuses Gradle and marks the build
-    // as successful even though some tests failed.
-    // We can solve this by using security manager which forbids System.exit call.
-    // It is safe to use as all the methods closing H2O cloud and stopping operations have been
-    // already called and we just need to ensure that JVM with the client/driver doesn't call the System.exit method
-    try {
-      val securityManager = new NoExitCheckSecurityManager
-      System.setSecurityManager(securityManager)
-      if (hc != null) {
-        hc.stop()
-      }
-    } catch {
-      case _: SecurityException => // ignore
-    } finally {
-      hc = null
-      resetSparkContext()
-      super.afterAll()
-      System.setSecurityManager(null)
-    }
-
-  }
-
-  private class NoExitCheckSecurityManager extends SecurityManager {
-    override def checkPermission(perm: Permission): Unit = {
-      /* allow any */
-    }
-
-    override def checkPermission(perm: Permission, context: scala.Any): Unit = {
-      /* allow any */
-    }
-
-    override def checkExit(status: Int): Unit = {
-      super.checkExit(status)
-      throw new SecurityException()
-    }
-  }
-
-}
-
-abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends ConfigurationPropertiesTestSuite {
-
-  def testExtraHTTPHeadersArePropagated(master: String, urlProvider: H2OContext => String): Unit = {
-    val spark = createSparkSession(master)
+  def testExtraHTTPHeadersArePropagated(urlProvider: H2OContext => String): Unit = {
     val h2oConf = new H2OConf()
     val extraHttpHeaders = Map("X-MyCustomHeaderA" -> "A", "X-MyCustomHeaderB" -> "B")
     h2oConf
@@ -108,23 +52,24 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
   test("test extra HTTP headers are propagated to FLOW UI") {
-    testExtraHTTPHeadersArePropagated("local[*]", (hc: H2OContext) => hc.flowURL())
+    testExtraHTTPHeadersArePropagated((hc: H2OContext) => hc.flowURL())
   }
+
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 }
 
 @RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
   test("test extra HTTP headers are propagated to FLOW UI") {
-    testExtraHTTPHeadersArePropagated(
-      "local-cluster[1,1,1024]",
-      (hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
+    testExtraHTTPHeadersArePropagated((hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
   }
+
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[1,1,1024]")
 }
 
-abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends ConfigurationPropertiesTestSuite {
+abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
 
-  def testNotifyLocalPropertyCreatesFile(master: String, propertySetter: (H2OConf, Path) => H2OConf): Unit = {
-    val spark = createSparkSession(master)
+  def testNotifyLocalPropertyCreatesFile(propertySetter: (H2OConf, Path) => H2OConf): Unit = {
     val tmpDirPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
     val tmpDir = tmpDirPath.toFile
     tmpDir.setWritable(true, false)
@@ -152,8 +97,10 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
   extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile("local[*]", setExtraClientProperties)
+    testNotifyLocalPropertyCreatesFile(setExtraClientProperties)
   }
+
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -161,8 +108,10 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Lo
   extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
 
   test("test that notify_local set via client extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraClientProperties)
+    testNotifyLocalPropertyCreatesFile(setExtraClientProperties)
   }
+
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[1,1,1024]")
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -179,16 +128,15 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
   }
 
   test("test that notify_local set via node extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile("local-cluster[1,1,1024]", setExtraNodeProperties)
+    testNotifyLocalPropertyCreatesFile(setExtraNodeProperties)
   }
+
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[1,1,1024]")
 }
 
 abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression(compressionType: String)
-  extends ConfigurationPropertiesTestSuite {
+  extends FunSuite with BeforeAndAfterEach with Matchers with SharedH2OTestContext {
 
-  val sparkSession = createSparkSession("local[*]")
-
-  if (sc.getConf.get("spark.ext.h2o.backend.cluster.mode", "internal") == "external") {
     test(s"Convert dataset from Spark to H2O and back with $compressionType compression") {
       val h2oConf = new H2OConf()
       h2oConf.setExternalCommunicationCompression(compressionType)
@@ -204,7 +152,8 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
 
       TestUtils.assertDataFramesAreIdentical(dataset, result)
     }
-  }
+
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 }
 
 @RunWith(classOf[JUnitRunner])

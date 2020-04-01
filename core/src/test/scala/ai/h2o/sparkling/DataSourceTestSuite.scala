@@ -17,14 +17,12 @@
 
 package ai.h2o.sparkling
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.Frame
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.h2o.{Frame, _}
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import water.DKV
-import org.apache.spark.h2o._
 
 /**
   * Test using H2O Frame as Spark SQL data source
@@ -32,14 +30,13 @@ import org.apache.spark.h2o._
 @RunWith(classOf[JUnitRunner])
 class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
-
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
+
   test("Reading H2OFrame using short variant") {
     val rdd = sc.parallelize(1 to 1000)
     val h2oFrame = hc.asH2OFrame(rdd)
-    val df = sqlContext.read.h2o(h2oFrame.key)
+    val df = spark.read.h2o(h2oFrame.key)
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")
@@ -49,7 +46,7 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   test("Reading H2OFrame using key option") {
     val rdd = sc.parallelize(1 to 1000)
     val h2oFrame = hc.asH2OFrame(rdd)
-    val df = sqlContext.read.format("h2o").option("key", h2oFrame.key.toString).load()
+    val df = spark.read.format("h2o").option("key", h2oFrame.key.toString).load()
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")
@@ -59,7 +56,7 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
   test("Reading H2OFrame using key in load method ") {
     val rdd = sc.parallelize(1 to 1000)
     val h2oFrame = hc.asH2OFrame(rdd)
-    val df = sqlContext.read.format("h2o").load(h2oFrame.key.toString)
+    val df = spark.read.format("h2o").load(h2oFrame.key.toString)
 
     assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
     assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")

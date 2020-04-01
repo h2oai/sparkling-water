@@ -18,15 +18,14 @@ package ai.h2o.sparkling.backend.converters
 
 import java.io.File
 import java.sql.Timestamp
-import java.util
 
 import ai.h2o.sparkling.TestUtils._
 import ai.h2o.sparkling.backend.utils.H2OClientUtils
 import ai.h2o.sparkling.{SharedH2OTestContext, SparkTimeZone, TestUtils}
-import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -39,8 +38,8 @@ import water.parser.{BufferedString, Categorical}
   */
 @RunWith(classOf[JUnitRunner])
 class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext {
-  override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
+
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("Empty RDD to H2O frame, Byte type") {
     val rdd = sc.parallelize(Array.empty[Byte])

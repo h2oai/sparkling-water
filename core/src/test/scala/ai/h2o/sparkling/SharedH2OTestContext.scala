@@ -19,7 +19,6 @@ package ai.h2o.sparkling
 
 import java.security.Permission
 
-import org.apache.spark.SparkContext
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.scalatest.Suite
 
@@ -30,13 +29,11 @@ import org.scalatest.Suite
 trait SharedH2OTestContext extends SparkTestContext {
   self: Suite =>
 
-  def createSparkContext: SparkContext
-
   @transient var hc: H2OContext = _
 
   override def beforeAll() {
     super.beforeAll()
-    sc = createSparkContext
+    spark = createSparkSession()
     hc = H2OContext.getOrCreate(new H2OConf().setClusterSize(1))
   }
 
@@ -49,9 +46,6 @@ trait SharedH2OTestContext extends SparkTestContext {
     try {
       val securityManager = new NoExitCheckSecurityManager
       System.setSecurityManager(securityManager)
-      hc.stop()
-      hc = null
-      resetSparkContext()
       super.afterAll()
       System.setSecurityManager(null)
     } catch {
