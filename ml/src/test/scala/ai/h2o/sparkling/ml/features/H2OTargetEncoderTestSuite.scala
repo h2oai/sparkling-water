@@ -248,7 +248,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
   }
 
-  test("The target encoder can work withttps://h2o-release.s3.amazonaws.com/h2o/masterh arbitrary label categories") {
+  test("The target encoder can work with arbitrary label categories") {
     val trainingDatasetWithLabel =
       trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
     val targetEncoder = new H2OTargetEncoder()

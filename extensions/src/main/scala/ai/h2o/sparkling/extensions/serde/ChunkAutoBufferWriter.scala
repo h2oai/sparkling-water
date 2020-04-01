@@ -91,7 +91,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
     putMarker(data)
   }
 
-  def writCategorical(data: Int): Unit = writeInt(data)
+  def writeCategorical(data: Int): Unit = writeInt(data)
 
   def writeInt(data: Int): Unit = {
     buffer.putInt(data)

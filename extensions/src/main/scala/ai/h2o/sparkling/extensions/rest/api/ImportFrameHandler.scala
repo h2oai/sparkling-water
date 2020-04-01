@@ -45,7 +45,7 @@ class ImportFrameHandler extends Handler {
 
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
 
-    // Update categorical indexes for all chunks.
+    // Update categorical indices for all chunks.
     val frame = DKV.getGet[Frame](frameKey)
     val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)

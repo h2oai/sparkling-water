@@ -17,16 +17,21 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
+
 import scala.collection.mutable
 
 /**
   * This class is not thread safe.
   */
-private[backend] class CategoricalDomainBuilder() {
+private[backend] class CategoricalDomainBuilder(expectedTypes: Array[Byte]) {
 
-  private val domains = mutable.ArrayBuffer[mutable.LinkedHashMap[String, Int]]()
+  private def categoricalIndexes: Array[Int] =
+    for ((eType, index) <- expectedTypes.zipWithIndex if eType == ChunkSerdeConstants.EXPECTED_CATEGORICAL) yield index
 
-  private val indexMapping = mutable.OpenHashMap[Int, Int]()
+  private val indexMapping = categoricalIndexes.zipWithIndex.toMap
+
+  private val domains = (0 until indexMapping.size).map(_ => mutable.LinkedHashMap[String, Int]()).toArray
 
   /**
     * The method adds string value to a corresponding categorical domain and returns position of the value within
@@ -37,25 +42,10 @@ private[backend] class CategoricalDomainBuilder() {
     * @return Index of the value within the categorical domain.
     */
   def addStringToDomain(value: String, columnIndex: Int): Int = {
-    val domain = getOrCreateDomain(columnIndex)
+    val domainIndex = indexMapping(columnIndex)
+    val domain = domains(domainIndex)
     domain.getOrElseUpdate(value, domain.size)
   }
 
-  /**
-    * The method does not any category to a domain, just creates a mapping from a columnId to a domain if does not exist
-    * @param columnIndex Index of a column determining the categorical domain.
-    *                    Indexing also includes columns of other types.
-    */
-  def markNA(columnIndex: Int): Unit = getOrCreateDomain(columnIndex)
-
-  private def getOrCreateDomain(columnIndex: Int): mutable.LinkedHashMap[String, Int] = {
-    val domainIndex = indexMapping.getOrElseUpdate(columnIndex, {
-      val result = domains.size
-      domains.append(mutable.LinkedHashMap[String, Int]())
-      result
-    })
-    domains(domainIndex)
-  }
-
-  def getDomains(): Array[Array[String]] = domains.map(_.keys.toArray).toArray
+  def getDomains(): Array[Array[String]] = domains.map(_.keys.toArray)
 }

@@ -42,7 +42,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     packedDomains = chunkDomainsToPackedDomains(localDomains[0]);
     for (int i = 1; i < localDomains.length; i++) {
       byte[][] anotherPackedDomains = chunkDomainsToPackedDomains(localDomains[i]);
-      packedDomains = mergePackedDomains(packedDomains, anotherPackedDomains);
+      mergePackedDomains(packedDomains, anotherPackedDomains);
     }
     Log.trace("Done locally collecting domains on each node.");
   }
@@ -58,11 +58,10 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     return result;
   }
 
-  private byte[][] mergePackedDomains(byte[][] first, byte[][] second) {
-    for (int i = 0; i < first.length; i++) {
-      first[i] = PackedDomains.merge(first[i], second[i]);
+  private void mergePackedDomains(byte[][] target, byte[][] source) {
+    for (int i = 0; i < target.length; i++) {
+      target[i] = PackedDomains.merge(target[i], source[i]);
     }
-    return first;
   }
 
   @Override
@@ -85,10 +84,6 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
       ForkJoinTask.invokeAll(tasks);
     }
     Log.trace("Done merging domains.");
-  }
-
-  public String[] getDomain(int colIdx) {
-    return packedDomains == null ? null : PackedDomains.unpackToStrings(packedDomains[colIdx]);
   }
 
   public String[][] getDomains() {

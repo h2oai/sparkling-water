@@ -72,10 +72,7 @@ private[sparkling] object H2OChunk extends RestCommunication {
       "maximum_vector_sizes" -> maxVecSizesString,
       "compression" -> conf.externalCommunicationCompression)
 
-    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    val addCompression =
-      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
-    insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
+    insert(node, Paths.CHUNK, conf, parameters)
   }
 
   def putChunkCategoricalDomains(
@@ -84,15 +81,17 @@ private[sparkling] object H2OChunk extends RestCommunication {
       frameName: String,
       chunkId: Int,
       domains: Array[Array[String]]): Unit = {
-    val parameters =
-      Map("frame_name" -> frameName, "chunk_id" -> chunkId, "compression" -> conf.externalCommunicationCompression)
-    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    val addCompression =
-      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
-    withResource(insert(endpoint, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, addCompression, parameters)) { outputStream =>
+    val parameters = Map(
+      "frame_name" -> frameName,
+      "chunk_id" -> chunkId,
+      "compression" -> conf.externalCommunicationCompression)
+
+    withResource(insert(node, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, parameters)) { outputStream =>
       val autoBuffer = new AutoBuffer(outputStream, false)
       autoBuffer.putAAStr(domains)
       autoBuffer.close()
     }
   }
+
+
 }

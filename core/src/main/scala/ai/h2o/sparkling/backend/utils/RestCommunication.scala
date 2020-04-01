@@ -20,8 +20,9 @@ package ai.h2o.sparkling.backend.utils
 import java.io._
 import java.net.{HttpURLConnection, URI, URL}
 
+import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.exceptions._
-import ai.h2o.sparkling.utils.FinalizingOutputStream
+import ai.h2o.sparkling.utils.{Compression, FinalizingOutputStream}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
 import org.apache.commons.io.IOUtils
@@ -72,6 +73,25 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       skippedFields: Seq[(Class[_], String)] = Seq.empty,
       encodeParamsAsJson: Boolean = false): ResultType = {
     request(endpoint, "POST", suffix, conf, params, skippedFields, encodeParamsAsJson)
+  }
+
+  /**
+    *
+    * @param node   H2O node descriptor
+    * @param suffix REST relative path representing a specific call
+    * @param conf   H2O conf object
+    * @param params Query parameters
+    * @return HttpUrlConnection facilitating the insertion and holding the outputStream
+    */
+  def insert(
+      node: NodeDesc,
+      suffix: String,
+      conf: H2OConf,
+      params: Map[String, Any] = Map.empty): OutputStream = {
+    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
+    val addCompression =
+      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
+    insert(endpoint, suffix, conf, addCompression, params)
   }
 
   /**

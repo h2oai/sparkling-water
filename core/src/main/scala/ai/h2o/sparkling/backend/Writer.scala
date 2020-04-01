@@ -111,7 +111,7 @@ private[backend] object Writer {
       partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val numRows = partitionSizes(context.partitionId())
-    val domainBuilder = new CategoricalDomainBuilder()
+    val domainBuilder = new CategoricalDomainBuilder(metadata.expectedTypes)
     val h2oNode = uploadPlan(chunkIdx)
     withResource(new Writer(h2oNode, metadata, numRows, chunkIdx)) { writer =>
       it.foreach { row =>
@@ -132,9 +132,6 @@ private[backend] object Writer {
       case (entry, idxField) =>
         if (row.isNullAt(idxField)) {
           con.putNA(idxField)
-          if (metadata.expectedTypes(idxField) == ChunkSerdeConstants.EXPECTED_CATEGORICAL) {
-            domainBuilder.markNA(idxField)
-          }
         } else {
           entry.dataType match {
             case BooleanType => con.put(row.getBoolean(idxField))
