@@ -17,20 +17,15 @@
 
 package ai.h2o.sparkling.ml
 
-import java.io.{File, PrintWriter}
-import java.nio.file.Files
-
+import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.ml.feature._
+import org.apache.spark.ml.feature.{HashingTF, IDF, RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.apache.spark.{SparkContext, SparkFiles}
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
@@ -98,101 +93,4 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
     val model = pipeline.fit(data)
     model
   }
-}
-
-@RunWith(classOf[JUnitRunner])
-class PipelinePredictionTest extends PipelinePredictionTestBase {
-
-  /**
-    * This test is not using H2O runtime since we are testing deployment of the pipeline
-    */
-  test("Run predictions on Spark pipeline model containing H2O Mojo") {
-
-    //
-    // Load exported pipeline
-    //
-    val model_path = getClass.getResource("/sms_pipeline.model")
-    val pipelineModel = PipelineModel.read.load(model_path.getFile)
-
-    //
-    // Define input stream
-    //
-    val smsDataFileName = "smsData.txt"
-    val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
-    sc.addFile(smsDataFilePath)
-
-    val inputDataStream = load(sc, "smsData.txt")
-
-    //
-    // Run predictions on the loaded model which was trained in PySparkling pipeline defined
-    // py/examples/pipelines/ham_or_spam_multi_algo.py
-    //
-    val predictions1 = pipelineModel.transform(inputDataStream)
-
-    //
-    // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
-    //
-    // Run predictions on the trained model right now in Scala
-    val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
-
-    TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
-  }
-}
-
-@RunWith(classOf[JUnitRunner])
-class StreamingPipelinePredictionTest extends PipelinePredictionTestBase {
-
-  test("Test streaming pipeline with H2O MOJO") {
-    //
-    val model_path = getClass.getResource("/sms_pipeline.model")
-    val pipelineModel = PipelineModel.read.load(model_path.getFile)
-
-    //
-    // Define input data
-    //
-    val smsDataFileName = "smsData.txt"
-    val smsDataFilePath = TestUtils.locate(s"smalldata/$smsDataFileName")
-    sc.addFile(smsDataFilePath)
-
-    val tmpPath = Files.createTempDirectory(s"SparklingWater-${getClass.getSimpleName}").toAbsolutePath
-    val tmpDir = tmpPath.toFile
-    tmpDir.setWritable(true, false)
-    tmpDir.setReadable(true, false)
-    tmpDir.setExecutable(true, false)
-    tmpDir.deleteOnExit()
-
-    val data = load(sc, "smsData.txt")
-    // Create data for streaming input
-    data.select("text").collect().zipWithIndex.foreach {
-      case (r, idx) =>
-        val printer = new PrintWriter(new File(tmpDir, s"$idx.txt"))
-        printer.write(r.getString(0))
-        printer.close()
-    }
-    val schema = StructType(Seq(StructField("text", StringType)))
-    val inputDataStream = spark.readStream.schema(schema).text(tmpDir.getAbsolutePath)
-
-    val outputDataStream = pipelineModel.transform(inputDataStream)
-    outputDataStream.writeStream.format("memory").queryName("predictions").start()
-
-    //
-    // Run predictions on the loaded model which was trained in PySparkling pipeline defined
-    // py/examples/pipelines/ham_or_spam_multi_algo.py
-    //
-    var predictions1 = spark.sql("select * from predictions")
-
-    while (predictions1.count() != 1324) { // The file has 380 entries
-      Thread.sleep(1000)
-      predictions1 = spark.sql("select * from predictions")
-    }
-
-    //
-    // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
-    //
-    // Run predictions on the trained model right now in Scala
-    val predictions2 = trainedPipelineModel(spark).transform(data).drop("label")
-
-    TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
-  }
-
 }
