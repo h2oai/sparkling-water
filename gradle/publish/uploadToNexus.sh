@@ -10,4 +10,3 @@ find $repodir -type f | while read f; do
     echo "x${stagingId}x"
     curl -v -u $name:$password -H "Content-type: application/x-rpm" --upload-file $f https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${stagingId}/${suffix} 2>> out.txt
 done
-

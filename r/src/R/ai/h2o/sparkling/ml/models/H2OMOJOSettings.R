@@ -52,4 +52,3 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$namedMojoOutputColumns)
                                  }
                                ))
-

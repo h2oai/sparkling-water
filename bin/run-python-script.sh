@@ -17,7 +17,7 @@ checkPythonPackages
 
 SCRIPT_MASTER=${MASTER:-"$DEFAULT_MASTER"}
 SCRIPT_DEPLOY_MODE="cluster"
-SCRIPT_DEPLOY_MODE=${DEPLOY_MODE:-"client"} 
+SCRIPT_DEPLOY_MODE=${DEPLOY_MODE:-"client"}
 SCRIPT_DRIVER_MEMORY=${DRIVER_MEMORY:-$DEFAULT_DRIVER_MEMORY}
 SCRIPT_H2O_SYS_OPS=${H2O_SYS_OPS:-""}
 
@@ -44,4 +44,3 @@ spark-submit \
 --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS" \
 $VERBOSE \
 "$@"
-

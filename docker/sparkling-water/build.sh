@@ -18,4 +18,3 @@
 #
 
 docker build -t sparkling-water-base sparkling-water/base/
-

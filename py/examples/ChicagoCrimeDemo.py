@@ -14,7 +14,7 @@ def refine_date_col(data, col):
     data["WeekNum"] = data[col].week()
     data["WeekDay"] = data[col].dayOfWeek()
     data["HourOfDay"] = data[col].hour()
-    
+
     # Create weekend and season cols
     # Spring = Mar, Apr, May. Summer = Jun, Jul, Aug. Autumn = Sep, Oct. Winter = Nov, Dec, Jan, Feb.
     # data["Weekend"]   = [1 if x in ("Sun", "Sat") else 0 for x in data["WeekDay"]]
@@ -154,7 +154,7 @@ crimeWithWeatherHF = h2oContext.asH2OFrame(crimeWithWeather, "crimeWithWeatherTa
 cat_cols = ["Arrest", "Season", "WeekDay", "Primary_Type", "Location_Description", "Domestic"]
 for col in cat_cols :
     crimeWithWeatherHF[col] = crimeWithWeatherHF[col].asfactor()
-    
+
 # Split frame into two - we use one as the training frame and the second one as the validation frame
 splits = crimeWithWeatherHF.split_frame(ratios=[0.8])
 train = splits[0]
@@ -180,7 +180,7 @@ gbm_model.train(x                = predictor_columns,
                 training_frame   = train,
                 validation_frame = test
                 )
-      
+
 # Create and train deeplearning model
 from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 
@@ -228,4 +228,3 @@ for i in crime_examples:
 # stop H2O and Spark services
 h2o.cluster().shutdown()
 spark.stop()
-

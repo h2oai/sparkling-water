@@ -10,4 +10,3 @@ c,addr = s.accept()
 while True:
     time.sleep(0.001)
     c.send(datetime.datetime.now().isoformat() + "," + str(random.random()) + "," + str(random.random()) +"\n")
-    

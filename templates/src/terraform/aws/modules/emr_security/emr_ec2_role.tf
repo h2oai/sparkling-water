@@ -35,7 +35,7 @@ resource "aws_iam_role_policy_attachment" "emr_for_ec2_role_policy_attach" {
 }
 
 ##
-## Create Instance Profile 
+## Create Instance Profile
 ##
 resource "aws_iam_instance_profile" "emr_ec2_instance_profile" {
   role = "${aws_iam_role.emr_ec2_role.name}"

@@ -27,7 +27,7 @@ class H2OStageBase(JavaMLReadable, JavaMLWritable):
             paramValue = self._java_obj.getDefault(paramPair.param()).get()
             param = getattr(self, paramName)
             self._defaultParamMap[param] = param.typeConverter(paramValue)
- 
+
         return self
 
     # Override of _set method
