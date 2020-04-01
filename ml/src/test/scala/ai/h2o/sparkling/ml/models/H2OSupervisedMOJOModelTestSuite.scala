@@ -20,9 +20,8 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
-import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -30,7 +29,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private lazy val dataset = spark.read
     .option("header", "true")

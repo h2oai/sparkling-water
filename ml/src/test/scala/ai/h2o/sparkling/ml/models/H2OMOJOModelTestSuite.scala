@@ -19,10 +19,9 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -30,7 +29,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture

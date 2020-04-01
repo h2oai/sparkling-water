@@ -18,15 +18,13 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.SharedH2OTestContext
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestContext with TransformSchemaTestSuite {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
-
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
 
   override protected lazy val dataset: DataFrame = {

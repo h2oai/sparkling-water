@@ -19,11 +19,10 @@ package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -31,7 +30,7 @@ import org.scalatest.{FunSuite, Matchers}
 @RunWith(classOf[JUnitRunner])
 class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private def loadDataFrameFromCsv(path: String): DataFrame = {
     spark.read

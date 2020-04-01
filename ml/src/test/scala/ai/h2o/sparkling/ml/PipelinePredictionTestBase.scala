@@ -23,21 +23,21 @@ import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.ml.feature.{HashingTF, IDF, RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.{SparkContext, SparkFiles}
 import org.scalatest.FunSuite
 
 abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", getClass.getSimpleName, defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   // This method loads the data, perform some basic filtering and create Spark's dataframe
-  def load(sc: SparkContext, dataFile: String)(implicit sqlContext: SQLContext): DataFrame = {
+  def load(sc: SparkContext, dataFile: String): DataFrame = {
     val smsSchema = StructType(
       Array(StructField("label", StringType, nullable = false), StructField("text", StringType, nullable = false)))
     val rowRDD =
       sc.textFile(SparkFiles.get(dataFile)).map(_.split("\t", 2)).filter(r => !r(0).isEmpty).map(p => Row(p(0), p(1)))
-    sqlContext.createDataFrame(rowRDD, smsSchema)
+    spark.createDataFrame(rowRDD, smsSchema)
   }
 
   def trainedPipelineModel(spark: SparkSession): PipelineModel = {

@@ -18,16 +18,15 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.SharedH2OTestContext
-import org.apache.spark.SparkContext
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkSession(): Any = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   val datasetSchema = (new StructType)
     .add("preds.probability", "int", true)

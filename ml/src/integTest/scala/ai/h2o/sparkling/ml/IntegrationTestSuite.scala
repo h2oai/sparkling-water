@@ -19,8 +19,7 @@ package ai.h2o.sparkling.ml
 
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -30,8 +29,7 @@ import scala.concurrent.duration.Duration
 @RunWith(classOf[JUnitRunner])
 class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkSession(): Any =
-    new SparkContext("local-cluster[2,1,2024]", getClass.getName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[2,1,2024]")
 
   test("SchemaUtils: flattenDataFrame should process a complex data frame with more than 200k columns after flattening") {
     val expectedNumberOfColumns = 200000
