@@ -92,52 +92,12 @@ object TestUtils extends Matchers {
       data: Array[Array[T]],
       h2oType: Byte,
       colDomains: Array[Array[String]] = null): h2o.H2OFrame = {
-    makeH2OFrame2(fname, colNames, chunkLayout, data.map(_.map(value => Array(value))), Array(h2oType), colDomains)
-  }
-
-  def makeH2OFrame2[T: ClassTag](
-      fname: String,
-      colNames: Array[String],
-      chunkLayout: Array[Long],
-      data: Array[Array[Array[T]]],
-      h2oTypes: Array[Byte],
-      colDomains: Array[Array[String]] = null): h2o.H2OFrame = {
     ChunkUtils.initFrame(fname, colNames)
-
+    val d = data.map(_.map(value => Array(value)))
     for (i <- chunkLayout.indices) {
-      buildChunks(fname, data(i), i, h2oTypes)
+      buildChunks(fname, d(i), i, Array(h2oType))
     }
-
-    new h2o.H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, h2oTypes, colDomains))
-  }
-
-  def buildChunks[T: ClassTag](
-      fname: String,
-      data: Array[Array[T]],
-      cidx: Integer,
-      h2oType: Array[Byte]): Array[_ <: Chunk] = {
-    val nchunks: Array[NewChunk] = ChunkUtils.createNewChunks(fname, h2oType, cidx)
-
-    data.foreach { values =>
-      values.indices.foreach { idx =>
-        val chunk: NewChunk = nchunks(idx)
-        values(idx) match {
-          case null => chunk.addNA()
-          case u: UUID => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
-          case s: String => chunk.addStr(new BufferedString(s))
-          case b: Byte => chunk.addNum(b)
-          case s: Short => chunk.addNum(s)
-          case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
-          case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
-          case l: Long => chunk.addNum(l)
-          case d: Double => chunk.addNum(d)
-          case x =>
-            throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
-        }
-      }
-    }
-    ChunkUtils.closeNewChunks(nchunks)
-    nchunks
+    new h2o.H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, Array(h2oType), colDomains))
   }
 
   def assertFieldNamesAreEqual(expected: DataFrame, produced: DataFrame): Unit = {
@@ -174,12 +134,9 @@ object TestUtils extends Matchers {
        """.stripMargin)
   }
 
-  private type RowValueAssert = (Long, Vec) => Unit
-
   def assertBasicInvariants[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
     assertRDDHolderProperties(df)
     assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    // Check numbering
     val vec = df.vec(0)
     var rowIdx = 0
     while (rowIdx < df.numRows()) {
@@ -192,31 +149,12 @@ object TestUtils extends Matchers {
   def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
     assertRDDHolderProperties(df)
     assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    // Check numbering
     val vec = df.vec(0)
     var rowIdx = 0
     while (rowIdx < df.numRows()) {
       rowAssert(rowIdx, vec)
       rowIdx += 1
     }
-  }
-
-  private def assertRDDHolderProperties(df: h2o.H2OFrame): Unit = {
-    assert(df.numCols() == 1, "H2OFrame should contain single column")
-    assert(df.names().length == 1, "H2OFrame column names should have single value")
-    assert(
-      df.names()(0).equals("value"),
-      "H2OFrame column name should be 'value' since we define the value inside the Option.")
-  }
-
-  private def assertDatasetHolderProperties(df: h2o.H2OFrame, names: List[String]): Unit = {
-    val actualNames = df.names().toList
-    val numCols = names.length
-    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
-    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
-    assert(
-      actualNames.equals(names),
-      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
   }
 
   def assertBasicInvariants[T <: Product](
@@ -302,18 +240,6 @@ object TestUtils extends Matchers {
           val values = fields.map(f => generateValueForField(random, f, settings, Some(nameWithPrefix)))
           new GenericRowWithSchema(values, struct)
       }
-    }
-  }
-
-  private def generateArray(
-      random: Random,
-      settings: GenerateDataFrameSettings,
-      elementType: DataType,
-      containsNull: Boolean,
-      nameWithPrefix: String): Seq[Any] = {
-    (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
-      val arrayField = StructField(idx.toString, elementType, containsNull)
-      generateValueForField(random, arrayField, settings, Some(nameWithPrefix))
     }
   }
 
@@ -405,4 +331,66 @@ object TestUtils extends Matchers {
   case class StringHolder(result: String)
 
   case class DoubleHolder(result: Double)
+
+  private def generateArray(
+      random: Random,
+      settings: GenerateDataFrameSettings,
+      elementType: DataType,
+      containsNull: Boolean,
+      nameWithPrefix: String): Seq[Any] = {
+    (0 until random.nextInt(settings.maxCollectionSize)).map { idx =>
+      val arrayField = StructField(idx.toString, elementType, containsNull)
+      generateValueForField(random, arrayField, settings, Some(nameWithPrefix))
+    }
+  }
+
+  private type RowValueAssert = (Long, Vec) => Unit
+
+  private def assertRDDHolderProperties(df: h2o.H2OFrame): Unit = {
+    assert(df.numCols() == 1, "H2OFrame should contain single column")
+    assert(df.names().length == 1, "H2OFrame column names should have single value")
+    assert(
+      df.names()(0).equals("value"),
+      "H2OFrame column name should be 'value' since we define the value inside the Option.")
+  }
+
+  private def assertDatasetHolderProperties(df: h2o.H2OFrame, names: List[String]): Unit = {
+    val actualNames = df.names().toList
+    val numCols = names.length
+    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
+    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert(
+      actualNames.equals(names),
+      s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
+  }
+
+  private def buildChunks[T: ClassTag](
+      fname: String,
+      data: Array[Array[T]],
+      cidx: Integer,
+      h2oType: Array[Byte]): Array[_ <: Chunk] = {
+    val nchunks: Array[NewChunk] = ChunkUtils.createNewChunks(fname, h2oType, cidx)
+
+    data.foreach { values =>
+      values.indices.foreach { idx =>
+        val chunk: NewChunk = nchunks(idx)
+        values(idx) match {
+          case null => chunk.addNA()
+          case u: UUID => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
+          case s: String => chunk.addStr(new BufferedString(s))
+          case b: Byte => chunk.addNum(b)
+          case s: Short => chunk.addNum(s)
+          case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
+          case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
+          case l: Long => chunk.addNum(l)
+          case d: Double => chunk.addNum(d)
+          case x =>
+            throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
+        }
+      }
+    }
+    ChunkUtils.closeNewChunks(nchunks)
+    nchunks
+  }
+
 }
