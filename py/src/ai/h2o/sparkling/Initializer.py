@@ -69,7 +69,7 @@ class Initializer(object):
     def __add_sparkling_jar_to_spark(sc):
         gateway = sc._gateway
         # Add Sparkling water assembly JAR to driver
-        sw_jar_file = Initializer.__get_sw_jar(sc)
+        sw_jar_file = Initializer.__get_sw_jar()
 
         # SW-593 - adding an extra / to fix a windows shell issue creating malform url
         if not sw_jar_file.startswith('/'):
