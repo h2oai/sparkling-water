@@ -32,6 +32,5 @@ memory_unit=${DOCKER_MEMORY/[0-9\.]* /}
 is_memory_enough=$(bc -l <<< "$memory_size > $REQUIRED_MEMORY")
 
 if [[ "$memory_unit" != "GiB" ]] || [[ "$is_memory_enough" != "1" ]]; then
-    echo "WARN: Docker reports $DOCKER_MEMORY total memory, but the Sparkling Water Dockerfile needs ${REQUIRED_MEMORY}G!" 
+    echo "WARN: Docker reports $DOCKER_MEMORY total memory, but the Sparkling Water Dockerfile needs ${REQUIRED_MEMORY}G!"
 fi
-

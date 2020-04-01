@@ -48,7 +48,7 @@ resource "aws_internet_gateway" "gw" {
 
 ##
 ## Route table (mainly for gataway)
-## 
+##
 resource "aws_route_table" "r" {
   vpc_id = "${aws_vpc.main.id}"
 

@@ -19,4 +19,3 @@
 
 
 docker run -i -t --rm sparkling-water-base bin/run-example.sh --master "local[*]" "$@"
-

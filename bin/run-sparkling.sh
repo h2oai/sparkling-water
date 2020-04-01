@@ -23,7 +23,6 @@ if [ -f "$SPARK_HOME"/conf/spark-defaults.conf ]; then
 fi
 
 # Show banner
-banner 
+banner
 
 spark-submit "$@" $VERBOSE --driver-memory "$DRIVER_MEMORY" --master "$MASTER" --conf spark.driver.extraJavaOptions="$EXTRA_DRIVER_PROPS" --class "$DRIVER_CLASS" "$FAT_JAR_FILE"
-

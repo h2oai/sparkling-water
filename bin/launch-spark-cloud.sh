@@ -29,4 +29,3 @@ echo "Starting master..."
 
 echo "Starting $SPARK_WORKER_INSTANCES workers..."
 "$SPARK_HOME"/sbin/start-slave.sh $MASTER
-

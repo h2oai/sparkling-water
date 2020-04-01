@@ -56,4 +56,3 @@ setup(
                   'h2o': ['version.txt', 'buildinfo.txt'],
                   'ai.h2o.sparkling': ['version.txt']},
 )
-

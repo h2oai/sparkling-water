@@ -210,6 +210,22 @@ configure(subprojects) { project ->
   if (project in benchProjects) {
     apply from: "$rootDir/gradle/bench.gradle"
   }
+
+  spotless {
+    format 'misc', {
+      target '**/*.sh', '**/*.gitignore', '**/*.properties', '**/*.R', '**/*.py', '**/*.tf', '**/*.xml', "**/*.groovy"
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+  }
+}
+
+spotless {
+  format 'misc', {
+    target 'bin/*.sh', '.gitignore', '*.properties', 'gradle/publish/*.*'
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
 }
 
 clean.doFirst {

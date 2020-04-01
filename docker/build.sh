@@ -20,4 +20,3 @@
 docker images > /dev/null || { echo Please install docker in non-sudo mode. ; exit; }
 
 ./sparkling-water/build.sh
-

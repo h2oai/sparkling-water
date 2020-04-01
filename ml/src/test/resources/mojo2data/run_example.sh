@@ -19,4 +19,3 @@ Command line : ${CMD_LINE} ${MOJO_FILE} ${CSV_FILE}
 EOF
 
 ${CMD_LINE} ${MOJO_FILE} ${CSV_FILE}
-
