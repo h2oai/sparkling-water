@@ -313,7 +313,8 @@ trait SharedBackendConf {
 
   def setKerberosKeytab(path: String): H2OConf = set(PROP_KERBEROS_KEYTAB._1, path)
 
-  private[backend] def getFileProperties: Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_KERBEROS_KEYTAB)
+  private[backend] def getFileProperties: Seq[(String, _)] =
+    Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF, PROP_KERBEROS_KEYTAB)
 }
 
 object SharedBackendConf {
@@ -479,9 +480,9 @@ object SharedBackendConf {
   val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
 
   /**
-   * If enabled, H2O instances will create JDBC connections to Hive and H2O Python & R API will be able to read data
-   * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
-   */
+    * If enabled, H2O instances will create JDBC connections to Hive and H2O Python & R API will be able to read data
+    * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
+    */
   val PROP_HIVE_SUPPORT_ENABLED: (String, Boolean) = ("spark.ext.h2o.hive.enabled", false)
 
   /** The full address of HiveServer2, for example hostname:10000 */
