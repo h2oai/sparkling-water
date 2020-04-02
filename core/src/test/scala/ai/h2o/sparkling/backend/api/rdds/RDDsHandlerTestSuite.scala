@@ -31,7 +31,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   test("RDDsHandler.list() method") {
     val rname = "Test"
     val rpart = 21
-    sc.parallelize(1 to 10, rpart).setName(rname).cache()
+    val rdd = sc.parallelize(1 to 10, rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val result = rddsHandler.list(3, new RDDsV3)
