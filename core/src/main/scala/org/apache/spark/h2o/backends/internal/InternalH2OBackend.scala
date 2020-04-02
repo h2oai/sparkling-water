@@ -18,8 +18,6 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
-import java.nio.file.Files
-
 import ai.h2o.sparkling.backend.shared.SparklingBackend
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.hadoop.conf.Configuration
@@ -35,7 +33,7 @@ import org.apache.spark.{SparkContext, SparkEnv}
 import water.api.RestAPIManager
 import water.util.{Log, PrettyPrint}
 import water.{H2O, H2OStarter}
-import water.hive.{DelegationTokenRefresher, HiveTokenGenerator}
+import water.hive.DelegationTokenRefresher
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 

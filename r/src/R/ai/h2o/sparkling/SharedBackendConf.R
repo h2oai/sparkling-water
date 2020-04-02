@@ -132,9 +132,9 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     hivePrincipal = function() { ConfUtils.getOption(invoke(jconf, "hivePrincipal")) },
 
-    hiveJdbcUrlPattern = function() { invoke(jconf, "hiveJdbcUrlPattern") },
+    hiveJdbcUrlPattern = function() { ConfUtils.getOption(invoke(jconf, "hiveJdbcUrlPattern")) },
 
-    hiveToken = function() { invoke(jconf, "hiveToken") },
+    hiveToken = function() { ConfUtils.getOption(invoke(jconf, "hiveToken")) },
 
 #
 # Setters
