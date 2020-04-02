@@ -15,16 +15,18 @@
 # limitations under the License.
 #
 
+import atexit
 import os
 import pyspark
+import shutil
 import sys
+import tempfile
 import warnings
 import zipfile
 from ai.h2o.sparkling.VersionComponents import VersionComponents
 from codecs import open
 from os import path
 from pyspark import SparkContext
-import tempfile
 
 """
 This class is used to load sparkling water JAR into spark environment - driver and executors.
@@ -41,6 +43,9 @@ class Initializer(object):
     __sparklingWaterJarLoaded = False
     __extracted_jar_dir = None
 
+    def __removeTmpDir(dir):
+        shutil.rmtree(dir)
+
     @staticmethod
     def load_sparkling_jar():
         if Initializer.__sparklingWaterJarLoaded is False:
@@ -49,6 +54,7 @@ class Initializer(object):
                 # Ensure that when we do import pysparkling, spark will put later the JAR file
                 # to the driver. This option has effect only when SparkContext has not been started before.
                 os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " pyspark-shell"
+                atexit.register(Initializer.__extracted_jar_dir)
             else:
                 jvm = sc._jvm
                 stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
