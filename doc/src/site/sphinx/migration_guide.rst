@@ -29,7 +29,6 @@ From 3.30 to 3.32
   use ``H2OGBM`` instead. The classes wrapping these methods are removed as well. This removal affects only Scala API
   as other APIs don't have such functionality.
 
-<<<<<<< HEAD
 - The method ``splitFrame`` and ``split`` in ``water.support.H2OFrameSupport`` is removed. Please use
   ``ai.h2o.sparkling.H2OFrame(frameKeyString).split(ratios)`` instead.
 
