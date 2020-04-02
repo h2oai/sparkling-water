@@ -51,7 +51,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
             case EXPECTED_BOOL | EXPECTED_BYTE => writeByte(chunk.at8(rowIdx).toByte)
             case EXPECTED_CHAR => writeChar(chunk.at8(rowIdx).toChar)
             case EXPECTED_SHORT => writeShort(chunk.at8(rowIdx).toShort)
-            case EXPECTED_INT => writeInt(chunk.at8(rowIdx).toInt)
+            case EXPECTED_INT | EXPECTED_CATEGORICAL => writeInt(chunk.at8(rowIdx).toInt)
             case EXPECTED_FLOAT => writeFloat(chunk.atd(rowIdx).toFloat)
             case EXPECTED_LONG | EXPECTED_TIMESTAMP => writeLong(chunk.at8(rowIdx))
             case EXPECTED_DOUBLE => writeDouble(chunk.atd(rowIdx))
@@ -91,6 +91,8 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
     putMarker(data)
   }
 
+  def writeCategorical(data: Int): Unit = writeInt(data)
+
   def writeInt(data: Int): Unit = {
     buffer.putInt(data)
     putMarker(data)
@@ -124,7 +126,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
     case EXPECTED_SHORT =>
       buffer.put2s(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_INT =>
+    case EXPECTED_INT | EXPECTED_CATEGORICAL =>
       buffer.putInt(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
     case EXPECTED_TIMESTAMP | EXPECTED_LONG =>

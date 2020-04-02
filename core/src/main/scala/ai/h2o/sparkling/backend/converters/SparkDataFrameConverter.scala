@@ -18,18 +18,12 @@
 package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SparkTimeZone
-import ai.h2o.sparkling.backend.utils.ConversionUtils.expectedTypesFromClasses
-import ai.h2o.sparkling.backend.utils.ReflectionUtils
-import ai.h2o.sparkling.backend.utils.SupportedTypes.Double
 import ai.h2o.sparkling.backend.{H2OAwareRDD, H2OFrameRelation, Writer, WriterMetadata}
 import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.ExposeUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OContext
-import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.types.{DataType, DecimalType}
 import water.fvec.{Frame, H2OFrame}
 import water.{DKV, Key}
 
@@ -77,22 +71,12 @@ object SparkDataFrameConverter extends Logging {
     val flattenSchema = expandedSchema(flatDataFrame.schema, elemMaxSizes)
     val colNames = flattenSchema.map(_.name).toArray
     val maxVecSizes = vecIndices.map(elemMaxSizes(_))
-    val expectedTypes = determineExpectedTypes(flatDataFrame)
 
     val rdd = flatDataFrame.rdd
+    val expectedTypes = DataTypeConverter.determineExpectedTypes(rdd, flatDataFrame.schema)
+
     val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + Key.rand())
     val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
     Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
-  }
-
-  private def determineExpectedTypes(flatDataFrame: DataFrame): Array[Byte] = {
-    val internalJavaClasses = flatDataFrame.schema.map { f =>
-      f.dataType match {
-        case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] => Double.javaClass
-        case v if ExposeUtils.isAnyVectorUDT(v) => classOf[Vector]
-        case dt: DataType => ReflectionUtils.supportedTypeOf(dt).javaClass
-      }
-    }.toArray
-    expectedTypesFromClasses(internalJavaClasses)
   }
 }

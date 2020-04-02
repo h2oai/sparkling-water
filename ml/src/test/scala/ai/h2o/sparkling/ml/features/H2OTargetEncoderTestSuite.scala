@@ -238,11 +238,11 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .withColumn("DPROS", 'DPROS cast StringType)
       .withColumn("DCAPS", 'DCAPS cast StringType)
       .withColumn("CAPSULE", 'CAPSULE cast StringType)
-    val Array(trainingDataset, testingDateset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
+    val Array(trainingDataset, testingDataset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
     val model = targetEncoder.fit(trainingDataset)
 
     val transformedByModel = model.transformTrainingDataset(testingDataset)
-    val transformedByMOJOModel = model.transform(testingDateset)
+    val transformedByMOJOModel = model.transform(testingDataset)
 
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)

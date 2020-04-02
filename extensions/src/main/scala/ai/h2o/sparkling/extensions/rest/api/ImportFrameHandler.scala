@@ -17,10 +17,14 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
+import ai.h2o.sparkling.extensions.internals.{CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3, UploadPlanV3}
 import ai.h2o.sparkling.utils.Base64Encoding
+import water.{DKV, Key}
 import water.api.Handler
-import water.fvec.{ChunkUtils, Vec}
+import water.fvec.{ChunkUtils, Frame, Vec}
+import water.parser.Categorical
+import water.util.Log
 
 class ImportFrameHandler extends Handler {
   def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
@@ -31,8 +35,48 @@ class ImportFrameHandler extends Handler {
   def finalize(version: Int, request: FinalizeFrameV3): FinalizeFrameV3 = {
     val rowsPerChunk = Base64Encoding.decodeToLongArray(request.rows_per_chunk)
     val columnTypes = Base64Encoding.decode(request.column_types)
-    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, null)
+    val frameKey = Key.make(request.key)
+
+    // Collect global domains from local domains on h2o nodes.
+    val collectDomainsTask = new CollectCategoricalDomainsTask(frameKey)
+    collectDomainsTask.doAllNodes()
+    val stringDomains = collectDomainsTask.getDomains()
+    val domains = expandDomains(stringDomains, columnTypes)
+
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
+
+    // Update categorical indices for all chunks.
+    val frame = DKV.getGet[Frame](frameKey)
+    val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
+    val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
+    updateCategoricalIndicesTask.doAll(frame)
+
+    // Convert categorical columns with too many categories to T_STR
+    categoricalColumnIndices.foreach { catColIdx =>
+      val vector = frame.vec(catColIdx)
+      if (vector.cardinality() > Categorical.MAX_CATEGORICAL_COUNT) {
+        Log.warn(
+          s"Categorical column with index '$catColIdx' exceeded maximum number of categories. " +
+            "Converting it to a column of strings ...")
+        frame.replace(catColIdx, vector.toStringVec())
+      }
+    }
+
     request
+  }
+
+  private def expandDomains(stringDomains: Array[Array[String]], columnTypes: Array[Byte]): Array[Array[String]] = {
+    var strIdx = 0
+    var idx = 0
+    val result = Array.fill[Array[String]](columnTypes.length)(null)
+    while (idx < columnTypes.length) {
+      if (columnTypes(idx) == Vec.T_CAT) {
+        result(idx) = stringDomains(strIdx)
+        strIdx += 1
+      }
+      idx += 1
+    }
+    result
   }
 
   def getUploadPlan(version: Int, request: UploadPlanV3): UploadPlanV3 = {

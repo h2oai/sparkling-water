@@ -20,7 +20,7 @@ package ai.h2o.sparkling.extensions.rest.api
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
-import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.DKV
 import water.fvec.Frame
 import water.server.ServletUtils
@@ -28,7 +28,7 @@ import water.server.ServletUtils
 /**
   * This servlet class handles GET and PUT requests for the path /3/Chunk
   */
-final class ChunkServlet extends HttpServlet {
+final class ChunkServlet extends ServletBase {
 
   private case class POSTRequestParameters(
       frameName: String,
@@ -103,34 +103,13 @@ final class ChunkServlet extends HttpServlet {
 
   def validateExpectedTypes(expectedTypes: Array[Byte], frame: Frame): Unit = {
     val lowerBound = ChunkSerdeConstants.EXPECTED_BOOL
-    val upperBound = ChunkSerdeConstants.EXPECTED_VECTOR
+    val upperBound = ChunkSerdeConstants.EXPECTED_CATEGORICAL
     for (i <- expectedTypes.indices) {
       if (expectedTypes(i) < lowerBound || expectedTypes(i) > upperBound) {
         val message = s"Expected Type ('expected_types') at position $i with " +
           s"the value '${expectedTypes(i)}' is invalid."
         throw new IllegalArgumentException(message)
       }
-    }
-  }
-
-  private def getParameterAsString(request: HttpServletRequest, parameterName: String): String = {
-    val result = request.getParameter(parameterName)
-    if (result == null) {
-      throw new IllegalArgumentException(s"Cannot find value for the parameter '$parameterName'")
-    }
-    result
-  }
-
-  private def processRequest[R](request: HttpServletRequest, response: HttpServletResponse)(
-      processor: => Unit): Unit = {
-    val uri = ServletUtils.getDecodedUri(request)
-    try {
-      processor
-      ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
-    } catch {
-      case e: Exception => ServletUtils.sendErrorResponse(response, e, uri)
-    } finally {
-      ServletUtils.logRequest(request.getMethod, request, response)
     }
   }
 
@@ -175,7 +154,7 @@ final class ChunkServlet extends HttpServlet {
       compression: String) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
-      if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName")
+      if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName' does not exist.")
       validateExpectedTypes(expectedTypes, frame)
       validateMaxVecSizes()
       Compression.validateCompressionType(compression)

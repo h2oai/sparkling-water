@@ -46,7 +46,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
           case EXPECTED_BOOL | EXPECTED_BYTE => addToChunk(chunks(startPositions(typeIdx)), readByte())
           case EXPECTED_CHAR => addToChunk(chunks(startPositions(typeIdx)), readChar())
           case EXPECTED_SHORT => addToChunk(chunks(startPositions(typeIdx)), readShort())
-          case EXPECTED_INT => addToChunk(chunks(startPositions(typeIdx)), readInt());
+          case EXPECTED_INT | EXPECTED_CATEGORICAL => addToChunk(chunks(startPositions(typeIdx)), readInt())
           case EXPECTED_LONG | EXPECTED_TIMESTAMP => addToChunk(chunks(startPositions(typeIdx)), readLong())
           case EXPECTED_FLOAT => addToChunk(chunks(startPositions(typeIdx)), readFloat())
           case EXPECTED_DOUBLE => addToChunk(chunks(startPositions(typeIdx)), readDouble())
@@ -134,7 +134,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     var vecCount = 0
     expectedTypes.map {
       case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_TIMESTAMP =>
+          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_CATEGORICAL | EXPECTED_TIMESTAMP =>
         1
       case EXPECTED_VECTOR =>
         val result = vecElemSizes(vecCount)

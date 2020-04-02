@@ -29,6 +29,7 @@ trait ChunkSerdeConstants {
   val EXPECTED_STRING: Byte = 8
   val EXPECTED_TIMESTAMP: Byte = 9
   val EXPECTED_VECTOR: Byte = 10
+  val EXPECTED_CATEGORICAL: Byte = 11
 
   /**
     * Meta Information used to specify whether we should expect sparse or dense vector

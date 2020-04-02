@@ -370,6 +370,28 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(catVec.domain().length == domSize)
   }
 
+  test("DataFrame[String] to H2OFrame[T_STRING] and back") {
+    val df = Seq("one", "two", "three", "four", "five", "six", "seven").toDF("Strings").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isString)
+
+    val resultDF = hc.asDataFrame(h2oFrame)
+    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+  }
+
+  test("DataFrame[String] to H2OFrame[T_CAT] and back") {
+    val df = Seq("one", "two", "three", "one", "two", "three", "one").toDF("Strings").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.vec(0).isCategorical)
+
+    val resultDF = hc.asDataFrame(h2oFrame)
+    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+  }
+
   test("DataFrame[DateType] to H2OFrame[Time]") {
     val dates = Seq("2020-12-12", "2020-01-01", "2020-02-02", "2019-05-10")
     val df = dates.toDF("strings").select('strings.cast("date").alias("dates"))

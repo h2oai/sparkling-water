@@ -22,7 +22,9 @@ import java.io.{InputStream, OutputStream}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.spark.h2o.H2OConf
+import water.AutoBuffer
 
 private[sparkling] case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)
 
@@ -70,9 +72,23 @@ private[sparkling] object H2OChunk extends RestCommunication {
       "maximum_vector_sizes" -> maxVecSizesString,
       "compression" -> conf.externalCommunicationCompression)
 
-    val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    val addCompression =
-      (outputStream: OutputStream) => Compression.compress(conf.externalCommunicationCompression, outputStream)
-    insert(endpoint, Paths.CHUNK, conf, addCompression, parameters)
+    insertToNode(node, Paths.CHUNK, conf, parameters)
   }
+
+  def putChunkCategoricalDomains(
+      node: NodeDesc,
+      conf: H2OConf,
+      frameName: String,
+      chunkId: Int,
+      domains: Array[Array[String]]): Unit = {
+    val parameters =
+      Map("frame_name" -> frameName, "chunk_id" -> chunkId, "compression" -> conf.externalCommunicationCompression)
+
+    withResource(insertToNode(node, Paths.CHUNK_CATEGORICAL_DOMAINS, conf, parameters)) { outputStream =>
+      val autoBuffer = new AutoBuffer(outputStream, false)
+      autoBuffer.putAAStr(domains)
+      autoBuffer.close()
+    }
+  }
+
 }
