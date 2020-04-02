@@ -36,7 +36,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .cache()
 
-  def testTrainedTreeBasedModelHasPositiveNumberOfTrees(
+  private def testTrainedTreeBasedModelHasPositiveNumberOfTrees(
       algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)
@@ -61,7 +61,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     testTrainedTreeBasedModelHasPositiveNumberOfTrees(new H2OXGBoost())
   }
 
-  def testLoadedTreeBasedModelHasPositiveNumberOfTrees(
+  private def testLoadedTreeBasedModelHasPositiveNumberOfTrees(
       algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)

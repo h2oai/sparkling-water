@@ -32,11 +32,12 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
 
   "flattenStructsInSchema" should "flatten a simple schema" in {
     val expSchema = StructType(
-      StructField("a", IntegerType, true) ::
-        StructField("b", IntegerType, false)
+      StructField("a", IntegerType, nullable = true) ::
+        StructField("b", IntegerType, nullable = false)
         :: Nil)
     val flatSchema = SchemaUtils.flattenStructsInSchema(expSchema)
-    val expected = Seq((StructField("a", IntegerType, true), "a"), (StructField("b", IntegerType, false), "b"))
+    val expected =
+      Seq((StructField("a", IntegerType, nullable = true), "a"), (StructField("b", IntegerType, nullable = false), "b"))
     assert(flatSchema === expected)
   }
 
@@ -44,21 +45,21 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
     val expSchema = StructType(
       StructField(
         "a",
-        StructType(StructField("a1", DoubleType, false) ::
-          StructField("a2", StringType, true) :: Nil),
-        true) ::
+        StructType(StructField("a1", DoubleType, nullable = false) ::
+          StructField("a2", StringType, nullable = true) :: Nil),
+        nullable = true) ::
         StructField(
           "b",
-          StructType(StructField("b1", DoubleType, false) ::
-            StructField("b2", StringType, true) :: Nil),
-          false)
+          StructType(StructField("b1", DoubleType, nullable = false) ::
+            StructField("b2", StringType, nullable = true) :: Nil),
+          nullable = false)
         :: Nil)
     val flatSchema = SchemaUtils.flattenStructsInSchema(expSchema)
     val expected = Seq(
-      (StructField("a.a1", DoubleType, true), "a.a1"),
-      (StructField("a.a2", StringType, true), "a.a2"),
-      (StructField("b.b1", DoubleType, false), "b.b1"),
-      (StructField("b.b2", StringType, true), "b.b2"))
+      (StructField("a.a1", DoubleType, nullable = true), "a.a1"),
+      (StructField("a.a2", StringType, nullable = true), "a.a2"),
+      (StructField("b.b1", DoubleType, nullable = false), "b.b1"),
+      (StructField("b.b2", StringType, nullable = true), "b.b2"))
     assert(flatSchema === expected)
   }
 
@@ -168,21 +169,21 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
       Seq(Row(Seq(Row(1, null), Row(3, 4))), Row(Seq(Row(1, 2), Row(3, 4), Row(5, 6))))
     }
     val structType = StructType(
-      StructField("a", IntegerType, false) ::
-        StructField("b", IntegerType, true) ::
+      StructField("a", IntegerType, nullable = false) ::
+        StructField("b", IntegerType, nullable = true) ::
         Nil)
     val schema = StructType(
-      StructField("arr", ArrayType(structType, false), false) ::
+      StructField("arr", ArrayType(structType, containsNull = false), nullable = false) ::
         Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("arr.0.a", IntegerType, false) ::
-        StructField("arr.0.b", IntegerType, true) ::
-        StructField("arr.1.a", IntegerType, false) ::
-        StructField("arr.1.b", IntegerType, true) ::
-        StructField("arr.2.a", IntegerType, true) ::
-        StructField("arr.2.b", IntegerType, true) ::
+      StructField("arr.0.a", IntegerType, nullable = false) ::
+        StructField("arr.0.b", IntegerType, nullable = true) ::
+        StructField("arr.1.a", IntegerType, nullable = false) ::
+        StructField("arr.1.b", IntegerType, nullable = true) ::
+        StructField("arr.2.a", IntegerType, nullable = true) ::
+        StructField("arr.2.b", IntegerType, nullable = true) ::
         Nil)
 
     val result = SchemaUtils.flattenSchema(df)
@@ -197,23 +198,23 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
         Row(Row(Seq(1, 2), null, Seq(5, 6), Seq(7, 8))))
     }
     val structType = StructType(
-      StructField("a", ArrayType(IntegerType, true), false) ::
-        StructField("b", ArrayType(IntegerType, false), true) ::
-        StructField("c", ArrayType(IntegerType, false), false) ::
-        StructField("d", ArrayType(IntegerType, false), false) ::
+      StructField("a", ArrayType(IntegerType, containsNull = true), nullable = false) ::
+        StructField("b", ArrayType(IntegerType, containsNull = false), nullable = true) ::
+        StructField("c", ArrayType(IntegerType, containsNull = false), nullable = false) ::
+        StructField("d", ArrayType(IntegerType, containsNull = false), nullable = false) ::
         Nil)
-    val schema = StructType(StructField("struct", structType, false) :: Nil)
+    val schema = StructType(StructField("struct", structType, nullable = false) :: Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("struct.a.0", IntegerType, true) ::
-        StructField("struct.a.1", IntegerType, true) ::
-        StructField("struct.b.0", IntegerType, true) ::
-        StructField("struct.b.1", IntegerType, true) ::
-        StructField("struct.c.0", IntegerType, false) ::
-        StructField("struct.c.1", IntegerType, true) ::
-        StructField("struct.d.0", IntegerType, true) ::
-        StructField("struct.d.1", IntegerType, true) ::
+      StructField("struct.a.0", IntegerType, nullable = true) ::
+        StructField("struct.a.1", IntegerType, nullable = true) ::
+        StructField("struct.b.0", IntegerType, nullable = true) ::
+        StructField("struct.b.1", IntegerType, nullable = true) ::
+        StructField("struct.c.0", IntegerType, nullable = false) ::
+        StructField("struct.c.1", IntegerType, nullable = true) ::
+        StructField("struct.d.0", IntegerType, nullable = true) ::
+        StructField("struct.d.1", IntegerType, nullable = true) ::
         Nil)
 
     val result = SchemaUtils.flattenSchema(df)
@@ -228,23 +229,23 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
         Row(Map("a" -> Row(1, 2), "b" -> Row(3, 4), "c" -> Row(5, 6))))
     }
     val structType = StructType(
-      StructField("a", IntegerType, false) ::
-        StructField("b", IntegerType, true) ::
+      StructField("a", IntegerType, nullable = false) ::
+        StructField("b", IntegerType, nullable = true) ::
         Nil)
     val schema = StructType(
-      StructField("map", MapType(StringType, structType, false), false) ::
+      StructField("map", MapType(StringType, structType, valueContainsNull = false), nullable = false) ::
         Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("map.a.a", IntegerType, false) ::
-        StructField("map.a.b", IntegerType, true) ::
-        StructField("map.b.a", IntegerType, false) ::
-        StructField("map.b.b", IntegerType, true) ::
-        StructField("map.c.a", IntegerType, true) ::
-        StructField("map.c.b", IntegerType, true) ::
-        StructField("map.d.a", IntegerType, true) ::
-        StructField("map.d.b", IntegerType, true) ::
+      StructField("map.a.a", IntegerType, nullable = false) ::
+        StructField("map.a.b", IntegerType, nullable = true) ::
+        StructField("map.b.a", IntegerType, nullable = false) ::
+        StructField("map.b.b", IntegerType, nullable = true) ::
+        StructField("map.c.a", IntegerType, nullable = true) ::
+        StructField("map.c.b", IntegerType, nullable = true) ::
+        StructField("map.d.a", IntegerType, nullable = true) ::
+        StructField("map.d.b", IntegerType, nullable = true) ::
         Nil)
 
     val result = SchemaUtils.flattenSchema(df)
@@ -264,24 +265,24 @@ class SchemaUtilsTestSuite extends FlatSpec with Matchers with SparkTestContext 
         Row(Row(Map("b" -> 1, "c" -> 2), null, Map("f" -> 6, "g" -> 7), Map("h" -> 8, "i" -> 9))))
     }
     val structType = StructType(
-      StructField("a", MapType(StringType, IntegerType, true), false) ::
-        StructField("b", MapType(StringType, IntegerType, false), true) ::
-        StructField("c", MapType(StringType, IntegerType, false), false) ::
-        StructField("d", MapType(StringType, IntegerType, false), false) ::
+      StructField("a", MapType(StringType, IntegerType, valueContainsNull = true), nullable = false) ::
+        StructField("b", MapType(StringType, IntegerType, valueContainsNull = false), nullable = true) ::
+        StructField("c", MapType(StringType, IntegerType, valueContainsNull = false), nullable = false) ::
+        StructField("d", MapType(StringType, IntegerType, valueContainsNull = false), nullable = false) ::
         Nil)
-    val schema = StructType(StructField("struct", structType, false) :: Nil)
+    val schema = StructType(StructField("struct", structType, nullable = false) :: Nil)
     val df = spark.createDataFrame(rdd, schema)
 
     val expectedSchema = StructType(
-      StructField("struct.a.a", IntegerType, true) ::
-        StructField("struct.a.b", IntegerType, true) ::
-        StructField("struct.a.c", IntegerType, true) ::
-        StructField("struct.b.d", IntegerType, true) ::
-        StructField("struct.b.e", IntegerType, true) ::
-        StructField("struct.c.f", IntegerType, false) ::
-        StructField("struct.c.g", IntegerType, true) ::
-        StructField("struct.d.h", IntegerType, true) ::
-        StructField("struct.d.i", IntegerType, true) ::
+      StructField("struct.a.a", IntegerType, nullable = true) ::
+        StructField("struct.a.b", IntegerType, nullable = true) ::
+        StructField("struct.a.c", IntegerType, nullable = true) ::
+        StructField("struct.b.d", IntegerType, nullable = true) ::
+        StructField("struct.b.e", IntegerType, nullable = true) ::
+        StructField("struct.c.f", IntegerType, nullable = false) ::
+        StructField("struct.c.g", IntegerType, nullable = true) ::
+        StructField("struct.d.h", IntegerType, nullable = true) ::
+        StructField("struct.d.i", IntegerType, nullable = true) ::
         Nil)
 
     val result = SchemaUtils.flattenSchema(df)

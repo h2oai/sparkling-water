@@ -52,7 +52,7 @@ class RestApiUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     testSettingTimezoneToH2OCluster("UTC")
   }
 
-  def testSettingTimezoneToH2OCluster(timezone: String): Unit = {
+  private def testSettingTimezoneToH2OCluster(timezone: String): Unit = {
     val conf = hc.getConf
     println(ParseTime.listTimezones)
     RestApiUtils.setTimeZone(conf, timezone)

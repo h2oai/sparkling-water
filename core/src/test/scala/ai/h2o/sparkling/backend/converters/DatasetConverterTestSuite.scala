@@ -29,9 +29,6 @@ import water.parser.BufferedString
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-/**
-  * Testing schema for h2o schema spark dataset transformation.
-  */
 @RunWith(classOf[JUnitRunner])
 class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
@@ -111,11 +108,11 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("Datasets with a projection") {
-    checkWith((n, a, e) => SampleCat(n, a))
+    checkWith((n, a, _) => SampleCat(n, a))
   }
 
   test("Datasets with a projection to singletons") {
-    checkWith((n, a, e) => SampleString(n))
+    checkWith((n, _, _) => SampleString(n))
   }
 
   test("Converting Total Dataset to Optional") {

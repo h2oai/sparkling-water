@@ -32,26 +32,25 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("[MOJO] Export and Import - binomial model") {
-    val (inputDf, model) = binomialModelFixture
+    val (inputDf, model) = binomialModelFixture()
     testModelReload("binomial_model_import_export", inputDf, model)
   }
 
   test("[MOJO] Export and Import - multinomial model") {
-    val (inputDf, model) = multinomialModelFixture
+    val (inputDf, model) = multinomialModelFixture()
     testModelReload("multinomial_model_import_export", inputDf, model)
   }
 
   test("[MOJO] Export and Import - regression model") {
-    val (inputDf, model) = regressionModelFixture
+    val (inputDf, model) = regressionModelFixture()
     testModelReload("regression_model_import_export", inputDf, model)
   }
 
   test("[MOJO] Export and import - deep learning model") {
-    val (inputDf, model) = deepLearningModelFixture
+    val (inputDf, model) = deepLearningModelFixture()
     testModelReload("deeplearning_model_import_export", inputDf, model)
   }
 
-  // @formatter:off
   test("[MOJO] Load from mojo file - binomial model") {
     val (inputDf, mojoModel) = savedBinomialModel()
     val (_, model) = binomialModelFixture()
@@ -83,26 +82,24 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val data = Seq(
       Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, "true", "true"),
       Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, "false", "true"),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, "true", "true")
-    )
+      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, "true", "true"))
 
-
-    val schema = StructType(List(
-      StructField("Year", IntegerType, true),
-      StructField("Month", IntegerType, true),
-      StructField("DayOfWeek", IntegerType, true),
-      StructField("UniqueCarrier", StringType, true),
-      StructField("FlightNum", IntegerType, true),
-      StructField("Origin", StringType, true),
-      StructField("Dest", StringType, true),
-      StructField("Distance", IntegerType, true),
-      StructField("IsDepDelayed", StringType, true),
-      StructField("IsArrDelayed", StringType, true))
-    )
+    val schema = StructType(
+      List(
+        StructField("Year", IntegerType, nullable = true),
+        StructField("Month", IntegerType, nullable = true),
+        StructField("DayOfWeek", IntegerType, nullable = true),
+        StructField("UniqueCarrier", StringType, nullable = true),
+        StructField("FlightNum", IntegerType, nullable = true),
+        StructField("Origin", StringType, nullable = true),
+        StructField("Dest", StringType, nullable = true),
+        StructField("Distance", IntegerType, nullable = true),
+        StructField("IsDepDelayed", StringType, nullable = true),
+        StructField("IsArrDelayed", StringType, nullable = true)))
 
     val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
 
-    mojo.transform(df).show(3, false)
+    mojo.transform(df).show(3, truncate = false)
   }
 
   test("BooleanColumn for mojo predictions") {
@@ -112,26 +109,24 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val data = Seq(
       Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
       Row(1987, 10, 4, "PS", 1451, "SAN", "SFO", 447, false, true),
-      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true)
-    )
+      Row(1987, 10, 6, "PS", 1451, "SAN", "SFO", 447, true, true))
 
-
-    val schema = StructType(List(
-      StructField("Year", IntegerType, true),
-      StructField("Month", IntegerType, true),
-      StructField("DayOfWeek", IntegerType, true),
-      StructField("UniqueCarrier", StringType, true),
-      StructField("FlightNum", IntegerType, true),
-      StructField("Origin", StringType, true),
-      StructField("Dest", StringType, true),
-      StructField("Distance", IntegerType, true),
-      StructField("IsDepDelayed", BooleanType, true),
-      StructField("IsArrDelayed", BooleanType, true))
-    )
+    val schema = StructType(
+      List(
+        StructField("Year", IntegerType, nullable = true),
+        StructField("Month", IntegerType, nullable = true),
+        StructField("DayOfWeek", IntegerType, nullable = true),
+        StructField("UniqueCarrier", StringType, nullable = true),
+        StructField("FlightNum", IntegerType, nullable = true),
+        StructField("Origin", StringType, nullable = true),
+        StructField("Dest", StringType, nullable = true),
+        StructField("Distance", IntegerType, nullable = true),
+        StructField("IsDepDelayed", BooleanType, nullable = true),
+        StructField("IsArrDelayed", BooleanType, nullable = true)))
 
     val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
 
-    mojo.transform(df).show(3, false)
+    mojo.transform(df).show(3, truncate = false)
   }
 
   test("DataFrame contains structs") {
@@ -181,7 +176,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertGBMPredictions(testingDF, predictionDF)
   }
 
-  def configureGBMforProstateDF(): H2OGBM = {
+  private def configureGBMforProstateDF(): H2OGBM = {
     new H2OGBM()
       .setNtrees(2)
       .setSeed(42)
@@ -189,7 +184,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .setLabelCol("CAPSULE")
   }
 
-  def assertGBMPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit = {
+  private def assertGBMPredictions(originalDF: DataFrame, predictionDF: DataFrame): Unit = {
     val records = predictionDF.select("detailed_prediction.probabilities").collect()
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
@@ -202,7 +197,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     }
   }
 
-  def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
+  private def testModelReload(name: String, df: DataFrame, model: H2OMOJOModel): Unit = {
     val predBeforeSave = model.transform(df)
     val modelFolder = tempFolder(name)
     model.write.overwrite.save(modelFolder)
@@ -212,30 +207,28 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     TestUtils.assertDataFramesAreIdentical(predBeforeSave, predAfterReload)
   }
 
-
-  def assertEqual(m1: H2OMOJOModel, m2: H2OMOJOModel, df: DataFrame): Unit = {
+  private def assertEqual(m1: H2OMOJOModel, m2: H2OMOJOModel, df: DataFrame): Unit = {
     val predMojo = m1.transform(df)
     val predModel = m2.transform(df)
 
     TestUtils.assertDataFramesAreIdentical(predMojo, predModel)
-
   }
 
-  def tempFolder(prefix: String) = {
+  private def tempFolder(prefix: String) = {
     val path = java.nio.file.Files.createTempDirectory(prefix)
     path.toFile.deleteOnExit()
     path.toString
   }
 
-  lazy val irisDataFrame = {
+  private lazy val irisDataFrame = {
     spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/iris/iris_wheader.csv")
   }
 
-  lazy val prostateDataFrame = {
+  private lazy val prostateDataFrame = {
     spark.read.option("header", "true").option("inferSchema", "true").csv("examples/smalldata/prostate/prostate.csv")
   }
 
-  def binomialModelFixture() = {
+  private def binomialModelFixture() = {
     val inputDf = prostateDataFrame
     val gbm = new H2OGBM()
       .setNtrees(2)
@@ -246,7 +239,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (inputDf, gbm.fit(inputDf))
   }
 
-  def multinomialModelFixture() = {
+  private def multinomialModelFixture() = {
     val inputDf = irisDataFrame
     val gbm = new H2OGBM()
       .setNtrees(2)
@@ -257,7 +250,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (inputDf, gbm.fit(inputDf))
   }
 
-  def regressionModelFixture() = {
+  private def regressionModelFixture() = {
     val inputDf = prostateDataFrame
     val gbm = new H2OGBM()
       .setNtrees(2)
@@ -267,7 +260,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (inputDf, gbm.fit(inputDf))
   }
 
-  def deepLearningModelFixture() = {
+  private def deepLearningModelFixture() = {
     val inputDf = prostateDataFrame
     val dl = new H2ODeepLearning()
       .setSeed(42)
@@ -277,28 +270,28 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     (inputDf, dl.fit(inputDf))
   }
 
-  def savedBinomialModel() = {
+  private def savedBinomialModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
       "binom_model_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 
-  def savedRegressionModel() = {
+  private def savedRegressionModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("regre_model_prostate.mojo"),
       "regre_model_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 
-  def savedMultinomialModel() = {
+  private def savedMultinomialModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
       "multi_model_iris.mojo")
     (irisDataFrame, mojo)
   }
 
-  def savedDeepLearningModel() = {
+  private def savedDeepLearningModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
       "deep_learning_prostate.mojo")

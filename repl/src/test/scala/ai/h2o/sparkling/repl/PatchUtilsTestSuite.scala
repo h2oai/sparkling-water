@@ -47,17 +47,17 @@ class PatchUtilsTestSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("[SW-386] Test patched OuterScopes") {
-    val regexBeforePatch = getRegexp()
+    val regexBeforePatch = getRegexp
     // Default regexp fails for our class names with intp_id prefix
     assertMatch(regexBeforePatch, EXAMPLE_CLASS_NAME, FAILED_MATCH)
 
     PatchUtils.PatchManager.patch("SW-386", Thread.currentThread().getContextClassLoader)
 
-    val regexAfterPatch = getRegexp()
+    val regexAfterPatch = getRegexp
     assertMatch(regexAfterPatch, EXAMPLE_CLASS_NAME, EXAMPLE_RESULT_AFTER_PATCH)
   }
 
-  def getRegexp(): Regex = {
+  private def getRegexp: Regex = {
     val clz = Class.forName(PatchUtils.OUTER_SCOPES_CLASS + "$")
     val module = PatchUtils.getModule(clz)
     val f = clz.getDeclaredField("REPLClass")

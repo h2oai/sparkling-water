@@ -43,7 +43,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setFamily("ordinal")
   }
 
-  private def assertExistenceOfColumns(df: DataFrame, path: String, expectedColumns: Seq[String]) = {
+  private def assertExistenceOfColumns(df: DataFrame, path: String, expectedColumns: Seq[String]): Unit = {
     assert(df.select(path).columns.sameElements(expectedColumns))
   }
 

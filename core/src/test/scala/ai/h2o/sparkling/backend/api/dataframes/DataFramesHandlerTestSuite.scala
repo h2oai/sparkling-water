@@ -29,9 +29,6 @@ import water.DKV
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.{Frame, H2OFrame}
 
-/**
-  * Test suite for DataFrames handler
-  */
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
@@ -140,7 +137,7 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
-  def parseSchema(schemaString: String): StructType = {
+  private def parseSchema(schemaString: String): StructType = {
     val parser = new JsonParser
     val obj = parser.parse(schemaString).getAsJsonObject
     val fields = obj.get("fields").getAsJsonArray

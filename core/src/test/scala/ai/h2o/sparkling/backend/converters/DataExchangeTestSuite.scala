@@ -30,44 +30,44 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  case class ColumnSpecification[T](field: StructField, valueGenerator: (Int) => Seq[Any])
+  private case class ColumnSpecification[T](field: StructField, valueGenerator: Int => Seq[Any])
 
-  def generateBooleans(numberOfRows: Int): Seq[Boolean] = generateIntegers(numberOfRows).map(i => i % 2 == 0)
+  private def generateBooleans(numberOfRows: Int): Seq[Boolean] = generateIntegers(numberOfRows).map(i => i % 2 == 0)
 
-  def generateBytes(numberOfRows: Int): Seq[Byte] = generateIntegers(numberOfRows).map(_.byteValue())
+  private def generateBytes(numberOfRows: Int): Seq[Byte] = generateIntegers(numberOfRows).map(_.byteValue())
 
-  def generateShorts(numberOfRows: Int): Seq[Short] = generateIntegers(numberOfRows).map(_.shortValue())
+  private def generateShorts(numberOfRows: Int): Seq[Short] = generateIntegers(numberOfRows).map(_.shortValue())
 
-  def generateIntegers(numberOfRows: Int): Seq[Integer] = (1 to numberOfRows).map(new Integer(_))
+  private def generateIntegers(numberOfRows: Int): Seq[Integer] = (1 to numberOfRows).map(new Integer(_))
 
-  def generateLongs(numberOfRows: Int): Seq[Long] = generateIntegers(numberOfRows).map(_.longValue())
+  private def generateLongs(numberOfRows: Int): Seq[Long] = generateIntegers(numberOfRows).map(_.longValue())
 
-  def generateTimestamps(numberOfRows: Int): Seq[java.sql.Timestamp] = {
+  private def generateTimestamps(numberOfRows: Int): Seq[java.sql.Timestamp] = {
     generateLongs(numberOfRows).map(new java.sql.Timestamp(_))
   }
 
-  def generateDates(numberOfRows: Int): Seq[java.sql.Date] = {
+  private def generateDates(numberOfRows: Int): Seq[java.sql.Date] = {
     generateLongs(numberOfRows).map(new java.sql.Date(_))
   }
 
-  def generateFloats(numberOfRows: Int): Seq[Float] = {
+  private def generateFloats(numberOfRows: Int): Seq[Float] = {
     generateIntegers(numberOfRows).map(i => i.floatValue() + i.floatValue() / 100)
   }
 
-  def generateDoubles(numberOfRows: Int): Seq[Double] = {
+  private def generateDoubles(numberOfRows: Int): Seq[Double] = {
     generateIntegers(numberOfRows).map(i => i.doubleValue() + i.doubleValue() / 100)
   }
 
-  def generateStrings(numberOfRows: Int): Seq[String] = generateIntegers(numberOfRows).map(_.toString())
+  private def generateStrings(numberOfRows: Int): Seq[String] = generateIntegers(numberOfRows).map(_.toString())
 
-  def generateDenseVectors(numberOfRows: Int): Seq[Vector] = {
+  private def generateDenseVectors(numberOfRows: Int): Seq[Vector] = {
     (1 to numberOfRows).map { size =>
       val doubles = generateDoubles(size).zipWithIndex.map { case (v, i) => if (i % 2 == 0) 0.0 else v }.toArray
       Vectors.dense(doubles)
     }
   }
 
-  def generateSparseVectors(numberOfRows: Int): Seq[Vector] = {
+  private def generateSparseVectors(numberOfRows: Int): Seq[Vector] = {
     def filterCondition(i: Int): Boolean = i % 2 == 0
 
     (1 to numberOfRows).map { size =>
@@ -78,33 +78,36 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     }
   }
 
-  val simpleColumns = Seq(
-    ColumnSpecification(StructField("Booleans", BooleanType, false), generateBooleans),
-    ColumnSpecification(StructField("Bytes", ByteType, false), generateBytes),
-    ColumnSpecification(StructField("Shorts", ShortType, false), generateShorts),
-    ColumnSpecification(StructField("Integers", IntegerType, false), generateIntegers),
-    ColumnSpecification(StructField("Longs", LongType, false), generateLongs),
-    ColumnSpecification(StructField("Floats", FloatType, false), generateFloats),
-    ColumnSpecification(StructField("Doubles", DoubleType, false), generateDoubles),
-    ColumnSpecification(StructField("Strings", StringType, false), generateStrings),
-    ColumnSpecification(StructField("Timestamps", TimestampType, false), generateTimestamps),
-    ColumnSpecification(StructField("Dates", DateType, false), generateDates))
+  private val simpleColumns = Seq(
+    ColumnSpecification(StructField("Booleans", BooleanType, nullable = false), generateBooleans),
+    ColumnSpecification(StructField("Bytes", ByteType, nullable = false), generateBytes),
+    ColumnSpecification(StructField("Shorts", ShortType, nullable = false), generateShorts),
+    ColumnSpecification(StructField("Integers", IntegerType, nullable = false), generateIntegers),
+    ColumnSpecification(StructField("Longs", LongType, nullable = false), generateLongs),
+    ColumnSpecification(StructField("Floats", FloatType, nullable = false), generateFloats),
+    ColumnSpecification(StructField("Doubles", DoubleType, nullable = false), generateDoubles),
+    ColumnSpecification(StructField("Strings", StringType, nullable = false), generateStrings),
+    ColumnSpecification(StructField("Timestamps", TimestampType, nullable = false), generateTimestamps),
+    ColumnSpecification(StructField("Dates", DateType, nullable = false), generateDates))
 
-  val vectorColumns = Seq(
-    ColumnSpecification(StructField("SparseVectors", VectorType, false), generateSparseVectors),
-    ColumnSpecification(StructField("DenseVectors", VectorType, false), generateDenseVectors))
+  private val vectorColumns = Seq(
+    ColumnSpecification(StructField("SparseVectors", VectorType, nullable = false), generateSparseVectors),
+    ColumnSpecification(StructField("DenseVectors", VectorType, nullable = false), generateDenseVectors))
 
-  val simpleColumnsWithNulls = simpleColumns.map {
+  private val simpleColumnsWithNulls = simpleColumns.map {
     case ColumnSpecification(field, valueGenerator) =>
-      ColumnSpecification(StructField(field.name + "AndSomeNulls", field.dataType, true), valueGenerator.andThen {
-        (values: Seq[Any]) =>
+      ColumnSpecification(
+        StructField(field.name + "AndSomeNulls", field.dataType, nullable = true),
+        valueGenerator.andThen { values: Seq[Any] =>
           values.zipWithIndex.map { case (value, index) => if (index % 4 == 0) null else value }
-      })
+        })
   }
 
-  val allColumns = simpleColumns ++ simpleColumnsWithNulls ++ vectorColumns // Nullable vectors are not supported
+  private val allColumns = simpleColumns ++ simpleColumnsWithNulls ++ vectorColumns // Nullable vectors are not supported
 
-  def testConversionFromSparkToH2OAndBack(first: ColumnSpecification[_], second: ColumnSpecification[_]): Unit = {
+  private def testConversionFromSparkToH2OAndBack(
+      first: ColumnSpecification[_],
+      second: ColumnSpecification[_]): Unit = {
     test(s"Convert DataFrame of [${first.field.name}, ${second.field.name}] to H2OFrame and back") {
       val numberOfRows = 20
       val firstValues = first.valueGenerator(numberOfRows)
@@ -121,7 +124,7 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
     }
   }
 
-  def getExpectedDataFrame(original: DataFrame, vectorSize: Int): DataFrame = {
+  private def getExpectedDataFrame(original: DataFrame, vectorSize: Int): DataFrame = {
     val newColumns = original.schema.fields.flatMap {
       case StructField(name, dataType, _, _) =>
         val column = col(name)

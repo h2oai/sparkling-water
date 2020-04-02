@@ -51,7 +51,7 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
   }
 
   test("transformSchema without detailed prediction col") {
-    val model = loadMojo(H2OMOJOSettings(withDetailedPredictionCol = false))
+    val model = loadMojo(H2OMOJOSettings())
 
     val datasetFields = dataset.schema.fields
 

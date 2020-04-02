@@ -30,14 +30,13 @@ class BenchSuite extends FunSuite {
       iterations: Int = 5,
       warmUp: Int = 1,
       outputTimeUnit: TimeUnit = TimeUnit.MILLISECONDS)(testFun: => Unit): Unit = {
-    def body: Unit = {
+    def body(): Unit = {
       val result = bench(iterations, warmUp, outputTimeUnit) {
-        val evaluated = testFun
+        testFun
       }
       println(s"$testName: ${result.show()}")
     }
-
-    registerTest(testName)(body)
+    registerTest(testName)(body())
   }
 
   /**
@@ -46,7 +45,7 @@ class BenchSuite extends FunSuite {
     * @param block block to measure
     * @return number of ns to execute given block
     */
-  def timer(block: => Unit): Long = {
+  private def timer(block: => Unit): Long = {
     val now = System.nanoTime()
     block
     System.nanoTime() - now
@@ -59,11 +58,11 @@ class BenchSuite extends FunSuite {
     * @param block      block to execute as benchmark
     * @return
     */
-  def bench(iterations: Int, warmup: Int = 4, outputTimeUnit: TimeUnit = TimeUnit.MILLISECONDS)(
+  private def bench(iterations: Int, warmup: Int = 4, outputTimeUnit: TimeUnit = TimeUnit.MILLISECONDS)(
       block: => Unit): BenchResult = {
     val times = new Array[Long](iterations)
     // Warmup
-    for (i <- 0 until warmup) {
+    for (_ <- 0 until warmup) {
       timer(block)
     }
     // Measure

@@ -39,7 +39,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
 
-  def testOffsetColumnGetsPropagatedToMOJOModel(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testOffsetColumnGetsPropagatedToMOJOModel(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSplitRatio(0.8)
@@ -82,7 +82,8 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testOffsetColumnGetsPropagatedToMOJOModel(new H2ODeepLearning())
   }
 
-  def testDeserializedMOJOAndOriginalMOJOReturnSameResult(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testDeserializedMOJOAndOriginalMOJOReturnSameResult(
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -98,7 +99,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     val loadedModel = PipelineModel.load(path)
 
     val originalResult = model.transform(testingDataset)
-    val deserializedResult = model.transform(testingDataset)
+    val deserializedResult = loadedModel.transform(testingDataset)
 
     TestUtils.assertDataFramesAreIdentical(originalResult, deserializedResult)
   }
@@ -121,7 +122,8 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2ODeepLearning())
   }
 
-  def testMOJOWithSetOffsetColumnReturnsDifferentResult(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testMOJOWithSetOffsetColumnReturnsDifferentResult(
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -181,7 +183,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     }
   }
 
-  def testLoadingOfSuppervisedAlgorithmWorks(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testLoadingOfSuppervisedAlgorithmWorks(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetCol = "PSA"
     algo
       .setSeed(1)

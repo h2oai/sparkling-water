@@ -33,9 +33,6 @@ import org.scalatest.junit.JUnitRunner
 import water.fvec.H2OFrame
 import water.parser.{BufferedString, Categorical}
 
-/**
-  * Testing schema for rdd  to h2o frame transformations.
-  */
 @RunWith(classOf[JUnitRunner])
 class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
@@ -129,7 +126,6 @@ class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext 
     assert(fr.numRows() == 0)
   }
 
-  // H2OFrame to RDD[T] JUnits
   test("H2OFrame[T_NUM] to RDD[Prostate]") {
     val h2oFrame: H2OFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
     assert(
@@ -555,7 +551,7 @@ class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext 
     assert(rdd.count() == hf.numRows(), "Number of row should match")
   }
 
-  def assertRDDH2OFrameInvariants[T](inputRDD: RDD[T], df: H2OFrame): Unit = {
+  private def assertRDDH2OFrameInvariants[T](inputRDD: RDD[T], df: H2OFrame): Unit = {
     assert(inputRDD.count == df.numRows(), "Number of rows has to match")
     inputRDD match {
       case x if x.take(1)(0).isInstanceOf[ByteField] =>

@@ -38,9 +38,6 @@ import water.Key
 import water.fvec._
 import water.parser.BufferedString
 
-/**
-  * Testing Conversions between H2OFrame and Spark DataFrame
-  */
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
@@ -489,17 +486,17 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val schema = StructType(StructField("f", ArrayType(IntegerType, containsNull = false), nullable = false) :: Nil)
     val df = spark.createDataFrame(rdd, schema)
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
     val metadatas = expandedSchema.map(f => f.metadata)
 
     assert(
       expandedSchema === Array(
-        (StructField("f.0", IntegerType, nullable = false, metadatas.head)),
-        (StructField("f.1", IntegerType, nullable = true, metadatas(1))),
-        (StructField("f.2", IntegerType, nullable = true, metadatas(2))),
-        (StructField("f.3", IntegerType, nullable = true, metadatas(3))),
-        (StructField("f.4", IntegerType, nullable = true, metadatas(4)))))
+        StructField("f.0", IntegerType, nullable = false, metadatas.head),
+        StructField("f.1", IntegerType, nullable = true, metadatas(1)),
+        StructField("f.2", IntegerType, nullable = true, metadatas(2)),
+        StructField("f.3", IntegerType, nullable = true, metadatas(3)),
+        StructField("f.4", IntegerType, nullable = true, metadatas(4))))
 
     // Verify transformation into dataframe
     val h2oFrame = hc.asH2OFrame(df)
@@ -521,7 +518,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val values = (1 to num).map(x => PrimitiveMllibFixture(Vectors.dense((1 to x).map(1.0 * _).toArray)))
     val df = sc.parallelize(values).toDF
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
     assert(
       expandedSchema === Vector(
@@ -546,7 +543,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val values = (0 until num).map(x => PrimitiveMllibFixture(Vectors.sparse(num, Seq((x, 1.0)))))
     val df = sc.parallelize(values).toDF()
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
     assert(
       expandedSchema === Vector(
@@ -565,22 +562,19 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
   }
 
-  // @formatter:off
   test("Expand schema with MLLIB empty sparse vectors") {
     import spark.implicits._
     val num = 3
-    val values = (0 until num).map(x =>
-      PrimitiveMllibFixture(
-        Vectors.sparse(num, Seq())
-      ))
+    val values = (0 until num).map(_ => PrimitiveMllibFixture(Vectors.sparse(num, Seq())))
     val df = sc.parallelize(values).toDF()
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType),
-      StructField("f2", DoubleType)))
+    assert(
+      expandedSchema === Vector(
+        StructField("f0", DoubleType),
+        StructField("f1", DoubleType),
+        StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -595,16 +589,13 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Expand schema with ML dense vectors") {
     val num = 2
-    val values = (0 to num).map(x =>
-      PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
-    )
+    val values =
+      (0 to num).map(x => PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray)))
     val df = sc.parallelize(values).toDF
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType)))
+    assert(expandedSchema === Vector(StructField("f0", DoubleType), StructField("f1", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -620,22 +611,20 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.vec(1), Seq(0.0, 0.0, 2.0))
   }
 
-
   test("Expand schema with ML sparse vectors") {
     import spark.implicits._
     val num = 3
-    val values = (0 until num).map(x =>
-      PrimitiveMlFixture(
-        org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0)))
-      ))
+    val values =
+      (0 until num).map(x => PrimitiveMlFixture(org.apache.spark.ml.linalg.Vectors.sparse(num, Seq((x, 1.0)))))
     val df = sc.parallelize(values, num).toDF()
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(
-      StructField("f0", DoubleType),
-      StructField("f1", DoubleType),
-      StructField("f2", DoubleType)))
+    assert(
+      expandedSchema === Vector(
+        StructField("f0", DoubleType),
+        StructField("f1", DoubleType),
+        StructField("f2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -656,24 +645,23 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
         x,
         org.apache.spark.ml.linalg.Vectors.dense((1 to x).map(1.0 * _).toArray))
     }
-    val schema = StructType(Seq(
-      StructField("f1", VectorType),
-      StructField("idx", IntegerType, nullable = false),
-      StructField("f2", VectorType)
-    ))
+    val schema = StructType(
+      Seq(
+        StructField("f1", VectorType),
+        StructField("idx", IntegerType, nullable = false),
+        StructField("f2", VectorType)))
     val df = spark.createDataFrame(rdd, schema)
 
-    val (flattenDF, maxElementSizes, expandedSchema) = getSchemaInfo(df)
+    val (_, _, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Array(
-      StructField("f10", DoubleType, true),
-      StructField("f11", DoubleType, true),
-      StructField("f12", DoubleType, true),
-      StructField("idx", IntegerType, false),
-      StructField("f20", DoubleType, true),
-      StructField("f21", DoubleType, true)
-    )
-    )
+    assert(
+      expandedSchema === Array(
+        StructField("f10", DoubleType, nullable = true),
+        StructField("f11", DoubleType, nullable = true),
+        StructField("f12", DoubleType, nullable = true),
+        StructField("idx", IntegerType, nullable = false),
+        StructField("f20", DoubleType, nullable = true),
+        StructField("f21", DoubleType, nullable = true)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -684,9 +672,12 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.names() === expandedSchema.map(_.name))
 
     // Verify data stored in h2oFrame after transformation
-    assertDoubleFrameValues(h2oFrame, Seq(Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-      Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
-      Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
+    assertDoubleFrameValues(
+      h2oFrame,
+      Seq(
+        Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+        Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
+        Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
   }
 
   test("Add metadata to Dataframe") {
@@ -702,7 +693,8 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     h2oFrame.delete()
 
-    val h2oFrameEnum = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
+    val h2oFrameEnum =
+      makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
     val dataFrameEnum = hc.asDataFrame(h2oFrameEnum)
     assert(dataFrameEnum.schema("C0").metadata.getLong("cardinality") == 2L)
     h2oFrameEnum.delete()
@@ -739,13 +731,17 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("SparkDataFrame with BinaryType to H2O Frame") {
-    val df = sc.parallelize(1 to 3).map { v => (0 until v).map(_.toByte).toArray[Byte] }.toDF()
+    val df = sc
+      .parallelize(1 to 3)
+      .map { v =>
+        (0 until v).map(_.toByte).toArray[Byte]
+      }
+      .toDF()
     // just verify that we are really testing the binary type case
     assert(df.schema.fields(0).dataType == BinaryType)
     val hf = hc.asH2OFrame(df)
     assert(hf.numRows() == 3)
     assert(hf.numCols() == 3) // max size of the array is 3
-
 
     assertVectorIntValues(hf.vec(0), Seq(0, 0, 0))
     assertVectorIntValues(hf.vec(1), Seq(-1, 1, 1))
@@ -760,11 +756,14 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(hf.name(0) == "with.dot")
   }
 
-
   test("Convert nested DataFrame to H2OFrame with dots in column names") {
     import org.apache.spark.sql.types._
-    val nameSchema = StructType(Seq[StructField](StructField("given.name", StringType, true), StructField("family", StringType, true)))
-    val personSchema = StructType(Seq(StructField("name", nameSchema, true), StructField("person.age", IntegerType, false)))
+    val nameSchema = StructType(
+      Seq[StructField](
+        StructField("given.name", StringType, nullable = true),
+        StructField("family", StringType, nullable = true)))
+    val personSchema = StructType(
+      Seq(StructField("name", nameSchema, nullable = true), StructField("person.age", IntegerType, nullable = false)))
 
     import spark.implicits._
     val df = sc.parallelize(Seq(Person(Name("Charles", "Dickens"), 58), Person(Name("Terry", "Prachett"), 66))).toDF()
@@ -790,16 +789,12 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     resultDF.foreach(_ => {})
   }
 
-  def fp(it: Iterator[Row]): Unit = {
-    println(it.size)
-  }
-
-  def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
+  private def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
     assert(inputDF.count == df.numRows(), "Number of rows has to match")
     assert(df.numCols() == SchemaUtils.flattenSchema(inputDF).length, "Number columns should match")
   }
 
-  def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
+  private def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
     val flattenDF = SchemaUtils.flattenDataFrame(df)
     val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF)
     val expandedSchema = SchemaUtils.expandedSchema(SchemaUtils.flattenSchema(df), maxElementSizes)

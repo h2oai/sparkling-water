@@ -51,7 +51,9 @@ trait SparkTestContext extends BeforeAndAfterAll {
     super.beforeAll()
   }
 
-  def defaultSparkConf: SparkConf =
+  def defaultSparkConf: SparkConf = {
+    val clusterMode = sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal")
+    val clientIp = sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress)
     H2OConf.checkSparkConf({
       val conf = new SparkConf()
         .set("spark.ext.h2o.cloud.name", getClass.getSimpleName)
@@ -61,13 +63,10 @@ trait SparkTestContext extends BeforeAndAfterAll {
         .set("spark.ext.h2o.client.log.level", "DEBUG")
         .set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
         .set("spark.scheduler.minRegisteredResourcesRatio", "1")
-        .set(
-          "spark.ext.h2o.backend.cluster.mode",
-          sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal"))
-        .set(
-          "spark.ext.h2o.client.ip",
-          sys.props.getOrElse("H2O_CLIENT_IP", NetworkInit.findInetAddressForSelf().getHostAddress))
+        .set("spark.ext.h2o.backend.cluster.mode", clusterMode)
+        .set("spark.ext.h2o.client.ip", clientIp)
         .set("spark.ext.h2o.external.start.mode", "auto")
       conf
     })
+  }
 }

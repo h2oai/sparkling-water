@@ -19,14 +19,11 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.sql.SparkSession
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.FunSuite
 import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
 
-/**
-  * Test conversion from RDD to DataFrame via H2OFrame
-  */
-class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterAll {
+class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -59,9 +56,9 @@ class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestCont
     assert(espcBeforeMr === espcAfterMr, "The ESPC of frame vectors before and after invocation of MRTask should match")
   }
 
-  class ZeroMR extends MRTask[ZeroMR] {
+  private class ZeroMR extends MRTask[ZeroMR] {
     override def map(c: Chunk, nc: NewChunk): Unit = {
-      for (i <- 0 until c.len()) {
+      for (_ <- 0 until c.len()) {
         nc.addNum(0.0)
       }
     }

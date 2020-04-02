@@ -22,7 +22,7 @@ import java.util.UUID
 
 import org.apache.spark.h2o.Dataset
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.types._
@@ -77,7 +77,7 @@ object TestUtils extends Matchers {
 
   def assertDoubleFrameValues(f: water.fvec.Frame, rows: Seq[Array[Double]]): Unit = {
     val ncol = f.numCols()
-    val rowsIdx = (0 until f.numRows().toInt)
+    val rowsIdx = 0 until f.numRows().toInt
     val columns = (0 until ncol).map(cidx => rowsIdx.map(rows(_)(cidx)))
     f.vecs().zipWithIndex.foreach {
       case (vec, idx: Int) =>
@@ -188,7 +188,7 @@ object TestUtils extends Matchers {
       spark: SparkSession,
       schemaHolder: SchemaHolder,
       settings: GenerateDataFrameSettings): DataFrame = {
-    implicit val encoder = RowEncoder(schemaHolder.schema)
+    implicit val encoder: ExpressionEncoder[Row] = RowEncoder(schemaHolder.schema)
     val numberOfPartitions = Math.max(1, settings.numberOfRows / settings.rowsPerPartition)
     spark
       .range(settings.numberOfRows)
@@ -227,7 +227,7 @@ object TestUtils extends Matchers {
         case ArrayType(elementType, containsNull) =>
           generateArray(random, settings, elementType, containsNull, nameWithPrefix)
         case BinaryType =>
-          generateArray(random, settings, ByteType, false, nameWithPrefix)
+          generateArray(random, settings, ByteType, containsNull = false, nameWithPrefix)
         case MapType(keyType, valueType, valueContainsNull) =>
           val array = generateArray(random, settings, valueType, valueContainsNull, nameWithPrefix)
           array.zipWithIndex.map {
@@ -293,14 +293,14 @@ object TestUtils extends Matchers {
 
     override def productArity: Int = 1
 
-    override def productElement(n: Int) =
+    override def productElement(n: Int): Option[Int] =
       n match {
         case 0 => result
         case _ => throw new IndexOutOfBoundsException(n.toString)
       }
   }
 
-  case class OptionAndNot(val x: Option[Int], val y: Option[Int]) extends Serializable
+  case class OptionAndNot(x: Option[Int], y: Option[Int]) extends Serializable
 
   case class SamplePerson(name: String, age: Int, email: String)
 

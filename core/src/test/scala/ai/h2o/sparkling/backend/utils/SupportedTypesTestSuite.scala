@@ -25,14 +25,11 @@ import org.scalatest.junit.JUnitRunner
 
 import scala.reflect.runtime.universe._
 
-/**
-  * Tests for type info handling
-  */
 @RunWith(classOf[JUnitRunner])
 class SupportedTypesTestSuite extends FunSuite {
 
   test("Infer type from a value") {
-    def mustBe[T](expected: SupportedType, value: T) = assert(supportedTypeOf(value) == expected)
+    def mustBe[T](expected: SupportedType, value: T): Unit = assert(supportedTypeOf(value) == expected)
 
     mustBe(Boolean, true)
     mustBe(Boolean, false)
@@ -56,12 +53,12 @@ class SupportedTypesTestSuite extends FunSuite {
   }
 
   test("Fail to infer type from a weird value") {
-    def mustFail[T](msg: String, value: T) =
+    def mustFail[T](msg: String, value: T): Unit =
       try {
-        val t = supportedTypeOf(value);
+        val t = supportedTypeOf(value)
         fail(s"Not acceptable: $msg: got $t")
       } catch {
-        case iae: IllegalArgumentException => ; //success
+        case _: IllegalArgumentException => //success
       }
 
     mustFail("Null", null)
@@ -73,10 +70,10 @@ class SupportedTypesTestSuite extends FunSuite {
   test("Infer type from simple scala type") {
     import scala.reflect.runtime.universe.definitions._
 
-    val stringCheck = SupportedTypes.String matches typeOf[String]
+    val stringCheck = SupportedTypes.String.matches(typeOf[String])
     assert(stringCheck, "Problems with String type")
 
-    def mustBe[T](expected: SupportedType, t: Type) = assert(SupportedTypes.byType(t) == expected)
+    def mustBe[T](expected: SupportedType, t: Type): Unit = assert(SupportedTypes.byType(t) == expected)
 
     mustBe(Boolean, BooleanTpe)
     mustBe(Boolean, typeOf[scala.Boolean])
@@ -107,7 +104,7 @@ class SupportedTypesTestSuite extends FunSuite {
 
   test("Infer type from optional scala type") {
 
-    def mustBe[T](expected: SupportedType, t: Type) = assert(SupportedTypes.byType(t) == expected)
+    def mustBe[T](expected: SupportedType, t: Type): Unit = assert(SupportedTypes.byType(t) == expected)
 
     mustBe(OptionalType(Boolean), typeOf[Option[scala.Boolean]])
     mustBe(OptionalType(Byte), typeOf[Option[scala.Byte]])
@@ -123,7 +120,7 @@ class SupportedTypesTestSuite extends FunSuite {
   }
 
   test("Find By String") {
-    def mustBe[T](expected: SupportedType, name: String) = assert(SupportedTypes.byName(name) == expected)
+    def mustBe[T](expected: SupportedType, name: String): Unit = assert(SupportedTypes.byName(name) == expected)
 
     mustBe(Boolean, "Boolean")
     mustBe(Byte, "Byte")

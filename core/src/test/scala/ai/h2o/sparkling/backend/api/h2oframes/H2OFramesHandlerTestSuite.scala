@@ -26,9 +26,6 @@ import org.scalatest.junit.JUnitRunner
 import water.exceptions.H2ONotFoundArgumentException
 import water.fvec.H2OFrame
 
-/**
-  * Test suite for H2OFrames handler
-  */
 @RunWith(classOf[JUnitRunner])
 class H2OFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 

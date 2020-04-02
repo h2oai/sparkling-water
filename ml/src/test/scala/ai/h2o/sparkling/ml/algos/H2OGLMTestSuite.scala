@@ -31,7 +31,7 @@ class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  lazy val dataset = spark.read
+  private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))

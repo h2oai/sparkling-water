@@ -45,7 +45,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     assert(algo.getSortMetric() == "AUTO")
   }
 
-  private def getAlgorithmForLeaderboardTesting(): H2OAutoML = {
+  private def getAlgorithmForLeaderboardTesting: H2OAutoML = {
     new H2OAutoML()
       .setLabelCol("CAPSULE")
       .setIgnoredCols(Array("ID"))
@@ -55,7 +55,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
   }
 
   test("Parameters of getLeaderboard add extra columns to the leaderboard") {
-    val algo = getAlgorithmForLeaderboardTesting()
+    val algo = getAlgorithmForLeaderboardTesting
     algo.fit(dataset)
 
     val extraColumns = Seq("training_time_ms", "predict_time_per_row_ms")
@@ -64,7 +64,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
   }
 
   test("ALL as getLeaderboard adds extra columns to the leaderboard") {
-    val algo = getAlgorithmForLeaderboardTesting()
+    val algo = getAlgorithmForLeaderboardTesting
     algo.fit(dataset)
 
     algo.getLeaderboard("ALL").columns.length should be > algo.getLeaderboard().columns.length
