@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.backend.SharedBackendConf
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
@@ -242,13 +241,13 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY: (String, Boolean) = ("spark.ext.h2o.external.kill.on.unhealthy", true)
 
   /**
-   * Kerberos principal
-   */
+    * Kerberos principal
+    */
   val PROP_EXTERNAL_KERBEROS_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.external.kerberos.principal", None)
 
   /**
-   * Path to Kerberos key tab
-   */
+    * Path to Kerberos key tab
+    */
   val PROP_EXTERNAL_KERBEROS_KEYTAB: (String, None.type) = ("spark.ext.h2o.external.kerberos.keytab", None)
 
   /**
