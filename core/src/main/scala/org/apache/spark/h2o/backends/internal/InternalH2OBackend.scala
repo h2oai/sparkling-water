@@ -18,8 +18,6 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
-import java.nio.file.Files
-
 import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils
