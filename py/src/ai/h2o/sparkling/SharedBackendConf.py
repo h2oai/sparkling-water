@@ -180,10 +180,10 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.hivePrincipal())
 
     def hiveJdbcUrlPattern(self):
-        return self._jconf.hiveJdbcUrlPattern()
+        return self._get_option(self._jconf.hiveJdbcUrlPattern())
 
     def hiveToken(self):
-        return self._jconf.hiveToken()
+        return self._get_option(self._jconf.hiveToken())
 
     #
     # Setters
