@@ -16,10 +16,10 @@
  */
 package ai.h2o.sparkling.internal
 
+import ai.h2o.sparkling.TestUtils.DoubleHolder
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.h2o.testdata.DoubleHolder
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -31,18 +31,15 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext: SparkContext =
-    new SparkContext(
-      "local-cluster[3,1,1024]",
-      getClass.getName,
-      conf = defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
+  override def createSparkSession(): SparkSession =
+    sparkSession("local-cluster[3,1,1024]", defaultSparkConf.set(InternalBackendConf.PROP_CLUSTER_SIZE._1, "1"))
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
     val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val h2oFrame = hc.asH2OFrame(rdd)
 
-    TestFrameUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
+    TestUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
       val nextRowIdx = rowIdx + 1
       val value = vec.at(rowIdx)
       assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
@@ -58,7 +55,7 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
     val convertedDf = hc.asDataFrame(hf)
     import spark.implicits._
-    TestFrameUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedDf.toDF())
+    TestUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedDf.toDF())
   }
 
   test("asRDD conversion on subset of executors") {
@@ -69,6 +66,6 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
     val convertedRdd = hc.asRDD[DoubleHolder](hf)
 
-    TestFrameUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedRdd.toDF())
+    TestUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedRdd.toDF())
   }
 }

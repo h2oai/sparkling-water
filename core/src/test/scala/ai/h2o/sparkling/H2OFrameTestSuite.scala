@@ -16,20 +16,17 @@
  */
 package ai.h2o.sparkling
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
-  override def createSparkContext: SparkContext =
-    new SparkContext("local[*]", getClass.getName, conf = defaultSparkConf)
 
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
+
   private def uploadH2OFrame(): H2OFrame = {
     // since we did not ask Spark to infer schema, all columns have been parsed as Strings
     val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
@@ -194,6 +191,6 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
     val resultDF = hc.asDataFrame(result.frameId).select("name", "age", "city", "salary")
-    TestFrameUtils.assertDataFramesAreIdentical(resultDF, expected)
+    TestUtils.assertDataFramesAreIdentical(resultDF, expected)
   }
 }

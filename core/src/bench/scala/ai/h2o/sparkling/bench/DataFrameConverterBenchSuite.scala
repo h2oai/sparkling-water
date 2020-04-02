@@ -17,11 +17,11 @@
 
 package ai.h2o.sparkling.bench
 
-import ai.h2o.sparkling.ml.utils.{FlatArraysOnlySchema, FlatSchema, SchemaUtils, StructsOnlySchema}
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.testdata.{DenseVectorHolder, SparseVectorHolder}
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import ai.h2o.sparkling.TestUtils.{DenseVectorHolder, SparseVectorHolder}
+import ai.h2o.sparkling.ml.utils.SchemaUtils
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.linalg.{DenseVector, SparseVector, Vectors}
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -30,10 +30,10 @@ import scala.util.Random
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext {
 
-  override def createSparkContext =
-    new SparkContext("local-cluster[2, 1, 2048]", getClass.getSimpleName, defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local-cluster[2, 1, 2048]")
+  import spark.implicits._
 
-  private val settings = TestFrameUtils.GenerateDataFrameSettings(
+  private val settings = TestUtils.GenerateDataFrameSettings(
     numberOfRows = 8000,
     rowsPerPartition = 500,
     maxCollectionSize = 100,
@@ -75,29 +75,28 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     rowToSchema(FlatArraysOnlySchema)
   }
 
-  private def testPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
     hf.remove()
   }
 
-  private def testflattenOnlyPerSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testflattenOnlyPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenDataFrame(df).foreach(_ => {})
   }
 
-  private def testflattenSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def testflattenSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.flattenSchema(df)
   }
 
-  private def rowToSchema(schemaHolder: TestFrameUtils.SchemaHolder): Unit = {
-    val df = TestFrameUtils.generateDataFrame(spark, schemaHolder, settings)
+  private def rowToSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
+    val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     SchemaUtils.rowsToRowSchemas(df).foreach(_ => {})
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide sparse vectors") {
-    import sqlContext.implicits._
     val numberOfCols = 50 * 1000
     val sparsity = 0.2
     val numberOfRows = 3 * 1000
@@ -112,7 +111,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
-    import sqlContext.implicits._
     val numberOfCols = 10 * 1000
     val numberOfRows = 3 * 1000
     val partitions = 4
@@ -128,7 +126,6 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   benchTest(
     "Measure performance of conversion to H2OFrame on a matrix 10x11 represented by sparse vectors",
     iterations = 10) {
-    import sqlContext.implicits._
 
     val numberOfRows = 10
     val numberOfCols = 11

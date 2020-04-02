@@ -97,10 +97,6 @@ dependencies {
 
   benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   benchImplementation("junit:junit:4.11")
-
-  // Put Spark Assembly on runtime path
-  integTestRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
-  benchRuntimeOnly(fileTree(dir: new File((String) sparkHome, "lib/"), include: '*.jar'))
 }
 
 task createSparkVersionFile {

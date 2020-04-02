@@ -18,20 +18,18 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private lazy val dataset = spark.read
     .option("header", "true")
@@ -41,7 +39,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
 
-  def testOffsetColumnGetsPropagatedToMOJOModel(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testOffsetColumnGetsPropagatedToMOJOModel(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSplitRatio(0.8)
@@ -84,7 +82,8 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testOffsetColumnGetsPropagatedToMOJOModel(new H2ODeepLearning())
   }
 
-  def testDeserializedMOJOAndOriginalMOJOReturnSameResult(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testDeserializedMOJOAndOriginalMOJOReturnSameResult(
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -100,9 +99,9 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     val loadedModel = PipelineModel.load(path)
 
     val originalResult = model.transform(testingDataset)
-    val deserializedResult = model.transform(testingDataset)
+    val deserializedResult = loadedModel.transform(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(originalResult, deserializedResult)
+    TestUtils.assertDataFramesAreIdentical(originalResult, deserializedResult)
   }
 
   test("The original MOJO and deserialized MOJO return the same result - GBM") {
@@ -123,7 +122,8 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2ODeepLearning())
   }
 
-  def testMOJOWithSetOffsetColumnReturnsDifferentResult(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testMOJOWithSetOffsetColumnReturnsDifferentResult(
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -183,7 +183,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     }
   }
 
-  def testLoadingOfSuppervisedAlgorithmWorks(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testLoadingOfSuppervisedAlgorithmWorks(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetCol = "PSA"
     algo
       .setSeed(1)

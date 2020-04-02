@@ -17,19 +17,17 @@
 
 package ai.h2o.sparkling.ml.algos
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private lazy val dataset = spark.read
     .option("header", "true")
@@ -45,7 +43,7 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setFamily("ordinal")
   }
 
-  private def assertExistenceOfColumns(df: DataFrame, path: String, expectedColumns: Seq[String]) = {
+  private def assertExistenceOfColumns(df: DataFrame, path: String, expectedColumns: Seq[String]): Unit = {
     assert(df.select(path).columns.sameElements(expectedColumns))
   }
 

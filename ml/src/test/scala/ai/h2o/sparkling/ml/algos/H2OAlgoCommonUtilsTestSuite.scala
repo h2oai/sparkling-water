@@ -17,34 +17,33 @@
 
 package ai.h2o.sparkling.ml.algos
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
 
 class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  val datasetSchema = (new StructType)
-    .add("preds.probability", "int", true)
-    .add("39_ClusterDist6:PAY_0.9", "double", true)
-    .add("35_TruncSVD:AGE:BILL_AMT3:BILL_AMT4:PAY_3:PAY_6:PAY_AMT4.0", "double", false)
+  private val datasetSchema = (new StructType)
+    .add("preds.probability", "int", nullable = true)
+    .add("39_ClusterDist6:PAY_0.9", "double", nullable = true)
+    .add("35_TruncSVD:AGE:BILL_AMT3:BILL_AMT4:PAY_3:PAY_6:PAY_AMT4.0", "double", nullable = false)
 
-  class DummyTestClass(override val uid: String) extends Transformer with H2OAlgoCommonUtils {
+  private class DummyTestClass(override val uid: String) extends Transformer with H2OAlgoCommonUtils {
 
-    override def transform(dataset: Dataset[_]): DataFrame = ???
+    override def transform(dataset: Dataset[_]): DataFrame = throw new NotImplementedError()
 
-    override def copy(extra: ParamMap): Transformer = ???
+    override def copy(extra: ParamMap): Transformer = throw new NotImplementedError()
 
-    override def transformSchema(schema: StructType): StructType = ???
+    override def transformSchema(schema: StructType): StructType = throw new NotImplementedError()
 
     override protected def getExcludedCols(): Seq[String] = Nil
 
-    def exposedTestMethod = prepareDatasetForFitting _
+    def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame], Array[String]) = prepareDatasetForFitting
   }
 
   test("Columns sanitation: DAI type of columns names") {
@@ -54,7 +53,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     val utils = new DummyTestClass("43")
 
     // When: transform
-    val (trainHf, testHf, internalFeatureCols) = utils.exposedTestMethod(dataset)
+    val (_, testHf, internalFeatureCols) = utils.exposedTestMethod(dataset)
     testHf shouldBe None
     internalFeatureCols shouldBe datasetSchema.fields.map(_.name)
   }

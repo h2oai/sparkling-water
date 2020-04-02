@@ -18,21 +18,19 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.{SharedH2OTestContext, TestFrameUtils}
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", "H2OTargetEncoderTest", conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private def loadDataFrameFromCsv(path: String): DataFrame = {
     spark.read
@@ -78,7 +76,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val loadedModel = PipelineModel.load(path)
     val transformedTestingDataset = loadedModel.transform(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
   test("The target encoder doesn't apply noise on the testing dataset") {
@@ -91,7 +89,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = pipeline.fit(trainingDataset)
     val transformedTestingDataset = model.transform(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
   test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
@@ -105,7 +103,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
     val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
@@ -120,7 +118,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
     val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test("TargetEncoderMOJOModel will use global average for unexpected values in the testing dataset") {
@@ -135,7 +133,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val resultDF = model.transform(unexpectedValuesDF)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
   test("TargetEncoderModel will use global average for unexpected values in the testing dataset") {
@@ -150,7 +148,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val resultDF = model.transformTrainingDataset(unexpectedValuesDF)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
   test("TargetEncoderMOJOModel will use global average for null values in the testing dataset") {
@@ -165,7 +163,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val resultDF = model.transform(withNullsDF)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
   test("TargetEncoderModel will use global average for null values in the testing dataset") {
@@ -180,7 +178,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val resultDF = model.transformTrainingDataset(withNullsDF)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
   test("The targetEncoder can be trained and used on a dataset with null values") {
@@ -202,7 +200,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     transformedByModel.filter('DCAPS_te.isNull).count() shouldBe 0
     transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test("The KFold strategy with column should give the same results as LeaveOneOut on the training dataset") {
@@ -224,7 +222,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedKFold = modelKFold.transformTrainingDataset(trainingDataset)
     val transformedLeaveOneOut = modelLeaveOneOut.transformTrainingDataset(trainingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
+    TestUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
   }
 
   test("The target encoder treats string columns as other types") {
@@ -246,8 +244,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = model.transformTrainingDataset(testingDataset)
     val transformedByMOJOModel = model.transform(testingDateset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
-    TestFrameUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
   }
 
   test("The target encoder can work with arbitrary label categories") {
@@ -263,7 +261,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
     val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test("The fit function throws a runtime exception when the label domain has more than two categories") {
@@ -299,7 +297,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
     val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test(
@@ -317,7 +315,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
     val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
 
-    TestFrameUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
   test("TargetEncoderModel returns the same result regardless the order of the inputCols specification") {
@@ -338,7 +336,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val result = transformTrainingDataset(Array("DPROS", "DCAPS", "RACE"))
       .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderMOJOModel returns the same result regardless the order of the inputCols specification") {
@@ -359,7 +357,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val result = transformTestingDataset(Array("DPROS", "DCAPS", "RACE"))
       .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderModel transforms a dataset regardless the order of columns") {
@@ -381,7 +379,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .transformTrainingDataset(testingSubDataset.select(originalOrder.reverse: _*))
       .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderMOJOModel transforms a dataset regardless the order of columns") {
@@ -403,7 +401,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .transform(testingSubDataset.select(originalOrder.reverse: _*))
       .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderModel transforms a dataset with a subset of columns the same way as full dataset") {
@@ -424,7 +422,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val result = model.transformTrainingDataset(testingSubDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderMOJOModel transforms a dataset with a subset of columns the same way as full dataset") {
@@ -445,7 +443,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
 
     val result = model.transform(testingSubDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expectedResult, result)
+    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
   }
 
   test("TargetEncoderModel supports custom outputCols") {
@@ -468,7 +466,7 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = targetEncoder.fit(trainingDataset)
     val transformedTestingDataset = model.transformTrainingDataset(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+    TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
   }
 
   test("TargetEncoderMOJOModel supports custom outputCols") {
@@ -491,6 +489,6 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val model = targetEncoder.fit(trainingDataset)
     val transformedTestingDataset = model.transform(testingDataset)
 
-    TestFrameUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+    TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
   }
 }

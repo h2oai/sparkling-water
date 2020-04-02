@@ -18,18 +18,17 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   private lazy val dataset = spark.read
     .option("header", "true")
@@ -37,7 +36,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .cache()
 
-  def testTrainedTreeBasedModelHasPositiveNumberOfTrees(
+  private def testTrainedTreeBasedModelHasPositiveNumberOfTrees(
       algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)
@@ -62,7 +61,7 @@ class H2OTreeBasedSupervisedMOJOModelTestSuite extends FunSuite with SharedH2OTe
     testTrainedTreeBasedModelHasPositiveNumberOfTrees(new H2OXGBoost())
   }
 
-  def testLoadedTreeBasedModelHasPositiveNumberOfTrees(
+  private def testLoadedTreeBasedModelHasPositiveNumberOfTrees(
       algo: H2OTreeBasedSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     algo
       .setNfolds(5)

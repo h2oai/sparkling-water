@@ -17,17 +17,16 @@
 
 package ai.h2o.sparkling.ml.algos
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 @RunWith(classOf[JUnitRunner])
 class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   import spark.implicits._
 
@@ -46,7 +45,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     assert(algo.getSortMetric() == "AUTO")
   }
 
-  private def getAlgorithmForLeaderboardTesting(): H2OAutoML = {
+  private def getAlgorithmForLeaderboardTesting: H2OAutoML = {
     new H2OAutoML()
       .setLabelCol("CAPSULE")
       .setIgnoredCols(Array("ID"))
@@ -56,7 +55,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
   }
 
   test("Parameters of getLeaderboard add extra columns to the leaderboard") {
-    val algo = getAlgorithmForLeaderboardTesting()
+    val algo = getAlgorithmForLeaderboardTesting
     algo.fit(dataset)
 
     val extraColumns = Seq("training_time_ms", "predict_time_per_row_ms")
@@ -65,7 +64,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
   }
 
   test("ALL as getLeaderboard adds extra columns to the leaderboard") {
-    val algo = getAlgorithmForLeaderboardTesting()
+    val algo = getAlgorithmForLeaderboardTesting
     algo.fit(dataset)
 
     algo.getLeaderboard("ALL").columns.length should be > algo.getLeaderboard().columns.length

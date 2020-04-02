@@ -21,12 +21,11 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SparkTestContext
+import ai.h2o.sparkling.SparkTestContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -34,14 +33,14 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
-  override def beforeAll(): Unit = {
-    sc = new SparkContext("local[*]", "test-local", conf = defaultSparkConf)
-    super.beforeAll()
-  }
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("Test columns names and numbers") {
     val df =
-      spark.read.option("header", "true").option("inferSchema", true).csv("examples/smalldata/prostate/prostate.csv")
+      spark.read
+        .option("header", "true")
+        .option("inferSchema", value = true)
+        .csv("examples/smalldata/prostate/prostate.csv")
 
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
@@ -87,7 +86,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val udfSelection = transDf.select(mojo.selectPredictionUDF("AGE"))
     val normalSelection = transDf.select("prediction.preds")
 
-    println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n, t) => s"${n}[${t}]" }.mkString(" ")}")
+    println(s"\n\nSpark Transformer Output:\n${transDf.dtypes.map { case (n, t) => s"$n[$t]" }.mkString(" ")}")
 
     println("Predictions from normal selection:")
     val valuesNormalSelection = normalSelection.take(5)
@@ -116,7 +115,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     // Test data
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
-    val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = true)
+    val mojoSettings = H2OMOJOSettings()
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
@@ -273,7 +272,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     assert(preds(4).getDouble(0) == 66.11327967814829)
   }
 
-  def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
+  private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -292,7 +291,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
-    val settings = H2OMOJOSettings(namedMojoOutputColumns = true)
+    val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
   }
 }

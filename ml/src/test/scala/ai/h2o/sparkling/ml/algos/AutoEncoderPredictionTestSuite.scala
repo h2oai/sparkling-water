@@ -17,12 +17,10 @@
 
 package ai.h2o.sparkling.ml.algos
 
-import org.apache.spark.SparkContext
-import org.apache.spark.h2o.utils.SharedH2OTestContext
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.{FunSuite, Matchers}
-import water.api.TestUtils
 
 class AutoEncoderPredictionTestSuite
   extends FunSuite
@@ -30,7 +28,7 @@ class AutoEncoderPredictionTestSuite
   with SharedH2OTestContext
   with TransformSchemaTestSuite {
 
-  override def createSparkContext = new SparkContext("local[*]", this.getClass.getSimpleName, conf = defaultSparkConf)
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   override protected lazy val dataset: DataFrame = {
     spark.read
