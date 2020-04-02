@@ -60,7 +60,7 @@ class Initializer(object):
             else:
                 pos = re.search("--jars\\s+", value).end()
                 os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + Initializer.__get_sw_jar(None) + "," + value[pos:]
-        atexit.register(Initializer.__extracted_jar_dir)
+        atexit.register(Initializer.__removeTmpDir)
 
     @staticmethod
     def load_sparkling_jar():
