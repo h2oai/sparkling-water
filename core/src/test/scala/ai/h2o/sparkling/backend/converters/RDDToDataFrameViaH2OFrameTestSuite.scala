@@ -19,10 +19,13 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.sql.SparkSession
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 import water.MRTask
 import water.fvec.{Chunk, H2OFrame, NewChunk, Vec}
 
+@RunWith(classOf[JUnitRunner])
 class RDDToDataFrameViaH2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")

@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.backend.api.rdds
 
-import ai.h2o.sparkling.TestUtils.SampleCat
 import ai.h2o.sparkling._
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -83,7 +82,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val rname = "Test"
     val rpart = 21
 
-    val rdd = sc.parallelize(Seq(SampleCat("A", 1), SampleCat("B", 2), SampleCat("C", 3)), rpart).setName(rname).cache()
+    val rdd = sc.parallelize(Seq(A(1, "A"), A(2, "B"), A(3, "C")), rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
     val rddReq = new RDD2H2OFrameIDV3
@@ -94,7 +93,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val h2oframe = hc.asH2OFrame(result.h2oframe_id)
     assert(h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
     assert(h2oframe.numCols() == 2, "Number of columns should match")
-    assert(h2oframe.names().sorted.sameElements(Seq("name", "age")), "Column names should match")
+    assert(h2oframe.names().sorted.sameElements(Seq("num", "str")), "Column names should match")
     assert(h2oframe.numRows() == rdd.count(), "Number of rows should match")
   }
 
@@ -110,3 +109,5 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 }
+
+case class A(num: Int, str: String) extends Serializable
