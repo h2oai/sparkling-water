@@ -18,6 +18,7 @@
 import atexit
 import os
 import pyspark
+import re
 import shutil
 import sys
 import tempfile
@@ -47,14 +48,26 @@ class Initializer(object):
         shutil.rmtree(dir)
 
     @staticmethod
+    def __setUpPySparkSubmitArgs():
+        # Ensure that when we do import pysparkling, spark will put later the JAR file
+        # to the driver. This option has effect only when SparkContext has not been started before.
+        if os.environ.get('PYSPARK_SUBMIT_ARGS') is None:
+            os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " pyspark-shell"
+        else:
+            value = os.environ.get('PYSPARK_SUBMIT_ARGS')
+            if "--jars" not in value:
+                os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " " + value
+            else:
+                pos = re.search("--jars\\s+", value).end()
+                os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + Initializer.__get_sw_jar(None) + "," + value[pos:]
+        atexit.register(Initializer.__extracted_jar_dir)
+
+    @staticmethod
     def load_sparkling_jar():
         if Initializer.__sparklingWaterJarLoaded is False:
             sc = SparkContext._active_spark_context
             if sc is None:
-                # Ensure that when we do import pysparkling, spark will put later the JAR file
-                # to the driver. This option has effect only when SparkContext has not been started before.
-                os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " pyspark-shell"
-                atexit.register(Initializer.__extracted_jar_dir)
+                Initializer.__setUpPySparkSubmitArgs()
             else:
                 jvm = sc._jvm
                 stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
