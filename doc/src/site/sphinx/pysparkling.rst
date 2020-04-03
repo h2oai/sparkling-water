@@ -73,7 +73,8 @@ Dependencies
 
 Supported Python versions are Python 2.7 or Python 3+.
 
-In order to use PySparkling, it requires the following runtime python dependencies to be available on the system, all of which are available on PyPI:
+The major dependency is Spark. Please make sure that your Python environment has functional Spark with all its
+dependencies.
 
 .. code-block:: bash
 
@@ -81,9 +82,8 @@ In order to use PySparkling, it requires the following runtime python dependenci
   $ pip install tabulate
   $ pip install future
   $ pip install colorama>=0.3.8
-  $ pip install numpy>=1.9.2
 
-The required packages are installed automatically in case when PySparkling is installed from PyPI.
+These dependencies are installed automatically in case PySparkling is installed from PyPI.
 
 
 The Sparkling Water Python Module
