@@ -15,9 +15,13 @@
 # limitations under the License.
 #
 
+import atexit
 import os
 import pyspark
+import re
+import shutil
 import sys
+import tempfile
 import warnings
 import zipfile
 from ai.h2o.sparkling.VersionComponents import VersionComponents
@@ -41,24 +45,41 @@ class Initializer(object):
     __extracted_jar_dir = None
 
     @staticmethod
-    def load_sparkling_jar():
-        sc = SparkContext._active_spark_context
-        if Initializer.__sparklingWaterJarLoaded is not True and sc is not None:
-            jvm = sc._jvm
-            stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
-            if stream is None:
-                sys.path.append(".")
-                Initializer.__add_sparkling_jar_to_spark(sc)
+    def __setUpPySparkSubmitArgs():
+        # Ensure that when we do import pysparkling, spark will put later the JAR file
+        # to the driver. This option has effect only when SparkContext has not been started before.
+        if os.environ.get('PYSPARK_SUBMIT_ARGS') is None:
+            os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " pyspark-shell"
+        else:
+            value = os.environ.get('PYSPARK_SUBMIT_ARGS')
+            if "--jars" not in value:
+                os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars " + Initializer.__get_sw_jar(None) + " " + value
             else:
-                otherVersion = jvm.scala.io.Source.fromInputStream(stream, "UTF-8").mkString()
-                currentVersion = Initializer.getVersion()
-                if otherVersion != currentVersion:
-                    raise Exception("JAR file for Sparkling Water {} is already attached to the cluster, but you " \
-                                    "are starting PySparkling for {}. Either remove the attached JAR of the different " \
-                                    "version or use PySparkling of the same version as the attached JAR.".format(
-                        otherVersion,
-                        currentVersion))
-            Initializer.__sparklingWaterJarLoaded = True
+                pos = re.search("--jars\\s+", value).end()
+                os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + Initializer.__get_sw_jar(None) + "," + value[pos:]
+
+    @staticmethod
+    def load_sparkling_jar():
+        if Initializer.__sparklingWaterJarLoaded is False:
+            sc = SparkContext._active_spark_context
+            if sc is None:
+                Initializer.__setUpPySparkSubmitArgs()
+            else:
+                jvm = sc._jvm
+                stream = jvm.Thread.currentThread().getContextClassLoader().getResourceAsStream("sw.version")
+                if stream is None:
+                    sys.path.append(".")
+                    Initializer.__add_sparkling_jar_to_spark(sc)
+                else:
+                    otherVersion = jvm.scala.io.Source.fromInputStream(stream, "UTF-8").mkString()
+                    currentVersion = Initializer.getVersion()
+                    if otherVersion != currentVersion:
+                        raise Exception("JAR file for Sparkling Water {} is already attached to the cluster, but you " \
+                                        "are starting PySparkling for {}. Either remove the attached JAR of the different " \
+                                        "version or use PySparkling of the same version as the attached JAR.".format(
+                            otherVersion,
+                            currentVersion))
+                Initializer.__sparklingWaterJarLoaded = True
 
     @staticmethod
     def __add_sparkling_jar_to_spark(sc):
@@ -79,11 +100,19 @@ class Initializer(object):
         sc._jsc.addJar(sw_jar_file)
 
     @staticmethod
+    def __removeTmpDir():
+        shutil.rmtree(Initializer.__extracted_jar_dir)
+
+    @staticmethod
     def __extracted_jar_path(sc):
 
         if Initializer.__extracted_jar_dir is None:
             zip_file = Initializer.__get_pysparkling_zip_path()
-            Initializer.__extracted_jar_dir = sc._temp_dir
+            if sc is None:
+                Initializer.__extracted_jar_dir = tempfile.mkdtemp()
+                atexit.register(Initializer.__removeTmpDir)
+            else:
+                Initializer.__extracted_jar_dir = sc._temp_dir
             import zipfile
             with zipfile.ZipFile(zip_file) as fzip:
                 fzip.extract('sparkling_water/sparkling_water_assembly.jar', path=Initializer.__extracted_jar_dir)
