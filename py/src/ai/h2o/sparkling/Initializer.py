@@ -44,8 +44,9 @@ class Initializer(object):
     __sparklingWaterJarLoaded = False
     __extracted_jar_dir = None
 
-    def __removeTmpDir(dir):
-        shutil.rmtree(dir)
+    @staticmethod
+    def __removeTmpDir():
+        shutil.rmtree(Initializer.__extracted_jar_dir)
 
     @staticmethod
     def __setUpPySparkSubmitArgs():
@@ -60,7 +61,6 @@ class Initializer(object):
             else:
                 pos = re.search("--jars\\s+", value).end()
                 os.environ["PYSPARK_SUBMIT_ARGS"] = value[:pos] + Initializer.__get_sw_jar(None) + "," + value[pos:]
-        atexit.register(Initializer.__removeTmpDir)
 
     @staticmethod
     def load_sparkling_jar():
@@ -110,6 +110,7 @@ class Initializer(object):
             zip_file = Initializer.__get_pysparkling_zip_path()
             if sc is None:
                 Initializer.__extracted_jar_dir = tempfile.mkdtemp()
+                atexit.register(Initializer.__removeTmpDir)
             else:
                 Initializer.__extracted_jar_dir = sc._temp_dir
             import zipfile
