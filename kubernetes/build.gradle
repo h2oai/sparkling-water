@@ -13,13 +13,15 @@ ext {
 
 task createScalaDockerfile(type: Dockerfile) {
   destFile = outputFileScala
-  from "spark:${sparkVersion}"
+  arg "spark_version"
+  from 'spark:$spark_version'
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
 }
 
 task createRDockerfile(type: Dockerfile) {
   destFile = outputFileR
-  from "spark-r:${sparkVersion}"
+  arg "spark_version"
+  from 'spark-r:$spark_version'
   runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
   runCommand """\\
                 R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
@@ -38,7 +40,8 @@ task createRDockerfile(type: Dockerfile) {
 
 task createPythonDockerfile(type: Dockerfile) {
   destFile = outputFilePython
-  from "spark-py:${sparkVersion}"
+  arg "spark_version"
+  from 'spark-py:$spark_version'
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
   runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
 }

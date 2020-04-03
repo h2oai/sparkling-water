@@ -123,9 +123,11 @@ fi
 
 
 function checkSparkVersion() {
-  installed_spark_version=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
-  if ! [[ "$SPARK_VERSION" =~ "$installed_spark_version".* ]]; then
-    echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your Spark is of version ${installed_spark_version}. Please ensure correct Spark is provided and re-run Sparkling Water."
+  export INSTALLED_SPARK_FULL_VERSION=$(spark-submit --version 2>&1 | grep version | grep -v Scala | sed -e "s/.*version //")
+  export INSTALLED_SPARK_MAJOR_MINOR_VERSION=$(echo "$INSTALLED_SPARK_FULL_VERSION" | sed -e "s/\([0-9][0-9]*.[0-9][0-9]*\).*/\1/")
+  if ! [[ "$SPARK_VERSION" =~ "$INSTALLED_SPARK_MAJOR_MINOR_VERSION".* ]]; then
+    echo "You are trying to use Sparkling Water built for Spark ${SPARK_VERSION}, but your Spark is of \
+version ${INSTALLED_SPARK_MAJOR_MINOR_VERSION}. Please ensure correct Spark is provided and re-run Sparkling Water."
     exit -1
   fi
 }
