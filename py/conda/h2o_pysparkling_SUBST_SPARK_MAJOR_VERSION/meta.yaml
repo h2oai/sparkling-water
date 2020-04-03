@@ -14,8 +14,6 @@ requirements:
     - future >=0.15.2
     - tabulate >=0.7.5
     - requests >=2.10
-    - numpy >=1.9.2
-    - pyspark >=SUBST_SPARK_MAJOR_VERSION.0,<=SUBST_SPARK_VERSION
 
   run:
     - python
@@ -23,8 +21,6 @@ requirements:
     - future >=0.15.2
     - tabulate >=0.7.5
     - requests >=2.10
-    - numpy >=1.9.2
-    - pyspark >=SUBST_SPARK_MAJOR_VERSION.0,<=SUBST_SPARK_VERSION
 
 
 about:
