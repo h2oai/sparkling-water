@@ -42,11 +42,8 @@ task createPythonDockerfile(type: Dockerfile) {
   destFile = outputFilePython
   arg "spark_version"
   from 'spark-py:$spark_version'
-  arg "spark_version"
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
-  runCommand 'echo "pyspark==$spark_version" > constraints'
-  runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip -c constraints"
-  runCommand 'rm constraints'
+  runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
 }
 
 task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])
