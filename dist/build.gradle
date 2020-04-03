@@ -1,5 +1,8 @@
 apply plugin: 'base'
+apply plugin: "org.paleozogt.symzip"
 apply from: "$rootDir/gradle/utils.gradle"
+
+import org.paleozogt.gradle.zip.SymZip
 
 ext {
   distDir = file("$buildDir/dist")
@@ -189,7 +192,7 @@ task cleanRepo(type: Delete) {
 copyFilesForZipDistribution.mustRunAfter cleanRepo
 copyFilesForZipDistribution.dependsOn(distTaskDependencies)
 
-task zipDistribution(type: Zip, dependsOn: copyFilesForZipDistribution) {
+task zipDistribution(type: SymZip, dependsOn: copyFilesForZipDistribution) {
   from "$buildDir/zip"
   archiveFileName = "sparkling-water-${archiveVersion.get()}.zip"
   destinationDirectory = file("$buildDir/dist")
