@@ -139,6 +139,16 @@ trait SharedBackendConf {
 
   def verifySslCertificates: Boolean = sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
+  def isHiveSupportEnabled: Boolean = sparkConf.getBoolean(PROP_HIVE_SUPPORT_ENABLED._1, PROP_HIVE_SUPPORT_ENABLED._2)
+
+  def hiveHost: Option[String] = sparkConf.getOption(PROP_HIVE_HOST._1)
+
+  def hivePrincipal: Option[String] = sparkConf.getOption(PROP_HIVE_PRINCIPAL._1)
+
+  def hiveJdbcUrlPattern: Option[String] = sparkConf.getOption(PROP_HIVE_JDBC_URL_PATTERN._1)
+
+  def hiveToken: Option[String] = sparkConf.getOption(PROP_HIVE_TOKEN._1)
+
   /** Setters */
 
   /** Generic parameters */
@@ -303,6 +313,18 @@ trait SharedBackendConf {
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
+
+  def setHiveSupportEnabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, true)
+
+  def setHiveSupportDisabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, false)
+
+  def setHiveHost(host: String): H2OConf = set(PROP_HIVE_HOST._1, host)
+
+  def setHivePrincipal(principal: String): H2OConf = set(PROP_HIVE_PRINCIPAL._1, principal)
+
+  def setHiveJdbcUrlPattern(pattern: String): H2OConf = set(PROP_HIVE_JDBC_URL_PATTERN._1, pattern)
+
+  def setHiveToken(token: String): H2OConf = set(PROP_HIVE_TOKEN._1, token)
 
   private[backend] def getFileProperties: Seq[(String, _)] = Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
@@ -471,4 +493,22 @@ object SharedBackendConf {
 
   /** Whether certificates should be verified before using in H2O or not. */
   val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
+
+  /**
+   * If enabled, H2O instances will create JDBC connections to Hive and H2O Python & R API will be able to read data
+   * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
+   */
+  val PROP_HIVE_SUPPORT_ENABLED: (String, Boolean) = ("spark.ext.h2o.hive.enabled", false)
+
+  /** The full address of HiveServer2, for example hostname:10000 */
+  val PROP_HIVE_HOST: (String, None.type) = ("spark.ext.h2o.hive.host", None)
+
+  /** Hiveserver2 Kerberos principal, for example hive/hostname@DOMAIN.COM */
+  val PROP_HIVE_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.hive.principal", None)
+
+  /** Can be used to further customize the way the driver constructs the Hive JDBC URL */
+  val PROP_HIVE_JDBC_URL_PATTERN: (String, None.type) = ("spark.ext.h2o.hive.jdbc_url_pattern", None)
+
+  /** Authorization token to Hive */
+  val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
 }

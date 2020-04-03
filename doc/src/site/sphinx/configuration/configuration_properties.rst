@@ -166,6 +166,26 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | master/h2o-docs/src/product/           |
 |                                                    |                |                                                 | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.enabled``                     | ``false``      | ``setHiveSupportEnabled()``                     | If enabled, H2O instances will create  |
+|                                                    |                |                                                 | JDBC connections to Hive so that H2O   |
+|                                                    |                | ``setHiveSupportDisabled()``                    | Python & R API will be able to read    |
+|                                                    |                |                                                 | data from HiveServer2. Don't forget to |
+|                                                    |                |                                                 | put a jar with Hive driver on Spark    |
+|                                                    |                |                                                 | classpath if the internal backend is   |
+|                                                    |                |                                                 | used.                                  |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.host``                        | ``None``       | ``setHiveHost(String)``                         | The full address of HiveServer2,       |
+|                                                    |                |                                                 | for example hostname:10000             |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.principal``                   | ``None``       | ``setHivePrincipal(String)``                    | Hiveserver2 Kerberos principal,        |
+|                                                    |                |                                                 | for example hive/hostname@DOMAIN.COM   |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.jdbc_url_pattern``            | ``None``       | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for         |
+|                                                    |                |                                                 | connecting to Hiveserver2. Example:    |
+|                                                    |                |                                                 | ``jdbc:hive2://{{host}}/;{{auth}}``    |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.hive.token``                       | ``None``       | ``setHiveToken(String)``                        | An authorization token to Hive         |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |

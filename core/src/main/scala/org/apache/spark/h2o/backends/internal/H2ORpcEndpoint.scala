@@ -53,8 +53,8 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv)
   }
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
-    case StartH2OWorkersMsg(conf) =>
-      val nodeDesc = InternalH2OBackend.startH2OWorker(conf)
+    case StartH2OWorkersMsg(conf, user) =>
+      val nodeDesc = InternalH2OBackend.startH2OWorker(conf, user)
       context.reply(nodeDesc)
   }
 }
@@ -63,4 +63,4 @@ case class StopEndpointMsg()
 
 case class FlatFileMsg(nodes: Array[NodeDesc], portOffset: Int)
 
-case class StartH2OWorkersMsg(conf: H2OConf)
+case class StartH2OWorkersMsg(conf: H2OConf, user: String)

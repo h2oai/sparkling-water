@@ -76,7 +76,7 @@ class ArgumentBuilder() {
 
   def addIf(arg: String, value: Option[String], condition: Boolean): ArgumentBuilder = {
     if (condition) {
-      add(arg, value.get)
+      add(arg, value)
     } else {
       this
     }
