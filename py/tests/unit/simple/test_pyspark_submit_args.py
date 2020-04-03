@@ -31,6 +31,7 @@ def testSparkSubmitOptsNoJars():
     jar = Initializer._Initializer__get_sw_jar(None)
     Initializer._Initializer__setUpPySparkSubmitArgs()
     propEdited = os.environ["PYSPARK_SUBMIT_ARGS"]
+    del os.environ["PYSPARK_SUBMIT_ARGS"]
     assert propEdited == "--jars {} --conf spark.app.name=test".format(jar)
 
 
@@ -39,4 +40,5 @@ def testSparkSubmitOptsWithJars():
     jar = Initializer._Initializer__get_sw_jar(None)
     Initializer._Initializer__setUpPySparkSubmitArgs()
     propEdited = os.environ["PYSPARK_SUBMIT_ARGS"]
+    del os.environ["PYSPARK_SUBMIT_ARGS"]
     assert propEdited == "--conf spark.app.name=test --jars     {},dummy.jar".format(jar)
