@@ -181,7 +181,7 @@ task copyFilesForZipDistribution {
 
     // TODO: The below lines should be removed in future. For now, they ensure compatibility with older versions of Steam.
     new File("$zipDir/assembly/build/libs").mkdirs()
-    exec { commandLine 'ln', '-s', "$zipDir/jars/$assemblyJarFile", "$zipDir/assembly/build/libs/$assemblyJarFile" }
+    exec { commandLine 'ln', '-s', "../../../jars/$assemblyJarFile", "$zipDir/assembly/build/libs/$assemblyJarFile" }
   }
 }
 
