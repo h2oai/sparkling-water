@@ -73,9 +73,10 @@ task createVersionFile {
 // Represents a location of H2O Wheel Package
 //
 def h2oPythonWheelPackageLocation() {
-  def suffix = "/${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
-  def prefix = "http://h2o-release.s3.amazonaws.com/h2o/"
+  def suffix = "${h2oBuild}/Python/h2o-${h2oMajorVersion}.${h2oBuild}-py2.py3-none-any.whl"
+  def prefix = "http://h2o-release.s3.amazonaws.com/h2o"
   if (h2oMajorName == "master") {
+    return "${prefix}/master/${suffix}"
   } else {
     return "${prefix}/rel-${h2oMajorName}/${suffix}"
   }
