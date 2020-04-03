@@ -45,10 +45,6 @@ class Initializer(object):
     __extracted_jar_dir = None
 
     @staticmethod
-    def __removeTmpDir():
-        shutil.rmtree(Initializer.__extracted_jar_dir)
-
-    @staticmethod
     def __setUpPySparkSubmitArgs():
         # Ensure that when we do import pysparkling, spark will put later the JAR file
         # to the driver. This option has effect only when SparkContext has not been started before.
@@ -102,6 +98,10 @@ class Initializer(object):
         # Add Sparkling Water Assembly JAR to Spark's file server so executors can fetch it
         # when they need to use the dependency.
         sc._jsc.addJar(sw_jar_file)
+
+    @staticmethod
+    def __removeTmpDir():
+        shutil.rmtree(Initializer.__extracted_jar_dir)
 
     @staticmethod
     def __extracted_jar_path(sc):
