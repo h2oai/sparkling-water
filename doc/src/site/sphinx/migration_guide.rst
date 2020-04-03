@@ -93,8 +93,7 @@ From 3.30 to 3.32
   - Left join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).leftJoin(rightFrame)``
   - Right join: ``ai.h2o.sparkling.H2OFrame(idOfLeftFrame).rightJoin(rightFrame)``
 
-The ``JoinMethod`` enum is removed as it is no longer required.
-
+  The ``JoinMethod`` enum is removed as it is no longer required.
 
 From 3.28.1 to 3.30
 -------------------
@@ -331,7 +330,6 @@ Removal of Deprecated Methods and Classes
 - The methods ``ignoreSparkPublicDNS``, ``setIgnoreSparkPublicDNSEnabled`` and ``setIgnoreSparkPublicDNSDisabled`` are
   removed without replacement as they are no longer required. Also the option ``spark.ext.h2o.client.ignore.SPARK_PUBLIC_DNS``
   does not have any effect anymore.
-
 
 From 3.28.0 to 3.28.1
 ---------------------

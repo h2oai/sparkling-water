@@ -101,6 +101,22 @@ trait SharedBackendUtils extends Logging with Serializable {
       conf.setH2OClientLogLevel(incLogLevel(conf.h2oClientLogLevel, "INFO"))
     }
 
+    if (conf.isHiveSupportEnabled) {
+      if (conf.hiveHost.isEmpty && conf.hiveJdbcUrlPattern.isEmpty) {
+        throw new IllegalArgumentException(
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_HOST._1}' " +
+            s"or '${SharedBackendConf.PROP_HIVE_JDBC_URL_PATTERN._1}' must be defined.")
+      }
+      if (conf.hivePrincipal.isEmpty) {
+        throw new IllegalArgumentException(
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_PRINCIPAL._1}' must be defined.")
+      }
+      if (conf.hiveToken.isEmpty) {
+        throw new IllegalArgumentException(
+          s"When Hive support is enabled, the option '${SharedBackendConf.PROP_HIVE_TOKEN._1}' must be defined.")
+      }
+    }
+
     conf
   }
 
