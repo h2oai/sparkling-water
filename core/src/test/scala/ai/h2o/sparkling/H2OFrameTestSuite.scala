@@ -33,24 +33,6 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     H2OFrame(hc.asH2OFrameKeyString(df))
   }
 
-  test("convertAllStringColumnsToCategorical") {
-    val originalFrame = uploadH2OFrame()
-
-    val stringColumns = originalFrame.columns.filter(_.dataType == H2OColumnType.string).map(_.name)
-    assert(stringColumns.nonEmpty)
-    val alteredFrame = originalFrame.convertAllStringColumnsToCategorical()
-    val convertedColumns = alteredFrame.columns.filter(col => stringColumns.contains(col.name))
-
-    // Verify that columns we asked to convert to categorical has been converted
-    convertedColumns.foreach { col =>
-      assert(col.dataType == H2OColumnType.`enum`)
-    }
-    // Check that all other columns remained unchanged
-    alteredFrame.columns.diff(convertedColumns) foreach { col =>
-      assert(col.dataType == originalFrame.columns.find(_.name == col.name).get.dataType)
-    }
-  }
-
   test("convertColumnsToCategorical with column names") {
     val originalFrame = uploadH2OFrame()
     val columnsToConvert = Array("ID", "AGE")

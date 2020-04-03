@@ -95,6 +95,10 @@ From 3.30 to 3.32
 
   The ``JoinMethod`` enum is removed as it is no longer required.
 
+- Since the method ``asH2OFrame`` of ``H2OContext`` converts strings to categorical columns automatically according to
+  the heuristic from H2O parsers, the methods ``getAllStringColumnsToCategorical`` and ``setAllStringColumnsToCategorical``
+  have been removed from all SW API algorithms in Python and Scala API.
+
 From 3.28.1 to 3.30
 -------------------
 

@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+import warnings
+
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
@@ -54,12 +56,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         "Number of fold columns",
         H2OTypeConverters.toInt())
 
-    allStringColumnsToCategorical = Param(
-        Params._dummy(),
-        "allStringColumnsToCategorical",
-        "Transform all strings columns to categorical",
-        H2OTypeConverters.toBoolean())
-
     columnsToCategorical = Param(
         Params._dummy(),
         "columnsToCategorical",
@@ -85,7 +81,9 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         return self.getOrDefault(self.nfolds)
 
     def getAllStringColumnsToCategorical(self):
-        return self.getOrDefault(self.allStringColumnsToCategorical)
+        warnings.warn("The 'getAllStringColumnsToCategorical' method has been deprecated without replacement."
+                      "The method will be removed in the version 3.32.", DeprecationWarning)
+        return False
 
     def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
@@ -109,7 +107,9 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         return self._set(nfolds=value)
 
     def setAllStringColumnsToCategorical(self, value):
-        return self._set(allStringColumnsToCategorical=value)
+        warnings.warn("The 'setAllStringColumnsToCategorical' method has been deprecated without replacement."
+                      "The method will be removed in the version 3.32.", DeprecationWarning)
+        return self
 
     def setColumnsToCategorical(self, value, *args):
         assert_is_type(value, [str], str)
