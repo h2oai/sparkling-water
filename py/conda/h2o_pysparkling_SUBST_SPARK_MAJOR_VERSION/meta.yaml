@@ -22,7 +22,6 @@ requirements:
     - tabulate >=0.7.5
     - requests >=2.10
 
-
 about:
   home: https://github.com/h2oai/sparkling-water.git
   license: Apache License Version 2.0
