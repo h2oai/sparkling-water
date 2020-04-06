@@ -148,6 +148,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Loggi
       .addIf("-hivePrincipal", conf.hivePrincipal, conf.isHiveSupportEnabled)
       .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isHiveSupportEnabled)
       .addIf("-hiveToken", conf.hiveToken, conf.isHiveSupportEnabled)
+      .add("-refreshTokens", conf.isHiveSupportEnabled)
       .add(conf.nodeExtraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
