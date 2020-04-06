@@ -33,7 +33,7 @@ def getS3Path() {
 def getParallelStageDefinition(params) {
     return {
         stage ("Spark ${params.spark}") {
-            node("node") {
+            node("master") {
                 docker.withRegistry("http://harbor.h2o.ai") {
                     ansiColor('xterm') {
                         timestamps {
