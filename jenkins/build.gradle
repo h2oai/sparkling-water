@@ -50,24 +50,19 @@ task createDockerfile(type: Dockerfile) {
                 cd /home/jenkins && \\
                 git clone https://github.com/h2oai/sparkling-water.git && \\
                 cd sparkling-water && \\
-                ./gradlew --refresh-dependencies resolveDependencies && \\
-                cd ..
+                for sparkMajor in ${supportedSparkVersions}; \\
+                do \\
+                  ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
+                  ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python && \\
+                  ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
+                done && cd .. && rm -rf sparkling-water
                 """
 
-  supportedSparkVersions.split(" ").each { majorVersion ->
-    runCommand """\\
-                    cd /home/jenkins/sparkling-water && \\
-                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python2.7/bin && \\
-                    ./gradlew -Pspark=${majorVersion} :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python3.6/bin
-                    """
-  }
-  runCommand "cp -R /home/jenkins/sparkling-water/.gradle/python /home/jenkins/.gradle/python"
   user("root")
 
   runCommand """\\
                 sudo sh -c "echo \\"jenkins ALL=(ALL) NOPASSWD:ALL\\" >> /etc/sudoers"
                """
-  runCommand "cd /home/jenkins && rm -rf sparkling-water"
 
   user("jenkins")
   environmentVariable("USER", "jenkins")
