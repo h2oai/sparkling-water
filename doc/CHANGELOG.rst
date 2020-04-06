@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+v3.28.1.3-1 (2020-04-06)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.28.1.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.28.1.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.28.1.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.28.1.3-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-2143 <https://0xdata.atlassian.net/browse/SW-2143>`__ - bin/build-kubernetes-images.sh should get spark version from $SPARK_HOME directory 
+   -  `SW-2144 <https://0xdata.atlassian.net/browse/SW-2144>`__ - Get rid of numpy and pyspark dependency
+   -  `SW-2145 <https://0xdata.atlassian.net/browse/SW-2145>`__ - Fix initialization of Sparkling Water JAR in case we call import pysparkling and sc is not yet running
+                
+-  New Feature
+        
+   -  `SW-2120 <https://0xdata.atlassian.net/browse/SW-2120>`__ - Enable H2O to Connect to Hive
+                
+-  Improvement
+        
+   -  `SW-2082 <https://0xdata.atlassian.net/browse/SW-2082>`__ - Deprecate hex.ModelUtils.classify in favour of SW Algo API
+   -  `SW-2084 <https://0xdata.atlassian.net/browse/SW-2084>`__ - Deprecate DeepLearningSupport and GBMSupport in favor of SW Algo API
+   -  `SW-2119 <https://0xdata.atlassian.net/browse/SW-2119>`__ - Make SW Compatible with Older Versions of Steam
+   -  `SW-2152 <https://0xdata.atlassian.net/browse/SW-2152>`__ - Upgrade to H2O 3.28.1.3
+                
+-  Engineering Story
+        
+   -  `SW-2080 <https://0xdata.atlassian.net/browse/SW-2080>`__ - Update Comments in ChunkServlet
+                
+-  Docs
+        
+   -  `SW-2122 <https://0xdata.atlassian.net/browse/SW-2122>`__ - In `Using the MOJO Scoring Pipeline` section,  clarify that MOJO Scoring Pipelines are from Driverless AI license
+                
+    
 v3.28.1.2-1 (2020-03-19)
 ------------------------
 Downloads:
