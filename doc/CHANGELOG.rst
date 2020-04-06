@@ -1,6 +1,103 @@
 Change Log
 ==========
 
+v3.30.0.1-1 (2020-04-06)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.1-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-2022 <https://0xdata.atlassian.net/browse/SW-2022>`__ - Start H2OContext on python side if the user didn&#39;t explicitly ask for it
+   -  `SW-2066 <https://0xdata.atlassian.net/browse/SW-2066>`__ - java.lang.UnsupportedOperationException: JsonObject on testGetLeaderboardWithVariableArgumens(hc, dataset)
+   -  `SW-2071 <https://0xdata.atlassian.net/browse/SW-2071>`__ - InternalH2OBackend Shouldn&#39;t Call setH2OCluster
+   -  `SW-2112 <https://0xdata.atlassian.net/browse/SW-2112>`__ - Update getOrCreate method after enabling rest api in py/r as well
+   -  `SW-2127 <https://0xdata.atlassian.net/browse/SW-2127>`__ - Fix compile of micro benchmarks
+                
+-  New Feature
+        
+   -  `SW-1715 <https://0xdata.atlassian.net/browse/SW-1715>`__ - Switch PySparkling in external backend to client-less approach by default
+   -  `SW-2125 <https://0xdata.atlassian.net/browse/SW-2125>`__ - Introduce Update Plan Reflecting the Final Layout of H2O Chunks
+                
+-  Improvement
+        
+   -  `SW-1391 <https://0xdata.atlassian.net/browse/SW-1391>`__ - Switch to scala formatter
+   -  `SW-1779 <https://0xdata.atlassian.net/browse/SW-1779>`__ - Change Spark DataFrame to H2OFrame Conversion to Implicitly Convert String Columns to Categoricals
+   -  `SW-1818 <https://0xdata.atlassian.net/browse/SW-1818>`__ - Switch PySparkling &amp; RSparkling in internal backend to client-less approach by default
+   -  `SW-1819 <https://0xdata.atlassian.net/browse/SW-1819>`__ - Remove deprecated r2stopping parameter on GBM and DRF
+   -  `SW-1824 <https://0xdata.atlassian.net/browse/SW-1824>`__ - Switch RSparkling in external backend to client-less approach by default
+   -  `SW-1850 <https://0xdata.atlassian.net/browse/SW-1850>`__ - Remove deprecated methods in RSparkling, from release 3.30 only instance methods should be used
+   -  `SW-1858 <https://0xdata.atlassian.net/browse/SW-1858>`__ - In case of rest api, train via rest API, not on the driver
+   -  `SW-1872 <https://0xdata.atlassian.net/browse/SW-1872>`__ - Remove deprecated nEstimators field and related methods on H2OXGBoost
+   -  `SW-1888 <https://0xdata.atlassian.net/browse/SW-1888>`__ - Remove deprecated methods in ExternalBackendConf.py
+   -  `SW-1890 <https://0xdata.atlassian.net/browse/SW-1890>`__ - Remove deprecated methods in InternalBackendConf.py
+   -  `SW-1892 <https://0xdata.atlassian.net/browse/SW-1892>`__ - Remove deprecated methods in SharedBackendConf.py
+   -  `SW-1894 <https://0xdata.atlassian.net/browse/SW-1894>`__ - Remove deprecated method setSparkVersionCheckEnable in SharedBackendConf.scala
+   -  `SW-1989 <https://0xdata.atlassian.net/browse/SW-1989>`__ - Remove kwargs argument from H2oContext.getOrCreate in python and deprecated verify_ssl_certificates arg handling
+   -  `SW-1994 <https://0xdata.atlassian.net/browse/SW-1994>`__ - Remove deprecated leaderboard method
+   -  `SW-2002 <https://0xdata.atlassian.net/browse/SW-2002>`__ - Remove deprecatd as_h2o_frame and as_spark_frame on H2OContext.py
+   -  `SW-2012 <https://0xdata.atlassian.net/browse/SW-2012>`__ - Remove deprecated download_h2o_logs method on H2OContext.py
+   -  `SW-2014 <https://0xdata.atlassian.net/browse/SW-2014>`__ - Remove deprecated get_conf method on H2OContext.py
+   -  `SW-2015 <https://0xdata.atlassian.net/browse/SW-2015>`__ - Simplify asH2OFrame in PySparkling
+   -  `SW-2028 <https://0xdata.atlassian.net/browse/SW-2028>`__ - Cleanup: Remove extra repl classes for different spark versions
+   -  `SW-2032 <https://0xdata.atlassian.net/browse/SW-2032>`__ - Remove exactLambdas param from H2OGLM
+   -  `SW-2037 <https://0xdata.atlassian.net/browse/SW-2037>`__ - Remove deprecated setClusterConfigFile from H2OConf
+   -  `SW-2038 <https://0xdata.atlassian.net/browse/SW-2038>`__ - Remove deprecated setClientPortBase from H2OConf
+   -  `SW-2042 <https://0xdata.atlassian.net/browse/SW-2042>`__ - Remove deprecated get_grid_models, get_grid_models_params and get_grid_models_metrics params from H2OGridSearch
+   -  `SW-2046 <https://0xdata.atlassian.net/browse/SW-2046>`__ - Remove deprecated initial_score_interval on H2OXGBoost
+   -  `SW-2048 <https://0xdata.atlassian.net/browse/SW-2048>`__ - Remove deprecated h2oNodeWebEnabled and associated setters
+   -  `SW-2052 <https://0xdata.atlassian.net/browse/SW-2052>`__ - Remove deprecated _score_interval on H2OXGBoost
+   -  `SW-2055 <https://0xdata.atlassian.net/browse/SW-2055>`__ - Remove deprecated learn_rate_annealing on H2OXGBoost
+   -  `SW-2056 <https://0xdata.atlassian.net/browse/SW-2056>`__ - Remove deprecated option to disable web on client node
+   -  `SW-2061 <https://0xdata.atlassian.net/browse/SW-2061>`__ - Improve and test getCurrentMetrics on H2OModel
+   -  `SW-2068 <https://0xdata.atlassian.net/browse/SW-2068>`__ - Remove REST API &amp; client h2ocontext, make rest api the default one
+   -  `SW-2069 <https://0xdata.atlassian.net/browse/SW-2069>`__ - Set H2O Cluster Time Zone only via REST
+   -  `SW-2079 <https://0xdata.atlassian.net/browse/SW-2079>`__ - Move api classes to ai.h2o.sparkling package
+   -  `SW-2086 <https://0xdata.atlassian.net/browse/SW-2086>`__ - Move classes from org.apache.spark.h2o.utils to ai.h2o.sparkling
+   -  `SW-2087 <https://0xdata.atlassian.net/browse/SW-2087>`__ - Deprecate MetricsSupport and make it possible to obtain training metrics on H2OMojoModel
+   -  `SW-2089 <https://0xdata.atlassian.net/browse/SW-2089>`__ - Expose only H2OFrame, hide remaining internal API
+   -  `SW-2092 <https://0xdata.atlassian.net/browse/SW-2092>`__ - Switch H2OFrameSupport methods to use rest api
+   -  `SW-2093 <https://0xdata.atlassian.net/browse/SW-2093>`__ - Remove unused classes &amp; move a few remaining classes to a ai.h2o.sparkling
+   -  `SW-2094 <https://0xdata.atlassian.net/browse/SW-2094>`__ - Remove NetworkBridge as the method isInetAddressOnNetwork is now public in H2O
+   -  `SW-2095 <https://0xdata.atlassian.net/browse/SW-2095>`__ - Remove and replace remaining reference in examples tests
+   -  `SW-2096 <https://0xdata.atlassian.net/browse/SW-2096>`__ - Reformat code up-to current standard everywhere except core to avoid formatting issues when cherry-picking
+   -  `SW-2097 <https://0xdata.atlassian.net/browse/SW-2097>`__ - Fix formatting in core ( the whole scala/java codebase now has consistent formatting)
+   -  `SW-2105 <https://0xdata.atlassian.net/browse/SW-2105>`__ - Remove standalone tests from codebase as we do not test against standalone cluster
+   -  `SW-2106 <https://0xdata.atlassian.net/browse/SW-2106>`__ - Remove and replace remaining reference in to H2O algos in SW doc
+   -  `SW-2123 <https://0xdata.atlassian.net/browse/SW-2123>`__ - Ignore warning report in pytest about converting bit number to string as it is on purpose
+   -  `SW-2124 <https://0xdata.atlassian.net/browse/SW-2124>`__ - Upgrade gradle python plugin to avoid gradle 6 deprecation warnings
+   -  `SW-2135 <https://0xdata.atlassian.net/browse/SW-2135>`__ - Deprecate JoinSupport in water.support package and make it part of ai.h2o.sparkling.H2OFrame
+   -  `SW-2146 <https://0xdata.atlassian.net/browse/SW-2146>`__ - Cleanup in tests -&gt; move to right ai.h2o.sparkling packages
+   -  `SW-2147 <https://0xdata.atlassian.net/browse/SW-2147>`__ - Add spotless check for ending new lines for most of the other files (the other files do not have better formattes now)
+   -  `SW-2149 <https://0xdata.atlassian.net/browse/SW-2149>`__ - Remove missleading comment in R&#39;s namespace file. 
+   -  `SW-2150 <https://0xdata.atlassian.net/browse/SW-2150>`__ - Remove subproject apps-streaming
+   -  `SW-2155 <https://0xdata.atlassian.net/browse/SW-2155>`__ - Upgrade H2O to 3.30.0.1
+                
+-  Engineering Story
+        
+   -  `SW-2108 <https://0xdata.atlassian.net/browse/SW-2108>`__ - Add unzipped all headers csv to repo
+   -  `SW-2109 <https://0xdata.atlassian.net/browse/SW-2109>`__ - Ensure AirlinesDemo runs without the client
+   -  `SW-2110 <https://0xdata.atlassian.net/browse/SW-2110>`__ - Remove the zeppelin notebook from examples dir
+   -  `SW-2111 <https://0xdata.atlassian.net/browse/SW-2111>`__ - Move interpreter tests to ScalaCode handler where they belong
+   -  `SW-2113 <https://0xdata.atlassian.net/browse/SW-2113>`__ - Make HamOrSpam example use SW API
+   -  `SW-2114 <https://0xdata.atlassian.net/browse/SW-2114>`__ - Make Prostate example use SW API
+   -  `SW-2115 <https://0xdata.atlassian.net/browse/SW-2115>`__ - Make DeepLearning example use SW API
+   -  `SW-2116 <https://0xdata.atlassian.net/browse/SW-2116>`__ - Make ChicagoCrimeApp use SW Api
+   -  `SW-2118 <https://0xdata.atlassian.net/browse/SW-2118>`__ - Deprecate and Disable allStringColumnsToCategorical Option
+   -  `SW-2126 <https://0xdata.atlassian.net/browse/SW-2126>`__ - Fix deprecation warning about duplicate paths in because of overwriting scala-editor.css file in Sparkling Water
+   -  `SW-2130 <https://0xdata.atlassian.net/browse/SW-2130>`__ - Remove extra hdpVersion from the codebase
+   -  `SW-2131 <https://0xdata.atlassian.net/browse/SW-2131>`__ - Proposal: Speed up of integration tests by sharing the context
+   -  `SW-2132 <https://0xdata.atlassian.net/browse/SW-2132>`__ - Upgrade docker image version to 26
+   -  `SW-2138 <https://0xdata.atlassian.net/browse/SW-2138>`__ - Apply spotless formatting to gradle files
+   -  `SW-2139 <https://0xdata.atlassian.net/browse/SW-2139>`__ - Deprecate ModelSerializationSupport
+   -  `SW-2141 <https://0xdata.atlassian.net/browse/SW-2141>`__ - Remove test classes from package.scala in org.apache.spark.h2o._
+   -  `SW-2156 <https://0xdata.atlassian.net/browse/SW-2156>`__ - Upgrade gradle + sphinx plugin to latest versions
+   -  `SW-2157 <https://0xdata.atlassian.net/browse/SW-2157>`__ - Update python plugin to version 2.2.0 ( avoid gradle deprecation warnings)
+                
+                            
 v3.28.1.3-1 (2020-04-06)
 ------------------------
 Downloads:
