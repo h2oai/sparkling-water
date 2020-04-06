@@ -158,7 +158,7 @@ task copyFilesForZipDistribution {
     if (!zipDir.exists()) {
       zipDir.mkdirs()
     }
-      
+
     copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
     copySingle("assembly-extensions/build/libs/", "sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
     copySingle("assembly/build/libs/", "sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")

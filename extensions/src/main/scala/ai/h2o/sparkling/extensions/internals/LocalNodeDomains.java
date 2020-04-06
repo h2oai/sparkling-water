@@ -60,6 +60,7 @@ public final class LocalNodeDomains {
   /**
    * The method returns domains for all chunks on the H2O node. The first array level identifies
    * chunks, the second columns, the third column values.
+   *
    * @param frameKey A key of a frame containing categorical domains.
    * @return Domains for all chunks on the H2O node.
    */
