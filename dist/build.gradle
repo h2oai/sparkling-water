@@ -158,11 +158,10 @@ task copyFilesForZipDistribution {
         if (!zipDir.exists()) {
             zipDir.mkdirs()
         }
-
-        def assemblyJarFile = "sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar"
+        
         copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
         copySingle("assembly-extensions/build/libs/", "sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
-        copySingle("assembly/build/libs/", assemblyJarFile, "$zipDir/jars")
+        copySingle("assembly/build/libs/", "sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
 
         createSupportedHadoopFile("$zipDir")
 
@@ -175,10 +174,6 @@ task copyFilesForZipDistribution {
         copyRecursive("bin/", "$zipDir/bin")
         copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
         copyRecursive("docker/", "$zipDir/docker")
-
-        // TODO: The below lines should be removed in future. For now, they ensure compatibility with older versions of Steam.
-        new File("$zipDir/assembly/build/libs").mkdirs()
-        exec { commandLine 'ln', '-s', "$zipDir/jars/$assemblyJarFile", "$zipDir/assembly/build/libs/$assemblyJarFile" }
     }
 }
 
