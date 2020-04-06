@@ -33,7 +33,7 @@ def getS3Path() {
 def getParallelStageDefinition(params) {
     return {
         stage ("Spark ${params.spark}") {
-            node("docker && micro") {
+            node("node") {
                 docker.withRegistry("http://harbor.h2o.ai") {
                     ansiColor('xterm') {
                         timestamps {
@@ -217,7 +217,7 @@ def updateNexRelVersion(params) {
 // Main entry point to the pipeline and definition of all stages
 //
 def sparkMajorVersions
-node("docker && micro") {
+node("master") {
     cleanWs()
     checkout scm
     def versionLine = readFile("gradle.properties")
@@ -245,7 +245,7 @@ def updateChangeLogStage(sparkMajorVersions) {
     return { params ->
         stage('Update Change Log') {
             if (params.updateChangeLog.toBoolean()) {
-                node("docker && micro") {
+                node("master") {
                     docker.withRegistry("http://harbor.h2o.ai") {
                         ansiColor('xterm') {
                             cleanWs()
@@ -267,7 +267,7 @@ def updateRelVersionStage() {
     return { params ->
         stage('Update Next Release Version') {
             if (params.releaseOnGithub.toBoolean()) {
-                node("docker && micro") {
+                node("master") {
                     docker.withRegistry("http://harbor.h2o.ai") {
                         ansiColor('xterm') {
                             timestamps {
