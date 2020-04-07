@@ -43,7 +43,6 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",

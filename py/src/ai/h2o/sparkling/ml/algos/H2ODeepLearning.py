@@ -46,7 +46,6 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",

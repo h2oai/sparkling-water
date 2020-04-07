@@ -47,11 +47,6 @@ class H2OFrame private (
 
   def numberOfColumns: Int = columns.length
 
-  def convertAllStringColumnsToCategorical(): H2OFrame = {
-    val columns = this.columns.filter(_.dataType == H2OColumnType.string).map(_.name)
-    convertColumnsToCategorical(columns)
-  }
-
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
     val indices = columnNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>

@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
 
 /**
@@ -67,9 +66,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def getNfolds(): Int = $(nfolds)
 
-  @DeprecatedMethod(version = "3.32")
-  def getAllStringColumnsToCategorical(): Boolean = false
-
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   //
@@ -84,9 +80,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   def setSeed(value: Long): this.type = set(seed, value)
 
   def setNfolds(value: Int): this.type = set(nfolds, value)
-
-  @DeprecatedMethod(version = "3.32")
-  def setAllStringColumnsToCategorical(value: Boolean): this.type = this
 
   def setColumnsToCategorical(first: String, others: String*): this.type =
     set(columnsToCategorical, Array(first) ++ others)
