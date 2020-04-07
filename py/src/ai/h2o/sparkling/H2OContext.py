@@ -26,7 +26,6 @@ from pyspark.ml.util import _jvm
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import *
 from pyspark.sql.types import StringType, BooleanType, IntegerType, LongType, FloatType
 
 
