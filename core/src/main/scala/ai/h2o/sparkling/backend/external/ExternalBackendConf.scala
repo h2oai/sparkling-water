@@ -103,18 +103,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
     * @return H2O Configuration
     */
   def setH2OCluster(host: String, port: Int): H2OConf = {
-    logWarning(
-      "The method 'setH2OCluster(host: String, port: Int)' also sets backend to external. " +
-        "This side effect will be removed in the version 3.32.")
-    setExternalClusterMode()
     set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, host + ":" + port)
   }
 
   def setH2OCluster(hostPort: String): H2OConf = {
-    logWarning(
-      "The method 'setH2OCluster(hostPort: String)' also sets backend to external. " +
-        "This side effect will be removed in the version in 3.32.")
-    setExternalClusterMode()
     set(PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, hostPort)
   }
 

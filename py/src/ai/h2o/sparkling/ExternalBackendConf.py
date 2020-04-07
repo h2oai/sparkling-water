@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-import warnings
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 
 
@@ -105,8 +104,6 @@ class ExternalBackendConf(SharedBackendConfUtils):
     #
 
     def setH2OCluster(self, ip, port):
-        warnings.warn("The method 'setH2OCluster(ip, port)' also sets backend to external. "
-                      "This side effect will be removed in the version in 3.32.")
         self._jconf.setH2OCluster(ip, port)
         return self
 
