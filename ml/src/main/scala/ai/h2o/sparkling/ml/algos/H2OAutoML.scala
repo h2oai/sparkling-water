@@ -33,7 +33,6 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, _}
-import water.support.ModelSerializationSupport
 
 import scala.collection.JavaConverters._
 import scala.util.control.NoStackTrace
