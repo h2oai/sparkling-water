@@ -16,19 +16,19 @@
 #
 
 import h2o
-import sys
+import numbers
 import warnings
+from ai.h2o.sparkling.H2OConf import H2OConf
+from ai.h2o.sparkling.Initializer import Initializer
 from h2o.frame import H2OFrame
 from h2o.utils.typechecks import assert_is_type, Enum
 from pyspark.ml.util import _jvm
 from pyspark.rdd import RDD
+from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import *
-from pyspark.sql import SparkSession
 from pyspark.sql.types import StringType, BooleanType, IntegerType, LongType, FloatType
-from ai.h2o.sparkling.Initializer import Initializer
-from ai.h2o.sparkling.H2OConf import H2OConf
-import numbers
+
 
 class H2OContext(object):
 
@@ -59,21 +59,16 @@ class H2OContext(object):
 
 
     @staticmethod
-    def getOrCreate(spark=None, conf=None):
+    def getOrCreate(conf=None):
         """
         Get existing or create new H2OContext based on provided H2O configuration. If the conf parameter is set then
         configuration from it is used. Otherwise the configuration properties passed to Sparkling Water are used.
         If the values are not found the default values are used in most of the cases. The default cluster mode
         is internal, ie. spark.ext.h2o.external.cluster.mode=false
 
-        :param spark: Spark Context or Spark Session or H2OConf
         :param conf: H2O configuration as instance of H2OConf
         :return:  instance of H2OContext
         """
-
-        if spark is not None and not isinstance(spark, H2OConf):
-            warnings.warn("Method getOrCreate with spark argument is deprecated. Please use either just getOrCreate() or if you need "
-                          "to pass extra H2OConf, use getOrCreate(conf). The spark argument will be removed in release 3.32.")
 
         # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
         # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not
@@ -83,9 +78,7 @@ class H2OContext(object):
             jvm = activeSession.sparkContext._jvm
             jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
 
-        if spark is not None and isinstance(spark, H2OConf):
-            selected_conf = spark
-        elif conf is not None:
+        if conf is not None:
             selected_conf = conf
         else:
             selected_conf = H2OConf()

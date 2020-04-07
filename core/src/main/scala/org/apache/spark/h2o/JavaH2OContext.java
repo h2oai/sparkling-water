@@ -20,11 +20,9 @@ package org.apache.spark.h2o;
 import ai.h2o.sparkling.backend.converters.SupportedRDD$;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
 import scala.Option;
 import water.Key;
 import water.fvec.Frame;
@@ -243,37 +241,6 @@ public class JavaH2OContext {
    */
   public static JavaH2OContext getOrCreate(H2OConf conf) {
     return new JavaH2OContext(H2OContext.getOrCreate(conf));
-  }
-
-  private static JavaH2OContext deprecationWarn(
-      JavaH2OContext jhc, String oldParams, String newParams) {
-    jhc.hc
-        .log()
-        .warn(
-            "Method 'getOrCreate("
-                + oldParams
-                + ")' is deprecated and will be removed in release 3.32. Use"
-                + "'getOrCreate("
-                + newParams
-                + ")' instead!");
-    return jhc;
-  }
-
-  public static JavaH2OContext getOrCreate(JavaSparkContext jsc) {
-    return deprecationWarn(getOrCreate(), "JavaSparkContext jsc", "");
-  }
-
-  public static JavaH2OContext getOrCreate(JavaSparkContext jsc, H2OConf conf) {
-    return deprecationWarn(getOrCreate(), "JavaSparkContext jsc, H2OConf conf", "H2OConf conf");
-  }
-
-  public static JavaH2OContext getOrCreate(SparkSession sparkSession) {
-    return deprecationWarn(getOrCreate(), "SparkSession sparkSession", "");
-  }
-
-  public static JavaH2OContext getOrCreate(SparkSession sparkSession, H2OConf conf) {
-    return deprecationWarn(
-        getOrCreate(), "SparkSession sparkSession, H2OConf conf", "H2OConf conf");
   }
 
   public String toString() {

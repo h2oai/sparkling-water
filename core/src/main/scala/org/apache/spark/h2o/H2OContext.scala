@@ -24,13 +24,11 @@ import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConv
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.util.ShutdownHookManager
 import water._
 import water.util.PrettyPrint
@@ -502,26 +500,6 @@ object H2OContext extends Logging {
     */
   def getOrCreate(): H2OContext = {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
-  }
-
-  @DeprecatedMethod("getOrCreate(conf: H2OConf)", "3.32")
-  def getOrCreate(sparkSession: SparkSession, conf: H2OConf): H2OContext = {
-    getOrCreate(conf)
-  }
-
-  @DeprecatedMethod("getOrCreate(conf: H2OConf)", "3.32")
-  def getOrCreate(sc: SparkContext, conf: H2OConf): H2OContext = {
-    getOrCreate(conf)
-  }
-
-  @DeprecatedMethod("getOrCreate()", "3.32")
-  def getOrCreate(sparkSession: SparkSession): H2OContext = {
-    getOrCreate()
-  }
-
-  @DeprecatedMethod("getOrCreate()", "3.32")
-  def getOrCreate(sc: SparkContext): H2OContext = {
-    getOrCreate()
   }
 
   private def logStartingInfo(conf: H2OConf): Unit = {
