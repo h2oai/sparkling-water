@@ -64,7 +64,6 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",

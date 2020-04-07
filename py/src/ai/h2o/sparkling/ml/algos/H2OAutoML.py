@@ -50,7 +50,6 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=5,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",

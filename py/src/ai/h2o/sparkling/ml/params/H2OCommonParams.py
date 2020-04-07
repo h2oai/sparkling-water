@@ -15,13 +15,10 @@
 # limitations under the License.
 #
 
-import warnings
-
-from h2o.utils.typechecks import assert_is_type
-from pyspark.ml.param import *
-
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from h2o.utils.typechecks import assert_is_type
+from pyspark.ml.param import *
 
 
 class H2OCommonParams(H2OMOJOAlgoSharedParams):
@@ -80,11 +77,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
     def getNfolds(self):
         return self.getOrDefault(self.nfolds)
 
-    def getAllStringColumnsToCategorical(self):
-        warnings.warn("The 'getAllStringColumnsToCategorical' method has been deprecated without replacement."
-                      "The method will be removed in the version 3.32.", DeprecationWarning)
-        return False
-
     def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
 
@@ -105,11 +97,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
 
     def setNfolds(self, value):
         return self._set(nfolds=value)
-
-    def setAllStringColumnsToCategorical(self, value):
-        warnings.warn("The 'setAllStringColumnsToCategorical' method has been deprecated without replacement."
-                      "The method will be removed in the version 3.32.", DeprecationWarning)
-        return self
 
     def setColumnsToCategorical(self, value, *args):
         assert_is_type(value, [str], str)

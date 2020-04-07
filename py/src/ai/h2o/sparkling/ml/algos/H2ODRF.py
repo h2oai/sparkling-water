@@ -54,7 +54,6 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",

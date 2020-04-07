@@ -46,7 +46,6 @@ class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
                  splitRatio=1.0,
                  seed=-1,
                  nfolds=0,
-                 allStringColumnsToCategorical=True,
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
