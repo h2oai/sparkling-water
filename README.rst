@@ -174,8 +174,7 @@ Contributing
 ~~~~~~~~~~~~
 
 Look at our `list of JIRA
-tasks <https://0xdata.atlassian.net/issues/?filter=13600>`__ for new
-contributors or send your idea to support@h2o.ai.
+tasks <https://0xdata.atlassian.net/projects/SW/issues>`__ or send your idea to support@h2o.ai.
 
 Filing Bug Reports and Feature Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
