@@ -23,11 +23,11 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
-import org.spark_project.jetty.client.HttpClient
-import org.spark_project.jetty.proxy.ProxyServlet.Transparent
-import org.spark_project.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
-import org.spark_project.jetty.servlet.{ServletContextHandler, ServletHandler}
-import org.spark_project.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
+import org.eclipse.jetty.client.HttpClient
+import org.eclipse.jetty.proxy.ProxyServlet.Transparent
+import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 object ProxyStarter extends Logging {
   def startFlowProxy(conf: H2OConf): URI = {
