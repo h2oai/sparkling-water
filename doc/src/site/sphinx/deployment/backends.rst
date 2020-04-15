@@ -211,7 +211,6 @@ To connect to this external cluster, run the following commands:
                         .setExternalClusterMode()
                         .useManualClusterStart()
                         .setH2OCluster("representant_ip", representant_port)
-                        .setClusterSize(3)
                         .setCloudName("test")
             val hc = H2OContext.getOrCreate(conf)
 
@@ -226,7 +225,6 @@ To connect to this external cluster, run the following commands:
                     .setExternalClusterMode()
                     .useManualClusterStart()
                     .setH2OCluster("representant_ip", representant_port)
-                    .setClusterSize(3)
                     .setCloudName("test")
             hc = H2OContext.getOrCreate(conf)
 
