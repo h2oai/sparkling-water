@@ -59,7 +59,8 @@ shadowJar {
   relocate 'com.google.common', 'ai.h2o.com.google.common'
   relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
   relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
-
+  relocate 'scala.compat', 'ai.h2o.scala.compat'
+  relocate 'scala.concurrent', 'ai.h2o.scala.concurrent'
   from "$project.buildDir/reports/" include '**/*'
   exclude 'www/flow/packs/test-*/**'
 
