@@ -44,7 +44,8 @@ private[backend] class H2ORDD[A <: Product: TypeTag: ClassTag](val frame: H2OFra
   extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes())
   with H2OSparkEntity {
 
-  override val expectedTypes: Array[ExpectedType] = DataTypeConverter.expectedTypesFromClasses(productType.memberClasses)
+  override val expectedTypes: Array[ExpectedType] =
+    DataTypeConverter.expectedTypesFromClasses(productType.memberClasses)
 
   private val h2oConf = hc.getConf
   private val sparkTimeZone = SparkTimeZone.current()

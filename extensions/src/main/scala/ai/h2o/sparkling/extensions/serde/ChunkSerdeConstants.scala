@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.extensions.serde
 
 trait ChunkSerdeConstants {
+
   /**
     * Meta Information used to specify whether we should expect sparse or dense vector
     */

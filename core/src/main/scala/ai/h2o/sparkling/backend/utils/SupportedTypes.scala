@@ -96,8 +96,10 @@ private[backend] object SupportedTypes extends Enumeration {
       onNAreturn(false),
       typeOf[Boolean])
   val Byte = SimpleType[scala.Byte](Vec.T_NUM, ExpectedTypes.Byte, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
-  val Short = SimpleType[scala.Short](Vec.T_NUM, ExpectedTypes.Short, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
-  val Integer = SimpleType[scala.Int](Vec.T_NUM, ExpectedTypes.Int, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
+  val Short =
+    SimpleType[scala.Short](Vec.T_NUM, ExpectedTypes.Short, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
+  val Integer =
+    SimpleType[scala.Int](Vec.T_NUM, ExpectedTypes.Int, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
   val Long = SimpleType[scala.Long](Vec.T_NUM, ExpectedTypes.Long, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
   val Float =
     SimpleType[scala.Float](

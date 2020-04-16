@@ -21,11 +21,13 @@ import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import water.fvec.Vec
 
 object SerdeUtils {
-  private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[ExpectedType], vecElemSizes: Array[Int]): Array[Byte] = {
+  private[sparkling] def expectedTypesToVecTypes(
+      expectedTypes: Array[ExpectedType],
+      vecElemSizes: Array[Int]): Array[Byte] = {
     var vecCount = 0
     expectedTypes.flatMap {
       case ExpectedTypes.Bool | ExpectedTypes.Byte | ExpectedTypes.Char | ExpectedTypes.Short | ExpectedTypes.Int |
-           ExpectedTypes.Long | ExpectedTypes.Float | ExpectedTypes.Double =>
+          ExpectedTypes.Long | ExpectedTypes.Float | ExpectedTypes.Double =>
         Array(Vec.T_NUM)
       case ExpectedTypes.String => Array(Vec.T_STR)
       case ExpectedTypes.Categorical => Array(Vec.T_CAT)
