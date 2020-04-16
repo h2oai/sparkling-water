@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor
 import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.converters.DataTypeConverter
 import ai.h2o.sparkling.backend.utils.ProductType
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import ai.h2o.sparkling.{H2OFrame, SparkTimeZone}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.{Partition, TaskContext}
@@ -43,7 +44,7 @@ private[backend] class H2ORDD[A <: Product: TypeTag: ClassTag](val frame: H2OFra
   extends H2OAwareEmptyRDD[A](hc.sparkContext, hc.getH2ONodes())
   with H2OSparkEntity {
 
-  override val expectedTypes: Array[Byte] = DataTypeConverter.expectedTypesFromClasses(productType.memberClasses)
+  override val expectedTypes: Array[ExpectedType] = DataTypeConverter.expectedTypesFromClasses(productType.memberClasses)
 
   private val h2oConf = hc.getConf
   private val sparkTimeZone = SparkTimeZone.current()

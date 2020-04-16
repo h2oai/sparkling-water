@@ -17,20 +17,20 @@
 
 package ai.h2o.sparkling.extensions.serde
 
-import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants._
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import water.fvec.Vec
 
 object SerdeUtils {
-  private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Byte] = {
+  private[sparkling] def expectedTypesToVecTypes(expectedTypes: Array[ExpectedType], vecElemSizes: Array[Int]): Array[Byte] = {
     var vecCount = 0
     expectedTypes.flatMap {
-      case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-          EXPECTED_FLOAT | EXPECTED_DOUBLE =>
+      case ExpectedTypes.Bool | ExpectedTypes.Byte | ExpectedTypes.Char | ExpectedTypes.Short | ExpectedTypes.Int |
+           ExpectedTypes.Long | ExpectedTypes.Float | ExpectedTypes.Double =>
         Array(Vec.T_NUM)
-      case EXPECTED_STRING => Array(Vec.T_STR)
-      case EXPECTED_CATEGORICAL => Array(Vec.T_CAT)
-      case EXPECTED_TIMESTAMP => Array(Vec.T_TIME)
-      case EXPECTED_VECTOR =>
+      case ExpectedTypes.String => Array(Vec.T_STR)
+      case ExpectedTypes.Categorical => Array(Vec.T_CAT)
+      case ExpectedTypes.Timestamp => Array(Vec.T_TIME)
+      case ExpectedTypes.Vector =>
         val result = Array.fill(vecElemSizes(vecCount))(Vec.T_NUM)
         vecCount += 1
         result

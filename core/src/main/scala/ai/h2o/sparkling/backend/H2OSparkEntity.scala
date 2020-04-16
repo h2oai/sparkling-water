@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.Partition
 
 /**
@@ -26,7 +27,7 @@ import org.apache.spark.Partition
 private[backend] trait H2OSparkEntity {
   val frame: H2OFrame
   val selectedColumnIndices: Array[Int]
-  val expectedTypes: Array[Byte]
+  val expectedTypes: Array[ExpectedType]
 
   val frameId: String = frame.frameId
   val numChunks: Int = frame.chunks.length

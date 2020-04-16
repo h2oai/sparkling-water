@@ -18,7 +18,8 @@
 package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.backend.utils.SupportedTypes
-import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
+import ai.h2o.sparkling.extensions.serde.{ChunkSerdeConstants, ExpectedTypes}
 import org.apache.spark.ExposeUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -28,7 +29,7 @@ import water.parser.{BufferedString, PreviewParseWriter}
 
 private[backend] object DataTypeConverter {
 
-  private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, Byte] = {
+  private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, ExpectedType] = {
     val stringTypeIndices = for {
       (field, index) <- schema.fields.zipWithIndex
       if field.dataType == StringType
@@ -41,11 +42,11 @@ private[backend] object DataTypeConverter {
 
       val preview = CategoricalPreviewWriter.deserialize(serializedPreview)
       preview.guessTypes().map {
-        case Vec.T_CAT => ChunkSerdeConstants.EXPECTED_CATEGORICAL
-        case _ => ChunkSerdeConstants.EXPECTED_STRING
+        case Vec.T_CAT => ExpectedTypes.Categorical
+        case _ => ExpectedTypes.String
       }
     } else {
-      stringTypeIndices.map(_ => Vec.T_STR)
+      stringTypeIndices.map(_ => ExpectedTypes.String)
     }
 
     stringTypeIndices.zip(types).toMap
@@ -82,44 +83,44 @@ private[backend] object DataTypeConverter {
     CategoricalPreviewWriter.serialize(result)
   }
 
-  def determineExpectedTypes(rdd: RDD[Row], schema: StructType): Array[Byte] = {
+  def determineExpectedTypes(rdd: RDD[Row], schema: StructType): Array[ExpectedType] = {
     val stringTypes = stringTypesToExpectedTypes(rdd, schema)
     schema.zipWithIndex.map {
       case (field, index) =>
         field.dataType match {
           case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>
-            ChunkSerdeConstants.EXPECTED_DOUBLE
-          case v if ExposeUtils.isAnyVectorUDT(v) => ChunkSerdeConstants.EXPECTED_VECTOR
+            ExpectedTypes.Double
+          case v if ExposeUtils.isAnyVectorUDT(v) => ExpectedTypes.Vector
           case StringType => stringTypes(index)
           case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
         }
     }.toArray
   }
 
-  def expectedTypesFromClasses(classes: Array[Class[_]]): Array[Byte] = {
+  def expectedTypesFromClasses(classes: Array[Class[_]]): Array[ExpectedType] = {
     classes.map { clazz =>
       if (clazz == classOf[java.lang.Boolean]) {
-        ChunkSerdeConstants.EXPECTED_BOOL
+        ExpectedTypes.Bool
       } else if (clazz == classOf[java.lang.Byte]) {
-        ChunkSerdeConstants.EXPECTED_BYTE
+        ExpectedTypes.Byte
       } else if (clazz == classOf[java.lang.Short]) {
-        ChunkSerdeConstants.EXPECTED_SHORT
+        ExpectedTypes.Short
       } else if (clazz == classOf[java.lang.Character]) {
-        ChunkSerdeConstants.EXPECTED_CHAR
+        ExpectedTypes.Char
       } else if (clazz == classOf[java.lang.Integer]) {
-        ChunkSerdeConstants.EXPECTED_INT
+        ExpectedTypes.Int
       } else if (clazz == classOf[java.lang.Long]) {
-        ChunkSerdeConstants.EXPECTED_LONG
+        ExpectedTypes.Long
       } else if (clazz == classOf[java.lang.Float]) {
-        ChunkSerdeConstants.EXPECTED_FLOAT
+        ExpectedTypes.Float
       } else if (clazz == classOf[java.lang.Double]) {
-        ChunkSerdeConstants.EXPECTED_DOUBLE
+        ExpectedTypes.Double
       } else if (clazz == classOf[java.lang.String]) {
-        ChunkSerdeConstants.EXPECTED_STRING
+        ExpectedTypes.String
       } else if (clazz == classOf[java.sql.Timestamp] || clazz == classOf[java.sql.Date]) {
-        ChunkSerdeConstants.EXPECTED_TIMESTAMP
+        ExpectedTypes.Timestamp
       } else if (clazz == classOf[org.apache.spark.ml.linalg.Vector]) {
-        ChunkSerdeConstants.EXPECTED_VECTOR
+        ExpectedTypes.Vector
       } else {
         throw new RuntimeException("Unsupported class: " + clazz)
       }

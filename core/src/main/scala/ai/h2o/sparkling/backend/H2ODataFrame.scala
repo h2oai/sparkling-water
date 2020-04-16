@@ -22,6 +22,7 @@ import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.converters.DataTypeConverter
 import ai.h2o.sparkling.backend.utils.ReflectionUtils
 import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
@@ -56,7 +57,7 @@ private[backend] class H2ODataFrame(val frame: H2OFrame, val requiredColumns: Ar
     }
   }
 
-  override val expectedTypes: Array[Byte] = {
+  override val expectedTypes: Array[ExpectedType] = {
     val javaClasses = selectedColumnIndices.map(indexToSupportedType(_).javaClass)
     DataTypeConverter.expectedTypesFromClasses(javaClasses)
   }

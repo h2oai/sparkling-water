@@ -16,8 +16,9 @@
  */
 package ai.h2o.sparkling.backend.utils
 
-import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants._
 import ai.h2o.sparkling.backend.utils.ReflectionUtils.NameOfType
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
 import water.fvec.Vec
@@ -34,7 +35,7 @@ private[backend] object SupportedTypes extends Enumeration {
   trait SupportedType {
     def vecType: VecType
 
-    def expectedType: Byte
+    def expectedType: ExpectedType
 
     def sparkType: DataType
 
@@ -51,7 +52,7 @@ private[backend] object SupportedTypes extends Enumeration {
 
   final case class SimpleType[T: TypeTag](
       vecType: VecType,
-      expectedType: Byte,
+      expectedType: ExpectedType,
       sparkType: DataType,
       javaClass: Class[_], // note, not always T, since T is scala class
       ifMissing: String => T,
@@ -64,7 +65,7 @@ private[backend] object SupportedTypes extends Enumeration {
   final case class OptionalType[T: TypeTag](contentType: SimpleType[T]) extends SupportedType {
     override def vecType: VecType = contentType.vecType
 
-    override def expectedType: VecType = contentType.expectedType
+    override def expectedType: ExpectedType = contentType.expectedType
 
     override def sparkType: DataType = contentType.sparkType
 
@@ -89,19 +90,19 @@ private[backend] object SupportedTypes extends Enumeration {
   val Boolean =
     SimpleType[scala.Boolean](
       Vec.T_NUM,
-      EXPECTED_BOOL,
+      ExpectedTypes.Bool,
       BooleanType,
       classOf[jl.Boolean],
       onNAreturn(false),
       typeOf[Boolean])
-  val Byte = SimpleType[scala.Byte](Vec.T_NUM, EXPECTED_BYTE, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
-  val Short = SimpleType[scala.Short](Vec.T_NUM, EXPECTED_SHORT, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
-  val Integer = SimpleType[scala.Int](Vec.T_NUM, EXPECTED_INT, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
-  val Long = SimpleType[scala.Long](Vec.T_NUM, EXPECTED_LONG, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
+  val Byte = SimpleType[scala.Byte](Vec.T_NUM, ExpectedTypes.Byte, ByteType, classOf[jl.Byte], onNAthrow, typeOf[Byte])
+  val Short = SimpleType[scala.Short](Vec.T_NUM, ExpectedTypes.Short, ShortType, classOf[jl.Short], onNAthrow, typeOf[Short])
+  val Integer = SimpleType[scala.Int](Vec.T_NUM, ExpectedTypes.Int, IntegerType, classOf[jl.Integer], onNAthrow, typeOf[Int])
+  val Long = SimpleType[scala.Long](Vec.T_NUM, ExpectedTypes.Long, LongType, classOf[jl.Long], onNAthrow, typeOf[Long])
   val Float =
     SimpleType[scala.Float](
       Vec.T_NUM,
-      EXPECTED_FLOAT,
+      ExpectedTypes.Float,
       FloatType,
       classOf[jl.Float],
       onNAreturn(scala.Float.NaN),
@@ -109,19 +110,19 @@ private[backend] object SupportedTypes extends Enumeration {
   val Double =
     SimpleType[scala.Double](
       Vec.T_NUM,
-      EXPECTED_DOUBLE,
+      ExpectedTypes.Double,
       DoubleType,
       classOf[jl.Double],
       onNAreturn(scala.Double.NaN),
       typeOf[Double])
   val Timestamp =
-    SimpleType[js.Timestamp](Vec.T_TIME, EXPECTED_TIMESTAMP, TimestampType, classOf[js.Timestamp], onNAthrow)
-  val Date = SimpleType[js.Date](Vec.T_TIME, EXPECTED_TIMESTAMP, DateType, classOf[js.Date], onNAthrow)
+    SimpleType[js.Timestamp](Vec.T_TIME, ExpectedTypes.Timestamp, TimestampType, classOf[js.Timestamp], onNAthrow)
+  val Date = SimpleType[js.Date](Vec.T_TIME, ExpectedTypes.Timestamp, DateType, classOf[js.Date], onNAthrow)
   val String =
-    SimpleType[String](Vec.T_STR, EXPECTED_STRING, StringType, classOf[String], onNAreturn(null), typeOf[String])
+    SimpleType[String](Vec.T_STR, ExpectedTypes.String, StringType, classOf[String], onNAreturn(null), typeOf[String])
   val UTF8 = SimpleType[UTF8String](
     Vec.T_STR,
-    EXPECTED_STRING,
+    ExpectedTypes.String,
     StringType,
     classOf[String],
     onNAreturn(null),
