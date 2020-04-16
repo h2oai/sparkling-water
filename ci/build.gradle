@@ -7,11 +7,16 @@ defaultTasks 'createDockerFile'
 description = "Create a Docker file for jenkins tests"
 
 ext {
-  outputFile = file("$projectDir//docker/regular-tests/Dockerfile")
+  outputFile = file("$buildDir/docker/Dockerfile")
   terraformDownloadUrl = "https://releases.hashicorp.com/terraform/${terraformVersion}/terraform_${terraformVersion}_linux_amd64.zip"
 }
 
-task createDockerfile(type: Dockerfile) {
+task copyFiles(type: Copy) {
+  from "$projectDir/docker/conf"
+  into "$buildDir/docker/conf"
+}
+
+task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76'
 
@@ -97,3 +102,12 @@ task cleanDockerfile(type: Delete) {
 }
 
 clean.dependsOn cleanDockerfile
+
+task loginToDockerRepo {
+  doLast {
+    def registryId = file("$rootDir/ci/aws/terraform/infra.state").readLines().find(it.startsWith("docker_registry_id")).trim().split(":")[1]
+    exec {
+      commandLine "\$(aws ecr get-login --region us-west-2 --no-include-email --registry-ids ${registryId})".split(" ")
+    }
+  }
+}

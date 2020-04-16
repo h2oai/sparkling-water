@@ -60,6 +60,12 @@ py/__pycache__/
 py/.pytest_cache
 
 # Terraform
+
+ci/aws/terraform/modules/jenkins/.terraform/
+ci/aws/terraform/modules/network/.terraform/
+ci/aws/terraform/modules/ecr/.terraform/
+ci/aws/terraform/.terraform/
+
 templates/src/terraform/aws/.terraform/
 templates/src/terraform/aws/.terraform.tfstate.lock.info
 templates/src/terraform/aws/terraform.tfstate
