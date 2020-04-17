@@ -39,7 +39,7 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
         return self._java_obj.getWithDetailedPredictionCol()
 
     def getFeaturesCols(self):
-        return self._java_obj.getFeaturesCols()
+        return list(self._java_obj.getFeaturesCols())
 
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
