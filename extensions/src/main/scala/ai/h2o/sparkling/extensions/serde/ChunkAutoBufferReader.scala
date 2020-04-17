@@ -20,6 +20,7 @@ package ai.h2o.sparkling.extensions.serde
 import java.io.{Closeable, InputStream}
 import java.sql.Timestamp
 
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import water.AutoBuffer
 import water.fvec.{ChunkUtils, NewChunk}
 
@@ -32,7 +33,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int]): Unit = {
     val vecTypes = SerdeUtils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
@@ -43,15 +44,15 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
       var typeIdx = 0
       while (typeIdx < expectedTypes.length) {
         expectedTypes(typeIdx) match {
-          case EXPECTED_BOOL | EXPECTED_BYTE => addToChunk(chunks(startPositions(typeIdx)), readByte())
-          case EXPECTED_CHAR => addToChunk(chunks(startPositions(typeIdx)), readChar())
-          case EXPECTED_SHORT => addToChunk(chunks(startPositions(typeIdx)), readShort())
-          case EXPECTED_INT | EXPECTED_CATEGORICAL => addToChunk(chunks(startPositions(typeIdx)), readInt())
-          case EXPECTED_LONG | EXPECTED_TIMESTAMP => addToChunk(chunks(startPositions(typeIdx)), readLong())
-          case EXPECTED_FLOAT => addToChunk(chunks(startPositions(typeIdx)), readFloat())
-          case EXPECTED_DOUBLE => addToChunk(chunks(startPositions(typeIdx)), readDouble())
-          case EXPECTED_STRING => addToChunk(chunks(startPositions(typeIdx)), readString())
-          case EXPECTED_VECTOR =>
+          case ExpectedTypes.Bool | ExpectedTypes.Byte => addToChunk(chunks(startPositions(typeIdx)), readByte())
+          case ExpectedTypes.Char => addToChunk(chunks(startPositions(typeIdx)), readChar())
+          case ExpectedTypes.Short => addToChunk(chunks(startPositions(typeIdx)), readShort())
+          case ExpectedTypes.Int | ExpectedTypes.Categorical => addToChunk(chunks(startPositions(typeIdx)), readInt())
+          case ExpectedTypes.Long | ExpectedTypes.Timestamp => addToChunk(chunks(startPositions(typeIdx)), readLong())
+          case ExpectedTypes.Float => addToChunk(chunks(startPositions(typeIdx)), readFloat())
+          case ExpectedTypes.Double => addToChunk(chunks(startPositions(typeIdx)), readDouble())
+          case ExpectedTypes.String => addToChunk(chunks(startPositions(typeIdx)), readString())
+          case ExpectedTypes.Vector =>
             isLastNAVar = false
             val isSparse = buffer.getZ
             if (isSparse) addSparseVectorToChunk(chunks, elementSizes(typeIdx), startPositions(typeIdx))
@@ -130,16 +131,14 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     startPositions
   }
 
-  private def getElementSizes(expectedTypes: Array[Byte], vecElemSizes: Array[Int]): Array[Int] = {
+  private def getElementSizes(expectedTypes: Array[ExpectedType], vecElemSizes: Array[Int]): Array[Int] = {
     var vecCount = 0
     expectedTypes.map {
-      case EXPECTED_BOOL | EXPECTED_BYTE | EXPECTED_CHAR | EXPECTED_SHORT | EXPECTED_INT | EXPECTED_LONG |
-          EXPECTED_FLOAT | EXPECTED_DOUBLE | EXPECTED_STRING | EXPECTED_CATEGORICAL | EXPECTED_TIMESTAMP =>
-        1
-      case EXPECTED_VECTOR =>
+      case ExpectedTypes.Vector =>
         val result = vecElemSizes(vecCount)
         vecCount += 1
         result
+      case _ => 1
     }
   }
 

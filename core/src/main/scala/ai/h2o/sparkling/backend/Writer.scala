@@ -25,7 +25,7 @@ import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3
 import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneConverter}
-import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ChunkSerdeConstants, SerdeUtils}
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ExpectedTypes, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.{H2OConf, RDD}
@@ -144,8 +144,8 @@ private[backend] object Writer {
             case DoubleType => con.put(row.getDouble(idxField))
             case StringType =>
               metadata.expectedTypes(idxField) match {
-                case ChunkSerdeConstants.EXPECTED_STRING => con.put(row.getString(idxField))
-                case ChunkSerdeConstants.EXPECTED_CATEGORICAL =>
+                case ExpectedTypes.String => con.put(row.getString(idxField))
+                case ExpectedTypes.Categorical =>
                   val valueIndex = domainBuilder.addStringToDomain(row.getString(idxField), idxField)
                   con.put(valueIndex)
               }

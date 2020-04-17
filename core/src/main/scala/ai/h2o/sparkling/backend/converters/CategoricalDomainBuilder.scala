@@ -17,17 +17,18 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.extensions.serde.ChunkSerdeConstants
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 
 import scala.collection.mutable
 
 /**
   * This class is not thread safe.
   */
-private[backend] class CategoricalDomainBuilder(expectedTypes: Array[Byte]) {
+private[backend] class CategoricalDomainBuilder(expectedTypes: Array[ExpectedType]) {
 
   private def categoricalIndexes: Array[Int] =
-    for ((eType, index) <- expectedTypes.zipWithIndex if eType == ChunkSerdeConstants.EXPECTED_CATEGORICAL) yield index
+    for ((eType, index) <- expectedTypes.zipWithIndex if eType == ExpectedTypes.Categorical) yield index
 
   private val indexMapping = categoricalIndexes.zipWithIndex.toMap
 

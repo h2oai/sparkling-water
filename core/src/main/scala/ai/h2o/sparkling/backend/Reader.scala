@@ -23,6 +23,7 @@ import ai.h2o.sparkling.backend.converters.TimeZoneConversions
 import ai.h2o.sparkling.backend.utils.SupportedTypes
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import ai.h2o.sparkling.extensions.serde.ChunkAutoBufferReader
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.h2o.H2OConf
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -31,7 +32,7 @@ private[backend] class Reader(
     chunkIdx: Int,
     numRows: Int,
     nodeDesc: NodeDesc,
-    expectedTypes: Array[Byte],
+    expectedTypes: Array[ExpectedType],
     selectedColumnIndices: Array[Int],
     conf: H2OConf,
     protected val sparkTimeZone: TimeZone)
