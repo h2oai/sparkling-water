@@ -18,18 +18,6 @@
 package ai.h2o.sparkling.extensions.serde
 
 trait ChunkSerdeConstants {
-  val EXPECTED_BOOL: Byte = 0
-  val EXPECTED_BYTE: Byte = 1
-  val EXPECTED_CHAR: Byte = 2
-  val EXPECTED_SHORT: Byte = 3
-  val EXPECTED_INT: Byte = 4
-  val EXPECTED_FLOAT: Byte = 5
-  val EXPECTED_LONG: Byte = 6
-  val EXPECTED_DOUBLE: Byte = 7
-  val EXPECTED_STRING: Byte = 8
-  val EXPECTED_TIMESTAMP: Byte = 9
-  val EXPECTED_VECTOR: Byte = 10
-  val EXPECTED_CATEGORICAL: Byte = 11
 
   /**
     * Meta Information used to specify whether we should expect sparse or dense vector

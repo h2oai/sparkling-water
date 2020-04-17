@@ -14,16 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend
 
-import java.util.TimeZone
+package ai.h2o.sparkling.extensions.serde
 
-import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
-import org.apache.spark.h2o.H2OConf
-
-case class WriterMetadata(
-    conf: H2OConf,
-    frameId: String,
-    expectedTypes: Array[ExpectedType],
-    maxVectorSizes: Array[Int],
-    timezone: TimeZone)
+object ExpectedTypes extends Enumeration {
+  type ExpectedType = Value
+  val Bool, Byte, Char, Short, Int, Float, Long, Double, String, Timestamp, Vector, Categorical = Value
+}

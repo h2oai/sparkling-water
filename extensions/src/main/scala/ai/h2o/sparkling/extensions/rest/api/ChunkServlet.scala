@@ -17,7 +17,8 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants}
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
+import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferReader, ChunkAutoBufferWriter, ChunkSerdeConstants, ExpectedTypes}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
@@ -34,7 +35,7 @@ final class ChunkServlet extends ServletBase {
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       selectedColumnIndices: Array[Int],
       compression: String) {
 
@@ -43,7 +44,6 @@ final class ChunkServlet extends ServletBase {
       if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName' doesn't exist.")
       validateChunkId(frame)
       validateSelectedColumns(frame)
-      validateExpectedTypes(expectedTypes, frame)
       validateExpectedTypesAndSelectedColumnsCompatibility(frame)
       Compression.validateCompressionType(compression)
     }
@@ -93,23 +93,11 @@ final class ChunkServlet extends ServletBase {
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
-      val expectedTypes = Base64Encoding.decode(expectedTypesString)
+      val expectedTypes = Base64Encoding.decode(expectedTypesString).map(ExpectedTypes(_))
       val selectedColumnsString = getParameterAsString(request, "selected_columns")
       val selectedColumnIndices = Base64Encoding.decodeToIntArray(selectedColumnsString)
       val compression = getParameterAsString(request, "compression")
       POSTRequestParameters(frameName, numRows, chunkId, expectedTypes, selectedColumnIndices, compression)
-    }
-  }
-
-  def validateExpectedTypes(expectedTypes: Array[Byte], frame: Frame): Unit = {
-    val lowerBound = ChunkSerdeConstants.EXPECTED_BOOL
-    val upperBound = ChunkSerdeConstants.EXPECTED_CATEGORICAL
-    for (i <- expectedTypes.indices) {
-      if (expectedTypes(i) < lowerBound || expectedTypes(i) > upperBound) {
-        val message = s"Expected Type ('expected_types') at position $i with " +
-          s"the value '${expectedTypes(i)}' is invalid."
-        throw new IllegalArgumentException(message)
-      }
     }
   }
 
@@ -149,19 +137,18 @@ final class ChunkServlet extends ServletBase {
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int],
       compression: String) {
     def validate(): Unit = {
       val frame = DKV.getGet[Frame](this.frameName)
       if (frame == null) throw new IllegalArgumentException(s"A frame with name '$frameName' does not exist.")
-      validateExpectedTypes(expectedTypes, frame)
       validateMaxVecSizes()
       Compression.validateCompressionType(compression)
     }
 
     def validateMaxVecSizes(): Unit = {
-      val numberOfVectorTypes = expectedTypes.filter(_ == ChunkSerdeConstants.EXPECTED_VECTOR).length
+      val numberOfVectorTypes = expectedTypes.filter(_ == ExpectedTypes.Vector).length
       if (numberOfVectorTypes != maxVecSizes.length) {
         val message = s"The number of vector types ($numberOfVectorTypes) doesn't correspond to" +
           s"the number of items in 'maximum_vector_sizes' (${maxVecSizes.length})"
@@ -178,7 +165,7 @@ final class ChunkServlet extends ServletBase {
       val chunkIdString = getParameterAsString(request, "chunk_id")
       val chunkId = chunkIdString.toInt
       val expectedTypesString = getParameterAsString(request, "expected_types")
-      val expectedTypes = Base64Encoding.decode(expectedTypesString)
+      val expectedTypes = Base64Encoding.decode(expectedTypesString).map(ExpectedTypes(_))
       val maximumVectorSizesString = getParameterAsString(request, "maximum_vector_sizes")
       val maxVecSizes = Base64Encoding.decodeToIntArray(maximumVectorSizesString)
       val compression = getParameterAsString(request, "compression")

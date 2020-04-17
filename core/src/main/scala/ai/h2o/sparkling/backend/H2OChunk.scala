@@ -21,6 +21,7 @@ import java.io.{InputStream, OutputStream}
 
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.spark.h2o.H2OConf
@@ -35,9 +36,9 @@ private[sparkling] object H2OChunk extends RestCommunication {
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       selectedColumnsIndices: Array[Int]): InputStream = {
-    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val expectedTypesString = Base64Encoding.encode(expectedTypes.map(_.id.asInstanceOf[Byte]))
     val selectedColumnsIndicesString = Base64Encoding.encode(selectedColumnsIndices)
 
     val parameters = Map(
@@ -59,9 +60,9 @@ private[sparkling] object H2OChunk extends RestCommunication {
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int]): OutputStream = {
-    val expectedTypesString = Base64Encoding.encode(expectedTypes)
+    val expectedTypesString = Base64Encoding.encode(expectedTypes.map(_.id.asInstanceOf[Byte]))
     val maxVecSizesString = Base64Encoding.encode(maxVecSizes)
 
     val parameters = Map(

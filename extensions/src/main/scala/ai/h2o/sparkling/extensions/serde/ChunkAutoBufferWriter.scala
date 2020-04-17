@@ -21,6 +21,7 @@ import java.io.{Closeable, OutputStream}
 import java.sql.Timestamp
 import java.util.UUID
 
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import water.fvec.{ChunkUtils, Frame}
 import water.parser.BufferedString
 import water.{AutoBuffer, DKV}
@@ -33,7 +34,7 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
       frameName: String,
       numRows: Int,
       chunkId: Int,
-      expectedTypes: Array[Byte],
+      expectedTypes: Array[ExpectedType],
       selectedColumnIndices: Array[Int]): Unit = {
     val frame = DKV.getGet[Frame](frameName)
     val chunks = ChunkUtils.getChunks(frame, chunkId)
@@ -48,14 +49,14 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
         } else {
           val chunk = chunks(selectedColumnIndices(i))
           expectedTypes(i) match {
-            case EXPECTED_BOOL | EXPECTED_BYTE => writeByte(chunk.at8(rowIdx).toByte)
-            case EXPECTED_CHAR => writeChar(chunk.at8(rowIdx).toChar)
-            case EXPECTED_SHORT => writeShort(chunk.at8(rowIdx).toShort)
-            case EXPECTED_INT | EXPECTED_CATEGORICAL => writeInt(chunk.at8(rowIdx).toInt)
-            case EXPECTED_FLOAT => writeFloat(chunk.atd(rowIdx).toFloat)
-            case EXPECTED_LONG | EXPECTED_TIMESTAMP => writeLong(chunk.at8(rowIdx))
-            case EXPECTED_DOUBLE => writeDouble(chunk.atd(rowIdx))
-            case EXPECTED_STRING =>
+            case ExpectedTypes.Bool | ExpectedTypes.Byte => writeByte(chunk.at8(rowIdx).toByte)
+            case ExpectedTypes.Char => writeChar(chunk.at8(rowIdx).toChar)
+            case ExpectedTypes.Short => writeShort(chunk.at8(rowIdx).toShort)
+            case ExpectedTypes.Int | ExpectedTypes.Categorical => writeInt(chunk.at8(rowIdx).toInt)
+            case ExpectedTypes.Float => writeFloat(chunk.atd(rowIdx).toFloat)
+            case ExpectedTypes.Long | ExpectedTypes.Timestamp => writeLong(chunk.at8(rowIdx))
+            case ExpectedTypes.Double => writeDouble(chunk.atd(rowIdx))
+            case ExpectedTypes.String =>
               var str: String = null
               if (chunk.vec.isCategorical) str = chunk.vec().domain()(chunk.at8(rowIdx).toInt)
               else if (chunk.vec.isString) str = chunk.atStr(valStr, rowIdx).toString
@@ -116,27 +117,27 @@ final class ChunkAutoBufferWriter(val outputStream: OutputStream) extends Closea
 
   def writeTimestamp(timestamp: Timestamp): Unit = writeLong(timestamp.getTime)
 
-  def writeNA(expectedType: Byte): Unit = expectedType match {
-    case EXPECTED_BOOL | EXPECTED_BYTE =>
+  def writeNA(expectedType: ExpectedType): Unit = expectedType match {
+    case ExpectedTypes.Bool | ExpectedTypes.Byte =>
       buffer.put1(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_CHAR =>
+    case ExpectedTypes.Char =>
       buffer.put2(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_SHORT =>
+    case ExpectedTypes.Short =>
       buffer.put2s(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_INT | EXPECTED_CATEGORICAL =>
+    case ExpectedTypes.Int | ExpectedTypes.Categorical =>
       buffer.putInt(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_TIMESTAMP | EXPECTED_LONG =>
+    case ExpectedTypes.Timestamp | ExpectedTypes.Long =>
       buffer.put8(NUM_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
-    case EXPECTED_FLOAT =>
+    case ExpectedTypes.Float =>
       buffer.put4f(Float.NaN)
-    case EXPECTED_DOUBLE =>
+    case ExpectedTypes.Double =>
       buffer.put8d(Double.NaN)
-    case EXPECTED_STRING =>
+    case ExpectedTypes.String =>
       buffer.putStr(STR_MARKER_NEXT_BYTE_FOLLOWS)
       buffer.put1(MARKER_NA)
     case _ =>
