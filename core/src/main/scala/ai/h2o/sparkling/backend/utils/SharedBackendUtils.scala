@@ -153,6 +153,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-user_name", conf.userName)
       .add("-login_conf", getDistributedFilePath(conf.loginConf))
       .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
+      .add("-allow_insecure_xgboost", conf.isInsecureXGBoostAllowed)
       .buildArgs()
   }
 

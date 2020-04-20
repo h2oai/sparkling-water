@@ -125,6 +125,9 @@ class SharedBackendConf(SharedBackendConfUtils):
     def isInternalSecureConnectionsEnabled(self):
         return self._jconf.isInternalSecureConnectionsEnabled()
 
+    def isInsecureXGBoostAllowed(self):
+        return self._jconf.isInsecureXGBoostAllowed()
+
     def flowDir(self):
         return self._get_option(self._jconf.flowDir())
 
@@ -367,6 +370,14 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setInternalSecureConnectionsDisabled(self):
         self._jconf.setInternalSecureConnectionsDisabled()
+        return self
+
+    def setInsecureXGBoostAllowed(self):
+        self._jconf.setInsecureXGBoostAllowed()
+        return self
+
+    def setInsecureXGBoostDenied(self):
+        self._jconf.setInsecureXGBoostDenied()
         return self
 
     def setFlowDir(self, dir):
