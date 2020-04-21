@@ -27,7 +27,7 @@ pipeline(params) { p ->
     runIntegTests = "true"
     runPyIntegTests = "true"
     buildAgainstH2OBranch = "true"
-    h2oBranch = "rel-yule"
+    h2oBranch = "rel-zahradnik"
     hadoopVersion = "2.7"
     backendMode = "both"
     driverHadoopVersion = "hdp2.2"

@@ -49,7 +49,7 @@ pipeline(params) { p ->
     runIntegTests = "${p.runIntegTests}"
     runPyIntegTests = "${p.runPyIntegTests}"
     buildAgainstH2OBranch = "true"
-    h2oBranch = "rel-yule"
+    h2oBranch = "rel-zahradnik"
     hadoopVersion = "2.7"
     driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
