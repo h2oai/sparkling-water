@@ -201,7 +201,6 @@ class Initializer(object):
         except:
             return False
 
-
     @staticmethod
     def getVersion():
         here = path.abspath(path.dirname(__file__))
