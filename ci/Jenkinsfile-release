@@ -5,17 +5,16 @@
 properties(
         [
                 parameters(
-                        [       booleanParam(name: 'wasH2OUpgraded', defaultValue: true, description: "True if H2O was upgraded in this release or not"),
-                                booleanParam(name: 'updateChangeLog', defaultValue: true, description: "Update change log"),
-                                string(name: 'releaseFor', defaultValue: 'all', description: "For which Spark Major version" +
-                                        " do a release. By default, do release for all supported released versions"),
-                                booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda'),
-                                booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus'),
-                                booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3'),
-                                booleanParam(name: 'updateDocLinks', defaultValue: true, description: 'Update documentation links'),
-                                booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy'),
-                                booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda'),
-                                booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
+                        [booleanParam(name: 'wasH2OUpgraded', defaultValue: true, description: "True if H2O was upgraded in this release or not"),
+                         booleanParam(name: 'updateChangeLog', defaultValue: true, description: "Update change log"),
+                         string(name: 'releaseFor', defaultValue: 'all', description: "For which Spark Major version" +
+                                 " do a release. By default, do release for all supported released versions"),
+                         booleanParam(name: 'buildConda', defaultValue: true, description: 'Build Conda'),
+                         booleanParam(name: 'publishToNexus', defaultValue: true, description: 'Publish to Nexus'),
+                         booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3'),
+                         booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy'),
+                         booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda'),
+                         booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
                         ]
                 )
         ]
@@ -32,48 +31,27 @@ def getS3Path() {
 
 def getParallelStageDefinition(params) {
     return {
-        stage ("Spark ${params.spark}") {
-            node("docker && micro") {
-                docker.withRegistry("http://harbor.h2o.ai") {
+        stage("Spark ${params.spark}") {
+            node("docker") {
+                commons.withSparklingWaterDockerImage {
                     ansiColor('xterm') {
                         timestamps {
                             ws("${env.WORKSPACE}-spark-${params.spark}") {
                                 cleanWs()
                                 checkout scm
-                                withDocker {
-                                    sh "git pull"
-                                    build()(params)
-                                    buildConda()(params)
-                                    publishToNexus()(params)
-                                    publishToS3()(params)
-                                    updateDocLinks()(params)
-                                    publishToPipy()(params)
-                                    publishToConda()(params)
-                                }
+                                sh "git pull"
+                                build()(params)
+                                buildConda()(params)
+                                publishToNexus()(params)
+                                publishToS3()(params)
+                                publishToPipy()(params)
+                                publishToConda()(params)
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-String getDockerImageVersion() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
-    return versionLine.split("=")[1]
-}
-
-def withDocker(code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
-    retryWithDelay(3, 120, {
-        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
-            sh "docker pull harbor.h2o.ai/${image}"
-        }
-    })
-    docker.image(image).inside("--init --privileged --dns 172.16.0.200") {
-        code()
     }
 }
 
@@ -98,7 +76,6 @@ String getNextVersionNoSuffix(params) {
     }
 }
 
-
 String getMajorVersion(params) {
     def v = getVersion(params)
     def split = v.split("-")[0].split("\\.")
@@ -117,20 +94,13 @@ String getPatchVersion(params) {
     return "${split[1]}".toString()
 }
 
-def prepareReleaseNotes(sparkMajorVersions) {
+def prepareReleaseNotes(sparkMajorVersions, commons) {
     def versionNoSparkSuffix = getVersionNoSuffix()
     def path = getS3Path()
-    def links = sparkMajorVersions.collect{ majorVersion ->
+    def links = sparkMajorVersions.collect { majorVersion ->
         "   - for Spark ${majorVersion}: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html>`__"
     }
-    withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]) {
-        sh """
-            # Copy keys
-            rm -rf ~/.ssh
-            mkdir -p ~/.ssh
-            cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-            cp \${GITCONFIG_PATH} ~/.gitconfig
-            """
+    commons.withGitPushCredentials {
         dir("doc/") {
             writeFile file: "release_notes", text: links.join("\n")
             sh "echo >> release_notes"
@@ -189,16 +159,8 @@ def prepareReleaseNotes(sparkMajorVersions) {
     }
 }
 
-def updateNexRelVersion(params) {
-    withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN')]) {
-        sh """
-                        # Copy keys
-                        rm -rf ~/.ssh ~/.gitconfig
-                        mkdir -p ~/.ssh
-                        cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                        cp \${GITCONFIG_PATH} ~/.gitconfig
-                        """
-
+def updateNexRelVersion(params, commons) {
+    commons.withGitPushCredentials {
         def version = getVersionNoSuffix()
         def nextVersion = getNextVersionNoSuffix(params)
         retryWithDelay(6, 10, {
@@ -217,13 +179,11 @@ def updateNexRelVersion(params) {
 // Main entry point to the pipeline and definition of all stages
 //
 def sparkMajorVersions
-node("docker && micro") {
+node("docker") {
     cleanWs()
     checkout scm
-    def versionLine = readFile("gradle.properties")
-            .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
-    sparkMajorVersions = versionLine.split("=")[1].split(" ")
-
+    def commons = load 'ci/commons.groovy'
+    sparkMajorVersions = commons.getSupportedSparkVersions()
     if (params.releaseFor.toString() != "all") {
         sparkMajorVersions = params.releaseFor.split(" ")
     }
@@ -233,65 +193,58 @@ node("docker && micro") {
         config = [:]
         params.each { k, v -> config[k] = v }
         config["spark"] = version
+        config["commons"] = commons
         parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
     }
 
-    updateChangeLogStage(sparkMajorVersions)(params)
+    updateChangeLogStage(sparkMajorVersions)(params, commons)
     parallel(parallelStages)
-    updateRelVersionStage()(params)
+    updateRelVersionStage()(params, commons)
 }
 
 def updateChangeLogStage(sparkMajorVersions) {
-    return { params ->
-        stage('Update Change Log') {
-            if (params.updateChangeLog.toBoolean()) {
-                node("docker && micro") {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        ansiColor('xterm') {
-                            cleanWs()
-                            checkout scm
-                            timestamps {
-                                withDocker {
-                                    prepareReleaseNotes(sparkMajorVersions)
+    return {
+        params, commons ->
+            stage('Update Change Log') {
+                if (params.updateChangeLog.toBoolean()) {
+                    node("docker") {
+                        commons.withSparklingWaterDockerImage {
+                            ansiColor('xterm') {
+                                timestamps {
+                                    prepareReleaseNotes(sparkMajorVersions, commons)
                                 }
                             }
                         }
                     }
                 }
             }
-        }
     }
 }
 
 def updateRelVersionStage() {
-    return { params ->
-        stage('Update Next Release Version') {
-            if (params.releaseOnGithub.toBoolean()) {
-                node("docker && micro") {
-                    docker.withRegistry("http://harbor.h2o.ai") {
-                        ansiColor('xterm') {
-                            timestamps {
-                                cleanWs()
-                                checkout scm
-                                withDocker {
-                                    updateNexRelVersion(params)
+    return {
+        params, commons ->
+            stage('Update Next Release Version') {
+                if (params.releaseOnGithub.toBoolean()) {
+                    node("docker") {
+                        commons.withSparklingWaterDockerImage {
+                            ansiColor('xterm') {
+                                timestamps {
+                                    updateNexRelVersion(params, commons)
                                 }
                             }
                         }
                     }
                 }
             }
-        }
     }
 }
 
 def build() {
     return { params ->
         stage('Build') {
-            withCredentials([usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
-                             file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
+            params.commons.withSigningCredentials {
                 sh """
-                    activate_java_8
                     ./gradlew dist -Pspark=${params.spark} -Pversion=${getVersion(params)} -PdoRelease -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                     """
             }
@@ -333,7 +286,7 @@ def publishToNexus() {
     return { params ->
         stage('Publish to Nexus') {
             if (params.publishToNexus.toBoolean()) {
-                withCredentials([usernamePassword(credentialsId: "PUBLIC_NEXUS", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                params.commons.withNexusCredentials {
                     sh "./gradlew -Pspark=${params.spark} -Pversion=${getVersion(params)} -PnexusUsername=${NEXUS_USERNAME} -PnexusPassword=${NEXUS_PASSWORD} publishToNexus -x check"
                 }
             }
@@ -347,7 +300,7 @@ def publishToS3() {
             if (params.publishToS3.toBoolean()) {
                 def version = getVersion(params)
                 def path = getS3Path()
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                params.commons.withAWSCredentials {
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -369,55 +322,12 @@ def publishToS3() {
     }
 }
 
-def updateDocLinks() {
-    return { params ->
-        stage('Update Documentation Links') {
-            if (params.updateDocLinks.toBoolean()) {
-                withCredentials([file(credentialsId: 'master-id-rsa', variable: 'ID_RSA_PATH'), file(credentialsId: 'master-gitconfig', variable: 'GITCONFIG_PATH'), string(credentialsId: 'h2o-ops-personal-auth-token', variable: 'GITHUB_TOKEN'), sshUserPrivateKey(credentialsId: 'h2oOpsGitPrivateKey', keyFileVariable: 'SSH_KEY_GITHUB')]) {
-
-                    sh """
-                               # Copy keys
-                               rm -rf ~/.ssh ~/.gitconfig
-                               mkdir -p ~/.ssh
-                               cp \${ID_RSA_PATH} ~/.ssh/id_rsa
-                               cp \${GITCONFIG_PATH} ~/.gitconfig
-
-cat <<EOF >>  ~/.ssh/config
-Host github.com
-   HostName github.com
-   User git
-   IdentityFile \${SSH_KEY_GITHUB}
-   IdentitiesOnly yes
-EOF
-
-                                ssh-keyscan github.com >> ~/.ssh/known_hosts
-                               """
-
-                    def version = getVersion(params)
-                    retryWithDelay(3, 120, {
-                        sh """
-                                rm -rf docs.h2o.ai
-                                git clone git@github.com:h2oai/docs.h2o.ai.git
-                                cd docs.h2o.ai/sites-available/
-                                sed -i.backup -E 's?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/".*?        ProxyPass "/sparkling-water/${params.spark}/latest-stable/" "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${params.spark}/${version}/"?' 000-default.conf
-                                git add 000-default.conf
-                                git commit -m "Update latest version of Sparkling Water for Spark ${params.spark} version to ${version}"
-                                git push --set-upstream origin master
-                                cd ../..
-                            """
-                    })
-                }
-            }
-        }
-    }
-}
-
 def publishToPipy() {
     return { params ->
         stage('Publish to PiPy') {
             if (params.publishToPiPy.toBoolean()) {
                 dir("py/build/pkg") {
-                    withCredentials([usernamePassword(credentialsId: "pypi-credentials", usernameVariable: 'PIPY_USERNAME', passwordVariable: 'PIPY_PASSWORD')]) {
+                    params.commons.withPipyCredentials {
                         sh """
                             . /envs/h2o_env_python3.6/bin/activate
                             python setup.py sdist
@@ -451,7 +361,7 @@ def publishToConda() {
         stage('Publish to Conda') {
             if (params.buildConda.toBoolean() && params.publishConda.toBoolean()) {
                 dir("py/build/conda") {
-                    withCredentials([usernamePassword(credentialsId: 'anaconda-credentials', usernameVariable: 'ANACONDA_USERNAME', passwordVariable: 'ANACONDA_PASSWORD')]) {
+                    params.commons.withCondaCredentials {
                         def pythonVersions = ['2.7', '3.6']
                         for (pyVersion in pythonVersions) {
                             def pkgName = getCondaPkgName(params, pyVersion)
