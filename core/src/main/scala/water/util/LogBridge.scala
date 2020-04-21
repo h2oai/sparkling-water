@@ -27,7 +27,7 @@ object LogBridge {
     * @param levelIdx log level specified by the index.
     */
   def setH2OLogLevel(levelIdx: Int): Unit = {
-    water.util.Log._level = levelIdx
+    water.util.Log.setLogLevel(water.util.Log.LVLS(levelIdx))
   }
 
   /**
@@ -35,5 +35,5 @@ object LogBridge {
     *
     * @return index of the log level
     */
-  def getH2OLogLevel() = water.util.Log._level
+  def getH2OLogLevel() = water.util.Log.getLogLevel
 }
