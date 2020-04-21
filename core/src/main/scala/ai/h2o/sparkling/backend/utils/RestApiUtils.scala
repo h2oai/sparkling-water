@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.utils
 import java.net.URI
 
 import ai.h2o.sparkling.backend.NodeDesc
+import ai.h2o.sparkling.extensions.rest.api.schema.LogLevelV3
 import org.apache.http.client.utils.URIBuilder
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3._
@@ -97,6 +98,17 @@ trait RestApiUtils extends RestCommunication {
   def setTimeZone(conf: H2OConf, timezone: String): Unit = {
     val expression = s"""(setTimeZone "$timezone")"""
     executeStringRapidsExpression(conf, expression)
+  }
+
+  def setLogLevel(conf: H2OConf, logLevel: String): Unit = {
+    val endpoint = getClusterEndpoint(conf)
+    val params = Map("log_level" -> logLevel)
+    update[LogLevelV3](endpoint: URI, "/3/LogLevel", conf, params)
+  }
+
+  def getLogLevel(conf: H2OConf): Unit = {
+    val endpoint = getClusterEndpoint(conf)
+    query[LogLevelV3](endpoint,"/3/LogLevel", conf)
   }
 }
 
