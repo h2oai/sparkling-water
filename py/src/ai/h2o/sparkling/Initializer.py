@@ -193,6 +193,16 @@ class Initializer(object):
             loader = loader.getParent()
 
     @staticmethod
+    def isRunningViaDBCConnect():
+        import pkg_resources as pkg
+        try:
+            pkg.get_distribution('databricks-connect')
+            return True
+        except:
+            return False
+
+
+    @staticmethod
     def getVersion():
         here = path.abspath(path.dirname(__file__))
         if '.zip' in here:
@@ -208,7 +218,7 @@ class Initializer(object):
         sparkVersionFromPySparkling = pySparklingVersionComponents.sparkMajorMinorVersion
         sparkVersionFromPySpark = pySparkVersionComponents.sparkMajorMinorVersion
 
-        if not (sparkVersionFromPySpark == sparkVersionFromPySparkling):
+        if not Initializer.isRunningViaDBCConnect() and not (sparkVersionFromPySpark == sparkVersionFromPySparkling):
             raise Exception("""
             You are using PySparkling for Spark {}, but your PySpark is of version {}.
             Please make sure Spark and PySparkling versions are compatible.""".format(
