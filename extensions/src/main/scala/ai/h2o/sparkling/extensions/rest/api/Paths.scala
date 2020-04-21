@@ -24,5 +24,4 @@ object Paths {
   val FINALIZE_FRAME: String = "/3/FinalizeFrame"
   val UPLOAD_PLAN: String = "/3/UploadPlan"
   val LOG_LEVEL: String = "/3/LogLevel"
-
 }

@@ -24,8 +24,8 @@ import water.api.Handler
 import water.util.Log
 
 /**
- * This servlet class handles GET and PUT requests for the path /3/LogLevel
- */
+  * This servlet class handles GET and PUT requests for the path /3/LogLevel
+  */
 final class LogLevelHandler extends Handler {
 
   def setLogLevel(version: Int, request: LogLevelV3): LogLevelV3 = {
