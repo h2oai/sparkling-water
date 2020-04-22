@@ -91,6 +91,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     isInternalSecureConnectionsEnabled = function() { invoke(jconf, "isInternalSecureConnectionsEnabled") },
 
+    isInsecureXGBoostAllowed = function() { invoke(jconf, "isInsecureXGBoostAllowed") },
+
     flowDir = function() { ConfUtils.getOption(invoke(jconf, "flowDir")) },
 
     clientIp = function() { ConfUtils.getOption(invoke(jconf, "clientIp")) },
@@ -223,6 +225,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     setInternalSecureConnectionsEnabled = function() { invoke(jconf, "setInternalSecureConnectionsEnabled"); .self },
 
     setInternalSecureConnectionsDisabled = function() { invoke(jconf, "setInternalSecureConnectionsDisabled"); .self },
+
+    setInsecureXGBoostAllowed = function() { invoke(jconf, "setInsecureXGBoostAllowed"); .self },
+
+    setInsecureXGBoostDenied = function() { invoke(jconf, "setInsecureXGBoostDenied"); .self },
 
     setFlowDir = function(dir) { invoke(jconf, "setFlowDir", dir); .self },
 
