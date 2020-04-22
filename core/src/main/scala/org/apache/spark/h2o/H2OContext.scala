@@ -275,6 +275,8 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     RestApiUtils.setLogLevel(conf, level)
   }
 
+  def getH2OLogLevel(): String = RestApiUtils.getLogLevel(conf)
+
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
     if (!inShutdownHook) {
       ShutdownHookManager.removeShutdownHook(shutdownHookRef)

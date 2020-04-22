@@ -106,9 +106,9 @@ trait RestApiUtils extends RestCommunication {
     update[LogLevelV3](endpoint: URI, "/3/LogLevel", conf, params)
   }
 
-  def getLogLevel(conf: H2OConf): Unit = {
+  def getLogLevel(conf: H2OConf): String = {
     val endpoint = getClusterEndpoint(conf)
-    query[LogLevelV3](endpoint, "/3/LogLevel", conf)
+    query[LogLevelV3](endpoint, "/3/LogLevel", conf).log_level
   }
 }
 

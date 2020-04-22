@@ -151,6 +151,9 @@ class H2OContext(object):
     def setH2OLogLevel(self, level):
         self._jhc.setH2OLogLevel(level)
 
+    def getH2OLogLevel(self):
+        self._jhc.getH2OLogLevel()
+
     def asSparkFrame(self, h2oFrame, copyMetadata=True):
         """
         Transforms given H2OFrame to Spark DataFrame

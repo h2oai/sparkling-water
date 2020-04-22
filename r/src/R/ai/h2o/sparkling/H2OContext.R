@@ -93,5 +93,8 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
   },
   setH2OLogLevel = function(level) {
     invoke(.self$jhc, "setH2OLogLevel", level)
-  }
+  },
+  getH2OLogLevel = function() {
+  invoke(.self$jhc, "getH2OLogLevel")
+}
 ))

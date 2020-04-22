@@ -32,7 +32,7 @@ final class LogLevelHandler extends Handler {
     new MRTask() {
       override def setupLocal() {
         if (!Log.LVLS.contains(request.log_level)) {
-          Log.warn(s"[$request.log_level] is not a supported log level.")
+          Log.warn(s"Log level remains unchanged as [$request.log_level] is not a supported log level.")
         } else {
           // Setup log4j
           LogManager.getLogger("water.default").setLevel(Level.toLevel(request.log_level))
