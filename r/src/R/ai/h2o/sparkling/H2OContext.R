@@ -90,5 +90,8 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
     sparkFrame <- invoke(.self$jhc, "asDataFrame", h2o.getId(h2oFrame), copyMetaData)
     # Register returned spark_jobj as a table for dplyr
     sdf_register(sparkFrame)
+  },
+  setH2OLogLeve = function(logLevel) {
+    invoke(.self$jhc, "setH2OLogLevel", logLevel)
   }
 ))

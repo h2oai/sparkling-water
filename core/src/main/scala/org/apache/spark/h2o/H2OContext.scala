@@ -261,7 +261,11 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def h2oLocalClientPort = leaderNode.port
 
   /** Set log level for the client running in driver */
-  def setH2OClientLogLevel(level: String): Unit = water.util.Log.setLogLevel(level)
+  def setH2OClientLogLevel(level: String): Unit = {
+    if (H2OClientUtils.isH2OClientBased(conf)) {
+      water.util.Log.setLogLevel(level)
+    }
+  }
 
   /** Set log level for all H2O services running on executors */
   def setH2ONodeLogLevel(level: String): Unit = RestApiUtils.setLogLevel(conf, level)
