@@ -91,7 +91,7 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
     # Register returned spark_jobj as a table for dplyr
     sdf_register(sparkFrame)
   },
-  setH2OLogLeve = function(evel) {
+  setH2OLogLevel = function(level) {
     invoke(.self$jhc, "setH2OLogLevel", level)
   }
 ))
