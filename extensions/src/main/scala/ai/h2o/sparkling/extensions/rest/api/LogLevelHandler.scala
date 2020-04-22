@@ -41,6 +41,7 @@ final class LogLevelHandler extends Handler {
         }
       }
     }.doAllNodes()
+    request
   }
 
   def getLogLevel(version: Int, request: LogLevelV3): LogLevelV3 = {
