@@ -166,6 +166,12 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | master/h2o-docs/src/product/           |
 |                                                    |                |                                                 | security.rst#hadoop>`_.                |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.allow_insecure_xgboost``           | ``false``      | ``setInsecureXGBoostAllowed()``                 | If the property set to true, insecure  |
+|                                                    |                |                                                 | communication among H2O nodes is       |
+|                                                    |                | ``setInsecureXGBoostDenied()``                  | allowed for the XGBoost algorithm even |
+|                                                    |                |                                                 | if the property |secureConnections| is |
+|                                                    |                |                                                 | set to ``true``.                       |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.hive.enabled``                     | ``false``      | ``setHiveSupportEnabled()``                     | If enabled, H2O instances will create  |
 |                                                    |                |                                                 | JDBC connections to Hive so that H2O   |
 |                                                    |                | ``setHiveSupportDisabled()``                    | Python & R API will be able to read    |
@@ -393,3 +399,4 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |hadoopConfig| replace:: ``sc.hadoopConfig``
 .. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
 .. |yarnDir| replace:: YARN container dir
+.. |secureConnections| replace:: ``spark.ext.h2o.internal_secure_connections``

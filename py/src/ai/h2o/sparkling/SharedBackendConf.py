@@ -243,6 +243,9 @@ class SharedBackendConf(SharedBackendConfUtils):
     def isInternalSecureConnectionsEnabled(self):
         return self._jconf.isInternalSecureConnectionsEnabled()
 
+    def isInsecureXGBoostAllowed(self):
+        return self._jconf.isInsecureXGBoostAllowed()
+
     def flow_dir(self):
         warnings.warn("Method 'flow_dir' is deprecated and will be removed in the next major release. Please use 'flowDir'.")
         return self.flowDir()
@@ -721,6 +724,14 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setInternalSecureConnectionsDisabled(self):
         self._jconf.setInternalSecureConnectionsDisabled()
+        return self
+
+    def setInsecureXGBoostAllowed(self):
+        self._jconf.setInsecureXGBoostAllowed()
+        return self
+
+    def setInsecureXGBoostDenied(self):
+        self._jconf.setInsecureXGBoostDenied()
         return self
 
     def set_flow_dir(self, dir):
