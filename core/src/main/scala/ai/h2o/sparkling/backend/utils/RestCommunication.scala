@@ -194,8 +194,10 @@ trait RestCommunication extends Logging with RestEncodingUtils {
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
   private def resolveUrl(endpoint: URI, suffix: String): URL = {
-    val suffixWithDelimiter = if (suffix.startsWith("/")) suffix else s"/$suffix"
-    endpoint.resolve(suffixWithDelimiter).toURL
+    val endpointAsString = endpoint.toString
+    val endpointWithDelimiter = if (endpointAsString.endsWith("/")) endpointAsString else endpointAsString + "/"
+    val suffixWithoutDelimiter = suffix.stripPrefix("/")
+    new URI(endpointWithDelimiter).resolve(suffixWithoutDelimiter).toURL
   }
 
   private def setHeaders(
