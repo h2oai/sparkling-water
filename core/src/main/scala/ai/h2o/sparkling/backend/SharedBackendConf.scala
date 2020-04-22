@@ -106,6 +106,9 @@ trait SharedBackendConf {
   def isInternalSecureConnectionsEnabled: Boolean =
     sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1, PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
+  def isInsecureXGBoostAllowed: Boolean =
+    sparkConf.getBoolean(PROP_ALLOW_INSECURE_XGBOOST._1, PROP_ALLOW_INSECURE_XGBOOST._2)
+
   /** H2O Client parameters */
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
 
@@ -263,6 +266,10 @@ trait SharedBackendConf {
   def setInternalSecureConnectionsEnabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = true)
 
   def setInternalSecureConnectionsDisabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = false)
+
+  def setInsecureXGBoostAllowed(): H2OConf = set(PROP_ALLOW_INSECURE_XGBOOST._1, value = true)
+
+  def setInsecureXGBoostDenied(): H2OConf = set(PROP_ALLOW_INSECURE_XGBOOST._1, value = false)
 
   /** H2O Client parameters */
   def setFlowDir(dir: String): H2OConf = set(PROP_FLOW_DIR._1, dir)
@@ -432,6 +439,9 @@ object SharedBackendConf {
   /** Secure internal connections by automatically generated credentials */
   val PROP_INTERNAL_SECURE_CONNECTIONS: (String, Boolean) = ("spark.ext.h2o.internal_secure_connections", false)
 
+  /** If the property set to true, insecure communication among H2O nodes is allowed for the XGBoost algorithm. */
+  val PROP_ALLOW_INSECURE_XGBOOST: (String, Boolean) = ("spark.ext.h2o.allow_insecure_xgboost", false)
+
   /** IP of H2O client node */
   val PROP_CLIENT_IP: (String, None.type) = ("spark.ext.h2o.client.ip", None)
 
@@ -492,4 +502,5 @@ object SharedBackendConf {
 
   /** Authorization token to Hive */
   val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
+
 }
