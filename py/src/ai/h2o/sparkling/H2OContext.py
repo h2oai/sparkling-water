@@ -148,8 +148,8 @@ class H2OContext(object):
     def getConf(self):
         return self._conf
 
-    def setH2OLogLevel(self, logLevel):
-        self._jhc.setH2OLogLevel(logLevel)
+    def setH2OLogLevel(self, level):
+        self._jhc.setH2OLogLevel(level)
 
     def asSparkFrame(self, h2oFrame, copyMetadata=True):
         """
