@@ -226,7 +226,7 @@ def ami = new SlaveTemplate(
         'worker_jenkins', // description
         '', // initScript
         '', // tmpDir
-        '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins', // userData
+        '#!/bin/sh\nsudo cp -R /home/ec2-user/.ssh /home/jenkins\nsudo chown -R jenkins /home/jenkins\nsudo yum -y update --security', // userData
         '1', // numExecutors
         'jenkins', // remoteAdmin
         new UnixData('', '', '', '22'), // amiType
