@@ -14,26 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package water.util
+package ai.h2o.sparkling
+
+import org.apache.spark.sql.SparkSession
+import org.junit.runner.RunWith
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 /**
-  * This object is used to get and set log level defined in the H2O running on the current node
+  * Test methods available on H2OContext
   */
-object LogBridge {
+@RunWith(classOf[JUnitRunner])
+class H2OContextTestSuite extends FunSuite with SharedH2OTestContext {
 
-  /**
-    * Setup log level for H2O log sub system.
-    *
-    * @param levelIdx log level specified by the index.
-    */
-  def setH2OLogLevel(levelIdx: Int): Unit = {
-    water.util.Log._level = levelIdx
+  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+
+  test("setH2OLogLevel") {
+    hc.setH2OLogLevel("DEBUG")
+    assert(hc.getH2OLogLevel() == "DEBUG")
   }
-
-  /**
-    * Get the log level index
-    *
-    * @return index of the log level
-    */
-  def getH2OLogLevel() = water.util.Log._level
 }

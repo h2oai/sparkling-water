@@ -279,11 +279,14 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   @DeprecatedMethod("setH2OLogLevel", "3.32")
   def setH2ONodeLogLevel(level: String): Unit = setH2OLogLevel(level)
 
-  /** Set H2O log level for the client and all executors */
   def setH2OLogLevel(level: String): Unit = {
-    LogUtil.setH2OClientLogLevel(level)
-    LogUtil.setH2ONodeLogLevel(level)
+    if (H2OClientUtils.isH2OClientBased(conf)) {
+      water.util.Log.setLogLevel(level)
+    }
+    RestApiUtils.setLogLevel(conf, level)
   }
+
+  def getH2OLogLevel(): String = RestApiUtils.getLogLevel(conf)
 
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
     if (!inShutdownHook) {
