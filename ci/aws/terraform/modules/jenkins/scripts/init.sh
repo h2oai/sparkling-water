@@ -3,7 +3,7 @@
 wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | apt-key add -
 sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 add-apt-repository ppa:certbot/certbot --yes
-apt update
+apt update -y
 apt install unzip openjdk-8-jre jenkins apache2 certbot -y
 
 /home/ubuntu/.init/init-ssl.sh
