@@ -108,6 +108,8 @@ terraform destroy \
     -var "aws_access_key=$aws_access_key" \
     -var "aws_secret_key=$aws_secret_key" \
     -var "aws_ssh_public_key=$aws_ssh_public_key" \
+    -var "aws_vpc_id=$vpc" \
+    -var "aws_subnet_id=$subnet" \
     -auto-approve
 echo "The cluster destroyed."
 
