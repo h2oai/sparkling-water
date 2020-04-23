@@ -35,6 +35,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   runCommand """\\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'require(devtools); install_version("dbplyr", version = "1.4.2", repos = "http://cran.us.r-project.org", upgrade = "never")' && \\                
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
   user("jenkins")
