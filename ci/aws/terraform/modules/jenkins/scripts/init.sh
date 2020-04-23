@@ -10,7 +10,7 @@ apt install unzip openjdk-8-jre jenkins apache2 certbot -y
 /home/ubuntu/.init/install-plugins.sh bouncycastle-api matrix-auth ec2 authorize-project workflow-multibranch github aws-credentials workflow-cps-global-lib ws-cleanup github-branch-source basic-branch-build-strategies ansicolor timestamper docker-workflow amazon-ecr permissive-script-security blueocean greenballs
 
 # Start And Configure Jenkins
-echo 'export JAVA_ARGS="-Xmx2048m -Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dpermissive-script-security.enabled=no_security"' >> /etc/default/jenkins
+echo 'export JAVA_ARGS="-Xms4096m -Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dpermissive-script-security.enabled=no_security"' >> /etc/default/jenkins
 mkdir -p /var/lib/jenkins/init.groovy.d
 cp /home/ubuntu/.init/init_jenkins.groovy /var/lib/jenkins/init.groovy.d
 
