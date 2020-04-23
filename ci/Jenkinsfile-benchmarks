@@ -48,4 +48,5 @@ node("docker") {
             }
         }
     }
+    cleanWs()
 }
