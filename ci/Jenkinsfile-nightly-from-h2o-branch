@@ -13,10 +13,9 @@ def sparkVersions
 node("docker") {
     cleanWs()
     checkout scm
-    pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
-    def versionLine = readFile("gradle.properties")
-            .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
-    sparkVersions = versionLine.split("=")[1].split(" ")
+    pipeline = load 'ci/sparklingWaterPipeline.groovy'
+    def commons = load 'ci/commons.groovy'
+    sparkVersions = commons.getSupportedSparkVersions()
 }
 
 pipeline(params) { p ->
