@@ -246,15 +246,10 @@ def unitTests() {
                     }
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
-                    junit 'core/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Core Unit Tests"
-                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'ml/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - ML Unit Tests"
-                    junit 'repl/build/test-results/test/*.xml'
                     testReport 'repl/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - REPL Unit Tests"
-                    junit 'utils/build/test-results/test/*.xml'
                     testReport 'utils/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Utils Unit Tests"
-                    junit 'macros/build/test-results/test/*.xml'
                     testReport 'macros/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Macros Unit Tests"
                 }
             }
@@ -330,11 +325,8 @@ def integTests() {
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
-                    junit 'core/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Core Integration Tests"
-                    junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'examples/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Examples Integration Tests"
-                    junit 'ml/build/test-results/integTest/*.xml'
                     testReport 'ml/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - ML Integration Tests"
                 }
             }
