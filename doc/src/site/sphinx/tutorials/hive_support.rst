@@ -73,7 +73,7 @@ Generate Initial Token
 ^^^^^^^^^^^^^^^^^^^^^^
 The initial delegation token can be generated with the following steps.
 
-Authenticated your user against Kerberos.
+Authenticate your user against Kerberos.
 
 .. code:: bash
 
