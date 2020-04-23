@@ -7,7 +7,7 @@ apt update
 apt install unzip openjdk-8-jre jenkins apache2 certbot -y
 
 /home/ubuntu/.init/init-ssl.sh
-/home/ubuntu/.init/install-plugins.sh bouncycastle-api matrix-auth ec2 authorize-project workflow-multibranch github aws-credentials workflow-cps-global-lib ws-cleanup github-branch-source basic-branch-build-strategies ansicolor timestamper docker-workflow amazon-ecr permissive-script-security blueocean
+/home/ubuntu/.init/install-plugins.sh bouncycastle-api matrix-auth ec2 authorize-project workflow-multibranch github aws-credentials workflow-cps-global-lib ws-cleanup github-branch-source basic-branch-build-strategies ansicolor timestamper docker-workflow amazon-ecr permissive-script-security blueocean greenballs
 
 # Start And Configure Jenkins
 echo 'export JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dpermissive-script-security.enabled=no_security"' >> /etc/default/jenkins
