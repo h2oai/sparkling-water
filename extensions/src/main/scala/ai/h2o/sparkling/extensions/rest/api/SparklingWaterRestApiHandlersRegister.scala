@@ -55,7 +55,7 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       "GET " + Paths.LOG_LEVEL,
       classOf[LogLevelHandler],
       "getLogLevel",
-      "Get log level on H2O cluster")
+      "Get log level of H2O cluster")
   }
 
   override def getName(): String = "Sparkling Water REST API Extensions"
