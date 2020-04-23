@@ -1,0 +1,29 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-west-2",
+    "source_ami": "ami-01f08ef3e76b957e5",
+    "instance_type": "m3.medium",
+    "ssh_username": "ec2-user",
+    "ami_name": "Sparkling Water Jenkins Slave"
+  }],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": true
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "init.sh"
+    }
+  ]
+}

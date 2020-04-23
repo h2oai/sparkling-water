@@ -1,0 +1,37 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+// Job parameters
+properties(
+        [
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+cancelPreviousBuilds()
+
+def pipeline
+def sparkVersions
+node("docker") {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    pipeline = load 'ci/sparklingWaterPipeline.groovy'
+    sparkVersions = commons.getSupportedSparkVersions()
+}
+
+
+pipeline(params) { p ->
+    sparkMajorVersions = sparkVersions
+    runUnitTests = "true"
+    runPyUnitTests = "true"
+    runRUnitTests = "true"
+    runIntegTests = "true"
+    runPyIntegTests = "true"
+    buildAgainstH2OBranch = "false"
+    h2oBranch = "master"
+    hadoopVersion = "2.7"
+    driverHadoopVersion = "hdp2.2"
+    uploadNightly = "false"
+    backendMode = "both"
+}

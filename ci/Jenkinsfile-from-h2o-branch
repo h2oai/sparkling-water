@@ -11,8 +11,6 @@ properties(
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: true, description: 'Run Scala integration tests'),
                                 booleanParam(name: 'runPyIntegTests', defaultValue: true, description: 'Run Python integration tests'),
-                                booleanParam(name: 'buildAgainstH2OBranch', defaultValue: false, description: 'By default, Sparkling Water is built with the included H2O. This option may be used to force build to use specific H2O branch against which Sparkling Water is built.'),
-                                string(name: 'h2oBranch', defaultValue: 'master', description: 'H2O branch to build against if buildAgainstH2OBranch is set to true'),
                                 choice(
                                         choices: 'both\ninternal\nexternal',
                                         description: "Choose in which mode to run tests",
@@ -31,10 +29,9 @@ def sparkVersions
 node("docker") {
     cleanWs()
     checkout scm
-    pipeline = load 'jenkins/sparklingWaterPipeline.groovy'
-    def versionLine = readFile("gradle.properties")
-            .split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
-    sparkVersions = versionLine.split("=")[1].split(" ")
+    pipeline = load 'ci/sparklingWaterPipeline.groovy'
+    def commons = load 'ci/commons.groovy'
+    sparkVersions = commons.getSupportedSparkVersions()
 }
 
 
@@ -45,8 +42,8 @@ pipeline(params) { p ->
     runRUnitTests = "${p.runRUnitTests}"
     runIntegTests = "${p.runIntegTests}"
     runPyIntegTests = "${p.runPyIntegTests}"
-    buildAgainstH2OBranch = "${p.buildAgainstH2OBranch}"
-    h2oBranch = "${p.h2oBranch}"
+    buildAgainstH2OBranch = "true"
+    h2oBranch = "master"
     hadoopVersion = "2.7"
     driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
