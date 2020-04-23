@@ -24,6 +24,7 @@ import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConv
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
@@ -260,15 +261,11 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   /** Returns port where H2O REST API is exposed */
   def h2oLocalClientPort = leaderNode.port
 
-  /** Set log level for the client running in driver */
-  def setH2OClientLogLevel(level: String): Unit = {
-    if (H2OClientUtils.isH2OClientBased(conf)) {
-      water.util.Log.setLogLevel(level)
-    }
-  }
+  @DeprecatedMethod("setH2OLogLevel", "3.32")
+  def setH2OClientLogLevel(level: String): Unit = setH2OLogLevel(level)
 
-  /** Set log level for all H2O services running on executors */
-  def setH2ONodeLogLevel(level: String): Unit = RestApiUtils.setLogLevel(conf, level)
+  @DeprecatedMethod("setH2OLogLevel", "3.32")
+  def setH2ONodeLogLevel(level: String): Unit = setH2OLogLevel(level)
 
   def setH2OLogLevel(level: String): Unit = {
     if (H2OClientUtils.isH2OClientBased(conf)) {
