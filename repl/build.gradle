@@ -7,6 +7,8 @@ dependencies {
 
   compileOnly("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
 
+  testCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
+
   testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")
