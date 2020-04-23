@@ -271,7 +271,9 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def setH2ONodeLogLevel(level: String): Unit = RestApiUtils.setLogLevel(conf, level)
 
   def setH2OLogLevel(level: String): Unit = {
-    setH2OClientLogLevel(level)
+    if (H2OClientUtils.isH2OClientBased(conf)) {
+      water.util.Log.setLogLevel(level)
+    }
     RestApiUtils.setLogLevel(conf, level)
   }
 
