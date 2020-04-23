@@ -21,7 +21,7 @@ def internalH2ODockerLogin() {
     })
 }
 
-node('docker') {
+node('mr-0xc10') {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'

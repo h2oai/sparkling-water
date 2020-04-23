@@ -1,7 +1,7 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 
-node("docker") {
+node("mr-0xc10") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
