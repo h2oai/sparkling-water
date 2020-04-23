@@ -118,6 +118,10 @@ def withAWSCredentials(groovy.lang.Closure code) {
 
 def withGitPushCredentials(groovy.lang.Closure code) {
     withCredentials([string(credentialsId: 'SW_GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+        sh """
+            git config --global user.name "h2o-ops"
+            git config --global user.email "h2o-ops@h2o.ai"
+            """
         code()
     }
 }
@@ -179,8 +183,6 @@ def withCondaCredentials(groovy.lang.Closure code) {
 
 def gitCommit(files, msg) {
     sh """
-                git config --global user.name "h2o-ops"
-                git config --global user.email "h2o-ops@h2o.ai"
                 git config --add remote.origin.fetch +refs/heads/${BRANCH_NAME}:refs/remotes/origin/${BRANCH_NAME}
                 git fetch --no-tags
                 git checkout ${BRANCH_NAME}
