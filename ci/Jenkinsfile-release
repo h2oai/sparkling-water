@@ -197,46 +197,34 @@ node("docker") {
         parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
     }
 
-    updateChangeLogStage(sparkMajorVersions)(params, commons)
-    parallel(parallelStages)
-    updateRelVersionStage()(params, commons)
-}
-
-def updateChangeLogStage(sparkMajorVersions) {
-    return {
-        params, commons ->
-            stage('Update Change Log') {
-                if (params.updateChangeLog.toBoolean()) {
-                    node("docker") {
-                        commons.withSparklingWaterDockerImage {
-                            ansiColor('xterm') {
-                                timestamps {
-                                    prepareReleaseNotes(sparkMajorVersions, commons)
-                                }
-                            }
+    stage('Update Change Log') {
+        if (params.updateChangeLog.toBoolean()) {
+            node("docker") {
+                commons.withSparklingWaterDockerImage {
+                    ansiColor('xterm') {
+                        timestamps {
+                            prepareReleaseNotes(sparkMajorVersions, commons)
                         }
                     }
                 }
             }
+        }
     }
-}
 
-def updateRelVersionStage() {
-    return {
-        params, commons ->
-            stage('Update Next Release Version') {
-                if (params.releaseOnGithub.toBoolean()) {
-                    node("docker") {
-                        commons.withSparklingWaterDockerImage {
-                            ansiColor('xterm') {
-                                timestamps {
-                                    updateNexRelVersion(params, commons)
-                                }
-                            }
+    parallel(parallelStages)
+
+    stage('Update Next Release Version') {
+        if (params.releaseOnGithub.toBoolean()) {
+            node("docker") {
+                commons.withSparklingWaterDockerImage {
+                    ansiColor('xterm') {
+                        timestamps {
+                            updateNexRelVersion(params, commons)
                         }
                     }
                 }
             }
+        }
     }
 }
 
