@@ -33,7 +33,7 @@ def getParallelStageDefinition(params) {
     return {
         stage("Spark ${params.spark}") {
             node("docker") {
-                commons.withSparklingWaterDockerImage {
+                params.commons.withSparklingWaterDockerImage {
                     ansiColor('xterm') {
                         timestamps {
                             ws("${env.WORKSPACE}-spark-${params.spark}") {
