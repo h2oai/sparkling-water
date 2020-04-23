@@ -15,7 +15,7 @@ dependencies {
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
   testCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
-
+  integTestCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
   testImplementation(project(":sparkling-water-macros"))
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")

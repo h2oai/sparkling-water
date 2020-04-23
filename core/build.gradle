@@ -95,6 +95,7 @@ dependencies {
 
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   integTestImplementation("junit:junit:4.11")
+  integTestCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
   benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   benchImplementation("junit:junit:4.11")
