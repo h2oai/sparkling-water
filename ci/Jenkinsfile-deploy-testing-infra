@@ -94,5 +94,5 @@ node("mr-0xc10") {
 }
 
 stage("Build and publish docker image") {
-    build job: 'TESTING_INFRA_BUILD_DOCKER_IMAGE/jh%2FSW-2160'
+    build job: 'TEST_INFRA_BUILD_DOCKER_IMAGE/master'
 }
