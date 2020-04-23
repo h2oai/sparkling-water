@@ -33,13 +33,13 @@ def getParallelStageDefinition(params) {
     return {
         stage("Spark ${params.spark}") {
             node("docker") {
-                params.commons.withSparklingWaterDockerImage {
-                    ansiColor('xterm') {
-                        timestamps {
-                            ws("${env.WORKSPACE}-spark-${params.spark}") {
-                                cleanWs()
-                                checkout scm
-                                sh "git pull"
+                ws("${env.WORKSPACE}-spark-${params.spark}") {
+                    cleanWs()
+                    checkout scm
+                    sh "git pull"
+                    params.commons.withSparklingWaterDockerImage {
+                        ansiColor('xterm') {
+                            timestamps {
                                 build()(params)
                                 buildConda()(params)
                                 publishToNexus()(params)
