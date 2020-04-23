@@ -34,7 +34,6 @@ final class LogLevelHandler extends Handler {
         if (!Log.LVLS.contains(request.log_level)) {
           Log.warn(s"Log level remains unchanged as [$request.log_level] is not a supported log level.")
         } else {
-          // Setup log4j
           LogManager.getLogger("water.default").setLevel(Level.toLevel(request.log_level))
           Log.setLogLevel(request.log_level)
           Log.info(s"Log level changed to [${request.log_level}].")
