@@ -230,7 +230,7 @@ def ami = new SlaveTemplate(
         '1', // numExecutors
         'jenkins', // remoteAdmin
         new UnixData('', '', '', '22'), // amiType
-        '-Xms2048M', // jvmopts
+        '', // jvmopts
         false, // stopOnTerminate
         subnetId, // subnetId
         [new EC2Tag('Name', 'SW-Tests-Jenkins-Slave')], //tags
