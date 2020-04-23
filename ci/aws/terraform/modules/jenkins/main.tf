@@ -35,6 +35,7 @@ export AWS_ACCESS_KEY_ID=${var.aws_access_key}
 export AWS_SECRET_ACCESS_KEY=${var.aws_secret_key}
 mkdir -p /home/ubuntu/.init
 /usr/local/bin/aws s3 cp ${format("s3://%s", aws_s3_bucket.init_files_bucket.bucket)} /home/ubuntu/.init/ --recursive
+/usr/local/bin/aws s3 rb ${format("s3://%s", aws_s3_bucket.init_files_bucket.bucket)} --force
 chmod +x /home/ubuntu/.init/init.sh
 chmod +x /home/ubuntu/.init/init-ssl.sh
 chmod +x /home/ubuntu/.init/install-plugins.sh
