@@ -1,0 +1,25 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+node("mr-0xc10") {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+
+    stage("Destroy Testing Infrastructure on AWS") {
+        commons.withAWSCredentials {
+            commons.withTerraform {
+                dir("ci/aws/terraform") {
+                    commons.terraformDestroy()
+                }
+            }
+        }
+    }
+
+    stage("Remove Infrastructure State") {
+        commons.withGitPushCredentials {
+            sh "rm -rf ci/aws/terraform/terraform.tfstate ci/aws/terraform/infra.properties"
+            commons.gitCommit(["ci/aws/terraform/terraform.tfstate", "ci/aws/terraform/infra.properties"], "Removing Infrastructure State")
+        }
+    }
+}

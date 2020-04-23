@@ -67,62 +67,42 @@ def getGradleCommand(config) {
     }
 }
 
-String getDockerImageVersion() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
-    return versionLine.split("=")[1]
-}
-
-def withDocker(config, code) {
-    def image = 'opsh2oai/sparkling_water_tests:' + getDockerImageVersion()
-    retryWithDelay(3, 120, {
-        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
-            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
-            sh "docker pull harbor.h2o.ai/${image}"
-        }
-    })
-    docker.image(image).inside("--init --privileged --dns 172.16.0.200") {
-        sh "activate_java_8"
-        code()
-    }
-}
-
 def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
-    node('docker && micro') {
-        docker.withRegistry("http://harbor.h2o.ai") {
-            ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
-                config.put("sparkMajorVersion", sparkMajorVersion)
+    node('docker') {
+        ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
+            config.put("sparkMajorVersion", sparkMajorVersion)
 
-                cleanWs()
-                if (shouldCheckout) {
-                    checkout scm
-                } else {
-                    unstash "sw-build-${config.sparkMajorVersion}"
-                }
+            cleanWs()
+            if (shouldCheckout) {
+                checkout scm
+                config.commons = load 'ci/commons.groovy'
+            } else {
+                unstash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
+            }
 
-                config.put("sparkVersion", getSparkVersion(config))
+            config.put("sparkVersion", getSparkVersion(config))
 
-                if (config.buildAgainstH2OBranch.toBoolean()) {
-                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
-                } else {
-                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
-                    def majorVersion = majorVersionLine.split("=")[1]
-                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
-                    def buildVersion = buildVersionLine.split("=")[1]
-                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
-                }
+            if (config.buildAgainstH2OBranch.toBoolean()) {
+                config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+            } else {
+                def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                def majorVersion = majorVersionLine.split("=")[1]
+                def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                def buildVersion = buildVersionLine.split("=")[1]
+                config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+            }
 
-                def customEnv = [
-                        "SPARK_HOME=${env.WORKSPACE}/spark",
-                        "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                        "H2O_DRIVER_JAR=${config.driverJarPath}"
-                ]
+            def customEnv = [
+                    "SPARK_HOME=${env.WORKSPACE}/spark",
+                    "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                    "H2O_DRIVER_JAR=${config.driverJarPath}"
+            ]
 
-                ansiColor('xterm') {
-                    timestamps {
-                        withEnv(customEnv) {
-                            timeout(time: 180, unit: 'MINUTES') {
-                                code()
-                            }
+            ansiColor('xterm') {
+                timestamps {
+                    withEnv(customEnv) {
+                        timeout(time: 180, unit: 'MINUTES') {
+                            code()
                         }
                     }
                 }
@@ -135,7 +115,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config, true) {
-                withDocker(config) {
+                config.commons.withSparklingWaterDockerImage {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
                     prepareSparklingWaterEnvironment()(config)
@@ -155,7 +135,7 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup(sparkMajorVersion, config, false) {
-                withDocker(config) {
+                config.commons.withSparklingWaterDockerImage {
                     publishNightly()(config)
                 }
             }
@@ -170,10 +150,8 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
 def call(params, body) {
     def config = [:]
     body.resolveStrategy = Closure.DELEGATE_FIRST
-
     body.delegate = config
     body(params)
-
     def backendTypes = []
     if (config.backendMode.toString() == "both") {
         backendTypes.add("internal")
@@ -200,10 +178,10 @@ def call(params, body) {
             nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
         }
     }
-
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
+    cleanWs()
 }
 
 def prepareSparkEnvironment() {
@@ -229,9 +207,9 @@ def prepareSparklingWaterEnvironment() {
                         . /envs/h2o_env_python2.7/bin/activate
                         export BUILD_HADOOP=true
                         export H2O_TARGET=${config.driverHadoopVersion}
-                        ./gradlew build -x check
-                        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2
-                        ./gradlew :h2o-r:buildPKG
+                        ./gradlew build -x check -Duser.name=ec2-user
+                        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+                        ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
                         cd ..
                     """
             } else {
@@ -247,7 +225,7 @@ def buildAndLint() {
             try {
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
                 if (config.uploadNightly.toBoolean()) {
-                    stash "sw-build-${config.sparkMajorVersion}"
+                    stash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
                 }
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
@@ -261,22 +239,17 @@ def unitTests() {
         stage('QA: Unit Tests - ' + config.backendMode) {
             if (config.runUnitTests.toBoolean()) {
                 try {
-                    withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                    config.commons.withDAICredentials {
                         sh """
                             ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
-                    junit 'core/build/test-results/test/*.xml'
                     testReport 'core/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Core Unit Tests"
-                    junit 'ml/build/test-results/test/*.xml'
                     testReport 'ml/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - ML Unit Tests"
-                    junit 'repl/build/test-results/test/*.xml'
                     testReport 'repl/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - REPL Unit Tests"
-                    junit 'utils/build/test-results/test/*.xml'
                     testReport 'utils/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Utils Unit Tests"
-                    junit 'macros/build/test-results/test/*.xml'
                     testReport 'macros/build/reports/tests/test', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Macros Unit Tests"
                 }
             }
@@ -289,10 +262,10 @@ def pyUnitTests() {
         stage('QA: PyUnit Tests 3.6 - ' + config.backendMode) {
             if (config.runPyUnitTests.toBoolean()) {
                 try {
-                    withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                    config.commons.withDAICredentials {
                         sh """
-                        ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
-                        """
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            """
                     }
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
@@ -303,10 +276,10 @@ def pyUnitTests() {
         stage('QA: PyUnit Tests 2.7 - ' + config.backendMode) {
             if (config.runPyUnitTests.toBoolean()) {
                 try {
-                    withCredentials([string(credentialsId: "DRIVERLESS_AI_LICENSE_KEY", variable: "DRIVERLESS_AI_LICENSE_KEY")]) {
+                    config.commons.withDAICredentials {
                         sh """
-                        ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
-                        """
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            """
                     }
                 } finally {
                     arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
@@ -352,11 +325,8 @@ def integTests() {
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
-                    junit 'core/build/test-results/integTest/*.xml'
                     testReport 'core/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Core Integration Tests"
-                    junit 'examples/build/test-results/integTest/*.xml'
                     testReport 'examples/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - Examples Integration Tests"
-                    junit 'ml/build/test-results/integTest/*.xml'
                     testReport 'ml/build/reports/tests/integTest', "Spark ${config.sparkMajorVersion} ${config.backendMode} - ML Integration Tests"
                 }
             }
@@ -383,30 +353,29 @@ def publishNightly() {
     return { config ->
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             if (config.uploadNightly.toBoolean()) {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS S3 Credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
-                                 usernamePassword(credentialsId: "SIGNING_KEY", usernameVariable: 'SIGN_KEY', passwordVariable: 'SIGN_PASSWORD'),
-                                 file(credentialsId: 'release-secret-key-ring-file', variable: 'RING_FILE_PATH')]) {
+                config.commons.withAWSCredentials {
+                    config.commons.withSigningCredentials {
+                        def version = getNightlyVersion(config)
+                        def path = getS3Path(config)
+                        sh """
+                            sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                            echo "doRelease=true" >> gradle.properties
+                            ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
-                    def version = getNightlyVersion(config)
-                    def path = getS3Path(config)
-                    sh  """
-                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
-                        echo "doRelease=true" >> gradle.properties
-                        ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                            ~/.local/bin/aws s3 sync dist/build/dist "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}" --acl public-read
 
-                        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                        ~/.local/bin/aws s3 sync dist/build/dist "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}" --acl public-read
-
-                        echo UPDATE LATEST POINTER
-                        echo ${version} > latest
-                        echo "<head>" > latest.html
-                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
-                        echo "</head>" >> latest.html
-                        ~/.local/bin/aws s3 cp latest "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest" --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
-                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
-                        """
+                            echo UPDATE LATEST POINTER
+                            echo ${version} > latest
+                            echo "<head>" > latest.html
+                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
+                            echo "</head>" >> latest.html
+                            ~/.local/bin/aws s3 cp latest "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest" --acl public-read
+                            ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
+                            ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
+                            """
+                    }
                 }
             }
         }

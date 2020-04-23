@@ -1,0 +1,61 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+// Job parameters
+properties(
+        [
+                parameters(
+                        [
+                                booleanParam(name: 'updateNextImageVersion', defaultValue: true, description: 'Update Next Image Version'),
+                        ]
+                ),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+def internalH2ODockerLogin() {
+    retryWithDelay(3, 120, {
+        withCredentials([usernamePassword(credentialsId: "harbor.h2o.ai", usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
+            sh "docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD harbor.h2o.ai"
+        }
+    })
+}
+
+node('mr-0xc10') {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    def currentVersion = commons.getDockerImageVersion()
+    def nextVersion = currentVersion + 1
+
+    stage("Build Docker Image") {
+        internalH2ODockerLogin()
+        sh "./gradlew :sparkling-water-ci:createDockerFile"
+        dir("ci/build/docker") {
+            sh """
+            docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76
+            docker build -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
+           """
+        }
+    }
+
+    stage("Publish Image") {
+        def repoUrl = commons.getAWSDockerRepo()
+        commons.withAWSDocker {
+            sh """
+            docker tag harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
+            docker push $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
+            """
+        }
+    }
+
+    stage("Update Next Image Version") {
+        if (params.updateNextImageVersion.toBoolean()) {
+            commons.withGitPushCredentials {
+                def content = readFile("gradle.properties").replaceAll("dockerImageVersion=${currentVersion}", "dockerImageVersion=${nextVersion}")
+                writeFile file: "gradle.properties", text: content
+                commons.gitCommit(["gradle.properties"], "Update Docker Image Version")
+            }
+        }
+    }
+}
