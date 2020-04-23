@@ -14,26 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package water.util
 
-/**
-  * This object is used to get and set log level defined in the H2O running on the current node
-  */
-object LogBridge {
+package ai.h2o.sparkling.extensions.rest.api.schema;
 
-  /**
-    * Setup log level for H2O log sub system.
-    *
-    * @param levelIdx log level specified by the index.
-    */
-  def setH2OLogLevel(levelIdx: Int): Unit = {
-    water.util.Log._level = levelIdx
-  }
+import water.Iced;
+import water.api.API;
+import water.api.schemas3.RequestSchemaV3;
 
-  /**
-    * Get the log level index
-    *
-    * @return index of the log level
-    */
-  def getH2OLogLevel() = water.util.Log._level
+public class LogLevelV3 extends RequestSchemaV3<Iced, LogLevelV3> {
+
+  @API(help = "Log Level", direction = API.Direction.INOUT)
+  public String log_level = "INFO";
 }
