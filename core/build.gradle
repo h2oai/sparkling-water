@@ -84,7 +84,6 @@ dependencies {
   compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
-  testCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
   testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
@@ -95,7 +94,6 @@ dependencies {
 
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   integTestImplementation("junit:junit:4.11")
-  integTestCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
   benchImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   benchImplementation("junit:junit:4.11")

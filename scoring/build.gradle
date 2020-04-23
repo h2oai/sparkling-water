@@ -9,8 +9,6 @@ dependencies {
   api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
   api(project(":sparkling-water-utils"))
 
-  testCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
-
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly(project(":sparkling-water-macros"))

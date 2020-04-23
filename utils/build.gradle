@@ -8,7 +8,6 @@ dependencies {
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
   implementation("org.xerial.snappy:snappy-java:1.1.7")
-  testCompileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
   testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
