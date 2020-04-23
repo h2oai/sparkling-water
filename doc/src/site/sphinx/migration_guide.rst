@@ -99,6 +99,9 @@ From 3.30 to 3.32
   the heuristic from H2O parsers, the methods ``getAllStringColumnsToCategorical`` and ``setAllStringColumnsToCategorical``
   have been removed from all SW API algorithms in Python and Scala API.
 
+- Methods ``setH2ONodeLogLevel`` and ``setH2OClientLogLevel`` are removed on ``H2OContext``. Please use ``setH2OLogLevel``
+  instead.
+
 From 3.28.1 to 3.30
 -------------------
 
