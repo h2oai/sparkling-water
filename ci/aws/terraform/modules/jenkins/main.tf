@@ -10,7 +10,7 @@ provider "aws" {
 
 resource "aws_instance" "jenkins" {
   ami = "ami-0d1cd67c26f5fca19"
-  instance_type = "t2.large"
+  instance_type = "t2.medium"
   subnet_id = var.aws_subnet_id
   vpc_security_group_ids = [aws_security_group.jenkins_security_group.id]
   associate_public_ip_address = true
