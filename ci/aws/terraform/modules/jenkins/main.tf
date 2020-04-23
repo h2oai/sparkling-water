@@ -15,7 +15,7 @@ resource "aws_instance" "jenkins" {
   vpc_security_group_ids = [aws_security_group.jenkins_security_group.id]
   associate_public_ip_address = true
   key_name = aws_key_pair.key.key_name
-  
+
   root_block_device {
     volume_size = "80"
     volume_type = "standard"
