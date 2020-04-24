@@ -33,7 +33,7 @@ This is all preparation we need to do. The following code shows how to import th
 
         .. code:: python
 
-            airlines_frame = h2o.import_hive_table("default", "airlines")
+            airlines_frame = h2oContext.importHiveTable("default", "airlines")
 
     .. tab-container:: R
         :title: R
@@ -42,7 +42,7 @@ This is all preparation we need to do. The following code shows how to import th
 
         .. code:: R
 
-            airlines_frame <- h2o.import_hive_table("default", "airlines")
+            airlines_frame <- h2oContext$importHiveTable("default", "airlines")
 
 This call reads airlines table from default database.
 
