@@ -4,7 +4,7 @@
 properties(
         [
                 pipelineTriggers([cron('H 16 * * *')]),
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '1'))
         ]
 )
 
