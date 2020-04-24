@@ -34,6 +34,7 @@ dependencies {
   integTestImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   integTestImplementation("junit:junit:4.11")
   integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+  integTestImplementation("org.scala-lang:scala-library:${scalaVersion}")
 
   // For test purposes, force newer client as the tests are modifying classpath and we get errors which
   // we do not get during normal production usage
