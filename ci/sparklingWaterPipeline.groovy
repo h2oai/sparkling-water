@@ -181,7 +181,6 @@ def call(params, body) {
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
-    cleanWs()
 }
 
 def prepareSparkEnvironment() {
