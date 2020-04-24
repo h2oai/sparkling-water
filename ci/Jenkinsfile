@@ -4,7 +4,7 @@
 // Job parameters
 properties(
         [
-                buildDiscarder(logRotator(numToKeepStr: '10'))
+                buildDiscarder(logRotator(numToKeepStr: '1'))
         ]
 )
 
