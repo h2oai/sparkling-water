@@ -68,7 +68,7 @@ def testDownloadLogsAsLOG(spark):
     clusterName = hc._conf.cloudName()
 
     with open(path, 'r') as f:
-        lines = list(filter(lambda line: "INFO: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
+        lines = list(filter(lambda line: "INFO water.default: H2O cloud name: '" + clusterName + "'" in line, f.readlines()))
         assert len(lines) >= 1
     hc.stop()
 
