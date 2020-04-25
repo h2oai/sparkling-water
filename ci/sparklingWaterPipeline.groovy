@@ -107,6 +107,11 @@ def withSharedSetup(sparkMajorVersion, config,  shouldCheckout, code) {
                     }
                 }
             }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
         }
     }
 }
