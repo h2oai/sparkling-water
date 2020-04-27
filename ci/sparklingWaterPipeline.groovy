@@ -68,41 +68,43 @@ def getGradleCommand(config) {
 }
 
 def withSharedSetup(sparkMajorVersion, config, code) {
-    ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
-        try {
-            config.put("sparkMajorVersion", sparkMajorVersion)
-            cleanWs()
-            checkout scm
-            config.commons = load 'ci/commons.groovy'
-            config.put("sparkVersion", getSparfkVersion(config))
+    node('docker') {
+        ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
+            try {
+                config.put("sparkMajorVersion", sparkMajorVersion)
+                cleanWs()
+                checkout scm
+                config.commons = load 'ci/commons.groovy'
+                config.put("sparkVersion", getSparkVersion(config))
 
-            if (config.buildAgainstH2OBranch.toBoolean()) {
-                config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
-            } else {
-                def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
-                def majorVersion = majorVersionLine.split("=")[1]
-                def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
-                def buildVersion = buildVersionLine.split("=")[1]
-                config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
-            }
+                if (config.buildAgainstH2OBranch.toBoolean()) {
+                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+                } else {
+                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                    def majorVersion = majorVersionLine.split("=")[1]
+                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                    def buildVersion = buildVersionLine.split("=")[1]
+                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+                }
 
-            def customEnv = [
-                    "SPARK_HOME=${env.WORKSPACE}/spark",
-                    "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                    "H2O_DRIVER_JAR=${config.driverJarPath}"
-            ]
+                def customEnv = [
+                        "SPARK_HOME=${env.WORKSPACE}/spark",
+                        "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                        "H2O_DRIVER_JAR=${config.driverJarPath}"
+                ]
 
-            ansiColor('xterm') {
-                timestamps {
-                    withEnv(customEnv) {
-                        timeout(time: 180, unit: 'MINUTES') {
-                            code()
+                ansiColor('xterm') {
+                    timestamps {
+                        withEnv(customEnv) {
+                            timeout(time: 180, unit: 'MINUTES') {
+                                code()
+                            }
                         }
                     }
                 }
+            } finally {
+                cleanWs()
             }
-        } finally {
-            cleanWs()
         }
     }
 }
@@ -175,11 +177,9 @@ def call(params, body) {
         }
     }
 
-    node('docker') {
-        parallel(parallelStages)
-        // Publish nightly only in case all tests for all Spark succeeded
-        parallel(nightlyParallelStages)
-    }
+    parallel(parallelStages)
+    // Publish nightly only in case all tests for all Spark succeeded
+    parallel(nightlyParallelStages)
 }
 
 def prepareSparkEnvironment() {
