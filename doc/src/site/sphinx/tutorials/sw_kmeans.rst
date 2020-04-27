@@ -30,7 +30,7 @@ The following sections describe how to train KMeans model in Sparkling Water in 
         .. code:: scala
 
             val frame = new H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv"))
-            val sparkDF = hc.asDataFrame(frame)
+            val sparkDF = hc.asSparkFrame(frame)
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Train the model. You can configure all the available KMeans arguments using provided setters.

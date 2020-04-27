@@ -43,7 +43,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.anyVec().nChunks() == 2)
     val updatedFrame = h2oFrame.add(h2oFrame)
 
-    val convertedDf = hc.asDataFrame(updatedFrame)
+    val convertedDf = hc.asSparkFrame(updatedFrame)
     convertedDf.collect()
 
     assert(convertedDf.count() == h2oFrame.numRows())

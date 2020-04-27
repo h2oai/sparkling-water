@@ -31,11 +31,11 @@ Example
 Converting an H2OFrame into a DataFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``H2OContext`` class provides the method ``asDataFrame``, which creates a DataFrame-like wrapper around the provided H2OFrame:
+The ``H2OContext`` class provides the method ``asSparkFrame``, which creates a DataFrame-like wrapper around the provided H2OFrame:
 
 .. code:: scala
 
-    def asDataFrame(fr: H2OFrame): DataFrame
+    def asSparkFrame(fr: H2OFrame): DataFrame
 
 The schema of the created instance of the ``DataFrame`` is derived from the column names and types of the specified ``H2OFrame``.
 
@@ -44,7 +44,7 @@ Example
 
 .. code:: scala
 
-    val dataFrame = asDataFrame(h2oFrame)
+    val dataFrame = asSparkFrame(h2oFrame)
 
 Converting an RDD[T] into an H2OFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
