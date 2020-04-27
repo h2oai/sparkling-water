@@ -119,7 +119,7 @@ To run Sparkling Water with Hive support for kerberized hadoop cluster, you must
         .. code:: scala
 
             import org.apache.spark.h2o._
-            val conf = H2OConf()
+            val conf = new H2OConf()
             conf.setHiveSupportEnabled()
             conf.setHiveHost("hostname:10000") # The full address of HiveServer2
             conf.setHivePrincipal("hive/hostname@DOMAIN.COM") # Hiveserver2 Kerberos principal
@@ -127,10 +127,10 @@ To run Sparkling Water with Hive support for kerberized hadoop cluster, you must
             val source = scala.io.Source.fromFile('hive.token')
             try {
                 conf.setHiveToken(source.mkString())
-                val hc = H2OContext.getOrCreate(conf)
             } finally {
                 source.close()
             }
+            val hc = H2OContext.getOrCreate(conf)
 
         Import data table from Hive
 
