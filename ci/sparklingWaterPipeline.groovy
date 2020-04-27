@@ -224,9 +224,6 @@ def buildAndLint() {
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
                 unstash "shared"
-                if (!config.uploadNightly.toBoolean()) {
-                    stash name: "shared", excludes: "**", allowEmpty: true
-                }
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
@@ -358,7 +355,6 @@ def publishNightly() {
                 config.commons.withAWSCredentials {
                     config.commons.withSigningCredentials {
                         unstash "shared"
-                        stash name: "shared", excludes: "**", allowEmpty: true
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
