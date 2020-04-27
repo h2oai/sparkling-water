@@ -174,7 +174,6 @@ def prepareSparklingEnvironmentStage(config) {
                     stash name: "shared", includes: ".gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar"
                 }
             }
-            stash name: "shared", includes: '.m2/**, h2o-3/h2o-py/h2o/**/*.py, h2o-3/h2o-r/h2o_*.99999.tar.gz'
         }
     }
 }
