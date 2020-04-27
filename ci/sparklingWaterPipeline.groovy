@@ -86,9 +86,9 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                     def buildVersion = buildVersionLine.split("=")[1]
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
-
+                config.put("sparkHome", "/home/jenkins/SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}}")
                 def customEnv = [
-                        "SPARK_HOME=${env.WORKSPACE}/spark",
+                        "SPARK_HOME=${config/sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
@@ -115,7 +115,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     sh "sudo -E /usr/sbin/startup.sh"
-                    prepareSparkEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
                     pyUnitTests()(config)
@@ -213,16 +212,6 @@ def call(params, body) {
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
-}
-
-def prepareSparkEnvironment() {
-    return { config ->
-        stage('Prepare Spark Environment - ' + config.backendMode) {
-            sh """
-                cp -R \${SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}} ${env.SPARK_HOME}
-                """
-        }
-    }
 }
 
 def buildAndLint() {
