@@ -40,4 +40,4 @@ Creating a Spark ``DataFrame`` from an ``H2OFrame``:
 .. code:: scala
 
     %spark
-    val df = hc.asDataFrame(hf)
+    val df = hc.asSparkFrame(hf)

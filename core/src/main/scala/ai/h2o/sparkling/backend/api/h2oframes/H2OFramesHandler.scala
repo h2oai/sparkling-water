@@ -43,7 +43,7 @@ class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends
       case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
     }
 
-    val dataFrame = h2oContext.asDataFrame(h2oFrame)
+    val dataFrame = h2oContext.asSparkFrame(h2oFrame)
     dataFrame.rdd.cache()
     if (s.dataframe_id == null) {
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString

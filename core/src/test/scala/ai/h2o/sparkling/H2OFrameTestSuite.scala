@@ -172,7 +172,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
-    val resultDF = hc.asDataFrame(result.frameId).select("name", "age", "city", "salary")
+    val resultDF = hc.asSparkFrame(result.frameId).select("name", "age", "city", "salary")
     TestUtils.assertDataFramesAreIdentical(resultDF, expected)
   }
 }

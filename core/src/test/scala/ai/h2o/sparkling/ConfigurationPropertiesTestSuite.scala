@@ -212,7 +212,7 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
     val frameKey = hc.asH2OFrameKeyString(dataset)
-    val result = hc.asDataFrame(frameKey)
+    val result = hc.asSparkFrame(frameKey)
 
     TestUtils.assertDataFramesAreIdentical(dataset, result)
   }

@@ -28,7 +28,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
         .. code:: scala
 
             val frame = new H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
-            val sparkDF = hc.asDataFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+            val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Train the model. You can configure all the available XGBoost arguments using provided setters, such as the label column.

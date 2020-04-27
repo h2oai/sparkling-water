@@ -118,7 +118,7 @@ class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestCon
 
       val expectedDataFrame = getExpectedDataFrame(dataFrame, numberOfRows)
       val h2oFrame = hc.asH2OFrame(dataFrame)
-      val result = hc.asDataFrame(h2oFrame)
+      val result = hc.asSparkFrame(h2oFrame)
 
       TestUtils.assertDataFramesAreIdentical(expectedDataFrame, result)
     }

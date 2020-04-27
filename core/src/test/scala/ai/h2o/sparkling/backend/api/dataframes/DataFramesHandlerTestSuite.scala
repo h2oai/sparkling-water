@@ -67,7 +67,7 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
     val h2oframe = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
     // we have created dataFrame from already existing h2oFrame, metadata are included
-    val df = hc.asDataFrame(h2oframe)
+    val df = hc.asSparkFrame(h2oframe)
     val name = "prostate"
     df.createOrReplaceTempView(name)
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
