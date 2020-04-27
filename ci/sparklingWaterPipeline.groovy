@@ -67,20 +67,14 @@ def getGradleCommand(config) {
     }
 }
 
-def withSharedSetup(sparkMajorVersion, config, shouldCheckout, code) {
+def withSharedSetup(sparkMajorVersion, config, code) {
     node('docker') {
         ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
             try {
                 config.put("sparkMajorVersion", sparkMajorVersion)
-
                 cleanWs()
-                if (shouldCheckout) {
-                    checkout scm
-                    config.commons = load 'ci/commons.groovy'
-                } else {
-                    unstash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
-                }
-
+                checkout scm
+                config.commons = load 'ci/commons.groovy'
                 config.put("sparkVersion", getSparkVersion(config))
 
                 if (config.buildAgainstH2OBranch.toBoolean()) {
@@ -92,9 +86,9 @@ def withSharedSetup(sparkMajorVersion, config, shouldCheckout, code) {
                     def buildVersion = buildVersionLine.split("=")[1]
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
-
+                config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin-hadoop2.7")
                 def customEnv = [
-                        "SPARK_HOME=${env.WORKSPACE}/spark",
+                        "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
@@ -118,11 +112,9 @@ def withSharedSetup(sparkMajorVersion, config, shouldCheckout, code) {
 def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
-            withSharedSetup(sparkMajorVersion, config, true) {
+            withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     sh "sudo -E /usr/sbin/startup.sh"
-                    prepareSparkEnvironment()(config)
-                    prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
                     pyUnitTests()(config)
@@ -138,9 +130,48 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
 def getNightlyStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
-            withSharedSetup(sparkMajorVersion, config, false) {
+            withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     publishNightly()(config)
+                }
+            }
+        }
+    }
+}
+
+def prepareSparklingEnvironmentStage(config) {
+    stage("Prepare Sparkling Water Environment") {
+        node('docker') {
+            cleanWs()
+            checkout scm
+            pipeline = load 'ci/sparklingWaterPipeline.groovy'
+            def commons = load 'ci/commons.groovy'
+            commons.withSparklingWaterDockerImage {
+                if (config.buildAgainstH2OBranch.toBoolean()) {
+                    retryWithDelay(3, 60, {
+                        sh "git clone https://github.com/h2oai/h2o-3.git"
+                    })
+                    retryWithDelay(5, 1, {
+                        sh """
+                            cd h2o-3
+                            git checkout ${config.h2oBranch}
+                            . /envs/h2o_env_python2.7/bin/activate
+                            export BUILD_HADOOP=true
+                            export H2O_TARGET=${config.driverHadoopVersion}
+                            ./gradlew build -x check -Duser.name=ec2-user
+                            ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+                            ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+                            cd ..
+                            """
+                    })
+                    stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz, h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+                } else {
+                    sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                    def majorVersion = majorVersionLine.split("=")[1]
+                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                    def buildVersion = buildVersionLine.split("=")[1]
+                    stash name: "shared", includes: ".gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar"
                 }
             }
         }
@@ -182,54 +213,21 @@ def call(params, body) {
             nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
         }
     }
+    prepareSparklingEnvironmentStage(config)
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
-}
-
-def prepareSparkEnvironment() {
-    return { config ->
-        stage('Prepare Spark Environment - ' + config.backendMode) {
-            sh """
-                cp -R \${SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}} ${env.SPARK_HOME}
-                """
-        }
-    }
-}
-
-def prepareSparklingWaterEnvironment() {
-    return { config ->
-        stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
-            if (config.buildAgainstH2OBranch.toBoolean()) {
-                retryWithDelay(3, 60, {
-                    sh "git clone https://github.com/h2oai/h2o-3.git"
-                })
-                sh """
-                        cd h2o-3
-                        git checkout ${config.h2oBranch}
-                        . /envs/h2o_env_python2.7/bin/activate
-                        export BUILD_HADOOP=true
-                        export H2O_TARGET=${config.driverHadoopVersion}
-                        ./gradlew build -x check -Duser.name=ec2-user
-                        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
-                        ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
-                        cd ..
-                    """
-            } else {
-                sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
-            }
-        }
-    }
 }
 
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
-                if (config.uploadNightly.toBoolean()) {
-                    stash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
+                unstash "shared"
+                if (!config.uploadNightly.toBoolean()) {
+                    stash name: "shared", excludes: "**", allowEmpty: true
                 }
+                sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
             }
@@ -359,6 +357,8 @@ def publishNightly() {
             if (config.uploadNightly.toBoolean()) {
                 config.commons.withAWSCredentials {
                     config.commons.withSigningCredentials {
+                        unstash "shared"
+                        stash name: "shared", excludes: "**", allowEmpty: true
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
