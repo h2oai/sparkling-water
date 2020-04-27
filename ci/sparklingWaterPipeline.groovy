@@ -86,7 +86,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                     def buildVersion = buildVersionLine.split("=")[1]
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
-                config.put("sparkHome", "/home/jenkins/SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}}")
+                config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin-hadoop2.7")
                 def customEnv = [
                         "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
