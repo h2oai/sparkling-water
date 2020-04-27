@@ -364,7 +364,6 @@ def publishNightly() {
                         sh """
                             sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
-
                             ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
                             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
