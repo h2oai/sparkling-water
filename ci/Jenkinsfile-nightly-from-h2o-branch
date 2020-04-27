@@ -11,11 +11,15 @@ properties(
 def pipeline
 def sparkVersions
 node("docker") {
-    cleanWs()
-    checkout scm
-    pipeline = load 'ci/sparklingWaterPipeline.groovy'
-    def commons = load 'ci/commons.groovy'
-    sparkVersions = commons.getSupportedSparkVersions()
+    try {
+        cleanWs()
+        checkout scm
+        pipeline = load 'ci/sparklingWaterPipeline.groovy'
+        def commons = load 'ci/commons.groovy'
+        sparkVersions = commons.getSupportedSparkVersions()
+    } finally {
+        cleanWs()
+    }
 }
 
 pipeline(params) { p ->
