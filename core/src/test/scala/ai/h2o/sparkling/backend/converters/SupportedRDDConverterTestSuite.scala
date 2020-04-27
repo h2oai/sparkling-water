@@ -417,7 +417,7 @@ class SupportedRDDConverterTestSuite extends FunSuite with SharedH2OTestContext 
     val timestamp = DateTimeUtils.toUTCTime(h2oFrame.vec(0).at8(0) * 1000, SparkTimeZone.current().getID) / 1000
     assert(rdd.first().getTime == timestamp)
     // the rdd back should have spark time zone set up because the h2o frame -> rdd respects the Spark timezone
-    val rddBack = hc.asDataFrame(h2oFrame)
+    val rddBack = hc.asSparkFrame(h2oFrame)
     val rddBackData = rddBack.collect().map(_.getTimestamp(0))
     assert(rdd.collect.sameElements(rddBackData))
     h2oFrame.delete()

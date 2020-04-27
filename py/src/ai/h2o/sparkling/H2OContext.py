@@ -172,7 +172,7 @@ class H2OContext(object):
 
         if isinstance(h2oFrame, H2OFrame):
             frame_id = h2oFrame.frame_id
-            jdf = self._jhc.asDataFrame(frame_id, copyMetadata)
+            jdf = self._jhc.asSparkFrame(frame_id, copyMetadata)
             sqlContext = SparkSession.builder.getOrCreate()._wrapped
             df = DataFrame(jdf, sqlContext)
             # Attach h2o_frame to dataframe which forces python not to delete the frame when we leave the scope of this

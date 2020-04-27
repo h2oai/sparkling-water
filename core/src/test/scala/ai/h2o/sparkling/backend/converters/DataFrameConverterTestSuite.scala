@@ -47,7 +47,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   test("Creation of H2ODataFrame") {
     val h2oFrame = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(
       h2oFrame.numRows() == dataFrame.count(),
@@ -84,7 +84,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(0).at8(0) == 1)
     assert(h2oFrame.vec(0).isCategorical)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(4)(3)(0) == "ONE")
@@ -106,7 +106,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(1) == 1428517566L)
     assert(h2oFrame.vec(0).isTime)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     val localtime = DateTimeUtils.toUTCTime(1428517566L * 1000, TimeZone.getDefault.getID) / 1000
@@ -129,7 +129,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 8)
     assert(h2oFrame.vec(0).isNumeric)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(8)(7)(0) == 8)
@@ -152,7 +152,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 208)
     assert(h2oFrame.vec(0).isNumeric)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(8)(7)(0) == 208)
@@ -175,7 +175,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(4) == 100008)
     assert(h2oFrame.vec(0).isNumeric)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(8)(7)(0) == 100008)
@@ -197,7 +197,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).at8(1) == -8589934595L)
     assert(h2oFrame.vec(0).isNumeric)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(4)(3)(0) == -8589934595L)
@@ -219,7 +219,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(1).atd(1) == 100.00012)
     assert(h2oFrame.vec(0).isNumeric)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(4)(3)(0) == 100.00012)
@@ -242,7 +242,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.vec(0).chunkForChunkIdx(2).atStr(new BufferedString(), 1).toString.equals("string8"))
     assert(h2oFrame.vec(0).isString)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.take(8)(7)(0) == "string8")
@@ -276,7 +276,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
           h2oFrame.vec(0).chunkForChunkIdx(0).at16h(0))
     assert(h2oFrame.vec(0).isUUID)
 
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.count == h2oFrame.numRows())
     assert(dataFrame.schema.fields(0) match {
@@ -377,7 +377,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.vec(0).isString)
 
-    val resultDF = hc.asDataFrame(h2oFrame)
+    val resultDF = hc.asSparkFrame(h2oFrame)
     TestUtils.assertDataFramesAreIdentical(df, resultDF)
   }
 
@@ -388,7 +388,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.vec(0).isCategorical)
 
-    val resultDF = hc.asDataFrame(h2oFrame)
+    val resultDF = hc.asSparkFrame(h2oFrame)
     TestUtils.assertDataFramesAreIdentical(df, resultDF)
   }
 
@@ -708,7 +708,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val chunkLayout: Array[Long] = Array(50L, 50L)
     val data: Array[Array[Long]] = Array((1L to 50L).toArray, (51L to 100L).toArray)
     val h2oFrame = makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_NUM)
-    val dataFrame = hc.asDataFrame(h2oFrame)
+    val dataFrame = hc.asSparkFrame(h2oFrame)
 
     assert(dataFrame.schema("C0").metadata.getDouble("min") == 1L)
     assert(dataFrame.schema("C0").metadata.getLong("count") == 100L)
@@ -717,7 +717,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     val h2oFrameEnum =
       makeH2OFrame(fname, colNames, chunkLayout, data, Vec.T_CAT, colDomains = Array(Array("ZERO", "ONE")))
-    val dataFrameEnum = hc.asDataFrame(h2oFrameEnum)
+    val dataFrameEnum = hc.asSparkFrame(h2oFrameEnum)
     assert(dataFrameEnum.schema("C0").metadata.getLong("cardinality") == 2L)
     h2oFrameEnum.delete()
   }
@@ -805,7 +805,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val wideDF = df.withColumn("_tmp", split($"value", ",")).select(cols: _*).drop("_tmp")
 
     val hf = hc.asH2OFrame(wideDF)
-    val resultDF = hc.asDataFrame(hf)
+    val resultDF = hc.asSparkFrame(hf)
 
     assert(hf.numCols() == numCols)
     resultDF.foreach(_ => {})

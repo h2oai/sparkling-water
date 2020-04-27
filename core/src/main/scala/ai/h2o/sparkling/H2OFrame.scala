@@ -153,8 +153,8 @@ class H2OFrame private (
 
   private def joinUsingSpark(another: H2OFrame, method: String): H2OFrame = {
     val hc = H2OContext.ensure()
-    val currentFrame = hc.asDataFrame(this.frameId)
-    val anotherFrame = hc.asDataFrame(another.frameId)
+    val currentFrame = hc.asSparkFrame(this.frameId)
+    val anotherFrame = hc.asSparkFrame(another.frameId)
     val sameCols = anotherFrame.columns.intersect(currentFrame.columns)
     val joined = currentFrame.join(anotherFrame, sameCols, method)
     H2OFrame(hc.asH2OFrameKeyString(joined))

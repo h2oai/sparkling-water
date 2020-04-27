@@ -48,12 +48,12 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
     h2oFrame.delete()
   }
 
-  test("asDataFrame conversion on subset of executors") {
+  test("asSparkFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
     val originalRdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
     val hf = hc.asH2OFrame(originalRdd)
 
-    val convertedDf = hc.asDataFrame(hf)
+    val convertedDf = hc.asSparkFrame(hf)
     import spark.implicits._
     TestUtils.assertDataFramesAreIdentical(originalRdd.toDF, convertedDf.toDF())
   }

@@ -102,6 +102,9 @@ From 3.30 to 3.32
 - Methods ``setH2ONodeLogLevel`` and ``setH2OClientLogLevel`` are removed on ``H2OContext``. Please use ``setH2OLogLevel``
   instead.
 
+- Methods ``asDataFrame`` on Scala ``H2OContext`` has been replaced by methods ``asSparkFrame`` with same arguments.
+  This was done to ensure full consistency between Scala, Python and R APIs.
+
 From 3.28.1 to 3.30
 -------------------
 

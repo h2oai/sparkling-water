@@ -128,7 +128,12 @@ public class JavaH2OContext {
    * @return a new RDD
    */
   public JavaRDD<Row> asRDD(H2OFrame fr) {
-    return hc.asDataFrame(fr, true).toJavaRDD();
+    return hc.asSparkFrame(fr, true).toJavaRDD();
+  }
+
+  @Deprecated
+  public Dataset<Row> asDataFrame(Frame fr) {
+    return asSparkFrame(fr);
   }
 
   /**
@@ -137,8 +142,13 @@ public class JavaH2OContext {
    * @param fr the frame to be used
    * @return a new data frame
    */
-  public Dataset<Row> asDataFrame(Frame fr) {
-    return asDataFrame(fr, true);
+  public Dataset<Row> asSparkFrame(Frame fr) {
+    return asSparkFrame(fr, true);
+  }
+
+  @Deprecated
+  public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata) {
+    return asSparkFrame(fr, copyMetadata);
   }
 
   /**
@@ -148,8 +158,13 @@ public class JavaH2OContext {
    * @param copyMetadata true if metadata should be copied
    * @return Spark dataset
    */
-  public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata) {
-    return hc.asDataFrame(fr, copyMetadata);
+  public Dataset<Row> asSparkFrame(Frame fr, boolean copyMetadata) {
+    return hc.asSparkFrame(fr, copyMetadata);
+  }
+
+  @Deprecated
+  public Dataset<Row> asDataFrame(String key) {
+    return asSparkFrame(key);
   }
 
   /**
@@ -158,8 +173,13 @@ public class JavaH2OContext {
    * @param key key of H2O frame to convert
    * @return Spark dataset
    */
-  public Dataset<Row> asDataFrame(String key) {
-    return asDataFrame(key, true);
+  public Dataset<Row> asSparkFrame(String key) {
+    return asSparkFrame(key, true);
+  }
+
+  @Deprecated
+  public Dataset<Row> asDataFrame(String key, boolean copyMetadata) {
+    return asSparkFrame(key, copyMetadata);
   }
 
   /**
@@ -169,8 +189,8 @@ public class JavaH2OContext {
    * @param copyMetadata true if metadata should be copied
    * @return Spark dataset
    */
-  public Dataset<Row> asDataFrame(String key, boolean copyMetadata) {
-    return hc.asDataFrame(key, copyMetadata);
+  public Dataset<Row> asSparkFrame(String key, boolean copyMetadata) {
+    return hc.asSparkFrame(key, copyMetadata);
   }
 
   /**

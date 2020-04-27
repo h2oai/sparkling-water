@@ -168,7 +168,7 @@ class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with 
     val req3 = new ScalaCodeV3
     req3.session_id = reqSession.session_id
     // this code is using implicitly sqlContext
-    req3.code = "val dataframe = h2oContext.asDataFrame(h2oFrame)"
+    req3.code = "val dataframe = h2oContext.asSparkFrame(h2oFrame)"
     val result3 = scalaCodeHandler.interpret(3, req3)
     assert(result3.output.equals(""), "Printed output should be empty")
     assert(result3.status.equals("Success"), "Status should be Success 3")

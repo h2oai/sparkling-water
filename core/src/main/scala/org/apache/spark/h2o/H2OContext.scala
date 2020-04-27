@@ -241,17 +241,25 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     SupportedRDDConverter.toRDD[A](this, fr)
   }
 
-  /** Convert given H2O frame into DataFrame type */
-  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
+  @DeprecatedMethod("asSparkFrame", "3.32")
+  def asDataFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = asSparkFrame(fr, copyMetadata)
+
+  def asSparkFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
   }
 
-  def asDataFrame(s: String, copyMetadata: Boolean): DataFrame = {
+  @DeprecatedMethod("asSparkFrame", "3.32")
+  def asDataFrame(s: String, copyMetadata: Boolean): DataFrame = asSparkFrame(s, copyMetadata)
+
+  def asSparkFrame(s: String, copyMetadata: Boolean): DataFrame = {
     val frame = ai.h2o.sparkling.H2OFrame(s)
     SparkDataFrameConverter.toDataFrame(this, frame, copyMetadata)
   }
 
-  def asDataFrame(s: String): DataFrame = asDataFrame(s, true)
+  @DeprecatedMethod("asSparkFrame", "3.32")
+  def asDataFrame(s: String): DataFrame = asSparkFrame(s)
+
+  def asSparkFrame(s: String): DataFrame = asSparkFrame(s, copyMetadata = true)
 
   /** Returns location of REST API of H2O client */
   def h2oLocalClient = leaderNode.hostname + ":" + leaderNode.port + conf.contextPath.getOrElse("")
