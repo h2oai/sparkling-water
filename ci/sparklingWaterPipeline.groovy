@@ -144,6 +144,9 @@ def prepareSparklingEnvironmentStage(config) {
     stage("Prepare Sparkling Water Environment") {
         node('docker') {
             cleanWs()
+            checkout scm
+            pipeline = load 'ci/sparklingWaterPipeline.groovy'
+            def commons = load 'ci/commons.groovy'
             commons.withSparklingWaterDockerImage {
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     retryWithDelay(3, 60, {
@@ -164,7 +167,7 @@ def prepareSparklingEnvironmentStage(config) {
                     sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
                 }
             }
-            stash "h2o"
+            stash "shared"
         }
     }
 }
@@ -224,7 +227,7 @@ def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
-                unstash "h2o"
+                unstash "shared"
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
@@ -355,7 +358,7 @@ def publishNightly() {
             if (config.uploadNightly.toBoolean()) {
                 config.commons.withAWSCredentials {
                     config.commons.withSigningCredentials {
-                        unstash "h2o"
+                        unstash "shared"
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
@@ -377,7 +380,7 @@ def publishNightly() {
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
                             """
-                        stash name: "h2o", excludes: "**", allowEmpty: true
+                        stash name: "shared", excludes: "**", allowEmpty: true
                     }
                 }
             }
