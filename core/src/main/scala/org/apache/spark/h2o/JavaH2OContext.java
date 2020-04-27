@@ -129,11 +129,6 @@ public class JavaH2OContext {
     return hc.asSparkFrame(fr, true).toJavaRDD();
   }
 
-  @Deprecated
-  public Dataset<Row> asDataFrame(Frame fr) {
-    return asSparkFrame(fr);
-  }
-
   /**
    * Convert given H2O frame into DataFrame type
    *
@@ -142,11 +137,6 @@ public class JavaH2OContext {
    */
   public Dataset<Row> asSparkFrame(Frame fr) {
     return asSparkFrame(fr, true);
-  }
-
-  @Deprecated
-  public Dataset<Row> asDataFrame(Frame fr, boolean copyMetadata) {
-    return asSparkFrame(fr, copyMetadata);
   }
 
   /**
@@ -160,11 +150,6 @@ public class JavaH2OContext {
     return hc.asSparkFrame(fr, copyMetadata);
   }
 
-  @Deprecated
-  public Dataset<Row> asDataFrame(String key) {
-    return asSparkFrame(key);
-  }
-
   /**
    * Convert given H2O frame into DataFrame type
    *
@@ -173,11 +158,6 @@ public class JavaH2OContext {
    */
   public Dataset<Row> asSparkFrame(String key) {
     return asSparkFrame(key, true);
-  }
-
-  @Deprecated
-  public Dataset<Row> asDataFrame(String key, boolean copyMetadata) {
-    return asSparkFrame(key, copyMetadata);
   }
 
   /**
