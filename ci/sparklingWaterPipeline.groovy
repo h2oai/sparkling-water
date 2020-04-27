@@ -67,50 +67,42 @@ def getGradleCommand(config) {
     }
 }
 
-def withSharedSetup(sparkMajorVersion, config, shouldCheckout, code) {
-    node('docker') {
-        ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
-            try {
-                config.put("sparkMajorVersion", sparkMajorVersion)
+def withSharedSetup(sparkMajorVersion, config, code) {
+    ws("${env.WORKSPACE}-spark-${sparkMajorVersion}-${config.backendMode}") {
+        try {
+            config.put("sparkMajorVersion", sparkMajorVersion)
+            cleanWs()
+            checkout scm
+            config.commons = load 'ci/commons.groovy'
+            config.put("sparkVersion", getSparfkVersion(config))
 
-                cleanWs()
-                if (shouldCheckout) {
-                    checkout scm
-                    config.commons = load 'ci/commons.groovy'
-                } else {
-                    unstash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
-                }
+            if (config.buildAgainstH2OBranch.toBoolean()) {
+                config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+            } else {
+                def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                def majorVersion = majorVersionLine.split("=")[1]
+                def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                def buildVersion = buildVersionLine.split("=")[1]
+                config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+            }
 
-                config.put("sparkVersion", getSparkVersion(config))
+            def customEnv = [
+                    "SPARK_HOME=${env.WORKSPACE}/spark",
+                    "HADOOP_CONF_DIR=/etc/hadoop/conf",
+                    "H2O_DRIVER_JAR=${config.driverJarPath}"
+            ]
 
-                if (config.buildAgainstH2OBranch.toBoolean()) {
-                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
-                } else {
-                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
-                    def majorVersion = majorVersionLine.split("=")[1]
-                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
-                    def buildVersion = buildVersionLine.split("=")[1]
-                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
-                }
-
-                def customEnv = [
-                        "SPARK_HOME=${env.WORKSPACE}/spark",
-                        "HADOOP_CONF_DIR=/etc/hadoop/conf",
-                        "H2O_DRIVER_JAR=${config.driverJarPath}"
-                ]
-
-                ansiColor('xterm') {
-                    timestamps {
-                        withEnv(customEnv) {
-                            timeout(time: 180, unit: 'MINUTES') {
-                                code()
-                            }
+            ansiColor('xterm') {
+                timestamps {
+                    withEnv(customEnv) {
+                        timeout(time: 180, unit: 'MINUTES') {
+                            code()
                         }
                     }
                 }
-            } finally {
-                cleanWs()
             }
+        } finally {
+            cleanWs()
         }
     }
 }
@@ -118,7 +110,7 @@ def withSharedSetup(sparkMajorVersion, config, shouldCheckout, code) {
 def getTestingStagesDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
-            withSharedSetup(sparkMajorVersion, config, true) {
+            withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
@@ -138,7 +130,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
 def getNightlyStageDefinition(sparkMajorVersion, config) {
     return {
         stage("Spark ${sparkMajorVersion}") {
-            withSharedSetup(sparkMajorVersion, config, false) {
+            withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     publishNightly()(config)
                 }
@@ -182,9 +174,12 @@ def call(params, body) {
             nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
         }
     }
-    parallel(parallelStages)
-    // Publish nightly only in case all tests for all Spark succeeded
-    parallel(nightlyParallelStages)
+
+    node('docker') {
+        parallel(parallelStages)
+        // Publish nightly only in case all tests for all Spark succeeded
+        parallel(nightlyParallelStages)
+    }
 }
 
 def prepareSparkEnvironment() {
@@ -227,9 +222,6 @@ def buildAndLint() {
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
-                if (config.uploadNightly.toBoolean()) {
-                    stash "sw-build-${config.sparkMajorVersion}-${config.backendMode}"
-                }
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
             }
@@ -364,7 +356,8 @@ def publishNightly() {
                         sh """
                             sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
-                            ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+
+                            ${getGradleCommand(config)} dist -Pspark=${config.sparkMajorVersion} -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
                             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
