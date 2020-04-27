@@ -88,7 +88,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 }
                 config.put("sparkHome", "/home/jenkins/SPARK_HOME_${config.sparkMajorVersion.replace(".", "_")}}")
                 def customEnv = [
-                        "SPARK_HOME=${config/sparkHome}",
+                        "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
                         "H2O_DRIVER_JAR=${config.driverJarPath}"
                 ]
