@@ -152,17 +152,19 @@ def prepareSparklingEnvironmentStage(config) {
                     retryWithDelay(3, 60, {
                         sh "git clone https://github.com/h2oai/h2o-3.git"
                     })
-                    sh """
-                    cd h2o-3
-                    git checkout ${config.h2oBranch}
-                    . /envs/h2o_env_python2.7/bin/activate
-                    export BUILD_HADOOP=true
-                    export H2O_TARGET=${config.driverHadoopVersion}
-                    ./gradlew build -x check -Duser.name=ec2-user
-                    ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
-                    ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
-                    cd ..
-                """
+                    retryWithDelay(5, 1, {
+                        sh """
+                            cd h2o-3
+                            git checkout ${config.h2oBranch}
+                            . /envs/h2o_env_python2.7/bin/activate
+                            export BUILD_HADOOP=true
+                            export H2O_TARGET=${config.driverHadoopVersion}
+                            ./gradlew build -x check -Duser.name=ec2-user
+                            ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+                            ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+                            cd ..
+                            """
+                    })
                 } else {
                     sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
                 }
