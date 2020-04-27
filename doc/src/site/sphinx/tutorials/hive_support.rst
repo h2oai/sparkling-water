@@ -199,4 +199,4 @@ To run Sparkling Water with Hive support for kerberized hadoop cluster, you must
 
         .. code:: R
 
-            frame <- hc$importHiveTable(("jdbc:hive2://hostname:10000/default;auth=delegationToken", "airlines")
+            frame <- hc$importHiveTable("jdbc:hive2://hostname:10000/default;auth=delegationToken", "airlines")
