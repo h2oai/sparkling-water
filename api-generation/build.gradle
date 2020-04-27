@@ -1,0 +1,8 @@
+description = "Sparkling Water API Generation"
+
+apply from: "$rootDir/gradle/utils.gradle"
+
+dependencies {
+  implementation("org.scala-lang:scala-library:${scalaVersion}")
+  implementation("ai.h2o:h2o-algos:${h2oVersion}")
+}
