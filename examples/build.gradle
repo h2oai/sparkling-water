@@ -2,24 +2,6 @@ description = "Sparkling Water Examples"
 
 apply from: "$rootDir/gradle/utils.gradle"
 
-project.ext.exampleResources = project.file("flows")
-
-sourceSets {
-  main {
-    resources {
-      srcDir("flows")
-    }
-  }
-}
-
-jar {
-  eachFile { f ->
-    if (new File(exampleResources, f.file.name).exists()) {
-      f.path = "www/flow/packs/examples/$f.name"
-    }
-  }
-}
-
 dependencies {
   api(project(":sparkling-water-ml"))
 
