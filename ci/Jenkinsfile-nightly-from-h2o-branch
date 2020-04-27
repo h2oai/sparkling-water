@@ -10,12 +10,13 @@ properties(
 
 def pipeline
 def sparkVersions
+def commonsLib
 node("docker") {
     try {
         cleanWs()
         checkout scm
         pipeline = load 'ci/sparklingWaterPipeline.groovy'
-        def commons = load 'ci/commons.groovy'
+        commons = load 'ci/commons.groovy'
         sparkVersions = commons.getSupportedSparkVersions()
     } finally {
         cleanWs()
@@ -23,6 +24,7 @@ node("docker") {
 }
 
 pipeline(params) { p ->
+    commons = commonsLib
     sparkMajorVersions = sparkVersions
     runUnitTests = "false"
     runPyUnitTests = "false"

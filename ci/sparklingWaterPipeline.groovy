@@ -116,7 +116,6 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     sh "sudo -E /usr/sbin/startup.sh"
                     prepareSparkEnvironment()(config)
-                    prepareSparklingWaterEnvironment()(config)
                     buildAndLint()(config)
                     unitTests()(config)
                     pyUnitTests()(config)
@@ -137,6 +136,35 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
                     publishNightly()(config)
                 }
             }
+        }
+    }
+}
+
+def prepareSparklingEnvironmentStage(config) {
+    stage("Prepare Sparkling Water Environment") {
+        node('docker') {
+            cleanWs()
+            commons.withSparklingWaterDockerImage {
+                if (config.buildAgainstH2OBranch.toBoolean()) {
+                    retryWithDelay(3, 60, {
+                        sh "git clone https://github.com/h2oai/h2o-3.git"
+                    })
+                    sh """
+                    cd h2o-3
+                    git checkout ${config.h2oBranch}
+                    . /envs/h2o_env_python2.7/bin/activate
+                    export BUILD_HADOOP=true
+                    export H2O_TARGET=${config.driverHadoopVersion}
+                    ./gradlew build -x check -Duser.name=ec2-user
+                    ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+                    ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+                    cd ..
+                """
+                } else {
+                    sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+                }
+            }
+            stash "h2o"
         }
     }
 }
@@ -176,7 +204,7 @@ def call(params, body) {
             nightlyParallelStages["Spark ${version}"] = getNightlyStageDefinition(version, configCopy)
         }
     }
-
+    prepareSparklingEnvironmentStage(config)
     parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
@@ -192,35 +220,11 @@ def prepareSparkEnvironment() {
     }
 }
 
-def prepareSparklingWaterEnvironment() {
-    return { config ->
-        stage('QA: Prepare Sparkling Water Environment - ' + config.backendMode) {
-            if (config.buildAgainstH2OBranch.toBoolean()) {
-                retryWithDelay(3, 60, {
-                    sh "git clone https://github.com/h2oai/h2o-3.git"
-                })
-                sh """
-                        cd h2o-3
-                        git checkout ${config.h2oBranch}
-                        . /envs/h2o_env_python2.7/bin/activate
-                        export BUILD_HADOOP=true
-                        export H2O_TARGET=${config.driverHadoopVersion}
-                        ./gradlew build -x check -Duser.name=ec2-user
-                        ./gradlew publishToMavenLocal -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
-                        ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
-                        cd ..
-                    """
-            } else {
-                sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
-            }
-        }
-    }
-}
-
 def buildAndLint() {
     return { config ->
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
+                unstash "h2o"
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
@@ -351,6 +355,7 @@ def publishNightly() {
             if (config.uploadNightly.toBoolean()) {
                 config.commons.withAWSCredentials {
                     config.commons.withSigningCredentials {
+                        unstash "h2o"
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
@@ -372,6 +377,7 @@ def publishNightly() {
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
                             """
+                        stash name: "h2o", excludes: "**", allowEmpty: true
                     }
                 }
             }
