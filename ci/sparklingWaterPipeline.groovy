@@ -164,11 +164,17 @@ def prepareSparklingEnvironmentStage(config) {
                             cd ..
                             """
                     })
+                    stash name: "shared", includes: ".m2/**, h2o-3/h2o-py/h2o/**/*.py, h2o-3/h2o-r/h2o_*.99999.tar.gz, h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
                 } else {
                     sh "${getGradleCommand(config)} -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+                    def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
+                    def majorVersion = majorVersionLine.split("=")[1]
+                    def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
+                    def buildVersion = buildVersionLine.split("=")[1]
+                    stash name: "shared", includes: ".gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar"
                 }
             }
-            stash "shared"
+            stash name: "shared", includes: '.m2/**, h2o-3/h2o-py/h2o/**/*.py, h2o-3/h2o-r/h2o_*.99999.tar.gz'
         }
     }
 }
