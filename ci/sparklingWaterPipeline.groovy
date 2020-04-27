@@ -224,6 +224,9 @@ def buildAndLint() {
         stage('QA: Build and Lint - ' + config.backendMode) {
             try {
                 unstash "shared"
+                if (!config.uploadNightly.toBoolean()) {
+                    stash name: "shared", excludes: "**", allowEmpty: true
+                }
                 sh "${getGradleCommand(config)} clean build -x check spotlessCheck"
             } finally {
                 arch 'assembly/build/reports/dependency-license/**/*'
@@ -355,6 +358,7 @@ def publishNightly() {
                 config.commons.withAWSCredentials {
                     config.commons.withSigningCredentials {
                         unstash "shared"
+                        stash name: "shared", excludes: "**", allowEmpty: true
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
@@ -376,7 +380,6 @@ def publishNightly() {
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
                             ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
                             """
-                        stash name: "shared", excludes: "**", allowEmpty: true
                     }
                 }
             }
