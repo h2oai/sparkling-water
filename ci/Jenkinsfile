@@ -13,15 +13,11 @@ cancelPreviousBuilds()
 def pipeline
 def sparkVersions
 node("docker") {
-    try {
-        cleanWs()
-        checkout scm
-        def commons = load 'ci/commons.groovy'
-        pipeline = load 'ci/sparklingWaterPipeline.groovy'
-        sparkVersions = commons.getSupportedSparkVersions()
-    } finally {
-        cleanWs()
-    }
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    pipeline = load 'ci/sparklingWaterPipeline.groovy'
+    sparkVersions = commons.getSupportedSparkVersions()
 }
 
 
