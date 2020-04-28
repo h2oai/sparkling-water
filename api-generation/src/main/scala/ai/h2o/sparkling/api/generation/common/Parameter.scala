@@ -18,9 +18,10 @@
 package ai.h2o.sparkling.api.generation.common
 
 case class Parameter(
-  name: String,
-  originalName: String,
+  swName: String,
+  h2oName: String,
   defaultValue: String,
-  dataType: DataType)
+  dataType: DataType,
+  comment: String)
 
 case class DataType(name: String, isEnum: Boolean)
