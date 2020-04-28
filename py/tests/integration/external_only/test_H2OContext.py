@@ -63,7 +63,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
 
 def testDownloadLogsAsLOG(spark):
-    hc = H2OContext.getOrCreate(createH2OConf())
+    hc = H2OContext.getOrCreate(createH2OConf().setH2ONodeLogLevel("INFO"))
     path = hc.downloadH2OLogs("build", "LOG")
     clusterName = hc._conf.cloudName()
 
