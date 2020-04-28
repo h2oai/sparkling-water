@@ -21,14 +21,13 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
+import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.{BuildInfo, NodeDesc}
+import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OConf, H2OContext}
-import water.api.ImportHiveTableHandler
+import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
 import water.api.ImportHiveTableHandler.HiveTableImporter
-import water.api.schemas3.CloudLockV3
+import water.api.schemas3.{CloudLockV3, JobV3}
 import water.fvec.Frame
 
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
@@ -53,20 +52,19 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       table: String,
       partitions: Array[Array[String]] = null,
       allowMultiFormat: Boolean = false): Frame = {
-    val hiveTableHandler = new ImportHiveTableHandler
-    val method = hiveTableHandler.getClass.getDeclaredMethod("getImporter")
-    method.setAccessible(true)
-    val importer = method.invoke(hiveTableHandler).asInstanceOf[ImportHiveTableHandler.HiveTableImporter]
-
-    if (importer != null) {
-      try {
-        importer.loadHiveTable(database, table, partitions, allowMultiFormat).get()
-      } catch {
-        case e: NoClassDefFoundError =>
-          throw new IllegalStateException("Hive Metastore client classes not available on classpath.", e)
-      }
-    } else {
-      throw new IllegalStateException("HiveTableImporter extension not enabled.")
+    val endpoint = RestApiUtils.getClusterEndpoint(getConf)
+    val params = Map(
+      "database" -> database,
+      "table" -> table,
+      "partitions" -> partitions,
+      "allow_multi_format" -> allowMultiFormat)
+    try {
+      val job = RestApiUtils.update[JobV3](endpoint, "/3/ImportHiveTable", getConf, params)
+      H2OJob(job.key.name).waitForFinish()
+      new H2OFrame(job.dest.name)
+    } catch {
+      case e: RestApiCommunicationException if e.getMessage.contains("table not found") =>
+        throw new IllegalArgumentException(s"Table '${table}' not found in the Hive database '${database}'!")
     }
   }
 

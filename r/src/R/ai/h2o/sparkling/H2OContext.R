@@ -96,5 +96,9 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
   },
   getH2OLogLevel = function() {
     invoke(.self$jhc, "getH2OLogLevel")
-}
+  },
+  importHiveTable = function(database = "default", table, partitions = NULL, allowMultiFormat = FALSE) {
+    library(h2o)
+    h2o.import_hive_table(database, table, partitions, allowMultiFormat)
+  }
 ))

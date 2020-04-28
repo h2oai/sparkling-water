@@ -154,6 +154,9 @@ class H2OContext(object):
     def getH2OLogLevel(self):
         return self._jhc.getH2OLogLevel()
 
+    def importHiveTable(self, database = "default", table = None, partitions = None, allowMultiFormat = False):
+        return h2o.import_hive_table(database, table, partitions, allowMultiFormat)
+
     def asSparkFrame(self, h2oFrame, copyMetadata=True):
         """
         Transforms given H2OFrame to Spark DataFrame
