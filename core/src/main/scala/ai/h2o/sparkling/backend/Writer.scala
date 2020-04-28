@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend
 
 import java.io.Closeable
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OConf, H2OFrame}
 import ai.h2o.sparkling.H2OFrame.query
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.extensions.rest.api.Paths
@@ -28,7 +28,7 @@ import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneCo
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ExpectedTypes, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.{H2OConf, RDD}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}

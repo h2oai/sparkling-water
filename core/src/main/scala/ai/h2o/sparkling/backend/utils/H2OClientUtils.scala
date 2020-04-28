@@ -19,9 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net.{InetAddress, NetworkInterface}
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.NodeDesc
 import org.apache.spark.SparkEnv
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.fvec.Frame
 import water.init.HostnameGuesser
 import water.{H2O, H2OStarter, Paxos}
@@ -32,7 +32,7 @@ import water.{H2O, H2OStarter, Paxos}
   */
 object H2OClientUtils extends SharedBackendUtils {
 
-  val PROP_REST_API_BASED_CLIENT: (String, Boolean) = ("spark.ext.h2o.rest.api.based.client", false)
+  val PROP_REST_API_BASED_CLIENT: (String, Boolean) = ("spark.ext.h2o.rest.api.based.client", true)
 
   def isH2OClientBased(conf: H2OConf): Boolean = {
     !conf.getBoolean(PROP_REST_API_BASED_CLIENT._1, PROP_REST_API_BASED_CLIENT._2)

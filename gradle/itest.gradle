@@ -38,7 +38,6 @@ task integTest(type: Test) {
     systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest/client")
     systemProperty "spark.ext.h2o.external.disable.version.check", "true"
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
-    systemProperty "spark.ext.h2o.rest.api.based.client", "true"
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
 

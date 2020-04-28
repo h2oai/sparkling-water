@@ -31,14 +31,14 @@ In order to use https correctly, the following two options need to be specified:
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
 
         You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf().setJks("/path/to/keystore").setJksPass("password")
             val hc = H2OContext.getOrCreate(conf)
 
@@ -134,7 +134,7 @@ certificates are created.
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
 
         You can also start Sparkling shell without the configuration
@@ -142,7 +142,7 @@ certificates are created.
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf().setAutoFlowSslEnabled().setVerifySslCertificates(false)
             val hc = H2OContext.getOrCreate(conf)
 

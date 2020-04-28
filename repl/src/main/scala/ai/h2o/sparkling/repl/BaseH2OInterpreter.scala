@@ -117,7 +117,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
       command(
         """
             @transient val h2oContext = {
-              val _h2oContext = org.apache.spark.h2o.H2OContext.ensure("H2OContext has to be started in order to use H2O REPL")
+              val _h2oContext = ai.h2o.sparkling.H2OContext.ensure("H2OContext has to be started in order to use H2O REPL")
               _h2oContext
             }
           """)
@@ -128,7 +128,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
       command("import sqlContext.sql")
       command("import org.apache.spark.sql._")
       command("import org.apache.spark.sql.functions._")
-      command("import org.apache.spark.h2o._")
+      command("import ai.h2o.sparkling._")
       command("import org.apache.spark._")
 
     })

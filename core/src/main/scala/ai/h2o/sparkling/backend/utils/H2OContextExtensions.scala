@@ -24,11 +24,10 @@ import java.util.Date
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
+import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OConf, H2OContext, H2OFrame}
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
-import water.fvec.Frame
 
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
   _: H2OContext =>
@@ -51,7 +50,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       database: String = HiveTableImporter.DEFAULT_DATABASE,
       table: String,
       partitions: Array[Array[String]] = null,
-      allowMultiFormat: Boolean = false): Frame = {
+      allowMultiFormat: Boolean = false): H2OFrame = {
     val endpoint = RestApiUtils.getClusterEndpoint(getConf)
     val params = Map(
       "database" -> database,
@@ -61,14 +60,14 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     try {
       val job = RestApiUtils.update[JobV3](endpoint, "/3/ImportHiveTable", getConf, params)
       H2OJob(job.key.name).waitForFinish()
-      new H2OFrame(job.dest.name)
+      H2OFrame(job.dest.name)
     } catch {
       case e: RestApiCommunicationException if e.getMessage.contains("table not found") =>
         throw new IllegalArgumentException(s"Table '${table}' not found in the Hive database '${database}'!")
     }
   }
 
-  protected def withConversionDebugPrints[R <: Frame](sc: SparkContext, conversionName: String, block: => R): R = {
+  protected def withConversionDebugPrints(sc: SparkContext, conversionName: String, block: => H2OFrame): H2OFrame = {
     val propName = "spark.h2o.measurements.timing"
     val performancePrintConf = sc.getConf.getOption(propName).orElse(sys.props.get(propName))
 
@@ -77,7 +76,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       val result = block
       val t1 = System.nanoTime()
       logInfo(
-        s"Elapsed time of the $conversionName conversion into H2OFrame ${result._key}: " + (t1 - t0) / 1000 + " millis")
+        s"Elapsed time of the $conversionName conversion into H2OFrame ${result.frameId}: " + (t1 - t0) / 1000 + " millis")
       result
     } else {
       block

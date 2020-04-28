@@ -17,11 +17,11 @@
 
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import java.util.concurrent.{Callable, ExecutorService, Executors}
+import java.util.concurrent.{Callable, ExecutorService}
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.repl.H2OInterpreter
-import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.JobV3
 
 import scala.collection.concurrent.TrieMap

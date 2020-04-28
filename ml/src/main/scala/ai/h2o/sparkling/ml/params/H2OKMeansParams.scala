@@ -16,11 +16,11 @@
  */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import hex.kmeans.KMeans
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.GLMV3.GLMParametersV3
-import org.apache.spark.h2o.H2OContext
 
 trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
@@ -114,7 +114,7 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
       val hc = H2OContext.ensure(
         "H2OContext needs to be created in order to train the H2OKMeans model. " +
           "Please create one as H2OContext.getOrCreate().")
-      hc.asH2OFrameKeyString(df)
+      hc.asH2OFrame(df).frameId
     }
   }
 }

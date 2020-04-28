@@ -20,20 +20,20 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{OutputStream, PrintWriter}
 import java.net.URI
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
 import hex.glm.GLM
 import hex.glm.GLMModel.GLMParameters
 import hex.tree.gbm.GBM
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.{Model, ModelBuilder}
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
 import water.MRTask
-import water.fvec.{Chunk, Frame, Vec}
+import water.fvec.{Chunk, Frame, H2OFrame, Vec}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -107,7 +107,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def loadRegularH2OFrame(): H2OFrame = {
     val uri = new URI(context.datasetDetails.url.get)
-    val frame = new H2OFrame(uri)
+    val frame = H2OFrame(uri)
     frame
   }
 

@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.utils.SchemaUtils
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
@@ -61,7 +60,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = H2OFrame(hc.asH2OFrameKeyString(relevantColumnsDF))
+    val input = hc.asH2OFrame(relevantColumnsDF)
     convertRelevantColumnsToCategorical(input)
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)

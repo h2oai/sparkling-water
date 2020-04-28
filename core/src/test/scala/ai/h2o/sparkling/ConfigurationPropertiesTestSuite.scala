@@ -21,7 +21,6 @@ import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
 import java.security.Permission
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -172,7 +171,7 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-    val frame = H2OFrame(hc.asH2OFrameKeyString(dataset))
+    val frame = hc.asH2OFrame(dataset)
     val result = hc.asSparkFrame(frame)
 
     TestUtils.assertDataFramesAreIdentical(dataset, result)

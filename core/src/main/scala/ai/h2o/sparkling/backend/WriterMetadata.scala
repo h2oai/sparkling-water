@@ -18,8 +18,8 @@ package ai.h2o.sparkling.backend
 
 import java.util.TimeZone
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
-import org.apache.spark.h2o.H2OConf
 
 case class WriterMetadata(
     conf: H2OConf,

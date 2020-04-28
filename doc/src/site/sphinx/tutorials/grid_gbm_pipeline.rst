@@ -36,7 +36,7 @@ Make sure ``H2OContext`` is available:
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     implicit val h2oContext = H2OContext.getOrCreate()
 
 

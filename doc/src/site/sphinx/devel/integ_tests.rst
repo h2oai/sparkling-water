@@ -52,7 +52,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext.implicits._
 
@@ -64,7 +64,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
-        import org.apache.spark.h2o._
+        import ai.h2o.sparkling._
         val h2oContext = H2OContext.getOrCreate()
 
         import java.io.File
@@ -79,7 +79,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
-        import org.apache.spark.h2o._
+        import ai.h2o.sparkling._
         val h2oContext = H2OContext.getOrCreate()
 
         val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
@@ -92,7 +92,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
         import org.apache.spark.sql.SparkSession
         val spark = SparkSession.builder().getOrCreate()
-        import org.apache.spark.h2o._
+        import ai.h2o.sparkling._
         val h2oContext = H2OContext.getOrCreate()
 
         val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
@@ -107,7 +107,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
 
     val rdd = sc.parallelize(1 to 1000, 100).map( v => IntHolder(Some(v)))
@@ -119,7 +119,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
 
     import spark.implicits._
@@ -132,7 +132,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
 
     val rdd = spark.sparkContext.parallelize(1 to 1000, 100).map(v => IntHolder(Some(v)))
@@ -145,7 +145,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
     import org.apache.spark.sql.SparkSession
     val spark = SparkSession.builder().getOrCreate()
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
 
     import spark.implicits._

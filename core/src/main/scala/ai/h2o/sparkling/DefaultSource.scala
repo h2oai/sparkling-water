@@ -18,7 +18,6 @@
 package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.H2OFrameRelation
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}

@@ -19,8 +19,8 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.H2OKMeans
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.SparkSession
 
 object ProstateDemo {

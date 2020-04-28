@@ -19,7 +19,6 @@ package ai.h2o.sparkling
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkConf
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 
 /**
   * A simple wrapper to allow launching H2O itself on the

@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.backend.api.rdds
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -77,18 +76,18 @@ private[api] class RDDsServlet extends ServletBase {
   private def convertToH2OFrame(rdd: RDD[_], name: Option[String]): H2OFrame = {
     if (rdd.isEmpty()) {
       // transform empty Seq in order to create empty H2OFrame
-      H2OFrame(hc.asH2OFrameKeyString(sc.parallelize(Seq.empty[Int]), name))
+      hc.asH2OFrame(sc.parallelize(Seq.empty[Int]), name)
     } else {
       rdd.first() match {
-        case _: Double => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Double]], name))
-        case _: LabeledPoint => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[LabeledPoint]], name))
-        case _: Boolean => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Boolean]], name))
-        case _: String => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[String]], name))
-        case _: Int => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Int]], name))
-        case _: Float => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Float]], name))
-        case _: Long => H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Long]], name))
+        case _: Double => hc.asH2OFrame(rdd.asInstanceOf[RDD[Double]], name)
+        case _: LabeledPoint => hc.asH2OFrame(rdd.asInstanceOf[RDD[LabeledPoint]], name)
+        case _: Boolean => hc.asH2OFrame(rdd.asInstanceOf[RDD[Boolean]], name)
+        case _: String => hc.asH2OFrame(rdd.asInstanceOf[RDD[String]], name)
+        case _: Int => hc.asH2OFrame(rdd.asInstanceOf[RDD[Int]], name)
+        case _: Float => hc.asH2OFrame(rdd.asInstanceOf[RDD[Float]], name)
+        case _: Long => hc.asH2OFrame(rdd.asInstanceOf[RDD[Long]], name)
         case _: java.sql.Timestamp =>
-          H2OFrame(hc.asH2OFrameKeyString(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name))
+          hc.asH2OFrame(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name)
         case _: Product =>
           val first = rdd.asInstanceOf[RDD[Product]].first()
           val fields = ScalaReflection.getConstructorParameters(first.getClass).map { v =>
@@ -97,7 +96,7 @@ private[api] class RDDsServlet extends ServletBase {
           }
           val df = SparkSessionUtils.active
             .createDataFrame(rdd.asInstanceOf[RDD[Product]].map(Row.fromTuple), StructType(fields))
-          H2OFrame(hc.asH2OFrameKeyString(df, name))
+          hc.asH2OFrame(df, name)
         case t => throw new IllegalArgumentException(s"Do not understand type $t")
       }
     }

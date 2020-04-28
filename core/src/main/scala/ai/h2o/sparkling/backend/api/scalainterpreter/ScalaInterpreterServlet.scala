@@ -20,13 +20,13 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.apache.spark.h2o.H2OConf
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap

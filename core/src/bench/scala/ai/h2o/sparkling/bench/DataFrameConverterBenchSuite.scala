@@ -78,7 +78,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
   private def testPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
     val df = TestUtils.generateDataFrame(spark, schemaHolder, settings)
     val hf = hc.asH2OFrame(df)
-    hf.remove()
+    hf.delete()
   }
 
   private def testflattenOnlyPerSchema(schemaHolder: TestUtils.SchemaHolder): Unit = {
@@ -107,7 +107,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
     val hf = hc.asH2OFrame(df)
-    hf.remove()
+    hf.delete()
   }
 
   benchTest("Measure performance of conversion to H2OFrame on a data frame with wide dense vectors") {
@@ -120,7 +120,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
     val hf = hc.asH2OFrame(df)
-    hf.remove()
+    hf.delete()
   }
 
   benchTest(
@@ -136,7 +136,7 @@ class DataFrameConverterBenchSuite extends BenchSuite with SharedH2OTestContext 
     val df = sc.parallelize((0 until numberOfRows).map(row => rowGenerator(row)), partitions).toDF()
 
     val hf = hc.asH2OFrame(df)
-    hf.remove()
+    hf.delete()
   }
 
   private def sparseVector(len: Int, elements: Int, rng: Random = Random): SparseVector = {

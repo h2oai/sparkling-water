@@ -19,11 +19,11 @@ package ai.h2o.sparkling.backend.utils
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Utils
-import org.apache.spark.h2o.H2OConf
 import water.network.SecurityUtils.SSLCredentials
 import water.network.{SecurityUtils => H2OSecurityUtils}
 

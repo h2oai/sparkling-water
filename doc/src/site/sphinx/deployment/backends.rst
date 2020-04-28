@@ -28,7 +28,7 @@ Explicitly specify internal backend on ``H2OConf``:
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf().setInternalClusterMode()
             val hc = H2OContext.getOrCreate(conf)
 
@@ -54,7 +54,7 @@ line or on the ``SparkConf`` class,  we can call just the following as ``H2OCont
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
 
     .. tab-container:: Python
@@ -76,7 +76,7 @@ We can however also explicitly pass the ``H2OConf``:
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf()
             val hc = H2OContext.getOrCreate(conf)
 
@@ -133,7 +133,7 @@ To start an H2O cluster and connect to it, run:
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useAutoClusterStart()
@@ -206,7 +206,7 @@ To connect to this external cluster, run the following commands:
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useManualClusterStart()
@@ -271,7 +271,7 @@ To connect to this external cluster, run the following commands:
 
          .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf()
                         .setExternalClusterMode()
                         .useManualClusterStart()
@@ -322,7 +322,7 @@ We can force the client to use the correct network or address using the followin
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val conf = new H2OConf()
                 .setExternalClusterMode()
                 .useManualClusterStart()

@@ -19,7 +19,6 @@ package ai.h2o.sparkling
 
 import java.security.Permission
 
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.scalatest.Suite
 
 /**

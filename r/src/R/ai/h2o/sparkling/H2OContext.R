@@ -40,10 +40,9 @@ H2OContext.getOrCreate <- function(conf = NULL) {
   if (is.null(conf)) {
     conf <- H2OConf()
   }
-  conf$set("spark.ext.h2o.rest.api.based.client", "true")
 
   sc <- spark_connection_find()[[1]]
-  jhc <- invoke_static(sc, "org.apache.spark.h2o.H2OContext", "getOrCreate", conf$jconf)
+  jhc <- invoke_static(sc, "ai.h2o.sparkling.H2OContext", "getOrCreate", conf$jconf)
   hc <- H2OContext(jhc)
   returnedConf <- invoke(jhc, "getConf")
   # Because of checks in Sparkling Water, we are sure context path starts with one slash
@@ -78,11 +77,12 @@ H2OContext <- setRefClass("H2OContext", fields = list(jhc = "ANY"), methods = li
   asH2OFrame = function(sparkFrame, h2oFrameName = NULL) {
     # Ensure we are dealing with a Spark DataFrame (might be e.g. a tbl)
     sparkFrame <- spark_dataframe(sparkFrame)
-    key <- if (is.null(h2oFrameName)) {
-      invoke(.self$jhc, "asH2OFrameKeyString", sparkFrame)
+    frame <- if (is.null(h2oFrameName)) {
+      invoke(.self$jhc, "asH2OFrame", sparkFrame)
     } else {
-      invoke(.self$jhc, "asH2OFrameKeyString", sparkFrame, h2oFrameName)
+      invoke(.self$jhc, "asH2OFrame", sparkFrame, h2oFrameName)
     }
+    key <- invoke(frame, "frameId")
 
     h2o.getFrame(key)
   },

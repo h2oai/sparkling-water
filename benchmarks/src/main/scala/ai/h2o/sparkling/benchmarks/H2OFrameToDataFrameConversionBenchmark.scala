@@ -23,5 +23,5 @@ class H2OFrameToDataFrameConversionBenchmark(context: BenchmarkContext) extends 
 
   override protected def initialize(): H2OFrame = loadDataToH2OFrame()
 
-  override protected def body(frame: H2OFrame): Unit = context.hc.asSparkFrame(frame).foreach(_ => {})
+  override protected def body(frame: H2OFrame): Unit = context.hc.asSparkFrame(frame.key.toString).foreach(_ => {})
 }

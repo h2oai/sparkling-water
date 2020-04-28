@@ -22,8 +22,7 @@ import java.lang.reflect.Constructor
 import ai.h2o.sparkling.backend.converters.DataTypeConverter
 import ai.h2o.sparkling.backend.utils.ProductType
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
-import ai.h2o.sparkling.{H2OFrame, SparkTimeZone}
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.{Partition, TaskContext}
 
 import scala.annotation.meta.{field, getter, param}

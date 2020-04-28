@@ -19,7 +19,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             import java.net.URI
             val hc = H2OContext.getOrCreate()
 

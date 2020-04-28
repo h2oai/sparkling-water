@@ -16,11 +16,11 @@
  */
 package ai.h2o.sparkling.backend.api.h2oframes
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**

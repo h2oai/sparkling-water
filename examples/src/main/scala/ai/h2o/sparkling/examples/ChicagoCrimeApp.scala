@@ -19,9 +19,9 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM}
 import ai.h2o.sparkling.ml.models.H2OMOJOModel
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.sql.{DataFrame, SparkSession}

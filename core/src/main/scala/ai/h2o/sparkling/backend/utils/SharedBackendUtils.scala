@@ -19,9 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf}
 import org.apache.spark.expose.{Logging, Utils}
-import org.apache.spark.h2o.H2OConf
 import org.apache.spark.{SparkContext, SparkEnv, SparkFiles}
 
 /**
