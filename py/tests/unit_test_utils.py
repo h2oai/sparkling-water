@@ -47,7 +47,6 @@ def get_default_spark_conf(additional_conf=None):
         set("spark.ext.h2o.external.start.mode", "auto"). \
         set("spark.ext.h2o.client.log.dir", "build/h2ologs-test"). \
         set("spark.ext.h2o.external.cluster.size", "1"). \
-        set("spark.ext.h2o.client.log.level", "WARN"). \
         set("spark.ext.h2o.node.log.level", "WARN")
 
     for key in additional_conf:
