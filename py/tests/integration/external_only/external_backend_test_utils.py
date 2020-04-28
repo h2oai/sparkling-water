@@ -23,6 +23,7 @@ def createH2OConf():
     conf.setClusterSize(1)
     conf.useAutoClusterStart()
     conf.setExternalClusterMode()
+    conf.setH2ONodeLogLevel("INFO")
     return conf
 
 

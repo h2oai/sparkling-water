@@ -33,13 +33,13 @@ def testZombieExternalH2OCluster():
     ipPort = getIpPortFromNotifyFile(notifyFile)
     appId = getYarnAppIdFromNotifyFile(notifyFile)
     # Lock the cloud, from this time, the cluster should stop after 10 seconds if nothing pings the /3/Ping endpoint
-    requests.post(url = "http://" + ipPort + "/3/CloudLock")
-
-    # Keep pinging the cluster
-    for x in range(0, 5):
-        requests.get(url = "http://" + ipPort + "/3/Ping")
-        assert appId in listYarnApps()
-        time.sleep(5)
+    with requests.Session() as s:
+        s.post(url = "http://" + ipPort + "/3/CloudLock")
+        # Keep pinging the cluster
+        for x in range(0, 5):
+            s.get(url = "http://" + ipPort + "/3/Ping")
+            assert appId in listYarnApps()
+            time.sleep(5)
     # Wait 60 seconds, H2O cluster should shut down as nothing has touched the /3/Ping endpoint
     time.sleep(60)
     assert appId not in listYarnApps()
@@ -63,7 +63,7 @@ def testH2OContextGetOrCreateReturnsReferenceToTheSameClusterIfStartedAutomatica
 
 
 def testDownloadLogsAsLOG(spark):
-    hc = H2OContext.getOrCreate(createH2OConf().setH2ONodeLogLevel("INFO"))
+    hc = H2OContext.getOrCreate(createH2OConf())
     path = hc.downloadH2OLogs("build", "LOG")
     clusterName = hc._conf.cloudName()
 
