@@ -60,7 +60,8 @@ trait SparkTestContext extends BeforeAndAfterAll {
         .set("spark.driver.memory", "1G")
         .set("spark.executor.memory", "1G")
         .set("spark.app.id", getClass.getSimpleName)
-        .set("spark.ext.h2o.client.log.level", "DEBUG")
+        .set("spark.ext.h2o.client.log.level", "WARN")
+        .set("spark.ext.h2o.node.log.level", "WARN")
         .set("spark.ext.h2o.repl.enabled", "false") // disable repl in tests
         .set("spark.scheduler.minRegisteredResourcesRatio", "1")
         .set("spark.ext.h2o.backend.cluster.mode", clusterMode)
