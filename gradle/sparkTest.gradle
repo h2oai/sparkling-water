@@ -15,7 +15,7 @@ test {
     forkEvery = 1
 
     // Increase heap size
-    maxHeapSize = "4g"
+    maxHeapSize = "2g"
 
     // Working dir will be root project
     workingDir = rootDir

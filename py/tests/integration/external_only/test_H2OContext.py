@@ -29,7 +29,7 @@ import pytest
 def testZombieExternalH2OCluster():
     jarPath = os.environ['H2O_DRIVER_JAR']
     notifyFile = "build/notify.txt"
-    subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 2G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
+    subprocess.check_call("hadoop jar {} -disown -notify {} -nodes 1 -mapperXmx 1G -J -rest_api_ping_timeout -J {}".format(jarPath, notifyFile, 10000), shell=True)
     ipPort = getIpPortFromNotifyFile(notifyFile)
     appId = getYarnAppIdFromNotifyFile(notifyFile)
     # Lock the cloud, from this time, the cluster should stop after 10 seconds if nothing pings the /3/Ping endpoint
