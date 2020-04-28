@@ -33,7 +33,9 @@ def get_default_spark_conf(additional_conf=None):
         "spark.executor.memory": "2g",
         "spark.driver.memory": "2g",
         "spark.ext.h2o.node.log.dir": "build/h2ologs-pyIntegTest",
-        "spark.ext.h2o.external.cluster.size": "1"
+        "spark.ext.h2o.external.cluster.size": "1",
+        "spark.ext.h2o.client.log.level": "WARN",
+        "spark.ext.h2o.node.log.level": "WARN"
     }
 
     for key in additional_conf:
