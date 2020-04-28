@@ -107,7 +107,7 @@ We also need to specify the algorithm on which we want to run Grid Search togeth
     import org.apache.spark.ml.h2o.algos.{H2OGBM, H2OGridSearch}
 
     val hyperParams: HashMap[String, Array[AnyRef]] = HashMap()
-    hyperParams += ("_ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
+    hyperParams += ("ntrees" -> Array(1, 30).map(_.asInstanceOf[AnyRef]))
 
     val grid = new H2OGridSearch().
       setLabelCol("label").

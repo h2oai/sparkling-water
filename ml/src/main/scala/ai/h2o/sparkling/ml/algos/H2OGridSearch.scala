@@ -26,6 +26,7 @@ import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import com.google.common.base.CaseFormat
 import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
 import hex.schemas.GridSchemaV99
@@ -106,14 +107,19 @@ class H2OGridSearch(override val uid: String)
       checkedHyperParams.put(hyperParamName, values)
     }
 
-    // REST API expects parameters without the starting `_`.
-    // User in SW api should anyway specify Sparkling Water parameter names and we should map it to H2O ones internally.
-    // See https://0xdata.atlassian.net/browse/SW-1608
-    def prepareKey(key: String) = {
+    def prepareKey(key: String): String = {
       if (key.startsWith("_")) {
         key.substring(1)
       } else {
-        key
+        // Cover alpha and lambda naming exceptions
+        if (key == "alphaValue") {
+          "alpha"
+        } else if (key == "lambdaValue") {
+          "lambda"
+        } else {
+          // Support for passing Sparkling Water parameter names
+          CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, key)
+        }
       }
     }
 
