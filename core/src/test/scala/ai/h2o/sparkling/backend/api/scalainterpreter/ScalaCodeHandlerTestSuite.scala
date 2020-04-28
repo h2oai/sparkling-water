@@ -24,7 +24,6 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import water.exceptions.H2ONotFoundArgumentException
 
-@RunWith(classOf[JUnitRunner])
 class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
 
   private var scalaCodeHandler: ScalaCodeHandler = _
