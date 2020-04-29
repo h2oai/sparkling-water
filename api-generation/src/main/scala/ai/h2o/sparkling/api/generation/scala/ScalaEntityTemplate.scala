@@ -20,7 +20,7 @@ package ai.h2o.sparkling.api.generation.scala
 import ai.h2o.sparkling.api.generation.common.CommonSubstitutionContext
 
 trait ScalaEntityTemplate {
-  def generateEntity(substitutionContext: CommonSubstitutionContext, entityType: String)(content: String): String = {
+  protected def generateEntity(substitutionContext: CommonSubstitutionContext, entityType: String)(content: String): String = {
     s"""
        |/*
        | * Licensed to the Apache Software Foundation (ASF) under one or more

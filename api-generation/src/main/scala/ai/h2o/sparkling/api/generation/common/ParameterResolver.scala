@@ -17,12 +17,31 @@
 
 package ai.h2o.sparkling.api.generation.common
 
+import water.api.API
+
 trait ParameterResolver {
   def resolveParameters(parameterSubstitutionContext: ParameterSubstitutionContext): Seq[Parameter] = {
-    ???
+    val h2oSchemaClass = parameterSubstitutionContext.h2oSchemaClass
+    val h2oParameterClass = parameterSubstitutionContext.h2oParameterClass
+    val h2oParameterInstance = h2oParameterClass.newInstance()
+    val partialParameters =
+      for (field <- h2oSchemaClass.getDeclaredFields if field.getAnnotation(classOf[API]) != null)
+        yield Parameter(
+          ParemeterNameConverter.convertFromH2OToSW(field.getName),
+          field.getName,
+          null, // Schema class doesn't have such information
+          DataType(field.getType.getSimpleName, field.getType.isEnum),
+          field.getAnnotation(classOf[API]).help())
+
+    val parameters = partialParameters.map{ parameter =>
+      val field = h2oParameterClass.getField("_" + parameter.h2oName)
+      val value = field.get(h2oParameterInstance)
+      parameter.copy(defaultValue = if (value == null) null else value.toString)
+    }
+    parameters
   }
 
-  def resolveClassFullName(classSpecification: String): String = ???
+  def resolveClassFullName(classSpecification: String): String = classSpecification.replace('$', '.')
 
   def resolveClassSimpleName(classSpecification: String): String = {
     resolveClassFullName(classSpecification).split('.').last

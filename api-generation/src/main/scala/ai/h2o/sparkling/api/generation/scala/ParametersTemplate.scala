@@ -23,18 +23,18 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   def apply(substitutionContext: ParameterSubstitutionContext): String = {
     val extraImports = Seq(
       "ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue",
-      resolveClassFullName(substitutionContext.h2oSchemaClass),
-      resolveClassFullName(substitutionContext.h2oParameterClass),
-      resolveClassFullName(substitutionContext.h2oParameterClass) + "._")
+      substitutionContext.h2oSchemaClass.getName,
+      substitutionContext.h2oParameterClass.getName,
+      substitutionContext.h2oParameterClass.getName + "._")
     val parameters = resolveParameters(substitutionContext)
     val contextWithExtraImports =
       substitutionContext.commonContext.copy(imports = substitutionContext.commonContext.imports ++ extraImports)
 
     generateEntity(contextWithExtraImports, "trait") {
       s"""
-         |  type H2O_SCHEMA = ${resolveClassSimpleName(substitutionContext.h2oSchemaClass)}
+         |  type H2O_SCHEMA = ${substitutionContext.h2oSchemaClass.getSimpleName}
          |
-         |  protected def paramTag = ${resolveClassSimpleName(substitutionContext.h2oParameterClass)}
+         |  protected def paramTag = ${substitutionContext.h2oParameterClass.getSimpleName}
          |
          |  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
          |
@@ -82,7 +82,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
 
   private def generateGetters(parameters: Seq[Parameter]): String = {
     parameters.map { parameter =>
-      s"  def get${parameter.swName.capitalize}(): ${parameter.dataType.name} = \$(${parameter.swName})"
+      s"  def get${parameter.swName.capitalize}(): ${parameter.dataType.name} = $$(${parameter.swName})"
     }.mkString("\n\n")
   }
 

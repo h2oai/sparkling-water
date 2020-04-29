@@ -17,14 +17,16 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-case class CommonSubstitutionContext(
-  namespace: String,
-  entityName: String,
-  inheritedEntities: Seq[String],
-  imports: Seq[String])
+object ParemeterNameConverter {
+  val h2oToSWExceptions: Map[String, String] = Map(
+    "lambda_value" -> "lambda",
+    "alpha_value" -> "alpha"
+  )
 
-
-case class ParameterSubstitutionContext(
-  commonContext: CommonSubstitutionContext,
-  h2oSchemaClass: Class[_],
-  h2oParameterClass: Class[_])
+  def convertFromH2OToSW(parameterName: String): String = {
+    val parts = parameterName.split("_")
+    val capitalizedParts = parts.head :+ parts.tail.map(_.capitalize)
+    val regularValue = capitalizedParts.mkString
+    h2oToSWExceptions.getOrElse(parameterName, regularValue)
+  }
+}
