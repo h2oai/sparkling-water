@@ -10,8 +10,8 @@ config <- c(config, list(
   "sparklyr.gateway.start.timeout" = 240,
   "sparklyr.backend.timeout" = 240,
   "sparklyr.log.console" = TRUE,
-  "sparklyr.connect.timeout" = 180,
-  "sparklyr.gateway.timeout" = 180,
+  "sparklyr.connect.timeout" = 60 * 5,
+  "sparklyr.gateway.timeout" = 60 * 5,
   "spark.ext.h2o.external.start.mode" = "auto",
   "spark.ext.h2o.external.disable.version.check" = "true"
 ))
