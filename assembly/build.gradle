@@ -37,7 +37,6 @@ configurations {
     exclude group: 'com.google.protobuf' // a dependency of org.apache.hadoop:hadoop-common
     exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
     // a dependency of org.apache.spark:spark-sql_2.11
-    exclude group: 'org.apache.httpcomponents' // a dependency of org.apache.hadoop:hadoop-auth
     exclude group: 'com.github.rwl', module: 'jtransforms' // a dependency of org.apache.spark:spark-mllib
     exclude group: 'com.google.code.findbugs', module: 'jsr305' // a dependency of org.apache.hadoop:hadoop-common
     exclude group: 'javax.xml.bind', module: 'jaxb-api' // a dependency of org.apache.hadoop:hadoop-yarn-common
@@ -62,6 +61,7 @@ shadowJar {
   relocate 'scala.compat.java8', 'ai.h2o.scala.compat.java8'
   relocate 'scala.concurrent.java8', 'ai.h2o.scala.concurrent.java8'
   relocate 'com.amazonaws', 'ai.h2o.com.amazonaws'
+  relocate 'org.apache.http', 'ai.h2o.org.apache.http'
   from "$project.buildDir/reports/" include '**/*'
   exclude 'www/flow/packs/test-*/**'
 
