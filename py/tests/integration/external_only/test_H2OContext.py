@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import pytest
 from pysparkling.context import H2OContext
 
 from tests.integration.external_only.external_backend_test_utils import *
