@@ -59,8 +59,8 @@ def getH2OBuild(h2oBuild) {
     }
 }
 
-static def getBuildInfo(h2oMajorName, h2oBuild) {
-    if (h2oMajorName == "bleeding_edge") {
+def getBuildInfo(h2oMajorName, h2oBuild) {
+    if (project.hasProperty("buildAgainstH2OBranch")) {
         // We are building against H2O published to Maven local
         // In this case we need to read the supported Hadoop distributions directly from H2O-3
         // code, therefore the H2O_HOME env variable needs to be setup
@@ -119,7 +119,6 @@ def getS3Path() {
     } else {
         def majorVersion = "${version.split("\\.")[0]}.${version.split("\\.")[1]}"
         def majorMinorVersion = "${majorVersion}.${version.split("\\.")[2]}"
-        def relBranch = "rel-${majorVersion}"
         if (branch == "rel-${majorVersion}" || branch == "rel-${majorMinorVersion}") {
             path = ""
         } else {
