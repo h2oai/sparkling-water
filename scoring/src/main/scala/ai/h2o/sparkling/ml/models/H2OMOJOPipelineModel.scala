@@ -21,7 +21,7 @@ import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
-import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
+import ai.h2o.mojos.runtime.readers.MojofileMojoReaderBackend
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -38,7 +38,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
   @transient private lazy val mojoPipeline: MojoPipeline = {
-    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData, this)
+    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoLocalPath, this)
   }
 
   case class Mojo2Prediction(preds: List[Double])
@@ -204,23 +204,23 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
+  override def createFromMojo(mojoPath: String, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
-    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+    model.distributeMojo(mojoPath)
+    val reader = new MojofileMojoReaderBackend(model.getMojoLocalPath())
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
     model.set(model.outputCols, MojoPipeline.loadFrom(reader).getOutputMeta.getColumnNames)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.setMojoData(mojoData)
     model
   }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
-  override def loadMojoBackend(mojoData: Array[Byte], model: H2OMOJOPipelineModel): MojoPipeline = {
-    val reader = MojoPipelineReaderBackendFactory.createReaderBackend(new ByteArrayInputStream(mojoData))
+  override def loadMojoBackend(mojoPath: String, model: H2OMOJOPipelineModel): MojoPipeline = {
+    val reader = new MojofileMojoReaderBackend(mojoPath)
     MojoPipeline.loadFrom(reader)
   }
 }

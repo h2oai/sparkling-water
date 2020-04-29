@@ -17,20 +17,26 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.File
+import org.apache.hadoop.fs.Path
+
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.SparkFiles
 
 private[models] trait HasMojoData {
 
+  var mojoFileName: String = null
+
   // Called during init of the model
-  def setMojoData(mojoData: Array[Byte]): this.type = {
-    this.mojoData = mojoData
-    broadcastMojo = SparkSessionUtils.active.sparkContext.broadcast(this.mojoData)
+  def distributeMojo(mojoPath: String): this.type = {
+    val sparkSession = SparkSessionUtils.active
+    val inputPath = new Path(mojoPath)
+    val fs = inputPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
+    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    sparkSession.sparkContext.addFile(mojoPath)
+    mojoFileName = new File(mojoPath).getName
     this
   }
 
-  protected def getMojoData(): Array[Byte] = broadcastMojo.value
-
-  @transient private var mojoData: Array[Byte] = _
-  private var broadcastMojo: Broadcast[Array[Byte]] = _
+  protected def getMojoLocalPath(): String = SparkFiles.get(mojoFileName)
 }

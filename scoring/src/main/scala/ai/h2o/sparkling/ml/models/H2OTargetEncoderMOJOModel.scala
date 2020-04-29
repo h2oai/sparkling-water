@@ -39,7 +39,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   def this() = this(Identifiable.randomUID(getClass.getSimpleName))
 
   @transient private lazy val orderOfInputColumns = {
-    val mojoModel = Utils.getMojoModel(getMojoData()).asInstanceOf[TargetEncoderMojoModel]
+    val mojoModel = Utils.getMojoModel(getMojoLocalPath()).asInstanceOf[TargetEncoderMojoModel]
     val indexes = mojoModel._teColumnNameToIdx
     indexes
   }
@@ -47,7 +47,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     import org.apache.spark.sql.DatasetExtensions._
     val outputCols = getOutputCols()
-    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojoData(), outputCols)
+    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojoLocalPath(), outputCols)
     val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
     withPredictionsDF
       .withColumns(
@@ -66,9 +66,9 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
 /**
   * The class holds all necessary dependencies of udf that needs to be serialized.
   */
-case class H2OTargetEncoderMOJOUdfWrapper(mojoData: Array[Byte], outputCols: Array[String]) {
+case class H2OTargetEncoderMOJOUdfWrapper(mojoPath: String, outputCols: Array[String]) {
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
-    val model = Utils.getMojoModel(mojoData).asInstanceOf[TargetEncoderMojoModel]
+    val model = Utils.getMojoModel(mojoPath).asInstanceOf[TargetEncoderMojoModel]
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(model)
     config.setConvertUnknownCategoricalLevelsToNa(true)

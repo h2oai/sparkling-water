@@ -29,14 +29,14 @@ trait H2OMOJOPredictionRegression {
     if (getWithDetailedPredictionCol()) {
       udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
         val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojoData, this)
+          .getMojoBackend(uid, getMojoLocalPath, this)
           .predictRegression(RowConverter.toH2ORowData(r), offset)
         WithContributions(pred.value, pred.contributions)
       }
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
         val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojoData, this)
+          .getMojoBackend(uid, getMojoLocalPath, this)
           .predictRegression(RowConverter.toH2ORowData(r), offset)
         Base(pred.value)
       }
