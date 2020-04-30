@@ -110,10 +110,13 @@ class H2OAutoML(override val uid: String)
     val autoMLId = trainAndGetDestinationKey(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
     amlKeyOption = Some(autoMLId)
     val model = H2OModel(getLeaderModelId(autoMLId))
-    val mojoData = model.downloadMojoData()
+    val mojo = model.downloadMojo()
     val algoName = getLeaderboard().select("model_id").head().getString(0)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
-    H2OMOJOModel.createFromMojo(mojoData, Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
+    val mojoModel =
+      H2OMOJOModel.createFromMojo(mojo.getPath, Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
+    mojo.delete()
+    mojoModel
   }
 
   private def determineIncludedAlgos(): Array[String] = {

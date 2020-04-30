@@ -75,7 +75,7 @@ trait H2OMOJOPredictionBinomial {
       val probabilitiesField =
         StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
-      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
+      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this))) {
         val calibratedProbabilitiesField = StructField(
           "calibratedProbabilities",
           MapType(StringType, DoubleType, valueContainsNull = false),

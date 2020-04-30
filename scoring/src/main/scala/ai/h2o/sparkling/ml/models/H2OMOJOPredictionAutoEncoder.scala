@@ -28,12 +28,14 @@ trait H2OMOJOPredictionAutoEncoder {
   def getAutoEncoderPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
+        val pred =
+          H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
         Detailed(pred.original, pred.reconstructed)
       }
     } else {
       udf[Base, Row] { r: Row =>
-        val pred = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
+        val pred =
+          H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
         Base(pred.original)
       }
     }

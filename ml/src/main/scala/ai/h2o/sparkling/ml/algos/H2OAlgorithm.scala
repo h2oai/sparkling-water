@@ -61,13 +61,15 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
         throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
           s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
     }
-    val mojoData = H2OModel(modelId).downloadMojoData()
+    val mojo = H2OModel(modelId).downloadMojo()
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
-    H2OMOJOModel.createFromMojo(
-      mojoData,
+    val mojoModel = H2OMOJOModel.createFromMojo(
+      mojo.getPath,
       Identifiable.randomUID(parameters.algoName()),
       modelSettings,
       internalFeatureCols)
+    mojo.delete()
+    mojoModel
   }
 
   private def convertModelIdToKey(): String = {

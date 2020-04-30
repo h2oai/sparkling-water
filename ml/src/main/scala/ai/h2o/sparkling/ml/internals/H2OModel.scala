@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.internals
 
 import java.io.File
-import java.nio.file.Files
 
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import org.apache.spark.expose.Utils
@@ -28,12 +27,12 @@ import water.api.schemas3.ModelsV3
 private[sparkling] class H2OModel private (val modelId: String) extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
-  private[sparkling] def downloadMojoData(): Array[Byte] = {
+  private[sparkling] def downloadMojo(): File = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
     val target = new File(sparkTmpDir, this.modelId)
     downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
-    Files.readAllBytes(target.toPath)
+    target
   }
 }
 
