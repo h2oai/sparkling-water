@@ -141,8 +141,7 @@ trait H2OMOJOModelUtils {
   }
 
   protected def getModelJson(mojoPath: String): JsonObject = {
-    val url = new URL(mojoPath)
-    val reader = MojoReaderBackendFactory.createReaderBackend(url, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+    val reader = MojoReaderBackendFactory.createReaderBackend(mojoPath)
     ModelJsonReader.parseModelJson(reader)
   }
 
@@ -233,8 +232,8 @@ trait H2OMOJOModelUtils {
 object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
 
   override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
-    val stringMojoPath = mojoPath.toString
-    val mojoModel = Utils.getMojoModel(stringMojoPath)
+    val mojoUrl = mojoPath.toUri.toURL
+    val mojoModel = Utils.getMojoModel(mojoUrl)
     val model = mojoModel match {
       case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
       case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
@@ -242,7 +241,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     }
 
     model.setSpecificParams(mojoModel)
-    model.distributeMojo(stringMojoPath)
+    model.distributeMojo(mojoUrl.getPath)
     val modelJson = getModelJson(model.getMojoLocalPath())
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
