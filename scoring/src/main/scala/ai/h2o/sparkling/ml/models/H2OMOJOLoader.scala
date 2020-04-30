@@ -34,6 +34,8 @@ trait H2OMOJOLoader[T] {
     createFromMojo(path, Identifiable.randomUID(inputPath.getName), settings)
   }
 
+  def createFromMojo(path: String, uid: String): T = createFromMojo(path, uid, H2OMOJOSettings.default)
+
   def createFromMojo(path: String, uid: String, settings: H2OMOJOSettings): T = {
     val qualifiedInputPath = SparkSessionUtils.resolveQualifiedPath(path)
     createFromMojo(qualifiedInputPath, uid, settings)
