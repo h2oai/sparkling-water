@@ -75,7 +75,7 @@ store.addCredentials(domain, awsPrivateKey)
 
 def awsCredentials = new AWSCredentialsImpl(
         CredentialsScope.GLOBAL,
-        'jenkins-full-aws-creds',
+        'SW_FULL_AWS_CREDS',
         'SUBST_AWS_ACCESS_KEY_ID',
         'SUBST_AWS_SECRET_ACCESS_KEY',
         'AWS Credentials',
@@ -256,7 +256,7 @@ def ami = new SlaveTemplate(
 def cloud = new AmazonEC2Cloud(
         'SparklingWaterInfra',
         false,
-        'jenkins-full-aws-creds',
+        'SW_FULL_AWS_CREDS',
         'us-west-2',
         getPrivateKey(),
         null,
