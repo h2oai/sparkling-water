@@ -10,14 +10,19 @@ config <- c(config, list(
   "sparklyr.gateway.start.timeout" = 240,
   "sparklyr.backend.timeout" = 240,
   "sparklyr.log.console" = TRUE,
-  "sparklyr.connect.timeout" = 60 * 5,
-  "sparklyr.gateway.timeout" = 60 * 5,
   "spark.ext.h2o.external.start.mode" = "auto",
   "spark.ext.h2o.external.disable.version.check" = "true"
 ))
 
+for (i in 1:4) {
+  tryCatch(
+    {
+    sc <- spark_connect(master = "local[*]", config = config)
+  }
+  )
+}
+
 test_that("Test transformation from h2o frame to data frame", {
-  sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1, 2, 3, 4, "A"))) # workaround for sparklyr#316
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
@@ -30,7 +35,6 @@ test_that("Test transformation from h2o frame to data frame", {
 })
 
 test_that("Test transformation of a spark data_frame of bools to an h2o frame of bools", {
-  sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(TRUE, FALSE, TRUE, FALSE)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
@@ -43,7 +47,6 @@ test_that("Test transformation of a spark data_frame of bools to an h2o frame of
 })
 
 test_that("Test transformation of a spark data_frame of complex types to an h2o frame of complex types", {
-  sc <- spark_connect(master = "local[*]", config = config)
   n <- c(2)
   s <- c("aa")
   b <- c(TRUE)
@@ -59,7 +62,6 @@ test_that("Test transformation of a spark data_frame of complex types to an h2o 
 })
 
 test_that("Test transformation of a spark data_frame of float types to an h2o frame of floats", {
-  sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1.5, 1.3333333333, 178.5555)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
@@ -71,7 +73,6 @@ test_that("Test transformation of a spark data_frame of float types to an h2o fr
 })
 
 test_that("Test transformation of a spark data_frame of int types to an h2o frame of ints", {
-  sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c(1, 125, 1778)))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
@@ -83,7 +84,6 @@ test_that("Test transformation of a spark data_frame of int types to an h2o fram
 })
 
 test_that("Test transformation of a spark data_frame of str types to an h2o frame of str", {
-  sc <- spark_connect(master = "local[*]", config = config)
   df <- as.data.frame(t(c("A", "B", "C")))
   sdf <- copy_to(sc, df, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
@@ -98,7 +98,6 @@ test_that("Test transformation of a spark data_frame of str types to an h2o fram
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
-  sc <- spark_connect(master = "local[*]", config = config)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
   mtcars_hf <- hc$asH2OFrame(mtcars_tbl)
@@ -109,7 +108,6 @@ test_that("Test transformation from dataframe to h2o frame", {
 })
 
 test_that("Test transformation from dataframe to h2o frame", {
-  sc <- spark_connect(master = "local[*]", config = config)
   mtcars_tbl <- copy_to(sc, mtcars, overwrite = TRUE)
   hc <- H2OContext.getOrCreate()
   mtcars_hf_name <- hc$asH2OFrame(mtcars_tbl, h2oFrameName = "frame1")
