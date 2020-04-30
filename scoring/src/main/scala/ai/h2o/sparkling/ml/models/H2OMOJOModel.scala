@@ -232,8 +232,9 @@ trait H2OMOJOModelUtils {
 
 object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
 
-  override def createFromMojo(mojoPath: String, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
-    val mojoModel = Utils.getMojoModel(mojoPath)
+  override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
+    val stringMojoPath = mojoPath.toString
+    val mojoModel = Utils.getMojoModel(stringMojoPath)
     val model = mojoModel match {
       case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
       case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
@@ -241,7 +242,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     }
 
     model.setSpecificParams(mojoModel)
-    model.distributeMojo(mojoPath)
+    model.distributeMojo(stringMojoPath)
     val modelJson = getModelJson(model.getMojoLocalPath())
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
@@ -283,7 +284,7 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData
   extends H2OMOJOReadable[T]
   with H2OMOJOLoader[T] {
 
-  override def createFromMojo(mojoPath: String, uid: String, settings: H2OMOJOSettings): T = {
+  override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): T = {
     val mojoModel = H2OMOJOModel.createFromMojo(mojoPath, uid, settings)
     mojoModel match {
       case specificModel: T => specificModel

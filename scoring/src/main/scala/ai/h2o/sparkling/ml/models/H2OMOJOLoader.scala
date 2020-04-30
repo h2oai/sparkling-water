@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.util.Identifiable
 
 trait H2OMOJOLoader[T] {
+  type QualifiedPath = Path
 
   def createFromMojo(path: String): T = createFromMojo(path, H2OMOJOSettings.default)
 
@@ -33,26 +34,10 @@ trait H2OMOJOLoader[T] {
     createFromMojo(path, Identifiable.randomUID(inputPath.getName), settings)
   }
 
-  def createFromMojo(path: String, uid: String, settings: H2OMOJOSettings): T
-  /*
-  = {
-    val inputPath = new Path(path)
-    val fs = inputPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
-    val qualifiedInputPath = inputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val is = fs.open(qualifiedInputPath)
-
-    createFromMojo(is, Identifiable.randomUID(inputPath.getName), settings)
+  def createFromMojo(path: String, uid: String, settings: H2OMOJOSettings): T = {
+    val qualifiedInputPath = SparkSessionUtils.resolveQualifiedPath(path)
+    createFromMojo(qualifiedInputPath, uid, settings)
   }
 
-  def createFromMojo(is: InputStream, uid: String): T = createFromMojo(is, uid, H2OMOJOSettings.default)
-
-  def createFromMojo(is: InputStream, uid: String, settings: H2OMOJOSettings): T = {
-    val byteArray = IOUtils.toByteArray(is)
-    createFromMojo(byteArray, uid, settings)
-  }
-
-  def createFromMojo(mojoData: Array[Byte], uid: String): T = createFromMojo(mojoData, uid, H2OMOJOSettings.default)
-
-  def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T
- */
+  def createFromMojo(qualifiedPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): T
 }

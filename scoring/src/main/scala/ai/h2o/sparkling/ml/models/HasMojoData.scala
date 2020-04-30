@@ -25,8 +25,6 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Utils
 
-import scala.util.Random
-
 private[models] trait HasMojoData {
 
   private var mojoFileName: String = _
@@ -35,12 +33,17 @@ private[models] trait HasMojoData {
   def distributeMojo(mojoPath: String): this.type = {
     val sparkSession = SparkSessionUtils.active
     val mojoFile = new File(mojoPath)
-    val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(sparkSession.sparkContext.getConf))
-    val newFile = new File(sparkTmpDir, s"${mojoFile.getName}_${UUID.randomUUID()}")
-    Files.copy(mojoFile.toPath, newFile.toPath)
-    mojoFileName = newFile.getName
-    sparkSession.sparkContext.addFile(newFile.getAbsolutePath)
-    newFile.delete()
+    if (new File(SparkFiles.get(mojoFile.getName)).exists()) {
+      val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(sparkSession.sparkContext.getConf))
+      val newFile = new File(sparkTmpDir, s"${mojoFile.getName}_${UUID.randomUUID()}")
+      Files.copy(mojoFile.toPath, newFile.toPath)
+      mojoFileName = newFile.getName
+      sparkSession.sparkContext.addFile(newFile.getAbsolutePath)
+      newFile.delete()
+    } else {
+      mojoFileName = mojoFile.getName
+      sparkSession.sparkContext.addFile(mojoPath)
+    }
     this
   }
 

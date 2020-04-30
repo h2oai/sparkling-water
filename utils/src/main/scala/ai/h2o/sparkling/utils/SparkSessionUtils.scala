@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.utils
 
+import org.apache.hadoop.fs.Path
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.internal.StaticSQLConf.CATALOG_IMPLEMENTATION
@@ -45,5 +46,12 @@ object SparkSessionUtils extends Logging {
     val sparkSession = builder.getOrCreate()
     logInfo("Created Spark session")
     sparkSession
+  }
+
+  def resolveQualifiedPath(path: String): Path = {
+    val hadoopPath = new Path(path)
+    val fs = hadoopPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
+    val qualifiedPath = hadoopPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    qualifiedPath
   }
 }
