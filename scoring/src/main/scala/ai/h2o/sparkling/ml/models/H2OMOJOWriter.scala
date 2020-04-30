@@ -17,12 +17,16 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.File
+import java.nio.file.Files
+
+import ai.h2o.sparkling.utils.ScalaUtils._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.MLWriter
 import org.apache.spark.ml.util.expose.DefaultParamsWriter
 
-private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte]) extends MLWriter {
+private[models] class H2OMOJOWriter(instance: Params, val mojoPath: String) extends MLWriter {
 
   override protected def saveImpl(path: String): Unit = {
     DefaultParamsWriter.saveMetadata(instance, path, sc)
@@ -30,11 +34,8 @@ private[models] class H2OMOJOWriter(instance: Params, val mojoData: Array[Byte])
     val outputPath = new Path(path, H2OMOJOProps.serializedFileName)
     val fs = outputPath.getFileSystem(sc.hadoopConfiguration)
     val qualifiedOutputPath = outputPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    val out = fs.create(qualifiedOutputPath)
-    try {
-      out.write(mojoData)
-    } finally {
-      out.close()
+    withResource(fs.create(qualifiedOutputPath)) { out =>
+      Files.copy(new File(mojoPath).toPath, out)
     }
     logInfo(s"Saved to: $qualifiedOutputPath")
   }

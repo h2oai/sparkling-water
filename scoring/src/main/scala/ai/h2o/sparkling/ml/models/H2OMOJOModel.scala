@@ -17,7 +17,6 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.ByteArrayInputStream
 import java.net.URL
 
 import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
