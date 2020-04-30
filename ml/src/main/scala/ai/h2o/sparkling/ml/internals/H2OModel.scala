@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.internals
 import java.io.File
 
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.H2OContext
 import water.api.schemas3.ModelsV3
@@ -33,6 +34,16 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
     val target = new File(sparkTmpDir, this.modelId)
     downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
     target
+  }
+
+  private[sparkling] def toMOJOModel(
+      uid: String,
+      settings: H2OMOJOSettings,
+      originalFeatures: Array[String]): H2OMOJOModel = {
+    val mojo = downloadMojo()
+    val result = H2OMOJOModel.createFromMojo(mojo.getPath, uid, settings, originalFeatures)
+    mojo.delete()
+    result
   }
 }
 

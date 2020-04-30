@@ -135,11 +135,7 @@ class H2OGridSearch(override val uid: String)
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(this)
     grid.model_ids.map { modelId =>
-      val mojo = H2OModel(modelId.name).downloadMojo()
-      val mojoModel =
-        H2OMOJOModel.createFromMojo(mojo.getPath, Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
-      mojo.delete()
-      mojoModel
+      H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
     }
   }
 

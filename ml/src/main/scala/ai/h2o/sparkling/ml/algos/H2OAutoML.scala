@@ -109,14 +109,10 @@ class H2OAutoML(override val uid: String)
     val params = Map("input_spec" -> inputSpec, "build_models" -> buildModels, "build_control" -> buildControl)
     val autoMLId = trainAndGetDestinationKey(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
     amlKeyOption = Some(autoMLId)
-    val model = H2OModel(getLeaderModelId(autoMLId))
-    val mojo = model.downloadMojo()
+
     val algoName = getLeaderboard().select("model_id").head().getString(0)
-    val modelSettings = H2OMOJOSettings.createFromModelParams(this)
-    val mojoModel =
-      H2OMOJOModel.createFromMojo(mojo.getPath, Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
-    mojo.delete()
-    mojoModel
+    H2OModel(getLeaderModelId(autoMLId))
+      .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this), internalFeatureCols)
   }
 
   private def determineIncludedAlgos(): Array[String] = {
