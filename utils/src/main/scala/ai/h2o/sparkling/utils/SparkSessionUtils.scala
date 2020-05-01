@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.utils
 
+import java.io.InputStream
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.SparkSession
@@ -48,10 +50,10 @@ object SparkSessionUtils extends Logging {
     sparkSession
   }
 
-  def resolveQualifiedPath(path: String): Path = {
+  def readHDFSFile(path: String): InputStream = {
     val hadoopPath = new Path(path)
     val fs = hadoopPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
     val qualifiedPath = hadoopPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
-    qualifiedPath
+    fs.open(qualifiedPath)
   }
 }

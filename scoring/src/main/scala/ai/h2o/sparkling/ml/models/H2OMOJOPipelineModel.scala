@@ -204,9 +204,9 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
-  override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
+  override def createFromMojo(mojoData: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
-    model.distributeMojo(mojoPath.toString)
+    model.setMojoData(mojoData, uid)
     val reader = new MojofileMojoReaderBackend(model.getMojoLocalPath())
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)

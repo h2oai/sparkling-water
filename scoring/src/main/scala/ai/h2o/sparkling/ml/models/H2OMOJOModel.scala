@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.InputStream
 import java.net.URL
 
 import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
@@ -231,9 +232,8 @@ trait H2OMOJOModelUtils {
 
 object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
 
-  override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
-    val mojoUrl = mojoPath.toUri.toURL
-    val mojoModel = Utils.getMojoModel(mojoUrl)
+  override def createFromMojo(mojoData: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
+    val mojoModel = Utils.getMojoModel(mojoData)
     val model = mojoModel match {
       case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
       case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
@@ -241,7 +241,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     }
 
     model.setSpecificParams(mojoModel)
-    model.distributeMojo(mojoUrl.getPath)
+    model.setMojoData(mojoData)
     val modelJson = getModelJson(model.getMojoLocalPath())
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
@@ -283,8 +283,8 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData
   extends H2OMOJOReadable[T]
   with H2OMOJOLoader[T] {
 
-  override def createFromMojo(mojoPath: QualifiedPath, uid: String, settings: H2OMOJOSettings): T = {
-    val mojoModel = H2OMOJOModel.createFromMojo(mojoPath, uid, settings)
+  override def createFromMojo(mojoData: InputStream, uid: String, settings: H2OMOJOSettings): T = {
+    val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)
     mojoModel match {
       case specificModel: T => specificModel
       case unexpectedModel =>

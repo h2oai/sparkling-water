@@ -17,11 +17,10 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.File
-import java.nio.file.Files
-import java.util.UUID
+import java.io.{File, InputStream}
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Utils
 
@@ -30,20 +29,14 @@ private[models] trait HasMojoData {
   private var mojoFileName: String = _
 
   // Called during init of the model
-  def distributeMojo(mojoPath: String): this.type = {
+  def setMojoData(mojoData: InputStream, mojoName: String = "mojoData"): this.type = {
     val sparkSession = SparkSessionUtils.active
-    val mojoFile = new File(mojoPath)
-    if (new File(SparkFiles.get(mojoFile.getName)).exists()) {
-      val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(sparkSession.sparkContext.getConf))
-      val newFile = new File(sparkTmpDir, s"${mojoFile.getName}_${UUID.randomUUID()}")
-      Files.copy(mojoFile.toPath, newFile.toPath)
-      mojoFileName = newFile.getName
-      sparkSession.sparkContext.addFile(newFile.getAbsolutePath)
-      newFile.delete()
-    } else {
-      mojoFileName = mojoFile.getName
-      sparkSession.sparkContext.addFile(mojoPath)
-    }
+    val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(sparkSession.sparkContext.getConf))
+    val mojoFile = File.createTempFile(mojoName,".mojo", sparkTmpDir)
+    FileUtils.copyInputStreamToFile(mojoData, mojoFile)
+    mojoFileName = mojoFile.getName
+    sparkSession.sparkContext.addFile(mojoFile.getAbsolutePath)
+    mojoFile.delete()
     this
   }
 
