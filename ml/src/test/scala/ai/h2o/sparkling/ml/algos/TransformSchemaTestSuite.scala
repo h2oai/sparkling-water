@@ -33,10 +33,9 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
   protected def expectedPredictionCol: StructField
 
   private def loadMojo(settings: H2OMOJOSettings): H2OMOJOModel = {
-    H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource(mojoName).toString,
-      mojoName,
-      settings)
+    val mojo =
+      H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream(mojoName), mojoName, settings)
+    mojo
   }
 
   test("transformSchema with detailed prediction col") {

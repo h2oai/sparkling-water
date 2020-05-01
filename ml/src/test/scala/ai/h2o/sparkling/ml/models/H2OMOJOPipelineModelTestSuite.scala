@@ -44,7 +44,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
       mojoSettings)
 
@@ -78,7 +78,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     // Test mojo
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
       mojoSettings)
 
@@ -117,7 +117,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     // Test mojo
     val mojoSettings = H2OMOJOSettings()
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
       mojoSettings)
 
@@ -139,7 +139,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val filePath = getClass.getResource("/mojo2_multiple_outputs/example.csv").getFile
     val df = spark.read.option("header", "true").csv(filePath)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2_multiple_outputs/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2_multiple_outputs/pipeline.mojo"),
       "iris_pipeline.mojo")
 
     val transDf = mojo.transform(df)
@@ -158,7 +158,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
 
     val transDf = mojo.transform(df)
@@ -174,7 +174,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       .drop("AGE")
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     val rdd = sc.parallelize(Seq(Row("1", "0", "1", "2", "1", "1.4", "0", "6")))
     val testingDF = spark.createDataFrame(rdd, schema)
@@ -192,7 +192,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       .withColumn("EXTRA", lit("extra"))
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", "6", "8")))
     val testingDF = spark.createDataFrame(rdd, schema)
@@ -210,7 +210,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo")
     val rdd = sc.parallelize(Seq(Row("1", "0", "65", "1", "2", "1", "1.4", "0", null)))
     val df2 = spark.createDataFrame(rdd, df.first().schema)
@@ -275,7 +275,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
     val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("mojo2data/pipeline.mojo").toString,
+      this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
       mojoSettings)
 

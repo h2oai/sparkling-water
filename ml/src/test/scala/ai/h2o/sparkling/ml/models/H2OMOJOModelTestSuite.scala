@@ -77,7 +77,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("BooleanColumn as String for mojo predictions") {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("airlines_boolean.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
       "airlines_boolean.mojo")
     val data = Seq(
       Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, "true", "true"),
@@ -104,7 +104,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   test("BooleanColumn for mojo predictions") {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("airlines_boolean.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("airlines_boolean.mojo"),
       "airlines_boolean.mojo")
     val data = Seq(
       Row(1987, 10, 3, "PS", 1451, "SAN", "SFO", 447, true, true),
@@ -272,28 +272,28 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   private def savedBinomialModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("binom_model_prostate.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("binom_model_prostate.mojo"),
       "binom_model_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 
   private def savedRegressionModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("regre_model_prostate.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("regre_model_prostate.mojo"),
       "regre_model_prostate.mojo")
     (prostateDataFrame, mojo)
   }
 
   private def savedMultinomialModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("multi_model_iris.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("multi_model_iris.mojo"),
       "multi_model_iris.mojo")
     (irisDataFrame, mojo)
   }
 
   private def savedDeepLearningModel() = {
     val mojo = H2OMOJOModel.createFromMojo(
-      this.getClass.getClassLoader.getResource("deep_learning_prostate.mojo").getPath,
+      this.getClass.getClassLoader.getResourceAsStream("deep_learning_prostate.mojo"),
       "deep_learning_prostate.mojo")
     (prostateDataFrame, mojo)
   }
