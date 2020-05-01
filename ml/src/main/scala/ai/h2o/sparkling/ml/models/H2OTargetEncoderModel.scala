@@ -42,12 +42,14 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojo = targetEncoderModel.downloadMojo()
-    val model = new H2OTargetEncoderMOJOModel()
-    val mojoModel = withResource(new FileInputStream(mojo)) { inputStream =>
-      copyValues(model).setMojoData(inputStream)
+    try {
+      val model = new H2OTargetEncoderMOJOModel()
+      withResource(new FileInputStream(mojo)) { inputStream =>
+        copyValues(model).setMojoData(inputStream)
+      }
+    } finally {
+      mojo.delete()
     }
-    mojo.delete()
-    mojoModel
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {

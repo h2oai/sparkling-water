@@ -32,7 +32,7 @@ private[models] trait HasMojoData {
   def setMojoData(mojoData: InputStream, mojoName: String = "mojoData"): this.type = {
     val sparkSession = SparkSessionUtils.active
     val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(sparkSession.sparkContext.getConf))
-    val mojoFile = File.createTempFile(mojoName,".mojo", sparkTmpDir)
+    val mojoFile = File.createTempFile(mojoName, ".mojo", sparkTmpDir)
     FileUtils.copyInputStreamToFile(mojoData, mojoFile)
     mojoFileName = mojoFile.getName
     sparkSession.sparkContext.addFile(mojoFile.getAbsolutePath)
