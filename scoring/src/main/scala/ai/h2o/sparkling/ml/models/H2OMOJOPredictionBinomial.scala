@@ -35,9 +35,9 @@ trait H2OMOJOPredictionBinomial {
 
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this))) {
+      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         udf[DetailedWithCalibration, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this)
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
           val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
           val calibratedProbabilities = model.getResponseDomainValues.zip(pred.calibratedClassProbabilities).toMap
@@ -45,7 +45,7 @@ trait H2OMOJOPredictionBinomial {
         }
       } else {
         udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this)
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
           val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
           Detailed(pred.label, probabilities, pred.contributions)
@@ -54,7 +54,7 @@ trait H2OMOJOPredictionBinomial {
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
         val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojoLocalPath, this)
+          .getMojoBackend(uid, getMojoData, this)
           .predictBinomial(RowConverter.toH2ORowData(r), offset)
         Base(pred.label)
       }
@@ -75,7 +75,7 @@ trait H2OMOJOPredictionBinomial {
       val probabilitiesField =
         StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
-      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this))) {
+      if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojoData, this))) {
         val calibratedProbabilitiesField = StructField(
           "calibratedProbabilities",
           MapType(StringType, DoubleType, valueContainsNull = false),

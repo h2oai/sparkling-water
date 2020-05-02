@@ -28,7 +28,7 @@ trait H2OMOJOPredictionOrdinal {
   def getOrdinalPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this)
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
         val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
         val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
         Detailed(pred.label, probabilities)
@@ -36,7 +36,7 @@ trait H2OMOJOPredictionOrdinal {
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
         val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojoLocalPath, this)
+          .getMojoBackend(uid, getMojoData, this)
           .predictOrdinal(RowConverter.toH2ORowData(r), offset)
         Base(pred.label)
       }

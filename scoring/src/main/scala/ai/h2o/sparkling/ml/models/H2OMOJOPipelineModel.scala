@@ -38,7 +38,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
   @transient private lazy val mojoPipeline: MojoPipeline = {
-    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoLocalPath, this)
+    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData, this)
   }
 
   case class Mojo2Prediction(preds: List[Double])
@@ -207,7 +207,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojoData: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojoData(mojoData, uid)
-    val reader = new MojofileMojoReaderBackend(model.getMojoLocalPath())
+    val reader = new MojofileMojoReaderBackend(model.getMojoData().getAbsolutePath)
     val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
     model.set(model.outputCols, MojoPipeline.loadFrom(reader).getOutputMeta.getColumnNames)
@@ -219,8 +219,8 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
-  override def loadMojoBackend(mojoPath: String, model: H2OMOJOPipelineModel): MojoPipeline = {
-    val reader = new MojofileMojoReaderBackend(mojoPath)
+  override def loadMojoBackend(mojoData: File, model: H2OMOJOPipelineModel): MojoPipeline = {
+    val reader = new MojofileMojoReaderBackend(mojoData.getAbsolutePath)
     MojoPipeline.loadFrom(reader)
   }
 }

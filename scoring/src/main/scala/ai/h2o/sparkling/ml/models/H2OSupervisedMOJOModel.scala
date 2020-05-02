@@ -50,7 +50,7 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoLocalPath, this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial | ModelCategory.Ordinal =>
         val offsetColumn = getOffsetCol()

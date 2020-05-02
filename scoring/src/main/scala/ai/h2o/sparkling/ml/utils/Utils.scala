@@ -17,19 +17,13 @@
 
 package ai.h2o.sparkling.ml.utils
 
-import java.io.InputStream
+import java.io.File
 
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
 
 object Utils {
-
-  def getMojoModel(mojoData: InputStream): MojoModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(mojoData, MojoReaderBackendFactory.CachingStrategy.MEMORY)
-    ModelMojoReader.readFrom(reader)
-  }
-
-  def getMojoModel(mojoPath: String): MojoModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(mojoPath)
+  def getMojoModel(mojoFile: File): MojoModel = {
+    val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
     ModelMojoReader.readFrom(reader)
   }
 }

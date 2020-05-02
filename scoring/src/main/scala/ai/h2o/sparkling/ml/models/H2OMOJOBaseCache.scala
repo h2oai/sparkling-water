@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.File
+
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.expose.Logging
 
@@ -71,13 +73,13 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, mojoPathGetter: () => String, model: M): B = Lock.synchronized {
+  def getMojoBackend(uid: String, mojoDataGetter: () => File, model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      pipelineCache.put(uid, loadMojoBackend(mojoPathGetter(), model))
+      pipelineCache.put(uid, loadMojoBackend(mojoDataGetter(), model))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
     pipelineCache(uid)
   }
 
-  def loadMojoBackend(mojoPath: String, model: M): B
+  def loadMojoBackend(mojoData: File, model: M): B
 }

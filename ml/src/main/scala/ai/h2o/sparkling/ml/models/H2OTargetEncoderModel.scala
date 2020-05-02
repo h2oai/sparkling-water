@@ -17,9 +17,6 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.FileInputStream
-
-import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
@@ -42,14 +39,8 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
     val mojo = targetEncoderModel.downloadMojo()
-    try {
-      val model = new H2OTargetEncoderMOJOModel()
-      withResource(new FileInputStream(mojo)) { inputStream =>
-        copyValues(model).setMojoData(inputStream)
-      }
-    } finally {
-      mojo.delete()
-    }
+    val model = new H2OTargetEncoderMOJOModel()
+    copyValues(model).setMojoData(mojo)
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
