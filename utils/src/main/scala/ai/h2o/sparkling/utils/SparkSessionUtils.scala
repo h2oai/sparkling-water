@@ -17,10 +17,14 @@
 
 package ai.h2o.sparkling.utils
 
+import java.io.{File, InputStream}
+
+import org.apache.commons.io.FileUtils
+import org.apache.hadoop.fs.Path
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.internal.StaticSQLConf.CATALOG_IMPLEMENTATION
-import org.apache.spark.{ExposeUtils, SparkConf}
+import org.apache.spark.{ExposeUtils, SparkConf, expose}
 
 /**
   * Internal utilities methods for Spark Session
@@ -45,5 +49,20 @@ object SparkSessionUtils extends Logging {
     val sparkSession = builder.getOrCreate()
     logInfo("Created Spark session")
     sparkSession
+  }
+
+  def readHDFSFile(path: String): InputStream = {
+    val hadoopPath = new Path(path)
+    val fs = hadoopPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
+    val qualifiedPath = hadoopPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
+    fs.open(qualifiedPath)
+  }
+
+  def inputStreamToTempFile(inputStream: InputStream, filePrefix: String, fileSuffix: String): File = {
+    val sparkSession = SparkSessionUtils.active
+    val sparkTmpDir = expose.Utils.createTempDir(expose.Utils.getLocalDir(sparkSession.sparkContext.getConf))
+    val outputFile = File.createTempFile(filePrefix, fileSuffix, sparkTmpDir)
+    FileUtils.copyInputStreamToFile(inputStream, outputFile)
+    outputFile
   }
 }

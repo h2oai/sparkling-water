@@ -25,7 +25,7 @@ import org.apache.spark.sql.types.{StructField, StructType}
 abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
   extends SparkModel[T]
   with H2OMOJOAlgoSharedParams
-  with HasMojoData
+  with HasMojo
   with H2OMOJOWritable
   with H2OMOJOFlattenedInput {
 
