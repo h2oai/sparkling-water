@@ -1,6 +1,47 @@
 Change Log
 ==========
 
+v3.30.0.2-1 (2020-05-04)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.2-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-1980 <https://0xdata.atlassian.net/browse/SW-1980>`__ -  java.lang.Long cannot be cast to org.apache.spark.sql.Row from PySparkling
+   -  `SW-2164 <https://0xdata.atlassian.net/browse/SW-2164>`__ - Fix class not found org.spark_project.jetty.util.thread.ThreadPool error
+   -  `SW-2165 <https://0xdata.atlassian.net/browse/SW-2165>`__ - Fix link to jira in README
+   -  `SW-2168 <https://0xdata.atlassian.net/browse/SW-2168>`__ - The AWS java sdk s3 in SW throws the exception: java.lang.IllegalStateException: Socket not created by this factory. Have tried with spark 2.4 version and sparkling water versions -3.28.1.2-1-2.4 and -3.30.0.1-1-2.4.
+   -  `SW-2169 <https://0xdata.atlassian.net/browse/SW-2169>`__ - Add numpy to Python Kubernetes Image
+   -  `SW-2172 <https://0xdata.atlassian.net/browse/SW-2172>`__ - Shadow scala-compat
+   -  `SW-2174 <https://0xdata.atlassian.net/browse/SW-2174>`__ - Don&#39;t do version check in case user is using databricks-connect
+   -  `SW-2175 <https://0xdata.atlassian.net/browse/SW-2175>`__ - getFeaturesCols in python returns scala obj
+   -  `SW-2177 <https://0xdata.atlassian.net/browse/SW-2177>`__ - Context Path is Erased From Rest Calls 
+   -  `SW-2181 <https://0xdata.atlassian.net/browse/SW-2181>`__ - Context Path Must be Also Considered on H2O Worker Nodes
+                
+-  New Feature
+        
+   -  `SW-2176 <https://0xdata.atlassian.net/browse/SW-2176>`__ - Expose spark.ext.h2o.allow_insecure_xgboost parameter
+                
+-  Improvement
+        
+   -  `SW-2044 <https://0xdata.atlassian.net/browse/SW-2044>`__ - Introduce method asSparkFrame on H2OContext.scala and deprecate asDataFrame
+   -  `SW-2170 <https://0xdata.atlassian.net/browse/SW-2170>`__ - Update description of spark.ext.h2o.external.cluster.size in SW Documentation
+   -  `SW-2179 <https://0xdata.atlassian.net/browse/SW-2179>`__ - Deprecate setH2OClientLogLevel and setH2ONodeLogLevel methods
+   -  `SW-2191 <https://0xdata.atlassian.net/browse/SW-2191>`__ - Distribute Mojos via SparkFiles to Avoid Maximum Array Size Limit
+   -  `SW-2192 <https://0xdata.atlassian.net/browse/SW-2192>`__ - Upgrade to H2O 3.30.0.2
+   -  `SW-2194 <https://0xdata.atlassian.net/browse/SW-2194>`__ - Document withDetailedPrediction on mojo deployment page
+                
+-  Engineering Story
+        
+   -  `SW-2148 <https://0xdata.atlassian.net/browse/SW-2148>`__ - Replace Expected Types with Enumeration
+   -  `SW-2160 <https://0xdata.atlassian.net/browse/SW-2160>`__ - Switch test infra to aws
+   -  `SW-2182 <https://0xdata.atlassian.net/browse/SW-2182>`__ - Document How to Import Hive Data in Kerberized Environment
+                
+                            
 v3.30.0.1-1 (2020-04-06)
 ------------------------
 Downloads:
