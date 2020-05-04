@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.ByteArrayInputStream
+import java.io.{File, InputStream}
 
 import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
 import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
@@ -27,6 +27,7 @@ import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, Predi
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
 import ai.h2o.sparkling.ml.utils.Utils
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
 import org.apache.spark.ml.param.ParamMap
@@ -83,7 +84,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
   def getModelDetails(): String = $(modelDetails)
 
   def getDomainValues(): Map[String, Array[String]] = {
-    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     val columns = mojoBackend.m.getNames
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
@@ -113,7 +114,7 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
-    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+    val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial | ModelCategory.Regression | ModelCategory.Multinomial | ModelCategory.Ordinal =>
         // Methods of EasyPredictModelWrapper for given prediction categories take offset as parameter.
@@ -140,9 +141,8 @@ trait H2OMOJOModelUtils {
     json
   }
 
-  protected def getModelJson(mojoData: Array[Byte]): JsonObject = {
-    val is = new ByteArrayInputStream(mojoData)
-    val reader = MojoReaderBackendFactory.createReaderBackend(is, MojoReaderBackendFactory.CachingStrategy.MEMORY)
+  protected def getModelJson(mojo: File): JsonObject = {
+    val reader = MojoReaderBackendFactory.createReaderBackend(mojo.getAbsolutePath)
     ModelJsonReader.parseModelJson(reader)
   }
 
@@ -232,8 +232,13 @@ trait H2OMOJOModelUtils {
 
 object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
 
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
-    val mojoModel = Utils.getMojoModel(mojoData)
+  override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
+    val mojoFile = SparkSessionUtils.inputStreamToTempFile(mojo, uid, ".mojo")
+    createFromMojo(mojoFile, uid, settings)
+  }
+
+  def createFromMojo(mojo: File, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
+    val mojoModel = Utils.getMojoModel(mojo)
     val model = mojoModel match {
       case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
       case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
@@ -241,8 +246,8 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     }
 
     model.setSpecificParams(mojoModel)
-
-    val modelJson = getModelJson(mojoData)
+    model.setMojo(mojo)
+    val modelJson = getModelJson(mojo)
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
     val modelCategory = extractModelCategory(modelJson)
@@ -261,7 +266,6 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.modelCategory -> modelCategory.toString)
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
-    model.setMojoData(mojoData)
     model
   }
 
@@ -269,23 +273,23 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   // When H2OMOJOModel is created from existing mojo created in H2O-3, we set features names as features stored in mojo
   // (they are not nested and structured), but as in Spark, data frames can be nested, we need to handle it
   private[h2o] def createFromMojo(
-      mojoData: Array[Byte],
+      mojo: File,
       uid: String,
       settings: H2OMOJOSettings,
       originalFeatures: Array[String]): H2OMOJOModel = {
-    val model = createFromMojo(mojoData, uid, settings)
+    val model = createFromMojo(mojo, uid, settings)
     // Override the feature cols with the original features as Spark sees them.
     // Internally, we expand the arrays and vectors
     model.set(model.featuresCols -> originalFeatures)
   }
 }
 
-abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojoData: ClassTag]
+abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: ClassTag]
   extends H2OMOJOReadable[T]
   with H2OMOJOLoader[T] {
 
-  override def createFromMojo(mojoData: Array[Byte], uid: String, settings: H2OMOJOSettings): T = {
-    val mojoModel = H2OMOJOModel.createFromMojo(mojoData, uid, settings)
+  override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): T = {
+    val mojoModel = H2OMOJOModel.createFromMojo(mojo, uid, settings)
     mojoModel match {
       case specificModel: T => specificModel
       case unexpectedModel =>
@@ -307,9 +311,9 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     }
   }
 
-  override def loadMojoBackend(mojoData: Array[Byte], model: H2OMOJOModel): EasyPredictModelWrapper = {
+  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
-    config.setModel(Utils.getMojoModel(mojoData))
+    config.setModel(Utils.getMojoModel(mojo))
     config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
     if (canGenerateContributions(config.getModel)) {

@@ -38,9 +38,9 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
-    val mojoData = targetEncoderModel.downloadMojoData()
+    val mojo = targetEncoderModel.downloadMojo()
     val model = new H2OTargetEncoderMOJOModel()
-    copyValues(model).setMojoData(mojoData)
+    copyValues(model).setMojo(mojo)
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
