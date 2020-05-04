@@ -23,31 +23,31 @@ import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.spark.SparkFiles
 
-private[models] trait HasMojoData {
+private[models] trait HasMojo {
 
   private var mojoFileName: String = _
 
-  def setMojoData(mojoData: InputStream): this.type = setMojoData(mojoData, mojoName = "mojoData")
+  def setMojo(mojo: InputStream): this.type = setMojo(mojo, mojoName = "mojoData")
 
-  def setMojoData(mojoData: InputStream, mojoName: String): this.type = {
-    val mojoFile = SparkSessionUtils.inputStreamToTempFile(mojoData, mojoName, ".mojo")
-    setMojoData(mojoFile)
+  def setMojo(mojo: InputStream, mojoName: String): this.type = {
+    val mojoFile = SparkSessionUtils.inputStreamToTempFile(mojo, mojoName, ".mojo")
+    setMojo(mojoFile)
     this
   }
 
-  def setMojoData(mojoData: File): this.type = {
+  def setMojo(mojo: File): this.type = {
     val sparkSession = SparkSessionUtils.active
-    mojoFileName = mojoData.getName
-    if (getMojoData().exists()) {
+    mojoFileName = mojo.getName
+    if (getMojo().exists()) {
       // Copy content to a new temp file
-      withResource(new FileInputStream(mojoData)) { inputStream =>
-        setMojoData(inputStream, mojoFileName)
+      withResource(new FileInputStream(mojo)) { inputStream =>
+        setMojo(inputStream, mojoFileName)
       }
     } else {
-      sparkSession.sparkContext.addFile(mojoData.getAbsolutePath)
+      sparkSession.sparkContext.addFile(mojo.getAbsolutePath)
     }
     this
   }
 
-  protected def getMojoData(): File = new File(SparkFiles.get(mojoFileName))
+  protected def getMojo(): File = new File(SparkFiles.get(mojoFileName))
 }

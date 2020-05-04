@@ -28,7 +28,7 @@ trait H2OMOJOPredictionMultinomial {
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojoData, this)
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
         val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
         val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
         Detailed(pred.label, probabilities)
@@ -36,7 +36,7 @@ trait H2OMOJOPredictionMultinomial {
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
         val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojoData, this)
+          .getMojoBackend(uid, getMojo, this)
           .predictMultinomial(RowConverter.toH2ORowData(r), offset)
         Base(pred.label)
       }

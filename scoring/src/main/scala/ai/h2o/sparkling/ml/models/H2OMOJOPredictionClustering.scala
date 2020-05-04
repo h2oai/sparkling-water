@@ -29,13 +29,13 @@ trait H2OMOJOPredictionClustering {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
         val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictClustering(RowConverter.toH2ORowData(r))
+          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
         Detailed(pred.cluster, pred.distances)
       }
     } else {
       udf[Base, Row] { r: Row =>
         val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictClustering(RowConverter.toH2ORowData(r))
+          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
         Base(pred.cluster)
       }
     }

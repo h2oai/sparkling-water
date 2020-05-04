@@ -23,13 +23,13 @@ import ai.h2o.sparkling.ml.utils.H2OReaderBase
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.utils.ScalaUtils._
 
-private[models] class H2OMOJOReader[T <: HasMojoData] extends H2OReaderBase[T] {
+private[models] class H2OMOJOReader[T <: HasMojo] extends H2OReaderBase[T] {
 
   override def load(path: String): T = {
     val model = super.load(path)
     val inputPath = Paths.get(path, H2OMOJOProps.serializedFileName).toString
     withResource(SparkSessionUtils.readHDFSFile(inputPath)) { inputStream =>
-      model.setMojoData(inputStream)
+      model.setMojo(inputStream)
     }
     model
   }

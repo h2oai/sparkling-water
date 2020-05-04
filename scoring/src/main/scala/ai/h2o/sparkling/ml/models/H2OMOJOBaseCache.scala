@@ -73,13 +73,13 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
     }
   }
 
-  def getMojoBackend(uid: String, mojoDataGetter: () => File, model: M): B = Lock.synchronized {
+  def getMojoBackend(uid: String, mojoGetter: () => File, model: M): B = Lock.synchronized {
     if (!pipelineCache.contains(uid)) {
-      pipelineCache.put(uid, loadMojoBackend(mojoDataGetter(), model))
+      pipelineCache.put(uid, loadMojoBackend(mojoGetter(), model))
     }
     lastAccessMap.put(uid, System.currentTimeMillis())
     pipelineCache(uid)
   }
 
-  def loadMojoBackend(mojoData: File, model: M): B
+  def loadMojoBackend(mojo: File, model: M): B
 }

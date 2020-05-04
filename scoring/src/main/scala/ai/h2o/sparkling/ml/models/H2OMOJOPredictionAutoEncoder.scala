@@ -29,13 +29,13 @@ trait H2OMOJOPredictionAutoEncoder {
     if (getWithDetailedPredictionCol()) {
       udf[Detailed, Row] { r: Row =>
         val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
+          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
         Detailed(pred.original, pred.reconstructed)
       }
     } else {
       udf[Base, Row] { r: Row =>
         val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojoData, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
+          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
         Base(pred.original)
       }
     }

@@ -39,7 +39,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
   @transient private lazy val mojoPipeline: MojoPipeline = {
-    H2OMOJOPipelineCache.getMojoBackend(uid, getMojoData, this)
+    H2OMOJOPipelineCache.getMojoBackend(uid, getMojo, this)
   }
 
   case class Mojo2Prediction(preds: List[Double])
@@ -205,10 +205,10 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
 }
 
 object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H2OMOJOLoader[H2OMOJOPipelineModel] {
-  override def createFromMojo(mojoData: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
+  override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
-    model.setMojoData(mojoData, uid)
-    withResource(new FileInputStream(model.getMojoData())) { inputStream =>
+    model.setMojo(mojo, uid)
+    withResource(new FileInputStream(model.getMojo())) { inputStream =>
       val reader = MojoPipelineReaderBackendFactory.createReaderBackend(inputStream)
       val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
       model.set(model.featuresCols, featureCols)
@@ -222,8 +222,8 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
-  override def loadMojoBackend(mojoData: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    withResource(new FileInputStream(mojoData)) { inputStream =>
+  override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
+    withResource(new FileInputStream(mojo)) { inputStream =>
       val reader = MojoPipelineReaderBackendFactory.createReaderBackend(inputStream)
       MojoPipeline.loadFrom(reader)
     }
