@@ -22,7 +22,6 @@ from ai.h2o.sparkling.H2OConf import H2OConf
 from ai.h2o.sparkling.Initializer import Initializer
 from h2o.frame import H2OFrame
 from h2o.utils.typechecks import assert_is_type, Enum
-from pyspark.ml.util import _jvm
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
@@ -73,9 +72,8 @@ class H2OContext(object):
         # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not
         # desirable
         activeSession = SparkSession._instantiatedSession
-        if activeSession is not None:
-            jvm = activeSession.sparkContext._jvm
-            jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
+        jvm = activeSession.sparkContext._jvm
+        jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
 
         if conf is not None:
             selected_conf = conf
@@ -86,7 +84,8 @@ class H2OContext(object):
         h2o_context = H2OContext()
 
         # Create backing H2OContext
-        package = getattr(_jvm().org.apache.spark.h2o, "H2OContext$")
+        h2o_context._jvm = jvm
+        package = getattr(jvm.org.apache.spark.h2o, "H2OContext$")
         module = package.__getattr__("MODULE$")
         jhc = module.getOrCreate(selected_conf._jconf)
         h2o_context._jhc = jhc
@@ -200,7 +199,7 @@ class H2OContext(object):
             """
         assert_is_type(sparkFrame, DataFrame, RDD)
 
-        df = H2OContext.__prepareSparkDataForConversion(sparkFrame)
+        df = H2OContext.__prepareSparkDataForConversion(self._jvm, sparkFrame)
         if h2oFrameName is None:
             key = self._jhc.asH2OFrameKeyString(df._jdf)
         else:
@@ -208,7 +207,7 @@ class H2OContext(object):
         return H2OFrame.get_frame(key, full_cols=fullCols, light=True)
 
     @staticmethod
-    def __prepareSparkDataForConversion(sparkData):
+    def __prepareSparkDataForConversion(_jvm, sparkData):
         if isinstance(sparkData, DataFrame):
             return sparkData
         elif sparkData.isEmpty():
@@ -222,9 +221,9 @@ class H2OContext(object):
                 elif isinstance(first, bool):
                     return session.createDataFrame(sparkData, BooleanType())
                 elif (isinstance(sparkData.min(), numbers.Integral) and isinstance(sparkData.max(), numbers.Integral)):
-                    if sparkData.min() >= _jvm().Integer.MIN_VALUE and sparkData.max() <= _jvm().Integer.MAX_VALUE:
+                    if sparkData.min() >= _jvm.Integer.MIN_VALUE and sparkData.max() <= _jvm.Integer.MAX_VALUE:
                         return session.createDataFrame(sparkData, IntegerType())
-                    elif sparkData.min() >= _jvm().Long.MIN_VALUE and sparkData.max() <= _jvm().Long.MAX_VALUE:
+                    elif sparkData.min() >= _jvm.Long.MIN_VALUE and sparkData.max() <= _jvm.Long.MAX_VALUE:
                         return session.createDataFrame(sparkData, LongType())
                     else:
                         warnings.warn(
