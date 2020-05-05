@@ -42,6 +42,7 @@ import water.fvec.H2OFrame;
  * <p>Cluster mode can be set using the spark configuration property spark.ext.h2o.mode which can be
  * set in script starting sparkling-water or can be set in H2O configuration class H2OConf
  */
+@Deprecated
 public class JavaH2OContext {
   /*
   Note for developers: This class is not written in scala intentionally as we want to have static method getOrCreate on
