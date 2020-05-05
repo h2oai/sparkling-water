@@ -19,13 +19,14 @@ from ai.h2o.sparkling.ExternalBackendConf import ExternalBackendConf
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.InternalBackendConf import InternalBackendConf
 from ai.h2o.sparkling.SharedBackendConf import SharedBackendConf
-from pyspark.ml.util import _jvm
+from pyspark.sql import SparkSession
 
 
 class H2OConf(SharedBackendConf, InternalBackendConf, ExternalBackendConf):
     def __init__(self):
         try:
             Initializer.load_sparkling_jar()
-            self._jconf = _jvm().org.apache.spark.h2o.H2OConf()
+            _jvm = SparkSession._instantiatedSession.sparkContext._jvm
+            self._jconf = _jvm.org.apache.spark.h2o.H2OConf()
         except:
             raise
