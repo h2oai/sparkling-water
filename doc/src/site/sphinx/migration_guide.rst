@@ -102,6 +102,8 @@ From 3.30 to 3.32
 - Methods ``asDataFrame`` on Scala ``H2OContext`` has been replaced by methods ``asSparkFrame`` with same arguments.
   This was done to ensure full consistency between Scala, Python and R APIs.
 
+- JavaH2OContext is removed. Please use ``org.apache.spark.h2o.H2OContext`` instead.
+
 From 3.28.1 to 3.30
 -------------------
 
