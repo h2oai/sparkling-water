@@ -20,7 +20,7 @@ from ai.h2o.sparkling.ExternalBackendConf import ExternalBackendConf
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.InternalBackendConf import InternalBackendConf
 from ai.h2o.sparkling.SharedBackendConf import SharedBackendConf
-from pyspark.ml.util import _jvm
+from pyspark.sql import SparkSession
 
 
 class H2OConf(SharedBackendConf, InternalBackendConf, ExternalBackendConf):
@@ -31,6 +31,7 @@ class H2OConf(SharedBackendConf, InternalBackendConf, ExternalBackendConf):
                     "Constructor H2OConf(spark) with spark argument is deprecated. Please use just H2OConf(). "
                     "The argument will be removed in release 3.32.")
             Initializer.load_sparkling_jar()
-            self._jconf = _jvm().org.apache.spark.h2o.H2OConf()
+            _jvm = SparkSession._instantiatedSession.sparkContext._jvm
+            self._jconf = _jvm.org.apache.spark.h2o.H2OConf()
         except:
             raise
