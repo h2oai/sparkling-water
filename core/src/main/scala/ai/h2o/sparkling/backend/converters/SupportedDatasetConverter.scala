@@ -23,10 +23,10 @@ import org.apache.spark.h2o._
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.runtime.universe._
 
-object DatasetConverter extends Logging {
+object SupportedDatasetConverter extends Logging {
 
-  def toH2OFrame[T <: Product](hc: H2OContext, ds: Dataset[T], frameKeyName: Option[String])(
-      implicit ttag: TypeTag[T]) = {
-    SparkDataFrameConverter.toH2OFrame(hc, ds.toDF(), frameKeyName)
+  /** Transform supported type for conversion to a key string of H2OFrame */
+  def toH2OFrameKeyString(hc: H2OContext, dataset: SupportedDataset, frameKeyName: Option[String]): String = {
+    dataset.toH2OFrameKeyString(hc, frameKeyName)
   }
 }
