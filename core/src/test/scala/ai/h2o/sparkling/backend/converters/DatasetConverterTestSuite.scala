@@ -17,12 +17,9 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import java.sql.Timestamp
-
 import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.TestUtils._
 import org.apache.spark.h2o._
-import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
