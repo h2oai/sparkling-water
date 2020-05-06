@@ -26,6 +26,13 @@ from pyspark.sql.types import *
 
 from tests import unit_test_utils
 
+def testDatasetConversion(spark, hc):
+    df = spark.range(100)
+    h2oFrame = hc.asH2OFrame(df)
+    assert h2oFrame.nrow == df.count(), "Number of rows should match"
+    assert h2oFrame.ncol == len(df.columns), "Number of columns should match"
+    assert h2oFrame.names == df.columns, "Column names should match"
+
 
 def testDataframeToH2OFrame(spark, hc):
     df = spark.sparkContext.parallelize([(num, "text") for num in range(0, 100)]).toDF()

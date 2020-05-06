@@ -184,7 +184,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
 
   def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
-    SparkDataFrameConverter.toH2OFrameKeyString(this, df, frameName)
+    SparkDataFrameConverter.toH2OFrameKeyString(this, df.toDF(), frameName)
   }
 
   /** Transform DataFrame to H2OFrame key */
