@@ -1,6 +1,10 @@
 Importing H2O MOJOs from H2O-3
 ------------------------------
 
+When training algorithm using Sparkling Water API, Sparkling Water always produces ``H2OMOJOModel``. It is however also possible
+to import existing MOJO into Sparkling Water ecosystem from H2O-3. After importing the H2O-3 MOJO the API is unified for the
+loaded MOJO and the one created in Sparkling Water, for example, using ``H2OXXGBoost``.
+
 H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
 
@@ -145,7 +149,7 @@ You can also manually specify the type of data source you need to use, in that c
 
 
 The loaded model is an immutable instance, so it's not possible to change the configuration of the model during its existence.
-On the other hand, the model can be configured during its creation via ``H2OMOJOSettings``, in Scala:
+On the other hand, the model can be configured during its creation via ``H2OMOJOSettings``:
 
 
 .. content-tabs::
@@ -233,6 +237,15 @@ Importing the previously exported MOJO model from Sparkling Water
 
 To import the MOJO model, call ``H2OMOJOModel.read.load(path)``. In case of Hadoop enabled system, the command by default
 uses HDFS.
+
+Accessing additional prediction details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After computing predictions, the ``prediction`` column contains in case of classification problem the predicted label
+and in case regression problem the predicted number. If we need to access more details for each prediction, set
+``withDetailedPredictionCol`` to true on ``H2OMOJOSettings`` before running the predictions. This will ensure that
+additional column will be created during predictions, by default named ``detailed_prediction`` which contains, for example,
+predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
