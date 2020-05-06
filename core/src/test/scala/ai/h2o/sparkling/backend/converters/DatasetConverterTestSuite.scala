@@ -139,7 +139,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
   test("Dataset[Boolean] to H2OFrame") {
     val ds = spark.sparkContext.parallelize(Seq(true, false, true)).toDS()
     val hf = hc.asH2OFrame(ds)
-    assertVectorDoubleValues(hf.vec(0), Seq(1, 0, 1))
+    assertVectorIntValues(hf.vec(0), Seq(1, 0, 1))
   }
 
   test("Dataset[LabeledPoint] to H2OFrame") {
