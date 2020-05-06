@@ -141,15 +141,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.vec(0), Seq(1, 0, 1))
   }
-
-  test("Dataset[LabeledPoint] to H2OFrame") {
-    val rdd = sc.parallelize(Array.empty[LabeledPoint])
-    val fr = hc.asH2OFrame(rdd)
-
-    assert(fr.numCols() == 1)
-    assert(fr.numRows() == 0)
-  }
-
+  
   test("Datasets with a type that does not match") {
 
     intercept[IllegalArgumentException] {
