@@ -32,7 +32,8 @@ def testDatasetConversion(spark, hc):
     assert h2oFrame.nrow == df.count(), "Number of rows should match"
     assert h2oFrame.ncol == len(df.columns), "Number of columns should match"
     assert h2oFrame.names == df.columns, "Column names should match"
-    
+
+
 def testDataframeToH2OFrame(spark, hc):
     df = spark.sparkContext.parallelize([(num, "text") for num in range(0, 100)]).toDF()
     h2o_frame = hc.asH2OFrame(df)
