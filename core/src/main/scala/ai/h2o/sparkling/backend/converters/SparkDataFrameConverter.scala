@@ -59,7 +59,7 @@ object SparkDataFrameConverter extends Logging {
 
   /** Transform Spark's DataFrame into H2O Frame */
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
-    val key = toH2OFrameKeyString(hc, dataFrame, frameKeyName)
+    val key = toH2OFrameKeyString(hc, dataFrame.toDF(), frameKeyName)
     new H2OFrame(DKV.getGet[Frame](key))
   }
 
