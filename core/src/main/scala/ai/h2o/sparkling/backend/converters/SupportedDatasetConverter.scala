@@ -25,7 +25,6 @@ import scala.reflect.runtime.universe._
 
 object SupportedDatasetConverter extends Logging {
 
-  /** Transform supported type for conversion to a key string of H2OFrame */
   def toH2OFrameKeyString(hc: H2OContext, dataset: SupportedDataset, frameKeyName: Option[String]): String = {
     dataset.toH2OFrameKeyString(hc, frameKeyName)
   }
