@@ -1,8 +1,9 @@
 Importing H2O MOJOs from H2O-3
 ------------------------------
 
-When training algorihtm using Sparkling Water API, Sparkling Water always produces ``H2OMOJOModel``. It is however also possible
-to import existing MOJO into Sparkling Water ecosystem from H2O-3.
+When training algorithm using Sparkling Water API, Sparkling Water always produces ``H2OMOJOModel``. It is however also possible
+to import existing MOJO into Sparkling Water ecosystem from H2O-3. After importing the H2O-3 MOJO the API is unified for the
+loaded MOJO and the one created in Sparkling Water, for example, using ``H2OXXGBoost``.
 
 H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
 semantics of the import is the same as in the Spark API.
