@@ -245,7 +245,7 @@ After computing predictions, the ``prediction`` column contains in case of class
 and in case regression problem the predicted number. If we need to access more details for each prediction, set
 ``withDetailedPredictionCol`` to true on ``H2OMOJOSettings`` before running the predictions. This will ensure that
 additional column will be created during predictions, by default named ``detailed_prediction`` which contains, for example,
-predicted probabilities for each predicted label in case of classification problem, shapley values and other information
+predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
