@@ -6,6 +6,20 @@ Migration guide between Sparkling Water versions.
 From 3.30 to 3.32
 -----------------
 
+- We have created two new classes - ``ai.h2o.sparkling.H2OContext`` and ``ai.h2o.sparkling.H2OConf``. The behaviour of the
+  context and configuration is the same as in the original ``org.apache.spark.h2o`` package expect that in this case we
+  no longer use H2O client on Spark driver. This means that H2O is running only on worker nodes and not on Spark driver.
+  This change affects only Scala API as PySparkling and RSparkling are already using the new API internally. We have
+  also changed all documentation materials to point to the new classes.
+
+  We are keeping the original context and conf available in the code in case
+  the user needs to use some of the H2O client features directly on the Spark driver, but please note that once the API
+  in the new package ``ai.h2o.sparkling`` is complete, the  context and conf classes will get removed. We therefore
+  encourage users to migrate to new context class and report missing features to us via Github issues.
+
+  For example, if the user is training XGboost model using H2O Java api but is not using ``H2OXGBoost`` from Sparkling
+  Water, this feature requires the H2O client to be available.
+
 - In PySparkling, the ``H2OConf`` no longer accepts any arguments. To create new ``H2OConf``, please just call ``conf = H2OConf()``.
   Also the ``H2OContext.getOrCreate`` method no longer accepts the spark argument. You can start H2OContext as
   ``H2OContext.getOrCreate()`` or ``H2OContext.getOrCreate(conf)``
