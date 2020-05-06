@@ -20,7 +20,7 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend._
-import ai.h2o.sparkling.backend.converters.{DatasetConverter, SparkDataFrameConverter, SupportedRDD, SupportedRDDConverter}
+import ai.h2o.sparkling.backend.converters.{SupportedDatasetConverter, SparkDataFrameConverter, SupportedDataset, SupportedRDD, SupportedRDDConverter}
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
@@ -195,20 +195,23 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def toH2OFrameKey(df: DataFrame, frameName: String): Key[Frame] = toH2OFrameKey(df, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame */
-  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T]): H2OFrame = asH2OFrame(ds, None)
+  def asH2OFrame(ds: SupportedDataset): H2OFrame = asH2OFrame(ds, None)
 
-  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T], frameName: Option[String]): H2OFrame =
-    withConversionDebugPrints(sparkContext, "Dataset", DatasetConverter.toH2OFrame(this, ds, frameName))
+  def asH2OFrame(ds: SupportedDataset, frameName: Option[String]): H2OFrame =
+    withConversionDebugPrints(sparkContext, "SupportedDataset", {
+      val key = SupportedDatasetConverter.toH2OFrameKeyString(this, ds, frameName)
+      new H2OFrame(DKV.getGet[Frame](key))
+    })
 
-  def asH2OFrame[T <: Product: TypeTag](ds: Dataset[T], frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
+  def asH2OFrame(ds: SupportedDataset, frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
 
   /** Transforms Dataset[Supported type] to H2OFrame key */
-  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T]): Key[Frame] = toH2OFrameKey(ds, None)
+  def toH2OFrameKey(ds: SupportedDataset): Key[Frame] = toH2OFrameKey(ds, None)
 
-  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T], frameName: Option[String]): Key[Frame] =
+  def toH2OFrameKey(ds: SupportedDataset, frameName: Option[String]): Key[Frame] =
     asH2OFrame(ds, frameName)._key
 
-  def toH2OFrameKey[T <: Product: TypeTag](ds: Dataset[T], frameName: String): Key[Frame] =
+  def toH2OFrameKey(ds: SupportedDataset, frameName: String): Key[Frame] =
     toH2OFrameKey(ds, Option(frameName))
 
   /** Create a new H2OFrame based on existing Frame referenced by its key. */

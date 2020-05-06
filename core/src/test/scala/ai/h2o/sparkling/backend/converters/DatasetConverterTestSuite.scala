@@ -17,9 +17,12 @@
 
 package ai.h2o.sparkling.backend.converters
 
+import java.sql.Timestamp
+
 import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.TestUtils._
 import org.apache.spark.h2o._
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -89,6 +92,62 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(testSourceDataset.count == testH2oFrame.numRows(), "Number of rows should match")
 
     matchData(extracted, samplePeople)
+  }
+
+  test("Dataset[Byte] to H2OFrame") {
+    val ds = spark.range(3).map(_.toByte)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+  }
+
+  test("Dataset[Short] to H2OFrame") {
+    val ds = spark.range(3).map(_.toShort)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+  }
+
+  test("Dataset[Int] to H2OFrame") {
+    val ds = spark.range(3).map(_.toInt)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+  }
+
+  test("Dataset[Long] to H2OFrame") {
+    val ds = spark.range(3).map(_.toLong)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+  }
+
+  test("Dataset[Float] to H2OFrame") {
+    val ds = spark.range(3).map(_.toFloat)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorDoubleValues(hf.vec(0), Seq(0, 1.0, 2.0))
+  }
+
+  test("Dataset[Double] to H2OFrame") {
+    val ds = spark.range(3).map(_.toDouble)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorDoubleValues(hf.vec(0), Seq(0, 1.0, 2.0))
+  }
+
+  test("Dataset[String] to H2OFrame") {
+    val ds = spark.range(3).map(_.toString)
+    val hf = hc.asH2OFrame(ds)
+    assertVectorStringValues(hf.vec(0), Seq("0", "1", "2"))
+  }
+
+  test("Dataset[Boolean] to H2OFrame") {
+    val ds = spark.sparkContext.parallelize(Seq(true, false, true)).toDS()
+    val hf = hc.asH2OFrame(ds)
+    assertVectorDoubleValues(hf.vec(0), Seq(1, 0, 1))
+  }
+
+  test("Dataset[LabeledPoint] to H2OFrame") {
+    val rdd = sc.parallelize(Array.empty[LabeledPoint])
+    val fr = hc.asH2OFrame(rdd)
+
+    assert(fr.numCols() == 1)
+    assert(fr.numRows() == 0)
   }
 
   test("Datasets with a type that does not match") {
