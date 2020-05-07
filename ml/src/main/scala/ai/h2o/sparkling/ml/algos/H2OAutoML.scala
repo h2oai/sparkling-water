@@ -145,7 +145,8 @@ class H2OAutoML(override val uid: String)
     val params = Map("extensions" -> extraColumns)
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val content = withResource(readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params)) {
+    val content = withResource(
+      readURLContent(endpoint, "GET", s"/99/Leaderboards/$automlId", conf, params, encodeParamsAsJson = false, None)) {
       response =>
         IOUtils.toString(response)
     }
