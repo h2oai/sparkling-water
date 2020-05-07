@@ -723,7 +723,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     import spark.implicits._
     val df = sc.parallelize(Seq(Person(Name("Charles", "Dickens"), 58), Person(Name("Terry", "Prachett"), 66))).toDF()
     val renamedDF = spark.sqlContext.createDataFrame(df.rdd, personSchema)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(df))
+    val hf = H2OFrame(hc.asH2OFrameKeyString(renamedDF))
 
     assert(hf.columnNames.sameElements(Array("name.given.name", "name.family", "person.age")))
   }
