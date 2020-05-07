@@ -18,16 +18,14 @@ package ai.h2o.sparkling.backend.api.dataframes
 
 import java.io.File
 
-import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import com.google.gson.JsonParser
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.DKV
 import water.exceptions.H2ONotFoundArgumentException
-import water.fvec.{Frame, H2OFrame}
 
 @RunWith(classOf[JUnitRunner])
 class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
@@ -65,7 +63,7 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("DataFrameHandler.getDataFrame() method where DataFrame has non empty metadata") {
 
-    val h2oframe = new H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
+    val h2oframe = H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
     // we have created dataFrame from already existing h2oFrame, metadata are included
     val df = hc.asSparkFrame(h2oframe)
     val name = "prostate"
@@ -109,13 +107,12 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
 
     // get h2o frame for the given id
     val h2oContext = hc
-    import h2oContext.implicits._
-    val h2oFrame = DKV.getGet[Frame](result.h2oframe_id)
+    val h2oFrame = H2OFrame(result.h2oframe_id)
 
-    assert(h2oFrame.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
-    assert(h2oFrame.numCols() == df.columns.length, "Number of columns should match")
-    assert(h2oFrame.names().sameElements(df.columns), "Column names should match")
-    assert(h2oFrame.numRows() == df.count(), "Number of rows should match")
+    assert(h2oFrame.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
+    assert(h2oFrame.numberOfColumns == df.columns.length, "Number of columns should match")
+    assert(h2oFrame.columnNames.sameElements(df.columns), "Column names should match")
+    assert(h2oFrame.numberOfRows == df.count(), "Number of rows should match")
   }
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame") {
