@@ -96,15 +96,6 @@ abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends Configur
 }
 
 @RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_HttpHeadersOnClient extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
-  test("test extra HTTP headers are propagated to FLOW UI") {
-    testExtraHTTPHeadersArePropagated((hc: H2OContext) => hc.flowURL())
-  }
-
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
-}
-
-@RunWith(classOf[JUnitRunner])
 class ConfigurationPropertiesTestSuite_HttpHeadersOnNode extends ConfigurationPropertiesTestSuite_HttpHeadersBase {
   test("test extra HTTP headers are propagated to FLOW UI") {
     testExtraHTTPHeadersArePropagated((hc: H2OContext) => s"http://${hc.getH2ONodes().head.ipPort()}")
@@ -138,36 +129,6 @@ abstract class ConfigurationPropertiesTestSuite_NotifyLocalBase extends Configur
 
     assert(file.exists(), s"H2O process didn't create a file on the path '$filePath'.")
   }
-
-  def setExtraClientProperties(conf: H2OConf, filePath: Path): H2OConf =
-    conf.setClientExtraProperties(s"-notify_local $filePath")
-}
-
-@RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_Local
-  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
-
-  test("test that notify_local set via client extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile(setExtraClientProperties)
-  }
-
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
-}
-
-@RunWith(classOf[JUnitRunner])
-class ConfigurationPropertiesTestSuite_SetNotifyLocalViaClientExtraProperties_LocalCluster
-  extends ConfigurationPropertiesTestSuite_NotifyLocalBase {
-
-  test("test that notify_local set via client extra properties produce a file") {
-    testNotifyLocalPropertyCreatesFile(setExtraClientProperties)
-  }
-
-  override def createSparkSession(): SparkSession =
-    sparkSession(
-      "local-cluster[1,1,1024]",
-      defaultSparkConf
-        .set("spark.driver.extraClassPath", sys.props("java.class.path"))
-        .set("spark.executor.extraClassPath", sys.props("java.class.path")))
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -211,8 +172,8 @@ abstract class ConfigurationPropertiesTestSuite_ExternalCommunicationCompression
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-    val frameKey = hc.asH2OFrameKeyString(dataset)
-    val result = hc.asSparkFrame(frameKey)
+    val frame = H2OFrame(hc.asH2OFrameKeyString(dataset))
+    val result = hc.asSparkFrame(frame)
 
     TestUtils.assertDataFramesAreIdentical(dataset, result)
   }
