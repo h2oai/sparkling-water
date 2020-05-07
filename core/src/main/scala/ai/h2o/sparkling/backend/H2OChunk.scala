@@ -50,7 +50,7 @@ private[sparkling] object H2OChunk extends RestCommunication {
       "compression" -> conf.externalCommunicationCompression)
 
     val endpoint = RestApiUtils.resolveNodeEndpoint(node, conf)
-    val inputStream = readURLContent(endpoint, "POST", Paths.CHUNK, conf, parameters)
+    val inputStream = readURLContent(endpoint, "POST", Paths.CHUNK, conf, parameters, encodeParamsAsJson = false, None)
     Compression.decompress(conf.externalCommunicationCompression, inputStream)
   }
 

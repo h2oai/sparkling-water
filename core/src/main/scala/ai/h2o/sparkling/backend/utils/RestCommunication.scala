@@ -77,6 +77,27 @@ trait RestCommunication extends Logging with RestEncodingUtils {
 
   /**
     *
+    * @param endpoint      An address of H2O node with exposed REST endpoint
+    * @param suffix        REST relative path representing a specific call
+    * @param conf          H2O conf object
+    * @param params        Query parameters
+    * @param skippedFields The list of field specifications that are skipped during deserialization. The specification
+    *                      consists of the class containing the field and the field name.
+    * @tparam ResultType A type that the result will be deserialized to
+    * @return A deserialized object
+    */
+  def delete[ResultType: ClassTag](
+      endpoint: URI,
+      suffix: String,
+      conf: H2OConf,
+      params: Map[String, Any] = Map.empty,
+      skippedFields: Seq[(Class[_], String)] = Seq.empty,
+      encodeParamsAsJson: Boolean = false): ResultType = {
+    request(endpoint, "DELETE", suffix, conf, params, skippedFields, encodeParamsAsJson)
+  }
+
+  /**
+    *
     * @param node   H2O node descriptor
     * @param suffix REST relative path representing a specific call
     * @param conf   H2O conf object
@@ -115,7 +136,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       connection.setRequestMethod(requestMethod)
       connection.setDoOutput(true)
       connection.setChunkedStreamingMode(-1) // -1 to use default size
-      setHeaders(connection, conf, requestMethod, params)
+      setHeaders(connection, conf, requestMethod, params, encodeParamsAsJson = false, None)
       val outputStream = connection.getOutputStream()
       val wrappedStream = streamWrapper(outputStream)
       new FinalizingOutputStream(wrappedStream, () => checkResponseCode(connection))
@@ -131,7 +152,8 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     * @param conf     H2O conf object
     */
   protected def delete(endpoint: URI, suffix: String, conf: H2OConf): Unit = {
-    withResource(readURLContent(endpoint, "DELETE", suffix, conf))(identity)
+    withResource(readURLContent(endpoint, "DELETE", suffix, conf, Map.empty, encodeParamsAsJson = false, None))(
+      identity)
   }
 
   def request[ResultType: ClassTag](
@@ -142,7 +164,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       params: Map[String, Any] = Map.empty,
       skippedFields: Seq[(Class[_], String)] = Seq.empty,
       encodeParamsAsJson: Boolean = false): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson)) { response =>
+    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson, None)) { response =>
       val content = IOUtils.toString(response)
       deserialize[ResultType](content, skippedFields)
     }
@@ -165,7 +187,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
   }
 
   protected def downloadBinaryURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    withResource(readURLContent(endpoint, "GET", suffix, conf)) { input =>
+    withResource(readURLContent(endpoint, "GET", suffix, conf, Map.empty, encodeParamsAsJson = false, None)) { input =>
       withResource(new BufferedOutputStream(new FileOutputStream(file))) { output =>
         IOUtils.copy(input, output)
       }
@@ -173,7 +195,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
   }
 
   protected def downloadStringURLContent(endpoint: URI, suffix: String, conf: H2OConf, file: File): Unit = {
-    withResource(readURLContent(endpoint, "GET", suffix, conf)) { input =>
+    withResource(readURLContent(endpoint, "GET", suffix, conf, Map.empty, encodeParamsAsJson = false, None)) { input =>
       withResource(new java.io.FileWriter(file)) { output =>
         IOUtils.copy(input, output)
       }
@@ -205,9 +227,10 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       conf: H2OConf,
       requestType: String,
       params: Map[String, Any],
-      encodeParamsAsJson: Boolean = false): Unit = {
+      encodeParamsAsJson: Boolean = false,
+      file: Option[String]): Unit = {
     getCredentials(conf).foreach(connection.setRequestProperty("Authorization", _))
-    if (params.nonEmpty && requestType == "POST") {
+    if (params.nonEmpty && file.isEmpty && requestType == "POST") {
       if (encodeParamsAsJson) {
         connection.setRequestProperty("Content-Type", "application/json")
       } else {
@@ -221,6 +244,23 @@ trait RestCommunication extends Logging with RestEncodingUtils {
         writer.write(paramsAsBytes)
       }
     }
+    if (params.isEmpty && file.isDefined && requestType == "POST") {
+      val boundary = s"===${System.currentTimeMillis}==="
+      connection.setRequestProperty("Content-Type", s"multipart/form-data;boundary=$boundary")
+      connection.setRequestProperty("charset", "UTF-8")
+      val CRLF = "\r\n"
+      connection.setDoOutput(true)
+      val body = new PrintWriter(new OutputStreamWriter(connection.getOutputStream, "UTF-8"), true)
+      body.append(CRLF)
+      body.flush()
+
+      IOUtils.copy(new FileInputStream(file.get), connection.getOutputStream)
+      connection.getOutputStream.flush()
+      body.append(CRLF)
+      body.flush()
+      body.append("--").append(boundary).append("--").append(CRLF)
+      body.flush()
+    }
   }
 
   protected def readURLContent(
@@ -229,14 +269,15 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       suffix: String,
       conf: H2OConf,
       params: Map[String, Any] = Map.empty,
-      encodeParamsAsJson: Boolean = false): InputStream = {
+      encodeParamsAsJson: Boolean = false,
+      file: Option[String]): InputStream = {
     val suffixWithParams =
       if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
-      setHeaders(connection, conf, requestType, params, encodeParamsAsJson)
+      setHeaders(connection, conf, requestType, params, encodeParamsAsJson, file)
       checkResponseCode(connection)
       connection.getInputStream()
     } catch {
