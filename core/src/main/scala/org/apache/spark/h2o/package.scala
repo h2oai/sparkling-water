@@ -17,8 +17,6 @@
 
 package org.apache.spark
 
-import org.apache.spark.sql._
-
 /** Type shortcuts to simplify work in Sparkling REPL */
 package object h2o {
   type Frame = water.fvec.Frame
@@ -31,25 +29,4 @@ package object h2o {
   type RDD[X] = org.apache.spark.rdd.RDD[X]
 
   type Dataset[X] = org.apache.spark.sql.Dataset[X]
-
-  /**
-    * Adds a method, `h2o`, to DataFrameWriter that allows you to write h2o frames using
-    * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
-    */
-  implicit class H2ODataFrameWriter[T](writer: DataFrameWriter[T]) {
-    def h2o(key: String): Unit = writer.format("org.apache.spark.h2o").save(key)
-
-    def h2o(key: water.Key[_]): Unit = h2o(key.toString)
-  }
-
-  /**
-    * Adds a method, `h2o`, to DataFrameReader that allows you to read h2o frames using
-    * the DataFileReader. It's alias for sqlContext.read.format("org.apache.spark.h2o").option("key",frame.key.toString).load()
-    */
-  implicit class H2ODataFrameReader(reader: DataFrameReader) {
-    def h2o(key: String): DataFrame = reader.format("org.apache.spark.h2o").load(key)
-
-    def h2o(key: water.Key[_]): DataFrame = h2o(key.toString)
-  }
-
 }
