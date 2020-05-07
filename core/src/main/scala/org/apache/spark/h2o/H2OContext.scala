@@ -25,11 +25,11 @@ import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, Res
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.util.ShutdownHookManager
 import water._
 import water.util.PrettyPrint
 
@@ -83,7 +83,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
   // resources before Spark does as we run as embedded application inside the Spark
-  private val shutdownHookRef = ShutdownHookManager.addShutdownHook(10) { () =>
+  private val shutdownHookRef = Utils.addShutdownHook(10) { () =>
     logWarning("Spark shutdown hook called, stopping H2OContext!")
     stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
   }
@@ -272,7 +272,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
 
   private def stop(stopSparkContext: Boolean, stopJvm: Boolean, inShutdownHook: Boolean): Unit = synchronized {
     if (!inShutdownHook) {
-      ShutdownHookManager.removeShutdownHook(shutdownHookRef)
+      Utils.removeShutdownHook(shutdownHookRef)
     }
     if (!stopped) {
       backendHeartbeatThread.interrupt()
