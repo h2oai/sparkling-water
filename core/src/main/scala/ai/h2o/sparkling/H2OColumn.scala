@@ -30,4 +30,14 @@ case class H2OColumn(
     domain: Array[String],
     domainCardinality: Long) {
   def nullable: Boolean = numberOfMissingElements > 0
+
+  def isString(): Boolean = dataType == H2OColumnType.string
+
+  def isNumeric(): Boolean = dataType == H2OColumnType.real || dataType == H2OColumnType.int
+
+  def isTime(): Boolean = dataType == H2OColumnType.time
+
+  def isCategorical(): Boolean = dataType == H2OColumnType.`enum`
+
+  def isUUID(): Boolean = dataType == H2OColumnType.uuid
 }
