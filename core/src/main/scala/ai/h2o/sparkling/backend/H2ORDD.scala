@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend
 
 import java.lang.reflect.Constructor
 
-import ai.h2o.sparkling.SparkTimeZone
 import ai.h2o.sparkling.backend.converters.DataTypeConverter
 import ai.h2o.sparkling.backend.utils.ProductType
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
