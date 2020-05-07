@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ai.h2o.sparkling.backend.api
 
-import ai.h2o.sparkling.backend.api.dataframes.DataFramesHandler
-import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesHandler
-import ai.h2o.sparkling.backend.api.rdds.RDDsHandler
-import org.apache.spark.h2o.H2OContext
-import water.api.RestApiContext
+import javax.servlet._
+import javax.servlet.http.HttpServletRequest
 
-/**
-  * Sparkling Water Core REST API
-  */
-object CoreRestAPI extends RestApi {
+private[sparkling] class SparklingWaterJettyFilter(val path: String, clazz: Class[_]) extends Filter {
 
-  override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
-    DataFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    H2OFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    RDDsHandler.registerEndpoints(context, hc.sparkContext, hc)
+  def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain): Unit = {
+    val req = request.asInstanceOf[HttpServletRequest]
+    if (req.getServletPath.startsWith(path)) {
+      request.getServletContext.getNamedDispatcher(clazz.getSimpleName).forward(request, response)
+    } else {
+      chain.doFilter(request, response)
+    }
   }
 
-  override def name: String = "Core Sparkling Water Rest API"
+  override def init(filterConfig: FilterConfig): Unit = {}
+
+  override def destroy(): Unit = {}
 }

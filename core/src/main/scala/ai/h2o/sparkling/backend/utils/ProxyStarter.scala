@@ -18,15 +18,18 @@
 package ai.h2o.sparkling.backend.utils
 
 import java.net._
+import java.util
 
+import ai.h2o.sparkling.backend.api.scalainterpreter.{ScalaInterpreterFilter, ScalaInterpreterServlet}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import javax.servlet.DispatcherType
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler, ServletHandler}
 import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 object ProxyStarter extends Logging {
@@ -88,14 +91,30 @@ object ProxyStarter extends Logging {
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     context.setContextPath("/")
+    context.setServletHandler(proxyContextHandler(conf))
+    if (conf.isH2OReplEnabled) {
+      val mapping = new FilterMapping()
+      mapping.setFilterName("ScalaFilter")
+      mapping.setPathSpecs(Array("/3/scalaint", "3/scalaint/*"))
+      mapping.setServletNames(Array(classOf[ScalaInterpreterServlet].getSimpleName))
+      mapping.setDispatcherTypes(util.EnumSet.of(DispatcherType.REQUEST))
+
+      val holder = new FilterHolder(classOf[ScalaInterpreterFilter])
+      holder.setName("ScalaFilter")
+      context.getServletHandler.addFilter(holder, mapping)
+      context.addServlet(classOf[ScalaInterpreterServlet], "/3/scalaint")
+    }
+    context
+  }
+
+  private def proxyContextHandler(conf: H2OConf): ServletHandler = {
     val handler = new ServletHandler()
     val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
 
     val ipPort = RestApiUtils.getLeaderNode(conf).ipPort()
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
-    context.setServletHandler(handler)
-    context
+    handler
   }
 
   class H2OFlowProxyServlet extends Transparent {

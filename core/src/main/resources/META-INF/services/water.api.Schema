@@ -7,5 +7,4 @@ ai.h2o.sparkling.backend.api.rdds.RDDV3
 ai.h2o.sparkling.backend.api.rdds.RDDsV3
 ai.h2o.sparkling.backend.api.scalainterpreter.ScalaCodeV3
 ai.h2o.sparkling.backend.api.scalainterpreter.ScalaSessionIdV3
-ai.h2o.sparkling.backend.api.scalainterpreter.ScalaSessionsV3
 ai.h2o.sparkling.backend.api.scalainterpreter.ScalaCodeResultV3

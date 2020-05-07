@@ -14,15 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import water.api.{API, Schema}
+import ai.h2o.sparkling.backend.api.SparklingWaterJettyFilter
 
-/**
-  * Schema representing [GET] /3/scalaint endpoint
-  */
-class ScalaSessionsV3 extends Schema[IcedSessions, ScalaSessionsV3] {
-
-  @API(help = "List of session IDs", direction = API.Direction.OUTPUT)
-  var sessions: Array[Int] = _
-}
+class ScalaInterpreterFilter extends SparklingWaterJettyFilter("/3/scalaint", classOf[ScalaInterpreterServlet])
