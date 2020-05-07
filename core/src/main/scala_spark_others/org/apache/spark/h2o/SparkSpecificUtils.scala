@@ -19,7 +19,7 @@ package org.apache.spark.h2o
 
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.ui.{AppStatusListener, AppStatusStore, SparklingWaterUITab}
+import org.apache.spark.h2o.ui.{AppStatusListener, AppStatusStore, CrossSparkUtils, SparklingWaterUITab}
 import org.apache.spark.status.ElementTrackingStore
 import org.apache.spark.ui.{SparkUITab, UIUtils}
 
