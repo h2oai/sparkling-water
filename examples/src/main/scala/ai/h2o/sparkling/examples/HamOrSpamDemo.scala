@@ -48,7 +48,7 @@ object HamOrSpamDemo {
     estimators.foreach { estimator =>
       val stages = Array(tokenizer, stopWordsRemover, hashingTF, idf, estimator, columnPruner)
       val pipeline = createPipeline(stages)
-      val model = trainPipeline(spark, pipeline, data)
+      val model = trainPipeline(pipeline, data)
       assertPredictions(spark, model)
     }
   }
@@ -119,7 +119,7 @@ object HamOrSpamDemo {
       Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
   }
 
-  def trainPipeline(spark: SparkSession, pipeline: Pipeline, data: DataFrame): PipelineModel = {
+  def trainPipeline(pipeline: Pipeline, data: DataFrame): PipelineModel = {
     val model = pipeline.fit(data)
     // Test exporting and importing pipeline model
     model.write.overwrite.save("build/examples/model")
