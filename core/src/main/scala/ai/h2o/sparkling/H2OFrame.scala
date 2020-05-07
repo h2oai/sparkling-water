@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling
 
+import java.io.File
+import java.net.URI
 import java.text.MessageFormat
 
 import ai.h2o.sparkling.backend.utils.RestApiUtils._
@@ -25,6 +27,9 @@ import ai.h2o.sparkling.backend.{H2OChunk, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
 import ai.h2o.sparkling.utils.Base64Encoding
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import com.google.gson.{Gson, JsonElement}
+import org.apache.commons.io.IOUtils
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
@@ -85,6 +90,15 @@ class H2OFrame private (
     splitFrameV3.destination_frames.map(frameKey => H2OFrame(frameKey.name))
   }
 
+  def add(another: H2OFrame): H2OFrame = {
+    val endpoint = getClusterEndpoint(conf)
+    val newFrameId = s"${frameId}_added_${another.frameId}"
+    val params = Map(
+      "ast" -> MessageFormat.format(s"( assign {0} (cbind {1} {2}))", newFrameId, frameId, another.frameId))
+    val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+    H2OFrame(rapidsFrameV3.key.name)
+  }
+
   def subframe(columns: Array[String]): H2OFrame = {
     val nonExistentColumns = columns.diff(columnNames)
     if (nonExistentColumns.nonEmpty) {
@@ -103,6 +117,11 @@ class H2OFrame private (
       H2OFrame(rapidsFrameV3.key.name)
     }
   }
+
+  /**
+    * Delete this H2O Frame from the cluster
+    */
+  def delete(): Unit = H2OFrame.deleteFrame(conf, frameId)
 
   /**
     * Left join this frame with another frame
@@ -191,6 +210,57 @@ object H2OFrame extends RestCommunication {
     getFrame(conf, frameId)
   }
 
+  def apply(file: File): H2OFrame = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = getClusterEndpoint(conf)
+    val content = withResource(
+      readURLContent(
+        endpoint,
+        "POST",
+        "/3/PostFile",
+        conf,
+        Map.empty,
+        encodeParamsAsJson = false,
+        Some(file.getAbsolutePath))) { response =>
+      IOUtils.toString(response)
+    }
+    val gson = new Gson()
+    val unparsedFrameId =
+      gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonPrimitive("destination_frame").getAsString
+
+    val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, Map("source_frames" -> unparsedFrameId))
+    val params = Map(
+      "source_frames" -> unparsedFrameId,
+      "destination_frame" -> parseSetup.destination_frame,
+      "parse_type" -> parseSetup.parse_type,
+      "separator" -> parseSetup.separator,
+      "single_quotes" -> parseSetup.single_quotes,
+      "check_header" -> parseSetup.check_header,
+      "number_columns" -> parseSetup.number_columns,
+      "chunk_size" -> parseSetup.chunk_size,
+      "column_types" -> parseSetup.column_types,
+      "column_names" -> parseSetup.column_names,
+      "skipped_columns" -> parseSetup.skipped_columns,
+      "custom_non_data_line_markers" -> parseSetup.custom_non_data_line_markers,
+      "delete_on_done" -> true)
+
+    val parse = update[ParseV3](endpoint, "/3/Parse", conf, params)
+    val jobId = parse.job.key.name
+    H2OJob(jobId).waitForFinish()
+    H2OFrame(parse.destination_frame.name)
+  }
+
+  def apply(uri: URI): H2OFrame = apply(new File(uri))
+
+  def listFrames(): Array[H2OFrame] = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesListV3](endpoint, "/3/Frames", conf)
+    frames.frames.map(fr => H2OFrame(fr.frame_id.name))
+  }
+
+  def exists(frameId: String): Boolean = listFrames().map(_.frameId).contains(frameId)
+
   private def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](
@@ -200,13 +270,19 @@ object H2OFrame extends RestCommunication {
       Map("row_count" -> 0),
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
-    val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
-    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
+    val chunks = if (frame.rows == 0) {
+      Array.empty[H2OChunk]
+    } else {
+      val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
+      val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
+      frameChunks.chunks.map(convertChunk(_, clusterNodes))
+    }
+    new H2OFrame(frame.frame_id.name, frame.columns.map(convertColumn), chunks)
+  }
 
-    new H2OFrame(
-      frame.frame_id.name,
-      frame.columns.map(convertColumn),
-      frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+  private def deleteFrame(conf: H2OConf, frameId: String): Unit = {
+    val endpoint = getClusterEndpoint(conf)
+    delete[FramesV3](endpoint, s"3/Frames/$frameId", conf)
   }
 
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {

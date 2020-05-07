@@ -16,6 +16,8 @@
  */
 package ai.h2o.sparkling
 
+import java.io.File
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -27,11 +29,7 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
 
-  private def uploadH2OFrame(): H2OFrame = {
-    // since we did not ask Spark to infer schema, all columns have been parsed as Strings
-    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-    H2OFrame(hc.asH2OFrameKeyString(df))
-  }
+  private def uploadH2OFrame(): H2OFrame = H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
 
   test("convertColumnsToCategorical with column names") {
     val originalFrame = uploadH2OFrame()
@@ -105,6 +103,20 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     val subframe = originalFrame.subframe(selectedColumns)
     assert(subframe.columnNames.sorted.sameElements(selectedColumns))
     assert(subframe.frameId != originalFrame.frameId)
+  }
+
+  test("delete") {
+    val originalFrame = uploadH2OFrame()
+    originalFrame.delete()
+    val frames = H2OFrame.listFrames()
+    assert(!frames.map(_.frameId).contains(originalFrame.frameId))
+  }
+
+  test("add") {
+    val originalFrame = uploadH2OFrame()
+    val newFrame = originalFrame.add(originalFrame)
+    val newNames = originalFrame.columnNames ++ originalFrame.columnNames.map(_ + "0")
+    assert(newFrame.columnNames.sameElements(newNames))
   }
 
   private lazy val leftFrame = {
