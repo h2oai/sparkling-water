@@ -33,22 +33,22 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Reading H2OFrame using key option") {
     val rdd = sc.parallelize(1 to 1000)
-    val h2oFrame = hc.asH2OFrame(rdd)
-    val df = spark.read.format("h2o").option("key", h2oFrame.key.toString).load()
+    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val df = spark.read.format("h2o").option("key", h2oFrame.frameId).load()
 
-    assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")
-    assert(df.count() == h2oFrame.numRows(), "Number of rows should match")
+    assert(df.columns.length == h2oFrame.numberOfColumns, "Number of columns should match")
+    assert(df.columns.sameElements(h2oFrame.columnNames), "Column names should match")
+    assert(df.count() == h2oFrame.numberOfRows, "Number of rows should match")
   }
 
   test("Reading H2OFrame using key in load method ") {
     val rdd = sc.parallelize(1 to 1000)
-    val h2oFrame = hc.asH2OFrame(rdd)
-    val df = spark.read.format("h2o").load(h2oFrame.key.toString)
+    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val df = spark.read.format("h2o").load(h2oFrame.frameId)
 
-    assert(df.columns.length == h2oFrame.numCols(), "Number of columns should match")
-    assert(df.columns.sameElements(h2oFrame.names()), "Column names should match")
-    assert(df.count() == h2oFrame.numRows(), "Number of rows should match")
+    assert(df.columns.length == h2oFrame.numberOfColumns, "Number of columns should match")
+    assert(df.columns.sameElements(h2oFrame.columnNames), "Column names should match")
+    assert(df.count() == h2oFrame.numberOfRows, "Number of rows should match")
   }
 
   test("Writing DataFrame to new H2O Frame ") {
