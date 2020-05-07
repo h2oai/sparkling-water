@@ -139,7 +139,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asH2OFrameKeyString(rdd: SupportedRDD, frameName: String): String = asH2OFrameKeyString(rdd, Some(frameName))
 
   def asH2OFrameKeyString(rdd: SupportedRDD, frameName: Option[String]): String = {
-    SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName)
+    SupportedRDDConverter.toH2OFrame(this, rdd, frameName).frameId
   }
 
   /** Transforms RDD[Supported type] to H2OFrame */
@@ -147,8 +147,8 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
 
   def asH2OFrame(rdd: SupportedRDD, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedRDD", {
-      val key = SupportedRDDConverter.toH2OFrameKeyString(this, rdd, frameName)
-      new H2OFrame(DKV.getGet[Frame](key))
+      val fr = SupportedRDDConverter.toH2OFrame(this, rdd, frameName)
+      new H2OFrame(fr.frameId)
     })
 
   def asH2OFrame(rdd: SupportedRDD, frameName: String): H2OFrame = asH2OFrame(rdd, Option(frameName))
@@ -164,7 +164,10 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asH2OFrame(df: DataFrame): H2OFrame = asH2OFrame(df, None)
 
   def asH2OFrame(df: DataFrame, frameName: Option[String]): H2OFrame =
-    withConversionDebugPrints(sparkContext, "DataFrame", SparkDataFrameConverter.toH2OFrame(this, df, frameName))
+    withConversionDebugPrints(
+      sparkContext,
+      "DataFrame",
+      new H2OFrame(SparkDataFrameConverter.toH2OFrame(this, df, frameName).frameId))
 
   def asH2OFrame(df: DataFrame, frameName: String): H2OFrame = asH2OFrame(df, Option(frameName))
 
@@ -179,7 +182,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asH2OFrameKeyString(df: DataFrame, frameName: String): String = asH2OFrameKeyString(df, Some(frameName))
 
   def asH2OFrameKeyString(df: DataFrame, frameName: Option[String]): String = {
-    SparkDataFrameConverter.toH2OFrameKeyString(this, df.toDF(), frameName)
+    SparkDataFrameConverter.toH2OFrame(this, df.toDF(), frameName).frameId
   }
 
   /** Transform DataFrame to H2OFrame key */
@@ -194,8 +197,8 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
 
   def asH2OFrame(ds: SupportedDataset, frameName: Option[String]): H2OFrame =
     withConversionDebugPrints(sparkContext, "SupportedDataset", {
-      val key = SupportedDatasetConverter.toH2OFrameKeyString(this, ds, frameName)
-      new H2OFrame(DKV.getGet[Frame](key))
+      val fr = SupportedDatasetConverter.toH2OFrame(this, ds, frameName)
+      new H2OFrame(fr.frameId)
     })
 
   def asH2OFrame(ds: SupportedDataset, frameName: String): H2OFrame = asH2OFrame(ds, Option(frameName))
@@ -214,7 +217,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asH2OFrameKeyString(ds: SupportedDataset, frameName: String): String = asH2OFrameKeyString(ds, Some(frameName))
 
   def asH2OFrameKeyString(ds: SupportedDataset, frameName: Option[String]): String = {
-    SupportedDatasetConverter.toH2OFrameKeyString(this, ds, frameName)
+    SupportedDatasetConverter.toH2OFrame(this, ds, frameName).frameId
   }
 
   /** Create a new H2OFrame based on existing Frame referenced by its key. */
@@ -229,7 +232,10 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     * in case we are RDD[T] where T is class defined in REPL. This is because class T is created as inner class
     * and we are not able to create instance of class T without outer scope - which is impossible to get.
     * */
-  def asRDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = SupportedRDDConverter.toRDD[A, H2OFrame](this, fr)
+  def asRDD[A <: Product: TypeTag: ClassTag](fr: H2OFrame): RDD[A] = {
+    DKV.put(fr)
+    SupportedRDDConverter.toRDD[A](this, ai.h2o.sparkling.H2OFrame(fr._key.toString))
+  }
 
   /** A generic convert of Frame into Product RDD type
     *
@@ -240,7 +246,10 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     * This code: hc.asRDD[PUBDEV458Type](rdd) will need to be call as hc.asRDD[PUBDEV458Type].apply(rdd)
     */
   def asRDD[A <: Product: TypeTag: ClassTag] = new {
-    def apply[T <: Frame](fr: T): RDD[A] = SupportedRDDConverter.toRDD[A, T](H2OContext.this, fr)
+    def apply[T <: Frame](fr: T): RDD[A] = {
+      DKV.put(fr)
+      SupportedRDDConverter.toRDD[A](H2OContext.this, ai.h2o.sparkling.H2OFrame(fr._key.toString))
+    }
   }
 
   def asRDD[A <: Product: TypeTag: ClassTag](fr: ai.h2o.sparkling.H2OFrame): org.apache.spark.rdd.RDD[A] = {
@@ -248,7 +257,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   }
 
   def asSparkFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
-    SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+    SparkDataFrameConverter.toDataFrame(this, ai.h2o.sparkling.H2OFrame(fr._key.toString), copyMetadata)
   }
 
   def asSparkFrame(fr: ai.h2o.sparkling.H2OFrame): DataFrame = {

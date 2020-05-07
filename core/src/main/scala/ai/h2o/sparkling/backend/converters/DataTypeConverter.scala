@@ -18,8 +18,8 @@
 package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.backend.utils.SupportedTypes
+import ai.h2o.sparkling.extensions.serde.ExpectedTypes
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
-import ai.h2o.sparkling.extensions.serde.{ChunkSerdeConstants, ExpectedTypes}
 import org.apache.spark.ExposeUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
