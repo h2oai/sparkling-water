@@ -107,6 +107,10 @@ From 3.30 to 3.32
 
 - JavaH2OContext is removed. Please use ``org.apache.spark.h2o.H2OContext`` instead.
 
+- When using H2O as Spark data source, the approach ``val df = spark.read.h2o(key)`` has been removed. Please use
+  ``val df = spark.read.format("h2o").load(key)`` instead. The same holds for ``spark.write.h2o(key)``. Please use
+  ``df.write.format("h2o").save("new_key")`` instead.
+
 From 3.28.1 to 3.30
 -------------------
 

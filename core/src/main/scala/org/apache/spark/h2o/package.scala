@@ -17,10 +17,12 @@
 
 package org.apache.spark
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
+import org.apache.spark.expose.Logging
 import org.apache.spark.sql._
 
 /** Type shortcuts to simplify work in Sparkling REPL */
-package object h2o {
+package object h2o extends Logging {
   type Frame = water.fvec.Frame
   //type Key = water.Key
   type H2O = water.H2O
@@ -37,8 +39,10 @@ package object h2o {
     * the DataFileWriter. It's alias for sqlContext.write.format("org.apache.spark.h2o").option("key","new_frame_key").save()
     */
   implicit class H2ODataFrameWriter[T](writer: DataFrameWriter[T]) {
+    @DeprecatedMethod("df.write.format(\"h2o\").save(key)", "3.32")
     def h2o(key: String): Unit = writer.format("org.apache.spark.h2o").save(key)
 
+    @DeprecatedMethod("df.write.format(\"h2o\").save(key)", "3.32")
     def h2o(key: water.Key[_]): Unit = h2o(key.toString)
   }
 
@@ -47,8 +51,10 @@ package object h2o {
     * the DataFileReader. It's alias for sqlContext.read.format("org.apache.spark.h2o").option("key",frame.key.toString).load()
     */
   implicit class H2ODataFrameReader(reader: DataFrameReader) {
+    @DeprecatedMethod("spark.read.format(\"h2o\").load(key)", "3.32")
     def h2o(key: String): DataFrame = reader.format("org.apache.spark.h2o").load(key)
 
+    @DeprecatedMethod("spark.read.format(\"h2o\").load(key)", "3.32")
     def h2o(key: water.Key[_]): DataFrame = h2o(key.toString)
   }
 
