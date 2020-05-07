@@ -257,6 +257,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   }
 
   def asSparkFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
+    DKV.put(fr)
     SparkDataFrameConverter.toDataFrame(this, ai.h2o.sparkling.H2OFrame(fr._key.toString), copyMetadata)
   }
 
