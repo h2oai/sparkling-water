@@ -119,10 +119,8 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
       cloudV3.cloud_uptime_millis)
     val swPropertiesInfo = conf.getAll.filter(_._1.startsWith("spark.ext.h2o"))
 
-    val swHeartBeatEvent = getSparklingWaterHeartbeatEvent()
-    SparkSessionUtils.active.sparkContext.listenerBus.post(swHeartBeatEvent)
-    val listenerBus = SparkSessionUtils.active.sparkContext.listenerBus
-    listenerBus.post(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
+    Utils.postToListenerBus(getSparklingWaterHeartbeatEvent())
+    Utils.postToListenerBus(H2OContextStartedEvent(h2oClusterInfo, h2oBuildInfo, swPropertiesInfo))
   }
 
   /**
@@ -392,7 +390,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
                 }
               }
             }
-            sparkContext.listenerBus.post(swHeartBeatInfo)
+            Utils.postToListenerBus(swHeartBeatInfo)
           } catch {
             case cause: RestApiException =>
               H2OContext.get().head.stop(stopSparkContext = false, stopJvm = false, inShutdownHook = false)
