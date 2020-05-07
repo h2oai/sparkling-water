@@ -21,8 +21,8 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
 
 trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {
-  protected def convertRelevantColumnsToCategorical(frameKey: String): Unit = {
+  protected def convertRelevantColumnsToCategorical(frame: H2OFrame): Unit = {
     val relevantColumns = getInputCols() ++ Array(getLabelCol())
-    H2OFrame(frameKey).convertColumnsToCategorical(relevantColumns)
+    frame.convertColumnsToCategorical(relevantColumns)
   }
 }

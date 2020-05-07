@@ -61,7 +61,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = hc.asH2OFrameKeyString(relevantColumnsDF)
+    val input = H2OFrame(hc.asH2OFrameKeyString(relevantColumnsDF))
     convertRelevantColumnsToCategorical(input)
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
@@ -69,7 +69,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
       "model" -> targetEncoderModel.modelId,
-      "frame" -> input,
+      "frame" -> input.frameId,
       "data_leakage_handling" -> getHoldoutStrategy(),
       "noise" -> getNoise(),
       "blending" -> getBlendedAvgEnabled(),
