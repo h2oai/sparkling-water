@@ -169,7 +169,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     val referencedVersion = BuildInfo.H2OVersion
     for (node <- nodes) {
       val externalVersion = RestApiUtils.getCloudInfoFromNode(node, conf).version
-      if (referencedVersion != externalVersion) {
+      if (referencedVersion != externalVersion && !referencedVersion.endsWith("-SNAPSHOT")) {
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
