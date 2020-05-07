@@ -70,11 +70,11 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     rddReq.h2oframe_id = "requested_name"
 
     val result = rddsHandler.toH2OFrame(3, rddReq)
-    val h2oframe = hc.asH2OFrame(result.h2oframe_id)
-    assert(h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
-    assert(h2oframe.numCols() == 1, "Number of columns should match")
-    assert(h2oframe.names().sameElements(Seq("value")), "Column names should match")
-    assert(h2oframe.numRows() == rdd.count(), "Number of rows should match")
+    val h2oframe = H2OFrame(result.h2oframe_id)
+    assert(h2oframe.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
+    assert(h2oframe.numberOfColumns == 1, "Number of columns should match")
+    assert(h2oframe.columnNames.sameElements(Seq("value")), "Column names should match")
+    assert(h2oframe.numberOfRows == rdd.count(), "Number of rows should match")
   }
 
   test("RDDsHandler.toH2OFrame() method - product class") {
@@ -90,11 +90,11 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     rddReq.h2oframe_id = "requested_name"
 
     val result = rddsHandler.toH2OFrame(3, rddReq)
-    val h2oframe = hc.asH2OFrame(result.h2oframe_id)
-    assert(h2oframe.key.toString == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
-    assert(h2oframe.numCols() == 2, "Number of columns should match")
-    assert(h2oframe.names().sorted.sameElements(Seq("num", "str")), "Column names should match")
-    assert(h2oframe.numRows() == rdd.count(), "Number of rows should match")
+    val h2oframe = H2OFrame(result.h2oframe_id)
+    assert(h2oframe.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
+    assert(h2oframe.numberOfColumns == 2, "Number of columns should match")
+    assert(h2oframe.columnNames.sorted.sameElements(Seq("num", "str")), "Column names should match")
+    assert(h2oframe.numberOfRows == rdd.count(), "Number of rows should match")
   }
 
   test("RDDsHandler.getRDD() method, querying non-existing RDD") {

@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.backend.api.dataframes
 
+import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.h2o.H2OContext
@@ -24,8 +25,8 @@ import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
-  * Handler for all Spark's DataFrame related queries
-  */
+ * Handler for all Spark's DataFrame related queries
+ */
 class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   val sqlContext = SparkSessionUtils.active.sqlContext
 
@@ -59,9 +60,13 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     }
     val dataFrame: DataFrame = sqlContext.table(s.dataframe_id)
     val h2oFrame =
-      if (s.h2oframe_id == null) h2oContext.asH2OFrame(dataFrame)
-      else h2oContext.asH2OFrame(dataFrame, s.h2oframe_id.toLowerCase())
-    s.h2oframe_id = h2oFrame._key.toString
+      if (s.h2oframe_id == null) {
+        H2OFrame(h2oContext.asH2OFrameKeyString(dataFrame))
+      }
+      else {
+        H2OFrame(h2oContext.asH2OFrameKeyString(dataFrame, s.h2oframe_id.toLowerCase()))
+      }
+    s.h2oframe_id = h2oFrame.frameId
     s
   }
 }

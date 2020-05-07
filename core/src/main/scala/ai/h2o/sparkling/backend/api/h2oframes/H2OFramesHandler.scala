@@ -17,33 +17,23 @@
 package ai.h2o.sparkling.backend.api.h2oframes
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.SparkContext
-import org.apache.spark.h2o.{H2OContext, H2OFrame}
-import water.DKV
+import org.apache.spark.h2o.H2OContext
 import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
-import water.fvec.Frame
 
 /**
-  * Handler for all H2OFrame related queries
-  */
+ * Handler for all H2OFrame related queries
+ */
 class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
-    val value = DKV.get(s.h2oframe_id)
-    if (value == null) {
+    if (!H2OFrame.exists(s.h2oframe_id)) {
       throw new H2ONotFoundArgumentException(
         s"H2OFrame with id '${s.h2oframe_id}' does not exist, can not proceed with the transformation!")
     }
 
-    val h2oFrame: H2OFrame = value.className() match {
-      case name if name.equals(classOf[Frame].getName) => {
-        import h2oContext.implicits._
-        value.get[Frame]()
-      }
-      case name if name.equals(classOf[H2OFrame].getName) => value.get[H2OFrame]()
-    }
-
-    val dataFrame = h2oContext.asSparkFrame(h2oFrame)
+    val dataFrame = h2oContext.asSparkFrame(s.h2oframe_id)
     dataFrame.rdd.cache()
     if (s.dataframe_id == null) {
       s.dataframe_id = "df_" + dataFrame.rdd.id.toString
