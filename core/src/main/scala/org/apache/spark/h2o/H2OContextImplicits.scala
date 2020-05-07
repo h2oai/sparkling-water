@@ -26,8 +26,8 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Implicit transformations available on [[org.apache.spark.h2o.H2OContext]]
- */
+  * Implicit transformations available on [[org.apache.spark.h2o.H2OContext]]
+  */
 abstract class H2OContextImplicits {
 
   protected def _h2oContext: H2OContext
