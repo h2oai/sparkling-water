@@ -17,14 +17,13 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.TestUtils._
-import org.apache.spark.h2o._
+import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.parser.BufferedString
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -75,18 +74,15 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
 
-    assertBasicInvariants(testSourceDataset, testH2oFrame, (row, vec) => {
+    assertDatasetBasicProperties(testSourceDataset, testH2oFrame, row => {
       val sample = samplePeople(row.toInt)
-      val valueString = new BufferedString()
-      assert(!vec.isNA(row), "The H2OFrame should not contain any NA values")
-
-      val value = vec.atStr(valueString, row)
-      assert(sample.name == value.toString, s"The H2OFrame values should match")
+      val value = testH2oFrame.collectStrings(0)(row.toInt)
+      assert(sample.name == value, s"The H2OFrame values should match")
     }, List("name", "age", "email"))
 
     val extracted = readWholeFrame[SamplePerson](testH2oFrame)
 
-    assert(testSourceDataset.count == testH2oFrame.numRows(), "Number of rows should match")
+    assert(testSourceDataset.count == testH2oFrame.numberOfRows, "Number of rows should match")
 
     matchData(extracted, samplePeople)
   }
@@ -94,49 +90,49 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
   test("Dataset[Byte] to H2OFrame") {
     val ds = spark.range(3).map(_.toByte)
     val hf = hc.asH2OFrame(ds)
-    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+    assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Short] to H2OFrame") {
     val ds = spark.range(3).map(_.toShort)
     val hf = hc.asH2OFrame(ds)
-    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+    assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Int] to H2OFrame") {
     val ds = spark.range(3).map(_.toInt)
     val hf = hc.asH2OFrame(ds)
-    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+    assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Long] to H2OFrame") {
     val ds = spark.range(3).map(_.toLong)
     val hf = hc.asH2OFrame(ds)
-    assertVectorIntValues(hf.vec(0), Seq(0, 1, 2))
+    assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Float] to H2OFrame") {
     val ds = spark.range(3).map(_.toFloat)
     val hf = hc.asH2OFrame(ds)
-    assertVectorDoubleValues(hf.vec(0), Seq(0, 1.0, 2.0))
+    assertVectorDoubleValues(hf.collectDoubles(0), Seq(0, 1.0, 2.0))
   }
 
   test("Dataset[Double] to H2OFrame") {
     val ds = spark.range(3).map(_.toDouble)
     val hf = hc.asH2OFrame(ds)
-    assertVectorDoubleValues(hf.vec(0), Seq(0, 1.0, 2.0))
+    assertVectorDoubleValues(hf.collectDoubles(0), Seq(0, 1.0, 2.0))
   }
 
   test("Dataset[String] to H2OFrame") {
     val ds = spark.range(3).map(_.toString)
     val hf = hc.asH2OFrame(ds)
-    assertVectorStringValues(hf.vec(0), Seq("0", "1", "2"))
+    assertVectorStringValues(hf.collectStrings(0), Seq("0", "1", "2"))
   }
 
   test("Dataset[Boolean] to H2OFrame") {
     val ds = spark.sparkContext.parallelize(Seq(true, false, true)).toDS()
     val hf = hc.asH2OFrame(ds)
-    assertVectorIntValues(hf.vec(0), Seq(1, 0, 1))
+    assertVectorIntValues(hf.collectInts(0), Seq(1, 0, 1))
   }
 
   test("Datasets with a type that does not match") {
@@ -172,7 +168,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val extracted = readWholeFrame[PartialPerson](testH2oFrameWithPartialData)
 
     assert(
-      testSourceDatasetWithPartialData.count == testH2oFrameWithPartialData.numRows(),
+      testSourceDatasetWithPartialData.count == testH2oFrameWithPartialData.numberOfRows,
       "Number of rows should match")
 
     matchData(extracted, samplePartialPeople)
@@ -240,7 +236,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   private lazy val testSourceDataset = spark.createDataset(samplePeople)
 
-  private lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
+  private lazy val testH2oFrame: H2OFrame = H2OFrame(hc.asH2OFrameKeyString(testSourceDataset))
 
   private def readWholeFrame[T <: Product: TypeTag: ClassTag](frame: H2OFrame) = {
     val asrdd: RDD[T] = hc.asRDD[T](frame)

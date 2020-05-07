@@ -201,6 +201,48 @@ class H2OFrame private (
     val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
     H2OFrame(rapidsFrameV3.key.name)
   }
+
+  private[sparkling] def collectDoubles(colIdx: Int): Array[Double] = {
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesV3](
+      endpoint,
+      s"/3/Frames/$frameId/columns/${columnNames(colIdx)}/summary",
+      conf,
+      Map("row_count" -> -1),
+      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
+    frames.frames.head.columns.head.data
+  }
+
+  private[sparkling] def collectDoubles(colName: String): Array[Double] = {
+    collectDoubles(columnNames.indexOf(colName))
+  }
+
+  private[sparkling] def collectLongs(colIdx: Int): Array[Long] = {
+    collectDoubles(colIdx).map(_.toLong)
+  }
+
+  private[sparkling] def collectLongs(colName: String): Array[Long] = {
+    collectLongs(columnNames.indexOf(colName))
+  }
+
+  private[sparkling] def collectInts(colIdx: Int): Array[Int] = {
+    collectDoubles(colIdx).map(_.toInt)
+  }
+
+  private[sparkling] def collectInts(colName: String): Array[Int] = {
+    collectInts(columnNames.indexOf(colName))
+  }
+
+  private[sparkling] def collectStrings(colIdx: Int): Array[String] = {
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesV3](
+      endpoint,
+      s"/3/Frames/$frameId/columns/${columnNames(colIdx)}/summary",
+      conf,
+      Map("row_count" -> -1),
+      Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
+    frames.frames.head.columns.head.string_data
+  }
 }
 
 object H2OFrame extends RestCommunication {

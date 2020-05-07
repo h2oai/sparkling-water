@@ -16,9 +16,9 @@
  */
 package ai.h2o.sparkling.internal
 
-import ai.h2o.sparkling.TestUtils.DoubleHolder
+import ai.h2o.sparkling.TestUtils.{DoubleHolder, assertRDDHolderProperties, assertVectorIntValues}
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
-import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -36,16 +36,13 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
 
   test("asH2OFrame conversion on subset of executors") {
     assert(hc.getH2ONodes().length == 1)
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v))
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    TestUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowIdx = rowIdx + 1
-      val value = vec.at(rowIdx)
-      assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
-    })
-
+    val data = 1 to 1000
+    val rdd = sc.parallelize(data, 100).map(v => Some(v))
+    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    assertRDDHolderProperties(h2oFrame, rdd)
+    assertVectorIntValues(h2oFrame.collectInts(0), data)
     h2oFrame.delete()
+    rdd.unpersist()
   }
 
   test("asSparkFrame conversion on subset of executors") {
