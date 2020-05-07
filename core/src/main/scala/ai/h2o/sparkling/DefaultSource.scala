@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.spark.h2o
+package ai.h2o.sparkling
 
 import ai.h2o.sparkling.backend.H2OFrameRelation
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
-import water.DKV
 
 /**
-  * Provides access to H2OFrame from pure SQL statements (i.e. for users of the
-  * JDBC server).
+  * Provides access to H2OFrame from pure SQL statements (i.e. for users of the JDBC server).
   */
 class DefaultSource
   extends RelationProvider
@@ -33,9 +32,6 @@ class DefaultSource
   with CreatableRelationProvider
   with DataSourceRegister {
 
-  /**
-    * Short alias for spark-csv data source.
-    */
   override def shortName(): String = "h2o"
 
   private def checkKey(parameters: Map[String, String]): String = {
@@ -74,26 +70,23 @@ class DefaultSource
       parameters: Map[String, String],
       data: DataFrame): BaseRelation = {
     val key = checkKey(parameters)
-    val originalFrame = DKV.getGet[Frame](key)
-    implicit val h2oContext: H2OContext =
-      H2OContext.ensure("H2OContext has to be started in order to save/load data using H2O Data source.")
+    val hc = H2OContext.ensure("H2OContext has to be started in order to save/load data using H2O Data source.")
 
-    if (originalFrame != null) {
+    if (H2OFrame.exists(key)) {
+      val originalFrame = H2OFrame(key)
       mode match {
         case SaveMode.Append =>
           sys.error("Appending to H2O Frame is not supported.")
         case SaveMode.Overwrite =>
-          originalFrame.remove()
-          h2oContext.asH2OFrame(data, key)
+          originalFrame.delete()
+          hc.asH2OFrame(data, key)
         case SaveMode.ErrorIfExists =>
           sys.error(s"Frame with key '$key' already exists, if you want to override it set the save mode to override.")
         case SaveMode.Ignore => // do nothing
       }
     } else {
-      // save as H2O Frame
-      h2oContext.asH2OFrame(data, key)
+      hc.asH2OFrame(data, key)
     }
-
     createRelation(sqlContext, parameters, data.schema)
   }
 }

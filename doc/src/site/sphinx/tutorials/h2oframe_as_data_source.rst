@@ -1,137 +1,108 @@
 H2O Frame as Spark's Data Source
 --------------------------------
 
-The way that an H2O Frame can be used as Spark's Data Source differs between Python and Scala.
+H2O Frame can be used directly as Spark data source.
 
-Quick links:
+Reading Spark Data Frame from H2O Frame
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- `Usage in Python - PySparkling`_
-- `Usage in Scala`_
-- `Specifying Saving Mode`_
+Let's suppose we have an H2OFrame with key ``testFrame``
 
-Usage in Python - PySparkling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There are multiple ways in which the Spark data frame can be loaded from H2OFrame:
 
-Reading from H2O Frame
-^^^^^^^^^^^^^^^^^^^^^^
+.. content-tabs::
 
-Let's suppose we have an H2OFrame ``frame``.
+    .. tab-container:: Scala
+        :title: Scala
 
-There are two ways in which the dataframe can be loaded from H2OFrame in PySparkling:
+        .. code:: scala
 
-.. code:: python
+            val df = spark.read.format("h2o").option("key", "testFrame").load()
 
-    df = spark.read.format("h2o").option("key", frame.frame_id).load()
+        .. code:: scala
 
-or
+            val df = spark.read.format("h2o").load("testFrame")
 
-.. code:: python
+    .. tab-container:: Python
+        :title: Python
 
-    df = spark.read.format("h2o").load(frame.frame_id)
+        .. code:: python
 
-Saving to H2O Frame
-^^^^^^^^^^^^^^^^^^^
+            df = spark.read.format("h2o").option("key", "testFrame").load()
 
-Let's suppose we have DataFrame ``df``.
+        .. code:: python
 
-There are two ways in which the dataframe can be saved as H2OFrame in PySparkling:
+            df = spark.read.format("h2o").load("testFrame")
 
-.. code:: python
 
-    df.write.format("h2o").option("key", "new_key").save()
+Saving H2O Frame as Spark Data Frame
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-or
+Let's suppose we have Spark Data Frame ``df``.
 
-.. code:: python
+There are multiple ways in which the Spark Data Frame can be saved as H2OFrame:
 
-    df.write.format("h2o").save("new_key")
+.. content-tabs::
 
-Both variants save the dataframe as an H2OFrame with the key ``new_key``. They will not succeed if the H2OFrame with the same key already exists.
+    .. tab-container:: Scala
+        :title: Scala
 
-Loading & Saving Options
-^^^^^^^^^^^^^^^^^^^^^^^^
+        .. code:: scala
 
-If the key is specified with the ``key`` option and also in the ``load/save`` method, then the ``key`` option is preferred
+            df.write.format("h2o").option("key", "new_key").save()
 
-.. code:: python
+        .. code:: scala
 
-    df = spark.read.from("h2o").option("key", "key_one").load("key_two")
+            df.write.format("h2o").save("new_key")
 
-or
+    .. tab-container:: Python
+        :title: Python
 
-.. code:: python
+        .. code:: python
 
-    df = spark.read.from("h2o").option("key", "key_one").save("key_two")
+            df.write.format("h2o").option("key", "new_key").save()
 
-In both examples, ``key_one`` is used.
+        .. code:: python
 
-Usage in Scala
-~~~~~~~~~~~~~~
+            df.write.format("h2o").save("new_key")
 
-Reading from H2O Frame
-^^^^^^^^^^^^^^^^^^^^^^
 
-Let's suppose we have H2OFrame ``frame``.
-
-The shortest way in which the dataframe can be loaded from the H2OFrame with default settings is:
-
-.. code:: scala
-
-    val df = spark.read.h2o(frame.key)
-
-There are two more ways in which the dataframe can be loaded from H2OFrame. These calls allow us to specify additional options:
-
-.. code:: scala
-
-    val df = spark.read.format("h2o").option("key", frame.key.toString).load()
-
-or
-
-.. code:: scala
-
-    val df = spark.read.format("h2o").load(frame.key.toString)
-
-Saving to H2O Frame
-^^^^^^^^^^^^^^^^^^^
-
-Let's suppose we have DataFrame ``df``.
-
-The shortest way in which a dataframe can be saved as an H2O Frame with default settings is:
-
-.. code:: scala
-
-    df.write.h2o("new_key")
-
-There are two additional methods for saving a dataframe as an H2OFrame. These calls allow us to specify additional options:
-
-.. code:: scala
-
-    df.write.format("h2o").option("key", "new_key").save()
-
-or
-
-.. code:: scala
-
-    df.write.format("h2o").save("new_key")
-
-All three variants save the dataframe as an H2OFrame with key ``new_key``. They will not succeed if the H2OFrame with the same key already exists.
+All variants save the data frame as an H2OFrame with the key ``new_key``. They will not
+succeed if the H2OFrame with the same key already exists.
 
 Loading & Saving Options
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the key is specified with the ``key`` option and also in the ``load/save`` method, then the ``key`` option is preferred.
+If the key is specified with the ``key`` option and also in the ``load/save`` method, then
+the ``key`` option is preferred
 
-.. code:: scala
+.. content-tabs::
 
-    val df = spark.read.from("h2o").option("key", "key_one").load("key_two")
+    .. tab-container:: Scala
+        :title: Scala
 
-or
+        .. code:: scala
 
-.. code:: scala
+            val df = spark.read.from("h2o").option("key", "key_one").load("key_two")
 
-    val df = spark.read.from("h2o").option("key", "key_one").save("key_two")
+        .. code:: scala
 
-In both examples, ``key_one`` is used.
+            val df = spark.read.from("h2o").option("key", "key_one").save("key_two")
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            df = spark.read.from("h2o").option("key", "key_one").load("key_two")
+
+        .. code:: python
+
+            df = spark.read.from("h2o").option("key", "key_one").save("key_two")
+
+
+
+In all examples, ``key_one`` is used.
 
 Specifying Saving Mode
 ~~~~~~~~~~~~~~~~~~~~~~
