@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.backend
+package org.apache.spark.h2o
 
-import ai.h2o.sparkling.backend.converters.SupportedDataset
 import org.apache.spark._
-import org.apache.spark.h2o.{Dataset, Frame, H2OContext, H2OFrame, RDD}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.DataFrame
 import water.Key
