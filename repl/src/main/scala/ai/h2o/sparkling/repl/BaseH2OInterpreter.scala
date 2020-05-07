@@ -114,10 +114,10 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
       intp.bind("spark", "org.apache.spark.sql.SparkSession", spark, List("@transient"))
       intp.bind("sqlContext", "org.apache.spark.sql.SQLContext", spark.sqlContext, List("@transient", "implicit"))
       intp.bind("_valuesExtractor", "ai.h2o.sparkling.repl.ValuesExtractor", valuesExtractor, List("@transient"))
-      command("""
+      command(
+        """
             @transient val h2oContext = {
-              val _h2oContext = org.apache.spark.h2o.H2OContext.get().getOrElse(throw new RuntimeException(
-              "H2OContext has to be started in order to use H2O REPL"))
+              val _h2oContext = org.apache.spark.h2o.H2OContext.ensure("H2OContext has to be started in order to use H2O REPL")
               _h2oContext
             }
           """)
