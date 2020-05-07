@@ -65,7 +65,8 @@ class RDDsHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Hand
         case _: Int => H2OFrame(h2oContext.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Int]], name))
         case _: Float => H2OFrame(h2oContext.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Float]], name))
         case _: Long => H2OFrame(h2oContext.asH2OFrameKeyString(rdd.asInstanceOf[RDD[Long]], name))
-        case _: java.sql.Timestamp => H2OFrame(h2oContext.asH2OFrameKeyString(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name))
+        case _: java.sql.Timestamp =>
+          H2OFrame(h2oContext.asH2OFrameKeyString(rdd.asInstanceOf[RDD[java.sql.Timestamp]], name))
         case _: Product =>
           val first = rdd.asInstanceOf[RDD[Product]].first()
           val fields = ScalaReflection.getConstructorParameters(first.getClass).map { v =>

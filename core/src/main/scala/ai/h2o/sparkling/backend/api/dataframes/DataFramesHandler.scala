@@ -25,8 +25,8 @@ import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
- * Handler for all Spark's DataFrame related queries
- */
+  * Handler for all Spark's DataFrame related queries
+  */
 class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   val sqlContext = SparkSessionUtils.active.sqlContext
 
@@ -62,8 +62,7 @@ class DataFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extend
     val h2oFrame =
       if (s.h2oframe_id == null) {
         H2OFrame(h2oContext.asH2OFrameKeyString(dataFrame))
-      }
-      else {
+      } else {
         H2OFrame(h2oContext.asH2OFrameKeyString(dataFrame, s.h2oframe_id.toLowerCase()))
       }
     s.h2oframe_id = h2oFrame.frameId

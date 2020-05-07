@@ -24,8 +24,8 @@ import water.api.{Handler, HandlerFactory, RestApiContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
- * Handler for all H2OFrame related queries
- */
+  * Handler for all H2OFrame related queries
+  */
 class H2OFramesHandler(val sc: SparkContext, val h2oContext: H2OContext) extends Handler {
   def toDataFrame(version: Int, s: DataFrameIDV3): DataFrameIDV3 = {
     if (!H2OFrame.exists(s.h2oframe_id)) {
