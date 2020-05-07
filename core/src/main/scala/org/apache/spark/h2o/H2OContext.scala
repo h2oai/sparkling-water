@@ -20,8 +20,8 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend._
-import ai.h2o.sparkling.backend.converters.{SupportedDatasetConverter, SparkDataFrameConverter, SupportedDataset, SupportedRDD, SupportedRDDConverter}
-import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
+import ai.h2o.sparkling.backend.converters._
+import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException, WrongSparkVersion}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -36,7 +36,6 @@ import water.util.PrettyPrint
 import scala.language.{implicitConversions, postfixOps}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-import scala.util.control.NoStackTrace
 
 /**
   * Main entry point for Sparkling Water functionality. H2O Context represents connection to H2O cluster and allows us
@@ -525,5 +524,3 @@ object H2OContext extends Logging {
     }
   }
 }
-
-class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace
