@@ -209,6 +209,14 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def toH2OFrameKey(ds: SupportedDataset, frameName: String): Key[Frame] =
     toH2OFrameKey(ds, Option(frameName))
 
+  def asH2OFrameKeyString(ds: SupportedDataset): String = asH2OFrameKeyString(ds, None)
+
+  def asH2OFrameKeyString(ds: SupportedDataset, frameName: String): String = asH2OFrameKeyString(ds, Some(frameName))
+
+  def asH2OFrameKeyString(ds: SupportedDataset, frameName: Option[String]): String = {
+    SupportedDatasetConverter.toH2OFrameKeyString(this, ds, frameName)
+  }
+
   /** Create a new H2OFrame based on existing Frame referenced by its key. */
   def asH2OFrame(s: String): H2OFrame = new H2OFrame(s)
 
@@ -241,6 +249,10 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
 
   def asSparkFrame[T <: Frame](fr: T, copyMetadata: Boolean = true): DataFrame = {
     SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata)
+  }
+
+  def asSparkFrame(fr: ai.h2o.sparkling.H2OFrame): DataFrame = {
+    SparkDataFrameConverter.toDataFrame(this, fr, copyMetadata = true)
   }
 
   def asSparkFrame(s: String, copyMetadata: Boolean): DataFrame = {

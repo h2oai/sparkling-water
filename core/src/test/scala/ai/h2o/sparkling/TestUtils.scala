@@ -18,21 +18,16 @@ package ai.h2o.sparkling
 
 import java.io.File
 import java.sql.Timestamp
-import java.util.UUID
 
-import org.apache.spark.h2o.Dataset
+import org.apache.spark.mllib
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.{lit, rand}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.{h2o, mllib}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.scalatest.Matchers
-import water.fvec.{Chunk, ChunkUtils, NewChunk, Vec}
-import water.parser.BufferedString
 
-import scala.reflect.ClassTag
 import scala.util.Random
 
 object TestUtils extends Matchers {
@@ -47,57 +42,28 @@ object TestUtils extends Matchers {
     }
   }
 
-  def assertVectorIntValues(vec: water.fvec.Vec, values: Seq[Int]): Unit = {
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(
-        if (vec.isNA(rIdx)) -1 == values(rIdx)
-        else vec.at8(rIdx) == values(rIdx),
-        "Values stored in H2OFrame has to match specified values")
+  def assertVectorIntValues(actual: Array[Int], expected: Seq[Int]): Unit = {
+    actual.indices.foreach { rIdx =>
+      assert(actual(rIdx) == expected(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
-  def assertVectorDoubleValues(vec: water.fvec.Vec, values: Seq[Double]): Unit = {
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(
-        if (vec.isNA(rIdx)) values(rIdx).equals(Double.NaN) // this is Scala i can do NaN comparision
-        else vec.at(rIdx) == values(rIdx),
-        "Values stored in H2OFrame has to match specified values")
+  def assertVectorDoubleValues(actual: Array[Double], expected: Seq[Double]): Unit = {
+    actual.indices.foreach { rIdx =>
+      assert(actual(rIdx) == expected(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
-  def assertVectorStringValues(vec: water.fvec.Vec, values: Seq[String]): Unit = {
-    val valString = new BufferedString()
-    (0 until vec.length().toInt).foreach { rIdx =>
-      assert(vec.isNA(rIdx) || {
-        vec.atStr(valString, rIdx)
-        valString.toSanitizedString == values(rIdx)
-      }, "Values stored in H2OFrame has to match specified values")
+  def assertVectorStringValues(actual: Array[String], expected: Seq[String]): Unit = {
+    actual.indices.foreach { rIdx =>
+      assert(actual(rIdx) == expected(rIdx), "Values stored in H2OFrame has to match specified values")
     }
   }
 
-  def assertDoubleFrameValues(f: water.fvec.Frame, rows: Seq[Array[Double]]): Unit = {
-    val ncol = f.numCols()
-    val rowsIdx = 0 until f.numRows().toInt
-    val columns = (0 until ncol).map(cidx => rowsIdx.map(rows(_)(cidx)))
-    f.vecs().zipWithIndex.foreach {
-      case (vec, idx: Int) =>
-        assertVectorDoubleValues(vec, columns(idx))
+  def assertDoubleFrameValues(frame: H2OFrame, expected: Seq[Array[Double]]): Unit = {
+    expected.indices.foreach { idx: Int =>
+      assertVectorDoubleValues(frame.collectDoubles(idx), expected(idx))
     }
-  }
-
-  def makeH2OFrame[T: ClassTag](
-      fname: String,
-      colNames: Array[String],
-      chunkLayout: Array[Long],
-      data: Array[Array[T]],
-      h2oType: Byte,
-      colDomains: Array[Array[String]] = null): h2o.H2OFrame = {
-    ChunkUtils.initFrame(fname, colNames)
-    val d = data.map(_.map(value => Array(value)))
-    for (i <- chunkLayout.indices) {
-      buildChunks(fname, d(i), i, Array(h2oType))
-    }
-    new h2o.H2OFrame(ChunkUtils.finalizeFrame(fname, chunkLayout, Array(h2oType), colDomains))
   }
 
   def assertFieldNamesAreEqual(expected: DataFrame, produced: DataFrame): Unit = {
@@ -134,42 +100,18 @@ object TestUtils extends Matchers {
        """.stripMargin)
   }
 
-  def assertBasicInvariants[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertRDDHolderProperties(df)
-    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    val vec = df.vec(0)
-    var rowIdx = 0
-    while (rowIdx < df.numRows()) {
-      assert(!vec.isNA(rowIdx), "The H2OFrame should not contain any NA values")
-      rowAssert(rowIdx, vec)
-      rowIdx += 1
-    }
-  }
-
-  def assertInvariantsWithNulls[T <: Product](rdd: RDD[T], df: h2o.H2OFrame, rowAssert: RowValueAssert): Unit = {
-    assertRDDHolderProperties(df)
-    assert(rdd.count == df.numRows(), "Number of rows in H2OFrame and RDD should match")
-    val vec = df.vec(0)
-    var rowIdx = 0
-    while (rowIdx < df.numRows()) {
-      rowAssert(rowIdx, vec)
-      rowIdx += 1
-    }
-  }
-
-  def assertBasicInvariants[T <: Product](
+  def assertDatasetBasicProperties[T <: Product](
       ds: Dataset[T],
-      df: h2o.H2OFrame,
+      df: H2OFrame,
       rowAssert: RowValueAssert,
       names: List[String]): Unit = {
     assertDatasetHolderProperties(df, names)
     assert(
-      ds.count == df.numRows(),
-      s"Number of rows in H2OFrame (${df.numRows()}) and Dataset (${ds.count}) should match")
+      ds.count == df.numberOfRows,
+      s"Number of rows in H2OFrame (${df.numberOfRows}) and Dataset (${ds.count}) should match")
 
-    val vec = df.vec(0)
-    for (row <- Range(0, df.numRows().toInt)) {
-      rowAssert(row, vec)
+    for (row <- Range(0, df.numberOfRows.toInt)) {
+      rowAssert(row)
     }
   }
 
@@ -344,53 +286,27 @@ object TestUtils extends Matchers {
     }
   }
 
-  private type RowValueAssert = (Long, Vec) => Unit
+  private type RowValueAssert = Long => Unit
 
-  private def assertRDDHolderProperties(df: h2o.H2OFrame): Unit = {
-    assert(df.numCols() == 1, "H2OFrame should contain single column")
-    assert(df.names().length == 1, "H2OFrame column names should have single value")
+  def assertRDDHolderProperties[T](df: H2OFrame, rdd: RDD[T]): Unit = {
+    assert(df.numberOfColumns == 1, "H2OFrame should contain single column")
+    assert(df.columnNames.length == 1, "H2OFrame column names should have single value")
     assert(
-      df.names()(0).equals("value"),
+      df.columnNames.head.equals("value"),
       "H2OFrame column name should be 'value' since we define the value inside the Option.")
+    assert(rdd.count == df.numberOfRows, "Number of rows in H2OFrame and RDD should match")
   }
 
-  private def assertDatasetHolderProperties(df: h2o.H2OFrame, names: List[String]): Unit = {
-    val actualNames = df.names().toList
+  private def assertDatasetHolderProperties(df: H2OFrame, names: List[String]): Unit = {
+    val actualNames = df.columnNames.toList
     val numCols = names.length
-    assert(df.numCols() == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numCols()}")
-    assert(df.names().length == numCols, s"H2OFrame column names should be $numCols in size, have ${df.names().length}")
+    assert(df.numberOfColumns == numCols, s"H2OFrame should contain $numCols column(s), have ${df.numberOfColumns}")
+    assert(
+      df.columnNames.length == numCols,
+      s"H2OFrame column names should be $numCols in size, have ${df.columnNames.length}")
     assert(
       actualNames.equals(names),
       s"H2OFrame column names should be $names since Holder object was used to define Dataset, but it is $actualNames")
-  }
-
-  private def buildChunks[T: ClassTag](
-      fname: String,
-      data: Array[Array[T]],
-      cidx: Integer,
-      h2oType: Array[Byte]): Array[_ <: Chunk] = {
-    val nchunks: Array[NewChunk] = ChunkUtils.createNewChunks(fname, h2oType, cidx)
-
-    data.foreach { values =>
-      values.indices.foreach { idx =>
-        val chunk: NewChunk = nchunks(idx)
-        values(idx) match {
-          case null => chunk.addNA()
-          case u: UUID => chunk.addUUID(u.getLeastSignificantBits, u.getMostSignificantBits)
-          case s: String => chunk.addStr(new BufferedString(s))
-          case b: Byte => chunk.addNum(b)
-          case s: Short => chunk.addNum(s)
-          case c: Integer if h2oType(0) == Vec.T_CAT => chunk.addCategorical(c)
-          case i: Integer if h2oType(0) != Vec.T_CAT => chunk.addNum(i.toDouble)
-          case l: Long => chunk.addNum(l)
-          case d: Double => chunk.addNum(d)
-          case x =>
-            throw new IllegalArgumentException(s"Failed to figure out what is it: $x")
-        }
-      }
-    }
-    ChunkUtils.closeNewChunks(nchunks)
-    nchunks
   }
 
 }

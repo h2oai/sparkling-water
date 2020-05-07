@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling
 
+import ai.h2o.sparkling.TestUtils.{assertRDDHolderProperties, assertVectorIntValues}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -39,19 +40,20 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV in distributed environment") {
     val rdd = sc.parallelize(1 to 100, 2)
-    val h2oFrame = hc.asH2OFrame(rdd)
-    assert(h2oFrame.anyVec().nChunks() == 2)
+    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    assert(h2oFrame.chunks.length == 2)
     val updatedFrame = h2oFrame.add(h2oFrame)
 
     val convertedDf = hc.asSparkFrame(updatedFrame)
     convertedDf.collect()
 
-    assert(convertedDf.count() == h2oFrame.numRows())
-    assert(convertedDf.columns.length == h2oFrame.names().length)
+    assert(convertedDf.count() == updatedFrame.numberOfRows)
+    assert(convertedDf.columns.length == updatedFrame.columnNames.length)
   }
 
   test("H2OFrame High Availability: Task killed but frame still converted successfully") {
-    val rdd = sc.parallelize(1 to 1000, 100).map(v => Some(v)).map { d =>
+    val data = 1 to 1000
+    val rdd = sc.parallelize(data, 100).map(v => Some(v)).map { d =>
       import org.apache.spark.TaskContext
       val tc = TaskContext.get()
       if (tc.attemptNumber == 0) {
@@ -61,15 +63,11 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
       }
     }
 
-    val h2oFrame = hc.asH2OFrame(rdd)
-
-    TestUtils.assertBasicInvariants(rdd, h2oFrame, (rowIdx, vec) => {
-      val nextRowIdx = rowIdx + 1
-      val value = vec.at(rowIdx)
-      assert(nextRowIdx == value, "The H2OFrame values should match row numbers+1")
-    })
-
+    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    assertRDDHolderProperties(h2oFrame, rdd)
+    assertVectorIntValues(h2oFrame.collectInts(0), data)
     h2oFrame.delete()
+    rdd.unpersist()
   }
 
   test("Spark Known Issues: PUBDEV-3808 - Spark's BroadcastHashJoin is non deterministic - Negative test") {
