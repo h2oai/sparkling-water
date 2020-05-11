@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.h2oframes
+package ai.h2o.sparkling.backend.api.rdds
 
-import water.Iced
+import water.api.API
 
-private[api] class IcedDataFrameID(val h2oframe_id: String, val dataframe_id: String) extends Iced[IcedDataFrameID] {
-
-  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
-}
+/** Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint */
+class RDDToH2OFrame(
+    @API(help = "Id of RDD to be transformed", direction = API.Direction.INPUT)
+    var rdd_id: Int,
+    @API(help = "Id of transformed H2OFrame", direction = API.Direction.INOUT)
+    var h2oframe_id: String = null)

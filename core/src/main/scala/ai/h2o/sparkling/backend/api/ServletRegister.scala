@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.rdds
 
-import org.apache.spark.rdd.RDD
-import water.Iced
+package ai.h2o.sparkling.backend.api
 
-private[rdds] class IcedRDD(val rdd_id: Int, val name: String, val partitions: Int) extends Iced[IcedRDD] {
+import javax.servlet.Servlet
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
 
-  def this() = this(-1, null, -1) // initialize with dummy values, this is used by the createImpl method in the
-  //RequestServer as it calls constructor without any arguments
-}
+private[api] trait ServletRegister {
+  protected def getServletClass(): Class[_ <: Servlet]
 
-private[rdds] object IcedRDD {
-  def fromRdd(rdd: RDD[_]): IcedRDD = {
-    val rddName = Option(rdd.name).getOrElse(rdd.id.toString)
-    new IcedRDD(rdd.id, rddName, rdd.partitions.length)
+  protected def getEndpoints(): Array[String]
+
+  def register(context: ServletContextHandler): Unit = {
+    val holder = new ServletHolder(getClass.asInstanceOf[Class[_ <: Servlet]])
+    context.getServletHandler.addServlet(holder)
+    val m = new ServletMapping()
+    m.setPathSpecs(getEndpoints())
+    m.setServletName(holder.getName)
+    context.getServletHandler.addServletMapping(m)
   }
 }

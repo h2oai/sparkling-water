@@ -14,16 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.h2oframes;
+package ai.h2o.sparkling.backend.api.rdds
 
-import water.api.API;
-import water.api.Schema;
+import org.apache.spark.rdd.RDD
+import water.api.API
 
-/** Schema representing /3/h2oframes/[h2oframe_id]/dataframe */
-public class DataFrameIDV3 extends Schema<IcedDataFrameID, DataFrameIDV3> {
-  @API(help = "ID of H2OFrame to be transformed", direction = API.Direction.INPUT)
-  public String h2oframe_id;
+/** Schema representing [GET] /3/RDDs/[rdd_id] endpoint */
+class RDDInfo(
+    @API(help = "RDD ID", direction = API.Direction.INOUT)
+    var rdd_id: Int,
+    @API(help = "RDD Name", direction = API.Direction.OUTPUT)
+    var name: String,
+    @API(help = "Number of partitions", direction = API.Direction.OUTPUT)
+    var partitions: Int)
 
-  @API(help = "ID of generated Spark's DataFrame", direction = API.Direction.INOUT)
-  public String dataframe_id;
+object RDDInfo {
+  def fromRDD(rdd: RDD[_]): RDDInfo = {
+    new RDDInfo(rdd.id, Option(rdd.name).getOrElse(rdd.id.toString), rdd.partitions.length)
+  }
 }

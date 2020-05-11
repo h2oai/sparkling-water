@@ -33,7 +33,7 @@ class H2OFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   test("H2OFramesHandler.toDataFrame() method") {
     // create H2OFrame which will be used for the transformation
     val h2oFrame = H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))
-    val h2oFramesHandler = new H2OFramesHandler(sc, hc)
+    val h2oFramesHandler = new H2OFramesServlet(sc, hc)
 
     val req = new DataFrameIDV3
     req.h2oframe_id = h2oFrame.frameId
@@ -54,7 +54,7 @@ class H2OFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("H2OFramesHandler.toDataFrame() method, trying to convert H2OFrame which does not exist") {
-    val h2oFramesHandler = new H2OFramesHandler(sc, hc)
+    val h2oFramesHandler = new H2OFramesServlet(sc, hc)
     val req = new DataFrameIDV3
     req.h2oframe_id = "does_not_exist"
     intercept[H2ONotFoundArgumentException] {

@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package ai.h2o.sparkling.backend.api
 
-import java.util.ServiceLoader
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import com.google.gson.Gson
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import water.server.ServletUtils
 
-import org.apache.spark.h2o.H2OContext
-import water.api.RequestServer.DummyRestApiContext
-import water.api.RestApiContext
+private[api] trait POSTRequestBase extends ai.h2o.sparkling.extensions.rest.api.ServletBase {
 
-private[api] class RestAPIManager(hc: H2OContext) {
-  private val loader: ServiceLoader[RestApi] = ServiceLoader.load(classOf[RestApi])
+  def handlePostRequest(request: HttpServletRequest): Any
 
-  def registerAll(): Unit = {
-    val dummyRestApiContext = new DummyRestApiContext
-    // Register first the core
-    register(CoreRestAPI, dummyRestApiContext)
-    // Then additional APIs
-    import scala.collection.JavaConverters._
-    loader.reload()
-    loader.asScala.foreach(api => register(api, dummyRestApiContext))
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    processRequest(req, resp) {
+      val obj = handlePostRequest(req)
+      val json = new Gson().toJson(obj)
+      withResource(resp.getWriter) { writer =>
+        resp.setContentType("application/json")
+        resp.setCharacterEncoding("UTF-8")
+        writer.print(json)
+      }
+      ServletUtils.setResponseStatus(resp, HttpServletResponse.SC_OK)
+    }
   }
-
-  def register(api: RestApi, context: RestApiContext): Unit = {
-    api.registerEndpoints(hc, context)
-  }
-}
-
-object RestAPIManager {
-  def apply(hc: H2OContext) = new RestAPIManager(hc)
 }

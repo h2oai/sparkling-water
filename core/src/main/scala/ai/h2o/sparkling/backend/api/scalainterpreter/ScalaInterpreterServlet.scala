@@ -19,13 +19,15 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import ai.h2o.sparkling.backend.api.ServletRegister
 import ai.h2o.sparkling.extensions.rest.api.ServletBase
 import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import com.google.gson.Gson
+import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.H2OContext
-import org.eclipse.jetty.servlet.ServletContextHandler
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
 import water.H2O.H2OCountedCompleter
 import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
@@ -172,10 +174,8 @@ class ScalaInterpreterServlet() extends ServletBase {
   }
 }
 
-object ScalaInterpreterServlet {
-  def register(context: ServletContextHandler): Unit = {
-    context.addServlet(classOf[ScalaInterpreterServlet], "/3/scalaint")
-    context.addServlet(classOf[ScalaInterpreterServlet], "/3/scalaint/*")
-    context.addServlet(classOf[ScalaInterpreterServlet], "/3/scalaint/result/*")
-  }
+object ScalaInterpreterServlet extends ServletRegister {
+  override protected def getServletClass(): Class[_ <: Servlet] = classOf[ScalaInterpreterServlet]
+
+  override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*", "/3/scalaint/result/*")
 }

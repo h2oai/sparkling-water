@@ -34,7 +34,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val rdd = sc.parallelize(1 to 10, rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
-    val result = rddsHandler.list(3, new RDDsV3)
+    val result = rddsHandler.list(3, new RDDs)
     assert(result.rdds.length == 1, "Number of created and persisted RDDs should be 1")
     assert(result.rdds(0).name.equals(rname), "Name matches")
     assert(result.rdds(0).partitions == rpart, "Number of partitions matches")
@@ -48,7 +48,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val rdd = sc.parallelize(1 to 100, rpart).setName(rname).cache()
 
     val rddsHandler = new RDDsHandler(sc, hc)
-    val rddReq = new RDDV3
+    val rddReq = new RDD
     rddReq.rdd_id = rdd.id
 
     val result = rddsHandler.getRDD(3, rddReq)
@@ -100,7 +100,7 @@ class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   test("RDDsHandler.getRDD() method, querying non-existing RDD") {
     val rddsHandler = new RDDsHandler(sc, hc)
 
-    val rddReq = new RDDV3
+    val rddReq = new RDD
     // put high RDD number so we are sure RDD with this ID wasn't created so far
     rddReq.rdd_id = 777
 

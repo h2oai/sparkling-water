@@ -16,22 +16,25 @@
  */
 package ai.h2o.sparkling.backend.api
 
-import ai.h2o.sparkling.backend.api.dataframes.DataFramesHandler
-import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesHandler
-import ai.h2o.sparkling.backend.api.rdds.RDDsHandler
-import org.apache.spark.h2o.H2OContext
-import water.api.RestApiContext
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import com.google.gson.Gson
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import water.server.ServletUtils
 
-/**
-  * Sparkling Water Core REST API
-  */
-object CoreRestAPI extends RestApi {
+private[api] trait GETRequestBase extends ai.h2o.sparkling.extensions.rest.api.ServletBase {
 
-  override def registerEndpoints(hc: H2OContext, context: RestApiContext): Unit = {
-    DataFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    H2OFramesHandler.registerEndpoints(context, hc.sparkContext, hc)
-    RDDsHandler.registerEndpoints(context, hc.sparkContext, hc)
+  def handleGetRequest(request: HttpServletRequest): Any
+
+  override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    processRequest(req, resp) {
+      val obj = handleGetRequest(req)
+      val json = new Gson().toJson(obj)
+      withResource(resp.getWriter) { writer =>
+        resp.setContentType("application/json")
+        resp.setCharacterEncoding("UTF-8")
+        writer.print(json)
+      }
+      ServletUtils.setResponseStatus(resp, HttpServletResponse.SC_OK)
+    }
   }
-
-  override def name: String = "Core Sparkling Water Rest API"
 }

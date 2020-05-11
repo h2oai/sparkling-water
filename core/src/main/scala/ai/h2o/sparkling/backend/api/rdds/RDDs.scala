@@ -14,9 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package ai.h2o.sparkling.backend.api.rdds
 
-package ai.h2o.sparkling.backend.api.scalainterpreter
+import water.api.API
 
-import ai.h2o.sparkling.backend.api.SparklingWaterJettyFilter
-
-class ScalaInterpreterFilter extends SparklingWaterJettyFilter("/3/scalaint", classOf[ScalaInterpreterServlet])
+/**
+  * Schema representing [GET] /3/RDDs endpoint
+  */
+class RDDs(
+    @API(help = "List of RDDs", direction = API.Direction.OUTPUT)
+    var rdds: Array[RDDInfo] = null)
