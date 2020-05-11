@@ -28,21 +28,19 @@ import hex.glm.GLMModel.GLMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 object Runner {
-  private def parametersConfiguration: Seq[ParameterSubstitutionContext] = Seq(
-    ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters])
-  ).map { case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_]) =>
-    ParameterSubstitutionContext(
-      CommonSubstitutionContext(
-        namespace = "ai.h2o.sparkling.ml.params",
-        entityName = entityName,
-        inheritedEntities = Seq(
-          s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]",
-          "H2OTreeBasedSupervisedMOJOParams"),
-        imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
-      h2oSchemaClass,
-      h2oParametersClass
-    )
-  }
+  private def parametersConfiguration: Seq[ParameterSubstitutionContext] =
+    Seq(("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters])).map {
+      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_]) =>
+        ParameterSubstitutionContext(
+          CommonSubstitutionContext(
+            namespace = "ai.h2o.sparkling.ml.params",
+            entityName = entityName,
+            inheritedEntities =
+              Seq(s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]", "H2OTreeBasedSupervisedMOJOParams"),
+            imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
+          h2oSchemaClass,
+          h2oParametersClass)
+    }
 
   def main(args: Array[String]): Unit = {
     val language = args(0)
@@ -51,8 +49,9 @@ object Runner {
     for (substitutionContext <- parametersConfiguration) {
       val fileName = substitutionContext.commonContext.entityName
       val namespacePath = substitutionContext.commonContext.namespace.replace('.', '/')
-      new File(destinationDir, namespacePath).mkdirs()
-      val destinationFile = new File(destinationDir,s"$fileName.$language")
+      val destinationDirWithNamespace = new File(destinationDir, namespacePath)
+      destinationDirWithNamespace.mkdirs()
+      val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$language")
       withResource(new PrintWriter(destinationFile)) { outputStream =>
         val content = ParametersTemplate(substitutionContext)
         outputStream.print(content)

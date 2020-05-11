@@ -21,20 +21,17 @@ import ai.h2o.sparkling.api.generation.common._
 
 object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   def apply(substitutionContext: ParameterSubstitutionContext): String = {
-    val extraImports = Seq(
-      "ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue",
-      substitutionContext.h2oSchemaClass.getName,
-      substitutionContext.h2oParameterClass.getName,
-      substitutionContext.h2oParameterClass.getName + "._")
+    val h2oSchemaClassFullName = substitutionContext.h2oSchemaClass.getName.replace('$', '.')
+    val h2oParameterFullName = substitutionContext.h2oParameterClass.getName.replace('$', '.')
+    val extraImports = Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._")
     val parameters = resolveParameters(substitutionContext)
     val contextWithExtraImports =
       substitutionContext.commonContext.copy(imports = substitutionContext.commonContext.imports ++ extraImports)
 
     generateEntity(contextWithExtraImports, "trait") {
-      s"""
-         |  type H2O_SCHEMA = ${substitutionContext.h2oSchemaClass.getSimpleName}
+      s"""  type H2O_SCHEMA = ${substitutionContext.h2oSchemaClass.getSimpleName}
          |
-         |  protected def paramTag = ${substitutionContext.h2oParameterClass.getSimpleName}
+         |  protected def paramTag = reflect.classTag[${substitutionContext.h2oParameterClass.getSimpleName}]
          |
          |  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
          |
@@ -69,44 +66,53 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   }
 
   private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      s"""  private val ${parameter.swName} = ${resolveParameterType(parameter)}Param("${parameter.swName}")"""
-    }.mkString("\n")
+    parameters
+      .map { parameter =>
+        val typePrefix = resolveParameterType(parameter).toLowerCase
+        s"""  private val ${parameter.swName} = ${typePrefix}Param("${parameter.swName}")"""
+      }
+      .mkString("\n")
   }
 
   private def generateDefaultValues(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      s"  ${parameter.swName} -> ${parameter.defaultValue}"
-    }.mkString(",\n")
+    parameters
+      .map(parameter => s"    ${parameter.swName} -> ${parameter.defaultValue}")
+      .mkString(",\n")
   }
 
   private def generateGetters(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      s"  def get${parameter.swName.capitalize}(): ${parameter.dataType.name} = $$(${parameter.swName})"
-    }.mkString("\n\n")
+    parameters
+      .map { parameter =>
+        s"  def get${parameter.swName.capitalize}(): ${resolveParameterType(parameter)} = $$(${parameter.swName})"
+      }
+      .mkString("\n\n")
   }
 
   private def generateSetters(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      if (parameter.dataType.isEnum) {
-        s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-           |    val validated = getValidatedEnumValue[${parameter.dataType.name}](value)
-           |    set(${parameter.swName}, validated)
-           |  }
+    parameters
+      .map { parameter =>
+        if (parameter.dataType.isEnum) {
+          s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
+             |    val validated = getValidatedEnumValue[${parameter.dataType.name}](value)
+             |    set(${parameter.swName}, validated)
+             |  }
          """.stripMargin
-      } else {
-        s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-           |    set(${parameter.swName}, value)
-           |  }
-         """.stripMargin
+        } else {
+          s"""  def set${parameter.swName.capitalize}(value: ${resolveParameterType(parameter)}): this.type = {
+             |    set(${parameter.swName}, value)
+             |  }
+           """.stripMargin
+        }
       }
-    }.mkString("\n")
+      .mkString("\n")
   }
 
   private def generateH2OAssignments(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      s"""        "${parameter.h2oName}" -> get${parameter.swName.capitalize}()"""
-    }.mkString(",\n")
+    parameters
+      .map { parameter =>
+        s"""        "${parameter.h2oName}" -> get${parameter.swName.capitalize}()"""
+      }
+      .mkString(",\n")
   }
 
   private def resolveParameterType(parameter: Parameter): String = {

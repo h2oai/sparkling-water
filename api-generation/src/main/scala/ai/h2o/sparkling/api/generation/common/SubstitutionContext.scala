@@ -18,13 +18,12 @@
 package ai.h2o.sparkling.api.generation.common
 
 case class CommonSubstitutionContext(
-  namespace: String,
-  entityName: String,
-  inheritedEntities: Seq[String],
-  imports: Seq[String])
-
+    namespace: String,
+    entityName: String,
+    inheritedEntities: Seq[String],
+    imports: Seq[String])
 
 case class ParameterSubstitutionContext(
-  commonContext: CommonSubstitutionContext,
-  h2oSchemaClass: Class[_],
-  h2oParameterClass: Class[_])
+    commonContext: CommonSubstitutionContext,
+    h2oSchemaClass: Class[_],
+    h2oParameterClass: Class[_])

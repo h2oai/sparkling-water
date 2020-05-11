@@ -27,13 +27,13 @@ trait ParameterResolver {
     val partialParameters =
       for (field <- h2oSchemaClass.getDeclaredFields if field.getAnnotation(classOf[API]) != null)
         yield Parameter(
-          ParemeterNameConverter.convertFromH2OToSW(field.getName),
+          ParameterNameConverter.convertFromH2OToSW(field.getName),
           field.getName,
           null, // Schema class doesn't have such information
           DataType(field.getType.getSimpleName, field.getType.isEnum),
           field.getAnnotation(classOf[API]).help())
 
-    val parameters = partialParameters.map{ parameter =>
+    val parameters = partialParameters.map { parameter =>
       val field = h2oParameterClass.getField("_" + parameter.h2oName)
       val value = field.get(h2oParameterInstance)
       parameter.copy(defaultValue = if (value == null) null else value.toString)
