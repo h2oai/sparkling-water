@@ -21,7 +21,7 @@ import ai.h2o.sparkling.backend.api.{GETRequestBase, POSTRequestBase, ServletReg
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -79,5 +79,5 @@ object DataFramesServlet extends ServletRegister {
     Array("/3/dataframes", "/3/dataframes/*")
   }
 
-  override protected def getServlet(): Servlet = new DataFramesServlet
+  override protected def getServlet(conf: H2OConf): Servlet = new DataFramesServlet
 }

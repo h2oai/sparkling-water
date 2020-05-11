@@ -19,13 +19,12 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import ai.h2o.sparkling.backend.api.rdds.RDDToH2OFrame
 import ai.h2o.sparkling.backend.api.{DELETERequestBase, GETRequestBase, POSTRequestBase, ServletRegister}
 import ai.h2o.sparkling.repl.H2OInterpreter
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.h2o.H2OContext
-import water.api.schemas3.JobV3
+import org.apache.spark.h2o.H2OConf
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -33,15 +32,16 @@ import scala.collection.concurrent.TrieMap
 /**
   * This servlet class handles requests for /3/scalaint endpoint
   */
-private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTRequestBase with DELETERequestBase {
+private[api] class ScalaInterpreterServlet(conf: H2OConf)
+  extends GETRequestBase
+  with POSTRequestBase
+  with DELETERequestBase {
 
-  private lazy val hc = H2OContext.ensure()
-  private val intrPoolSize = hc.getConf.scalaIntDefaultNum
+  private val intrPoolSize = conf.scalaIntDefaultNum
   private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   private var mapIntr = new TrieMap[Int, H2OInterpreter]
   private val lastIdUsed = new AtomicInteger(0)
   private val jobResults = new TrieMap[String, ScalaCodeResult]
-  private val jobs = new TrieMap[String, Thread]
   private val jobCount = new AtomicInteger(0)
   initializeInterpreterPool()
 
@@ -50,8 +50,8 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
   def interpret(sessionId: Int, code: String): ScalaCode = {
     this.synchronized {
       jobCount.incrementAndGet()
-      while (hc.getConf.maxParallelScalaCellJobs != -1 && jobCount
-               .intValue() > hc.getConf.maxParallelScalaCellJobs) {
+      while (conf.maxParallelScalaCellJobs != -1 && jobCount
+               .intValue() > conf.maxParallelScalaCellJobs) {
         Thread.sleep(1000)
       }
     }
@@ -69,7 +69,7 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
     job.start()
 
     /** If we are not running in asynchronous mode, compute the result right away */
-    if (!hc.getConf.flowScalaCellAsync) {
+    if (!conf.flowScalaCellAsync) {
       job.join()
       val result = jobResults(resultKey)
       ScalaCode(sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
@@ -80,7 +80,7 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
 
   def initSession(): ScalaSessionId = {
     val intp = fetchInterpreter()
-    ScalaSessionId(intp.sessionId, hc.getConf.flowScalaCellAsync)
+    ScalaSessionId(intp.sessionId, conf.flowScalaCellAsync)
   }
 
   def getScalaCodeResult(resultKey: String): ScalaCode = {
@@ -108,7 +108,7 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
       } else {
         // pool is empty at the moment and is being filled, return new interpreter without using the pool
         val id = lastIdUsed.incrementAndGet()
-        val intp = new H2OInterpreter(hc.sparkContext, id)
+        val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, id)
         mapIntr.put(intp.sessionId, intp)
         intp
       }
@@ -123,7 +123,7 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
 
   private def createInterpreterInPool(): H2OInterpreter = {
     val id = lastIdUsed.incrementAndGet()
-    val intp = new H2OInterpreter(hc.sparkContext, id)
+    val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, id)
     freeInterpreters.add(intp)
     intp
   }
@@ -166,5 +166,5 @@ private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTReque
 object ScalaInterpreterServlet extends ServletRegister {
   override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*")
 
-  override protected def getServlet(): Servlet = new ScalaInterpreterServlet
+  override protected def getServlet(conf: H2OConf): Servlet = new ScalaInterpreterServlet(conf)
 }

@@ -18,15 +18,16 @@
 package ai.h2o.sparkling.backend.api
 
 import javax.servlet.Servlet
+import org.apache.spark.h2o.H2OConf
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
 
 private[api] trait ServletRegister {
-  protected def getServlet(): Servlet
+  protected def getServlet(conf: H2OConf): Servlet
 
   protected def getEndpoints(): Array[String]
 
-  def register(context: ServletContextHandler): Unit = {
-    val holder = new ServletHolder(getServlet())
+  def register(context: ServletContextHandler, conf: H2OConf): Unit = {
+    val holder = new ServletHolder(getServlet(conf))
     context.getServletHandler.addServlet(holder)
     val m = new ServletMapping()
     m.setPathSpecs(getEndpoints())

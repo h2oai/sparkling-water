@@ -20,8 +20,11 @@ import ai.h2o.sparkling.SharedH2OTestContext
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.repl.CodeResults
 import org.apache.spark.sql.SparkSession
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContext with ScalaInterpreterRestApi {
 
   override def createSparkSession(): SparkSession =
@@ -55,11 +58,6 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
     initSession()
     initSession()
     val result = getSessions()
-
-    val actualSessionIds = result.sessions.sorted
-    assert(
-      actualSessionIds.sorted.sameElements(Array(1, 2)),
-      s"Array of active sessions should contain 1 and 2, but it is [${actualSessionIds.mkString(",")}]")
     assert(getSessions().sessions.length == 2)
     getSessions().sessions.foreach(destroySession)
   }
@@ -77,46 +75,40 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
   }
 
   test("ScalaCodeHandler.interpret() method, using previously defined class") {
-    val session1 = initSession()
-    val result1 = interpret(session1.session_id, "case class Foo(num: Int)")
+    val session = initSession()
+    val result1 = interpret(session.session_id, "case class Foo(num: Int)")
     assert(result1.output.equals(""), "Printed output should be empty")
     assert(result1.status.equals("Success"), "Status should be Success")
     assert(result1.response.equals("defined class Foo\n"), "Response should not be empty")
-    destroySession(session1.session_id)
 
-    val session2 = initSession()
-    val result2 = interpret(session2.session_id, "val num = Foo(42)")
+    val result2 = interpret(session.session_id, "val num = Foo(42)")
     assert(result2.output.equals(""), "Printed output should equal to text")
     assert(result2.status.equals("Success"), "Status should be Success")
     assert(result2.response.equals("num: Foo = Foo(42)\n"), "Response should not be empty")
-    destroySession(session2.session_id)
+    destroySession(session.session_id)
   }
 
   test("ScalaCodeHandler.interpret() method, using sqlContext, h2oContext and sparkContext") {
-    val session1 = initSession()
-    val result1 = interpret(session1.session_id, "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache")
+    val session = initSession()
+    val result1 = interpret(session.session_id, "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache")
     assert(result1.output.equals(""), "Printed output should be empty")
     assert(result1.status.equals("Success"), "Status should be Success ")
     assert(
       result1.response.contains("rdd: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD"),
       "Response should not be empty")
-    destroySession(session1.session_id)
 
-    val session2 = initSession()
-    val result2 = interpret(session1.session_id, "val h2oFrame = h2oContext.asH2OFrame(rdd)")
+    val result2 = interpret(session.session_id, "val h2oFrame = h2oContext.asH2OFrame(rdd)")
     assert(result2.output.equals(""), "Printed output should be empty")
     assert(
       result2.status.equals("Success"),
       s"Status should be Success, got ${result2.status}, reason: ${result2.response} ")
     assert(!result2.response.equals(""), "Response should not be empty")
-    destroySession(session2.session_id)
 
-    val session3 = initSession()
-    val result3 = interpret(session1.session_id, "val dataframe = h2oContext.asSparkFrame(h2oFrame)")
+    val result3 = interpret(session.session_id, "val dataframe = h2oContext.asSparkFrame(h2oFrame)")
     assert(result3.output.equals(""), "Printed output should be empty")
     assert(result3.status.equals("Success"), "Status should be Success 3")
     assert(!result3.response.equals(""), "Response should not be empty")
-    destroySession(session3.session_id)
+    destroySession(session.session_id)
   }
 
   test("Code with exception") {

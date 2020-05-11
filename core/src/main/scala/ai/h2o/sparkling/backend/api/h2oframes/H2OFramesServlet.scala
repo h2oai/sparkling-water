@@ -20,7 +20,7 @@ import ai.h2o.sparkling.backend.api.{POSTRequestBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -50,5 +50,5 @@ private[api] class H2OFramesServlet extends POSTRequestBase {
 object H2OFramesServlet extends ServletRegister {
   override protected def getEndpoints(): Array[String] = Array("/3/h2oframes/*")
 
-  override protected def getServlet(): Servlet = new H2OFramesServlet
+  override protected def getServlet(conf: H2OConf): Servlet = new H2OFramesServlet
 }

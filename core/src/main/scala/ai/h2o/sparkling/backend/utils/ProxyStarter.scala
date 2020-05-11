@@ -94,11 +94,11 @@ object ProxyStarter extends Logging {
     context.setContextPath("/")
     context.setServletHandler(proxyContextHandler(conf))
     if (conf.isH2OReplEnabled) {
-      ScalaInterpreterServlet.register(context)
+      ScalaInterpreterServlet.register(context, conf)
     }
-    RDDsServlet.register(context)
-    H2OFramesServlet.register(context)
-    DataFramesServlet.register(context)
+    RDDsServlet.register(context, conf)
+    H2OFramesServlet.register(context, conf)
+    DataFramesServlet.register(context, conf)
     context
   }
 

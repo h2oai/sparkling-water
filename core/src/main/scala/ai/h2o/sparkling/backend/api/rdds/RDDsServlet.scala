@@ -22,7 +22,7 @@ import ai.h2o.sparkling.backend.api.{GETRequestBase, POSTRequestBase, ServletReg
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.h2o.H2OContext
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -109,5 +109,5 @@ object RDDsServlet extends ServletRegister {
     Array("/3/RDDs", "/3/RDDs/*")
   }
 
-  override protected def getServlet(): Servlet = new RDDsServlet
+  override protected def getServlet(conf: H2OConf): Servlet = new RDDsServlet
 }
