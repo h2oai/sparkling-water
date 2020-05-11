@@ -46,14 +46,14 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
     context.registerEndpoint(
       "sw_set_log_level",
       "POST " + Paths.LOG_LEVEL,
-      classOf[SparklingWaterAvailableHandler],
+      classOf[LogLevelHandler],
       "setLogLevel",
       "Set log level on H2O cluster")
 
     context.registerEndpoint(
       "sw_get_log_level",
       "GET " + Paths.LOG_LEVEL,
-      classOf[SparklingWaterAvailableHandler],
+      classOf[LogLevelHandler],
       "getLogLevel",
       "Get log level of H2O cluster")
 

@@ -25,7 +25,7 @@ import water.util.Log
 
 final class SparklingWaterAvailableHandler extends Handler {
 
-  def getLogLevel(version: Int, request: LogLevelV3): LogLevelV3 = {
+  def isSWAvailable(version: Int, request: LogLevelV3): LogLevelV3 = {
     request.log_level = Log.LVLS(Log.getLogLevel)
     request
   }
