@@ -14,12 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.scalainterpreter
+package ai.h2o.sparkling.backend.api
 
-import water.Iced
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import com.google.gson.Gson
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
-private[scalainterpreter] class IcedSessionId(val rdd_id: Integer, val async: Boolean) extends Iced[IcedSessionId] {
+private[api] trait DELETERequestBase extends ServletBase {
 
-  def this() = this(-1, false) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
+  def handleDeleteRequest(request: HttpServletRequest): Any
+
+  override def doDelete(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = handleDeleteRequest(req)
+    val json = new Gson().toJson(obj)
+    withResource(resp.getWriter) { writer =>
+      resp.setContentType("application/json")
+      resp.setCharacterEncoding("UTF-8")
+      writer.print(json)
+    }
+    resp.setStatus(HttpServletResponse.SC_OK)
+  }
 }

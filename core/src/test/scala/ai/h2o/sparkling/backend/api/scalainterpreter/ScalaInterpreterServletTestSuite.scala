@@ -17,14 +17,12 @@
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import ai.h2o.sparkling.SharedH2OTestContext
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.repl.CodeResults
 import org.apache.spark.sql.SparkSession
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.{BeforeAndAfterEach, FunSuite}
-import water.exceptions.H2ONotFoundArgumentException
+import org.scalatest.FunSuite
 
-class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with BeforeAndAfterEach {
+class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContext with ScalaInterpreterRestApi {
 
   override def createSparkSession(): SparkSession =
     sparkSession(
@@ -33,76 +31,37 @@ class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with 
         .set("spark.ext.h2o.repl.enabled", "true")
         .set("spark.ext.scala.int.default.num", "2"))
 
-  /*private var scalaCodeHandler: ScalaCodeHandler = _
-
-
-  override protected def beforeEach(): Unit = {
-    scalaCodeHandler = new ScalaCodeHandler(sc, hc)
-  }
-
-  test("ScalaCodeHandler after initialization") {
-    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
-    assert(
-      scalaCodeHandler.freeInterpreters.size() == 2,
-      "Number of prepared but not used interpreters should be equal to 1")
-  }
-
   test("ScalaCodeHandler.initSession() method") {
-    val req = new ScalaSessionIdV3
-    val result = scalaCodeHandler.initSession(3, req)
-
+    val result = initSession()
     assert(result.session_id == 1, "First id should be equal to 1")
-    // new interpreter is automatically created, so the last ID used should be equal to 2
-    assert(scalaCodeHandler.mapIntr.size == 1, "Number of currently used interpreters should be equal to 1")
-    assert(
-      scalaCodeHandler.mapIntr.get(1).nonEmpty,
-      "The value in the interpreters hash map with the key 1 should not be empty")
-    assert(scalaCodeHandler.mapIntr(1).sessionId == 1, "ID attached to the interpreter should be equal to 1")
+    assert(getSessions().sessions.length == 1)
+    destroySession(result.session_id)
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy existing session") {
-    // create new session
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-    val reqMsg = new ScalaSessionIdV3
-    reqMsg.session_id = reqSession.session_id
-    scalaCodeHandler.destroySession(3, reqMsg)
-    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
-    assert(
-      scalaCodeHandler.mapIntr.get(1).isEmpty,
-      "The value in the interpreters hashmap with the key 1 should be empty")
+    val result = initSession()
+    destroySession(result.session_id)
+    assert(getSessions().sessions.length == 0)
   }
 
   test("ScalaCodeHandler.destroySession() method, destroy non-existing session") {
-    val reqMsg = new ScalaSessionIdV3
-    reqMsg.session_id = 3
-    intercept[H2ONotFoundArgumentException] {
-      scalaCodeHandler.destroySession(3, reqMsg)
+    intercept[RestApiCommunicationException] {
+      destroySession(777) // ID 777 does not exist
     }
-    assert(scalaCodeHandler.mapIntr.isEmpty, "Number of currently used interpreters should be equal to 0")
-    assert(
-      scalaCodeHandler.mapIntr.get(3).isEmpty,
-      "The value in the interpreters hashmap with the key 3 should be empty")
+    assert(getSessions().sessions.length == 0)
   }
 
   test("ScalaCodeHandler.getSessions() method") {
-    // create first interpreter
-    val reqSession1 = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession1)
-
-    // create second interpreter
-    val reqSession2 = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession2)
-
-    val req = new ScalaSessionsV3
-    val result = scalaCodeHandler.getSessions(3, req)
+    initSession()
+    initSession()
+    val result = getSessions()
 
     val actualSessionIds = result.sessions.sorted
     assert(
       actualSessionIds.sorted.sameElements(Array(1, 2)),
       s"Array of active sessions should contain 1 and 2, but it is [${actualSessionIds.mkString(",")}]")
-    assert(scalaCodeHandler.mapIntr.size == 2, "Number of currently used interpreters should be equal to 2")
+    assert(getSessions().sessions.length == 2)
+    getSessions().sessions.foreach(destroySession)
   }
 
   test("ScalaCodeHandler.interpret() method, printing") {
@@ -118,61 +77,46 @@ class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with 
   }
 
   test("ScalaCodeHandler.interpret() method, using previously defined class") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-
-    val req1 = new ScalaCodeV3
-    req1.session_id = reqSession.session_id
-    req1.code = "case class Foo(num: Int)"
-    val result1 = scalaCodeHandler.interpret(3, req1)
-
+    val session1 = initSession()
+    val result1 = interpret(session1.session_id, "case class Foo(num: Int)")
     assert(result1.output.equals(""), "Printed output should be empty")
     assert(result1.status.equals("Success"), "Status should be Success")
     assert(result1.response.equals("defined class Foo\n"), "Response should not be empty")
+    destroySession(session1.session_id)
 
-    val req2 = new ScalaCodeV3
-    req2.session_id = reqSession.session_id
-    req2.code = "val num = Foo(42)"
-    val result2 = scalaCodeHandler.interpret(3, req2)
-
+    val session2 = initSession()
+    val result2 = interpret(session2.session_id, "val num = Foo(42)")
     assert(result2.output.equals(""), "Printed output should equal to text")
     assert(result2.status.equals("Success"), "Status should be Success")
     assert(result2.response.equals("num: Foo = Foo(42)\n"), "Response should not be empty")
+    destroySession(session2.session_id)
   }
 
   test("ScalaCodeHandler.interpret() method, using sqlContext, h2oContext and sparkContext") {
-    // create interpreter
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-    val req1 = new ScalaCodeV3
-    req1.session_id = reqSession.session_id
-    req1.code = "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache"
-    val result1 = scalaCodeHandler.interpret(3, req1)
+    val session1 = initSession()
+    val result1 = interpret(session1.session_id, "val rdd = sc.parallelize(1 to 100, 8).map(v=>v+10);rdd.cache")
     assert(result1.output.equals(""), "Printed output should be empty")
     assert(result1.status.equals("Success"), "Status should be Success ")
     assert(
       result1.response.contains("rdd: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD"),
       "Response should not be empty")
+    destroySession(session1.session_id)
 
-    val req2 = new ScalaCodeV3
-    req2.session_id = reqSession.session_id
-    req2.code = "val h2oFrame = h2oContext.asH2OFrame(rdd)"
-    val result2 = scalaCodeHandler.interpret(3, req2)
+    val session2 = initSession()
+    val result2 = interpret(session1.session_id, "val h2oFrame = h2oContext.asH2OFrame(rdd)")
     assert(result2.output.equals(""), "Printed output should be empty")
     assert(
       result2.status.equals("Success"),
       s"Status should be Success, got ${result2.status}, reason: ${result2.response} ")
     assert(!result2.response.equals(""), "Response should not be empty")
+    destroySession(session2.session_id)
 
-    val req3 = new ScalaCodeV3
-    req3.session_id = reqSession.session_id
-    // this code is using implicitly sqlContext
-    req3.code = "val dataframe = h2oContext.asSparkFrame(h2oFrame)"
-    val result3 = scalaCodeHandler.interpret(3, req3)
+    val session3 = initSession()
+    val result3 = interpret(session1.session_id, "val dataframe = h2oContext.asSparkFrame(h2oFrame)")
     assert(result3.output.equals(""), "Printed output should be empty")
     assert(result3.status.equals("Success"), "Status should be Success 3")
     assert(!result3.response.equals(""), "Response should not be empty")
+    destroySession(session3.session_id)
   }
 
   test("Code with exception") {
@@ -215,14 +159,11 @@ class ScalaCodeHandlerTestSuite extends FunSuite with SharedH2OTestContext with 
       CodeResults.Success)
   }
 
-  private def testCode(code: String, expectedResult: CodeResults.Value): ScalaCodeV3 = {
-    val reqSession = new ScalaSessionIdV3
-    scalaCodeHandler.initSession(3, reqSession)
-    val req = new ScalaCodeV3
-    req.session_id = reqSession.session_id
-    req.code = code
-    val result = scalaCodeHandler.interpret(3, req)
+  private def testCode(code: String, expectedResult: CodeResults.Value): ScalaCode = {
+    val session = initSession()
+    val result = interpret(session.session_id, code)
     assert(result.status == expectedResult.toString)
+    destroySession(session.session_id)
     result
-  }*/
+  }
 }

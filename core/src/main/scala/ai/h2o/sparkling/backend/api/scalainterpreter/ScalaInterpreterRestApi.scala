@@ -17,33 +17,41 @@
 
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
+import java.net.URI
+
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.h2o.H2OContext
 
 trait ScalaInterpreterRestApi extends RestApiUtils {
 
-  protected def initSession(): ScalaSessionIdV3 = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
-    update[ScalaSessionIdV3](endpoint, "/3/scalaint", conf)
+  protected def initSession(): ScalaSessionId = {
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
+    update[ScalaSessionId](endpoint, "/3/scalaint", hc.getConf)
   }
 
   protected def destroySession(sessionId: Int): Unit = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
-    //delete[ScalaSessionIdV3](endpoint, s"/3/scalaint/$sessionId", conf)
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
+    delete[ScalaSessionId](endpoint, s"/3/scalaint/$sessionId", hc.getConf)
   }
 
   protected def getSessions(): ScalaSessions = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
-    query[ScalaSessions](endpoint, "/3/scalaint", conf)
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
+    query[ScalaSessions](endpoint, "/3/scalaint", hc.getConf)
   }
 
-  protected def interpret(code: String, sessionId: Int): ScalaCodeV3 = {
-    val conf = H2OContext.ensure().getConf
-    val endpoint = getClusterEndpoint(conf)
+  protected def interpret(sessionId: Int, code: String): ScalaCode = {
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
     val params = Map("code" -> code)
-    update[ScalaCodeV3](endpoint, s"/3/scalaint/$sessionId", conf, params)
+    update[ScalaCode](endpoint, s"/3/scalaint/$sessionId", hc.getConf, params)
+  }
+
+  protected def getScalaCodeResult(resultKey: String): ScalaCodeResult = {
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
+    update[ScalaCodeResult](endpoint, s"/3/scalaint/result/$resultKey", hc.getConf)
   }
 }

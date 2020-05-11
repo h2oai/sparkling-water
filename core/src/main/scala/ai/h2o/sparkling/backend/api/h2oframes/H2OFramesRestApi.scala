@@ -19,10 +19,10 @@ package ai.h2o.sparkling.backend.api.h2oframes
 
 import java.net.URI
 
-import ai.h2o.sparkling.backend.utils.RestApiUtils
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestEncodingUtils}
 import org.apache.spark.h2o.H2OContext
 
-trait H2OFramesRestApi extends RestApiUtils {
+trait H2OFramesRestApi extends RestApiUtils with RestEncodingUtils {
 
   protected def convertToDataFrame(h2oFrameId: String, dataFrameId: String): H2OFrameToDataFrame = {
     val hc = H2OContext.ensure()

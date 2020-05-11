@@ -48,7 +48,7 @@ private[api] class H2OFramesServlet extends POSTRequestBase {
 }
 
 object H2OFramesServlet extends ServletRegister {
-  override protected def getEndpoints(): Array[String] = Array("/3/h2oframes/*/dataframe")
+  override protected def getEndpoints(): Array[String] = Array("/3/h2oframes/*")
 
   override protected def getServlet(): Servlet = new H2OFramesServlet
 }

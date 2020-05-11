@@ -16,13 +16,7 @@
  */
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import water.api.API
-
 /**
   * Schema representing [GET] /3/scalaint endpoint
   */
-class ScalaSessions {
-
-  @API(help = "List of session IDs", direction = API.Direction.OUTPUT)
-  var sessions: Array[Int] = _
-}
+case class ScalaSessions(sessions: Array[Int])

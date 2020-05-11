@@ -16,20 +16,24 @@
  */
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import water.{Key, Lockable};
+import ai.h2o.sparkling.backend.api.ParameterBase
+import javax.servlet.http.HttpServletRequest;
 
 /**
   * This object is returned by jobs executing the Scala code
   */
-class ScalaCodeResult(key: Key[ScalaCodeResult]) extends Lockable[ScalaCodeResult](key) {
-  var code: String = _
-  var scalaStatus: String = _
-  var scalaResponse: String = _
-  var scalaOutput: String = _
+case class ScalaCodeResult(code: String, scalaStatus: String, scalaResponse: String, scalaOutput: String)
 
-  def this() = this(null)
+object ScalaCodeResult extends ParameterBase {
 
-  override def makeSchema(): Class[ScalaCodeResultV3] = {
-    classOf[ScalaCodeResultV3]
+  private[scalainterpreter] case class ScalaCodeResultParameters(resultKey: String) {
+    def validate(): Unit = {}
+  }
+
+  object ScalaCodeResultParameters {
+    private[scalainterpreter] def parse(request: HttpServletRequest): ScalaCodeResultParameters = {
+      val resultKey = request.getRequestURI.split("/")(4)
+      ScalaCodeResultParameters(resultKey)
+    }
   }
 }

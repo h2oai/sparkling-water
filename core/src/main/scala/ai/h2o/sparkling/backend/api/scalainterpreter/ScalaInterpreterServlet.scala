@@ -19,50 +19,35 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import ai.h2o.sparkling.backend.api.ServletRegister
-import ai.h2o.sparkling.extensions.rest.api.ServletBase
+import ai.h2o.sparkling.backend.api.rdds.RDDToH2OFrame
+import ai.h2o.sparkling.backend.api.{DELETERequestBase, GETRequestBase, POSTRequestBase, ServletRegister}
 import ai.h2o.sparkling.repl.H2OInterpreter
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import com.google.gson.Gson
 import javax.servlet.Servlet
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import javax.servlet.http.HttpServletRequest
 import org.apache.spark.h2o.H2OContext
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
-import water.H2O.H2OCountedCompleter
 import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
-import water.server.ServletUtils
-import water.{DKV, Job, Key}
 
 import scala.collection.concurrent.TrieMap
 
 /**
   * This servlet class handles requests for /3/scalaint endpoint
   */
-private[api] class ScalaInterpreterServlet() extends ServletBase {
+private[api] class ScalaInterpreterServlet extends GETRequestBase with POSTRequestBase with DELETERequestBase {
 
   private lazy val hc = H2OContext.ensure()
   private val intrPoolSize = hc.getConf.scalaIntDefaultNum
   private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
   private var mapIntr = new TrieMap[Int, H2OInterpreter]
   private val lastIdUsed = new AtomicInteger(0)
+  private val jobResults = new TrieMap[String, ScalaCodeResult]
+  private val jobs = new TrieMap[String, Thread]
   private val jobCount = new AtomicInteger(0)
   initializeInterpreterPool()
 
-  def getSessions(): ScalaSessions = {
-    val sessions = new ScalaSessions
-    sessions.sessions = mapIntr.keys.toArray
-    sessions
-  }
+  def getSessions(): ScalaSessions = ScalaSessions(mapIntr.keys.toArray)
 
-  def interpret(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
-    // check if session exists
-    if (s.session_id == -1 || !mapIntr.isDefinedAt(s.session_id)) {
-      throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
-    }
-
-    val job = new Job[ScalaCodeResult](Key.make[ScalaCodeResult](), classOf[ScalaCodeResult].getName, "ScalaCodeResult")
-
+  def interpret(sessionId: Int, code: String): ScalaCode = {
     this.synchronized {
       jobCount.incrementAndGet()
       while (hc.getConf.maxParallelScalaCellJobs != -1 && jobCount
@@ -71,73 +56,42 @@ private[api] class ScalaInterpreterServlet() extends ServletBase {
       }
     }
 
-    job.start(new H2OCountedCompleter() {
-      override def compute2(): Unit = {
-
-        val scalaCodeExecution = new ScalaCodeResult(job._result)
-        val intp = mapIntr(s.session_id)
-        scalaCodeExecution.code = s.code
-        scalaCodeExecution.scalaStatus = intp.runCode(s.code).toString
-        scalaCodeExecution.scalaResponse = intp.interpreterResponse
-        scalaCodeExecution.scalaOutput = intp.consoleOutput
-        DKV.put(scalaCodeExecution)
-        tryComplete()
+    val resultKey = s"${sessionId}_${System.currentTimeMillis()}"
+    val job = new Thread {
+      override def run(): Unit = {
+        val intp = mapIntr(sessionId)
+        val codeResult =
+          ScalaCodeResult(code, intp.runCode(code).toString, intp.interpreterResponse, intp.consoleOutput)
+        jobResults.put(resultKey, codeResult)
         jobCount.decrementAndGet()
       }
-    }, 1)
-
-    s.job = new JobV3(job)
+    }
+    job.start()
 
     /** If we are not running in asynchronous mode, compute the result right away */
     if (!hc.getConf.flowScalaCellAsync) {
-      val result = job.get()
-      s.status = result.scalaStatus
-      s.response = result.scalaResponse
-      s.output = result.scalaOutput
+      job.join()
+      val result = jobResults(resultKey)
+      ScalaCode(sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
+    } else {
+      ScalaCode(sessionId, code, resultKey, null, null, null, null)
     }
-    s
   }
 
-  def initSession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
+  def initSession(): ScalaSessionId = {
     val intp = fetchInterpreter()
-    s.session_id = intp.sessionId
-    s.async = hc.getConf.flowScalaCellAsync
-    s
+    ScalaSessionId(intp.sessionId, hc.getConf.flowScalaCellAsync)
   }
 
-  def getScalaCodeResult(version: Int, s: ScalaCodeV3): ScalaCodeV3 = {
-    val result = DKV.getGet[ScalaCodeResult](s.result_key)
-    s.code = result.code
-    s.status = result.scalaStatus
-    s.response = result.scalaResponse
-    s.output = result.scalaOutput
-    s
+  def getScalaCodeResult(resultKey: String): ScalaCode = {
+    val result = jobResults(resultKey)
+    ScalaCode(0, result.code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
   }
 
-  def destroySession(version: Int, s: ScalaSessionIdV3): ScalaSessionIdV3 = {
-    if (!mapIntr.contains(s.session_id)) {
-      throw new H2ONotFoundArgumentException("Session does not exists. Create session using the address /3/scalaint!")
-    }
-    mapIntr(s.session_id).closeInterpreter()
-    mapIntr -= s.session_id
-    s
-  }
-
-  override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    processRequest(req, resp) {
-      val path = req.getServletPath
-      val obj = path match {
-        case "/3/scalaint" =>
-          getSessions()
-      }
-      val json = new Gson().toJson(obj)
-      withResource(resp.getWriter) { writer =>
-        resp.setContentType("application/json")
-        resp.setCharacterEncoding("UTF-8")
-        writer.print(json)
-      }
-      ServletUtils.setResponseStatus(resp, HttpServletResponse.SC_OK)
-    }
+  def destroySession(sessionId: Int): ScalaSessionId = {
+    mapIntr(sessionId).closeInterpreter()
+    mapIntr -= sessionId
+    ScalaSessionId(sessionId)
   }
 
   private def fetchInterpreter(): H2OInterpreter = {
@@ -160,6 +114,7 @@ private[api] class ScalaInterpreterServlet() extends ServletBase {
       }
     }
   }
+
   private def initializeInterpreterPool(): Unit = {
     for (_ <- 0 until intrPoolSize) {
       createInterpreterInPool()
@@ -172,10 +127,44 @@ private[api] class ScalaInterpreterServlet() extends ServletBase {
     freeInterpreters.add(intp)
     intp
   }
+
+  override def handleGetRequest(request: HttpServletRequest): Any = {
+    request.getRequestURI match {
+      case "/3/scalaint" =>
+        getSessions()
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+  }
+
+  override def handlePostRequest(request: HttpServletRequest): Any = {
+    request.getRequestURI match {
+      case "/3/scalaint" =>
+        initSession()
+      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
+        val parameters = ScalaCode.ScalaCodeParameters.parse(request)
+        parameters.validate(mapIntr)
+        interpret(parameters.sessionId, parameters.code)
+      case s if s.matches(toScalaRegex("/3/scalaint/result/*")) =>
+        val parameters = ScalaCodeResult.ScalaCodeResultParameters.parse(request)
+        parameters.validate()
+        getScalaCodeResult(parameters.resultKey)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+  }
+
+  override def handleDeleteRequest(request: HttpServletRequest): Any = {
+    request.getRequestURI match {
+      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
+        val parameters = ScalaSessionId.ScalaSessionIdParameters.parse(request)
+        parameters.validate(mapIntr)
+        destroySession(parameters.sessionId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+  }
 }
 
 object ScalaInterpreterServlet extends ServletRegister {
-  override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*", "/3/scalaint/result/*")
+  override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*")
 
   override protected def getServlet(): Servlet = new ScalaInterpreterServlet
 }

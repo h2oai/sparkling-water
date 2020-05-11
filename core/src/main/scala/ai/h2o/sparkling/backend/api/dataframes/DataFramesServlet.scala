@@ -76,7 +76,7 @@ private[api] class DataFramesServlet extends GETRequestBase with POSTRequestBase
 object DataFramesServlet extends ServletRegister {
 
   override protected def getEndpoints(): Array[String] = {
-    Array("/3/dataframes", "/3/dataframes/*", "/3/dataframes/*/h2oframe")
+    Array("/3/dataframes", "/3/dataframes/*")
   }
 
   override protected def getServlet(): Servlet = new DataFramesServlet

@@ -106,7 +106,7 @@ private[api] class RDDsServlet extends GETRequestBase with POSTRequestBase {
 object RDDsServlet extends ServletRegister {
 
   override protected def getEndpoints(): Array[String] = {
-    Array("/3/RDDs", "/3/RDDs/*", "/3/RDDs/*/h2oframe")
+    Array("/3/RDDs", "/3/RDDs/*")
   }
 
   override protected def getServlet(): Servlet = new RDDsServlet
