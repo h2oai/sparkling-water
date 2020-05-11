@@ -18,6 +18,7 @@ package ai.h2o.sparkling.backend.api.dataframes
 
 import java.io.File
 
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import com.google.gson.JsonParser
 import org.apache.spark.sql.SparkSession
@@ -25,10 +26,9 @@ import org.apache.spark.sql.types.{DataType, Metadata, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import water.exceptions.H2ONotFoundArgumentException
 
 @RunWith(classOf[JUnitRunner])
-class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
+class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
@@ -38,12 +38,9 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val rid = "df_" + rdd.id
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
-
     df.createOrReplaceTempView(rid)
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
-    val req = new DataFramesV3
-    val result = dataFramesHandler.list(3, req)
+    val result = listDataFrames()
     assert(result.dataframes.length == 1, "Number of created and persisted DataFramess should be 1")
     assert(result.dataframes(0).dataframe_id == rid, "IDs should match")
 
@@ -69,12 +66,8 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     val name = "prostate"
     df.createOrReplaceTempView(name)
     val percentiles = df.schema.fields(0).metadata.getDoubleArray("percentiles")
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
-    val req = new DataFrameV3
-    req.dataframe_id = name
-    val result = dataFramesHandler.getDataFrame(3, req)
-
+    val result = getDataFrame(name)
     assert(result.dataframe_id == name, "IDs should match")
     val schema = parseSchema(result.schema)
     assert(schema.length == df.schema.length, "Number of fields in schemas should be the same")
@@ -98,15 +91,8 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
     // create dataframe using method toDF, This is spark method which does not include any metadata
     val df = rdd.toDF("nums")
     df.createOrReplaceTempView(name)
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
 
-    val req = new H2OFrameIDV3
-    req.dataframe_id = name
-    req.h2oframe_id = "requested_name"
-    val result = dataFramesHandler.toH2OFrame(3, req)
-
-    // get h2o frame for the given id
-    val h2oContext = hc
+    val result = convertToH2OFrame(name, "requested_name")
     val h2oFrame = H2OFrame(result.h2oframe_id)
 
     assert(h2oFrame.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
@@ -116,21 +102,14 @@ class DataFramesHandlerTestSuite extends FunSuite with SharedH2OTestContext {
   }
 
   test("DataFramesHandler.getDataFrame() method, querying non existing data frame") {
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
-    val req = new DataFrameV3
-    req.dataframe_id = "does_not_exist"
-    intercept[H2ONotFoundArgumentException] {
-      dataFramesHandler.getDataFrame(3, req)
+    intercept[RestApiCommunicationException] {
+      getDataFrame("does_not_exist")
     }
   }
 
   test("DataFramesHandler.toH2OFrame() method, trying to convert dataframe which does not exist") {
-    val dataFramesHandler = new DataFramesHandler(sc, hc)
-    val req = new H2OFrameIDV3
-    req.dataframe_id = "does_not_exist"
-
-    intercept[H2ONotFoundArgumentException] {
-      dataFramesHandler.toH2OFrame(3, req)
+    intercept[RestApiCommunicationException] {
+      convertToH2OFrame("does_not_exist", null)
     }
   }
 

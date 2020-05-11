@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.dataframes
+package ai.h2o.sparkling.backend.api
 
-import water.Iced
+import javax.servlet.http.HttpServlet
 
-private[api] class IcedH2OFrameID(val dataframe_id: String, val h2oframe_id: String) extends Iced[IcedH2OFrameID] {
-
-  def this() = this(null, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
+private[api] trait ServletBase extends HttpServlet {
+  protected def toScalaRegex(pathSpec: String): String = {
+    pathSpec.replaceAll("\\*", "\\.*")
+  }
 }

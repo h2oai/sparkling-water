@@ -28,71 +28,45 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.{StructField, StructType}
+import water.exceptions.H2ONotFoundArgumentException
 
 /**
   * This servlet class handles requests for /3/RDDs endpoint
   */
-private[api] class RDDsInterpreterServlet() extends GETRequestBase with POSTRequestBase {
+private[api] class RDDsServlet extends GETRequestBase with POSTRequestBase {
   private lazy val hc = H2OContext.ensure()
   private lazy val sc = hc.sparkContext
 
-  private case class RDDInfoParameters(rddId: Int) {
-    def validate(): Unit = {
-      sc.getPersistentRDDs
-        .getOrElse(rddId, throw new IllegalArgumentException(s"RDD with ID '$rddId' does not exist!"))
-    }
-  }
-
-  private object RDDInfoParameters {
-    def parse(request: HttpServletRequest): RDDInfoParameters = {
-      val rddId = getParameterAsString(request, "rdd_id").toInt
-      RDDInfoParameters(rddId)
-    }
-  }
-
-  private case class RDDToH2OFrameParameters(rddId: Int, h2oFrameId: Option[String]) {
-    def validate(): Unit = {
-      sc.getPersistentRDDs
-        .getOrElse(rddId, throw new IllegalArgumentException(s"RDD with ID '$rddId' does not exist!"))
-    }
-  }
-
-  private object RDDToH2OFrameParameters {
-    def parse(request: HttpServletRequest): RDDToH2OFrameParameters = {
-      val rddId = getParameterAsString(request, "rdd_id").toInt
-      val h2oFrameId = getParameterAsString(request, "h2o_frame_id")
-      RDDToH2OFrameParameters(rddId, Option(h2oFrameId).map(_.toLowerCase()))
-    }
-  }
-
   override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getServletPath match {
-      case RDDsInterpreterServlet.convertRDDPath =>
-        val parameters = RDDToH2OFrameParameters.parse(request)
+    request.getRequestURI match {
+      case s if s.matches(toScalaRegex("/3/RDDs/*/h2oframe")) =>
+        val parameters = RDDToH2OFrame.RDDToH2OFrameParameters.parse(request)
         parameters.validate()
         toH2OFrame(parameters.rddId, parameters.h2oFrameId)
+      case s if s.matches(toScalaRegex("/3/RDDs/*")) =>
+        val parameters = RDDInfo.RDDInfoParameters.parse(request)
+        parameters.validate()
+        getRDD(parameters.rddId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
   }
 
   override def handleGetRequest(request: HttpServletRequest): Any = {
-    request.getServletPath match {
-      case RDDsInterpreterServlet.getRDDsPath =>
+    request.getRequestURI match {
+      case "/3/RDDs" =>
         list()
-      case RDDsInterpreterServlet.getRDDsPath =>
-        val parameters = RDDInfoParameters.parse(request)
-        parameters.validate()
-        getRDD(parameters.rddId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
   }
 
-  def list(): RDDs = new RDDs(fetchAll())
+  def list(): RDDs = RDDs(fetchAll())
 
   def getRDD(rddId: Int): RDDInfo = RDDInfo.fromRDD(sc.getPersistentRDDs(rddId))
 
   def toH2OFrame(rddId: Int, h2oFrameId: Option[String]): RDDToH2OFrame = {
     val rdd = sc.getPersistentRDDs(rddId)
     val h2oFrame = convertToH2OFrame(rdd, h2oFrameId)
-    new RDDToH2OFrame(rddId, h2oFrame.frameId)
+    RDDToH2OFrame(rddId, h2oFrame.frameId)
   }
 
   private def fetchAll(): Array[RDDInfo] = {
@@ -129,14 +103,11 @@ private[api] class RDDsInterpreterServlet() extends GETRequestBase with POSTRequ
   }
 }
 
-object RDDsInterpreterServlet extends ServletRegister {
+object RDDsServlet extends ServletRegister {
 
-  private val getRDDsPath = "/3/RDDs"
-  private val getRDDPath = "/3/RDD/*"
-  private val convertRDDPath = "/3/RDD/*/h2oframe"
   override protected def getEndpoints(): Array[String] = {
-    Array(getRDDsPath, getRDDPath, convertRDDPath)
+    Array("/3/RDDs", "/3/RDDs/*", "/3/RDDs/*/h2oframe")
   }
 
-  override protected def getServletClass(): Class[_ <: Servlet] = classOf[RDDsInterpreterServlet]
+  override protected def getServlet(): Servlet = new RDDsServlet
 }

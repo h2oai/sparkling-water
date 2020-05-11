@@ -14,11 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.dataframes
 
-import water.Iced
+package ai.h2o.sparkling.backend.api.h2oframes
 
-/** Simple POJO holding list of DataFrames */
-private[api] class IcedDataFrames extends Iced[IcedDataFrames] {
-  var dataframes: Array[IcedDataFrame] = _
+import java.net.URI
+
+import ai.h2o.sparkling.backend.utils.RestApiUtils
+import org.apache.spark.h2o.H2OContext
+
+trait H2OFramesRestApi extends RestApiUtils {
+
+  protected def convertToDataFrame(h2oFrameId: String, dataFrameId: String): H2OFrameToDataFrame = {
+    val hc = H2OContext.ensure()
+    val endpoint = new URI(hc.flowURL())
+    val params = Map("dataframe_id" -> dataFrameId)
+    update[H2OFrameToDataFrame](endpoint, s"/3/h2oframes/$h2oFrameId/dataframe", hc.getConf, params)
+  }
 }

@@ -19,22 +19,19 @@ package ai.h2o.sparkling.backend.api
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import com.google.gson.Gson
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import water.server.ServletUtils
 
-private[api] trait POSTRequestBase extends ai.h2o.sparkling.extensions.rest.api.ServletBase {
+private[api] trait POSTRequestBase extends ServletBase {
 
   def handlePostRequest(request: HttpServletRequest): Any
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    processRequest(req, resp) {
-      val obj = handlePostRequest(req)
-      val json = new Gson().toJson(obj)
-      withResource(resp.getWriter) { writer =>
-        resp.setContentType("application/json")
-        resp.setCharacterEncoding("UTF-8")
-        writer.print(json)
-      }
-      ServletUtils.setResponseStatus(resp, HttpServletResponse.SC_OK)
+    val obj = handlePostRequest(req)
+    val json = new Gson().toJson(obj)
+    withResource(resp.getWriter) { writer =>
+      resp.setContentType("application/json")
+      resp.setCharacterEncoding("UTF-8")
+      writer.print(json)
     }
+    resp.setStatus(HttpServletResponse.SC_OK)
   }
 }

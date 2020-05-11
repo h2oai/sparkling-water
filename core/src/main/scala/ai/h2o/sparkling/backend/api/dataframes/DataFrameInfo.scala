@@ -14,33 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.rdds
+package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.backend.api.ParameterBase
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import water.exceptions.H2ONotFoundArgumentException
 
-/** Schema representing /3/RDDs/[rdd_id] endpoint */
-case class RDDInfo(rdd_id: Int, name: String, partitions: Int)
+/** Schema representing /3/dataframes/[dataframe_id] endpoint */
+case class DataFrameInfo(dataframe_id: String, partitions: Int, schema: String)
 
-object RDDInfo extends ParameterBase {
-  def fromRDD(rdd: RDD[_]): RDDInfo = {
-    new RDDInfo(rdd.id, Option(rdd.name).getOrElse(rdd.id.toString), rdd.partitions.length)
-  }
+object DataFrameInfo extends ParameterBase {
 
-  private[api] case class RDDInfoParameters(rddId: Int) {
+  private[dataframes] case class DataFrameInfoParameters(dataFrameId: String) {
     def validate(): Unit = {
-      SparkSession.active.sparkContext.getPersistentRDDs
-        .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
+      if (!SparkSession.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
+        throw new H2ONotFoundArgumentException(s"DataFrame with id '$dataFrameId' does not exist!")
+      }
     }
   }
 
-  private[api] object RDDInfoParameters {
-    def parse(request: HttpServletRequest): RDDInfoParameters = {
-      val rddId = request.getRequestURI.split("/")(3).toInt
-      RDDInfoParameters(rddId)
+  private[dataframes] object DataFrameInfoParameters {
+    def parse(request: HttpServletRequest): DataFrameInfoParameters = {
+      val dataFrameId = request.getRequestURI.split("/")(3)
+      DataFrameInfoParameters(dataFrameId)
     }
   }
 }

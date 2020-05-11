@@ -14,33 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.rdds
+
+package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.backend.api.ParameterBase
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import water.exceptions.H2ONotFoundArgumentException
 
-/** Schema representing /3/RDDs/[rdd_id] endpoint */
-case class RDDInfo(rdd_id: Int, name: String, partitions: Int)
+/** Schema representing /3/dataframe/[dataframe_id]/h2oframe endpoint */
+case class DataFrameToH2OFrame(dataframe_id: String, h2oframe_id: String)
 
-object RDDInfo extends ParameterBase {
-  def fromRDD(rdd: RDD[_]): RDDInfo = {
-    new RDDInfo(rdd.id, Option(rdd.name).getOrElse(rdd.id.toString), rdd.partitions.length)
-  }
-
-  private[api] case class RDDInfoParameters(rddId: Int) {
+object DataFrameToH2OFrame extends ParameterBase {
+  private[dataframes] case class DataFrameToH2OFrameParameters(dataFrameId: String, h2oFrameId: Option[String]) {
     def validate(): Unit = {
-      SparkSession.active.sparkContext.getPersistentRDDs
-        .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
+      if (!SparkSession.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
+        throw new H2ONotFoundArgumentException(s"DataFrame with id '$dataFrameId' does not exist!")
+      }
     }
   }
 
-  private[api] object RDDInfoParameters {
-    def parse(request: HttpServletRequest): RDDInfoParameters = {
-      val rddId = request.getRequestURI.split("/")(3).toInt
-      RDDInfoParameters(rddId)
+  object DataFrameToH2OFrameParameters {
+    private[dataframes] def parse(request: HttpServletRequest): DataFrameToH2OFrameParameters = {
+      val dataFrameId = request.getRequestURI.split("/")(3)
+      val h2oFrameId = getParameterAsString(request, "h2oframe_id")
+      DataFrameToH2OFrameParameters(dataFrameId, Option(h2oFrameId).map(_.toLowerCase()))
     }
   }
 }

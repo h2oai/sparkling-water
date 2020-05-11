@@ -16,11 +16,27 @@
  */
 package ai.h2o.sparkling.backend.api.rdds
 
-import water.api.API
+import ai.h2o.sparkling.backend.api.ParameterBase
+import javax.servlet.http.HttpServletRequest
+import org.apache.spark.sql.SparkSession
+import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint */
-class RDDToH2OFrame(
-    @API(help = "Id of RDD to be transformed", direction = API.Direction.INPUT)
-    var rdd_id: Int,
-    @API(help = "Id of transformed H2OFrame", direction = API.Direction.INOUT)
-    var h2oframe_id: String = null)
+case class RDDToH2OFrame(rdd_id: Int, h2oframe_id: String)
+
+object RDDToH2OFrame extends ParameterBase {
+  private[rdds] case class RDDToH2OFrameParameters(rddId: Int, h2oFrameId: Option[String]) {
+    def validate(): Unit = {
+      SparkSession.active.sparkContext.getPersistentRDDs
+        .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
+    }
+  }
+
+  object RDDToH2OFrameParameters {
+    private[rdds] def parse(request: HttpServletRequest): RDDToH2OFrameParameters = {
+      val rddId = request.getRequestURI.split("/")(3).toInt
+      val h2oFrameId = getParameterAsString(request, "h2oframe_id")
+      RDDToH2OFrameParameters(rddId, Option(h2oFrameId).map(_.toLowerCase()))
+    }
+  }
+}

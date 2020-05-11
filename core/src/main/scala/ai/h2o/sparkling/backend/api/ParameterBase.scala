@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.dataframes
 
-import water.Iced
+package ai.h2o.sparkling.backend.api
 
-private[api] class IcedDataFrame(val dataframe_id: String, val partitions: Int, val schema: String)
-  extends Iced[IcedDataFrame] {
-  def this() = this(null, -1, null) // initialize with empty values, this is used by the createImpl method in the
-  //RequestServer, as it calls constructor without any arguments
+import javax.servlet.http.HttpServletRequest
+
+trait ParameterBase {
+  protected def getParameterAsString(request: HttpServletRequest, parameterName: String): String = {
+    val result = request.getParameter(parameterName)
+    if (result == null) {
+      throw new IllegalArgumentException(s"Cannot find value for the parameter '$parameterName'")
+    }
+    result
+  }
 }

@@ -21,12 +21,12 @@ import javax.servlet.Servlet
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
 
 private[api] trait ServletRegister {
-  protected def getServletClass(): Class[_ <: Servlet]
+  protected def getServlet(): Servlet
 
   protected def getEndpoints(): Array[String]
 
   def register(context: ServletContextHandler): Unit = {
-    val holder = new ServletHolder(getClass.asInstanceOf[Class[_ <: Servlet]])
+    val holder = new ServletHolder(getServlet())
     context.getServletHandler.addServlet(holder)
     val m = new ServletMapping()
     m.setPathSpecs(getEndpoints())

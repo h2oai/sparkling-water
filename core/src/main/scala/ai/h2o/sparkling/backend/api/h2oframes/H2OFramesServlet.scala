@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.backend.api.h2oframes
 
-import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.api.{POSTRequestBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
@@ -27,30 +26,14 @@ import water.exceptions.H2ONotFoundArgumentException
 /**
   * Handler for all H2OFrame related queries
   */
-class H2OFramesServlet extends POSTRequestBase {
-  private case class DataFrameToH2OFrameParameters(h2oFrameId: String, dataframeId: Option[String]) {
-    def validate(): Unit = {
-      if (!H2OFrame.exists(h2oFrameId)) {
-        throw new H2ONotFoundArgumentException(
-          s"H2OFrame with id '$h2oFrameId' does not exist, can not proceed with the transformation!")
-      }
-    }
-  }
-
-  private object DataFrameToH2OFrameParameters {
-    def parse(request: HttpServletRequest): DataFrameToH2OFrameParameters = {
-      val h2oFrameId = getParameterAsString(request, "h2oframe_id")
-      val dataFrameId = getParameterAsString(request, "dataframe_id")
-      DataFrameToH2OFrameParameters(h2oFrameId, Option(dataFrameId).map(_.toLowerCase()))
-    }
-  }
-
+private[api] class H2OFramesServlet extends POSTRequestBase {
   override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getServletPath match {
-      case H2OFramesServlet.dataFrameToH2OFramePath =>
-        val parameters = DataFrameToH2OFrameParameters.parse(request)
+    request.getRequestURI match {
+      case s if s.matches(toScalaRegex("/3/h2oframes/*/dataframe")) =>
+        val parameters = H2OFrameToDataFrame.H2OFrameToDataFrameParameters.parse(request)
         parameters.validate()
         toDataFrame(parameters.h2oFrameId, parameters.dataframeId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
   }
 
@@ -65,8 +48,7 @@ class H2OFramesServlet extends POSTRequestBase {
 }
 
 object H2OFramesServlet extends ServletRegister {
-  private val dataFrameToH2OFramePath = "/3/h2oframes/*/dataframe"
-  override protected def getServletClass(): Class[_ <: Servlet] = classOf[H2OFramesServlet]
+  override protected def getEndpoints(): Array[String] = Array("/3/h2oframes/*/dataframe")
 
-  override protected def getEndpoints(): Array[String] = Array(dataFrameToH2OFramePath)
+  override protected def getServlet(): Servlet = new H2OFramesServlet
 }

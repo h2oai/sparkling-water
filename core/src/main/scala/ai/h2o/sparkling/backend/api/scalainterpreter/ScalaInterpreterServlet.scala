@@ -39,7 +39,7 @@ import scala.collection.concurrent.TrieMap
 /**
   * This servlet class handles requests for /3/scalaint endpoint
   */
-class ScalaInterpreterServlet() extends ServletBase {
+private[api] class ScalaInterpreterServlet() extends ServletBase {
 
   private lazy val hc = H2OContext.ensure()
   private val intrPoolSize = hc.getConf.scalaIntDefaultNum
@@ -175,7 +175,7 @@ class ScalaInterpreterServlet() extends ServletBase {
 }
 
 object ScalaInterpreterServlet extends ServletRegister {
-  override protected def getServletClass(): Class[_ <: Servlet] = classOf[ScalaInterpreterServlet]
-
   override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*", "/3/scalaint/result/*")
+
+  override protected def getServlet(): Servlet = new ScalaInterpreterServlet
 }

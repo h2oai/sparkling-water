@@ -19,10 +19,9 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
-import ai.h2o.sparkling.backend.api.ServletRegister
+import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
-import ai.h2o.sparkling.backend.api.rdds.RDDsInterpreterServlet
-import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
+import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
@@ -96,8 +95,9 @@ object ProxyStarter extends Logging {
     if (conf.isH2OReplEnabled) {
       //ScalaInterpreterServlet.register(context)
     }
-    RDDsInterpreterServlet.register(context)
-    //H2OFramesServlet.register(context)
+    RDDsServlet.register(context)
+    H2OFramesServlet.register(context)
+    DataFramesServlet.register(context)
     context
   }
 

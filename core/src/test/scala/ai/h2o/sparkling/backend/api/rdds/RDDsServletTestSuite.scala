@@ -17,6 +17,7 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling._
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -24,88 +25,62 @@ import org.scalatest.junit.JUnitRunner
 import water.exceptions.H2ONotFoundArgumentException
 
 @RunWith(classOf[JUnitRunner])
-class RDDsHandlerTestSuite extends FunSuite with SharedH2OTestContext {
+class RDDsServletTestSuite extends FunSuite with SharedH2OTestContext with RDDsRestApi {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
   test("RDDsHandler.list() method") {
     val rname = "Test"
     val rpart = 21
-    val rdd = sc.parallelize(1 to 10, rpart).setName(rname).cache()
+    sc.parallelize(1 to 10, rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc, hc)
-    val result = rddsHandler.list(3, new RDDs)
+    val result = listRDDs()
     assert(result.rdds.length == 1, "Number of created and persisted RDDs should be 1")
     assert(result.rdds(0).name.equals(rname), "Name matches")
     assert(result.rdds(0).partitions == rpart, "Number of partitions matches")
-
   }
 
   test("RDDsHandler.getRDD() method") {
-    //Create and persist RDD
     val rname = "Test"
     val rpart = 21
     val rdd = sc.parallelize(1 to 100, rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc, hc)
-    val rddReq = new RDD
-    rddReq.rdd_id = rdd.id
-
-    val result = rddsHandler.getRDD(3, rddReq)
+    val result = getRDD(rdd.id)
     assert(result.rdd_id == rdd.id, "Original ID and obtained ID should match")
     assert(result.name.equals(rname), "Name matches")
     assert(result.partitions == rpart, "Number of partitions matches")
   }
 
   test("RDDsHandler.toH2OFrame() method simple type") {
-    //Create and persist RDD
     val rname = "Test"
     val rpart = 21
-
     val rdd = sc.parallelize(1 to 100, rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc, hc)
-    val rddReq = new RDD2H2OFrameIDV3
-    rddReq.rdd_id = rdd.id
-    rddReq.h2oframe_id = "requested_name"
-
-    val result = rddsHandler.toH2OFrame(3, rddReq)
+    val result = convertToH2OFrame(rdd.id, "frame_a")
     val h2oframe = H2OFrame(result.h2oframe_id)
-    assert(h2oframe.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
+    assert(h2oframe.frameId == "frame_a", "H2OFrame ID should be equal to \"requested_name\"")
     assert(h2oframe.numberOfColumns == 1, "Number of columns should match")
     assert(h2oframe.columnNames.sameElements(Seq("value")), "Column names should match")
     assert(h2oframe.numberOfRows == rdd.count(), "Number of rows should match")
   }
 
   test("RDDsHandler.toH2OFrame() method - product class") {
-    //Create and persist RDD
     val rname = "Test"
     val rpart = 21
-
     val rdd = sc.parallelize(Seq(A(1, "A"), A(2, "B"), A(3, "C")), rpart).setName(rname).cache()
 
-    val rddsHandler = new RDDsHandler(sc, hc)
-    val rddReq = new RDD2H2OFrameIDV3
-    rddReq.rdd_id = rdd.id
-    rddReq.h2oframe_id = "requested_name"
-
-    val result = rddsHandler.toH2OFrame(3, rddReq)
+    val result = convertToH2OFrame(rdd.id, "frame_b")
     val h2oframe = H2OFrame(result.h2oframe_id)
-    assert(h2oframe.frameId == "requested_name", "H2OFrame ID should be equal to \"requested_name\"")
+    assert(h2oframe.frameId == "frame_b", "H2OFrame ID should be equal to \"requested_name\"")
     assert(h2oframe.numberOfColumns == 2, "Number of columns should match")
     assert(h2oframe.columnNames.sorted.sameElements(Seq("num", "str")), "Column names should match")
     assert(h2oframe.numberOfRows == rdd.count(), "Number of rows should match")
   }
 
   test("RDDsHandler.getRDD() method, querying non-existing RDD") {
-    val rddsHandler = new RDDsHandler(sc, hc)
-
-    val rddReq = new RDD
-    // put high RDD number so we are sure RDD with this ID wasn't created so far
-    rddReq.rdd_id = 777
-
-    intercept[H2ONotFoundArgumentException] {
-      rddsHandler.getRDD(3, rddReq)
+    intercept[RestApiCommunicationException] {
+      // RDD with ID 777 does not exist
+      getRDD(777)
     }
   }
 }
