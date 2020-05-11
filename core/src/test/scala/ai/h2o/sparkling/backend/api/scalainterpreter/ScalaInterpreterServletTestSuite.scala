@@ -57,7 +57,6 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
   test("ScalaCodeHandler.getSessions() method") {
     initSession()
     initSession()
-    val result = getSessions()
     assert(getSessions().sessions.length == 2)
     getSessions().sessions.foreach(destroySession)
   }
