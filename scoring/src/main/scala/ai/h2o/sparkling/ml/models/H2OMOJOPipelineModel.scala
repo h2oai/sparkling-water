@@ -21,8 +21,6 @@ import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
-import ai.h2o.mojos.runtime.readers.MojoPipelineReaderBackendFactory
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -208,24 +206,19 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
-    withResource(new FileInputStream(model.getMojo())) { inputStream =>
-      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(inputStream)
-      val featureCols = MojoPipeline.loadFrom(reader).getInputMeta.getColumnNames
-      model.set(model.featuresCols, featureCols)
-      model.set(model.outputCols, MojoPipeline.loadFrom(reader).getOutputMeta.getColumnNames)
-      model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
-      model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
-      model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-      model
-    }
+    val pipelineMojo = MojoPipeline.loadFrom(model.getMojo().getAbsolutePath)
+    val featureCols = pipelineMojo.getInputMeta.getColumnNames
+    model.set(model.featuresCols, featureCols)
+    model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
+    model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
+    model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
+    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    model
   }
 }
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    withResource(new FileInputStream(mojo)) { inputStream =>
-      val reader = MojoPipelineReaderBackendFactory.createReaderBackend(inputStream)
-      MojoPipeline.loadFrom(reader)
-    }
+    MojoPipeline.loadFrom(mojo.getAbsolutePath)
   }
 }
