@@ -17,9 +17,9 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.backend.api.ParameterBase
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/RDDs/[rdd_id] endpoint */
@@ -32,7 +32,7 @@ object RDDInfo extends ParameterBase {
 
   private[api] case class RDDInfoParameters(rddId: Int) {
     def validate(): Unit = {
-      SparkSession.active.sparkContext.getPersistentRDDs
+      SparkSessionUtils.active.sparkContext.getPersistentRDDs
         .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
     }
   }

@@ -17,8 +17,8 @@
 package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.backend.api.ParameterBase
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.http.HttpServletRequest
-import org.apache.spark.sql.SparkSession
 import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/dataframes/[dataframe_id] endpoint */
@@ -28,7 +28,7 @@ object DataFrameInfo extends ParameterBase {
 
   private[dataframes] case class DataFrameInfoParameters(dataFrameId: String) {
     def validate(): Unit = {
-      if (!SparkSession.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
+      if (!SparkSessionUtils.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
         throw new H2ONotFoundArgumentException(s"DataFrame with id '$dataFrameId' does not exist!")
       }
     }
