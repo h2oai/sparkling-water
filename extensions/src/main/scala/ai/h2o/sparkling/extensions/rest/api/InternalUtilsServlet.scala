@@ -17,19 +17,32 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import ai.h2o.sparkling.extensions.rest.api.schema.{ScalaCodeResult, ScalaCodeResultV3}
+import ai.h2o.sparkling.extensions.rest.api.schema.ScalaCodeResult
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import com.google.gson.Gson
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.H2O.H2OCountedCompleter
-import water.{Iced, Job, Key, Lockable}
-import water.api.schemas3.{JobV3, KeyV3}
+import water.api.schemas3.JobV3
 import water.server.ServletUtils
+import water.{DKV, Job, Key}
+
+import scala.collection.concurrent.TrieMap
 
 /**
   * This servlet class handles POST requests for the path /3/sw_internal
   */
 class InternalUtilsServlet extends ServletBase {
+
+  private val jobs = new TrieMap[String, Boolean]
+
+  case class JobIdParameters(jobId: String)
+
+  object JobIdParameters {
+    def parse(request: HttpServletRequest): JobIdParameters = {
+      val jobId = request.getRequestURI.split("/")(4)
+      JobIdParameters(jobId)
+    }
+  }
 
   override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = {
 
@@ -38,17 +51,24 @@ class InternalUtilsServlet extends ServletBase {
         case s if s.startsWith("/3/sw_internal/start") =>
           val job =
             new Job[ScalaCodeResult](Key.make[ScalaCodeResult](), classOf[ScalaCodeResult].getName, "ScalaCodeResult")
+          val jobV3 = new JobV3(job)
+          jobs.put(jobV3.key.name, true)
           job.start(new H2OCountedCompleter() {
             override def compute2(): Unit = {
-              while (true) {
-                Thread.sleep(1000)
+              while (jobs.contains(jobV3.key.name) && jobs(jobV3.key.name)) {
+                Thread.sleep(100)
               }
               tryComplete()
             }
           }, 1)
-          new JobV3(job)
+          jobV3
         case s if s.startsWith("/3/sw_internal/stop/") =>
-          null
+          val parameters = JobIdParameters.parse(request)
+          val job = DKV.getGet[Job[ScalaCodeResult]](parameters.jobId)
+          jobs.put(parameters.jobId, false)
+          jobs.remove(parameters.jobId)
+
+
       }
       val json = new Gson().toJson(obj)
       withResource(response.getWriter) { writer =>

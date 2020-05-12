@@ -74,13 +74,7 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
         jobCount.decrementAndGet()
         val endpoint = RestApiUtils.getClusterEndpoint(conf)
         if (conf.flowScalaCellAsync) {
-          // Start dummy backend job
-          val params = Map(
-            "code" -> codeResult.code,
-            "status" -> codeResult.scalaStatus,
-            "response" -> codeResult.scalaResponse,
-            "output" -> codeResult.scalaOutput)
-          update[JobV3](endpoint, s"/3/sw_internal/stop/$resultKey", conf, params)
+          readURLContent(endpoint, "POST", s"/3/sw_internal/stop/${backendJob.key.name}", conf, Map.empty, encodeParamsAsJson = false, None)
         }
       }
     }
@@ -157,14 +151,14 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
     request.getRequestURI match {
       case "/3/scalaint" =>
         initSession()
-      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
-        val parameters = ScalaCode.ScalaCodeParameters.parse(request)
-        parameters.validate(mapIntr)
-        interpret(parameters.sessionId, parameters.code)
       case s if s.matches(toScalaRegex("/3/scalaint/result/*")) =>
         val parameters = ScalaCodeResult.ScalaCodeResultParameters.parse(request)
         parameters.validate()
         getScalaCodeResult(parameters.resultKey)
+      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
+        val parameters = ScalaCode.ScalaCodeParameters.parse(request)
+        parameters.validate(mapIntr)
+        interpret(parameters.sessionId, parameters.code)
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
   }
