@@ -79,7 +79,7 @@ object H2OClientUtils extends SharedBackendUtils {
       val launcherArgs = toH2OArgs(args, nodes)
       logDebug(s"Arguments used for launching the H2O client node: ${launcherArgs.mkString(" ")}")
 
-      H2OStarter.start(launcherArgs, false)
+      H2OStarter.start(launcherArgs, true)
 
       if (conf.runsInInternalClusterMode || conf.isAutoClusterStartUsed) {
         val expectedSize = nodes.length
@@ -90,7 +90,6 @@ object H2OClientUtils extends SharedBackendUtils {
           throw new RuntimeException("Cloud size " + discoveredSize + " under " + expectedSize)
         }
       }
-      H2O.startServingRestApi()
     }
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
