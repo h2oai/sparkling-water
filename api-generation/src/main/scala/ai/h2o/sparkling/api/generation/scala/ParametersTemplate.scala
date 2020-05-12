@@ -23,10 +23,8 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   def apply(substitutionContext: ParameterSubstitutionContext): String = {
     val h2oSchemaClassFullName = substitutionContext.h2oSchemaClass.getName.replace('$', '.')
     val h2oParameterFullName = substitutionContext.h2oParameterClass.getName.replace('$', '.')
-    val extraImports =
-      Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._") ++
-        substitutionContext.explicitFields.map(_.implementation)
-    val extraTraits = substitutionContext.explicitFields.map(_.implementation.split('.').last)
+    val extraImports = Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._")
+    val extraTraits = substitutionContext.explicitFields.map(_.implementation)
     val parameters = resolveParameters(substitutionContext)
     val contextWithExtraImports = substitutionContext.commonContext.copy(
       imports = substitutionContext.commonContext.imports ++ extraImports,
@@ -86,9 +84,15 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
         } else {
           parameter.defaultValue
         }
-        s"    ${parameter.swName} -> $defaultValue"
+        s"    ${parameter.swName} -> $defaultValue${getConstantSuffix(parameter)}"
       }
       .mkString(",\n")
+  }
+
+  private def getConstantSuffix(parameter: Parameter): String = parameter.dataType.name match {
+    case "float" => "f"
+    case "long" => "L"
+    case _ => ""
   }
 
   private def generateGetters(parameters: Seq[Parameter]): String = {

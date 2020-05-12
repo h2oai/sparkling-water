@@ -22,31 +22,38 @@ import java.io.{File, PrintWriter}
 import ai.h2o.sparkling.api.generation.common._
 import ai.h2o.sparkling.api.generation.scala.ParametersTemplate
 import ai.h2o.sparkling.utils.ScalaUtils._
+import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.glm.GLMModel.GLMParameters
+import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 object Runner {
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
-    val xgboostExplicitFields =
-      Seq(ExplicitField("monotone_constraints", "ai.h2o.sparkling.ml.params.HasMonotoneConstraints"))
+    val xgboostExplicitFields = Seq(ExplicitField("monotone_constraints", "HasMonotoneConstraints"))
+    val gbmExplicitFields = Seq(ExplicitField("monotone_constraints", "HasMonotoneConstraints"))
+    type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
-    val algorithmParameters = Seq(
-      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostExplicitFields))
+    val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
+      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostExplicitFields),
+      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmExplicitFields),
+      ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq.empty),
+      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq.empty),
+      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], Seq.empty))
 
     algorithmParameters.map {
-      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields: Seq[ExplicitField]) =>
+      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields) =>
         ParameterSubstitutionContext(
           CommonSubstitutionContext(
             namespace = "ai.h2o.sparkling.ml.params",
             entityName = entityName,
             inheritedEntities =
-              Seq(s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]", "H2OTreeBasedSupervisedMOJOParams"),
+              Seq(s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]", "H2OSupervisedMOJOParams"),
             imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
           h2oSchemaClass,
           h2oParametersClass,
-          ignoredFields = Seq("calibration_frame"),
+          ignoredFields = Seq("calibration_frame", "max_hit_ratio_k"),
           explicitFields)
     }
   }
