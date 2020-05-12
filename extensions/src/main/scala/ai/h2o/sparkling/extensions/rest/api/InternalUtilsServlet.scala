@@ -35,12 +35,12 @@ class InternalUtilsServlet extends ServletBase {
 
   private val jobs = new TrieMap[String, Boolean]
 
-  case class JobIdParameters(jobId: String)
+  case class IdParameter(id: String)
 
-  object JobIdParameters {
-    def parse(request: HttpServletRequest): JobIdParameters = {
+  object IdParameter {
+    def parse(request: HttpServletRequest): IdParameter = {
       val jobId = request.getRequestURI.split("/")(4)
-      JobIdParameters(jobId)
+      IdParameter(jobId)
     }
   }
 
@@ -48,9 +48,14 @@ class InternalUtilsServlet extends ServletBase {
 
     processRequest(request, response) {
       val obj = request.getRequestURI match {
-        case s if s.startsWith("/3/sw_internal/start") =>
+        case s if s.startsWith("/3/sw_internal/start/") =>
+          val parameters = IdParameter.parse(request)
+          val key = parameters.id
           val job =
-            new Job[ScalaCodeResult](Key.make[ScalaCodeResult](), classOf[ScalaCodeResult].getName, "ScalaCodeResult")
+            new Job[ScalaCodeResult](
+              Key.make[ScalaCodeResult](key),
+              classOf[ScalaCodeResult].getName,
+              "ScalaCodeResult")
           val jobV3 = new JobV3(job)
           jobs.put(jobV3.key.name, true)
           job.start(new H2OCountedCompleter() {
@@ -63,11 +68,9 @@ class InternalUtilsServlet extends ServletBase {
           }, 1)
           jobV3
         case s if s.startsWith("/3/sw_internal/stop/") =>
-          val parameters = JobIdParameters.parse(request)
-          val job = DKV.getGet[Job[ScalaCodeResult]](parameters.jobId)
-          jobs.put(parameters.jobId, false)
-          jobs.remove(parameters.jobId)
-
+          val parameters = IdParameter.parse(request)
+          jobs.put(parameters.id, false)
+          jobs.remove(parameters.id)
 
       }
       val json = new Gson().toJson(obj)

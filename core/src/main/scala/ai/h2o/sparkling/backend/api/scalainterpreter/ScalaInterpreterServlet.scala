@@ -58,13 +58,13 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
         Thread.sleep(1000)
       }
     }
+    val resultKey = s"${sessionId}_${System.currentTimeMillis()}"
     val backendJob = if (conf.flowScalaCellAsync) {
       val endpoint = RestApiUtils.getClusterEndpoint(conf)
-      update[JobV3](endpoint, s"/3/sw_internal/start", conf)
+      update[JobV3](endpoint, s"/3/sw_internal/start/$resultKey", conf)
     } else {
       null.asInstanceOf[JobV3]
     }
-    val resultKey = s"${sessionId}_${System.currentTimeMillis()}"
     val job = new Thread {
       override def run(): Unit = {
         val intp = mapIntr(sessionId)
@@ -74,7 +74,14 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
         jobCount.decrementAndGet()
         val endpoint = RestApiUtils.getClusterEndpoint(conf)
         if (conf.flowScalaCellAsync) {
-          readURLContent(endpoint, "POST", s"/3/sw_internal/stop/${backendJob.key.name}", conf, Map.empty, encodeParamsAsJson = false, None)
+          readURLContent(
+            endpoint,
+            "POST",
+            s"/3/sw_internal/stop/${backendJob.key.name}",
+            conf,
+            Map.empty,
+            encodeParamsAsJson = false,
+            None)
         }
       }
     }
