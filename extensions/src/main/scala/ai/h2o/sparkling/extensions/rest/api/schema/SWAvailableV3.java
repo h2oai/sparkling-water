@@ -15,14 +15,9 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.extensions.rest.api
+package ai.h2o.sparkling.extensions.rest.api.schema;
 
-import ai.h2o.sparkling.extensions.rest.api.schema.SWAvailableV3
-import water.api.Handler
+import water.Iced;
+import water.api.schemas3.RequestSchemaV3;
 
-final class SparklingWaterAvailableHandler extends Handler {
-
-  def isSWAvailable(version: Int, request: SWAvailableV3): SWAvailableV3 = {
-    request
-  }
-}
+public class SWAvailableV3 extends RequestSchemaV3<Iced, SWAvailableV3> {}

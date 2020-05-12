@@ -20,11 +20,13 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 import java.util.concurrent.atomic.AtomicInteger
 
 import ai.h2o.sparkling.backend.api.{DELETERequestBase, GETRequestBase, POSTRequestBase, ServletRegister}
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.h2o.H2OConf
+import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -35,7 +37,8 @@ import scala.collection.concurrent.TrieMap
 private[api] class ScalaInterpreterServlet(conf: H2OConf)
   extends GETRequestBase
   with POSTRequestBase
-  with DELETERequestBase {
+  with DELETERequestBase
+  with RestCommunication {
 
   private val intrPoolSize = conf.scalaIntDefaultNum
   private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
@@ -55,7 +58,12 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
         Thread.sleep(1000)
       }
     }
-
+    val backendJob = if (conf.flowScalaCellAsync) {
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      update[JobV3](endpoint, s"/3/sw_internal/start", conf)
+    } else {
+      null.asInstanceOf[JobV3]
+    }
     val resultKey = s"${sessionId}_${System.currentTimeMillis()}"
     val job = new Thread {
       override def run(): Unit = {
@@ -64,17 +72,26 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
           ScalaCodeResult(code, intp.runCode(code).toString, intp.interpreterResponse, intp.consoleOutput)
         jobResults.put(resultKey, codeResult)
         jobCount.decrementAndGet()
+        val endpoint = RestApiUtils.getClusterEndpoint(conf)
+        if (conf.flowScalaCellAsync) {
+          // Start dummy backend job
+          val params = Map(
+            "code" -> codeResult.code,
+            "status" -> codeResult.scalaStatus,
+            "response" -> codeResult.scalaResponse,
+            "output" -> codeResult.scalaOutput)
+          update[JobV3](endpoint, s"/3/sw_internal/stop/$resultKey", conf, params)
+        }
       }
     }
     job.start()
 
-    /** If we are not running in asynchronous mode, compute the result right away */
     if (!conf.flowScalaCellAsync) {
       job.join()
       val result = jobResults(resultKey)
-      ScalaCode(sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
+      ScalaCode(sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, backendJob)
     } else {
-      ScalaCode(sessionId, code, resultKey, null, null, null, null)
+      ScalaCode(sessionId, code, resultKey, null, null, null, backendJob)
     }
   }
 
