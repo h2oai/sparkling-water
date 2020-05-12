@@ -28,9 +28,15 @@ import hex.glm.GLMModel.GLMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 object Runner {
-  private def parametersConfiguration: Seq[ParameterSubstitutionContext] =
-    Seq(("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters])).map {
-      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_]) =>
+  private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+    val xgboostExplicitFields =
+      Seq(ExplicitField("monotone_constraints", "ai.h2o.sparkling.ml.params.HasMonotoneConstraints"))
+
+    val algorithmParameters = Seq(
+      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostExplicitFields))
+
+    algorithmParameters.map {
+      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields: Seq[ExplicitField]) =>
         ParameterSubstitutionContext(
           CommonSubstitutionContext(
             namespace = "ai.h2o.sparkling.ml.params",
@@ -39,8 +45,11 @@ object Runner {
               Seq(s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]", "H2OTreeBasedSupervisedMOJOParams"),
             imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
           h2oSchemaClass,
-          h2oParametersClass)
+          h2oParametersClass,
+          ignoredFields = Seq("calibration_frame"),
+          explicitFields)
     }
+  }
 
   def main(args: Array[String]): Unit = {
     val language = args(0)

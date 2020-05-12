@@ -23,10 +23,14 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   def apply(substitutionContext: ParameterSubstitutionContext): String = {
     val h2oSchemaClassFullName = substitutionContext.h2oSchemaClass.getName.replace('$', '.')
     val h2oParameterFullName = substitutionContext.h2oParameterClass.getName.replace('$', '.')
-    val extraImports = Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._")
+    val extraImports =
+      Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._") ++
+        substitutionContext.explicitFields.map(_.implementation)
+    val extraTraits = substitutionContext.explicitFields.map(_.implementation.split('.').last)
     val parameters = resolveParameters(substitutionContext)
-    val contextWithExtraImports =
-      substitutionContext.commonContext.copy(imports = substitutionContext.commonContext.imports ++ extraImports)
+    val contextWithExtraImports = substitutionContext.commonContext.copy(
+      imports = substitutionContext.commonContext.imports ++ extraImports,
+      inheritedEntities = substitutionContext.commonContext.inheritedEntities ++ extraTraits)
 
     generateEntity(contextWithExtraImports, "trait") {
       s"""  type H2O_SCHEMA = ${substitutionContext.h2oSchemaClass.getSimpleName}
@@ -76,7 +80,14 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
 
   private def generateDefaultValues(parameters: Seq[Parameter]): String = {
     parameters
-      .map(parameter => s"    ${parameter.swName} -> ${parameter.defaultValue}")
+      .map { parameter =>
+        val defaultValue = if (parameter.dataType.isEnum) {
+          s"${parameter.dataType.name}.${parameter.defaultValue}.name()"
+        } else {
+          parameter.defaultValue
+        }
+        s"    ${parameter.swName} -> $defaultValue"
+      }
       .mkString(",\n")
   }
 
@@ -96,7 +107,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
              |    val validated = getValidatedEnumValue[${parameter.dataType.name}](value)
              |    set(${parameter.swName}, validated)
              |  }
-         """.stripMargin
+           """.stripMargin
         } else {
           s"""  def set${parameter.swName.capitalize}(value: ${resolveParameterType(parameter)}): this.type = {
              |    set(${parameter.swName}, value)

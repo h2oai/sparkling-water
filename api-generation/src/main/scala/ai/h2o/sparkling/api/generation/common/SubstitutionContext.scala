@@ -26,4 +26,8 @@ case class CommonSubstitutionContext(
 case class ParameterSubstitutionContext(
     commonContext: CommonSubstitutionContext,
     h2oSchemaClass: Class[_],
-    h2oParameterClass: Class[_])
+    h2oParameterClass: Class[_],
+    ignoredFields: Seq[String],
+    explicitFields: Seq[ExplicitField])
+
+case class ExplicitField(name: String, implementation: String)
