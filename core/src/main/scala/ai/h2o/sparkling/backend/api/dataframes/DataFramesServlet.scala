@@ -17,39 +17,42 @@
 package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.backend.api.{GETRequestBase, POSTRequestBase, ServletRegister}
+import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
   * Handler for all Spark's DataFrame related queries
   */
-private[api] class DataFramesServlet extends GETRequestBase with POSTRequestBase {
+private[api] class DataFramesServlet extends ServletBase {
   private lazy val sqlContext = SparkSessionUtils.active.sqlContext
 
-  override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/dataframes/*/h2oframe")) =>
-        val parameters = DataFrameToH2OFrame.DataFrameToH2OFrameParameters.parse(request)
-        parameters.validate()
-        toH2OFrame(parameters.dataFrameId, parameters.h2oFrameId)
-      case s if s.matches(toScalaRegex("/3/dataframes/*")) =>
-        val parameters = DataFrameInfo.DataFrameInfoParameters.parse(request)
-        parameters.validate()
-        getDataFrame(parameters.dataFrameId)
-      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
-    }
-  }
-
-  override def handleGetRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+  override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case "/3/dataframes" =>
         list()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
+  }
+
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
+      case s if s.matches(toScalaRegex("/3/dataframes/*/h2oframe")) =>
+        val parameters = DataFrameToH2OFrame.DataFrameToH2OFrameParameters.parse(req)
+        parameters.validate()
+        toH2OFrame(parameters.dataFrameId, parameters.h2oFrameId)
+      case s if s.matches(toScalaRegex("/3/dataframes/*")) =>
+        val parameters = DataFrameInfo.DataFrameInfoParameters.parse(req)
+        parameters.validate()
+        getDataFrame(parameters.dataFrameId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+    sendResult(obj, resp)
+
   }
 
   def list(): DataFrames = {
@@ -71,6 +74,7 @@ private[api] class DataFramesServlet extends GETRequestBase with POSTRequestBase
     val h2oFrame = H2OFrame(H2OContext.ensure().asH2OFrameKeyString(dataFrame, h2oFrameId))
     DataFrameToH2OFrame(dataFrameId, h2oFrame.frameId)
   }
+
 }
 
 object DataFramesServlet extends ServletRegister {

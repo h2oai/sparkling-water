@@ -16,25 +16,27 @@
  */
 package ai.h2o.sparkling.backend.api.h2oframes
 
-import ai.h2o.sparkling.backend.api.{POSTRequestBase, ServletRegister}
+import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
   * Handler for all H2OFrame related queries
   */
-private[api] class H2OFramesServlet extends POSTRequestBase {
-  override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+private[api] class H2OFramesServlet extends ServletBase {
+
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case s if s.matches(toScalaRegex("/3/h2oframes/*/dataframe")) =>
-        val parameters = H2OFrameToDataFrame.H2OFrameToDataFrameParameters.parse(request)
+        val parameters = H2OFrameToDataFrame.H2OFrameToDataFrameParameters.parse(req)
         parameters.validate()
         toDataFrame(parameters.h2oFrameId, parameters.dataframeId)
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
   }
 
   private def toDataFrame(h2oFrameId: String, dataFrameId: Option[String]): H2OFrameToDataFrame = {

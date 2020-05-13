@@ -18,10 +18,10 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.backend.api.{GETRequestBase, POSTRequestBase, ServletRegister}
+import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -33,30 +33,32 @@ import water.exceptions.H2ONotFoundArgumentException
 /**
   * This servlet class handles requests for /3/RDDs endpoint
   */
-private[api] class RDDsServlet extends GETRequestBase with POSTRequestBase {
+private[api] class RDDsServlet extends ServletBase {
   private lazy val hc = H2OContext.ensure()
   private lazy val sc = hc.sparkContext
 
-  override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/RDDs/*/h2oframe")) =>
-        val parameters = RDDToH2OFrame.RDDToH2OFrameParameters.parse(request)
-        parameters.validate()
-        toH2OFrame(parameters.rddId, parameters.h2oFrameId)
-      case s if s.matches(toScalaRegex("/3/RDDs/*")) =>
-        val parameters = RDDInfo.RDDInfoParameters.parse(request)
-        parameters.validate()
-        getRDD(parameters.rddId)
-      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
-    }
-  }
-
-  override def handleGetRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+  override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case "/3/RDDs" =>
         list()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
+  }
+
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
+      case s if s.matches(toScalaRegex("/3/RDDs/*/h2oframe")) =>
+        val parameters = RDDToH2OFrame.RDDToH2OFrameParameters.parse(req)
+        parameters.validate()
+        toH2OFrame(parameters.rddId, parameters.h2oFrameId)
+      case s if s.matches(toScalaRegex("/3/RDDs/*")) =>
+        val parameters = RDDInfo.RDDInfoParameters.parse(req)
+        parameters.validate()
+        getRDD(parameters.rddId)
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+    sendResult(obj, resp)
   }
 
   def list(): RDDs = RDDs(fetchAll())

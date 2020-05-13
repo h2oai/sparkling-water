@@ -19,12 +19,12 @@ package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import ai.h2o.sparkling.backend.api.{DELETERequestBase, GETRequestBase, POSTRequestBase, ServletRegister}
+import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.H2OConf
 import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
@@ -34,11 +34,7 @@ import scala.collection.concurrent.TrieMap
 /**
   * This servlet class handles requests for /3/scalaint endpoint
   */
-private[api] class ScalaInterpreterServlet(conf: H2OConf)
-  extends GETRequestBase
-  with POSTRequestBase
-  with DELETERequestBase
-  with RestCommunication {
+private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase with RestCommunication {
 
   private val intrPoolSize = conf.scalaIntDefaultNum
   private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
@@ -146,39 +142,43 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf)
     intp
   }
 
-  override def handleGetRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+  override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case "/3/scalaint" =>
         getSessions()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
   }
 
-  override def handlePostRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case "/3/scalaint" =>
         initSession()
       case s if s.matches(toScalaRegex("/3/scalaint/result/*")) =>
-        val parameters = ScalaCodeResult.ScalaCodeResultParameters.parse(request)
+        val parameters = ScalaCodeResult.ScalaCodeResultParameters.parse(req)
         parameters.validate()
         getScalaCodeResult(parameters.resultKey)
       case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
-        val parameters = ScalaCode.ScalaCodeParameters.parse(request)
+        val parameters = ScalaCode.ScalaCodeParameters.parse(req)
         parameters.validate(mapIntr)
         interpret(parameters.sessionId, parameters.code)
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
   }
 
-  override def handleDeleteRequest(request: HttpServletRequest): Any = {
-    request.getRequestURI match {
+  override def doDelete(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getRequestURI match {
       case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
-        val parameters = ScalaSessionId.ScalaSessionIdParameters.parse(request)
+        val parameters = ScalaSessionId.ScalaSessionIdParameters.parse(req)
         parameters.validate(mapIntr)
         destroySession(parameters.sessionId)
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
+    sendResult(obj, resp)
   }
+
 }
 
 object ScalaInterpreterServlet extends ServletRegister {
