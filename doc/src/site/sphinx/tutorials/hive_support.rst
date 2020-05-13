@@ -95,6 +95,7 @@ Get the delegation token generated with arguments:
     - ``hiveHost`` - The full address of HiveServer2, for example ``hostname:10000``
     - ``hivePrincipal`` - Hiveserver2 Kerberos principal, for example ``hive/hostname@DOMAIN.COM``
     - ``tokenFile`` - The output file which the delegation token will be generated to
+
 .. code:: bash
 
     hadoop jar $SW_ASSEMBLY water.hive.GenerateHiveToken -hiveHost <your_hive_host> -hivePrincipal <your_hive_principal> -tokenFile hive.token
@@ -124,7 +125,7 @@ To run Sparkling Water with Hive support for kerberized hadoop cluster, you must
             conf.setHiveHost("hostname:10000") // The full address of HiveServer2
             conf.setHivePrincipal("hive/hostname@DOMAIN.COM") // Hiveserver2 Kerberos principal
             conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") // Doesn't have to be specified if host is set
-            val source = scala.io.Source.fromFile('hive.token')
+            val source = scala.io.Source.fromFile("hive.token")
             try {
                 conf.setHiveToken(source.mkString())
             } finally {
