@@ -18,15 +18,15 @@
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{SynchronousQueue, ThreadPoolExecutor, TimeUnit}
 
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
-import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import org.apache.spark.h2o.H2OConf
-import water.api.schemas3.JobV3
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -41,55 +41,16 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
   private var mapIntr = new TrieMap[Int, H2OInterpreter]
   private val lastIdUsed = new AtomicInteger(0)
   private val jobResults = new TrieMap[String, ScalaCodeResult]
-  private val jobCount = new AtomicInteger(0)
+  private val threadPoolMaxSize =
+    if (conf.maxParallelScalaCellJobs == -1) Integer.MAX_VALUE else conf.maxParallelScalaCellJobs
+  private val threadPool =
+    new ThreadPoolExecutor(0, threadPoolMaxSize, 60L, TimeUnit.SECONDS, new SynchronousQueue[Runnable])
   initializeInterpreterPool()
 
   def getSessions(): ScalaSessions = ScalaSessions(mapIntr.keys.toArray)
 
   def interpret(sessionId: Int, code: String): ScalaCode = {
-    this.synchronized {
-      jobCount.incrementAndGet()
-      while (conf.maxParallelScalaCellJobs != -1 && jobCount
-               .intValue() > conf.maxParallelScalaCellJobs) {
-        Thread.sleep(1000)
-      }
-    }
-    val resultKey = s"${sessionId}_${System.currentTimeMillis()}"
-    val backendJob = if (conf.flowScalaCellAsync) {
-      val endpoint = RestApiUtils.getClusterEndpoint(conf)
-      update[JobV3](endpoint, s"/3/sw_internal/start/$resultKey", conf)
-    } else {
-      null.asInstanceOf[JobV3]
-    }
-    val job = new Thread {
-      override def run(): Unit = {
-        val intp = mapIntr(sessionId)
-        val codeResult =
-          ScalaCodeResult(code, intp.runCode(code).toString, intp.interpreterResponse, intp.consoleOutput)
-        jobResults.put(resultKey, codeResult)
-        jobCount.decrementAndGet()
-        val endpoint = RestApiUtils.getClusterEndpoint(conf)
-        if (conf.flowScalaCellAsync) {
-          readURLContent(
-            endpoint,
-            "POST",
-            s"/3/sw_internal/stop/${backendJob.key.name}",
-            conf,
-            Map.empty,
-            encodeParamsAsJson = false,
-            None)
-        }
-      }
-    }
-    job.start()
-
-    if (!conf.flowScalaCellAsync) {
-      job.join()
-      val result = jobResults(resultKey)
-      ScalaCode(sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, backendJob)
-    } else {
-      ScalaCode(sessionId, code, resultKey, null, null, null, backendJob)
-    }
+    new ScalaInterpretJob(mapIntr(sessionId), conf, code, jobResults, threadPool).run()
   }
 
   def initSession(): ScalaSessionId = {
@@ -178,7 +139,6 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
     }
     sendResult(obj, resp)
   }
-
 }
 
 object ScalaInterpreterServlet extends ServletRegister {
