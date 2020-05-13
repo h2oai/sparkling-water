@@ -28,7 +28,7 @@ object DataFrameInfo extends ParameterBase {
 
   private[dataframes] case class DataFrameInfoParameters(dataFrameId: String) {
     def validate(): Unit = {
-      if (!SparkSessionUtils.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
+      if (!SparkSessionUtils.active.sqlContext.tableNames().contains(dataFrameId)) {
         throw new H2ONotFoundArgumentException(s"DataFrame with id '$dataFrameId' does not exist!")
       }
     }
