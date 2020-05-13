@@ -95,6 +95,7 @@ Get the delegation token generated with arguments:
     - ``hiveHost`` - The full address of HiveServer2, for example ``hostname:10000``
     - ``hivePrincipal`` - Hiveserver2 Kerberos principal, for example ``hive/hostname@DOMAIN.COM``
     - ``tokenFile`` - The output file which the delegation token will be generated to
+
 .. code:: bash
 
     hadoop jar $SW_ASSEMBLY water.hive.GenerateHiveToken -hiveHost <your_hive_host> -hivePrincipal <your_hive_principal> -tokenFile hive.token
