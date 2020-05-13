@@ -128,6 +128,13 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     }
   }
 
+  protected def nullableFloatArrayParam(name: String, doc: String): NullableFloatArrayParam =
+    nullableFloatArrayParam(name, Some(doc))
+
+  protected def nullableFloatArrayParam(name: String, doc: Option[String] = None): NullableFloatArrayParam = {
+    new NullableFloatArrayParam(this, name, getDoc(doc, name))
+  }
+
   protected def nullableDoubleArrayParam(name: String, doc: String): NullableDoubleArrayParam =
     nullableDoubleArrayParam(name, Some(doc))
 
@@ -142,6 +149,7 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
 
+  private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = Map.empty
 }
 
 object H2OAlgoParamsHelper {

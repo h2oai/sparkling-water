@@ -70,8 +70,8 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
     parameters
       .map { parameter =>
-        val typePrefix = resolveParameterType(parameter).toLowerCase
-        s"""  private val ${parameter.swName} = ${typePrefix}Param("${parameter.swName}")"""
+        val constructorMethod = resolveParameterContructorMethod(parameter)
+        s"""  private val ${parameter.swName} = ${constructorMethod}("${parameter.swName}")"""
       }
       .mkString("\n")
   }
@@ -80,19 +80,21 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     parameters
       .map { parameter =>
         val defaultValue = if (parameter.dataType.isEnum) {
-          s"${parameter.dataType.name}.${parameter.defaultValue}.name()"
+          s"${parameter.dataType.fullName}.${parameter.defaultValue}.name()"
         } else {
           parameter.defaultValue
         }
-        s"    ${parameter.swName} -> $defaultValue${getConstantSuffix(parameter)}"
+        s"    ${parameter.swName} -> ${stringify(defaultValue)}"
       }
       .mkString(",\n")
   }
 
-  private def getConstantSuffix(parameter: Parameter): String = parameter.dataType.name match {
-    case "float" => "f"
-    case "long" => "L"
-    case _ => ""
+  private def stringify(value: Any): String = value match {
+    case f: java.lang.Float => s"${f}f"
+    case l: java.lang.Long => s"${l}L"
+    case a: Array[_] => s"Array(${a.map(stringify).mkString(", ")})"
+    case v if v == null => null
+    case v => v.toString
   }
 
   private def generateGetters(parameters: Seq[Parameter]): String = {
@@ -108,7 +110,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .map { parameter =>
         if (parameter.dataType.isEnum) {
           s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-             |    val validated = getValidatedEnumValue[${parameter.dataType.name}](value)
+             |    val validated = getValidatedEnumValue[${parameter.dataType.fullName}](value)
              |    set(${parameter.swName}, validated)
              |  }
            """.stripMargin
@@ -131,6 +133,26 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   }
 
   private def resolveParameterType(parameter: Parameter): String = {
-    if (parameter.dataType.isEnum) "String" else parameter.dataType.name.capitalize
+    if (parameter.dataType.isEnum) {
+      "String"
+    } else if (parameter.dataType.name.endsWith("[]")) {
+      s"Array[${parameter.dataType.name.stripSuffix("[]").capitalize}]"
+    } else {
+      parameter.dataType.name.capitalize
+    }
+  }
+
+  private def resolveParameterContructorMethod(parameter: Parameter): String = {
+    val rawPrefix = if (parameter.dataType.isEnum) {
+      "string"
+    } else if (parameter.dataType.name.endsWith("[]")) {
+      s"${parameter.dataType.name.stripSuffix("[]").toLowerCase}Array"
+    } else {
+      parameter.dataType.name.toLowerCase
+    }
+
+    val finalPrefix = if (parameter.defaultValue == null) s"nullable${rawPrefix.capitalize}" else rawPrefix
+
+    finalPrefix + "Param"
   }
 }

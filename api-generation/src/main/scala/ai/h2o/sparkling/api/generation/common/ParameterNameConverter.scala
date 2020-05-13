@@ -18,12 +18,20 @@
 package ai.h2o.sparkling.api.generation.common
 
 object ParameterNameConverter {
-  val h2oToSWExceptions: Map[String, String] = Map("lambda" -> "lambdaValue", "alpha" -> "alphaValue")
+  val h2oToSWExceptions: Map[String, String] = Map(
+    "lambda" -> "lambdaValue",
+    "alpha" -> "alphaValue",
+    "colsample_bylevel" -> "colSampleByLevel",
+    "colsample_bytree" -> "colSampleByTree")
+
+  val conversionRules: Map[String, String] = Map("Column" -> "Col")
 
   def convertFromH2OToSW(parameterName: String): String = {
     val parts = parameterName.split("_")
     val capitalizedParts = parts.head +: parts.tail.map(_.capitalize)
-    val regularValue = capitalizedParts.mkString
+    val regularValue = conversionRules.foldLeft(capitalizedParts.mkString) {
+      case (input, (from, to)) => input.replace(from, to)
+    }
     h2oToSWExceptions.getOrElse(parameterName, regularValue)
   }
 }

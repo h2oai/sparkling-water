@@ -75,7 +75,8 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
   }
 
-  private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+  private[sparkling] override def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++
     Map(
       "weights_column" -> getWeightCol(),
       "nfolds" -> getNfolds(),

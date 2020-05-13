@@ -26,21 +26,45 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.glm.GLMModel.GLMParameters
+import hex.kmeans.KMeansModel.KMeansParameters
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 object Runner {
+
+  private val ignoredFields = Seq(
+    "__meta",
+    "model_id",
+    "training_frame",
+    "validation_frame",
+    "calibration_frame",
+    "max_hit_ratio_k",
+    "checkpoint",
+    "response_column",
+    "fold_column",
+    "weights_column",
+    "offset_column",
+    "plug_values",
+    "interaction_pairs",
+    "beta_constraints",
+    "rand_link",
+    "rand_family",
+    "random_columns",
+    "initial_biases",
+    "initial_weights",
+    "pretrained_autoencoder")
+
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
-    val xgboostExplicitFields = Seq(ExplicitField("monotone_constraints", "HasMonotoneConstraints"))
-    val gbmExplicitFields = Seq(ExplicitField("monotone_constraints", "HasMonotoneConstraints"))
+    val monotonicity = ExplicitField("monotone_constraints", "HasMonotoneConstraints")
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
-      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostExplicitFields),
-      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmExplicitFields),
+      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], Seq(monotonicity)),
+      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity)),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq.empty),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq.empty),
-      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], Seq.empty))
+      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], Seq.empty),
+      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq.empty))
 
     algorithmParameters.map {
       case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields) =>
@@ -48,12 +72,11 @@ object Runner {
           CommonSubstitutionContext(
             namespace = "ai.h2o.sparkling.ml.params",
             entityName = entityName,
-            inheritedEntities =
-              Seq(s"H2OAlgoSupervisedParams[${h2oParametersClass.getSimpleName}]", "H2OSupervisedMOJOParams"),
+            inheritedEntities = Seq(s"H2OAlgoParamsHelper[${h2oParametersClass.getSimpleName}]"),
             imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
           h2oSchemaClass,
           h2oParametersClass,
-          ignoredFields = Seq("calibration_frame", "max_hit_ratio_k"),
+          ignoredFields,
           explicitFields)
     }
   }
