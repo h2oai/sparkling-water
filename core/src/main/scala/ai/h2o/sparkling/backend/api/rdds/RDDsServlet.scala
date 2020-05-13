@@ -39,8 +39,7 @@ private[api] class RDDsServlet extends ServletBase {
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
     val obj = req.getRequestURI match {
-      case "/3/RDDs" =>
-        list()
+      case "/3/RDDs" => list()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
     sendResult(obj, resp)
