@@ -17,24 +17,19 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.backend.api.ParameterBase
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.rdd.RDD
-import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/RDDs/[rdd_id] endpoint */
 case class RDDInfo(rdd_id: Int, name: String, partitions: Int)
 
-object RDDInfo extends ParameterBase {
+object RDDInfo extends ParameterBase with RDDCommons {
   def fromRDD(rdd: RDD[_]): RDDInfo = {
     new RDDInfo(rdd.id, Option(rdd.name).getOrElse(rdd.id.toString), rdd.partitions.length)
   }
 
   private[api] case class RDDInfoParameters(rddId: Int) {
-    def validate(): Unit = {
-      SparkSessionUtils.active.sparkContext.getPersistentRDDs
-        .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
-    }
+    def validate(): Unit = validateRDDId(rddId)
   }
 
   private[api] object RDDInfoParameters {

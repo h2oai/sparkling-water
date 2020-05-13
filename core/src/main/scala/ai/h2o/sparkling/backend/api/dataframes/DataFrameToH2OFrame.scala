@@ -18,20 +18,14 @@
 package ai.h2o.sparkling.backend.api.dataframes
 
 import ai.h2o.sparkling.backend.api.ParameterBase
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.http.HttpServletRequest
-import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/dataframe/[dataframe_id]/h2oframe endpoint */
 case class DataFrameToH2OFrame(dataframe_id: String, h2oframe_id: String)
 
-object DataFrameToH2OFrame extends ParameterBase {
+object DataFrameToH2OFrame extends ParameterBase with DataFrameCommons {
   private[dataframes] case class DataFrameToH2OFrameParameters(dataFrameId: String, h2oFrameId: Option[String]) {
-    def validate(): Unit = {
-      if (!SparkSessionUtils.active.sqlContext.tableNames().toList.contains(dataFrameId)) {
-        throw new H2ONotFoundArgumentException(s"DataFrame with id '$dataFrameId' does not exist!")
-      }
-    }
+    def validate(): Unit = validateDataFrameId(dataFrameId)
   }
 
   object DataFrameToH2OFrameParameters {

@@ -17,19 +17,14 @@
 package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.backend.api.ParameterBase
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.http.HttpServletRequest
-import water.exceptions.H2ONotFoundArgumentException
 
 /** Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint */
 case class RDDToH2OFrame(rdd_id: Int, h2oframe_id: String)
 
-object RDDToH2OFrame extends ParameterBase {
+object RDDToH2OFrame extends ParameterBase with RDDCommons {
   private[rdds] case class RDDToH2OFrameParameters(rddId: Int, h2oFrameId: Option[String]) {
-    def validate(): Unit = {
-      SparkSessionUtils.active.sparkContext.getPersistentRDDs
-        .getOrElse(rddId, throw new H2ONotFoundArgumentException(s"RDD with ID '$rddId' does not exist!"))
-    }
+    def validate(): Unit = validateRDDId(rddId)
   }
 
   object RDDToH2OFrameParameters {
