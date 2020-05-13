@@ -81,6 +81,13 @@ private[api] class ScalaInterpretJob(
     */
   private def stopDummyWrapperH2OJob(jobId: String): Unit = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    readURLContent(endpoint, "POST", s"/3/SparklingInternal/stop/$jobId", conf, Map.empty, encodeParamsAsJson = false, None)
+    readURLContent(
+      endpoint,
+      "POST",
+      s"/3/SparklingInternal/stop/$jobId",
+      conf,
+      Map.empty,
+      encodeParamsAsJson = false,
+      None)
   }
 }

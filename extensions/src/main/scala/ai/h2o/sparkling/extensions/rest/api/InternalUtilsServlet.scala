@@ -24,7 +24,7 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.H2O.H2OCountedCompleter
 import water.api.schemas3.JobV3
 import water.server.ServletUtils
-import water.{DKV, Job, Key}
+import water.{Job, Key}
 
 import scala.collection.concurrent.TrieMap
 
@@ -45,42 +45,49 @@ class InternalUtilsServlet extends ServletBase {
   }
 
   override def doPost(request: HttpServletRequest, response: HttpServletResponse): Unit = {
-
     processRequest(request, response) {
       val obj = request.getRequestURI match {
         case s if s.startsWith("/3/SparklingInternal/start/") =>
           val parameters = IdParameter.parse(request)
-          val key = parameters.id
-          val job =
-            new Job[ScalaCodeResult](
-              Key.make[ScalaCodeResult](key),
-              classOf[ScalaCodeResult].getName,
-              "ScalaCodeResult")
-          val jobV3 = new JobV3(job)
-          jobs.put(jobV3.key.name, true)
-          job.start(new H2OCountedCompleter() {
-            override def compute2(): Unit = {
-              while (jobs.contains(jobV3.key.name) && jobs(jobV3.key.name)) {
-                Thread.sleep(100)
-              }
-              tryComplete()
-            }
-          }, 1)
-          jobV3
+          submitScalaCodeWrapperJob(parameters.id)
         case s if s.startsWith("/3/SparklingInternal/stop/") =>
           val parameters = IdParameter.parse(request)
-          jobs.put(parameters.id, false)
-          jobs.remove(parameters.id)
-
+          stopScalaCodeWrapperJob(parameters.id)
       }
-      val json = new Gson().toJson(obj)
-      withResource(response.getWriter) { writer =>
-        response.setContentType("application/json")
-        response.setCharacterEncoding("UTF-8")
-        writer.print(json)
-      }
-      response.setStatus(HttpServletResponse.SC_OK)
-      ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
+      sendResult(obj, response)
     }
+  }
+
+  private def submitScalaCodeWrapperJob(resultKey: String): JobV3 = {
+    val key = Key.make[ScalaCodeResult](resultKey)
+    val className = classOf[ScalaCodeResult].getName
+    val job = new Job[ScalaCodeResult](key, className, "ScalaCodeResult")
+    val jobV3 = new JobV3(job)
+    jobs.put(jobV3.key.name, true)
+    job.start(new H2OCountedCompleter() {
+      override def compute2(): Unit = {
+        while (jobs.contains(jobV3.key.name) && jobs(jobV3.key.name)) {
+          Thread.sleep(100)
+        }
+        tryComplete()
+      }
+    }, 1)
+    jobV3
+  }
+
+  private def stopScalaCodeWrapperJob(id: String): Unit = {
+    jobs.put(id, false)
+    jobs.remove(id)
+  }
+
+  private def sendResult(obj: Any, response: HttpServletResponse): Unit = {
+    val json = new Gson().toJson(obj)
+    withResource(response.getWriter) { writer =>
+      response.setContentType("application/json")
+      response.setCharacterEncoding("UTF-8")
+      writer.print(json)
+    }
+    response.setStatus(HttpServletResponse.SC_OK)
+    ServletUtils.setResponseStatus(response, HttpServletResponse.SC_OK)
   }
 }
