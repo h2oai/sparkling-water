@@ -29,8 +29,8 @@ import water.exceptions.H2ONotFoundArgumentException
 private[api] class H2OFramesServlet extends ServletBase {
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/h2oframes/*/dataframe")) =>
+    val obj = req.getPathInfo match {
+      case s if s.matches("/.*/dataframe") =>
         val parameters = H2OFrameToDataFrame.H2OFrameToDataFrameParameters.parse(req)
         parameters.validate()
         toDataFrame(parameters.h2oFrameId, parameters.dataframeId)

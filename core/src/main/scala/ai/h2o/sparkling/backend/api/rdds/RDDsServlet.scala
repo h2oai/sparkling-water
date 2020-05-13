@@ -38,20 +38,20 @@ private[api] class RDDsServlet extends ServletBase {
   private lazy val sc = hc.sparkContext
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case "/3/RDDs" => list()
+    val obj = req.getPathInfo match {
+      case null => list()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
     sendResult(obj, resp)
   }
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/RDDs/*/h2oframe")) =>
+    val obj = req.getPathInfo match {
+      case s if s.matches("/.*/h2oframe") =>
         val parameters = RDDToH2OFrame.RDDToH2OFrameParameters.parse(req)
         parameters.validate()
         toH2OFrame(parameters.rddId, parameters.h2oFrameId)
-      case s if s.matches(toScalaRegex("/3/RDDs/*")) =>
+      case s if s.matches("/.*") =>
         val parameters = RDDInfo.RDDInfoParameters.parse(req)
         parameters.validate()
         getRDD(parameters.rddId)

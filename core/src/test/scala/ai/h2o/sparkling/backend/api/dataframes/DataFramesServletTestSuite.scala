@@ -30,7 +30,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class DataFramesServletTestSuite extends FunSuite with SharedH2OTestContext with DataFramesRestApi {
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  override def createSparkSession(): SparkSession =
+    sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))
   import spark.implicits._
 
   test("DataFrameHandler.list() method") {

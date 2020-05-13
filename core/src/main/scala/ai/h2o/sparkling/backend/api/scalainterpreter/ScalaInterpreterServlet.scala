@@ -104,23 +104,21 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
   }
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case "/3/scalaint" =>
-        getSessions()
+    val obj = req.getPathInfo match {
+      case null => getSessions()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
     sendResult(obj, resp)
   }
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case "/3/scalaint" =>
-        initSession()
-      case s if s.matches(toScalaRegex("/3/scalaint/result/*")) =>
+    val obj = req.getPathInfo match {
+      case null => initSession()
+      case s if s.matches("/result/.*") =>
         val parameters = ScalaCodeResult.ScalaCodeResultParameters.parse(req)
         parameters.validate()
         getScalaCodeResult(parameters.resultKey)
-      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
+      case s if s.matches("/.*") =>
         val parameters = ScalaCode.ScalaCodeParameters.parse(req)
         parameters.validate(mapIntr)
         interpret(parameters.sessionId, parameters.code)
@@ -130,8 +128,8 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
   }
 
   override def doDelete(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/scalaint/*")) =>
+    val obj = req.getPathInfo match {
+      case s if s.matches("/.*") =>
         val parameters = ScalaSessionId.ScalaSessionIdParameters.parse(req)
         parameters.validate(mapIntr)
         destroySession(parameters.sessionId)

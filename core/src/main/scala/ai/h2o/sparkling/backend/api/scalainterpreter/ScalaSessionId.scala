@@ -40,7 +40,7 @@ object ScalaSessionId extends ParameterBase {
 
   object ScalaSessionIdParameters {
     private[scalainterpreter] def parse(request: HttpServletRequest): ScalaSessionIdParameters = {
-      val sessionId = request.getRequestURI.split("/")(3).toInt
+      val sessionId = request.getPathInfo.drop(1).split("/").head.toInt
       ScalaSessionIdParameters(sessionId)
     }
   }

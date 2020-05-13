@@ -32,7 +32,7 @@ object ScalaCodeResult extends ParameterBase {
 
   object ScalaCodeResultParameters {
     private[scalainterpreter] def parse(request: HttpServletRequest): ScalaCodeResultParameters = {
-      val resultKey = request.getRequestURI.split("/")(4)
+      val resultKey = request.getPathInfo.drop(1).split("/")(1)
       ScalaCodeResultParameters(resultKey)
     }
   }

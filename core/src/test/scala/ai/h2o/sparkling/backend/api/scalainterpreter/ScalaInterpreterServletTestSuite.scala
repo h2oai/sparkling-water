@@ -32,7 +32,8 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
       "local[*]",
       defaultSparkConf
         .set("spark.ext.h2o.repl.enabled", "true")
-        .set("spark.ext.scala.int.default.num", "2"))
+        .set("spark.ext.scala.int.default.num", "2")
+        .set("spark.ext.h2o.context.path", "context"))
 
   test("ScalaCodeHandler.initSession() method") {
     val result = initSession()

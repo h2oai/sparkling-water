@@ -26,7 +26,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class RDDsServletTestSuite extends FunSuite with SharedH2OTestContext with RDDsRestApi {
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  override def createSparkSession(): SparkSession =
+    sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))
 
   test("RDDsHandler.list() method") {
     val rname = "Test"

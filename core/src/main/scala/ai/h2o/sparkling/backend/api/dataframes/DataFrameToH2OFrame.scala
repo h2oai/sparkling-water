@@ -30,7 +30,7 @@ object DataFrameToH2OFrame extends ParameterBase with DataFrameCommons {
 
   object DataFrameToH2OFrameParameters {
     private[dataframes] def parse(request: HttpServletRequest): DataFrameToH2OFrameParameters = {
-      val dataFrameId = request.getRequestURI.split("/")(3)
+      val dataFrameId = request.getPathInfo.drop(1).split("/").head
       val h2oFrameId = getParameterAsString(request, "h2oframe_id")
       DataFrameToH2OFrameParameters(dataFrameId, Option(h2oFrameId).map(_.toLowerCase()))
     }

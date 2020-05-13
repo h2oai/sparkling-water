@@ -46,7 +46,7 @@ object ScalaCode extends ParameterBase {
 
   object ScalaCodeParameters {
     private[scalainterpreter] def parse(request: HttpServletRequest): ScalaCodeParameters = {
-      val sessionId = request.getRequestURI.split("/")(3).toInt
+      val sessionId = request.getPathInfo.drop(1).split("/").head.toInt
       val code = getParameterAsString(request, "code")
       ScalaCodeParameters(sessionId, code)
     }

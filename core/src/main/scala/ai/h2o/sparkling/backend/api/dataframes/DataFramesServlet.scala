@@ -31,21 +31,20 @@ private[api] class DataFramesServlet extends ServletBase {
   private lazy val sqlContext = SparkSessionUtils.active.sqlContext
 
   override def doGet(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case "/3/dataframes" =>
-        list()
+    val obj = req.getPathInfo match {
+      case null => list()
       case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
     }
     sendResult(obj, resp)
   }
 
   override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
-    val obj = req.getRequestURI match {
-      case s if s.matches(toScalaRegex("/3/dataframes/*/h2oframe")) =>
+    val obj = req.getPathInfo match {
+      case s if s.matches("/.*/h2oframe") =>
         val parameters = DataFrameToH2OFrame.DataFrameToH2OFrameParameters.parse(req)
         parameters.validate()
         toH2OFrame(parameters.dataFrameId, parameters.h2oFrameId)
-      case s if s.matches(toScalaRegex("/3/dataframes/*")) =>
+      case s if s.matches("/.*") =>
         val parameters = DataFrameInfo.DataFrameInfoParameters.parse(req)
         parameters.validate()
         getDataFrame(parameters.dataFrameId)

@@ -29,7 +29,7 @@ object RDDToH2OFrame extends ParameterBase with RDDCommons {
 
   object RDDToH2OFrameParameters {
     private[rdds] def parse(request: HttpServletRequest): RDDToH2OFrameParameters = {
-      val rddId = request.getRequestURI.split("/")(3).toInt
+      val rddId = request.getPathInfo.drop(1).split("/").head.toInt
       val h2oFrameId = getParameterAsString(request, "h2oframe_id")
       RDDToH2OFrameParameters(rddId, Option(h2oFrameId).map(_.toLowerCase()))
     }

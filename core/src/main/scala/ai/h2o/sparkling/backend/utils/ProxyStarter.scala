@@ -91,7 +91,7 @@ object ProxyStarter extends Logging {
 
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.setContextPath("/")
+    context.setContextPath(conf.contextPath.getOrElse("/"))
     context.setServletHandler(proxyContextHandler(conf))
     if (conf.isH2OReplEnabled) {
       ScalaInterpreterServlet.register(context, conf)
@@ -107,8 +107,8 @@ object ProxyStarter extends Logging {
     val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
 
     val ipPort = RestApiUtils.getLeaderNode(conf).ipPort()
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
-    holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
+    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort")
+    holder.setInitParameter("prefix", "/")
     handler
   }
 

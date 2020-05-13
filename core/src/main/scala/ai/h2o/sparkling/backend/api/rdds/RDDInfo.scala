@@ -34,7 +34,7 @@ object RDDInfo extends ParameterBase with RDDCommons {
 
   private[api] object RDDInfoParameters {
     def parse(request: HttpServletRequest): RDDInfoParameters = {
-      val rddId = request.getRequestURI.split("/")(3).toInt
+      val rddId = request.getPathInfo.drop(1).split("/").head.toInt
       RDDInfoParameters(rddId)
     }
   }

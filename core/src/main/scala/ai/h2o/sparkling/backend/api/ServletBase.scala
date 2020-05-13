@@ -21,9 +21,6 @@ import com.google.gson.Gson
 import javax.servlet.http.{HttpServlet, HttpServletResponse}
 
 private[api] trait ServletBase extends HttpServlet {
-  protected def toScalaRegex(pathSpec: String): String = {
-    pathSpec.replaceAll("\\*", "\\.*")
-  }
 
   protected def sendResult(obj: Any, resp: HttpServletResponse): Unit = {
     val json = new Gson().toJson(obj)

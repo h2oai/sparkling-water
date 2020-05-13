@@ -28,7 +28,8 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OFramesServletTestSuite extends FunSuite with SharedH2OTestContext with H2OFramesRestApi {
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  override def createSparkSession(): SparkSession =
+    sparkSession("local[*]", defaultSparkConf.set("spark.ext.h2o.context.path", "context"))
 
   test("H2OFramesHandler.toDataFrame() method") {
     val h2oFrame = H2OFrame(new File(TestUtils.locate("smalldata/prostate/prostate.csv")))

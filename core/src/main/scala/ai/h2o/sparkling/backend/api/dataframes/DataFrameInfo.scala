@@ -30,7 +30,7 @@ object DataFrameInfo extends ParameterBase with DataFrameCommons {
 
   private[dataframes] object DataFrameInfoParameters {
     def parse(request: HttpServletRequest): DataFrameInfoParameters = {
-      val dataFrameId = request.getRequestURI.split("/")(3)
+      val dataFrameId = request.getPathInfo.drop(1).split("/").head
       DataFrameInfoParameters(dataFrameId)
     }
   }
