@@ -95,6 +95,9 @@ trait SharedBackendUtils extends Logging with Serializable {
           conf.setContextPath(pattern.replaceFirstIn(conf.contextPath.get, "/"))
         }
       }
+      if (!conf.contextPath.get.endsWith("/")) {
+        conf.setContextPath(conf.contextPath.get + "/")
+      }
     }
 
     if (conf.clientVerboseOutput) {
