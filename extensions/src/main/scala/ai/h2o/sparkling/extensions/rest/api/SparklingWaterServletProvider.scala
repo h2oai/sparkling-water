@@ -32,6 +32,6 @@ class SparklingWaterServletProvider extends ServletProvider {
     Seq(
       new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]),
       new ServletMeta(Paths.CHUNK_CATEGORICAL_DOMAINS, classOf[ChunkCategoricalDomainsServlet]),
-      new ServletMeta(Paths.SW_INTERNAL, classOf[InternalUtilsServlet])).asJava
+      new ServletMeta(Paths.SPARKLING_INTERNAL, classOf[InternalUtilsServlet])).asJava
   }
 }

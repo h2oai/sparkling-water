@@ -24,7 +24,7 @@ object Paths {
   val FINALIZE_FRAME: String = "/3/FinalizeFrame"
   val UPLOAD_PLAN: String = "/3/UploadPlan"
   val LOG_LEVEL: String = "/3/LogLevel"
-  val SW_INTERNAL: String = "/3/sw_internal/*"
+  val SPARKLING_INTERNAL: String = "/3/SparklingInternal/*"
   val SW_AVAILABLE: String = "/3/scalaint" // H2O Flow determines whether we run Sparkling Water
   // based on existence of /3/scalaint endpoint. We therefore expose dummy endpoint on H2O-3 side
   // which ensures that H2O Flow expose additional Sparkling Water related buttons

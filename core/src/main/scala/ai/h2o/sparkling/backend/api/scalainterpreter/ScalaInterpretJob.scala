@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.backend.api.scalainterpreter
 
-import java.util.concurrent.{ExecutorService, Executors}
+import java.util.concurrent.{Callable, ExecutorService, Executors}
 
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.repl.H2OInterpreter
@@ -57,9 +57,14 @@ private[api] class ScalaInterpretJob(
       })
       ScalaCode(intp.sessionId, code, resultKey, null, null, null, job)
     } else {
-      val result = ScalaCodeResult(code, intp.runCode(code).toString, intp.interpreterResponse, intp.consoleOutput)
-      jobResults.put(resultKey, result)
-      ScalaCode(intp.sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
+      val future = threadPool.submit(new Callable[ScalaCode] {
+        override def call(): ScalaCode = {
+          val result = ScalaCodeResult(code, intp.runCode(code).toString, intp.interpreterResponse, intp.consoleOutput)
+          jobResults.put(resultKey, result)
+          ScalaCode(intp.sessionId, code, resultKey, result.scalaStatus, result.scalaResponse, result.scalaOutput, null)
+        }
+      })
+      future.get()
     }
   }
 
@@ -68,7 +73,7 @@ private[api] class ScalaInterpretJob(
     */
   private def submitDummyWrapperH2OJob(resultKey: String): JobV3 = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    update[JobV3](endpoint, s"/3/sw_internal/start/$resultKey", conf)
+    update[JobV3](endpoint, s"/3/SparklingInternal/start/$resultKey", conf)
   }
 
   /**
@@ -76,6 +81,6 @@ private[api] class ScalaInterpretJob(
     */
   private def stopDummyWrapperH2OJob(jobId: String): Unit = {
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    readURLContent(endpoint, "POST", s"/3/sw_internal/stop/$jobId", conf, Map.empty, encodeParamsAsJson = false, None)
+    readURLContent(endpoint, "POST", s"/3/SparklingInternal/stop/$jobId", conf, Map.empty, encodeParamsAsJson = false, None)
   }
 }

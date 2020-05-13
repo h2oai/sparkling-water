@@ -29,7 +29,7 @@ import water.{DKV, Job, Key}
 import scala.collection.concurrent.TrieMap
 
 /**
-  * This servlet class handles POST requests for the path /3/sw_internal
+  * This servlet class handles POST requests for the path /3/SparklingInternal
   */
 class InternalUtilsServlet extends ServletBase {
 
@@ -48,7 +48,7 @@ class InternalUtilsServlet extends ServletBase {
 
     processRequest(request, response) {
       val obj = request.getRequestURI match {
-        case s if s.startsWith("/3/sw_internal/start/") =>
+        case s if s.startsWith("/3/SparklingInternal/start/") =>
           val parameters = IdParameter.parse(request)
           val key = parameters.id
           val job =
@@ -67,7 +67,7 @@ class InternalUtilsServlet extends ServletBase {
             }
           }, 1)
           jobV3
-        case s if s.startsWith("/3/sw_internal/stop/") =>
+        case s if s.startsWith("/3/SparklingInternal/stop/") =>
           val parameters = IdParameter.parse(request)
           jobs.put(parameters.id, false)
           jobs.remove(parameters.id)
