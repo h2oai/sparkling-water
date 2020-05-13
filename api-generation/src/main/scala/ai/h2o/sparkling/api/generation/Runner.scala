@@ -56,6 +56,7 @@ object Runner {
 
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity = ExplicitField("monotone_constraints", "HasMonotoneConstraints")
+    val userPoints = ExplicitField("user_points", "HasUserPoints")
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
@@ -64,7 +65,7 @@ object Runner {
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq.empty),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq.empty),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], Seq.empty),
-      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq.empty))
+      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq(userPoints)))
 
     algorithmParameters.map {
       case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields) =>

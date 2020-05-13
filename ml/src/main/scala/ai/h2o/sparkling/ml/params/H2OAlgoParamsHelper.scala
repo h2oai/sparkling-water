@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
   *
   * @tparam P H2O's parameter type
   */
-trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
+trait H2OAlgoParamsHelper[P <: Parameters] extends H2OAlgoParamsBase {
   // Target schema type
   type H2O_SCHEMA
 
@@ -128,6 +128,13 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
     }
   }
 
+  protected def nullableIntArrayParam(name: String, doc: String): NullableIntArrayParam =
+    nullableIntArrayParam(name, Some(doc))
+
+  protected def nullableIntArrayParam(name: String, doc: Option[String] = None): NullableIntArrayParam = {
+    new NullableIntArrayParam(this, name, getDoc(doc, name))
+  }
+
   protected def nullableFloatArrayParam(name: String, doc: String): NullableFloatArrayParam =
     nullableFloatArrayParam(name, Some(doc))
 
@@ -148,8 +155,6 @@ trait H2OAlgoParamsHelper[P <: Parameters] extends Params {
   protected def nullableStringArrayParam(name: String, doc: Option[String] = None): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, getDoc(doc, name))
   }
-
-  private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = Map.empty
 }
 
 object H2OAlgoParamsHelper {

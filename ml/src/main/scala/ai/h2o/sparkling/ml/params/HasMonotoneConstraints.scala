@@ -24,7 +24,7 @@ import org.apache.spark.ml.param.Params
 
 import scala.collection.JavaConverters._
 
-trait HasMonotoneConstraints extends Params {
+trait HasMonotoneConstraints extends H2OAlgoParamsBase {
   private val monotoneConstraints = new DictionaryParam(
     this,
     "monotoneConstraints",
@@ -36,7 +36,7 @@ trait HasMonotoneConstraints extends Params {
 
   def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value.asJava)
 
-  protected def getMonotoneConstraintsAsKeyValuePairs(): Array[KeyValue] = {
+  private def getMonotoneConstraintsAsKeyValuePairs(): Array[KeyValue] = {
     val constraints = getMonotoneConstraints()
     if (constraints == null) {
       null
@@ -45,5 +45,9 @@ trait HasMonotoneConstraints extends Params {
         case (key, value) => new KeyValue(key, value)
       }.toArray
     }
+  }
+
+  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
+    super.getH2OAlgorithmParams() ++ Map("user_points" -> getMonotoneConstraintsAsKeyValuePairs())
   }
 }

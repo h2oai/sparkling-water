@@ -20,7 +20,8 @@ package ai.h2o.sparkling.ml.params
 import hex.schemas.GBMV3.GBMParametersV3
 import hex.tree.gbm.GBMModel.GBMParameters
 
-trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonotoneConstraints with HasQuantileAlpha {
+trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonotoneConstraints[GBMParameters]
+  with HasQuantileAlpha {
 
   type H2O_SCHEMA = GBMParametersV3
 

@@ -22,7 +22,7 @@ import hex.kmeans.KMeans
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.GLMV3.GLMParametersV3
 
-trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
+trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] with HasUserPoints {
 
   type H2O_SCHEMA = GLMParametersV3
 
@@ -37,12 +37,6 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
   private val standardize =
     booleanParam("standardize", "Standardize the numeric columns to have a mean of zero and unit variance.")
   private val init = stringParam("init", "Initialization mode for finding the initial cluster centers.")
-  private val userPoints = nullableDoubleArrayArrayParam(
-    "userPoints",
-    "This option allows" +
-      " you to specify array of points, where each point represents coordinates of an initial cluster center. The user-specified" +
-      " points must have the same number of columns as the training observations. The number of rows must equal" +
-      " the number of clusters.")
   private val estimateK = booleanParam(
     "estimateK",
     "If enabled, the algorithm tries to identify optimal number of clusters, up to k clusters.")
@@ -68,8 +62,6 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
 
   def getInit(): String = $(init)
 
-  def getUserPoints(): Array[Array[Double]] = $(userPoints)
-
   def getEstimateK(): Boolean = $(estimateK)
 
   def getK(): Int = $(k)
@@ -85,8 +77,6 @@ trait H2OKMeansParams extends H2OAlgoUnsupervisedParams[KMeansParameters] {
     val validated = H2OAlgoParamsHelper.getValidatedEnumValue[KMeans.Initialization](value)
     set(init, validated)
   }
-
-  def setUserPoints(value: Array[Array[Double]]): this.type = set(userPoints, value)
 
   def setEstimateK(value: Boolean): this.type = set(estimateK, value)
 
