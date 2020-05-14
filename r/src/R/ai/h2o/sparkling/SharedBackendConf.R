@@ -257,8 +257,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
         invoke(jconf, "setIcedDir", dir); .self
     },
 
-    setH2ONodeLogLevel = function(level) {
-      warning("The method 'setH2ONodeLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+    setH2OClientLogLevel = function(level) {
+      warning("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
       invoke(jconf, "setLogLevel", level); .self
     },
 
