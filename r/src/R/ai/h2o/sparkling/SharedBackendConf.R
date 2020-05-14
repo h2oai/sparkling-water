@@ -210,7 +210,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
       invoke(jconf, "setLogLevel", level); .self
     },
 
-    setH2ONodeLogLevel = function(level) { invoke(jconf, "setLogLevel", level); .self },
+    setLogLevel = function(level) { invoke(jconf, "setLogLevel", level); .self },
 
     setH2ONodeLogDir = function(dir) { invoke(jconf, "setH2ONodeLogDir", dir); .self },
 
