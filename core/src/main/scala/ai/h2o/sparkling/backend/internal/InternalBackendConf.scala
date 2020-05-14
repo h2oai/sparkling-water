@@ -21,6 +21,7 @@ import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkEnv
@@ -45,7 +46,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def subseqTries: Int = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
 
-  def nodeIcedDir: Option[String] = sparkConf.getOption(PROP_NODE_ICED_DIR._1)
+  @DeprecatedMethod("icedDir", "3.34")
+  def nodeIcedDir: Option[String] = sparkConf.getOption(SharedBackendConf.PROP_ICED_DIR._1)
 
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
 
@@ -61,7 +63,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def setSubseqTries(subseqTriesNum: Int): H2OConf = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
 
-  def setNodeIcedDir(dir: String): H2OConf = set(PROP_NODE_ICED_DIR._1, dir)
+  @DeprecatedMethod("setIcedDir", "3.34")
+  def setNodeIcedDir(dir: String): H2OConf = set(SharedBackendConf.PROP_ICED_DIR._1, dir)
 
   def setHdfsConf(path: String): H2OConf = set(PROP_HDFS_CONF._1, path)
 
@@ -111,9 +114,6 @@ object InternalBackendConf {
 
   /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
   val PROP_SUBSEQ_TRIES: (String, Int) = ("spark.ext.h2o.subseq.tries", 5)
-
-  /** Location of iced directory for Spark nodes */
-  val PROP_NODE_ICED_DIR: (String, None.type) = ("spark.ext.h2o.node.iced.dir", None)
 
   /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
   val PROP_HDFS_CONF: (String, None.type) = ("spark.ext.h2o.hdfs_conf", None)

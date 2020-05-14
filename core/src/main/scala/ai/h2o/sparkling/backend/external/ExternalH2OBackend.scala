@@ -107,6 +107,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-mapperXmx", conf.mapperXmx)
       .add("-nthreads", conf.nthreads)
       .add(Seq("-J", "-log_level", "-J", conf.h2oNodeLogLevel))
+      .add(conf.icedDir.map(dir => Seq("-J", "-ice_root", "-J", dir)).getOrElse(Seq()))
       .add("-port_offset", conf.internalPortOffset)
       .add("-baseport", conf.nodeBasePort)
       .add("-timeout", conf.clusterStartTimeout)

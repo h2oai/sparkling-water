@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.macros.DeprecatedMethod
 
 import scala.collection.JavaConverters._
 
@@ -114,7 +115,8 @@ trait SharedBackendConf {
 
   def clientIp: Option[String] = sparkConf.getOption(PROP_CLIENT_IP._1)
 
-  def clientIcedDir: Option[String] = sparkConf.getOption(PROP_CLIENT_ICED_DIR._1)
+  @DeprecatedMethod("icedDir", "3.34")
+  def clientIcedDir: Option[String] = icedDir
 
   def h2oClientLogLevel: String = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
 
@@ -151,6 +153,8 @@ trait SharedBackendConf {
   def hiveJdbcUrlPattern: Option[String] = sparkConf.getOption(PROP_HIVE_JDBC_URL_PATTERN._1)
 
   def hiveToken: Option[String] = sparkConf.getOption(PROP_HIVE_TOKEN._1)
+
+  def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
 
   /** Setters */
   /** Generic parameters */
@@ -276,7 +280,8 @@ trait SharedBackendConf {
 
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
 
-  def setClientIcedDir(icedDir: String): H2OConf = set(PROP_CLIENT_ICED_DIR._1, icedDir)
+  @DeprecatedMethod("setIcedDir", "3.34")
+  def setClientIcedDir(icedDir: String): H2OConf = setIcedDir(icedDir)
 
   def setH2OClientLogLevel(level: String): H2OConf = set(PROP_CLIENT_LOG_LEVEL._1, level)
 
@@ -315,6 +320,8 @@ trait SharedBackendConf {
   def setHiveJdbcUrlPattern(pattern: String): H2OConf = set(PROP_HIVE_JDBC_URL_PATTERN._1, pattern)
 
   def setHiveToken(token: String): H2OConf = set(PROP_HIVE_TOKEN._1, token)
+
+  def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
   private[backend] def getFileProperties: Seq[(String, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
@@ -503,4 +510,6 @@ object SharedBackendConf {
   /** Authorization token to Hive */
   val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
 
+  /** Location of iced directory for H2O nodes */
+  val PROP_ICED_DIR: (String, None.type) = ("spark.ext.h2o.iced.dir", None)
 }

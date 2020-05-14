@@ -16,6 +16,7 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
+import warnings
 
 class SharedBackendConf(SharedBackendConfUtils):
 
@@ -135,7 +136,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clientIp())
 
     def clientIcedDir(self):
-        return self._get_option(self._jconf.clientIcedDir())
+        warnings.warn("The method 'clientIcedDir' is deprecated and will be removed in 3.34. Use 'icedDir' instead!")
+        return self.icedDir()
 
     def h2oClientLogLevel(self):
         return self._jconf.h2oClientLogLevel()
@@ -188,6 +190,8 @@ class SharedBackendConf(SharedBackendConfUtils):
     def hiveToken(self):
         return self._get_option(self._jconf.hiveToken())
 
+    def icedDir(self):
+        return self._get_option(self._jconf.icedDir())
     #
     # Setters
     #
@@ -388,9 +392,9 @@ class SharedBackendConf(SharedBackendConfUtils):
         self._jconf.setClientIp(ip)
         return self
 
-    def setClientIcedDir(self, icedDir):
-        self._jconf.setClientIcedDir(icedDir)
-        return self
+    def setClientIcedDir(self, dir):
+        warnings.warn("The method 'setClientIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        return self.setIcedDir(dir)
 
     def setH2OClientLogLevel(self, level):
         self._jconf.setH2OClientLogLevel(level)
@@ -458,4 +462,8 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setHiveToken(self, token):
         self._jconf.setHiveToken(token)
+        return self
+
+    def setIcedDir(self, dir):
+        self._jconf.setIcedDir(dir)
         return self

@@ -97,7 +97,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     clientIp = function() { ConfUtils.getOption(invoke(jconf, "clientIp")) },
 
-    clientIcedDir = function() { ConfUtils.getOption(invoke(jconf, "clientIcedDir")) },
+    clientIcedDir = function() {
+        warning("The method 'clientIcedDir' is deprecated and will be removed in 3.34. Use 'icedDir' instead!")
+        ConfUtils.getOption(invoke(jconf, "icedDir"))
+    },
 
     h2oClientLogLevel = function() { invoke(jconf, "h2oClientLogLevel") },
 
@@ -132,6 +135,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     hiveJdbcUrlPattern = function() { ConfUtils.getOption(invoke(jconf, "hiveJdbcUrlPattern")) },
 
     hiveToken = function() { ConfUtils.getOption(invoke(jconf, "hiveToken")) },
+
+    icedDir = function() { ConfUtils.getOption(invoke(jconf, "icedDir")) },
 
 #
 # Setters
@@ -234,7 +239,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientIp = function(ip) { invoke(jconf, "setClientIp", ip); .self },
 
-    setClientIcedDir = function(icedDir) { invoke(jconf, "setClientIcedDir", icedDir); .self },
+    setClientIcedDir = function(dir) {
+        warning("The method 'setClientIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        invoke(jconf, "setIcedDir", dir); .self
+    },
 
     setH2OClientLogLevel = function(level) { invoke(jconf, "setH2OClientLogLevel", level); .self },
 
@@ -268,5 +276,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveJdbcUrlPattern = function(pattern) { invoke(jconf, "setHiveJdbcUrlPattern", pattern); .self },
 
-    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self }
+    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self },
+
+    setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self }
 ))
