@@ -280,7 +280,7 @@ trait SharedBackendConf {
 
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
 
-  @Deprecated("setIcedDir", "3.34")
+  @DeprecatedMethod("setIcedDir", "3.34")
   def setClientIcedDir(icedDir: String): H2OConf = set(PROP_ICED_DIR._1, icedDir)
 
   def setH2OClientLogLevel(level: String): H2OConf = set(PROP_CLIENT_LOG_LEVEL._1, level)
