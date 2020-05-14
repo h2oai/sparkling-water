@@ -47,10 +47,10 @@ class H2OContext private (val hc: ai.h2o.sparkling.H2OContext) {
   }
 
   def importHiveTable(
-                       database: String = HiveTableImporter.DEFAULT_DATABASE,
-                       table: String,
-                       partitions: Array[Array[String]] = null,
-                       allowMultiFormat: Boolean = false): H2OFrame = {
+      database: String = HiveTableImporter.DEFAULT_DATABASE,
+      table: String,
+      partitions: Array[Array[String]] = null,
+      allowMultiFormat: Boolean = false): H2OFrame = {
     new H2OFrame(hc.importHiveTable(database, table, partitions, allowMultiFormat).frameId)
   }
 
