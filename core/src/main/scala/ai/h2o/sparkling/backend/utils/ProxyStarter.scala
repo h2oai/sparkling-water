@@ -19,6 +19,10 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
+import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
+import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
+import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
+import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
@@ -87,15 +91,24 @@ object ProxyStarter extends Logging {
 
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.setContextPath("/")
+    context.setContextPath(conf.contextPath.getOrElse("/"))
+    context.setServletHandler(proxyContextHandler(conf))
+    if (conf.isH2OReplEnabled) {
+      ScalaInterpreterServlet.register(context, conf)
+    }
+    RDDsServlet.register(context, conf)
+    H2OFramesServlet.register(context, conf)
+    DataFramesServlet.register(context, conf)
+    context
+  }
+
+  private def proxyContextHandler(conf: H2OConf): ServletHandler = {
     val handler = new ServletHandler()
     val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
 
     val ipPort = RestApiUtils.getLeaderNode(conf).ipPort()
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
-    holder.setInitParameter("prefix", conf.contextPath.getOrElse("/"))
-    context.setServletHandler(handler)
-    context
+    handler
   }
 
   class H2OFlowProxyServlet extends Transparent {

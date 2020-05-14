@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package ai.h2o.sparkling.backend.api.rdds
 
-package ai.h2o.sparkling.extensions.rest.api
+import ai.h2o.sparkling.backend.api.ParameterBase
+import javax.servlet.http.HttpServletRequest
+import org.apache.spark.rdd.RDD
 
-import java.util
-import scala.collection.JavaConverters._
-import water.server.{ServletMeta, ServletProvider}
+/** Schema representing /3/RDDs/[rdd_id] endpoint */
+case class RDDInfo(rdd_id: Int, name: String, partitions: Int)
 
-class SparklingWaterServletProvider extends ServletProvider {
+object RDDInfo extends ParameterBase with RDDCommons {
+  def fromRDD(rdd: RDD[_]): RDDInfo = {
+    new RDDInfo(rdd.id, Option(rdd.name).getOrElse(rdd.id.toString), rdd.partitions.length)
+  }
 
-  /**
-    * Provides a collection of Servlets that should be registered.
-    *
-    * @return a map of context path to a Servlet class
-    */
-  override def servlets(): util.List[ServletMeta] = {
-    Seq(
-      new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]),
-      new ServletMeta(Paths.CHUNK_CATEGORICAL_DOMAINS, classOf[ChunkCategoricalDomainsServlet]),
-      new ServletMeta(Paths.SPARKLING_INTERNAL, classOf[InternalUtilsServlet])).asJava
+  private[api] case class RDDInfoParameters(rddId: Int) {
+    def validate(): Unit = validateRDDId(rddId)
+  }
+
+  private[api] object RDDInfoParameters {
+    def parse(request: HttpServletRequest): RDDInfoParameters = {
+      val rddId = request.getPathInfo.drop(1).split("/").head.toInt
+      RDDInfoParameters(rddId)
+    }
   }
 }

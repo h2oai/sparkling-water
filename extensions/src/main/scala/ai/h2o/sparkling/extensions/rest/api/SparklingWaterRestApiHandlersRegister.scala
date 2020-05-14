@@ -56,6 +56,13 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       classOf[LogLevelHandler],
       "getLogLevel",
       "Get log level of H2O cluster")
+
+    context.registerEndpoint(
+      "running_on_sparkling_water",
+      "GET " + Paths.SW_AVAILABLE,
+      classOf[SparklingWaterAvailableHandler],
+      "isSWAvailable",
+      "Checks whether SW endpoints should be exposed in H2O Flow")
   }
 
   override def getName(): String = "Sparkling Water REST API Extensions"

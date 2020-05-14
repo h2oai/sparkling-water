@@ -18,7 +18,6 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
-import ai.h2o.sparkling.backend.api.RestAPIManager
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.backend.{NodeDesc, SparklingBackend}
@@ -119,9 +118,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
     initializeH2OHiveSupport(conf, hc.sparkContext.sparkUser)
-    H2OStarter.start(launcherArgs, false)
-    RestAPIManager(hc).registerAll()
-    H2O.startServingRestApi()
+    H2OStarter.start(launcherArgs, true)
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
 
