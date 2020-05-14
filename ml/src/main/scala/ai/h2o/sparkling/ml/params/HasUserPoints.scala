@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.h2o.H2OContext
+import ai.h2o.sparkling.H2OContext
 
 trait HasUserPoints extends H2OAlgoParamsBase {
   private val userPoints = new NullableDoubleArrayArrayParam(
@@ -50,7 +50,7 @@ trait HasUserPoints extends H2OAlgoParamsBase {
       val hc = H2OContext.ensure(
         "H2OContext needs to be created in order to train the H2OKMeans model. " +
           "Please create one as H2OContext.getOrCreate().")
-      hc.asH2OFrameKeyString(df)
+      hc.asH2OFrame(df).frameId
     }
   }
 }
