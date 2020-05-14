@@ -195,6 +195,9 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.iced.dir``                         | ``None``       | ``setIcedDir(String)``                          | Location of iced directory for H2O     |
 |                                                    |                |                                                 | nodes.                                 |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be         |
+|                                                    |                |                                                 | verified before using in H2O or not.   |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.flow.dir``                  | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |
@@ -242,9 +245,6 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | only if H2O parameters do not have any |
 |                                                    |                |                                                 | corresponding parameters in Sparkling  |
 |                                                    |                |                                                 | Water.                                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be         |
-|                                                    |                |                                                 | verified before using in H2O or not.   |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 
 --------------
