@@ -3,7 +3,7 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
-From 3.33 to 3.34
+From 3.32 to 3.34
 -----------------
 
 - On ``H2OConf``, the setters ``setClientIcedDir`` and ``setNodeIcedDir`` are replaced by ``setIcedDir`` and
