@@ -16,15 +16,10 @@
  */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2OKMeansParams
 import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import hex.kmeans.KMeansModel.KMeansParameters
-import org.apache.spark.ml.util.{DefaultParamsReadable, Identifiable}
 
-/**
-  * H2O KMeans algorithm exposed via Spark ML pipelines.
-  */
-class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMeansParameters] with H2OKMeansParams {
+trait H2OKMeansExtras extends H2OAlgorithm[KMeansParameters] {
 
   override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
     super.prepareH2OTrainFrameForFitting(trainFrame)
@@ -36,8 +31,4 @@ class H2OKMeans(override val uid: String) extends H2OUnsupervisedAlgorithm[KMean
           " These methods ensure that string columns are converted to representation H2O-3 understands.")
     }
   }
-
-  def this() = this(Identifiable.randomUID(classOf[H2OKMeans].getSimpleName))
 }
-
-object H2OKMeans extends DefaultParamsReadable[H2OKMeans]

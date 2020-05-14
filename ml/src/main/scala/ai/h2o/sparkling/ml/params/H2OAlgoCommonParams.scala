@@ -77,14 +77,14 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
 
   private[sparkling] override def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
-    Map(
-      "weights_column" -> getWeightCol(),
-      "nfolds" -> getNfolds(),
-      "fold_column" -> getFoldCol(),
-      "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
-      "keep_cross_validation_fold_assignment" -> getKeepCrossValidationFoldAssignment(),
-      "parallelize_cross_validation" -> getParallelizeCrossValidation(),
-      "seed" -> getSeed(),
-      "distribution" -> getDistribution())
+      Map(
+        "weights_column" -> getWeightCol(),
+        "nfolds" -> getNfolds(),
+        "fold_column" -> getFoldCol(),
+        "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
+        "keep_cross_validation_fold_assignment" -> getKeepCrossValidationFoldAssignment(),
+        "parallelize_cross_validation" -> getParallelizeCrossValidation(),
+        "seed" -> getSeed(),
+        "distribution" -> getDistribution())
   }
 }

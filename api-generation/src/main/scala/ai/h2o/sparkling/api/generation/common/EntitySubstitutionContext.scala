@@ -17,17 +17,10 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-case class CommonSubstitutionContext(
+case class EntitySubstitutionContext(
     namespace: String,
     entityName: String,
     inheritedEntities: Seq[String],
-    imports: Seq[String])
-
-case class ParameterSubstitutionContext(
-    commonContext: CommonSubstitutionContext,
-    h2oSchemaClass: Class[_],
-    h2oParameterClass: Class[_],
-    ignoredFields: Seq[String],
-    explicitFields: Seq[ExplicitField])
-
-case class ExplicitField(name: String, implementation: String)
+    imports: Seq[String],
+    parameters: String = "")
+  extends SubstitutionContextBase

@@ -17,13 +17,11 @@
 
 package ai.h2o.sparkling.api.generation.scala
 
-import ai.h2o.sparkling.api.generation.common.CommonSubstitutionContext
+import ai.h2o.sparkling.api.generation.common.EntitySubstitutionContext
 
 trait ScalaEntityTemplate {
-  protected def generateEntity(substitutionContext: CommonSubstitutionContext, entityType: String)(
-      content: String): String = {
-    s"""
-       |/*
+  protected def generateEntity(properties: EntitySubstitutionContext, entityType: String)(content: String): String = {
+    s"""/*
        | * Licensed to the Apache Software Foundation (ASF) under one or more
        | * contributor license agreements.  See the NOTICE file distributed with
        | * this work for additional information regarding copyright ownership.
@@ -40,23 +38,23 @@ trait ScalaEntityTemplate {
        | * limitations under the License.
        | */
        |
-       |package ${substitutionContext.namespace}
+       |package ${properties.namespace}
        |
-       |${generateImports(substitutionContext)}
+       |${generateImports(properties)}
        |
-       |$entityType ${substitutionContext.entityName}
-       |${referencesToInheritedClasses(substitutionContext)} {
+       |$entityType ${properties.entityName}${properties.parameters}
+       |${referencesToInheritedClasses(properties)} {
        |
        |$content
        |}
     """.stripMargin
   }
 
-  private def generateImports(substitutionContext: CommonSubstitutionContext): String = {
+  private def generateImports(substitutionContext: EntitySubstitutionContext): String = {
     substitutionContext.imports.map(i => s"import $i").mkString("\n")
   }
 
-  private def referencesToInheritedClasses(substitutionContext: CommonSubstitutionContext): String = {
+  private def referencesToInheritedClasses(substitutionContext: EntitySubstitutionContext): String = {
     if (substitutionContext.inheritedEntities.isEmpty) {
       ""
     } else {

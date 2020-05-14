@@ -20,7 +20,7 @@ package ai.h2o.sparkling.api.generation
 import java.io.{File, PrintWriter}
 
 import ai.h2o.sparkling.api.generation.common._
-import ai.h2o.sparkling.api.generation.scala.ParametersTemplate
+import ai.h2o.sparkling.api.generation.scala.{AlgorithmTemplate, ParametersTemplate}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
@@ -70,15 +70,48 @@ object Runner {
     algorithmParameters.map {
       case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], explicitFields) =>
         ParameterSubstitutionContext(
-          CommonSubstitutionContext(
-            namespace = "ai.h2o.sparkling.ml.params",
-            entityName = entityName,
-            inheritedEntities = Seq(s"H2OAlgoParamsHelper[${h2oParametersClass.getSimpleName}]"),
-            imports = Seq("ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue")),
+          namespace = "ai.h2o.sparkling.ml.params",
+          entityName,
           h2oSchemaClass,
           h2oParametersClass,
           ignoredFields,
           explicitFields)
+    }
+  }
+
+  private def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+
+    val algorithms = Seq[(String, Class[_], String, Seq[String])](
+      ("H2OXGBoost", classOf[XGBoostParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OGBM", classOf[GBMParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2ODRF", classOf[DRFParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")))
+
+    algorithms.map {
+      case (entityName, h2oParametersClass: Class[_], algorithmType, extraParents) =>
+        AlgorithmSubstitutionContext(
+          namespace = "ai.h2o.sparkling.ml.algos",
+          entityName,
+          h2oParametersClass,
+          algorithmType,
+          extraParents)
+    }
+  }
+
+  private def writeResultToFile(
+      content: String,
+      substitutionContext: SubstitutionContextBase,
+      language: String,
+      destinationDir: String) = {
+    val fileName = substitutionContext.entityName
+    val namespacePath = substitutionContext.namespace.replace('.', '/')
+    val destinationDirWithNamespace = new File(destinationDir, namespacePath)
+    destinationDirWithNamespace.mkdirs()
+    val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$language")
+    withResource(new PrintWriter(destinationFile)) { outputStream =>
+      outputStream.print(content)
     }
   }
 
@@ -87,15 +120,13 @@ object Runner {
     val destinationDir = args(1)
 
     for (substitutionContext <- parametersConfiguration) {
-      val fileName = substitutionContext.commonContext.entityName
-      val namespacePath = substitutionContext.commonContext.namespace.replace('.', '/')
-      val destinationDirWithNamespace = new File(destinationDir, namespacePath)
-      destinationDirWithNamespace.mkdirs()
-      val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$language")
-      withResource(new PrintWriter(destinationFile)) { outputStream =>
-        val content = ParametersTemplate(substitutionContext)
-        outputStream.print(content)
-      }
+      val content = ParametersTemplate(substitutionContext)
+      writeResultToFile(content, substitutionContext, language, destinationDir)
+    }
+
+    for (substitutionContext <- algorithmConfiguration) {
+      val content = AlgorithmTemplate(substitutionContext)
+      writeResultToFile(content, substitutionContext, language, destinationDir)
     }
   }
 }

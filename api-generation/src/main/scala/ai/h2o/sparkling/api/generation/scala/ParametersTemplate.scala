@@ -20,20 +20,28 @@ package ai.h2o.sparkling.api.generation.scala
 import ai.h2o.sparkling.api.generation.common._
 
 object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
-  def apply(substitutionContext: ParameterSubstitutionContext): String = {
-    val h2oSchemaClassFullName = substitutionContext.h2oSchemaClass.getName.replace('$', '.')
-    val h2oParameterFullName = substitutionContext.h2oParameterClass.getName.replace('$', '.')
-    val extraImports = Seq(h2oSchemaClassFullName, h2oParameterFullName, h2oParameterFullName + "._")
-    val extraTraits = substitutionContext.explicitFields.map(_.implementation)
-    val parameters = resolveParameters(substitutionContext)
-    val contextWithExtraImports = substitutionContext.commonContext.copy(
-      imports = substitutionContext.commonContext.imports ++ extraImports,
-      inheritedEntities = substitutionContext.commonContext.inheritedEntities ++ extraTraits)
 
-    generateEntity(contextWithExtraImports, "trait") {
-      s"""  type H2O_SCHEMA = ${substitutionContext.h2oSchemaClass.getSimpleName}
+  def apply(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
+    val h2oSchemaClassFullName = parameterSubstitutionContext.h2oSchemaClass.getName.replace('$', '.')
+    val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')
+
+    val parameters = resolveParameters(parameterSubstitutionContext)
+    val imports = Seq(h2oSchemaClassFullName, h2oParameterFullName) ++
+      parameters.filter(_.dataType.isEnum).map(_.dataType.fullName)
+    val extraTraits = parameterSubstitutionContext.explicitFields.map(_.implementation)
+    val parents = Seq(s"H2OAlgoParamsHelper[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]") ++
+      extraTraits
+
+    val entitySubstitutionContext = EntitySubstitutionContext(
+      parameterSubstitutionContext.namespace,
+      parameterSubstitutionContext.entityName,
+      parents,
+      imports)
+
+    generateEntity(entitySubstitutionContext, "trait") {
+      s"""  type H2O_SCHEMA = ${parameterSubstitutionContext.h2oSchemaClass.getSimpleName}
          |
-         |  protected def paramTag = reflect.classTag[${substitutionContext.h2oParameterClass.getSimpleName}]
+         |  protected def paramTag = reflect.classTag[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]
          |
          |  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
          |
@@ -80,7 +88,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     parameters
       .map { parameter =>
         val defaultValue = if (parameter.dataType.isEnum) {
-          s"${parameter.dataType.fullName}.${parameter.defaultValue}.name()"
+          s"${parameter.dataType.name}.${parameter.defaultValue}.name()"
         } else {
           parameter.defaultValue
         }
@@ -110,7 +118,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .map { parameter =>
         if (parameter.dataType.isEnum) {
           s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-             |    val validated = getValidatedEnumValue[${parameter.dataType.fullName}](value)
+             |    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[${parameter.dataType.name}](value)
              |    set(${parameter.swName}, validated)
              |  }
            """.stripMargin

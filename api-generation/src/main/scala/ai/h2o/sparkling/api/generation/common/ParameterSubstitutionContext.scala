@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params._
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.tree.xgboost.XGBoostModel.XGBoostParameters
-import org.apache.spark.ml.util.Identifiable
+package ai.h2o.sparkling.api.generation.common
 
-/**
-  * H2O XGBoost algorithm exposed via Spark ML pipelines.
-  */
-class H2OXGBoost(override val uid: String)
-  extends H2OTreeBasedSupervisedAlgorithm[XGBoostParameters]
-  with H2OXGBoostParams {
+case class ParameterSubstitutionContext(
+    namespace: String,
+    entityName: String,
+    h2oSchemaClass: Class[_],
+    h2oParameterClass: Class[_],
+    ignoredFields: Seq[String],
+    explicitFields: Seq[ExplicitField])
+  extends SubstitutionContextBase
 
-  def this() = this(Identifiable.randomUID(classOf[H2OXGBoost].getSimpleName))
-}
-
-object H2OXGBoost extends H2OParamsReadable[H2OXGBoost]
+case class ExplicitField(name: String, implementation: String)
