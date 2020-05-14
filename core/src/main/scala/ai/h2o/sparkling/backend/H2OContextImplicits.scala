@@ -19,8 +19,8 @@ package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark._
-import org.apache.spark.h2o.RDD
 import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset}
 
 import scala.reflect.ClassTag

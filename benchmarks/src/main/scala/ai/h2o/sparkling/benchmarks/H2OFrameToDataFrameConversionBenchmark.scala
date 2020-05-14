@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import org.apache.spark.h2o.H2OFrame
+import water.fvec.H2OFrame
 
 class H2OFrameToDataFrameConversionBenchmark(context: BenchmarkContext) extends BenchmarkBase[H2OFrame](context) {
 
