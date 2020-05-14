@@ -60,6 +60,4 @@ abstract class H2OContextImplicits {
 
   implicit def asH2OFrameFromDataset[T <: Product: ClassTag: TypeTag](ds: Dataset[T]): H2OFrame =
     hc.asH2OFrame(ds, None)
-
-  implicit def symbolToString(sy: scala.Symbol): String = sy.name
 }

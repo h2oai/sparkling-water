@@ -459,8 +459,4 @@ object H2OContext extends Logging {
           s" Spark and re-run the application.")
     }
   }
-
-  private def getSparkHome(conf: SparkConf): String = {
-    conf.getOption("spark.home").orElse(Option(System.getenv("SPARK_HOME"))).getOrElse("SPARK_HOME is not defined!")
-  }
 }
