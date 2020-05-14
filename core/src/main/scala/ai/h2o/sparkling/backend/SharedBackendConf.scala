@@ -141,9 +141,6 @@ trait SharedBackendConf {
   def clientCheckRetryTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._2)
 
-  def verifySslCertificates: Boolean =
-    sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
-
   def isHiveSupportEnabled: Boolean = sparkConf.getBoolean(PROP_HIVE_SUPPORT_ENABLED._1, PROP_HIVE_SUPPORT_ENABLED._2)
 
   def hiveHost: Option[String] = sparkConf.getOption(PROP_HIVE_HOST._1)
@@ -155,6 +152,9 @@ trait SharedBackendConf {
   def hiveToken: Option[String] = sparkConf.getOption(PROP_HIVE_TOKEN._1)
 
   def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
+
+  def verifySslCertificates: Boolean =
+    sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
   /** Setters */
   /** Generic parameters */
@@ -307,8 +307,6 @@ trait SharedBackendConf {
 
   def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
 
-  def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
-
   def setHiveSupportEnabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, true)
 
   def setHiveSupportDisabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, false)
@@ -322,6 +320,8 @@ trait SharedBackendConf {
   def setHiveToken(token: String): H2OConf = set(PROP_HIVE_TOKEN._1, token)
 
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
+
+  def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
   private[backend] def getFileProperties: Seq[(String, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
@@ -489,9 +489,6 @@ object SharedBackendConf {
   /** Extra properties passed to H2O client during startup. */
   val PROP_CLIENT_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.client.extra", None)
 
-  /** Whether certificates should be verified before using in H2O or not. */
-  val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
-
   /**
     * If enabled, H2O instances will create JDBC connections to Hive and H2O Python & R API will be able to read data
     * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
@@ -512,4 +509,7 @@ object SharedBackendConf {
 
   /** Location of iced directory for H2O nodes */
   val PROP_ICED_DIR: (String, None.type) = ("spark.ext.h2o.iced.dir", None)
+
+  /** Whether certificates should be verified before using in H2O or not. */
+  val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
 }

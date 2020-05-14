@@ -124,8 +124,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     clientCheckRetryTimeout = function() { invoke(jconf, "clientCheckRetryTimeout") },
 
-    verifySslCertificates = function() { invoke(jconf, "verifySslCertificates") },
-
     isHiveSupportEnabled = function() { invoke(jconf, "isHiveSupportEnabled") },
 
     hiveHost = function() { ConfUtils.getOption(invoke(jconf, "hiveHost")) },
@@ -137,6 +135,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
     hiveToken = function() { ConfUtils.getOption(invoke(jconf, "hiveToken")) },
 
     icedDir = function() { ConfUtils.getOption(invoke(jconf, "icedDir")) },
+
+    verifySslCertificates = function() { invoke(jconf, "verifySslCertificates") },
 
 #
 # Setters
@@ -264,8 +264,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientExtraProperties = function(extraProperties) { invoke(jconf, "setClientExtraProperties", extraProperties); .self },
 
-    setVerifySslCertificates = function(verify) { invoke(jconf, "setVerifySslCertificates", verify); .self },
-
     setHiveSupportEnabled = function() { invoke(jconf, "setHiveSupportEnabled"); .self },
 
     setHiveSupportDisabled = function() { invoke(jconf, "setHiveSupportDisabled"); .self },
@@ -278,5 +276,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self },
 
-    setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self }
+    setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self },
+
+    setVerifySslCertificates = function(verify) { invoke(jconf, "setVerifySslCertificates", verify); .self }
 ))

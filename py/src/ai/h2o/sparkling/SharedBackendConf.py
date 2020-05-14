@@ -172,9 +172,6 @@ class SharedBackendConf(SharedBackendConfUtils):
     def clientCheckRetryTimeout(self):
         return self._jconf.clientCheckRetryTimeout()
 
-    def verifySslCertificates(self):
-        return self._jconf.verifySslCertificates()
-
     def isHiveSupportEnabled(self):
         return self._jconf.isHiveSupportEnabled()
 
@@ -192,6 +189,10 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def icedDir(self):
         return self._get_option(self._jconf.icedDir())
+
+    def verifySslCertificates(self):
+        return self._jconf.verifySslCertificates()
+
     #
     # Setters
     #
@@ -436,10 +437,6 @@ class SharedBackendConf(SharedBackendConfUtils):
         self._jconf.setClientExtraProperties(extraProperties)
         return self
 
-    def setVerifySslCertificates(self, verify):
-        self._jconf.setVerifySslCertificates(verify)
-        return self
-
     def setHiveSupportEnabled(self):
         self._jconf.setHiveSupportEnabled()
         return self
@@ -466,4 +463,8 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setIcedDir(self, dir):
         self._jconf.setIcedDir(dir)
+        return self
+
+    def setVerifySslCertificates(self, verify):
+        self._jconf.setVerifySslCertificates(verify)
         return self
