@@ -33,7 +33,7 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Reading H2OFrame using key option") {
     val rdd = sc.parallelize(1 to 1000)
-    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val h2oFrame = hc.asH2OFrame(rdd)
     val df = spark.read.format("h2o").option("key", h2oFrame.frameId).load()
 
     assert(df.columns.length == h2oFrame.numberOfColumns, "Number of columns should match")
@@ -43,7 +43,7 @@ class DataSourceTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Reading H2OFrame using key in load method ") {
     val rdd = sc.parallelize(1 to 1000)
-    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val h2oFrame = hc.asH2OFrame(rdd)
     val df = spark.read.format("h2o").load(h2oFrame.frameId)
 
     assert(df.columns.length == h2oFrame.numberOfColumns, "Number of columns should match")

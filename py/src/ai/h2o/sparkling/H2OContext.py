@@ -79,13 +79,12 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-        selected_conf.set("spark.ext.h2o.rest.api.based.client", "true")
 
         h2o_context = H2OContext()
 
         # Create backing H2OContext
         h2o_context._jvm = jvm
-        package = getattr(jvm.org.apache.spark.h2o, "H2OContext$")
+        package = getattr(jvm.ai.h2o.sparkling, "H2OContext$")
         module = package.__getattr__("MODULE$")
         jhc = module.getOrCreate(selected_conf._jconf)
         h2o_context._jhc = jhc
@@ -123,7 +122,7 @@ class H2OContext(object):
 
     def stop(self):
         h2o.connection().close()
-        scalaStopMethod = getattr(self._jhc, "org$apache$spark$h2o$H2OContext$$stop")
+        scalaStopMethod = getattr(self._jhc, "ai$h2o$sparkling$H2OContext$$stop")
         scalaStopMethod(False, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
 
     def downloadH2OLogs(self,  destination, container = "ZIP"):
@@ -201,9 +200,9 @@ class H2OContext(object):
 
         df = H2OContext.__prepareSparkDataForConversion(self._jvm, sparkFrame)
         if h2oFrameName is None:
-            key = self._jhc.asH2OFrameKeyString(df._jdf)
+            key = self._jhc.asH2OFrame(df._jdf).frameId()
         else:
-            key = self._jhc.asH2OFrameKeyString(df._jdf, h2oFrameName)
+            key = self._jhc.asH2OFrame(df._jdf, h2oFrameName).frameId()
         return H2OFrame.get_frame(key, full_cols=fullCols, light=True)
 
     @staticmethod

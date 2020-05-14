@@ -18,7 +18,6 @@
 package ai.h2o.sparkling
 
 import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
-import org.apache.spark.h2o.H2OConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, Suite}

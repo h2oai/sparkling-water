@@ -18,22 +18,23 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
+
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.backend.{NodeDesc, SparklingBackend}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.expose.Utils
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend._
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.internal.Logging
 import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
+import water.hive.DelegationTokenRefresher
 import water.util.Log
 import water.{H2O, H2OStarter}
-import water.hive.DelegationTokenRefresher
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 

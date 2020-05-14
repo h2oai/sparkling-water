@@ -19,8 +19,8 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.H2OGBM
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover, Word2Vec}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}

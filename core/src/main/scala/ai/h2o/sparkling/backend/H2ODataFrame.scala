@@ -18,12 +18,10 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.backend.utils.SupportedTypes._
-import ai.h2o.sparkling.SparkTimeZone
+import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import ai.h2o.sparkling.backend.converters.DataTypeConverter
 import ai.h2o.sparkling.backend.utils.ReflectionUtils
-import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.{Partition, TaskContext}

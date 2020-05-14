@@ -123,12 +123,12 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     val leftDf = sc
       .parallelize(Seq(("A", 12, "NYC"), ("B", 13, "SF"), ("C", 14, "PRG"), ("D", 15, "SYD")))
       .toDF("name", "age", "city")
-    H2OFrame(hc.asH2OFrameKeyString(leftDf)).convertColumnsToCategorical(Array("name"))
+    hc.asH2OFrame(leftDf).convertColumnsToCategorical(Array("name"))
   }
 
   private lazy val rightFrame = {
     val rightDf = sc.parallelize(Seq(("Y", 10000), ("B", 20000), ("X", 30000), ("D", 40000))).toDF("name", "salary")
-    H2OFrame(hc.asH2OFrameKeyString(rightDf)).convertColumnsToCategorical(Array("name"))
+    hc.asH2OFrame(rightDf).convertColumnsToCategorical(Array("name"))
   }
 
   test("Left join") {

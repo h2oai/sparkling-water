@@ -35,7 +35,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._
 
@@ -80,7 +80,7 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
@@ -118,7 +118,7 @@ This section describes how to launch H2O on a standalone Spark cluster.
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
@@ -155,7 +155,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val conf = new H2OConf().setExternalClusterMode().useManualClusterStart().setCloudName("test")
     val hc = H2OContext.getOrCreate(conf)
 
@@ -208,6 +208,6 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
 
 .. code:: scala
 
-   import org.apache.spark.h2o._
+   import ai.h2o.sparkling._
    val h2oContext = H2OContext.getOrCreate()
    import h2oContext._ 

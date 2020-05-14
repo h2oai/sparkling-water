@@ -30,7 +30,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
         .. code:: Scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf().setInternalSecureConnectionsEnabled()
             val hc = H2OContext.getOrCreate(conf)
 
@@ -75,7 +75,7 @@ This can be also achieved in programmatic way on the ``H2OConf``:
 
         .. code:: Scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf().setSslConf("/path/to/ssl/configuration")
             val hc = H2OContext.getOrCreate(conf)
 

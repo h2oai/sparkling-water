@@ -19,9 +19,9 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.features.ColumnPruner
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.feature.{HashingTF, IDF, _}
 import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}

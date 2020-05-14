@@ -20,13 +20,13 @@ package ai.h2o.sparkling.backend.external
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.util.Properties
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, H2OClientUtils, SharedBackendUtils, ShellUtils}
 import ai.h2o.sparkling.backend.{SharedBackendConf, SparklingBackend}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkFiles
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 
 import scala.io.Source
 

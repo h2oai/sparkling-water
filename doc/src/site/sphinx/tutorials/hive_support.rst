@@ -119,7 +119,7 @@ To run Sparkling Water with Hive support for kerberized hadoop cluster, you must
 
         .. code:: scala
 
-            import org.apache.spark.h2o._
+            import ai.h2o.sparkling._
             val conf = new H2OConf()
             conf.setHiveSupportEnabled()
             conf.setHiveHost("hostname:10000") // The full address of HiveServer2

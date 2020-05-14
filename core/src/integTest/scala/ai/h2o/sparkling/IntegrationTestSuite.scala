@@ -18,7 +18,6 @@
 package ai.h2o.sparkling
 
 import ai.h2o.sparkling.TestUtils.{assertRDDHolderProperties, assertVectorIntValues}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -40,7 +39,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Convert H2OFrame to DataFrame when H2OFrame was changed in DKV in distributed environment") {
     val rdd = sc.parallelize(1 to 100, 2)
-    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val h2oFrame = hc.asH2OFrame(rdd)
     assert(h2oFrame.chunks.length == 2)
     val updatedFrame = h2oFrame.add(h2oFrame)
 
@@ -63,7 +62,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
       }
     }
 
-    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val h2oFrame = hc.asH2OFrame(rdd)
     assertRDDHolderProperties(h2oFrame, rdd)
     assertVectorIntValues(h2oFrame.collectInts(0), data)
     h2oFrame.delete()

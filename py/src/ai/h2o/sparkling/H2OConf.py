@@ -27,6 +27,6 @@ class H2OConf(SharedBackendConf, InternalBackendConf, ExternalBackendConf):
         try:
             Initializer.load_sparkling_jar()
             _jvm = SparkSession._instantiatedSession.sparkContext._jvm
-            self._jconf = _jvm.org.apache.spark.h2o.H2OConf()
+            self._jconf = _jvm.ai.h2o.sparkling.H2OConf()
         except:
             raise

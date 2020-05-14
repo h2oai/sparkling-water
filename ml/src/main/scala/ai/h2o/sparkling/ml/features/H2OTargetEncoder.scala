@@ -17,14 +17,13 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.targetencoding._
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
@@ -46,7 +45,7 @@ class H2OTargetEncoder(override val uid: String)
     }
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val input = H2OFrame(h2oContext.asH2OFrameKeyString(dataset.toDF()))
+    val input = h2oContext.asH2OFrame(dataset.toDF())
     convertRelevantColumnsToCategorical(input)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)

@@ -16,10 +16,9 @@
  */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
@@ -47,7 +46,7 @@ trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
     val columns = featureColumns ++ excludedColumns
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
-    val trainFrame = H2OFrame(h2oContext.asH2OFrameKeyString(dataset.select(columns: _*).toDF()))
+    val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(featureColumns: _*)).columns

@@ -23,10 +23,10 @@ import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OConf
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}

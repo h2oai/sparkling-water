@@ -19,12 +19,12 @@ package ai.h2o.sparkling.backend
 
 import java.io.{InputStream, OutputStream}
 
+import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.{Base64Encoding, Compression}
-import org.apache.spark.h2o.H2OConf
 import water.AutoBuffer
 
 private[sparkling] case class H2OChunk(index: Int, numberOfRows: Int, location: NodeDesc)

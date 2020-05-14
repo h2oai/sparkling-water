@@ -72,7 +72,7 @@ Next, let's start ``H2OContext``. This context brings H2O support into Spark env
 
  .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val hc = H2OContext.getOrCreate()
 
 Finally, read the data:

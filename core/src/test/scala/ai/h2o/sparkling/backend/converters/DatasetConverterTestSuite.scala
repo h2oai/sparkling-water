@@ -70,8 +70,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   private lazy val testSourceDatasetWithPartialData = spark.createDataset(samplePartialPeople)
 
-  private lazy val testH2oFrameWithPartialData: H2OFrame = H2OFrame(
-    hc.asH2OFrameKeyString(testSourceDatasetWithPartialData))
+  private lazy val testH2oFrameWithPartialData: H2OFrame = hc.asH2OFrame(testSourceDatasetWithPartialData)
 
   test("Dataset[SamplePerson] to H2OFrame and back") {
 
@@ -90,49 +89,49 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   test("Dataset[Byte] to H2OFrame") {
     val ds = spark.range(3).map(_.toByte)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Short] to H2OFrame") {
     val ds = spark.range(3).map(_.toShort)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Int] to H2OFrame") {
     val ds = spark.range(3).map(_.toInt)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Long] to H2OFrame") {
     val ds = spark.range(3).map(_.toLong)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.collectInts(0), Seq(0, 1, 2))
   }
 
   test("Dataset[Float] to H2OFrame") {
     val ds = spark.range(3).map(_.toFloat)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorDoubleValues(hf.collectDoubles(0), Seq(0, 1.0, 2.0))
   }
 
   test("Dataset[Double] to H2OFrame") {
     val ds = spark.range(3).map(_.toDouble)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorDoubleValues(hf.collectDoubles(0), Seq(0, 1.0, 2.0))
   }
 
   test("Dataset[String] to H2OFrame") {
     val ds = spark.range(3).map(_.toString)
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorStringValues(hf.collectStrings(0), Seq("0", "1", "2"))
   }
 
   test("Dataset[Boolean] to H2OFrame") {
     val ds = spark.sparkContext.parallelize(Seq(true, false, true)).toDS()
-    val hf = H2OFrame(hc.asH2OFrameKeyString(ds))
+    val hf = hc.asH2OFrame(ds)
     assertVectorIntValues(hf.collectInts(0), Seq(1, 0, 1))
   }
 
@@ -194,7 +193,7 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
       val expected: List[SamplePerson] = samplePartialPeopleWithAges map (p =>
         SamplePerson(p.name.orNull, p.age.get, p.email.orNull))
       val extracted =
-        readWholeFrame[SamplePerson](H2OFrame(hc.asH2OFrameKeyString(testSourceDatasetWithPartialDataAgesPresent)))
+        readWholeFrame[SamplePerson](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
 
       matchData(extracted, expected)
 
@@ -232,14 +231,14 @@ class DatasetConverterTestSuite extends FunSuite with SharedH2OTestContext {
       samplePartialPeopleWithAges.flatMap(p =>
         SampleCat(p.name.orNull, p.age.get) :: SampleCat(p.name.orNull, p.age.get) :: Nil)
     val extracted =
-      readWholeFrame[SampleCat](H2OFrame(hc.asH2OFrameKeyString(testSourceDatasetWithPartialDataAgesPresent)))
+      readWholeFrame[SampleCat](hc.asH2OFrame(testSourceDatasetWithPartialDataAgesPresent))
 
     matchData(extracted, sampleCats) // the idea is, all sample people are there, the rest is ignored
   }
 
   private lazy val testSourceDataset = spark.createDataset(samplePeople)
 
-  private lazy val testH2oFrame: H2OFrame = H2OFrame(hc.asH2OFrameKeyString(testSourceDataset))
+  private lazy val testH2oFrame: H2OFrame = hc.asH2OFrame(testSourceDataset)
 
   private def readWholeFrame[T <: Product: TypeTag: ClassTag](frame: H2OFrame) = {
     val asrdd: RDD[T] = hc.asRDD[T](frame)

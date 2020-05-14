@@ -58,7 +58,7 @@ Step-by-Step Weather Data Example
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val hc = H2OContext.getOrCreate()
     import spark.implicits._
 

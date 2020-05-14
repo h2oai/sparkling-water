@@ -17,10 +17,9 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark._
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.Dataset
 

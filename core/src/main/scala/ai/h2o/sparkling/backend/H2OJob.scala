@@ -17,10 +17,10 @@
 
 package ai.h2o.sparkling.backend
 
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.{JobV3, JobsV3}
 
 private[sparkling] class H2OJob private (val id: String) extends Logging {

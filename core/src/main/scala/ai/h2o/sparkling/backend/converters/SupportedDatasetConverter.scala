@@ -17,9 +17,8 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OContext
 
 object SupportedDatasetConverter extends Logging {
 

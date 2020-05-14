@@ -46,7 +46,7 @@ And later, you can create ``H2OContext`` as:
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     conf = new H2OConf().setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(conf)
 
@@ -54,7 +54,7 @@ Or, you can also use setters available on ``H2OConf`` as:
 
 .. code:: scala
 
-    import org.apache.spark.h2o._
+    import ai.h2o.sparkling._
     val conf = new H2OConf().setLoginConf("ldap.conf").setLdapLoginEnabled().setUserName("username").setPassword("password")
     val hc = H2OContext.getOrCreate(conf)
 

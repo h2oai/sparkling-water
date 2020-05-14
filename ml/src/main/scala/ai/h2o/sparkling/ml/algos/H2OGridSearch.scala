@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
-import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
@@ -30,7 +30,6 @@ import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
 import hex.schemas.GridSchemaV99
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._

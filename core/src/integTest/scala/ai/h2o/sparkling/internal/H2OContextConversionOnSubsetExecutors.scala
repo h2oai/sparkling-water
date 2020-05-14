@@ -38,7 +38,7 @@ class H2OContextConversionOnSubsetExecutors extends FunSuite with SharedH2OTestC
     assert(hc.getH2ONodes().length == 1)
     val data = 1 to 1000
     val rdd = sc.parallelize(data, 100).map(v => Some(v))
-    val h2oFrame = H2OFrame(hc.asH2OFrameKeyString(rdd))
+    val h2oFrame = hc.asH2OFrame(rdd)
     assertRDDHolderProperties(h2oFrame, rdd)
     assertVectorIntValues(h2oFrame.collectInts(0), data)
     h2oFrame.delete()

@@ -16,12 +16,11 @@
  */
 package ai.h2o.sparkling.backend.api.dataframes
 
-import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
@@ -70,7 +69,7 @@ private[api] class DataFramesServlet extends ServletBase {
 
   def toH2OFrame(dataFrameId: String, h2oFrameId: Option[String]): DataFrameToH2OFrame = {
     val dataFrame = sqlContext.table(dataFrameId)
-    val h2oFrame = H2OFrame(H2OContext.ensure().asH2OFrameKeyString(dataFrame, h2oFrameId))
+    val h2oFrame = H2OContext.ensure().asH2OFrame(dataFrame, h2oFrameId)
     DataFrameToH2OFrame(dataFrameId, h2oFrame.frameId)
   }
 

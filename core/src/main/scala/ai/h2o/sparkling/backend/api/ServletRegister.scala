@@ -17,8 +17,8 @@
 
 package ai.h2o.sparkling.backend.api
 
+import ai.h2o.sparkling.H2OConf
 import javax.servlet.Servlet
-import org.apache.spark.h2o.H2OConf
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
 
 private[api] trait ServletRegister {

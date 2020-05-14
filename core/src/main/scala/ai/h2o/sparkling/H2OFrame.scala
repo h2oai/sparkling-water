@@ -30,7 +30,6 @@ import ai.h2o.sparkling.utils.Base64Encoding
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import com.google.gson.{Gson, JsonElement}
 import org.apache.commons.io.IOUtils
-import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.api.schemas3.FrameChunksV3.FrameChunkV3
 import water.api.schemas3.FrameV3.ColV3
 import water.api.schemas3._
@@ -171,7 +170,7 @@ class H2OFrame private (
     val anotherFrame = hc.asSparkFrame(another.frameId)
     val sameCols = anotherFrame.columns.intersect(currentFrame.columns)
     val joined = currentFrame.join(anotherFrame, sameCols, method)
-    H2OFrame(hc.asH2OFrameKeyString(joined))
+    hc.asH2OFrame(joined)
   }
 
   /**

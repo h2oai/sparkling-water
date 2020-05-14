@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.backend.converters
 
-import ai.h2o.sparkling.{H2OFrame, SparkTimeZone}
 import ai.h2o.sparkling.backend.{H2OAwareRDD, H2OFrameRelation, Writer, WriterMetadata}
 import ai.h2o.sparkling.ml.utils.SchemaUtils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OContext, H2OFrame, SparkTimeZone}
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OContext
 import org.apache.spark.sql.DataFrame
 
 object SparkDataFrameConverter extends Logging {
