@@ -62,16 +62,18 @@ class InternalUtilsServlet extends ServletBase {
     val key = Key.make[ScalaCodeResult](resultKey)
     val className = classOf[ScalaCodeResult].getName
     val job = new Job[ScalaCodeResult](key, className, "ScalaCodeResult")
-    val jobV3 = new JobV3(job)
-    jobs.put(jobV3.key.name, true)
+    val jobKey = job._key.toString
+    jobs.put(jobKey, true)
     job.start(new H2OCountedCompleter() {
       override def compute2(): Unit = {
-        while (jobs.contains(jobV3.key.name) && jobs(jobV3.key.name)) {
+        while (jobs.contains(jobKey) && jobs(jobKey)) {
           Thread.sleep(100)
         }
         tryComplete()
       }
     }, 1)
+    val jobV3 = new JobV3(job)
+    jobs.put(jobKey, true)
     jobV3
   }
 
