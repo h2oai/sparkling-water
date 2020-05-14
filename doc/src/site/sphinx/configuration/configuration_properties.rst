@@ -255,8 +255,6 @@ Internal backend configuration properties
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | Property name                                      | Default value  | H2OConf setter (* getter_)                      | Description                            |
 +====================================================+================+=================================================+========================================+
-| **Generic parameters**                             |                |                                                 |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.cluster.size``                     | ``None``       | ``setNumH2OWorkers(Integer)``                   | Expected number of workers of H2O      |
 |                                                    |                |                                                 | cluster. Value None means automatic    |
 |                                                    |                |                                                 | detection of cluster size. This number |
