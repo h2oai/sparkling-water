@@ -27,7 +27,7 @@ trait H2OFramesRestApi extends RestApiUtils with RestEncodingUtils {
   protected def convertToDataFrame(h2oFrameId: String, dataFrameId: String): H2OFrameToDataFrame = {
     val hc = H2OContext.ensure()
     val endpoint = new URI(hc.flowURL())
-    val params = Map("dataframe_id" -> dataFrameId)
+    val params = if (dataFrameId == null) Map[String, String]() else Map("dataframe_id" -> dataFrameId)
     update[H2OFrameToDataFrame](endpoint, s"/3/h2oframes/$h2oFrameId/dataframe", hc.getConf, params)
   }
 }

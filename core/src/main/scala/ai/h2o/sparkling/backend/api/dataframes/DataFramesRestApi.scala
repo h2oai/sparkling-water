@@ -39,7 +39,7 @@ trait DataFramesRestApi extends RestApiUtils {
   protected def convertToH2OFrame(dataFrameId: String, h2oFrameId: String): DataFrameToH2OFrame = {
     val hc = H2OContext.ensure()
     val endpoint = new URI(hc.flowURL())
-    val params = Map("h2oframe_id" -> h2oFrameId)
+    val params = if (h2oFrameId == null) Map[String, String]() else Map("h2oframe_id" -> h2oFrameId)
     update[DataFrameToH2OFrame](endpoint, s"/3/dataframes/$dataFrameId/h2oframe", hc.getConf, params)
   }
 }

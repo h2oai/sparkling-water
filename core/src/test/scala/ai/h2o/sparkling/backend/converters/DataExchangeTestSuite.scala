@@ -24,11 +24,8 @@ import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
-@RunWith(classOf[JUnitRunner])
 class DataExchangeTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
