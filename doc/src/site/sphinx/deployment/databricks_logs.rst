@@ -16,7 +16,6 @@ To download logs, please run:
             val path = hc.downloadH2OLogs("/tmp")
             dbutils.fs.cp("file://" + path, "/FileStore/logs.zip")
 
-
     .. tab-container:: Python
         :title: Python
 
@@ -24,7 +23,6 @@ To download logs, please run:
 
             path = hc.downloadH2OLogs("/tmp")
             dbutils.fs.cp("file://" + path, "/FileStore/logs.zip")
-
 
 The first method downloads the log files to the Databricks filesystem. In order to make it available for
 download from Databricks, we need to move the obtained logs from the Databricks filesystem to the ``FileStore``, which
