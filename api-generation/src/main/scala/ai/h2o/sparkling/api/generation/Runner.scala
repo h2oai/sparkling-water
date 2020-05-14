@@ -44,6 +44,9 @@ object Runner {
     "fold_column",
     "weights_column",
     "offset_column",
+    "seed",
+    "nfolds",
+    "distribution",
     "plug_values",
     "interaction_pairs",
     "beta_constraints",
@@ -52,7 +55,8 @@ object Runner {
     "random_columns",
     "initial_biases",
     "initial_weights",
-    "pretrained_autoencoder")
+    "pretrained_autoencoder",
+    "max_w2")
 
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity = ExplicitField("monotone_constraints", "HasMonotoneConstraints")

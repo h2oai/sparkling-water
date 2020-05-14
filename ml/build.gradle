@@ -58,6 +58,7 @@ task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wate
   errorOutput = System.err
 }
 
-build.dependsOn(generateApi)
+compileScala.dependsOn(generateApi)
+clean.dependsOn(cleanGeneratedApi)
 
 defineStandardPublication().call()

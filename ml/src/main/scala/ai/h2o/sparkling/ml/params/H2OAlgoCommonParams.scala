@@ -32,31 +32,17 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
     this,
     "modelId",
     "An unique identifier of a trained model. If the id already exists, a number will be appended to ensure uniqueness.")
-  private val keepCrossValidationPredictions = booleanParam("keepCrossValidationPredictions")
-  private val keepCrossValidationFoldAssignment = booleanParam("keepCrossValidationFoldAssignment")
-  private val parallelizeCrossValidation = booleanParam("parallelizeCrossValidation")
   private val distribution = stringParam("distribution")
 
   //
   // Default values
   //
-  setDefault(
-    modelId -> null,
-    keepCrossValidationPredictions -> parameters._keep_cross_validation_predictions,
-    keepCrossValidationFoldAssignment -> parameters._keep_cross_validation_fold_assignment,
-    parallelizeCrossValidation -> parameters._parallelize_cross_validation,
-    distribution -> parameters._distribution.name())
+  setDefault(modelId -> null, distribution -> parameters._distribution.name())
 
   //
   // Getters
   //
   def getModelId(): String = $(modelId)
-
-  def getKeepCrossValidationPredictions(): Boolean = $(keepCrossValidationPredictions)
-
-  def getKeepCrossValidationFoldAssignment(): Boolean = $(keepCrossValidationFoldAssignment)
-
-  def getParallelizeCrossValidation(): Boolean = $(parallelizeCrossValidation)
 
   def getDistribution(): String = $(distribution)
 
@@ -64,12 +50,6 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
   // Setters
   //
   def setModelId(id: String): this.type = set(modelId, id)
-
-  def setKeepCrossValidationPredictions(value: Boolean): this.type = set(keepCrossValidationPredictions, value)
-
-  def setKeepCrossValidationFoldAssignment(value: Boolean): this.type = set(keepCrossValidationFoldAssignment, value)
-
-  def setParallelizeCrossValidation(value: Boolean): this.type = set(parallelizeCrossValidation, value)
 
   def setDistribution(value: String): this.type = {
     set(distribution, getValidatedEnumValue[DistributionFamily](value))
@@ -81,10 +61,6 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H
         "weights_column" -> getWeightCol(),
         "nfolds" -> getNfolds(),
         "fold_column" -> getFoldCol(),
-        "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
-        "keep_cross_validation_fold_assignment" -> getKeepCrossValidationFoldAssignment(),
-        "parallelize_cross_validation" -> getParallelizeCrossValidation(),
-        "seed" -> getSeed(),
         "distribution" -> getDistribution())
   }
 }
