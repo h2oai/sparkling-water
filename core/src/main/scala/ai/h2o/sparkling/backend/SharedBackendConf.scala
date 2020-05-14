@@ -116,7 +116,7 @@ trait SharedBackendConf {
   def clientIp: Option[String] = sparkConf.getOption(PROP_CLIENT_IP._1)
 
   @DeprecatedMethod("icedDir", "3.34")
-  def clientIcedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
+  def clientIcedDir: Option[String] = icedDir
 
   def h2oClientLogLevel: String = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
 
@@ -281,7 +281,7 @@ trait SharedBackendConf {
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
 
   @DeprecatedMethod("setIcedDir", "3.34")
-  def setClientIcedDir(icedDir: String): H2OConf = set(PROP_ICED_DIR._1, icedDir)
+  def setClientIcedDir(icedDir: String): H2OConf = setIcedDir(icedDir)
 
   def setH2OClientLogLevel(level: String): H2OConf = set(PROP_CLIENT_LOG_LEVEL._1, level)
 
