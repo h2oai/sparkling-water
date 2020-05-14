@@ -193,6 +193,15 @@ object H2OFrame extends RestCommunication {
     getFrame(conf, frameId)
   }
 
+  def listFrames(): Array[H2OFrame] = {
+    val conf = H2OContext.ensure().getConf
+    val endpoint = getClusterEndpoint(conf)
+    val frames = query[FramesListV3](endpoint, "/3/Frames", conf)
+    frames.frames.map(fr => H2OFrame(fr.frame_id.name))
+  }
+
+  def exists(frameId: String): Boolean = listFrames().map(_.frameId).contains(frameId)
+
   private def getFrame(conf: H2OConf, frameId: String): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
     val frames = query[FramesV3](

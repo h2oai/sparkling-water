@@ -18,9 +18,8 @@
 package org.apache.spark.h2o.backends.internal
 
 import java.io.File
-import ai.h2o.sparkling.backend.api.RestAPIManager
+
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
-import ai.h2o.sparkling.backend.utils.RestApiUtils
 import ai.h2o.sparkling.backend.{NodeDesc, SparklingBackend}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.hadoop.conf.Configuration
@@ -32,9 +31,9 @@ import org.apache.spark.rpc.RpcEndpointRef
 import org.apache.spark.scheduler.{SparkListener, SparkListenerExecutorAdded}
 import org.apache.spark.util.RpcUtils
 import org.apache.spark.{SparkContext, SparkEnv}
+import water.hive.DelegationTokenRefresher
 import water.util.Log
 import water.{H2O, H2OStarter}
-import water.hive.DelegationTokenRefresher
 
 class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend with Logging {
 
@@ -143,9 +142,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
     initializeH2OKerberizedHiveSupport(conf)
-    H2OStarter.start(launcherArgs, false)
-    RestAPIManager(hc).registerAll()
-    H2O.startServingRestApi()
+    H2OStarter.start(launcherArgs, true)
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
 

@@ -130,8 +130,14 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     * @param suffix   REST relative path representing a specific call
     * @param conf     H2O conf object
     */
-  protected def delete(endpoint: URI, suffix: String, conf: H2OConf): Unit = {
-    withResource(readURLContent(endpoint, "DELETE", suffix, conf))(identity)
+  def delete[ResultType: ClassTag](
+      endpoint: URI,
+      suffix: String,
+      conf: H2OConf,
+      params: Map[String, Any] = Map.empty,
+      skippedFields: Seq[(Class[_], String)] = Seq.empty,
+      encodeParamsAsJson: Boolean = false): ResultType = {
+    request(endpoint, "DELETE", suffix, conf, params, skippedFields, encodeParamsAsJson)
   }
 
   def request[ResultType: ClassTag](

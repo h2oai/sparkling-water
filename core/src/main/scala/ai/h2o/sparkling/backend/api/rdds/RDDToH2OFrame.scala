@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.backend.api.scalainterpreter
+package ai.h2o.sparkling.backend.api.rdds
 
 import ai.h2o.sparkling.backend.api.ParameterBase
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest
 
-/**
-  * This object is returned by jobs executing the Scala code
-  */
-case class ScalaCodeResult(code: String, scalaStatus: String, scalaResponse: String, scalaOutput: String)
+/** Schema representing /3/RDDs/[rdd_id]/h2oframe endpoint */
+case class RDDToH2OFrame(rdd_id: Int, h2oframe_id: String)
 
-object ScalaCodeResult extends ParameterBase {
-
-  private[scalainterpreter] case class ScalaCodeResultParameters(resultKey: String) {
-    def validate(): Unit = {}
+object RDDToH2OFrame extends ParameterBase with RDDCommons {
+  private[rdds] case class RDDToH2OFrameParameters(rddId: Int, h2oFrameId: Option[String]) {
+    def validate(): Unit = validateRDDId(rddId)
   }
 
-  object ScalaCodeResultParameters {
-    private[scalainterpreter] def parse(request: HttpServletRequest): ScalaCodeResultParameters = {
-      val resultKey = request.getPathInfo.drop(1).split("/")(1)
-      ScalaCodeResultParameters(resultKey)
+  object RDDToH2OFrameParameters {
+    private[rdds] def parse(request: HttpServletRequest): RDDToH2OFrameParameters = {
+      val rddId = request.getPathInfo.drop(1).split("/").head.toInt
+      val h2oFrameId = getParameterAsString(request, "h2oframe_id")
+      RDDToH2OFrameParameters(rddId, Option(h2oFrameId).map(_.toLowerCase()))
     }
   }
 }
