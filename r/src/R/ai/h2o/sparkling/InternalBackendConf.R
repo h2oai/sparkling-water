@@ -33,7 +33,10 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     subseqTries = function() { invoke(jconf, "subseqTries") },
 
-    nodeIcedDir = function() { ConfUtils.getOption(invoke(jconf, "nodeIcedDir")) },
+    nodeIcedDir = function() {
+        warning("The method 'nodeIcedDir' is deprecated and will be removed in 3.34. Use 'icedDir' instead!")
+        ConfUtils.getOption(invoke(jconf, "icedDir"))
+    },
 
     hdfsConf = function() { ConfUtils.getOption(invoke(jconf, "hdfsConf")) },
 
@@ -50,7 +53,10 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     setSubseqTries = function(subseqTriesNum) { invoke(jconf, "setSubseqTries", as.integer(subseqTriesNum)); .self },
 
-    setNodeIcedDir = function(dir) { invoke(jconf, "setNodeIcedDir", dir); .self },
+    setNodeIcedDir = function(dir) {
+        warning("The method 'setNodeIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        invoke(jconf, "setIcedDir", dir); .self
+    },
 
     setHdfsConf = function(hdfsConf) { invoke(jconf, "setHdfsConf", hdfsConf); .self }
 ))
