@@ -3,6 +3,13 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.33 to 3.34
+-----------------
+
+- On ``H2OConf``, the setters ``setClientIcedDir`` and ``setNodeIcedDir`` are replaced by ``setIcedDir`` and
+  getters ``clientIcedDir`` and ``nodeIcedDir`` are replaced by ``icedDir``. Also the spark option
+  ``spark.ext.h2o.node.iced.dir`` is replaced by ``spark.ext.h2o.iced.dir``.
+
 From 3.30 to 3.32
 -----------------
 

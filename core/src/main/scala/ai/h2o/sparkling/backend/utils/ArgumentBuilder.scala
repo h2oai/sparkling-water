@@ -28,7 +28,9 @@ class ArgumentBuilder() {
   }
 
   def add(args: Seq[String]): ArgumentBuilder = {
-    arguments = arguments ++ args
+    if (args.nonEmpty) {
+      arguments = arguments ++ args
+    }
     this
   }
 

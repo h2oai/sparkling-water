@@ -16,6 +16,7 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
+import warnings
 
 class InternalBackendConf(SharedBackendConfUtils):
 
@@ -39,7 +40,8 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self._jconf.subseqTries()
 
     def nodeIcedDir(self):
-        return self._get_option(self._jconf.nodeIcedDir())
+        warnings.warn("The method 'nodeIcedDir' is deprecated and will be removed in 3.34. Use 'icedDir' instead!")
+        return self._get_option(self._jconf.icedDir())
 
     def hdfsConf(self):
         return self._get_option(self._jconf.hdfsConf())
@@ -69,7 +71,8 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeIcedDir(self, dir):
-        self._jconf.setNodeIcedDir(dir)
+        warnings.warn("The method 'setNodeIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        self._jconf.setIcedDir(dir)
         return self
 
     def setHdfsConf(self, hdfsConf):
