@@ -127,6 +127,11 @@ Once we've installed **rsparkling** and its dependencies, the first step would b
 
    sc <- spark_connect(master = "local", version = "SUBST_SPARK_VERSION")
 
+**Note**: If you are running on Databricks, please use the following code instead:
+
+.. code:: r
+
+   sc <- spark_connect(method = "databricks")
 
 **NOTE**: Please be sure to set ``version`` to the proper Spark version utilized by your version of Sparkling Water in ``spark_connect()``
 
