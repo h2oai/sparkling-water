@@ -82,7 +82,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.autoFlowSsl()
 
     def h2oNodeLogLevel(self):
-        return self._jconf.h2oNodeLogLevel()
+        warnings.warn("The method 'h2oNodeLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
+        return self._jconf.logLevel()
+
+    def logLevel(self):
+        return self._jconf.logLevel()
 
     def h2oNodeLogDir(self):
         return self._jconf.h2oNodeLogDir()
@@ -140,7 +144,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.icedDir()
 
     def h2oClientLogLevel(self):
-        return self._jconf.h2oClientLogLevel()
+        warnings.warn("The method 'h2oClientLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
+        return self._jconf.logLevel()
 
     def h2oClientLogDir(self):
         return self._get_option(self._jconf.h2oClientLogDir())
@@ -309,7 +314,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeLogLevel(self, level):
-        self._jconf.setH2ONodeLogLevel(level)
+        warnings.warn("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+        return self.setLogLevel(level)
+
+    def setLogLevel(self, level):
+        self._jconf.setLogLevel(level)
         return self
 
     def setH2ONodeLogDir(self, dir):
@@ -397,8 +406,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setIcedDir(dir)
 
     def setH2OClientLogLevel(self, level):
-        self._jconf.setH2OClientLogLevel(level)
-        return self
+        warnings.warn("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+        return self.setLogLevel(level)
 
     def setH2OClientLogDir(self, dir):
         self._jconf.setH2OClientLogDir(dir)

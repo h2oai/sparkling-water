@@ -87,8 +87,7 @@ trait InternalBackendConf extends SharedBackendConf {
        |  clientBasePort       : $clientBasePort
        |  nodeBasePort         : $nodeBasePort
        |  cloudTimeout         : $cloudTimeout
-       |  h2oNodeLog           : $h2oNodeLogLevel
-       |  h2oClientLog         : $h2oClientLogLevel
+       |  log level            : $logLevel
        |  nthreads             : $nthreads
        |  drddMulFactor        : $drddMulFactor""".stripMargin
 

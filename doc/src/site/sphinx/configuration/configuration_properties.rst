@@ -93,8 +93,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | key store and password to secure H2O   |
 |                                                    |                | ``setAutoFlowSslDisabled()``                    | flow by SSL.                           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.log.level``                   | ``INFO``       | ``setH2ONodeLogLevel(String)``                  | H2O internal log level used for H2O    |
-|                                                    |                |                                                 | nodes except the client.               |
+| ``spark.ext.h2o.log.level``                        | ``INFO``       | ``setLogLevel(String)``                         | H2O log level.                         |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.node.log.dir``                     | |h2oLogDir|    | ``setH2ONodeLogDir(String)``                    | Location of H2O logs on H2O nodes      |
 |                                                    |                |                                                 | except on the client.                  |
@@ -201,9 +200,6 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | are saved.                             |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | ``setClientIp(String)``                         | IP of H2O client node.                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.log.level``                 | ``INFO``       | ``setH2OClientLogLevel(String)``                | H2O internal log level used for H2O    |
-|                                                    |                |                                                 | client running inside Spark driver.    |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.log.dir``                   | |h2oLogDir|    | ``setH2OClientLogDir(String)``                  | Location of H2O logs on the driver     |
 |                                                    |                |                                                 | machine.                               |

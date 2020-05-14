@@ -98,7 +98,7 @@ trait SharedBackendUtils extends Logging with Serializable {
     }
 
     if (conf.clientVerboseOutput) {
-      conf.setH2OClientLogLevel(incLogLevel(conf.h2oClientLogLevel, "INFO"))
+      conf.setLogLevel(incLogLevel(conf.logLevel, "INFO"))
     }
 
     if (conf.isHiveSupportEnabled) {
@@ -174,6 +174,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-nthreads", Some(conf.nthreads).filter(_ > 0).orElse(conf.sparkConf.getOption("spark.executor.cores")))
       .add("-hdfs_config", getDistributedFilePath(conf.hdfsConf))
       .add(getExtraHttpHeaderArgs(conf))
+      .add("-log_level", conf.logLevel)
       .add("-embedded")
       .add("-ice_root", conf.icedDir)
       .buildArgs()
@@ -184,7 +185,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
       .addIf("-quiet", !conf.clientVerboseOutput)
-      .add("-log_level", conf.h2oClientLogLevel)
       .add("-log_dir", conf.h2oClientLogDir)
       .add("-baseport", conf.clientBasePort)
       .add("-flow_dir", conf.flowDir)
