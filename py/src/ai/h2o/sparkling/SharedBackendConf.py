@@ -314,7 +314,7 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeLogLevel(self, level):
-        warnings.warn("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+        warnings.warn("The method 'setH2ONodeLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
         return self.setLogLevel(level)
 
     def setLogLevel(self, level):
