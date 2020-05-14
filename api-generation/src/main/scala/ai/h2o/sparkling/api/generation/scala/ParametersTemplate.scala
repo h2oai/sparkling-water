@@ -98,7 +98,8 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   }
 
   private def stringify(value: Any): String = value match {
-    case f: java.lang.Float => s"${f}f"
+    case f: java.lang.Float => s"${f.toString.toLowerCase}f"
+    case d: java.lang.Double => d.toString.toLowerCase
     case l: java.lang.Long => s"${l}L"
     case a: Array[_] => s"Array(${a.map(stringify).mkString(", ")})"
     case v if v == null => null

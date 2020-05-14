@@ -11,6 +11,15 @@ sourceSets {
   }
 }
 
+spotless {
+  scala {
+    target project.fileTree(project.rootDir) {
+      include '**/*.scala'
+      exclude "ml/src-gen/main/**/*.scala"
+    }
+  }
+}
+
 dependencies {
   api(project(":sparkling-water-core")) { exclude group: "javax.servlet", module: "servlet-api" }
   api(project(":sparkling-water-scoring"))
