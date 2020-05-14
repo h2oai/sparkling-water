@@ -17,16 +17,16 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import water.fvec.H2OFrame
+import water.fvec.Frame
 
 class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-  extends AlgorithmBenchmarkBase[H2OFrame](context, algorithmBundle) {
+  extends AlgorithmBenchmarkBase[Frame](context, algorithmBundle) {
 
-  override protected def initialize(): H2OFrame = loadDataToH2OFrame()
+  override protected def initialize(): Frame = loadDataToH2OFrame()
 
-  override protected def body(trainingFrame: H2OFrame): Unit = {
+  override protected def body(trainingFrame: Frame): Unit = {
     val h2oAlgorithm = algorithmBundle.h2oAlgorithm
-    h2oAlgorithm._parms._train = trainingFrame.key
+    h2oAlgorithm._parms._train = trainingFrame._key
     h2oAlgorithm._parms._response_column = context.datasetDetails.labelCol
     h2oAlgorithm.trainModel().get()
   }

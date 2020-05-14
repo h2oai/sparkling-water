@@ -32,8 +32,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
-import water.MRTask
-import water.fvec.{Chunk, Frame, H2OFrame, Vec}
+import water.{Key, MRTask}
+import water.fvec.{Chunk, Frame, Vec}
+import water.parser.ParseSetup
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -97,7 +98,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def removeFromCache(dataFrame: DataFrame): Unit = dataFrame.unpersist(blocking = true)
 
-  def loadDataToH2OFrame(): H2OFrame = {
+  def loadDataToH2OFrame(): Frame = {
     if (context.datasetDetails.isVirtual) {
       loadVirtualH2OFrame()
     } else {
@@ -105,13 +106,16 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     }
   }
 
-  def loadRegularH2OFrame(): H2OFrame = {
+  def loadRegularH2OFrame(): Frame = {
     val uri = new URI(context.datasetDetails.url.get)
-    val frame = H2OFrame(uri)
+    val s = uri.toString
+    val baseName = s.substring(s.lastIndexOf('/') + 1)
+    val key = Key.make(ParseSetup.createHexName(baseName))
+    val frame = new Frame(water.util.FrameUtils.parseFrame(key, uri))
     frame
   }
 
-  def loadVirtualH2OFrame(): H2OFrame = {
+  def loadVirtualH2OFrame(): Frame = {
     val numberOfRows = context.datasetDetails.nRows.get
     val numberOfPartitions = context.datasetDetails.nPartitions.getOrElse(200)
     val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
@@ -132,7 +136,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
         }
       }
     }.doAll(frame)
-    new H2OFrame(frame)
+    new Frame(frame)
   }
 
   def run(): Unit = {

@@ -17,11 +17,11 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import water.fvec.H2OFrame
+import water.fvec.Frame
 
-class H2OFrameToDataFrameConversionBenchmark(context: BenchmarkContext) extends BenchmarkBase[H2OFrame](context) {
+class H2OFrameToDataFrameConversionBenchmark(context: BenchmarkContext) extends BenchmarkBase[Frame](context) {
 
-  override protected def initialize(): H2OFrame = loadDataToH2OFrame()
+  override protected def initialize(): Frame = loadDataToH2OFrame()
 
-  override protected def body(frame: H2OFrame): Unit = context.hc.asSparkFrame(frame.key.toString).foreach(_ => {})
+  override protected def body(frame: Frame): Unit = context.hc.asSparkFrame(frame._key.toString).foreach(_ => {})
 }
