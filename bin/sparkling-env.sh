@@ -59,7 +59,11 @@ function getJarsArg() {
 
 
 function checkPythonPackages() {
-    packages=$(pip list --format=freeze)
+    PYTHON_BINARY=python
+    if [ -n "$PYSPARK_PYTHON" ]; then
+      PYTHON_BINARY=$PYSPARK_PYTHON
+    fi
+    packages=$($PYTHON_BINARY -m pip list --format=freeze)
     error=0
     checkPythonPackage "$packages" "colorama" "0.3.8"
     checkPythonPackage "$packages" "requests"
