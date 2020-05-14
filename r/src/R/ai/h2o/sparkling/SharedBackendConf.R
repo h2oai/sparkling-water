@@ -276,7 +276,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveJdbcUrlPattern = function(pattern) { invoke(jconf, "setHiveJdbcUrlPattern", pattern); .self },
 
-    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self }
+    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self },
 
     setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self }
 ))
