@@ -1,6 +1,38 @@
 Change Log
 ==========
 
+v3.30.0.3-1 (2020-05-14)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.3-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-502 <https://0xdata.atlassian.net/browse/SW-502>`__ - SW Runtime is complaining about missing SPARK_HOME during version check
+   -  `SW-1569 <https://0xdata.atlassian.net/browse/SW-1569>`__ - Sparkling water fails to detect newer version of colorama
+   -  `SW-1980 <https://0xdata.atlassian.net/browse/SW-1980>`__ -  java.lang.Long cannot be cast to org.apache.spark.sql.Row from PySparkling
+   -  `SW-1991 <https://0xdata.atlassian.net/browse/SW-1991>`__ - asH2OFrame does not work on dataset with primitive values
+   -  `SW-2201 <https://0xdata.atlassian.net/browse/SW-2201>`__ - Nightly builds fail on SW version check
+   -  `SW-2224 <https://0xdata.atlassian.net/browse/SW-2224>`__ - Fix doc warninigs on hive site
+   -  `SW-2226 <https://0xdata.atlassian.net/browse/SW-2226>`__ - Fix documentation for download logs from DBC cluster
+   -  `SW-2228 <https://0xdata.atlassian.net/browse/SW-2228>`__ - Update Plan Contains HostNames instead of IP Addresses
+                
+-  Improvement
+        
+   -  `SW-1992 <https://0xdata.atlassian.net/browse/SW-1992>`__ - Deprecate JavaH2OContext
+   -  `SW-2194 <https://0xdata.atlassian.net/browse/SW-2194>`__ - Document withDetailedPrediction on mojo deployment page
+   -  `SW-2200 <https://0xdata.atlassian.net/browse/SW-2200>`__ - Ensure H2OContext can be created in PySparkling without numpy installed
+   -  `SW-2210 <https://0xdata.atlassian.net/browse/SW-2210>`__ - deprecate spark.read.h2o and spark.write.h2o to be consistent with python api
+   -  `SW-2225 <https://0xdata.atlassian.net/browse/SW-2225>`__ - Upgrade to H2O 3.30.0.3
+                
+-  Engineering Story
+        
+   -  `SW-2222 <https://0xdata.atlassian.net/browse/SW-2222>`__ - Remove Usages of Deprecated MojoPipelineReaderBackendFactory
+                
+                            
 v3.30.0.2-1 (2020-05-04)
 ------------------------
 Downloads:
