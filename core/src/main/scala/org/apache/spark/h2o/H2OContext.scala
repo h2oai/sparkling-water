@@ -538,9 +538,8 @@ object H2OContext extends Logging {
     if (!runningOnCorrectSpark) {
       throw new WrongSparkVersion(
         s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
-          s" but your $$SPARK_HOME(=${sc.getSparkHome().getOrElse("SPARK_HOME is not defined!")}) property" +
-          s" points to Spark of version ${sc.version}. Please ensure correct Spark is provided and" +
-          s" re-run Sparkling Water.")
+          s" but your Spark is of version ${sc.version}. Please make sure to use correct Sparkling Water for your" +
+          s" Spark and re-run the application.")
     }
   }
 }
