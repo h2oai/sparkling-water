@@ -15,17 +15,21 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.params
+package ai.h2o.sparkling.ml.algos
 
-import org.apache.spark.ml.param._
+import ai.h2o.sparkling.ml.models.H2OTreeBasedSupervisedMOJOModel
+import hex.Model
+import org.apache.spark.sql.Dataset
 
-trait HasQuantileAlpha extends Params {
-  private val quantileAlpha =
-    new DoubleParam(this, "quantileAlpha", "Desired quantile when performing quantile regression.")
+import scala.reflect.ClassTag
 
-  setDefault(quantileAlpha -> 0.5)
+abstract class H2OTreeBasedSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H2OSupervisedAlgorithm[P] {
 
-  def getQuantileAlpha(): Double = $(quantileAlpha)
+  override def fit(dataset: Dataset[_]): H2OTreeBasedSupervisedMOJOModel = {
+    super.fit(dataset).asInstanceOf[H2OTreeBasedSupervisedMOJOModel]
+  }
 
-  def setQuantileAlpha(value: Double): this.type = set(quantileAlpha, value)
+  def getNtrees(): Int
+
+  def setNtrees(value: Int): this.type
 }
