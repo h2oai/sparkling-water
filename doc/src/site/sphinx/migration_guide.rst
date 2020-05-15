@@ -21,6 +21,10 @@ From 3.32 to 3.34
   getters ``clientBasePort`` and ``nodeBasePort`` are replaced by ``basePort``. Also the spark options
   ``spark.ext.h2o.client.port.base`` and ``spark.ext.h2o.node.port.base`` are replaced by ``spark.ext.h2o.base.port``.
 
+- On ``H2OConf``, the setters ``setH2OClientLogDir`` and ``setH2ONodeLogDir`` are replaced by ``setLogDir`` and
+  getters ``h2oClientLogDir`` and ``h2oNodeLogDir`` are replaced by ``logDir``. Also the spark options
+  ``spark.ext.h2o.client.log.dir`` and ``spark.ext.h2o.node.log.dir`` are replaced by ``spark.ext.h2o.log.dir``.
+
 From 3.30 to 3.32
 -----------------
 

@@ -31,7 +31,6 @@ trait SharedBackendConf {
   import SharedBackendConf._
 
   /** Getters */
-  /** Generic parameters */
   def backendClusterMode: String = sparkConf.get(PROP_BACKEND_CLUSTER_MODE._1, PROP_BACKEND_CLUSTER_MODE._2)
 
   def cloudName: Option[String] = sparkConf.getOption(PROP_CLOUD_NAME._1)
@@ -78,7 +77,10 @@ trait SharedBackendConf {
 
   def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
-  def h2oNodeLogDir: Option[String] = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
+  @DeprecatedMethod("logDir", "3.34")
+  def h2oNodeLogDir: Option[String] = logDir
+
+  def logDir: Option[String] = sparkConf.getOption(PROP_LOG_DIR._1)
 
   def backendHeartbeatInterval: Int =
     sparkConf.getInt(PROP_BACKEND_HEARTBEAT_INTERVAL._1, PROP_BACKEND_HEARTBEAT_INTERVAL._2)
@@ -116,7 +118,6 @@ trait SharedBackendConf {
   def isInsecureXGBoostAllowed: Boolean =
     sparkConf.getBoolean(PROP_ALLOW_INSECURE_XGBOOST._1, PROP_ALLOW_INSECURE_XGBOOST._2)
 
-  /** H2O Client parameters */
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
 
   def clientIp: Option[String] = sparkConf.getOption(PROP_CLIENT_IP._1)
@@ -127,7 +128,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("logLevel", "3.34")
   def h2oClientLogLevel: String = logLevel
 
-  def h2oClientLogDir: Option[String] = sparkConf.getOption(PROP_CLIENT_LOG_DIR._1)
+  @DeprecatedMethod("logDir", "3.34")
+  def h2oClientLogDir: Option[String] = logDir
 
   @DeprecatedMethod("basePort", "3.34")
   def clientBasePort: Int = basePort
@@ -165,7 +167,6 @@ trait SharedBackendConf {
   def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
 
   /** Setters */
-  /** Generic parameters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
       logWarning("Using internal cluster mode!")
@@ -237,7 +238,10 @@ trait SharedBackendConf {
 
   def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
 
-  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_NODE_LOG_DIR._1, dir)
+  @DeprecatedMethod("setLogDir", "3.34")
+  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
+
+  def setLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
 
   def setBackendHeartbeatInterval(interval: Int): H2OConf = set(PROP_BACKEND_HEARTBEAT_INTERVAL._1, interval.toString)
 
@@ -289,7 +293,6 @@ trait SharedBackendConf {
 
   def setInsecureXGBoostDenied(): H2OConf = set(PROP_ALLOW_INSECURE_XGBOOST._1, value = false)
 
-  /** H2O Client parameters */
   def setFlowDir(dir: String): H2OConf = set(PROP_FLOW_DIR._1, dir)
 
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
@@ -300,7 +303,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("setLogLevel", "3.34")
   def setH2OClientLogLevel(level: String): H2OConf = setLogLevel(level)
 
-  def setH2OClientLogDir(dir: String): H2OConf = set(PROP_CLIENT_LOG_DIR._1, dir)
+  @DeprecatedMethod("setLogDir", "3.34")
+  def setH2OClientLogDir(dir: String): H2OConf = setLogDir(dir)
 
   @DeprecatedMethod("setBasePort", "3.34")
   def setClientBasePort(basePort: Int): H2OConf = setBasePort(basePort)
@@ -414,8 +418,8 @@ object SharedBackendConf {
   /** H2O internal log level for launched remote nodes. */
   val PROP_LOG_LEVEL: (String, String) = ("spark.ext.h2o.log.level", "INFO")
 
-  /** Location of log directory for remote nodes. */
-  val PROP_NODE_LOG_DIR: (String, None.type) = ("spark.ext.h2o.node.log.dir", None)
+  /** Location of H2O log directory. */
+  val PROP_LOG_DIR: (String, None.type) = ("spark.ext.h2o.log.dir", None)
 
   /** Interval used to ping and check the H2O backend status. */
   val PROP_BACKEND_HEARTBEAT_INTERVAL: (String, Int) = ("spark.ext.h2o.backend.heartbeat.interval", 10000)
@@ -494,7 +498,7 @@ object SharedBackendConf {
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE: (String, None.type) = ("spark.ext.h2o.client.flow.baseurl.override", None)
 
   /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-    * client (either H2O client or REST) is connected
+    * client is connected
     */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) =
     ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)

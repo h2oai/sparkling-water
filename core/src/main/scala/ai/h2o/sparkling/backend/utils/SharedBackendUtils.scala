@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend.utils
 
 import java.io.File
+import java.nio.file.Paths
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf}
@@ -50,9 +51,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
-    if (conf.h2oClientLogDir.isEmpty) {
-      conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
-    }
 
     if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
       AzureDatabricksUtils.setClientWebPort(conf)
@@ -138,10 +136,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def defaultLogDir(appId: String): String = {
-    System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
-  }
-
   def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
@@ -177,6 +171,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-log_level", conf.logLevel)
       .add("-embedded")
       .add("-baseport", conf.basePort)
+      .add("-log_dir", determineLogDir(conf))
       .add("-ice_root", conf.icedDir)
       .add("-flow_dir", conf.flowDir)
       .buildArgs()
@@ -187,10 +182,16 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
       .addIf("-quiet", !conf.clientVerboseOutput)
-      .add("-log_dir", conf.h2oClientLogDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
+  }
+
+  private def determineLogDir(conf: H2OConf): String = {
+    Option(System.getProperty("spark.yarn.app.container.log.dir"))
+      .map(_ + java.io.File.separator)
+      .orElse(conf.logDir)
+      .getOrElse(Paths.get(System.getProperty("user.dir"), "h2ologs", SparkEnv.get.conf.getAppId))
   }
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {

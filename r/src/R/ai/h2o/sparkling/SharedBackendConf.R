@@ -68,7 +68,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     logLevel = function() { invoke(jconf, "logLevel") },
 
-    h2oNodeLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oNodeLogDir")) },
+    h2oNodeLogDir = function() {
+      warning("The method 'h2oNodeLogDir' is deprecated and will be removed in 3.34. Use 'logDir' instead!")
+      ConfUtils.getOption(invoke(jconf, "logDir"))
+    },
+
+    logDir = function() { ConfUtils.getOption(invoke(jconf, "logDir")) },
 
     backendHeartbeatInterval = function() { invoke(jconf, "backendHeartbeatInterval") },
 
@@ -117,7 +122,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
       invoke(jconf, "logLevel")
     },
 
-    h2oClientLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oClientLogDir")) },
+    h2oClientLogDir = function() {
+      warning("The method 'h2oClientLogDir' is deprecated and will be removed in 3.34. Use 'logDir' instead!")
+      ConfUtils.getOption(invoke(jconf, "logDir"))
+    },
 
     clientBasePort = function() {
       warning("The method 'clientBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
@@ -220,7 +228,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setLogLevel = function(level) { invoke(jconf, "setLogLevel", level); .self },
 
-    setH2ONodeLogDir = function(dir) { invoke(jconf, "setH2ONodeLogDir", dir); .self },
+    setH2ONodeLogDir = function(dir) {
+      warning("The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+      invoke(jconf, "setLogDir", dir); .self
+    },
+
+    setLogDir = function(dir) { invoke(jconf, "setLogDir", dir); .self },
 
     setBackendHeartbeatInterval = function(interval) { invoke(jconf, "setBackendHeartbeatInterval", as.integer(interval)); .self },
 
@@ -275,7 +288,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
       invoke(jconf, "setLogLevel", level); .self
     },
 
-    setH2OClientLogDir = function(dir) { invoke(jconf, "setH2OClientLogDir", dir); .self },
+    setH2OClientLogDir = function(dir) {
+      warning("The method 'setH2OClientLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+      invoke(jconf, "setLogDir", dir); .self
+    },
 
     setClientBasePort = function(port) {
       warning("The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
