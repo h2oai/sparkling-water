@@ -446,7 +446,7 @@ object SharedBackendConf {
   val PROP_NODE_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.node.extra", None)
 
   /** Path to flow dir. */
-  val PROP_FLOW_DIR: (String, None.type) = ("spark.ext.h2o.client.flow.dir", None)
+  val PROP_FLOW_DIR: (String, None.type) = ("spark.ext.h2o.flow.dir", None)
 
   /** Extra http headers for Flow UI */
   val PROP_FLOW_EXTRA_HTTP_HEADERS: (String, None.type) = ("spark.ext.h2o.flow.extra.http.headers", None)

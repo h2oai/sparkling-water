@@ -177,6 +177,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-log_level", conf.logLevel)
       .add("-embedded")
       .add("-ice_root", conf.icedDir)
+      .add("-flow_dir", conf.flowDir)
       .buildArgs()
   }
 
@@ -187,7 +188,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .addIf("-quiet", !conf.clientVerboseOutput)
       .add("-log_dir", conf.h2oClientLogDir)
       .add("-baseport", conf.clientBasePort)
-      .add("-flow_dir", conf.flowDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
