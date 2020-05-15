@@ -70,7 +70,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
     parameters
       .map { parameter =>
-        val constructorMethod = resolveParameterContructorMethod(parameter)
+        val constructorMethod = resolveParameterConstructorMethod(parameter)
         s"""  private val ${parameter.swName} = ${constructorMethod}(
            |    name = "${parameter.swName}",
            |    doc = "${parameter.comment}")""".stripMargin
@@ -145,7 +145,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     }
   }
 
-  private def resolveParameterContructorMethod(parameter: Parameter): String = {
+  private def resolveParameterConstructorMethod(parameter: Parameter): String = {
     val rawPrefix = if (parameter.dataType.isEnum) {
       "string"
     } else if (parameter.dataType.name.endsWith("[]")) {
