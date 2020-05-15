@@ -191,7 +191,8 @@ trait SharedBackendUtils extends Logging with Serializable {
     Option(System.getProperty("spark.yarn.app.container.log.dir"))
       .map(_ + java.io.File.separator)
       .orElse(conf.logDir)
-      .getOrElse(Paths.get(System.getProperty("user.dir"), "h2ologs", SparkEnv.get.conf.getAppId))
+      .getOrElse(
+        Paths.get(System.getProperty("user.dir"), "h2ologs", SparkEnv.get.conf.getAppId).toAbsolutePath.toString)
   }
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {
