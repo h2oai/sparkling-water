@@ -31,7 +31,6 @@ trait SharedBackendConf {
   import SharedBackendConf._
 
   /** Getters */
-  /** Generic parameters */
   def backendClusterMode: String = sparkConf.get(PROP_BACKEND_CLUSTER_MODE._1, PROP_BACKEND_CLUSTER_MODE._2)
 
   def cloudName: Option[String] = sparkConf.getOption(PROP_CLOUD_NAME._1)
@@ -119,7 +118,6 @@ trait SharedBackendConf {
   def isInsecureXGBoostAllowed: Boolean =
     sparkConf.getBoolean(PROP_ALLOW_INSECURE_XGBOOST._1, PROP_ALLOW_INSECURE_XGBOOST._2)
 
-  /** H2O Client parameters */
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
 
   def clientIp: Option[String] = sparkConf.getOption(PROP_CLIENT_IP._1)
@@ -169,7 +167,6 @@ trait SharedBackendConf {
   def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
 
   /** Setters */
-  /** Generic parameters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
       logWarning("Using internal cluster mode!")
@@ -296,7 +293,6 @@ trait SharedBackendConf {
 
   def setInsecureXGBoostDenied(): H2OConf = set(PROP_ALLOW_INSECURE_XGBOOST._1, value = false)
 
-  /** H2O Client parameters */
   def setFlowDir(dir: String): H2OConf = set(PROP_FLOW_DIR._1, dir)
 
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
@@ -502,7 +498,7 @@ object SharedBackendConf {
   val PROP_CLIENT_FLOW_BASEURL_OVERRIDE: (String, None.type) = ("spark.ext.h2o.client.flow.baseurl.override", None)
 
   /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-    * client (either H2O client or REST) is connected
+    * client is connected
     */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) =
     ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
