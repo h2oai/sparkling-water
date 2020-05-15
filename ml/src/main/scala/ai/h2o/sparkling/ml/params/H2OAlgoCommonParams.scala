@@ -67,6 +67,7 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsBase with H2OCom
         "weights_column" -> getWeightCol(),
         "nfolds" -> getNfolds(),
         "fold_column" -> getFoldCol(),
-        "distribution" -> getDistribution())
+        "distribution" -> getDistribution(),
+        "seed" -> getSeed())
   }
 }
