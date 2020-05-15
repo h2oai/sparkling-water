@@ -88,7 +88,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     mojoDestroyTimeout = function() { invoke(jconf, "mojoDestroyTimeout") },
 
-    nodeBasePort = function() { invoke(jconf, "nodeBasePort") },
+    nodeBasePort = function() {
+      warning("The method 'nodeBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
+      invoke(jconf, "basePort")
+    },
+
+    basePort = function() { invoke(jconf, "basePort") },
 
     nodeExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "nodeExtraProperties")) },
 
@@ -114,7 +119,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     h2oClientLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oClientLogDir")) },
 
-    clientBasePort = function() { invoke(jconf, "clientBasePort") },
+    clientBasePort = function() {
+      warning("The method 'clientBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
+      invoke(jconf, "basePort")
+    },
 
     clientWebPort = function() { invoke(jconf, "clientWebPort") },
 
@@ -232,7 +240,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setInternalPortOffset = function(offset) { invoke(jconf, "setInternalPortOffset", as.integer(offset)); .self },
 
-    setNodeBasePort = function(port) { invoke(jconf, "setNodeBasePort", as.integer(port)); .self },
+    setNodeBasePort = function(port) {
+      warning("The method 'setNodeBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+      invoke(jconf, "setBasePort", as.integer(port)); .self
+    },
+
+    setBasePort = function(port) { invoke(jconf, "setBasePort", as.integer(port)); .self },
 
     setMojoDestroyTimeout = function(timeoutInMilliseconds) { invoke(jconf, "setMojoDestroyTimeout", as.integer(timeoutInMilliseconds)); .self },
 
@@ -264,7 +277,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setH2OClientLogDir = function(dir) { invoke(jconf, "setH2OClientLogDir", dir); .self },
 
-    setClientBasePort = function(basePort) { invoke(jconf, "setClientBasePort", as.integer(basePort)); .self },
+    setClientBasePort = function(port) {
+      warning("The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+      invoke(jconf, "setBasePort", as.integer(port)); .self
+    },
 
     setClientWebPort = function(port) { invoke(jconf, "setClientWebPort", as.integer(port)); .self },
 

@@ -86,7 +86,7 @@ object ProxyStarter extends Logging {
     } else {
       1
     }
-    conf.clientBasePort + numSkipped
+    conf.basePort + numSkipped
   }
 
   private def getContextHandler(conf: H2OConf): ServletContextHandler = {

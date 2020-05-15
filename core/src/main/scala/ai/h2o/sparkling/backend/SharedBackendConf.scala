@@ -99,7 +99,10 @@ trait SharedBackendConf {
 
   def internalPortOffset: Int = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
 
-  def nodeBasePort: Int = sparkConf.getInt(PROP_NODE_PORT_BASE._1, PROP_NODE_PORT_BASE._2)
+  @DeprecatedMethod("basePort", "3.34")
+  def nodeBasePort: Int = basePort
+
+  def basePort: Int = sparkConf.getInt(PROP_BASE_PORT._1, PROP_BASE_PORT._2)
 
   def mojoDestroyTimeout: Int = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
 
@@ -126,7 +129,8 @@ trait SharedBackendConf {
 
   def h2oClientLogDir: Option[String] = sparkConf.getOption(PROP_CLIENT_LOG_DIR._1)
 
-  def clientBasePort: Int = sparkConf.getInt(PROP_CLIENT_PORT_BASE._1, PROP_CLIENT_PORT_BASE._2)
+  @DeprecatedMethod("basePort", "3.34")
+  def clientBasePort: Int = basePort
 
   def clientWebPort: Int = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
 
@@ -254,7 +258,10 @@ trait SharedBackendConf {
 
   def setInternalPortOffset(offset: Int): H2OConf = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
 
-  def setNodeBasePort(port: Int): H2OConf = set(PROP_NODE_PORT_BASE._1, port.toString)
+  @DeprecatedMethod("setBasePort", "3.34")
+  def setNodeBasePort(port: Int): H2OConf = setBasePort(port)
+
+  def setBasePort(port: Int): H2OConf = set(PROP_BASE_PORT._1, port.toString)
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf =
     set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
@@ -295,7 +302,8 @@ trait SharedBackendConf {
 
   def setH2OClientLogDir(dir: String): H2OConf = set(PROP_CLIENT_LOG_DIR._1, dir)
 
-  def setClientBasePort(basePort: Int): H2OConf = set(PROP_CLIENT_PORT_BASE._1, basePort.toString)
+  @DeprecatedMethod("setBasePort", "3.34")
+  def setClientBasePort(basePort: Int): H2OConf = setBasePort(basePort)
 
   def setClientWebPort(port: Int): H2OConf = set(PROP_CLIENT_WEB_PORT._1, port.toString)
 
@@ -434,7 +442,7 @@ object SharedBackendConf {
   val PROP_INTERNAL_PORT_OFFSET: (String, Int) = ("spark.ext.h2o.internal.port.offset", 1)
 
   /** Configuration property - base port used for individual H2O nodes configuration. */
-  val PROP_NODE_PORT_BASE: (String, Int) = ("spark.ext.h2o.node.port.base", 54321)
+  val PROP_BASE_PORT: (String, Int) = ("spark.ext.h2o.base.port", 54321)
 
   /**
     * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
@@ -468,9 +476,6 @@ object SharedBackendConf {
 
   /** Location of log directory for the driver instance. */
   val PROP_CLIENT_LOG_DIR: (String, None.type) = ("spark.ext.h2o.client.log.dir", None)
-
-  /** Port on which H2O client publishes its API. If already occupied, the next odd port is tried and so on */
-  val PROP_CLIENT_PORT_BASE: (String, Int) = ("spark.ext.h2o.client.port.base", 54321)
 
   /** Exact client port to access web UI.
     * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */

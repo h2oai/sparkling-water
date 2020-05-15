@@ -84,8 +84,7 @@ trait InternalBackendConf extends SharedBackendConf {
        |  workers              : $numH2OWorkers
        |  cloudName            : ${cloudName.getOrElse(
          "Not set yet, it will be set automatically before starting H2OContext.")}
-       |  clientBasePort       : $clientBasePort
-       |  nodeBasePort         : $nodeBasePort
+       |  base port            : $basePort
        |  cloudTimeout         : $cloudTimeout
        |  log level            : $logLevel
        |  nthreads             : $nthreads

@@ -17,6 +17,10 @@ From 3.32 to 3.34
 
 - Spark option ``spark.ext.h2o.client.flow.dir`` is replaced by ``spark.ext.h2o.flow.dir``.
 
+- On ``H2OConf``, the setters ``setClientBasePort`` and ``setNodeBasePort`` are replaced by ``setBasePort`` and
+  getters ``clientBasePort`` and ``nodeBasePort`` are replaced by ``basePort``. Also the spark options
+  ``spark.ext.h2o.client.port.base`` and ``spark.ext.h2o.node.port.base`` are replaced by ``spark.ext.h2o.base.port``.
+
 From 3.30 to 3.32
 -----------------
 
