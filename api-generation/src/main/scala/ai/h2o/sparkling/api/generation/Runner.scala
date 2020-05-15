@@ -86,9 +86,9 @@ object Runner {
   private def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OXGBoost", classOf[XGBoostParameters], "H2OSupervisedAlgorithm", Seq.empty),
-      ("H2OGBM", classOf[GBMParameters], "H2OSupervisedAlgorithm", Seq.empty),
-      ("H2ODRF", classOf[DRFParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OXGBoost", classOf[XGBoostParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
+      ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
+      ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
       ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")))
