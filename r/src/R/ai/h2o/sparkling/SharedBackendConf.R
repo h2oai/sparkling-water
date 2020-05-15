@@ -61,7 +61,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     autoFlowSsl = function() { invoke(jconf, "autoFlowSsl") },
 
-    h2oNodeLogLevel = function() { invoke(jconf, "h2oNodeLogLevel") },
+    h2oNodeLogLevel = function() {
+      warning("The method 'h2oNodeLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
+      invoke(jconf, "logLevel")
+    },
+
+    logLevel = function() { invoke(jconf, "logLevel") },
 
     h2oNodeLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oNodeLogDir")) },
 
@@ -102,7 +107,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
         ConfUtils.getOption(invoke(jconf, "icedDir"))
     },
 
-    h2oClientLogLevel = function() { invoke(jconf, "h2oClientLogLevel") },
+    h2oClientLogLevel = function() {
+      warning("The method 'h2oClientLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
+      invoke(jconf, "logLevel")
+    },
 
     h2oClientLogDir = function() { ConfUtils.getOption(invoke(jconf, "h2oClientLogDir")) },
 
@@ -197,7 +205,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setAutoFlowSslDisabled = function() { invoke(jconf, "setAutoFlowSslDisabled"); .self },
 
-    setH2ONodeLogLevel = function(level) { invoke(jconf, "setH2ONodeLogLevel", level); .self },
+    setH2ONodeLogLevel = function(level) {
+      warning("The method 'setH2ONodeLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+      invoke(jconf, "setLogLevel", level); .self
+    },
+
+    setLogLevel = function(level) { invoke(jconf, "setLogLevel", level); .self },
 
     setH2ONodeLogDir = function(dir) { invoke(jconf, "setH2ONodeLogDir", dir); .self },
 
@@ -244,7 +257,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
         invoke(jconf, "setIcedDir", dir); .self
     },
 
-    setH2OClientLogLevel = function(level) { invoke(jconf, "setH2OClientLogLevel", level); .self },
+    setH2OClientLogLevel = function(level) {
+      warning("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+      invoke(jconf, "setLogLevel", level); .self
+    },
 
     setH2OClientLogDir = function(dir) { invoke(jconf, "setH2OClientLogDir", dir); .self },
 

@@ -73,7 +73,10 @@ trait SharedBackendConf {
 
   def autoFlowSsl: Boolean = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
 
-  def h2oNodeLogLevel: String = sparkConf.get(PROP_NODE_LOG_LEVEL._1, PROP_NODE_LOG_LEVEL._2)
+  @DeprecatedMethod("logLevel", "3.34")
+  def h2oNodeLogLevel: String = logLevel
+
+  def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
   def h2oNodeLogDir: Option[String] = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
 
@@ -118,7 +121,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("icedDir", "3.34")
   def clientIcedDir: Option[String] = icedDir
 
-  def h2oClientLogLevel: String = sparkConf.get(PROP_CLIENT_LOG_LEVEL._1, PROP_CLIENT_LOG_LEVEL._2)
+  @DeprecatedMethod("logLevel", "3.34")
+  def h2oClientLogLevel: String = logLevel
 
   def h2oClientLogDir: Option[String] = sparkConf.getOption(PROP_CLIENT_LOG_DIR._1)
 
@@ -224,7 +228,10 @@ trait SharedBackendConf {
 
   def setAutoFlowSslDisabled(): H2OConf = set(PROP_AUTO_SSL_FLOW._1, value = false)
 
-  def setH2ONodeLogLevel(level: String): H2OConf = set(PROP_NODE_LOG_LEVEL._1, level)
+  @DeprecatedMethod("setLogLevel", "3.34")
+  def setH2ONodeLogLevel(level: String): H2OConf = setLogLevel(level)
+
+  def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
 
   def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_NODE_LOG_DIR._1, dir)
 
@@ -283,7 +290,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("setIcedDir", "3.34")
   def setClientIcedDir(icedDir: String): H2OConf = setIcedDir(icedDir)
 
-  def setH2OClientLogLevel(level: String): H2OConf = set(PROP_CLIENT_LOG_LEVEL._1, level)
+  @DeprecatedMethod("setLogLevel", "3.34")
+  def setH2OClientLogLevel(level: String): H2OConf = setLogLevel(level)
 
   def setH2OClientLogDir(dir: String): H2OConf = set(PROP_CLIENT_LOG_DIR._1, dir)
 
@@ -396,7 +404,7 @@ object SharedBackendConf {
   val PROP_AUTO_SSL_FLOW: (String, Boolean) = ("spark.ext.h2o.auto.flow.ssl", false)
 
   /** H2O internal log level for launched remote nodes. */
-  val PROP_NODE_LOG_LEVEL: (String, String) = ("spark.ext.h2o.node.log.level", "INFO")
+  val PROP_LOG_LEVEL: (String, String) = ("spark.ext.h2o.log.level", "INFO")
 
   /** Location of log directory for remote nodes. */
   val PROP_NODE_LOG_DIR: (String, None.type) = ("spark.ext.h2o.node.log.dir", None)

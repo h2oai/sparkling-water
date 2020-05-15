@@ -10,6 +10,11 @@ From 3.32 to 3.34
   getters ``clientIcedDir`` and ``nodeIcedDir`` are replaced by ``icedDir``. Also the spark options
   ``spark.ext.h2o.client.iced.dir`` and ``spark.ext.h2o.node.iced.dir`` are replaced by ``spark.ext.h2o.iced.dir``.
 
+- On ``H2OConf``, the setters ``setH2OClientLogLevel`` and ``setH2ONodeLogLevel`` are replaced by ``setLogLevel`` and
+  getters ``h2oClientLogLevel`` and ``h2oNodeLogLevel`` are replaced by ``logLevel``. Also the spark options
+  ``spark.ext.h2o.client.log.level`` and ``spark.ext.h2o.node.log.level`` are replaced by
+  ``spark.ext.h2o.log.level``.
+
 From 3.30 to 3.32
 -----------------
 

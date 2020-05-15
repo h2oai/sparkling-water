@@ -122,7 +122,9 @@ object H2OConf extends Logging {
 
   private val deprecatedOptions = Map[String, String](
     "spark.ext.h2o.node.iced.dir" -> "spark.ext.h2o.iced.dir",
-    "spark.ext.h2o.client.iced.dir" -> "spark.ext.h2o.iced.dir")
+    "spark.ext.h2o.client.iced.dir" -> "spark.ext.h2o.iced.dir",
+    "spark.ext.h2o.client.log.level" -> "spark.ext.h2o.log.level",
+    "spark.ext.h2o.node.log.level" -> "spark.ext.h2o.log.level")
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
     deprecatedOptions.foreach {
