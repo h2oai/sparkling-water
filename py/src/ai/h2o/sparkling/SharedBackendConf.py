@@ -130,7 +130,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.basePort()
 
     def nodeExtraProperties(self):
-        return self._get_option(self._jconf.nodeExtraProperties())
+        warnings.warn("The method 'nodeExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+        return self.extraProperties()
+
+    def extraProperties(self):
+        return self._get_option(self._jconf.extraProperties())
 
     def flowExtraHttpHeaders(self):
         return self._get_option(self._jconf.flowExtraHttpHeaders())
@@ -176,7 +180,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
 
     def clientExtraProperties(self):
-        return self._get_option(self._jconf.clientExtraProperties())
+        warnings.warn("The method 'clientExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+        return self.extraProperties()
 
     def runsInExternalClusterMode(self):
         return self._jconf.runsInExternalClusterMode()
@@ -388,7 +393,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeExtraProperties(self, extraProperties):
-        self._jconf.setNodeExtraProperties(extraProperties)
+        warnings.warn("The method 'setNodeExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+        return self.setExtraProperties(extraProperties)
+
+    def setExtraProperties(self, extraProperties):
+        self._jconf.setExtraProperties(extraProperties)
         return self
 
     def setFlowExtraHttpHeaders(self, headers):
@@ -460,8 +469,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setClientExtraProperties(self, extraProperties):
-        self._jconf.setClientExtraProperties(extraProperties)
-        return self
+        warnings.warn("The method 'setClientExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+        return self.setExtraProperties(extraProperties)
 
     def setVerifySslCertificates(self, verify):
         self._jconf.setVerifySslCertificates(verify)

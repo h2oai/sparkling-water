@@ -137,7 +137,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | evicted from executor's cache. Default |
 |                                                    |                |                                                 | timeout value is 10 minutes.           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.extra``                       | ``None``       | ``setNodeExtraProperties(String)``              | A string containing extra parameters   |
+| ``spark.ext.h2o.extra.properties``                 | ``None``       | ``setExtraProperties(String)``                  | A string containing extra parameters   |
 |                                                    |                |                                                 | passed to H2O nodes during startup.    |
 |                                                    |                |                                                 | This parameter should be configured    |
 |                                                    |                |                                                 | only if H2O parameters do not have any |
@@ -218,13 +218,6 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.cluster.client.retry.timeout``     | ``60000``      | ``setClientCheckRetryTimeout(Integer)``         | Timeout in milliseconds specifying     |
 |                                                    |                |                                                 | how often we check whether the         |
 |                                                    |                |                                                 | the client is still connected.         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.extra``                     | ``None``       | ``setClientExtraProperties(String)``            | A string containing extra parameters   |
-|                                                    |                |                                                 | passed to H2O client during startup.   |
-|                                                    |                |                                                 | This parameter should be configured    |
-|                                                    |                |                                                 | only if H2O parameters do not have any |
-|                                                    |                |                                                 | corresponding parameters in Sparkling  |
-|                                                    |                |                                                 | Water.                                 |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be         |
 |                                                    |                |                                                 | verified before using in H2O or not.   |

@@ -108,7 +108,10 @@ trait SharedBackendConf {
 
   def mojoDestroyTimeout: Int = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
 
-  def nodeExtraProperties: Option[String] = sparkConf.getOption(PROP_NODE_EXTRA_PROPERTIES._1)
+  @DeprecatedMethod("extraProperties", "3.34")
+  def nodeExtraProperties: Option[String] = extraProperties
+
+  def extraProperties: Option[String] = sparkConf.getOption(PROP_EXTRA_PROPERTIES._1)
 
   def flowExtraHttpHeaders: Option[String] = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
 
@@ -142,7 +145,8 @@ trait SharedBackendConf {
 
   def clientFlowBaseurlOverride: Option[String] = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
 
-  def clientExtraProperties: Option[String] = sparkConf.getOption(PROP_CLIENT_EXTRA_PROPERTIES._1)
+  @DeprecatedMethod("extraProperties", "3.34")
+  def clientExtraProperties: Option[String] = extraProperties
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_EXTERNAL
 
@@ -270,7 +274,10 @@ trait SharedBackendConf {
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf =
     set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
-  def setNodeExtraProperties(extraProperties: String): H2OConf = set(PROP_NODE_EXTRA_PROPERTIES._1, extraProperties)
+  @DeprecatedMethod("setExtraProperties", "3.34")
+  def setNodeExtraProperties(extraProperties: String): H2OConf = setExtraProperties(extraProperties)
+
+  def setExtraProperties(extraProperties: String): H2OConf = set(PROP_EXTRA_PROPERTIES._1, extraProperties)
 
   def setFlowExtraHttpHeaders(headers: String): H2OConf = { // R mapping
     set(PROP_FLOW_EXTRA_HTTP_HEADERS._1, headers)
@@ -325,7 +332,8 @@ trait SharedBackendConf {
 
   def setClientCheckRetryTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 
-  def setClientExtraProperties(extraProperties: String): H2OConf = set(PROP_CLIENT_EXTRA_PROPERTIES._1, extraProperties)
+  @DeprecatedMethod("setExtraProperties", "3.34")
+  def setClientExtraProperties(extraProperties: String): H2OConf = setExtraProperties(extraProperties)
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
@@ -455,7 +463,7 @@ object SharedBackendConf {
   val PROP_MOJO_DESTROY_TIMEOUT: (String, Int) = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
 
   /** Extra properties passed to H2O nodes during startup. */
-  val PROP_NODE_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.node.extra", None)
+  val PROP_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.extra.properties", None)
 
   /** Path to flow dir. */
   val PROP_FLOW_DIR: (String, None.type) = ("spark.ext.h2o.flow.dir", None)
@@ -502,9 +510,6 @@ object SharedBackendConf {
     */
   val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) =
     ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
-
-  /** Extra properties passed to H2O client during startup. */
-  val PROP_CLIENT_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.client.extra", None)
 
   /** Whether certificates should be verified before using in H2O or not. */
   val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
