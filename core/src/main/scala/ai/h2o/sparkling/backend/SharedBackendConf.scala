@@ -78,7 +78,10 @@ trait SharedBackendConf {
 
   def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
-  def h2oNodeLogDir: Option[String] = sparkConf.getOption(PROP_NODE_LOG_DIR._1)
+  @DeprecatedMethod("logDir", "3.34")
+  def h2oNodeLogDir: Option[String] = logDir
+
+  def logDir: Option[String] = sparkConf.getOption(PROP_LOG_DIR._1)
 
   def backendHeartbeatInterval: Int =
     sparkConf.getInt(PROP_BACKEND_HEARTBEAT_INTERVAL._1, PROP_BACKEND_HEARTBEAT_INTERVAL._2)
@@ -127,7 +130,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("logLevel", "3.34")
   def h2oClientLogLevel: String = logLevel
 
-  def h2oClientLogDir: Option[String] = sparkConf.getOption(PROP_CLIENT_LOG_DIR._1)
+  @DeprecatedMethod("logDir", "3.34")
+  def h2oClientLogDir: Option[String] = logDir
 
   @DeprecatedMethod("basePort", "3.34")
   def clientBasePort: Int = basePort
@@ -237,7 +241,10 @@ trait SharedBackendConf {
 
   def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
 
-  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_NODE_LOG_DIR._1, dir)
+  @DeprecatedMethod("setLogDir", "3.34")
+  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
+
+  def setLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
 
   def setBackendHeartbeatInterval(interval: Int): H2OConf = set(PROP_BACKEND_HEARTBEAT_INTERVAL._1, interval.toString)
 
@@ -300,7 +307,8 @@ trait SharedBackendConf {
   @DeprecatedMethod("setLogLevel", "3.34")
   def setH2OClientLogLevel(level: String): H2OConf = setLogLevel(level)
 
-  def setH2OClientLogDir(dir: String): H2OConf = set(PROP_CLIENT_LOG_DIR._1, dir)
+  @DeprecatedMethod("setLogDir", "3.34")
+  def setH2OClientLogDir(dir: String): H2OConf = setLogDir(dir)
 
   @DeprecatedMethod("setBasePort", "3.34")
   def setClientBasePort(basePort: Int): H2OConf = setBasePort(basePort)
@@ -414,8 +422,8 @@ object SharedBackendConf {
   /** H2O internal log level for launched remote nodes. */
   val PROP_LOG_LEVEL: (String, String) = ("spark.ext.h2o.log.level", "INFO")
 
-  /** Location of log directory for remote nodes. */
-  val PROP_NODE_LOG_DIR: (String, None.type) = ("spark.ext.h2o.node.log.dir", None)
+  /** Location of H2O log directory. */
+  val PROP_LOG_DIR: (String, None.type) = ("spark.ext.h2o.log.dir", None)
 
   /** Interval used to ping and check the H2O backend status. */
   val PROP_BACKEND_HEARTBEAT_INTERVAL: (String, Int) = ("spark.ext.h2o.backend.heartbeat.interval", 10000)

@@ -50,9 +50,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     */
   def checkAndUpdateConf(conf: H2OConf): H2OConf = {
     // Note: updating Spark Conf is useless at this time in more of the cases since SparkContext is already running
-    if (conf.h2oClientLogDir.isEmpty) {
-      conf.setH2OClientLogDir(defaultLogDir(conf.sparkConf.getAppId))
-    }
 
     if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
       AzureDatabricksUtils.setClientWebPort(conf)
@@ -138,10 +135,6 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def defaultLogDir(appId: String): String = {
-    System.getProperty("user.dir") + java.io.File.separator + "h2ologs" + File.separator + appId
-  }
-
   def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
     new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
@@ -177,6 +170,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-log_level", conf.logLevel)
       .add("-embedded")
       .add("-baseport", conf.basePort)
+      .add("-log_dir", determineLogDir(conf, SparkEnv.get))
       .add("-ice_root", conf.icedDir)
       .add("-flow_dir", conf.flowDir)
       .buildArgs()
@@ -187,10 +181,17 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
       .addIf("-quiet", !conf.clientVerboseOutput)
-      .add("-log_dir", conf.h2oClientLogDir)
       .add("-port", Some(conf.clientWebPort).filter(_ > 0))
       .addAsString(conf.clientExtraProperties)
       .buildArgs()
+  }
+
+  private def determineLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
+    val fs = java.io.File.separator
+    Option(System.getProperty("spark.yarn.app.container.log.dir"))
+      .map(_ + fs)
+      .orElse(conf.logDir)
+      .getOrElse(System.getProperty("user.dir") + fs + "h2ologs" + fs + sparkEnv.conf.getAppId)
   }
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {

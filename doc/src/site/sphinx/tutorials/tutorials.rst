@@ -10,6 +10,7 @@ How to...
    run_sparkling_water
    change_default_port
    hive_support
+   logs
 
 **Security**
 
@@ -49,15 +50,6 @@ How to...
    :maxdepth: 2
 
    grid_gbm_pipeline
-
-**Logging**
-
-.. toctree::
-   :maxdepth: 2
-
-   change_log_level
-   change_log_location
-   obtaining_logs
 
 **As Spark Package**
 

@@ -95,8 +95,7 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.log.level``                        | ``INFO``       | ``setLogLevel(String)``                         | H2O log level.                         |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.log.dir``                     | |h2oLogDir|    | ``setH2ONodeLogDir(String)``                    | Location of H2O logs on H2O nodes      |
-|                                                    |                |                                                 | except on the client.                  |
+| ``spark.ext.h2o.log.dir``                          | |h2oLogDir|    | ``setLogDir(String)``                           | Location of H2O logs.                  |
 |                                                    | or |yarnDir|   |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.backend.heartbeat.interval``       | ``10000ms``    | ``setBackendHeartbeatInterval(Integer)``        | Interval for getting heartbeat from    |
@@ -200,11 +199,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | are saved.                             |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | ``setClientIp(String)``                         | IP of H2O client node.                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.log.dir``                   | |h2oLogDir|    | ``setH2OClientLogDir(String)``                  | Location of H2O logs on the driver     |
-|                                                    |                |                                                 | machine.                               |
-|                                                    |                |                                                 |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+ |                |                                                 | odd port is tried on so on.            |
 | ``spark.ext.h2o.client.web.port``                  | ``-1``         | ``setClientWebPort(Integer)``                   | Exact client port to access web UI.    |
 |                                                    |                |                                                 | The value ``-1`` means automatic       |
 |                                                    |                |                                                 | search for a free port starting at     |

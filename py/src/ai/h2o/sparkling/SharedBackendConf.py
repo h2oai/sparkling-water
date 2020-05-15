@@ -89,7 +89,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.logLevel()
 
     def h2oNodeLogDir(self):
-        return self._jconf.h2oNodeLogDir()
+        warnings.warn("The method 'h2oNodeLogDir' is deprecated and will be removed in 3.34. Use 'logDir' instead!")
+        return self.logDir()
+
+    def logDir(self):
+        return self._get_option(self._jconf.logDir())
 
     def backendHeartbeatInterval(self):
         return self._jconf.backendHeartbeatInterval()
@@ -152,7 +156,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.logLevel()
 
     def h2oClientLogDir(self):
-        return self._get_option(self._jconf.h2oClientLogDir())
+        warnings.warn("The method 'h2oClientLogDir' is deprecated and will be removed in 3.34. Use 'logDir' instead!")
+        return self.logDir()
 
     def clientBasePort(self):
         warnings.warn("The method 'clientBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
@@ -327,7 +332,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeLogDir(self, dir):
-        self._jconf.setH2ONodeLogDir(dir)
+        warnings.warn("The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+        return self.setLogDir(dir)
+
+    def setLogDir(self, dir):
+        self._jconf.setLogDir(dir)
         return self
 
     def setBackendHeartbeatInterval(self, interval):
@@ -419,8 +428,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.setLogLevel(level)
 
     def setH2OClientLogDir(self, dir):
-        self._jconf.setH2OClientLogDir(dir)
-        return self
+        warnings.warn("The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+        return self.setLogDir(dir)
 
     def setClientBasePort(self, basePort):
         warnings.warn("The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")

@@ -55,18 +55,10 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
-      .add("-log_dir", getH2ONodeLogDir(conf, SparkEnv.get))
       .addIf("-network", conf.nodeNetworkMask, conf.nodeNetworkMask.isDefined)
       .addIf("-ip", ip, conf.nodeNetworkMask.isEmpty)
       .addAsString(conf.nodeExtraProperties)
       .buildArgs()
-  }
-
-  private def getH2ONodeLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
-    Option(System.getProperty("spark.yarn.app.container.log.dir"))
-      .map(_ + java.io.File.separator)
-      .orElse(conf.h2oNodeLogDir)
-      .getOrElse(defaultLogDir(sparkEnv.conf.getAppId))
   }
 
   private[spark] def guessTotalExecutorSize(sc: SparkContext): Option[Int] = {
