@@ -79,9 +79,11 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     parameters
       .map { parameter =>
         val constructorMethod = resolveParameterContructorMethod(parameter)
-        s"""  private val ${parameter.swName} = ${constructorMethod}("${parameter.swName}")"""
+        s"""  private val ${parameter.swName} = ${constructorMethod}(
+           |    name = "${parameter.swName}",
+           |    doc = "${parameter.comment}")""".stripMargin
       }
-      .mkString("\n")
+      .mkString("\n\n")
   }
 
   private def generateDefaultValues(parameters: Seq[Parameter]): String = {
