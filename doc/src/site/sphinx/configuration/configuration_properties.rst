@@ -195,7 +195,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | are saved.                             |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | ``setClientIp(String)``                         | IP of H2O client node.                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+ |                |                                                 | odd port is tried on so on.            |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.web.port``                  | ``-1``         | ``setClientWebPort(Integer)``                   | Exact client port to access web UI.    |
 |                                                    |                |                                                 | The value ``-1`` means automatic       |
 |                                                    |                |                                                 | search for a free port starting at     |
