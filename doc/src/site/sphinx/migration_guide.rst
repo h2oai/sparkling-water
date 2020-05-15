@@ -15,6 +15,8 @@ From 3.32 to 3.34
   ``spark.ext.h2o.client.log.level`` and ``spark.ext.h2o.node.log.level`` are replaced by
   ``spark.ext.h2o.log.level``.
 
+- Spark option ``spark.ext.h2o.client.flow.dir`` is replaced by ``spark.ext.h2o.flow.dir``.
+
 From 3.30 to 3.32
 -----------------
 

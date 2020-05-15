@@ -196,7 +196,7 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O client parameters**                          |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.flow.dir``                  | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |
+| ``spark.ext.h2o.flow.dir``                         | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |
 |                                                    |                |                                                 | are saved.                             |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.ip``                        | ``None``       | ``setClientIp(String)``                         | IP of H2O client node.                 |
