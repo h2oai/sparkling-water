@@ -48,6 +48,6 @@ trait HasMonotoneConstraints extends H2OAlgoParamsBase {
   }
 
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("user_points" -> getMonotoneConstraintsAsKeyValuePairs())
+    super.getH2OAlgorithmParams() ++ Map("monotone_constraints" -> getMonotoneConstraintsAsKeyValuePairs())
   }
 }
