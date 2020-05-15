@@ -110,7 +110,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add(conf.icedDir.map(dir => Seq("-J", "-ice_root", "-J", dir)).getOrElse(Seq()))
       .add(conf.flowDir.map(dir => Seq("-J", "-flow_dir", "-J", dir)).getOrElse(Seq()))
       .add("-port_offset", conf.internalPortOffset)
-      .add("-baseport", conf.nodeBasePort)
+      .add("-baseport", conf.basePort)
       .add("-timeout", conf.clusterStartTimeout)
       .add("-disown")
       .add(H2OClientUtils.getExtraExternalBackendArgsWhenClientBased(conf), H2OClientUtils.isH2OClientBased(conf))

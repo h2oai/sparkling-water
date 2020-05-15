@@ -119,7 +119,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.mojoDestroyTimeout()
 
     def nodeBasePort(self):
-        return self._jconf.nodeBasePort()
+        warnings.warn("The method 'nodeBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
+        return self.basePort()
+
+    def basePort(self):
+        return self._jconf.basePort()
 
     def nodeExtraProperties(self):
         return self._get_option(self._jconf.nodeExtraProperties())
@@ -151,7 +155,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.h2oClientLogDir())
 
     def clientBasePort(self):
-        return self._jconf.clientBasePort()
+        warnings.warn("The method 'clientBasePort' is deprecated and will be removed in 3.34. Use 'basePort' instead!")
+        return self.basePort()
 
     def clientWebPort(self):
         return self._jconf.clientWebPort()
@@ -362,7 +367,11 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeBasePort(self, port):
-        self._jconf.setNodeBasePort(port)
+        warnings.warn("The method 'setNodeBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+        return self.setBasePort(port)
+
+    def setBasePort(self, port):
+        self._jconf.setBasePort(port)
         return self
 
     def setMojoDestroyTimeout(self, timeoutInMilliseconds):
@@ -414,8 +423,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setClientBasePort(self, basePort):
-        self._jconf.setClientBasePort(basePort)
-        return self
+        warnings.warn("The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+        return self.setBasePort(basePort)
 
     def setClientWebPort(self, port):
         self._jconf.setClientWebPort(port)

@@ -178,7 +178,7 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
        |  cluster start mode   : $clusterStartMode
        |  cloudName            : ${cloudName.getOrElse("Not set yet")}
        |  cloud representative : ${h2oCluster.getOrElse("Not set, using cloud name only")}
-       |  clientBasePort       : $clientBasePort
+       |  base port            : $basePort
        |  log level            : $logLevel
        |  nthreads             : $nthreads""".stripMargin
 }

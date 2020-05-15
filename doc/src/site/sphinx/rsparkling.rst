@@ -160,8 +160,7 @@ If you want to change a value of a given property, use an appropriate setter lis
 
 .. code:: r
 
-    h2oConf$setNodeBasePort(55555)
-    h2oConf$setClientBasePort(44444)
+    h2oConf$setBasePort(55555)
 
 Or you change the property value via the ``set`` method and specifying the property name.:
 

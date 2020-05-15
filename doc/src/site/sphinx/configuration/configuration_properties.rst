@@ -131,7 +131,7 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | client node;                           |
 |                                                    |                |                                                 | ``api_port + port_offset = h2o_port``  |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.port.base``                   | ``54321``      | ``setNodeBasePort(Integer)``                    | Base port used for individual H2O      |
+| ``spark.ext.h2o.base.port``                        | ``54321``      | ``setBasePort(Integer)``                        | Base port used for individual H2O      |
 |                                                    |                |                                                 | nodes.                                 |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.mojo.destroy.timeout``             | ``600000``     | ``setMojoDestroyTimeout(Integer)``              | If a scoring MOJO instance is not used |
@@ -205,14 +205,10 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | machine.                               |
 |                                                    |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.port.base``                 | ``54321``      | ``setClientBasePort(Integer)``                  | Port on which H2O client publishes     |
-|                                                    |                |                                                 | its API. If already occupied, the next |
-|                                                    |                |                                                 | odd port is tried on so on.            |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.web.port``                  | ``-1``         | ``setClientWebPort(Integer)``                   | Exact client port to access web UI.    |
 |                                                    |                |                                                 | The value ``-1`` means automatic       |
 |                                                    |                |                                                 | search for a free port starting at     |
-|                                                    |                |                                                 | ``spark.ext.h2o.port.base``.           |
+|                                                    |                |                                                 | ``spark.ext.h2o.base.port``.           |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.client.verbose``                   | ``false``      | ``setClientVerboseEnabled()``                   | The client outputs verbose log output  |
 |                                                    |                |                                                 | directly into console. Enabling the    |
