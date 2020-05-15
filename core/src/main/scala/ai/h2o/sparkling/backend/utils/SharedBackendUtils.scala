@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend.utils
 
 import java.io.File
+import java.nio.file.Paths
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.{NodeDesc, SharedBackendConf}
@@ -187,11 +188,10 @@ trait SharedBackendUtils extends Logging with Serializable {
   }
 
   private def determineLogDir(conf: H2OConf): String = {
-    val fs = java.io.File.separator
     Option(System.getProperty("spark.yarn.app.container.log.dir"))
-      .map(_ + fs)
+      .map(_ + java.io.File.separator)
       .orElse(conf.logDir)
-      .getOrElse(System.getProperty("user.dir") + fs + "h2ologs" + fs + SparkEnv.get.conf.getAppId)
+      .getOrElse(Paths.get(System.getProperty("user.dir"), "h2ologs", SparkEnv.get.conf.getAppId))
   }
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {

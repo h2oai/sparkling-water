@@ -46,7 +46,7 @@ Sparkling Water uses the following steps to determine the final logging director
 - First, we check if the ``spark.yarn.app.container.log.dir`` environmental property is defined. If
   it is available, we use it as a logging directory.
 
-- If ``spark.yarn.app.container.log.dir`` is missing we check whether ``spark.ext.h2o.log.dir`` is defined and use it
+- If ``spark.yarn.app.container.log.dir`` is missing, we check whether ``spark.ext.h2o.log.dir`` is defined and use it
   if it is not empty.
 
 - At last, if both options are missing, we store the logs into the default directory ``${user.dir}/h2ologs/${sparkAppId}``
