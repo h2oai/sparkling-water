@@ -57,7 +57,6 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
       .add(getH2OSecurityArgs(conf))
       .addIf("-network", conf.nodeNetworkMask, conf.nodeNetworkMask.isDefined)
       .addIf("-ip", ip, conf.nodeNetworkMask.isEmpty)
-      .addAsString(conf.nodeExtraProperties)
       .buildArgs()
   }
 

@@ -134,7 +134,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isHiveSupportEnabled)
       .addIf("-hiveToken", conf.hiveToken, conf.isHiveSupportEnabled)
       .add("-refreshTokens", conf.isHiveSupportEnabled)
-      .add(conf.nodeExtraProperties)
+      .add(conf.extraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()
   }

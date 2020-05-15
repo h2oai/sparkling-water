@@ -100,7 +100,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     basePort = function() { invoke(jconf, "basePort") },
 
-    nodeExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "nodeExtraProperties")) },
+    nodeExtraProperties = function() {
+      warning("The method 'nodeExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+      ConfUtils.getOption(invoke(jconf, "extraProperties"))
+    },
+
+    extraProperties = function() { ConfUtils.getOption(invoke(jconf, "extraProperties")) },
 
     flowExtraHttpHeaders = function() { ConfUtils.getOption(invoke(jconf, "flowExtraHttpHeaders")) },
 
@@ -140,7 +145,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     clientFlowBaseurlOverride = function() { ConfUtils.getOption(invoke(jconf, "clientFlowBaseurlOverride")) },
 
-    clientExtraProperties = function() { ConfUtils.getOption(invoke(jconf, "clientExtraProperties")) },
+    clientExtraProperties = function() {
+      warning("The method 'clientExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+      ConfUtils.getOption(invoke(jconf, "extraProperties"))
+    },
 
     runsInExternalClusterMode = function() { invoke(jconf, "runsInExternalClusterMode") },
 
@@ -262,7 +270,12 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setMojoDestroyTimeout = function(timeoutInMilliseconds) { invoke(jconf, "setMojoDestroyTimeout", as.integer(timeoutInMilliseconds)); .self },
 
-    setNodeExtraProperties = function(extraProperties) { invoke(jconf, "setNodeExtraProperties", extraProperties); .self },
+    setNodeExtraProperties = function(extraProperties) {
+      warning("The method 'setNodeExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+      invoke(jconf, "setExtraProperties", extraProperties); .self
+    },
+
+    setExtraProperties = function(extraProperties) { invoke(jconf, "setExtraProperties", extraProperties); .self },
 
     setFlowExtraHttpHeaders = function(headers) { invoke(jconf, "setFlowExtraHttpHeaders", headers); .self },
 
@@ -310,7 +323,10 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setClientCheckRetryTimeout = function(timeout) { invoke(jconf, "setClientCheckRetryTimeout", as.integer(timeout)); .self },
 
-    setClientExtraProperties = function(extraProperties) { invoke(jconf, "setClientExtraProperties", extraProperties); .self },
+    setClientExtraProperties = function(extraProperties) {
+      warning("The method 'setClientExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+      invoke(jconf, "setExtraProperties", extraProperties); .self
+    },
 
     setVerifySslCertificates = function(verify) { invoke(jconf, "setVerifySslCertificates", verify); .self },
 
