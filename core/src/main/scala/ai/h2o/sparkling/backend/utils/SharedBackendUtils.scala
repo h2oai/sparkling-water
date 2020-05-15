@@ -170,7 +170,7 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-log_level", conf.logLevel)
       .add("-embedded")
       .add("-baseport", conf.basePort)
-      .add("-log_dir", determineLogDir(conf, SparkEnv.get))
+      .add("-log_dir", determineLogDir(conf))
       .add("-ice_root", conf.icedDir)
       .add("-flow_dir", conf.flowDir)
       .buildArgs()
@@ -186,12 +186,12 @@ trait SharedBackendUtils extends Logging with Serializable {
       .buildArgs()
   }
 
-  private def determineLogDir(conf: H2OConf, sparkEnv: SparkEnv): String = {
+  private def determineLogDir(conf: H2OConf): String = {
     val fs = java.io.File.separator
     Option(System.getProperty("spark.yarn.app.container.log.dir"))
       .map(_ + fs)
       .orElse(conf.logDir)
-      .getOrElse(System.getProperty("user.dir") + fs + "h2ologs" + fs + sparkEnv.conf.getAppId)
+      .getOrElse(System.getProperty("user.dir") + fs + "h2ologs" + fs + SparkEnv.get.conf.getAppId)
   }
 
   def parseStringToHttpHeaderArgs(headers: String): Seq[String] = {
