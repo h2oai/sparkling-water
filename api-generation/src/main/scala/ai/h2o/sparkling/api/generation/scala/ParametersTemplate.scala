@@ -46,7 +46,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
          |  // Default values
          |  //
          |  setDefault(
-         |${generateDefaultValues(parameters)})
+         |${generateDefaultValues(parameters, parameterSubstitutionContext.explicitDefaultValues)})
          |
          |  //
          |  // Getters
@@ -78,7 +78,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .mkString("\n\n")
   }
 
-  private def generateDefaultValues(parameters: Seq[Parameter]): String = {
+  private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, String]): String = {
     parameters
       .map { parameter =>
         val defaultValue = if (parameter.dataType.isEnum) {
@@ -86,7 +86,8 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
         } else {
           parameter.defaultValue
         }
-        s"    ${parameter.swName} -> ${stringify(defaultValue)}"
+        val finalDefaultValue = explicitDefaultValues.getOrElse(parameter.h2oName, stringify(defaultValue))
+        s"    ${parameter.swName} -> $finalDefaultValue"
       }
       .mkString(",\n")
   }

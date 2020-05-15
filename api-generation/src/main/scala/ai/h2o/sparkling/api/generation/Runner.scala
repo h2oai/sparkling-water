@@ -55,8 +55,9 @@ object Runner {
     "random_columns",
     "initial_biases",
     "initial_weights",
-    "pretrained_autoencoder",
-    "max_w2")
+    "pretrained_autoencoder")
+
+  private val explicitDefaultValues = Map("max_w2" -> "java.lang.Float.MAX_VALUE")
 
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity = ExplicitField("monotone_constraints", "HasMonotoneConstraints")
@@ -79,7 +80,8 @@ object Runner {
           h2oSchemaClass,
           h2oParametersClass,
           ignoredFields,
-          explicitFields)
+          explicitFields,
+          explicitDefaultValues)
     }
   }
 

@@ -23,7 +23,8 @@ case class ParameterSubstitutionContext(
     h2oSchemaClass: Class[_],
     h2oParameterClass: Class[_],
     ignoredFields: Seq[String],
-    explicitFields: Seq[ExplicitField])
+    explicitFields: Seq[ExplicitField],
+    explicitDefaultValues: Map[String, String])
   extends SubstitutionContextBase
 
 case class ExplicitField(name: String, implementation: String)
