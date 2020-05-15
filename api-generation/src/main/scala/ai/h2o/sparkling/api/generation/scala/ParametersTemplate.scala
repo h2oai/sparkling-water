@@ -22,15 +22,11 @@ import ai.h2o.sparkling.api.generation.common._
 object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
 
   def apply(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
-    val h2oSchemaClassFullName = parameterSubstitutionContext.h2oSchemaClass.getName.replace('$', '.')
     val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')
 
     val parameters = resolveParameters(parameterSubstitutionContext)
-    val imports = Seq(h2oSchemaClassFullName, h2oParameterFullName) ++
-      parameters.filter(_.dataType.isEnum).map(_.dataType.fullName)
-    val extraTraits = parameterSubstitutionContext.explicitFields.map(_.implementation)
-    val parents = Seq(s"H2OAlgoParamsHelper[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]") ++
-      extraTraits
+    val imports = Seq(h2oParameterFullName) ++ parameters.filter(_.dataType.isEnum).map(_.dataType.fullName)
+    val parents = Seq("H2OAlgoParamsBase") ++ parameterSubstitutionContext.explicitFields.map(_.implementation)
 
     val entitySubstitutionContext = EntitySubstitutionContext(
       parameterSubstitutionContext.namespace,
@@ -39,11 +35,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       imports)
 
     generateEntity(entitySubstitutionContext, "trait") {
-      s"""  type H2O_SCHEMA = ${parameterSubstitutionContext.h2oSchemaClass.getSimpleName}
-         |
-         |  protected def paramTag = reflect.classTag[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]
-         |
-         |  protected def schemaTag = reflect.classTag[H2O_SCHEMA]
+      s"""  protected def paramTag = reflect.classTag[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]
          |
          |  //
          |  // Parameter definitions

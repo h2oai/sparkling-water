@@ -20,19 +20,25 @@ import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 
+import scala.reflect.ClassTag
+
 /**
   * A trait extracting a shared parameters among all simple algorithms (all except Grid & AutoML).
   */
-trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsHelper[P] with H2OCommonParams {
+trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsBase with H2OCommonParams {
+
+  // Class tag for parameters to get runtime class
+  protected def paramTag: ClassTag[P]
+
+  protected var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
 
   //
   // Param definitions
   //
-  protected final val modelId = new NullableStringParam(
-    this,
+  protected final val modelId = nullableStringParam(
     "modelId",
     "An unique identifier of a trained model. If the id already exists, a number will be appended to ensure uniqueness.")
-  private val distribution = stringParam("distribution")
+  private val distribution = stringParam("distribution", "Distribution function")
 
   //
   // Default values
