@@ -45,9 +45,7 @@ task createPythonDockerfile(type: Dockerfile) {
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
   runCommand """\\
                 pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip && \\
-                apk add build-base python-dev && \\
-                pip install numpy && \\
-                apk del build-base python-dev
+                pip install numpy
                 """
 }
 
