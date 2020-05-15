@@ -19,7 +19,6 @@ package ai.h2o.sparkling
 
 import java.net.{HttpURLConnection, URL}
 import java.nio.file.{Files, Path}
-import java.security.Permission
 
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
@@ -35,42 +34,6 @@ abstract class ConfigurationPropertiesTestSuite
   with SparkTestContext {
 
   @transient var hc: H2OContext = _
-
-  override def afterEach(): Unit = {
-    // The method H2O.exit calls System.exit which confuses Gradle and marks the build
-    // as successful even though some tests failed.
-    // We can solve this by using security manager which forbids System.exit call.
-    // It is safe to use as all the methods closing H2O cloud and stopping operations have been
-    // already called and we just need to ensure that JVM with the client/driver doesn't call the System.exit method
-    try {
-      val securityManager = new NoExitCheckSecurityManager
-      System.setSecurityManager(securityManager)
-      if (hc != null) {
-        hc.stop()
-      }
-    } catch {
-      case _: SecurityException => // ignore
-    } finally {
-      super.afterAll()
-      System.setSecurityManager(null)
-    }
-
-  }
-
-  private class NoExitCheckSecurityManager extends SecurityManager {
-    override def checkPermission(perm: Permission): Unit = {
-      /* allow any */
-    }
-
-    override def checkPermission(perm: Permission, context: scala.Any): Unit = {
-      /* allow any */
-    }
-
-    override def checkExit(status: Int): Unit = {
-      super.checkExit(status)
-      throw new SecurityException()
-    }
-  }
 }
 
 abstract class ConfigurationPropertiesTestSuite_HttpHeadersBase extends ConfigurationPropertiesTestSuite {
