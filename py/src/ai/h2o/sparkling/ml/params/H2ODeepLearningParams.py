@@ -66,6 +66,25 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "The activation function (non-linearity) applied on neurons of hidden layers.",
         H2OTypeConverters.toEnumString("hex.deeplearning.DeepLearningModel$DeepLearningParameters$Activation"))
 
+    inputDropoutRatio = Param(
+        Params._dummy(),
+        "inputDropoutRatio",
+        "Input layer dropout ratio (can improve generalization, try 0.1 or 0.2).",
+        H2OTypeConverters.toFloat())
+
+    shuffleTrainingData = Param(
+        Params._dummy(),
+        "shuffleTrainingData",
+        "Enable shuffling of training data (recommended if training data is replicated and train_samples_per_iteration"
+        " is close to #nodes x #rows, of if using balance_classes).",
+        H2OTypeConverters.toBoolean())
+
+    rateDecay = Param(
+        Params._dummy(),
+        "rateDecay",
+        "Learning rate decay factor between layers (N-th layer: rate * rate_decay ^ (n - 1).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -87,6 +106,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getActivation(self):
         return self.getOrDefault(self.activation)
 
+    def getInputDropoutRatio(self):
+        return self.getOrDefault(self.inputDropoutRatio)
+
+    def getShuffleTrainingData(self):
+        return self.getOrDefault(self.shuffleTrainingData)
+
+    def getRateDecay(self):
+        return self.getOrDefault(self.rateDecay)
+
     ##
     # Setters
     ##
@@ -107,3 +135,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setActivation(self, value):
         return self._set(activation=value)
+
+    def setInputDropoutRatio(self, value):
+        return self._set(inputDropoutRatio=value)
+
+    def setShuffleTrainingData(self, value):
+        return self._set(shuffleTrainingData=value)
+
+    def setRateDecay(self, value):
+        return self._set(rateDecay=value)

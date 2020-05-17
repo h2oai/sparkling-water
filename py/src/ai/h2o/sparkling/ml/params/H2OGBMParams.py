@@ -58,6 +58,33 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions",
         H2OTypeConverters.toFloat())
 
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    checkConstantResponse = Param(
+        Params._dummy(),
+        "checkConstantResponse",
+        "Check if response column is constant. If enabled, then an exception is thrown if the response column "
+        "is a constant value.If disabled, then model will train regardless of the response column being a constant "
+        "value or not.",
+        H2OTypeConverters.toBoolean())
+
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toDouble())
+
     ##
     # Getters
     ##
@@ -76,6 +103,19 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getPredNoiseBandwidth(self):
         return self.getOrDefault(self.predNoiseBandwidth)
 
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getCheckConstantResponse(self):
+        return self.getOrDefault(self.checkConstantResponse)
+
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+
     ##
     # Setters
     ##
@@ -93,3 +133,15 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setPredNoiseBandwidth(self, value):
         return self._set(predNoiseBandwidth=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setCheckConstantResponse(self, value):
+        return self._set(checkConstantResponse=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)

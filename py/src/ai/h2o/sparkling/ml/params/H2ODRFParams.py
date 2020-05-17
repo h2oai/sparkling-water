@@ -38,6 +38,18 @@ class H2ODRFParams(H2OSharedTreeParams):
         "to sqrt{p} for classification and p/3 for regression (where p is the # of predictors",
         H2OTypeConverters.toInt())
 
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toDouble())
+
     ##
     # Getters
     ##
@@ -47,6 +59,12 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getMtries(self):
         return self.getOrDefault(self.mtries)
 
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
     ##
     # Setters
     ##
@@ -55,3 +73,9 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setMtries(self, value):
         return self._set(mtries=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
