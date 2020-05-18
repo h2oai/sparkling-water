@@ -111,6 +111,39 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Automatically export generated models to this directory.",
         H2OTypeConverters.toNullableString())
 
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
+    calibrateModel = Param(
+        Params._dummy(),
+        "calibrateModel",
+        "Use Platt Scaling to calculate calibrated class probabilities. Calibration can provide more accurate "
+        "estimates of class probabilities.",
+        H2OTypeConverters.toBoolean())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -150,6 +183,21 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getExportCheckpointsDir(self):
         return self.getOrDefault(self.exportCheckpointsDir)
 
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
+    def getCalibrateModel(self):
+        return self.getOrDefault(self.calibrateModel)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
     ##
     # Setters
     ##
@@ -188,3 +236,18 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setExportCheckpointsDir(self, value):
         return self._set(exportCheckpointsDir=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)
+
+    def setCalibrateModel(self, value):
+        return self._set(calibrateModel=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCol=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)

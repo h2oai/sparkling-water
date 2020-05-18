@@ -174,6 +174,33 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "earlyStopping",
         H2OTypeConverters.toBoolean())
 
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    stoppingMetric = Param(
+        Params._dummy(),
+        "stoppingMetric",
+        "Metric to use for early stopping (AUTO: logloss for classification, deviance for regression and"
+        " anonomaly_score for Isolation Forest). Note that custom and custom_increasing can only be used"
+        " in GBM and DRF with the Python client.",
+        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+
+    stoppingTolerance = Param(
+        Params._dummy(),
+        "stoppingTolerance",
+        "Relative tolerance for metric-based stopping criterion (stop if relative improvement is not"
+        " at least this much)",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -251,6 +278,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def getEarlyStopping(self):
         return self.getOrDefault(self.earlyStopping)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getStoppingMetric(self):
+        return self.getOrDefault(self.stoppingMetric)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
 
     ##
     # Setters
@@ -330,3 +369,15 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setEarlyStopping(self, value):
         return self._set(earlyStopping=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setStoppingMetric(self, value):
+        return self._set(stoppingMetric=value)
+
+    def setStoppingTolerance(self, value):
+        return self._set(stoppingTolerance=value)

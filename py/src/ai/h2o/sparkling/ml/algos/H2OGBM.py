@@ -76,7 +76,11 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  customMetricFunc=None,
                  maxRuntimeSecs=0.0,
                  foldAssignment="AUTO",
-                 exportCheckpointsDir=None):
+                 exportCheckpointsDir=None,
+                 maxAfterBalanceSize=5.0,
+                 calibrateModel=False,
+                 ignoredCols=None,
+                 huperAlpha=0.9):
         Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGBM", self.uid)

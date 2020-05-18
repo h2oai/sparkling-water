@@ -94,6 +94,8 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  scoreEachIteration=False,
                  customDistributionFunc=None,
                  customMetricFunc=None,
+                 huberAlpha=0.9,
+                 balanceClasses=False,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()

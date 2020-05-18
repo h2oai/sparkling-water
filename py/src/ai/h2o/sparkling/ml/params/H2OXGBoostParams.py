@@ -281,6 +281,13 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Reference to custom evaluation function, format: `language:keyName=funcName`",
         H2OTypeConverters.toNullableString())
 
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -409,6 +416,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getCustomMetricFunc(self):
         return self.getOrDefault(self.customMetricFunc)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
 
     ##
     # Setters
@@ -541,3 +551,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setCustomMetricFunc(self, value):
         return self._set(customMetricFunc=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)

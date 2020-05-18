@@ -85,6 +85,32 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Learning rate decay factor between layers (N-th layer: rate * rate_decay ^ (n - 1).",
         H2OTypeConverters.toFloat())
 
+    singleNodeMode = Param(
+        Params._dummy(),
+        "singleNodeMode",
+        "Run on a single node for fine-tuning of model parameters.",
+        H2OTypeConverters.toBoolean())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    hiddenDropoutRatios = Param(
+        Params._dummy(),
+        "hiddenDropoutRatios",
+        "Hidden layer dropout ratios (can improve generalization), specify one value per hidden layer,"
+        " defaults to 0.5.",
+        H2OTypeConverters.toNullableListFloat())
+
+    useAllFactorLevels = Param(
+        Params._dummy(),
+        "useAllFactorLevels",
+        "Use all factor levels of categorical variables. Otherwise, the first factor level is omitted"
+        " (without loss of accuracy). Useful for variable importances and auto-enabled for autoencoder.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -115,6 +141,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getRateDecay(self):
         return self.getOrDefault(self.rateDecay)
 
+    def getSingleNodeMode(self):
+        return self.getOrDefault(self.singleNodeMode)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getHiddenDropoutRatios(self):
+        return self.getOrDefault(self.hiddenDropoutRatios)
+
+    def getUseAllFactorLevels(self):
+        return self.getOrDefault(self.useAllFactorLevels)
+
     ##
     # Setters
     ##
@@ -144,3 +182,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setRateDecay(self, value):
         return self._set(rateDecay=value)
+
+    def setSingleNodeMode(self, value):
+        return self._set(singleNodeMode=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCols=value)
+
+    def setHiddenDropoutRatios(self, value):
+        return self._set(hiddenDropoutRatios=value)
+
+    def setUseAllFactorLevels(self, value):
+        return self._set(useAllFactorLevels=value)

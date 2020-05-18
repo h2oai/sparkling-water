@@ -67,7 +67,9 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  stoppingTolerance=0.001,
                  customDistributionFunc=None,
                  maxRuntimeSecs=0.0,
-                 exportCheckpointsDir=None):
+                 exportCheckpointsDir=None,
+                 classSamplingFactors=None,
+                 huperAlpha=0.9):
         Initializer.load_sparkling_jar()
         super(H2ODRF, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODRF", self.uid)

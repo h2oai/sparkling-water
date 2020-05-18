@@ -85,6 +85,43 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
+    ignoredConstCols = Param(
+        Params._dummy(),
+        "ignoredConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    stoppingRounds = Param(
+        Params._dummy(),
+        "stoppingRounds",
+        "Early stopping based on convergence of stopping_metric. Stop if simple moving average of length k of"
+        " the stopping_metric does not improve for k:=stopping_rounds scoring events (0 to disable)",
+        H2OTypeConverters.toInt())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
     #
     # Getters
     #
@@ -118,6 +155,24 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
 
+    def getIgnoredConstCols(self):
+        return self.getOrDefault(self.ignoredConstCols)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
     #
     # Setters
     #
@@ -150,3 +205,21 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
+
+    def setIgnoredConstCols(self, value):
+        return self._set(ignoredConstCol=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setStoppingRounds(self, value):
+        return self._set(stoppingRounds=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)

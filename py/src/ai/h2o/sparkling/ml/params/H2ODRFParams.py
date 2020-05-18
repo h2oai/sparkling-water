@@ -56,6 +56,20 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Automatically export generated models to this directory.",
         H2OTypeConverters.toNullableString())
 
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -74,6 +88,12 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getExportCheckpointsDir(self):
         return self.getOrDefault(self.exportCheckpointsDir)
 
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
     ##
     # Setters
     ##
@@ -91,3 +111,9 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setExportCheckpointsDir(self, value):
         return self._set(exportCheckpointsDir=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
