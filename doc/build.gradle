@@ -1,6 +1,7 @@
 description = "Sparkling Water Documentation"
 
 import static groovy.io.FileType.FILES
+import org.gradle.util.VersionNumber
 
 task cleanDoc(type: Delete) {
   delete getBuildDir()
@@ -48,6 +49,9 @@ task substitute() {
 
 sphinx {
   environments = ["PYTHONWARNINGS" : ""]
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesClusterSupportSinceSpark)) {
+    tags = "SupportsKubernetes"
+  }
 }
 
 task docJar(type: Jar) {
