@@ -2,6 +2,7 @@ apply plugin: 'base'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import org.gradle.util.VersionNumber
 
 description = "Build docker images for Kubernetes with Sparkling Water"
 
@@ -43,12 +44,17 @@ task createPythonDockerfile(type: Dockerfile) {
   arg "spark_version"
   from 'spark-py:$spark_version'
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
-  runCommand """\\
-                pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip && \\
+  runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(2.4.4)) {
+    runCommand "pip install numpy"
+  } else {
+    runCommand """\\
                 apk add build-base python-dev && \\
                 pip install numpy && \\
                 apk del build-base python-dev
                 """
+  }
+
 }
 
 task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])
