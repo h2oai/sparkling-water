@@ -85,6 +85,13 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
         H2OTypeConverters.toFloat())
 
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model.Parameters$FoldAssignmentScheme"))
+
     ##
     # Getters
     ##
@@ -114,6 +121,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
 
 
     ##
@@ -145,3 +155,6 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)

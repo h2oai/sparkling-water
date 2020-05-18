@@ -60,6 +60,31 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "Number of clusters to generate.",
         H2OTypeConverters.toInt())
 
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
     #
     # Getters
     #
@@ -81,6 +106,18 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getK(self):
         return self.getOrDefault(self.k)
 
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
     #
     # Setters
     #
@@ -101,3 +138,15 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setK(self, value):
         return self._set(k=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCol=value)

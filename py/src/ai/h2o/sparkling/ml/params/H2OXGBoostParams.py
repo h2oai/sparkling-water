@@ -239,6 +239,24 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Backend",
         H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend"))
 
+    saveMatrixDirectory = Param(
+        Params._dummy(),
+        "saveMatrixDirectory",
+        "Directory where to save matrices passed to XGBoost library. Useful for debugging.",
+        H2OTypeConverters.toNullableString())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    buildTreeOneNode = Param(
+        Params._dummy(),
+        "buildTreeOneNode",
+        "Run on one node only; no network overhead but fewer cpus used. Suitable for small datasets.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -346,6 +364,15 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getBackend(self):
         return self.getOrDefault(self.backend)
+
+    def getSaveMatrixDirectory(self):
+        return self.getOrDefault(self.saveMatrixDirectory)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getBuildTreeOneNode(self):
+        return self.getOrDefault(self.buildTreeOneNode)
 
     ##
     # Setters
@@ -457,3 +484,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setBackend(self, value):
         return self._set(backend=value)
+
+    def setSaveMatrixDirectory(self, value):
+        return self._set(saveMatrixDirectory=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCol=value)
+
+    def setBuildTreeOneNode(self, value):
+        return self._set(buildTreeOneNode=value)
