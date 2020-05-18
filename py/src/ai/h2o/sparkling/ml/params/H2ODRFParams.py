@@ -50,6 +50,12 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
         H2OTypeConverters.toFloat())
 
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -65,6 +71,9 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
 
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
     ##
     # Setters
     ##
@@ -79,3 +88,6 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)

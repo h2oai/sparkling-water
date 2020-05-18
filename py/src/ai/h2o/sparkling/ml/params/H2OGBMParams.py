@@ -98,6 +98,19 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "stratify the folds based on the response variable, for classification problems.",
         H2OTypeConverters.toEnumString("hex.Model.Parameters$FoldAssignmentScheme"))
 
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model.Parameters$FoldAssignmentScheme"))
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -134,6 +147,8 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getFoldAssignment(self):
         return self.getOrDefault(self.foldAssignment)
 
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
 
     ##
     # Setters
@@ -170,3 +185,6 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setFoldAssignment(self, value):
         return self._set(foldAssignment=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
