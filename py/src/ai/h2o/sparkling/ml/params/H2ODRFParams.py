@@ -48,7 +48,7 @@ class H2ODRFParams(H2OSharedTreeParams):
         Params._dummy(),
         "maxRuntimeSecs",
         "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
-        H2OTypeConverters.toDouble())
+        H2OTypeConverters.toFloat())
 
     ##
     # Getters

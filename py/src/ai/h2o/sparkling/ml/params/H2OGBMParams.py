@@ -83,7 +83,7 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         Params._dummy(),
         "maxRuntimeSecs",
         "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
-        H2OTypeConverters.toDouble())
+        H2OTypeConverters.toFloat())
 
     ##
     # Getters
