@@ -79,6 +79,12 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Reference to custom distribution, format: `language:keyName=funcName`",
         H2OTypeConverters.toNullableString())
 
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
     maxRuntimeSecs = Param(
         Params._dummy(),
         "maxRuntimeSecs",
@@ -119,6 +125,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getCustomDistributionFunc(self):
         return self.getOrDefault(self.customDistributionFunc)
 
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
 
@@ -152,6 +161,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setCustomDistributionFunc(self, value):
         return self._set(customDistributionFunc=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)

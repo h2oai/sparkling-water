@@ -257,6 +257,30 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Run on one node only; no network overhead but fewer cpus used. Suitable for small datasets.",
         H2OTypeConverters.toBoolean())
 
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -373,6 +397,18 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getBuildTreeOneNode(self):
         return self.getOrDefault(self.buildTreeOneNode)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
 
     ##
     # Setters
@@ -493,3 +529,15 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setBuildTreeOneNode(self, value):
         return self._set(buildTreeOneNode=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)

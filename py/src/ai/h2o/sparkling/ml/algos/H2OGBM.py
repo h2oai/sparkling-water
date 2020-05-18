@@ -73,6 +73,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  classSamplingFactors=None,
                  checkConstantResponse=True,
                  customDistributionFunc=None,
+                 customMetricFunc=None,
                  maxRuntimeSecs=0.0,
                  foldAssignment="AUTO"):
         Initializer.load_sparkling_jar()

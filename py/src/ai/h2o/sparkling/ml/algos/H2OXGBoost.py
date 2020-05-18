@@ -90,6 +90,10 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  saveMatrixDirectory=None,
                  buildTreeOneNode=False,
                  ignoredCols=None,
+                 maxRuntimeSecs=0.0,
+                 scoreEachIteration=False,
+                 customDistributionFunc=None,
+                 customMetricFunc=None,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()

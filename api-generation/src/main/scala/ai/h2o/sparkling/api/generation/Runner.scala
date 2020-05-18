@@ -47,6 +47,7 @@ object Runner {
     "seed",
     "nfolds",
     "distribution",
+    "r2_stopping", // Deprecated
     "max_confusion_matrix_size", // Deprecated
     "plug_values",
     "interaction_pairs",
