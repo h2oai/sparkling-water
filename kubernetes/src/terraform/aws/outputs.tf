@@ -22,3 +22,11 @@ output "cluster_name" {
   description = "Kubernetes Cluster Name"
   value       = local.cluster_name
 }
+
+output "docker_registry_url" {
+  value = aws_ecr_repository.sw_kubernetes_repo.repository_url
+}
+
+output "docker_registry_id" {
+  value = aws_ecr_repository.sw_kubernetes_repo.registry_id
+}

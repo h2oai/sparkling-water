@@ -49,7 +49,7 @@ task substitute() {
 
 sphinx {
   environments = ["PYTHONWARNINGS" : ""]
-  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesClusterSupportSinceSpark)) {
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesSupportSinceSpark)) {
     tags = "SupportsKubernetes"
   }
 }
