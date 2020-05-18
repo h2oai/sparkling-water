@@ -57,10 +57,14 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  ignoredCols=None,
                  ignoreConstCols=True,
                  scoreEachIteration=False,
+                 customDistributionFunc=None,
                  customMetricFunc=None,
                  exportCheckpointsDir=None,
                  stoppingRounds=0,
-                 maxRuntimeSecs=0.0):
+                 maxRuntimeSecs=0.0,
+                 clusterSizeConstraints=None,
+                 stoppingTolerance=0.001,
+                 foldAssignment="AUTO"):
         Initializer.load_sparkling_jar()
         super(H2OKMeans, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OKMeans", self.uid)

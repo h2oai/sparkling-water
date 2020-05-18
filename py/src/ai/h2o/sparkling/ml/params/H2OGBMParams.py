@@ -96,14 +96,7 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "foldAssignment",
         "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
         "stratify the folds based on the response variable, for classification problems.",
-        H2OTypeConverters.toEnumString("hex.Model.Parameters$FoldAssignmentScheme"))
-
-    foldAssignment = Param(
-        Params._dummy(),
-        "foldAssignment",
-        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
-        "stratify the folds based on the response variable, for classification problems.",
-        H2OTypeConverters.toEnumString("hex.Model.Parameters$FoldAssignmentScheme"))
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
 
     exportCheckpointsDir = Param(
         Params._dummy(),
@@ -131,6 +124,12 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
+    ignoredConstCols = Param(
+        Params._dummy(),
+        "ignoredConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
     balanceClasses = Param(
         Params._dummy(),
         "balanceClasses",
@@ -143,6 +142,37 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
         " must be between 0 and 1).",
         H2OTypeConverters.toFloat())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
 
     ##
     # Getters
@@ -192,11 +222,32 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
 
+    def getIgnoredConstCols(self):
+        return self.getOrDefault(self.ignoredConstCols)
+
     def getBalanceClasses(self):
         return self.getOrDefault(self.balanceClasses)
 
     def getHuberAlpha(self):
         return self.getOrDefault(self.huberAlpha)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
 
     ##
     # Setters
@@ -246,8 +297,26 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
 
+    def setIgnoredConstCols(self, value):
+        return self._set(ignoredConstCol=value)
+
     def setBalanceClasses(self, value):
         return self._set(balanceClasses=value)
 
     def setHuberAlpha(self, value):
         return self._set(huberAlpha=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)

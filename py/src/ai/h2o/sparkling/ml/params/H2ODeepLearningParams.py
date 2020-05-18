@@ -97,6 +97,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
+    ignoredConstCols = Param(
+        Params._dummy(),
+        "ignoredConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
     hiddenDropoutRatios = Param(
         Params._dummy(),
         "hiddenDropoutRatios",
@@ -109,6 +115,25 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "useAllFactorLevels",
         "Use all factor levels of categorical variables. Otherwise, the first factor level is omitted"
         " (without loss of accuracy). Useful for variable importances and auto-enabled for autoencoder.",
+        H2OTypeConverters.toBoolean())
+
+    missingValuesHandling = Param(
+        Params._dummy(),
+        "missingValuesHandling",
+        "Handling of missing values. Either MeanImputation or Skip.",
+        H2OTypeConverters.toEnumString(
+            "hex.deeplearning.DeepLearningModel$DeepLearningParameters$MissingValuesHandling"))
+
+    maxCategoricalFeatures = Param(
+        Params._dummy(),
+        "maxCategoricalFeatures",
+        "Max. number of categorical features, enforced via hashing. #Experimental",
+        H2OTypeConverters.toInt())
+
+    fastMode = Param(
+        Params._dummy(),
+        "fastMode",
+        "Enable fast mode (minor approximation in back-propagation).",
         H2OTypeConverters.toBoolean())
 
     ##
@@ -153,6 +178,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getUseAllFactorLevels(self):
         return self.getOrDefault(self.useAllFactorLevels)
 
+    def getMissingValuesHandling(self):
+        return self.getOrDefault(self.missingValuesHandling)
+
+    def getMaxCategoricalFeatures(self):
+        return self.getOrDefault(self.maxCategoricalFeatures)
+
+    def getIgnoredConstCols(self):
+        return self.getOrDefault(self.ignoredConstCols)
+
+    def getFastMode(self):
+        return self.getOrDefault(self.fastMode)
+
     ##
     # Setters
     ##
@@ -194,3 +231,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setUseAllFactorLevels(self, value):
         return self._set(useAllFactorLevels=value)
+
+    def setMissingValuesHandling(self, value):
+        return self._set(missingValuesHandling=value)
+
+    def setMaxCategoricalFeatures(self, value):
+        return self._set(maxCategoricalFeatures=value)
+
+    def setIgnoredConstCols(self, value):
+        return self._set(ignoredConstCols=value)
+
+    def setFastMode(self, value):
+        return self._set(fastMode=value)

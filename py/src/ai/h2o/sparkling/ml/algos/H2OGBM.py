@@ -80,7 +80,12 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  maxAfterBalanceSize=5.0,
                  calibrateModel=False,
                  ignoredCols=None,
-                 huperAlpha=0.9):
+                 ignoreConstCols=True,
+                 huperAlpha=0.9,
+                 tweediePower=1.5,
+                 scoreEachIteration=False,
+                 categoricalEncoding="AUTO",
+                 maxCategoricalLevels=10):
         Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGBM", self.uid)

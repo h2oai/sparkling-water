@@ -70,6 +70,24 @@ class H2ODRFParams(H2OSharedTreeParams):
         " must be between 0 and 1).",
         H2OTypeConverters.toFloat())
 
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -94,6 +112,15 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getHuberAlpha(self):
         return self.getOrDefault(self.huberAlpha)
 
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
     ##
     # Setters
     ##
@@ -117,3 +144,12 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setHuberAlpha(self, value):
         return self._set(huberAlpha=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setCustomMetricFunc(self, value):
+        return self.getOrDefault(customMetricFunc=value)

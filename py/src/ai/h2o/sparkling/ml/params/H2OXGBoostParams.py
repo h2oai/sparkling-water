@@ -288,6 +288,32 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         " must be between 0 and 1).",
         H2OTypeConverters.toFloat())
 
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
+    calibrateModel = Param(
+        Params._dummy(),
+        "calibrateModel",
+        "Use Platt Scaling to calculate calibrated class probabilities. Calibration can provide more accurate "
+        "estimates of class probabilities.",
+        H2OTypeConverters.toBoolean())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -419,6 +445,18 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getHuberAlpha(self):
         return self.getOrDefault(self.huberAlpha)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
+    def getCalibrateModel(self):
+        return self.getOrDefault(self.calibrateModel)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
 
     ##
     # Setters
@@ -554,3 +592,15 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setHuberAlpha(self, value):
         return self._set(huberAlpha=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)
+
+    def setCalibrateModel(self, value):
+        return self._set(calibrateModel=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)

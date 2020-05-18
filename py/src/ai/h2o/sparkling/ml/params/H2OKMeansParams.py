@@ -97,6 +97,12 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "Whether to score during each iteration of model training.",
         H2OTypeConverters.toBoolean())
 
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
     customMetricFunc = Param(
         Params._dummy(),
         "customMetricFunc",
@@ -121,6 +127,27 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "maxRuntimeSecs",
         "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
         H2OTypeConverters.toFloat())
+
+    clusterSizeConstraints = Param(
+        Params._dummy(),
+        "clusterSizeConstraints",
+        "An array specifying the minimum number of points that should be in each cluster. The length of the constraints"
+        " array has to be the same as the number of clusters.",
+        H2OTypeConverters.toNullableListFloat())
+
+    stoppingTolerance = Param(
+        Params._dummy(),
+        "stoppingTolerance",
+        "Relative tolerance for metric-based stopping criterion (stop if relative improvement is not"
+        " at least this much)",
+        H2OTypeConverters.toFloat())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
 
     #
     # Getters
@@ -161,6 +188,9 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getScoreEachIteration(self):
         return self.getOrDefault(self.scoreEachIteration)
 
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
     def getCustomMetricFunc(self):
         return self.getOrDefault(self.customMetricFunc)
 
@@ -172,6 +202,15 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def getMaxRuntimeSecs(self):
         return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getClusterSizeConstraints(self):
+        return self.getOrDefault(self.clusterSizeConstraints)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
 
     #
     # Setters
@@ -212,6 +251,9 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def setScoreEachIteration(self, value):
         return self._set(scoreEachIteration=value)
 
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
     def setCustomMetricFunc(self, value):
         return self._set(customMetricFunc=value)
 
@@ -223,3 +265,12 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
+
+    def setClusterSizeConstraints(self, value):
+        return self._set(clusterSizeConstraints=value)
+
+    def setStoppingTolerance(self, value):
+        return self._set(stoppingTolerance=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)

@@ -201,6 +201,37 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         " at least this much)",
         H2OTypeConverters.toFloat())
 
+    stoppingRounds = Param(
+        Params._dummy(),
+        "stoppingRounds",
+        "Early stopping based on convergence of stopping_metric. Stop if simple moving average of length k of"
+        " the stopping_metric does not improve for k:=stopping_rounds scoring events (0 to disable)",
+        H2OTypeConverters.toInt())
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    ignoredConstCols = Param(
+        Params._dummy(),
+        "ignoredConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -290,6 +321,21 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def getStoppingTolerance(self):
         return self.getOrDefault(self.stoppingTolerance)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoredConstCols(self):
+        return self.getOrDefault(self.ignoredConstCols)
 
     ##
     # Setters
@@ -381,3 +427,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setStoppingTolerance(self, value):
         return self._set(stoppingTolerance=value)
+
+    def setStoppingRounds(self, value):
+        return self._set(stoppingRounds=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCol=value)
+
+    def setIgnoredConstCols(self, value):
+        return self._set(ignoredConstCol=value)

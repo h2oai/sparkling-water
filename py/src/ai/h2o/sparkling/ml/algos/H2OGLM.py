@@ -76,6 +76,11 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  quantileAlpha=0.5,
                  stoppingMetric="AUTO",
                  stoppingTolerance=0.0001,
+                 stoppingRounds=3,
+                 categoricalEncoding="AUTO",
+                 exportCheckpointsDir=None,
+                 ignoredCols=None,
+                 ignoreConstCols=True,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()
