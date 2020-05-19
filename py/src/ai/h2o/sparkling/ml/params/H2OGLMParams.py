@@ -592,7 +592,7 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(ignoredCol=value)
 
     def setIgnoreConstCols(self, value):
-        return self._set(ignoreConstCol=value)
+        return self._set(ignoreConstCols=value)
 
     def setClassSamplingFactors(self, value):
         return self._set(classSamplingFactors=value)

@@ -299,6 +299,24 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Maximum duty cycle fraction for scoring (lower: more training, higher: more scoring).",
         H2OTypeConverters.toFloat())
 
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    nesterovAcceleratedGradient = Param(
+        Params._dummy(),
+        "nesterovAcceleratedGradient",
+        "Use Nesterov accelerated gradient (recommended).",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -431,6 +449,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getScoreDutyCycle(self):
         return self.getOrDefault(self.scoreDutyCycle)
 
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getNesterovAcceleratedGradient(self):
+        return self.getOrDefault(self.nesterovAcceleratedGradient)
+
     ##
     # Setters
     ##
@@ -562,3 +589,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setScoreDutyCycle(self, value):
         return self._set(scoreDutyCycle=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setNesterovAcceleratedGradient(self, value):
+        return self._set(nesterovAcceleratedGradient=value)

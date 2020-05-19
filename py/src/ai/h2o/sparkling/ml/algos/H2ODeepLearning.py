@@ -92,7 +92,10 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  variableImportances=True,
                  loss="Automatic",
                  rateAnnealing=0.000001,
-                 scoreDutyCycle=0.1):
+                 scoreDutyCycle=0.1,
+                 maxRuntimeSecs=0.0,
+                 exportCheckpointsDir=None,
+                 nesterovAcceleratedGradient=True):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)
