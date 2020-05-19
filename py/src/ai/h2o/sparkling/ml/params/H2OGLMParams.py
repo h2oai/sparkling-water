@@ -589,7 +589,7 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         return self._set(exportCheckpointsDir=value)
 
     def setIgnoredCols(self, value):
-        return self._set(ignoredCol=value)
+        return self._set(ignoredCols=value)
 
     def setIgnoreConstCols(self, value):
         return self._set(ignoreConstCols=value)
