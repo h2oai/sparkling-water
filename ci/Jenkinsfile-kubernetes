@@ -33,7 +33,7 @@ node("docker") {
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
-                commons.withTerraform {
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host") {
                     commons.terraformApply()
                     env.DOCKER_REGISTRY_ID = sh(
                             script: "terraform output docker_registry_id",
@@ -82,7 +82,7 @@ node("docker") {
 
     stage("Stop EKS & ECR") {
         dir("kubernetes/src/terraform/aws") {
-            commons.withTerraform {
+            commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host") {
                 commons.terraformDestroy()
             }
         }
