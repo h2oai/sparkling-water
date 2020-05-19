@@ -622,7 +622,7 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self._set(ignoredCols=value)
 
     def setIgnoreConstCols(self, value):
-        return self._set(ignoreConstCol=value)
+        return self._set(ignoreConstCols=value)
 
     def setBuildTreeOneNode(self, value):
         return self._set(buildTreeOneNode=value)

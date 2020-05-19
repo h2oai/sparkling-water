@@ -274,6 +274,31 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Sparsity regularization. #Experimental",
         H2OTypeConverters.toFloat())
 
+    variableImportances = Param(
+        Params._dummy(),
+        "variableImportances",
+        "Compute variable importances for input features (Gedeon method) - can be slow for large networks.",
+        H2OTypeConverters.toBoolean())
+
+    loss = Param(
+        Params._dummy(),
+        "loss",
+        "Loss function.",
+        H2OTypeConverters.toEnumString(
+            "hex.deeplearning.DeepLearningModel$DeepLearningParameters$Loss"))
+
+    rateAnnealing = Param(
+        Params._dummy(),
+        "rateAnnealing",
+        "Learning rate annealing: rate / (1 + rate_annealing * samples).",
+        H2OTypeConverters.toFloat())
+
+    scoreDutyCycle = Param(
+        Params._dummy(),
+        "scoreDutyCycle",
+        "Maximum duty cycle fraction for scoring (lower: more training, higher: more scoring).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -393,6 +418,19 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def getSparsityBeta(self):
         return self.getOrDefault(self.sparsityBeta)
+
+    def getVariableImportances(self):
+        return self.getOrDefault(self.variableImportances)
+
+    def getLoss(self):
+        return self.getOrDefault(self.loss)
+
+    def getRateAnnealing(self):
+        return self.getOrDefault(self.rateAnnealing)
+
+    def getScoreDutyCycle(self):
+        return self.getOrDefault(self.scoreDutyCycle)
+
     ##
     # Setters
     ##
@@ -512,3 +550,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setSparsityBeta(self, value):
         return self._set(sparsityBeta=value)
+
+    def setVariableImportances(self, value):
+        return self._set(variableImportances=value)
+
+    def setLoss(self, value):
+        return self._set(loss=value)
+
+    def setRateAnnealing(self, value):
+        return self._set(rateAnnealing=value)
+
+    def setScoreDutyCycle(self, value):
+        return self._set(scoreDutyCycle=value)

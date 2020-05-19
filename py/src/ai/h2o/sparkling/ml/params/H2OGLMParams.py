@@ -329,6 +329,12 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "if true, will return likelihood function value for HGLM.",
         H2OTypeConverters.toBoolean())
 
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -479,6 +485,8 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getCalcLike(self):
         return self.getOrDefault(self.calcLike)
 
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
 
     ##
     # Setters
@@ -627,3 +635,6 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setCalcLike(self, value):
         return self._set(calcLike=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)

@@ -269,7 +269,7 @@ class H2ODRFParams(H2OSharedTreeParams):
         return self._set(customMetricFunc=value)
 
     def setIgnoredCols(self, value):
-        return self._set(ignoredCol=value)
+        return self._set(ignoredCols=value)
 
     def setIgnoreConstCols(self, value):
         return self._set(ignoreConstCols=value)

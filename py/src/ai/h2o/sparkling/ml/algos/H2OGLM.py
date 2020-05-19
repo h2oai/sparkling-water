@@ -96,6 +96,7 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  maxActivePredictors=-1,
                  foldAssignment="AUTO",
                  calcLike=False,
+                 maxRuntimeSecs=0.0,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()
