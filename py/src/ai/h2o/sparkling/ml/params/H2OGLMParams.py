@@ -638,3 +638,6 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setMaxRuntimeSecs(self, value):
         return self._set(maxRuntimeSecs=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)

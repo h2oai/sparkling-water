@@ -317,6 +317,30 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Use Nesterov accelerated gradient (recommended).",
         H2OTypeConverters.toBoolean())
 
+    momentumRamp = Param(
+        Params._dummy(),
+        "momentumRamp",
+        "Number of training samples for which momentum increases.",
+        H2OTypeConverters.toFloat())
+
+    rho = Param(
+        Params._dummy(),
+        "rho",
+        "Adaptive learning rate time decay factor (similarity to prior updates).",
+        H2OTypeConverters.toFloat())
+
+    scoreInterval = Param(
+        Params._dummy(),
+        "scoreInterval",
+        "Shortest time interval (in seconds) between model scoring.",
+        H2OTypeConverters.toFloat())
+
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -458,6 +482,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getNesterovAcceleratedGradient(self):
         return self.getOrDefault(self.nesterovAcceleratedGradient)
 
+    def getMomentumRamp(self):
+        return self.getOrDefault(self.momentumRamp)
+
+    def getRho(self):
+        return self.getOrDefault(self.rho)
+
+    def getScoreInterval(self):
+        return self.getOrDefault(self.scoreInterval)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
     ##
     # Setters
     ##
@@ -596,5 +632,17 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def setExportCheckpointsDir(self, value):
         return self._set(exportCheckpointsDir=value)
 
-    def setNesterovAcceleratedGradient(self, value):
+    def setNgesterovAcceleratedGradient(self, value):
         return self._set(nesterovAcceleratedGradient=value)
+
+    def setMomentumRamp(self, value):
+        return self._set(momentumRamp=value)
+
+    def setRho(self, value):
+        return self._set(rho=value)
+
+    def setScoreInterval(self, value):
+        return self._set(scoreInterval=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
