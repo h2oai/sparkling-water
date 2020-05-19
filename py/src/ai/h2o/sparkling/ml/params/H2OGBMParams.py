@@ -124,9 +124,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
-    ignoredConstCols = Param(
+    ignoreConstCols = Param(
         Params._dummy(),
-        "ignoredConstCols",
+        "ignoreConstCols",
         "Ignore constant columns.",
         H2OTypeConverters.toBoolean())
 
@@ -222,14 +222,11 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
 
-    def getIgnoredConstCols(self):
-        return self.getOrDefault(self.ignoredConstCols)
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
 
     def getBalanceClasses(self):
         return self.getOrDefault(self.balanceClasses)
-
-    def getHuberAlpha(self):
-        return self.getOrDefault(self.huberAlpha)
 
     def getHuberAlpha(self):
         return self.getOrDefault(self.huberAlpha)
@@ -297,8 +294,8 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
 
-    def setIgnoredConstCols(self, value):
-        return self._set(ignoredConstCol=value)
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCol=value)
 
     def setBalanceClasses(self, value):
         return self._set(balanceClasses=value)

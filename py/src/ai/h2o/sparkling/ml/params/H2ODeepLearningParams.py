@@ -97,9 +97,9 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
-    ignoredConstCols = Param(
+    ignoreConstCols = Param(
         Params._dummy(),
-        "ignoredConstCols",
+        "ignoreConstCols",
         "Ignore constant columns.",
         H2OTypeConverters.toBoolean())
 
@@ -135,6 +135,37 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "fastMode",
         "Enable fast mode (minor approximation in back-propagation).",
         H2OTypeConverters.toBoolean())
+
+    sparse = Param(
+        Params._dummy(),
+        "sparse",
+        "Sparse data handling (more efficient for data with lots of 0 values).",
+        H2OTypeConverters.toBoolean())
+
+    scoreTrainingSamples = Param(
+        Params._dummy(),
+        "scoreTrainingSamples",
+        "Number of training set samples for scoring (0 for all).",
+        H2OTypeConverters.toInt())
+
+    adaptiveRate = Param(
+        Params._dummy(),
+        "adaptiveRate",
+        "Number of training set samples for scoring (0 for all).",
+        H2OTypeConverters.toBoolean())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    initialWeightScale = Param(
+        Params._dummy(),
+        "initialWeightScale",
+        "Uniform: -value...value, Normal: stddev.",
+        H2OTypeConverters.toFloat())
 
     ##
     # Getters
@@ -184,11 +215,26 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getMaxCategoricalFeatures(self):
         return self.getOrDefault(self.maxCategoricalFeatures)
 
-    def getIgnoredConstCols(self):
+    def getIgnoreConstCols(self):
         return self.getOrDefault(self.ignoredConstCols)
 
     def getFastMode(self):
         return self.getOrDefault(self.fastMode)
+
+    def getSparse(self):
+        return self.getOrDefault(self.sparse)
+
+    def getScoreTrainingSamples(self):
+        return self.getOrDefault(self.scoreTrainingSamples)
+
+    def getAdaptiveRate(self):
+        return self.getOrDefault(self.adaptiveRate)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getInitialWeightScale(self):
+        return self.getOrDefault(self.initialWeightScale)
 
     ##
     # Setters
@@ -238,8 +284,23 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def setMaxCategoricalFeatures(self, value):
         return self._set(maxCategoricalFeatures=value)
 
-    def setIgnoredConstCols(self, value):
-        return self._set(ignoredConstCols=value)
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCols=value)
 
     def setFastMode(self, value):
         return self._set(fastMode=value)
+
+    def setSparse(self, value):
+        return self._set(sparse=value)
+
+    def setScoreTrainingSamples(self, value):
+        return self._set(scoreTrainingSamples=value)
+
+    def setAdaptiveRate(self, value):
+        return self._set(adaptiveRate=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setInitialWeightScale(self, value):
+        return self._set(initialWeightScale=value)

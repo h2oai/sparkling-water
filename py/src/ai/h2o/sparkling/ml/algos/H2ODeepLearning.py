@@ -67,7 +67,11 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  useAllFactorLevels=True,
                  missingValuesHandling="MeanImputation",
                  maxCategoricalFeatures=2147483647,
-                 fastMode=True):
+                 fastMode=True,
+                 sparse=False,
+                 scoreTrainingSamples=10000,
+                 adaptiveRate=True,
+                 initialWeightScale=1.0):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

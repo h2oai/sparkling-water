@@ -88,6 +88,38 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Reference to custom evaluation function, format: `language:keyName=funcName`",
         H2OTypeConverters.toNullableString())
 
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    ignoreConstCols = Param(
+        Params._dummy(),
+        "ignoreConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -121,6 +153,21 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getCustomMetricFunc(self):
         return self.getOrDefault(self.customMetricFunc)
 
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
     ##
     # Setters
     ##
@@ -153,3 +200,18 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setCustomMetricFunc(self, value):
         return self.getOrDefault(customMetricFunc=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCol=value)
+
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCol=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)

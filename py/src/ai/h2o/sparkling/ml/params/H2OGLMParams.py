@@ -226,10 +226,37 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
-    ignoredConstCols = Param(
+    ignoreConstCols = Param(
         Params._dummy(),
-        "ignoredConstCols",
+        "ignoreConstCols",
         "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    HGLM = Param(
+        Params._dummy(),
+        "HGLM",
+        "If set to true, will return HGLM model.  Otherwise, normal GLM model will be returned",
         H2OTypeConverters.toBoolean())
 
     ##
@@ -334,8 +361,20 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
 
-    def getIgnoredConstCols(self):
-        return self.getOrDefault(self.ignoredConstCols)
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
+
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
+    def getHGLM(self):
+        return self.getOrDefault(self.HGLM)
 
     ##
     # Setters
@@ -440,5 +479,14 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
 
-    def setIgnoredConstCols(self, value):
-        return self._set(ignoredConstCol=value)
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCol=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)
+
+    def setHGLM(self, value):
+        return self._set(HGLM=value)

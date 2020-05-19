@@ -85,9 +85,9 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "Names of columns to ignore for training.",
         H2OTypeConverters.toNullableListString())
 
-    ignoredConstCols = Param(
+    ignoreConstCols = Param(
         Params._dummy(),
-        "ignoredConstCols",
+        "ignoreConstCols",
         "Ignore constant columns.",
         H2OTypeConverters.toBoolean())
 
@@ -149,6 +149,27 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "stratify the folds based on the response variable, for classification problems.",
         H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
 
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    stoppingMetric = Param(
+        Params._dummy(),
+        "stoppingMetric",
+        "Metric to use for early stopping (AUTO: logloss for classification, deviance for regression and"
+        " anonomaly_score for Isolation Forest). Note that custom and custom_increasing can only be used"
+        " in GBM and DRF with the Python client.",
+        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
     #
     # Getters
     #
@@ -182,8 +203,8 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
 
-    def getIgnoredConstCols(self):
-        return self.getOrDefault(self.ignoredConstCols)
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
 
     def getScoreEachIteration(self):
         return self.getOrDefault(self.scoreEachIteration)
@@ -211,6 +232,15 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def getFoldAssignment(self):
         return self.getOrDefault(self.foldAssignment)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getStoppingMetric(self):
+        return self.getOrDefault(self.stoppingMetric)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
 
     #
     # Setters
@@ -245,8 +275,8 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
 
-    def setIgnoredConstCols(self, value):
-        return self._set(ignoredConstCol=value)
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCol=value)
 
     def setScoreEachIteration(self, value):
         return self._set(scoreEachIteration=value)
@@ -274,3 +304,12 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setFoldAssignment(self, value):
         return self._set(foldAssignment=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setStoppingMetric(self, value):
+        return self._set(stoppingMetric=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
