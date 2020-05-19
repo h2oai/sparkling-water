@@ -170,6 +170,12 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         " must be between 0 and 1).",
         H2OTypeConverters.toFloat())
 
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
     #
     # Getters
     #
@@ -242,6 +248,9 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getHuberAlpha(self):
         return self.getOrDefault(self.huberAlpha)
 
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
     #
     # Setters
     #
@@ -313,3 +322,6 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setHuberAlpha(self, value):
         return self._set(huberAlpha=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)

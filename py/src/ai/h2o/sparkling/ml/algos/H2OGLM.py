@@ -85,6 +85,9 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  maxAfterBalanceSize=5.0,
                  maxCategoricalLevels=10,
                  HGLM=False,
+                 customDistributionFunc=None,
+                 customMetricFunc=None,
+                 startval=None,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()

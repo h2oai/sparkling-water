@@ -185,6 +185,33 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Stopping criterion for classification error fraction on training data (-1 to disable).",
         H2OTypeConverters.toFloat())
 
+    standardize = Param(
+        Params._dummy(),
+        "standardize",
+        "If enabled, automatically standardize the data. "
+        "If disabled, the user must provide properly scaled input data.",
+        H2OTypeConverters.toBoolean())
+
+    targetRatioCommToComp = Param(
+        Params._dummy(),
+        "targetRatioCommToComp",
+        "Target ratio of communication overhead to computation. "
+        "Only for multi-node operation and train_samples_per_iteration = -2 (auto-tuning).",
+        H2OTypeConverters.toFloat())
+
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    elasticAveragingMovingRate = Param(
+        Params._dummy(),
+        "elasticAveragingMovingRate",
+        "Elastic averaging moving rate (only if elastic averaging is enabled).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -263,6 +290,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getClassificationStop(self):
         return self.getOrDefault(self.classificationStop)
 
+    def getStandardize(self):
+        return self.getOrDefault(self.standardize)
+
+    def getTargetRatioCommToComp(self):
+        return self.getOrDefault(self.targetRatioCommToComp)
+
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getElasticAveragingMovingRate(self):
+        return self.getOrDefault(self.elasticAveragingMovingRate)
+
     ##
     # Setters
     ##
@@ -340,3 +379,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setClassificationStop(self, value):
         return self._set(classificationStop=value)
+
+    def setStandardize(self, value):
+        return self._set(standardize=value)
+
+    def setTargetRatioCommToComp(self, value):
+        return self._set(targetRatioCommToComp=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setElasticAveragingMovingRate(self, value):
+        return self._set(elasticAveragingMovingRate=value)

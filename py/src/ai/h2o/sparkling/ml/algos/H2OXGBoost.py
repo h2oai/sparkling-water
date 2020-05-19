@@ -102,6 +102,8 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  tweediePower=1.5,
                  categoricalEncoding="AUTO",
                  maxCategoricalLevels=10,
+                 exportCheckpointsDir=None,
+                 quantileAlpha=0.5,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OXGBoost, self).__init__()

@@ -139,6 +139,27 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Encoding scheme for categorical features",
         H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
 
+    calibrateModel = Param(
+        Params._dummy(),
+        "calibrateModel",
+        "Use Platt Scaling to calculate calibrated class probabilities. Calibration can provide more accurate "
+        "estimates of class probabilities.",
+        H2OTypeConverters.toBoolean())
+
+    checkConstantResponse = Param(
+        Params._dummy(),
+        "checkConstantResponse",
+        "Check if response column is constant. If enabled, then an exception is thrown if the response column "
+        "is a constant value.If disabled, then model will train regardless of the response column being a constant "
+        "value or not.",
+        H2OTypeConverters.toBoolean())
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -196,6 +217,15 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getCategoricalEncoding(self):
         return self.getOrDefault(self.categoricalEncoding)
 
+    def getCalibrateModel(self):
+        return self.getOrDefault(self.calibrateModel)
+
+    def getCheckConstantResponse(self):
+        return self.getOrDefault(self.checkConstantResponse)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
     ##
     # Setters
     ##
@@ -252,3 +282,12 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setCategoricalEncoding(self, value):
         return self._set(categoricalEncoding=value)
+
+    def setCalibrateModel(self, value):
+        return self._set(calibrateModel=value)
+
+    def setCheckConstantResponse(self, value):
+        return self._set(checkConstantResponse=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)

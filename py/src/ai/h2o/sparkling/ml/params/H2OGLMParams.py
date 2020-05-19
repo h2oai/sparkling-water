@@ -259,6 +259,24 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "If set to true, will return HGLM model.  Otherwise, normal GLM model will be returned",
         H2OTypeConverters.toBoolean())
 
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    startval = Param(
+        Params._dummy(),
+        "startval",
+        "double array to initialize fixed and random coefficients for HGLM.",
+        H2OTypeConverters.toNullableListFloat())
+
     ##
     # Getters
     ##
@@ -376,6 +394,15 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getHGLM(self):
         return self.getOrDefault(self.HGLM)
 
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getStartval(self):
+        return self.getOrDefault(self.startval)
+
     ##
     # Setters
     ##
@@ -490,3 +517,12 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setHGLM(self, value):
         return self._set(HGLM=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setStartval(self, value):
+        return self._set(startval=value)

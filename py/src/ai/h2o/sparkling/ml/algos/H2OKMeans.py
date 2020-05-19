@@ -36,6 +36,7 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,
+                 keepCrossValidationModels=True,
                  parallelizeCrossValidation=True,
                  distribution="AUTO",
                  foldCol=None,

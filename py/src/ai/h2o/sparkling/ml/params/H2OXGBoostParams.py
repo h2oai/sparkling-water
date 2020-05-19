@@ -327,6 +327,18 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Only used for categorical_encoding == EnumLimited.",
         H2OTypeConverters.toInt())
 
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -476,6 +488,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getMaxCategoricalLevels(self):
         return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
 
     ##
     # Setters
@@ -627,5 +645,8 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
     def setCategoricalEncoding(self, value):
         return self._set(categoricalEncoding=value)
 
-    def setMaxCategoricalLevels(self, value):
-        return self._set(maxCategoricalLevels=value)
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)

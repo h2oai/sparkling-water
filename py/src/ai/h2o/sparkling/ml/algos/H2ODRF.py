@@ -79,8 +79,11 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  maxCategoricalLevels=10,
                  maxAfterBalanceSize=5.0,
                  balanceClasses=False,
+                 calibrateModel=False,
+                 checkConstantResponse=True,
                  foldAssignment="AUTO",
-                 categoricalEncoding="AUTO"):
+                 categoricalEncoding="AUTO",
+                 keepCrossValidationModels=True):
         Initializer.load_sparkling_jar()
         super(H2ODRF, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODRF", self.uid)
