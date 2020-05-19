@@ -266,7 +266,7 @@ class H2ODRFParams(H2OSharedTreeParams):
         return self._set(quantileAlpha=value)
 
     def setCustomMetricFunc(self, value):
-        return self.getOrDefault(customMetricFunc=value)
+        return self._set(customMetricFunc=value)
 
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)

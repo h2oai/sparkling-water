@@ -90,6 +90,7 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  saveMatrixDirectory=None,
                  buildTreeOneNode=False,
                  ignoredCols=None,
+                 ignoreConstCols=True,
                  maxRuntimeSecs=0.0,
                  scoreEachIteration=False,
                  customDistributionFunc=None,

@@ -91,6 +91,9 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  startval=None,
                  theta=0.0000000001,
                  tweediePower=1.5,
+                 scoreEachIteration=False,
+                 huberAlpha=0.9,
+                 maxActivePredictors=-1,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()

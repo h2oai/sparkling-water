@@ -339,6 +339,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Desired quantile for Quantile regression, must be between 0 and 1.",
         H2OTypeConverters.toFloat())
 
+    ignoreConstCols = Param(
+        Params._dummy(),
+        "ignoreConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -452,6 +458,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getIgnoredCols(self):
         return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
 
     def getBuildTreeOneNode(self):
         return self.getOrDefault(self.buildTreeOneNode)
@@ -611,6 +620,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setIgnoredCols(self, value):
         return self._set(ignoredCol=value)
+
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCol=value)
 
     def setBuildTreeOneNode(self, value):
         return self._set(buildTreeOneNode=value)

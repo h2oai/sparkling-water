@@ -301,7 +301,7 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         return self._set(calibrateModel=value)
 
     def setIgnoredCols(self, value):
-        return self._set(ignoredCol=value)
+        return self._set(ignoredCols=value)
 
     def setIgnoreConstCols(self, value):
         return self._set(ignoreConstCol=value)

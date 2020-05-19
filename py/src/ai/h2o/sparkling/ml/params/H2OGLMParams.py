@@ -289,6 +289,33 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "Theta",
         H2OTypeConverters.toFloat())
 
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
+    maxActivePredictors = Param(
+        Params._dummy(),
+        "maxActivePredictors",
+        "Maximum number of active predictors during computation. Use as a stopping criterion to prevent expensive "
+        "model building with many predictors. Default indicates: If the IRLSM solver is used, the value of "
+        "max_active_predictors is set to 5000 otherwise it is set to 100000000.",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -421,6 +448,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getTheta(self):
         return self.getOrDefault(self.theta)
 
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getMaxActivePredictors(self):
+        return self.getOrDefault(self.maxActivePredictors)
+
     ##
     # Setters
     ##
@@ -550,3 +589,15 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setTheta(self, value):
         return self._set(theta=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
+
+    def setMaxActivePredictors(self, value):
+        return self._set(maxActivePredictors=value)

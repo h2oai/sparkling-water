@@ -81,6 +81,10 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  elasticAveragingMovingRate=0.9,
                  quietMode=False,
                  scoreValidationSampling="Uniform",
+                 epsilon=.00000001,
+                 trainSamplesPerIteration=-2,
+                 diagnostics=True,
+                 momentumStable=0.0,
                  rate=0.005):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()

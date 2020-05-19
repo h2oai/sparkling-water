@@ -68,7 +68,7 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  stoppingTolerance=0.001,
                  foldAssignment="AUTO",
                  categoricalEncoding="AUTO",
-                 huperAlpha=0.9):
+                 huberAlpha=0.9):
         Initializer.load_sparkling_jar()
         super(H2OKMeans, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OKMeans", self.uid)

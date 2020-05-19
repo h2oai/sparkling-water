@@ -230,6 +230,31 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Learning rate (higher => less stable, lower => slower convergence).",
         H2OTypeConverters.toFloat())
 
+    epsilon = Param(
+        Params._dummy(),
+        "epsilon",
+        "Adaptive learning rate smoothing factor (to avoid divisions by zero and allow progress).",
+        H2OTypeConverters.toFloat())
+
+    trainSamplesPerIteration = Param(
+        Params._dummy(),
+        "trainSamplesPerIteration",
+        "Number of training samples (globally) per MapReduce iteration. Special values are 0: one epoch, "
+        "-1: all available data (e.g., replicated training data), -2: automatic.",
+        H2OTypeConverters.toInt())
+
+    diagnostics = Param(
+        Params._dummy(),
+        "diagnostics",
+        "Enable diagnostics for hidden layers.",
+        H2OTypeConverters.toBoolean())
+
+    momentumStable = Param(
+        Params._dummy(),
+        "momentumStable",
+        "Final momentum after the ramp is over (try 0.99).",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -329,6 +354,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getRate(self):
         return self.getOrDefault(self.rate)
 
+    def getEpsilon(self):
+        return self.getOrDefault(self.epsilon)
+
+    def getTrainSamplesPerIteration(self):
+        return self.getOrDefault(self.trainSamplesPerIteration)
+
+    def getDiagnostics(self):
+        return self.getOrDefault(self.diagnostics)
+
+    def getMomentumStable(self):
+        return self.getOrDefault(self.momentumStable)
+
     ##
     # Setters
     ##
@@ -427,3 +464,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setRate(self, value):
         return self._set(rate=value)
+
+    def setEpsilon(self, value):
+        return self._set(epsilon=value)
+
+    def setTrainSamplesPerIteration(self, value):
+        return self._set(trainSamplesPerIteration=value)
+
+    def setDiagnostics(self, value):
+        return self._set(diagnostics=value)
+
+    def setMomentumStable(self, value):
+        return self._set(momentumStable=value)
