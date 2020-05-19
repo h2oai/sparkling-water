@@ -120,6 +120,25 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Requires balance_classes.",
         H2OTypeConverters.toFloat())
 
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
     ##
     # Getters
     ##
@@ -168,6 +187,15 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getMaxAfterBalanceSize(self):
         return self.getOrDefault(self.maxAfterBalanceSize)
 
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
     ##
     # Setters
     ##
@@ -215,3 +243,12 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setMaxAfterBalanceSize(self, value):
         return self._set(maxAfterBalanceSize=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)

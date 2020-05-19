@@ -167,6 +167,24 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Uniform: -value...value, Normal: stddev.",
         H2OTypeConverters.toFloat())
 
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    autoencoder = Param(
+        Params._dummy(),
+        "autoencoder",
+        "autoencoder",
+        H2OTypeConverters.toBoolean())
+
+    classificationStop = Param(
+        Params._dummy(),
+        "classificationStop",
+        "Stopping criterion for classification error fraction on training data (-1 to disable).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -236,6 +254,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getInitialWeightScale(self):
         return self.getOrDefault(self.initialWeightScale)
 
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getAutoencoder(self):
+        return self.getOrDefault(self.autoencoder)
+
+    def getClassificationStop(self):
+        return self.getOrDefault(self.classificationStop)
+
     ##
     # Setters
     ##
@@ -304,3 +331,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setInitialWeightScale(self, value):
         return self._set(initialWeightScale=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setAutoencoder(self, value):
+        return self._set(autoencoder=value)
+
+    def setClassificationStop(self, value):
+        return self._set(classificationStop=value)
