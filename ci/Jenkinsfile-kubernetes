@@ -17,6 +17,11 @@ def getKubernetesSparkVersions() {
     return sparkVersions.subList(boundaryVersion.indexOf(boundaryVersion), sparkVersions.size())
 }
 
+def getSparklingVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
+    return versionLine.split("=")[1]
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -45,22 +50,26 @@ node("docker") {
                 ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                     cleanWs()
                     checkout scm
-                    sh """
-                            ./gradlew dist -Pspark=$sparkMajorVersion
-                            cd ./dist/build/zip
-                            sw_dir=\$(ls)
-                            cd \$sw_dir
+                    def sparklingVersion = getSparklingVersion()
+                    sh "./gradlew dist -Pspark=$sparkMajorVersion"
+                    dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                        sh """
                             ./bin/build-kubernetes-images.sh scala
                             ./bin/build-kubernetes-images.sh python
                             ./bin/build-kubernetes-images.sh r
                            """
+                    }
+
                     def repoUrl = "${env.DOCKER_REGISTRY_ID}.dkr.ecr.us-east-2.amazonaws.com"
                     docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                         sh """
-
-            docker tag sparkling_water_tests:${nextVersion} $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
-            docker push $repoUrl/opsh2oai/sparkling_water_tests:${nextVersion}
-            """
+                            docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                            docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                            docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            """
                     }
                     cleanWs()
                 }
