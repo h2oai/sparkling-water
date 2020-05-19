@@ -43,6 +43,7 @@ node("docker") {
     }
 
 
+/*
     parallel(getKubernetesSparkVersions().each { sparkMajorVersion ->
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
             node('docker') {
@@ -75,6 +76,7 @@ node("docker") {
             }
         }
     })
+*/
 
     stage("Stop EKS & ECR") {
         dir("kubernetes/src/terraform/aws") {
