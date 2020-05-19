@@ -33,11 +33,13 @@ node("docker") {
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
-                commons.terraformApply()
-                env.DOCKER_REGISTRY_ID = sh(
-                        script: "terraform output docker_registry_id",
-                        returnStdout: true
-                ).trim()
+                commons.withTerraform {
+                    commons.terraformApply()
+                    env.DOCKER_REGISTRY_ID = sh(
+                            script: "terraform output docker_registry_id",
+                            returnStdout: true
+                    ).trim()
+                }
             }
         }
     }
@@ -80,7 +82,9 @@ node("docker") {
 
     stage("Stop EKS & ECR") {
         dir("kubernetes/src/terraform/aws") {
-            sh "terraform destroy -var aws_access_key=$AWS_ACCESS_KEY_ID -var aws_secret_key=${AWS_SECRET_ACCESS_KEY} -auto-approve"
+            commons.withTerraform {
+                commons.terraformDestroy()
+            }
         }
     }
 }
