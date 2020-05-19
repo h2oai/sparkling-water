@@ -3,12 +3,6 @@ module "eks" {
   cluster_name = local.cluster_name
   subnets = module.vpc.private_subnets
   wait_for_cluster_cmd = "until curl -k -s $ENDPOINT/healthz >/dev/null; do sleep 4; done"
-  tags = {
-    Environment = "training"
-    GithubRepo = "terraform-aws-eks"
-    GithubOrg = "terraform-aws-modules"
-  }
-
   vpc_id = module.vpc.vpc_id
 
   worker_groups = [
