@@ -33,8 +33,7 @@ node("docker") {
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
-                sh "terraform init"
-                sh "terraform apply -var aws_access_key=$AWS_ACCESS_KEY_ID -var aws_secret_key=${AWS_SECRET_ACCESS_KEY} -auto-approve"
+                commons.terraformApply()
                 env.DOCKER_REGISTRY_ID = sh(
                         script: "terraform output docker_registry_id",
                         returnStdout: true
