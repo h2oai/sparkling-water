@@ -160,6 +160,12 @@ class H2ODRFParams(H2OSharedTreeParams):
         "Whether to keep the cross-validation models.",
         H2OTypeConverters.toBoolean())
 
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -226,6 +232,9 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getKeepCrossValidationModels(self):
         return self.getOrDefault(self.keepCrossValidationModels)
 
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
     ##
     # Setters
     ##
@@ -291,3 +300,6 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setKeepCrossValidationModels(self, value):
         return self._set(keepCrossValidationModels=value)
+
+    def setTweediePower(self, value):
+        return self.getOrDefault(tweediePower=value)

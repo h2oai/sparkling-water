@@ -55,6 +55,7 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,
+                 keepCrossValidationModels=True,
                  parallelizeCrossValidation=True,
                  distribution="AUTO",
                  labelCol="label",
@@ -88,6 +89,8 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  customDistributionFunc=None,
                  customMetricFunc=None,
                  startval=None,
+                 theta=0.0000000001,
+                 tweediePower=1.5,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()

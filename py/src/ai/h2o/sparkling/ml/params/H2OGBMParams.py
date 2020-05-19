@@ -174,6 +174,12 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Whether to keep the cross-validation models.",
         H2OTypeConverters.toBoolean())
 
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -246,6 +252,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getKeepCrossValidationModels(self):
         return self.getOrDefault(self.keepCrossValidationModels)
 
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
     ##
     # Setters
     ##
@@ -317,3 +326,6 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setKeepCrossValidationModels(self, value):
         return self._set(keepCrossValidationModels=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)

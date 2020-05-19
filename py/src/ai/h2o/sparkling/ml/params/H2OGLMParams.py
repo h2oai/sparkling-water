@@ -277,6 +277,18 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "double array to initialize fixed and random coefficients for HGLM.",
         H2OTypeConverters.toNullableListFloat())
 
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
+    theta = Param(
+        Params._dummy(),
+        "theta",
+        "Theta",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -403,6 +415,12 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getStartval(self):
         return self.getOrDefault(self.startval)
 
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
+    def getTheta(self):
+        return self.getOrDefault(self.theta)
+
     ##
     # Setters
     ##
@@ -526,3 +544,9 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setStartval(self, value):
         return self._set(startval=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)
+
+    def setTheta(self, value):
+        return self._set(theta=value)

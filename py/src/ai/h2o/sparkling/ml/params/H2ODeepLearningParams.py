@@ -212,6 +212,24 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Elastic averaging moving rate (only if elastic averaging is enabled).",
         H2OTypeConverters.toFloat())
 
+    quietMode = Param(
+        Params._dummy(),
+        "quietMode",
+        "Enable quiet mode for less output to standard output.",
+        H2OTypeConverters.toBoolean())
+
+    scoreValidationSampling = Param(
+        Params._dummy(),
+        "scoreValidationSampling",
+        "Method used to sample validation dataset for scoring.",
+        H2OTypeConverters.toEnumString("hex.deeplearning.DeepLearningModel$DeepLearningParameters$Uniform"))
+
+    rate = Param(
+        Params._dummy(),
+        "rate",
+        "Learning rate (higher => less stable, lower => slower convergence).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -302,6 +320,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getElasticAveragingMovingRate(self):
         return self.getOrDefault(self.elasticAveragingMovingRate)
 
+    def getQuietMode(self):
+        return self.getOrDefault(self.quietMode)
+
+    def getScoreValidationSampling(self):
+        return self.getOrDefault(self.scoreValidationSampling)
+
+    def getRate(self):
+        return self.getOrDefault(self.rate)
+
     ##
     # Setters
     ##
@@ -391,3 +418,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setElasticAveragingMovingRate(self, value):
         return self._set(elasticAveragingMovingRate=value)
+
+    def setQuiteMode(self, value):
+        return self._set(quiteMode=value)
+
+    def setScoreValidationSampling(self, value):
+        return self._set(scoreValidationSampling=value)
+
+    def setRate(self, value):
+        return self._set(rate=value)

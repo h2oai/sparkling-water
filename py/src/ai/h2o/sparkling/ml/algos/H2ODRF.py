@@ -70,7 +70,7 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  maxRuntimeSecs=0.0,
                  exportCheckpointsDir=None,
                  classSamplingFactors=None,
-                 huperAlpha=0.9,
+                 huberAlpha=0.9,
                  tweediePower=1.5,
                  quantileAlpha=0.5,
                  ignoredCols=None,
