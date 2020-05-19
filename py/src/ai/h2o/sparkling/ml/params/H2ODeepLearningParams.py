@@ -255,6 +255,25 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Final momentum after the ramp is over (try 0.99).",
         H2OTypeConverters.toBoolean())
 
+    regressionStop = Param(
+        Params._dummy(),
+        "regressionStop",
+        "Stopping criterion for regression error (MSE) on training data (-1 to disable).",
+        H2OTypeConverters.toFloat())
+
+    initialWeightDistribution = Param(
+        Params._dummy(),
+        "initialWeightDistribution",
+        "Initial weight distribution.",
+        H2OTypeConverters.toEnumString(
+            "hex.deeplearning.DeepLearningModel$DeepLearningParameters$InitialWeightDistribution"))
+
+    sparsityBeta = Param(
+        Params._dummy(),
+        "sparsityBeta",
+        "Sparsity regularization. #Experimental",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -366,6 +385,14 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getMomentumStable(self):
         return self.getOrDefault(self.momentumStable)
 
+    def getRegressionStop(self):
+        return self.getOrDefault(self.regressionStop)
+
+    def getInitialWeightDistribution(self):
+        return self.getOrDefault(self.initialWeightDistribution)
+
+    def getSparsityBeta(self):
+        return self.getOrDefault(self.sparsityBeta)
     ##
     # Setters
     ##
@@ -476,3 +503,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setMomentumStable(self, value):
         return self._set(momentumStable=value)
+
+    def setRegressionStop(self, value):
+        return self._set(regressionStop=value)
+
+    def setInitialWeightDistribution(self, value):
+        return self._set(initialWeightDistribution=value)
+
+    def setSparsityBeta(self, value):
+        return self._set(sparsityBeta=value)

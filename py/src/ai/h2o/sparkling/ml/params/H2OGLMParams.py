@@ -316,6 +316,19 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "max_active_predictors is set to 5000 otherwise it is set to 100000000.",
         H2OTypeConverters.toInt())
 
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    calcLike = Param(
+        Params._dummy(),
+        "calcLike",
+        "if true, will return likelihood function value for HGLM.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -460,6 +473,13 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
     def getMaxActivePredictors(self):
         return self.getOrDefault(self.maxActivePredictors)
 
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getCalcLike(self):
+        return self.getOrDefault(self.calcLike)
+
+
     ##
     # Setters
     ##
@@ -601,3 +621,9 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setMaxActivePredictors(self, value):
         return self._set(maxActivePredictors=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setCalcLike(self, value):
+        return self._set(calcLike=value)

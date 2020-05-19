@@ -285,7 +285,7 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         return self._set(ignoredCol=value)
 
     def setIgnoreConstCols(self, value):
-        return self._set(ignoreConstCol=value)
+        return self._set(ignoreConstCols=value)
 
     def setScoreEachIteration(self, value):
         return self._set(scoreEachIteration=value)
