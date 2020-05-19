@@ -340,6 +340,12 @@ createJob(
         "rel-*",
         true)
 
+createJob(
+        "TESTS_KUBERNETES",
+        "ci/Jenkinsfile-kubernetes",
+        "master rel-*",
+        true)
+
 // Scan repositories
 for (f in Jenkins.instance.getAllItems(jenkins.branch.MultiBranchProject.class)) {
     f.computation.run()
