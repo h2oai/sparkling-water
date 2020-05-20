@@ -44,7 +44,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                                 "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
                         ]
                         sh "sudo apt -y install docker.io"
-                        sh "sudo groupadd docker"
+                        sh "sudo chmod 666 /var/run/docker.sock"
                         sh "sudo usermod -aG docker \${USER}"
                         sh "sudo service docker start"
                         withEnv(customEnv) {
