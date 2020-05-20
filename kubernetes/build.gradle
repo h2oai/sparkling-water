@@ -15,14 +15,22 @@ ext {
 task createScalaDockerfile(type: Dockerfile) {
   destFile = outputFileScala
   arg "spark_version"
-  from 'spark:$spark_version'
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.0")) {
+    from 'spark:$spark_version'
+  } else {
+    from 'spark:$spark_version'
+  }
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
 }
 
 task createRDockerfile(type: Dockerfile) {
   destFile = outputFileR
   arg "spark_version"
-  from 'spark-r:$spark_version'
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.0")) {
+    from 'spark-r:$spark_version'
+  } else {
+    from 'spark:$spark_version'
+  }
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.4")) {
     runCommand "apt-get install -y libc-dev libssl-dev libcurl4-openssl-dev g++ libxml2-dev"
   } else {
@@ -46,7 +54,11 @@ task createRDockerfile(type: Dockerfile) {
 task createPythonDockerfile(type: Dockerfile) {
   destFile = outputFilePython
   arg "spark_version"
-  from 'spark-py:$spark_version'
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.0")) {
+    from 'spark-py:$spark_version'
+  } else {
+    from 'spark:$spark_version'
+  }
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
   runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.4")) {
