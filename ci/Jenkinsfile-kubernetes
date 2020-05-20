@@ -25,24 +25,25 @@ def getSparklingVersion() {
 }
 
 def getBuildAndPublishStage(sparkMajorVersion) {
-    stage("Build & Publish Images For Spark $sparkMajorVersion") {
-        node('docker') {
-            ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                cleanWs()
-                checkout scm
-                def sparklingVersion = getSparklingVersion()
-                sh "./gradlew dist -Pspark=$sparkMajorVersion"
-                dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                    sh """
+    return {
+        stage("Build & Publish Images For Spark $sparkMajorVersion") {
+            node('docker') {
+                ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                    cleanWs()
+                    checkout scm
+                    def sparklingVersion = getSparklingVersion()
+                    sh "./gradlew dist -Pspark=$sparkMajorVersion"
+                    dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                        sh """
                             ./bin/build-kubernetes-images.sh scala
                             ./bin/build-kubernetes-images.sh python
                             ./bin/build-kubernetes-images.sh r
                            """
-                }
+                    }
 
-                def repoUrl = "${env.DOCKER_REGISTRY_ID}.dkr.ecr.us-east-2.amazonaws.com"
-                docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
-                    sh """
+                    def repoUrl = "${env.DOCKER_REGISTRY_ID}.dkr.ecr.us-east-2.amazonaws.com"
+                    docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
+                        sh """
                             docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
                             docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
                             docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
@@ -50,8 +51,9 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                             docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
                             docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
                             """
+                    }
+                    cleanWs()
                 }
-                cleanWs()
             }
         }
     }
@@ -89,7 +91,7 @@ node("docker") {
     }*/
 
     parallel(getBuildAndPublishStages())
-    
+
     stage("Stop EKS & ECR") {
         dir("kubernetes/src/terraform/aws") {
             def code = {
