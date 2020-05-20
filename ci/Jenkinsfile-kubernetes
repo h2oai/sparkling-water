@@ -33,13 +33,14 @@ node("docker") {
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host") {
+                def code = {
                     commons.terraformApply()
                     env.DOCKER_REGISTRY_ID = sh(
                             script: "terraform output docker_registry_id",
                             returnStdout: true
                     ).trim()
                 }
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
