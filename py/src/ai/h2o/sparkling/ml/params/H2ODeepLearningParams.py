@@ -434,6 +434,24 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Constraint for squared sum of incoming weights per unit (e.g. for Rectifier).",
         H2OTypeConverters.toFloat())
 
+    elasticAveragingRegularization = Param(
+        Params._dummy(),
+        "elasticAveragingRegularization",
+        "Elastic averaging regularization strength (only if elastic averaging is enabled).",
+        H2OTypeConverters.toFloat())
+
+    replicateTrainingData = Param(
+        Params._dummy(),
+        "replicateTrainingData",
+        "Replicate the entire training dataset onto every node for faster training on small datasets.",
+        H2OTypeConverters.toBoolean())
+
+    miniBatchSize = Param(
+        Params._dummy(),
+        "miniBatchSize",
+        "Mini-batch size (smaller leads to better fit, larger can speed up and generalize better).",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -632,6 +650,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getMaxW2(self):
         return self.getOrDefault(self.maxW2)
 
+    def getElasticAveragingRegularization(self):
+        return self.getOrDefault(self.elasticAveragingRegularization)
+
+    def getReplicateTrainingData(self):
+        return self.getOrDefault(self.replicateTrainingData)
+
+    def getMiniBatchSize(self):
+        return self.getOrDefault(self.miniBatchSize)
+
     ##
     # Setters
     ##
@@ -829,3 +856,9 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setMaxW2(self, value):
         return self._set(maxW2=value)
+
+    def setReplicateTrainingData(self, value):
+        return self._set(replicateTrainingData=value)
+
+    def setMiniBatchSize(self, value):
+        return self._set(miniBatchSize=value)
