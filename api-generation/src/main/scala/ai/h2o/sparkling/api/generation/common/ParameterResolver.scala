@@ -27,7 +27,7 @@ trait ParameterResolver {
     val partialParameters =
       for (field <- h2oSchemaClass.getFields
            if field.getAnnotation(classOf[API]) != null
-           if !parameterSubstitutionContext.ignoredFields.contains(field.getName)
+           if !IgnoredParameters.all.contains(field.getName)
            if !parameterSubstitutionContext.explicitFields.map(_.name).contains(field.getName))
         yield Parameter(
           ParameterNameConverter.convertFromH2OToSW(field.getName),

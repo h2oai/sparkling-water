@@ -32,34 +32,6 @@ import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
 object Runner {
 
-  private val ignoredFields = Seq(
-    "__meta",
-    "model_id",
-    "training_frame",
-    "validation_frame",
-    "calibration_frame",
-    "max_hit_ratio_k",
-    "checkpoint",
-    "response_column",
-    "fold_column",
-    "weights_column",
-    "offset_column",
-    "seed",
-    "nfolds",
-    "distribution",
-    "r2_stopping", // Deprecated
-    "max_confusion_matrix_size", // Deprecated
-    "col_major", // Deprecated
-    "plug_values",
-    "interaction_pairs",
-    "beta_constraints",
-    "rand_link",
-    "rand_family",
-    "random_columns",
-    "initial_biases",
-    "initial_weights",
-    "pretrained_autoencoder")
-
   private val explicitDefaultValues = Map("max_w2" -> "java.lang.Float.MAX_VALUE")
 
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
@@ -82,7 +54,6 @@ object Runner {
           entityName,
           h2oSchemaClass,
           h2oParametersClass,
-          ignoredFields,
           explicitFields,
           explicitDefaultValues)
     }
