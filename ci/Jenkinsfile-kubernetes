@@ -43,7 +43,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                         def customEnv = [
                                 "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
                         ]
-                        sh "sudo apt -y install docker.io && sudo systemctl start docker"
+                        sh "sudo apt -y install docker.io"
                         withEnv(customEnv) {
                             dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                                 sh """
