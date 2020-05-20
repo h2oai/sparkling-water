@@ -390,6 +390,37 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Requires balance_classes.",
         H2OTypeConverters.toFloat())
 
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    overwriteWithBestModel = Param(
+        Params._dummy(),
+        "overwriteWithBestModel",
+        "If enabled, override the final model with the best model found during training.",
+        H2OTypeConverters.toBoolean())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    exportWeightsAndBiases = Param(
+        Params._dummy(),
+        "exportWeightsAndBiases",
+        "Whether to export Neural Network weights and biases to H2O Frames.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -567,6 +598,21 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getMaxAfterBalanceSize(self):
         return self.getOrDefault(self.maxAfterBalanceSize)
 
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getOverwriteWithBestModel(self):
+        return self.getOrDefault(self.overwriteWithBestModel)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getExportWeightsAndBiases(self):
+        return self.getOrDefault(self.exportWeightsAndBiases)
+
     ##
     # Setters
     ##
@@ -743,3 +789,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setMaxAfterBalanceSize(self, value):
         return self._set(maxAfterBalanceSize=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setOverwriteWithBestModel(self, value):
+        return self._set(overwriteWithBestModel=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setExportWeightsAndBiases(self, value):
+        return self._set(exportWeightsAndBiases=value)
