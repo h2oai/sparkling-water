@@ -24,6 +24,11 @@ def getSparklingVersion(sparkMajorVersion) {
     return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
 }
 
+String getSparkVersion(sparkMajorVersion) {
+    def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
+    return versionLine.split("=")[1]
+}
+
 def getBuildAndPublishStage(sparkMajorVersion) {
     return {
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
@@ -35,13 +40,17 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                     commons.withSparklingWaterDockerImage {
                         def sparklingVersion = getSparklingVersion(sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
-                        sh "ls -al ./dist/build/zip/"
                         dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                            sh """
-                            ./bin/build-kubernetes-images.sh scala
-                            ./bin/build-kubernetes-images.sh python
-                            ./bin/build-kubernetes-images.sh r
-                           """
+                            def customEnv = [
+                                    "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+                            ]
+                            withEnv(customEnv) {
+                                sh """
+                                    ./bin/build-kubernetes-images.sh scala
+                                    ./bin/build-kubernetes-images.sh python
+                                    ./bin/build-kubernetes-images.sh r
+                                   """
+                            }
                         }
 
                         def repoUrl = "${env.DOCKER_REGISTRY_ID}.dkr.ecr.us-east-2.amazonaws.com"
