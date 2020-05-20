@@ -22,6 +22,8 @@ from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgoBase import H2OSupervisedAlgoBase
 from ai.h2o.sparkling.ml.params import H2ODeepLearningParams
 
+import sys
+
 
 class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
 
@@ -112,7 +114,9 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  huberAlpha=0.9,
                  overwriteWithBestModel=True,
                  scoreEachIteration=False,
-                 exportWeightsAndBiases=False):
+                 exportWeightsAndBiases=False,
+                 foldAssignment="AUTO",
+                 maxW2=sys.float_info.max):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

@@ -421,6 +421,19 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Whether to export Neural Network weights and biases to H2O Frames.",
         H2OTypeConverters.toBoolean())
 
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    maxW2 = Param(
+        Params._dummy(),
+        "maxW2",
+        "Constraint for squared sum of incoming weights per unit (e.g. for Rectifier).",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -613,6 +626,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getExportWeightsAndBiases(self):
         return self.getOrDefault(self.exportWeightsAndBiases)
 
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getMaxW2(self):
+        return self.getOrDefault(self.maxW2)
+
     ##
     # Setters
     ##
@@ -804,3 +823,9 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setExportWeightsAndBiases(self, value):
         return self._set(exportWeightsAndBiases=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setMaxW2(self, value):
+        return self._set(maxW2=value)
