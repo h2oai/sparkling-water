@@ -45,6 +45,7 @@ node("docker") {
         }
     }*/
 
+    throw new RuntimeException(getKubernetesSparkVersions())
     parallel(getKubernetesSparkVersions().each { sparkMajorVersion ->
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
             node('docker') {
