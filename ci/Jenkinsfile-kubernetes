@@ -14,7 +14,9 @@ def getKubernetesSparkVersions() {
 
     def boundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
     def boundaryVersion = boundaryVersionLine.split("=")[1]
-    return sparkVersions.subList(sparkVersions.indexOf(boundaryVersion), sparkVersions.size())
+    def list = new ArrayList<String>()
+    list.addAll(sparkVersions.subList(sparkVersions.indexOf(boundaryVersion), sparkVersions.size()))
+    return list
 }
 
 def getSparklingVersion() {
