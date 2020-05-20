@@ -19,9 +19,9 @@ def getKubernetesSparkVersions() {
     return list
 }
 
-def getSparklingVersion() {
+def getSparklingVersion(sparkMajorVersion) {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    return versionLine.split("=")[1]
+    return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
 }
 
 def getBuildAndPublishStage(sparkMajorVersion) {
@@ -33,7 +33,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                     checkout scm
                     def commons = load 'ci/commons.groovy'
                     commons.withSparklingWaterDockerImage {
-                        def sparklingVersion = getSparklingVersion()
+                        def sparklingVersion = getSparklingVersion(sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
                         sh "ls -al ./dist/build/zip/"
                         dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
