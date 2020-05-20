@@ -73,6 +73,7 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  adaptiveRate=True,
                  initialWeightScale=1.0,
                  customMetricFunc=None,
+                 customDistributionFunc=None,
                  autoencoder=False,
                  classificationStop=0.0,
                  standardize=True,
@@ -99,7 +100,10 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  momentumRamp=1000000.0,
                  rho=0.99,
                  scoreInterval=5.0,
-                 balanceClasses=False):
+                 balanceClasses=False,
+                 elasticAveraging=False,
+                 averageActivation=0.0,
+                 forceLoadBalance=True):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

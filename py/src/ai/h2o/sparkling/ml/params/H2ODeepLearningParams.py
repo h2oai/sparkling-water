@@ -341,6 +341,30 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Balance training data class counts via over/under-sampling (for imbalanced data).",
         H2OTypeConverters.toBoolean())
 
+    elasticAveraging = Param(
+        Params._dummy(),
+        "elasticAveraging",
+        "Elastic averaging between compute nodes can improve distributed model convergence. #Experimental",
+        H2OTypeConverters.toBoolean())
+
+    averageActivation = Param(
+        Params._dummy(),
+        "averageActivation",
+        "Average activation for sparse auto-encoder. #Experimental",
+        H2OTypeConverters.toFloat())
+
+    forceLoadBalance = Param(
+        Params._dummy(),
+        "forceLoadBalance",
+        "Force extra load balancing to increase training speed for small datasets (to keep all cores busy).",
+        H2OTypeConverters.toBoolean())
+
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -494,6 +518,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getBalanceClasses(self):
         return self.getOrDefault(self.balanceClasses)
 
+    def getElasticAveraging(self):
+        return self.getOrDefault(self.elasticAveraging)
+
+    def getAverageActivation(self):
+        return self.getOrDefault(self.averageActivation)
+
+    def getForceLoadBalance(self):
+        return self.getOrDefault(self.forceLoadBalance)
+
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
     ##
     # Setters
     ##
@@ -646,3 +682,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setBalanceClasses(self, value):
         return self._set(balanceClasses=value)
+
+    def setElasticAveraging(self, value):
+        return self._set(elasticAveraging=value)
+
+    def setAverageActivation(self, value):
+        return self._set(averageActivation=value)
+
+    def setForceLoadBalance(self, value):
+        return self._set(forceLoadBalance=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
