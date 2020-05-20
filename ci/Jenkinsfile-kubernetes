@@ -13,7 +13,7 @@ def getKubernetesSparkVersions() {
     def sparkVersions = versionLine.split("=")[1].split(" ")
 
     def boundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
-    def boundaryVersion = boundaryVersionLine.split("=")[1].split(" ")
+    def boundaryVersion = boundaryVersionLine.split("=")[1]
     return sparkVersions.subList(boundaryVersion.indexOf(boundaryVersion), sparkVersions.size())
 }
 
@@ -45,7 +45,6 @@ node("docker") {
         }
     }*/
 
-    throw new RuntimeException(getKubernetesSparkVersions())
     parallel(getKubernetesSparkVersions().each { sparkMajorVersion ->
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
             node('docker') {
