@@ -43,6 +43,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                         def customEnv = [
                                 "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
                         ]
+                        sh "sudo apt-get -y install docker-ce"
                         withEnv(customEnv) {
                             dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                                 sh """
