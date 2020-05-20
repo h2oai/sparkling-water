@@ -56,7 +56,9 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                             }
                         }
 
-                        def repoUrl = "${env.DOCKER_REGISTRY_ID}.dkr.ecr.us-east-2.amazonaws.com"
+                        unstash "registryId"
+                        def repoId = readFile("registryId").trim()
+                        def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                             sh """
                             docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
@@ -87,24 +89,24 @@ node("docker") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
-
-    environment {
-        DOCKER_REGISTRY_ID = ''
-    }
-/*    stage("Start EKS & ECR") {
+/*
+    stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
                     commons.terraformApply()
-                    env.DOCKER_REGISTRY_ID = sh(
+                    def registryId = sh(
                             script: "terraform output docker_registry_id",
                             returnStdout: true
                     ).trim()
+                    writeFile file: "docker_registry_id", text: registryId
+                    stash name: "registryId", includes: "docker_registry_id"
+                    commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
                 }
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }*/
+
 
     parallel(getBuildAndPublishStages())
 
