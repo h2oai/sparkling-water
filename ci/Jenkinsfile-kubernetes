@@ -35,6 +35,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                     commons.withSparklingWaterDockerImage {
                         def sparklingVersion = getSparklingVersion()
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
+                        sh "ls -al ./dist/build/zip/"
                         dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                             sh """
                             ./bin/build-kubernetes-images.sh scala
