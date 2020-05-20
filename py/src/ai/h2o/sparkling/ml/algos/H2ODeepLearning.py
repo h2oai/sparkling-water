@@ -37,6 +37,7 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,
+                 keepCrossValidationModels=True,
                  parallelizeCrossValidation=True,
                  distribution="AUTO",
                  labelCol="label",
@@ -103,7 +104,10 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  balanceClasses=False,
                  elasticAveraging=False,
                  averageActivation=0.0,
-                 forceLoadBalance=True):
+                 forceLoadBalance=True,
+                 categoricalEncoding="AUTO",
+                 momentumStart=0.0,
+                 maxAfterBalanceSize=5.0):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

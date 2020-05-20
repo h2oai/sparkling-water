@@ -365,6 +365,31 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Reference to custom distribution, format: `language:keyName=funcName`",
         H2OTypeConverters.toNullableString())
 
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
+    momentumStart = Param(
+        Params._dummy(),
+        "momentumStart",
+        "Initial momentum at the beginning of training (try 0.5).",
+        H2OTypeConverters.toFloat())
+
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -530,6 +555,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
     def getCustomDistributionFunc(self):
         return self.getOrDefault(self.customDistributionFunc)
 
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
+    def getMomentumStart(self):
+        return self.getOrDefault(self.momentumStart)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
     ##
     # Setters
     ##
@@ -694,3 +731,15 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setCustomDistributionFunc(self, value):
         return self._set(customDistributionFunc=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)
+
+    def setMomentumStart(self, value):
+        return self._set(momentumStart=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)
