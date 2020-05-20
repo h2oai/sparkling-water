@@ -49,7 +49,7 @@ object Runner {
     "distribution",
     "r2_stopping", // Deprecated
     "max_confusion_matrix_size", // Deprecated
-    "colMajor", // Deprecated
+    "col_major", // Deprecated
     "plug_values",
     "interaction_pairs",
     "beta_constraints",

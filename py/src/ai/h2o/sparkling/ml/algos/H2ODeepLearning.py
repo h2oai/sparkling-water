@@ -119,7 +119,9 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  maxW2=sys.float_info.max,
                  elasticAveragingRegularization=0.001,
                  replicateTrainingData=True,
-                 miniBatchSize=1):
+                 miniBatchSize=1,
+                 scoreValidationSamples=0,
+                 maxCategoricalLevels=10):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

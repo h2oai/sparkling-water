@@ -222,7 +222,7 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         Params._dummy(),
         "scoreValidationSampling",
         "Method used to sample validation dataset for scoring.",
-        H2OTypeConverters.toEnumString("hex.deeplearning.DeepLearningModel$DeepLearningParameters$Uniform"))
+        H2OTypeConverters.toEnumString("hex.deeplearning.DeepLearningModel$DeepLearningParameters$ClassSamplingMethod"))
 
     rate = Param(
         Params._dummy(),
@@ -253,7 +253,7 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         Params._dummy(),
         "momentumStable",
         "Final momentum after the ramp is over (try 0.99).",
-        H2OTypeConverters.toBoolean())
+        H2OTypeConverters.toFloat())
 
     regressionStop = Param(
         Params._dummy(),
@@ -452,6 +452,19 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         "Mini-batch size (smaller leads to better fit, larger can speed up and generalize better).",
         H2OTypeConverters.toInt())
 
+    scoreValidationSamples = Param(
+        Params._dummy(),
+        "scoreValidationSamples",
+        "Number of validation set samples for scoring (0 for all).",
+        H2OTypeConverters.toInt())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -501,7 +514,7 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
         return self.getOrDefault(self.maxCategoricalFeatures)
 
     def getIgnoreConstCols(self):
-        return self.getOrDefault(self.ignoredConstCols)
+        return self.getOrDefault(self.ignoreConstCols)
 
     def getFastMode(self):
         return self.getOrDefault(self.fastMode)
@@ -658,6 +671,12 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def getMiniBatchSize(self):
         return self.getOrDefault(self.miniBatchSize)
+
+    def getScoreValidationSamples(self):
+        return self.getOrDefault(self.scoreValidationSamples)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
 
     ##
     # Setters
@@ -862,3 +881,18 @@ class H2ODeepLearningParams(H2OAlgoSupervisedParams, HasStoppingCriteria, HasQua
 
     def setMiniBatchSize(self, value):
         return self._set(miniBatchSize=value)
+
+    def setScoreValidationSamples(self, value):
+        return self._set(scoreValidationSamples=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setNesterovAcceleratedGradient(self, value):
+        return self._set(nesterovAcceleratedGradient=value)
+
+    def setElasticAveragingRegularization(self, value):
+        return self._set(elasticAveragingRegularization=value)
+
+    def setQuietMode(self, value):
+        return self._set(quietMode=value)
