@@ -40,11 +40,11 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                     commons.withSparklingWaterDockerImage {
                         def sparklingVersion = getSparklingVersion(sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
-                        dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                            def customEnv = [
-                                    "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
-                            ]
-                            withEnv(customEnv) {
+                        def customEnv = [
+                                "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+                        ]
+                        withEnv(customEnv) {
+                            dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                                 sh """
                                     ./bin/build-kubernetes-images.sh scala
                                     ./bin/build-kubernetes-images.sh python
