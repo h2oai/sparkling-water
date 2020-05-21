@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import hex.kmeans.KMeansModel.KMeansParameters
 
-trait H2OKMeansExtras extends H2OAlgorithm[KMeansParameters] {
+private[algos] trait H2OKMeansExtras extends H2OAlgorithm[KMeansParameters] {
 
   override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
     super.prepareH2OTrainFrameForFitting(trainFrame)
