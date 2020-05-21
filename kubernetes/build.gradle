@@ -27,7 +27,7 @@ task createRDockerfile(type: Dockerfile) {
   } else {
     from 'spark:$spark_version'
   }
-  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.4")) {
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.5")) {
     runCommand "apt-get install -y libc-dev libssl-dev libcurl4-openssl-dev g++ libxml2-dev"
   } else {
     runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
@@ -63,7 +63,7 @@ task createPythonDockerfile(type: Dockerfile) {
   }
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
   runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
-  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.4")) {
+  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.5")) {
     runCommand "pip install numpy"
   } else {
     runCommand """\\
