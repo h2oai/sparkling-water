@@ -114,7 +114,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .map { parameter =>
         if (parameter.dataType.isEnum) {
           s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-             |    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[${parameter.dataType.name}](value)
+             |    val validated = EnumParamValidator.getValidatedEnumValue[${parameter.dataType.name}](value)
              |    set(${parameter.swName}, validated)
              |  }
            """.stripMargin

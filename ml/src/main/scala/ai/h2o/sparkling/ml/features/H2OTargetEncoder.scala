@@ -21,7 +21,7 @@ import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OTargetEncoderBase, H2OTargetEncoderModel}
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper
+import ai.h2o.sparkling.ml.params.EnumParamValidator
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.targetencoding._
 import org.apache.spark.ml.Estimator
@@ -76,7 +76,7 @@ class H2OTargetEncoder(override val uid: String)
   def setOutputCols(values: Array[String]): this.type = set(outputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    set(holdoutStrategy, H2OAlgoParamsHelper.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
+    set(holdoutStrategy, EnumParamValidator.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)

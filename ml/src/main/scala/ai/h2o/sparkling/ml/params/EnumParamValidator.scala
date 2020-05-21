@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.params
 
 import java.util
 
-object H2OAlgoParamsHelper {
+object EnumParamValidator {
 
   def getValidatedEnumValue[T <: Enum[T]](name: String)(implicit ctag: reflect.ClassTag[T]): String = {
     getValidatedEnumValue(ctag.runtimeClass, name)

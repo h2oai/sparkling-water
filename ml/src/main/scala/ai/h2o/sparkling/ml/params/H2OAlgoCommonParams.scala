@@ -16,7 +16,7 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
+import ai.h2o.sparkling.ml.params.EnumParamValidator.getValidatedEnumValue
 import hex.Model.Parameters
 import hex.genmodel.utils.DistributionFamily
 
