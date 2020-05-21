@@ -39,6 +39,10 @@ trait HasUserPoints extends H2OAlgoParamsBase {
     super.getH2OAlgorithmParams() ++ Map("user_points" -> getUserPointAsH2OFrameKeyString())
   }
 
+  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
+    super.getSWtoH2OParamNameMap() ++ Map("userPoints" -> "user_points")
+  }
+
   private def getUserPointAsH2OFrameKeyString(): String = {
     val userPoints = getUserPoints()
     if (userPoints == null) {

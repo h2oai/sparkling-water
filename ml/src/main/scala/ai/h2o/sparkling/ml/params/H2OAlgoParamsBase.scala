@@ -22,6 +22,8 @@ import org.apache.spark.ml.param._
 trait H2OAlgoParamsBase extends Params {
   private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = Map.empty
 
+  private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = Map.empty
+
   protected def booleanParam(name: String, doc: String): BooleanParam = {
     new BooleanParam(this, name, doc)
   }

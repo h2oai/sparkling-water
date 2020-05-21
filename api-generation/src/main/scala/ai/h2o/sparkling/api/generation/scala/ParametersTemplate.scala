@@ -63,6 +63,12 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
          |      Map(
          |${generateH2OAssignments(parameters)})
          |  }
+         |
+         |  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
+         |    super.getSWtoH2OParamNameMap() ++
+         |      Map(
+         |${generateSWToH2OParamNameAssociations(parameters)})
+         |  }
       """.stripMargin
     }
   }
@@ -132,6 +138,14 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     parameters
       .map { parameter =>
         s"""        "${parameter.h2oName}" -> get${parameter.swName.capitalize}()"""
+      }
+      .mkString(",\n")
+  }
+
+  private def generateSWToH2OParamNameAssociations(parameters: Seq[Parameter]): String = {
+    parameters
+      .map { parameter =>
+        s"""        "${parameter.swName}" -> "${parameter.h2oName}""""
       }
       .mkString(",\n")
   }

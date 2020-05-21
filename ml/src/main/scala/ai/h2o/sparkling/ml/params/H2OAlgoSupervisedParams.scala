@@ -30,4 +30,9 @@ trait H2OAlgoSupervisedParams[P <: Parameters]
     super.getH2OAlgorithmParams() ++
       Map("response_column" -> getLabelCol(), "offset_column" -> getOffsetCol())
   }
+
+  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
+    super.getSWtoH2OParamNameMap() ++
+      Map("labelCol" -> "response_column", "offsetCol" -> "offset_column")
+  }
 }

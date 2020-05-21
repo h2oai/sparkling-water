@@ -70,4 +70,14 @@ trait H2OAlgoCommonParams[P <: Parameters] extends H2OAlgoParamsBase with H2OCom
         "distribution" -> getDistribution(),
         "seed" -> getSeed())
   }
+
+  private[sparkling] override def getSWtoH2OParamNameMap(): Map[String, String] = {
+    super.getSWtoH2OParamNameMap() ++
+      Map(
+        "weightCol" -> "weights_column",
+        "nfolds" -> "nfolds",
+        "foldCol" -> "fold_column",
+        "distribution" -> "distribution",
+        "seed" -> "seed")
+  }
 }
