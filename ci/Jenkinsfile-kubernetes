@@ -11,8 +11,10 @@ properties(
 def readGradleProperties() {
     def properties = [:]
     readFile("gradle.properties").split("\n").each { line ->
-        def splits = line.split("=")
-        properties[splits[0]]=splits[1]
+        if (!line.startsWith("#")) {
+            def splits = line.split("=")
+            properties[splits[0]] = splits[1]
+        }
     }
     return properties
 }
