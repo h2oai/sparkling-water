@@ -113,7 +113,7 @@ node("docker") {
     stage("Stop EKS & ECR") {
         dir("kubernetes/src/terraform/aws") {
             def code = {
-                commons.terraformDestroy()
+                //commons.terraformDestroy()
             }
             commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
         }
