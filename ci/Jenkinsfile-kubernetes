@@ -101,7 +101,7 @@ node("docker") {
                     ).trim()
                     writeFile file: "docker_registry_id", text: registryId
                     stash name: "docker_registry_id", includes: "docker_registry_id"
-                    arch "kubernetes/src/terraform/aws/terraform.tfstate"
+                    arch "terraform.tfstate"
                 }
                 commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
