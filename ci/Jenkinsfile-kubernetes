@@ -93,20 +93,25 @@ node("docker") {
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
-                //def code = {
-                    //commons.terraformApply()
-                    //def registryId = sh(
-                    //        script: "terraform output docker_registry_id",
-                    //        returnStdout: true
-                    //).trim()
-                    writeFile file: "docker_registry_id", text: "524466471676"//registryId
+                def code = {
+                    commons.terraformApply()
+                    def registryId = sh(
+                            script: "terraform output docker_registry_id",
+                            returnStdout: true
+                    ).trim()
+                    writeFile file: "docker_registry_id", text: registryId
                     stash name: "docker_registry_id", includes: "docker_registry_id"
-                    //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
-                //}
+                    commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                }
             }
         }
     }
 
+    stage("DEBUG ONLY: Save Infrastructure State") {
+        commons.withGitPushCredentials {
+            commons.gitCommit(["kubernetes/src/terraform/aws/terraform.tfstate"], "Saving Infrastructure State")
+        }
+    }
 
     parallel(getBuildAndPublishStages())
 
