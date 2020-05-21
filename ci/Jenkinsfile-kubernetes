@@ -8,20 +8,25 @@ properties(
         ]
 )
 
-def getKubernetesSparkVersions() {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
-    def sparkVersions = versionLine.split("=")[1].split(" ").toList()
+def readGradleProperties() {
+    def properties = [:]
+    readFile("gradle.properties").split("\n").each {
+        def splits = line.split("=")
+        properties[splits[0]]=splits[1]
+    }
+    return properties
+}
 
-    def boundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
-    def boundaryVersion = boundaryVersionLine.split("=")[1]
+def getKubernetesSparkVersions(props) {
+    def sparkVersions = props["supportedSparkVersions"].split(" ").toList()
+    def boundaryVersion = props["kubernetesSupportSinceSpark"]
     def list = new ArrayList<String>()
     list.addAll(sparkVersions.subList(sparkVersions.indexOf(boundaryVersion), sparkVersions.size()))
     return list
 }
 
-def getSparklingVersion(sparkMajorVersion) {
-    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
-    return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
+def getSparklingVersion(props, sparkMajorVersion) {
+    return "${props['version'].split("=")[1].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(sparkMajorVersion) {
@@ -29,7 +34,7 @@ String getSparkVersion(sparkMajorVersion) {
     return versionLine.split("=")[1]
 }
 
-def getBuildAndPublishStage(sparkMajorVersion) {
+def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
             node('docker') {
@@ -41,7 +46,7 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                         sh "sudo apt -y install docker.io"
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
-                        def sparklingVersion = getSparklingVersion(sparkMajorVersion)
+                        def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
                         def customEnv = [
                                 "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
@@ -77,10 +82,10 @@ def getBuildAndPublishStage(sparkMajorVersion) {
     }
 }
 
-def getBuildAndPublishStages() {
+def getBuildAndPublishStages(props) {
     def parallelStages = [:]
-    getKubernetesSparkVersions().each { sparkMajorVersion ->
-        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndPublishStage(sparkMajorVersion)
+    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndPublishStage(props, sparkMajorVersion)
     }
     return parallelStages
 }
@@ -89,7 +94,7 @@ node("docker") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
-
+    def props = readGradleProperties()
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -108,7 +113,7 @@ node("docker") {
         }
     }
 
-    parallel(getBuildAndPublishStages())
+    parallel(getBuildAndPublishStages(props))
 
     stage("Stop EKS & ECR") {
         commons.withAWSCredentials {
