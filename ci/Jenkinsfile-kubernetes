@@ -28,7 +28,7 @@ def getKubernetesSparkVersions(props) {
 }
 
 def getSparklingVersion(props, sparkMajorVersion) {
-    return "${props['version'].split("=")[1].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
+    return "${props['version'].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
 }
 
 String getSparkVersion(sparkMajorVersion) {
