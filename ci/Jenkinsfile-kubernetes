@@ -104,8 +104,8 @@ node("docker") {
                     commons.withGitPushCredentials {
                         commons.gitCommit(["kubernetes/src/terraform/aws/terraform.tfstate"], "Saving Infrastructure State")
                     }
-                    commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
                 }
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
