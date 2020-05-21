@@ -174,6 +174,167 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
         "earlyStopping",
         H2OTypeConverters.toBoolean())
 
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    stoppingMetric = Param(
+        Params._dummy(),
+        "stoppingMetric",
+        "Metric to use for early stopping (AUTO: logloss for classification, deviance for regression and"
+        " anonomaly_score for Isolation Forest). Note that custom and custom_increasing can only be used"
+        " in GBM and DRF with the Python client.",
+        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+
+    stoppingTolerance = Param(
+        Params._dummy(),
+        "stoppingTolerance",
+        "Relative tolerance for metric-based stopping criterion (stop if relative improvement is not"
+        " at least this much)",
+        H2OTypeConverters.toFloat())
+
+    stoppingRounds = Param(
+        Params._dummy(),
+        "stoppingRounds",
+        "Early stopping based on convergence of stopping_metric. Stop if simple moving average of length k of"
+        " the stopping_metric does not improve for k:=stopping_rounds scoring events (0 to disable)",
+        H2OTypeConverters.toInt())
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    ignoreConstCols = Param(
+        Params._dummy(),
+        "ignoreConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    HGLM = Param(
+        Params._dummy(),
+        "HGLM",
+        "If set to true, will return HGLM model.  Otherwise, normal GLM model will be returned",
+        H2OTypeConverters.toBoolean())
+
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    startval = Param(
+        Params._dummy(),
+        "startval",
+        "double array to initialize fixed and random coefficients for HGLM.",
+        H2OTypeConverters.toNullableListFloat())
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
+    theta = Param(
+        Params._dummy(),
+        "theta",
+        "Theta",
+        H2OTypeConverters.toFloat())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
+    maxActivePredictors = Param(
+        Params._dummy(),
+        "maxActivePredictors",
+        "Maximum number of active predictors during computation. Use as a stopping criterion to prevent expensive "
+        "model building with many predictors. Default indicates: If the IRLSM solver is used, the value of "
+        "max_active_predictors is set to 5000 otherwise it is set to 100000000.",
+        H2OTypeConverters.toInt())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    calcLike = Param(
+        Params._dummy(),
+        "calcLike",
+        "if true, will return likelihood function value for HGLM.",
+        H2OTypeConverters.toBoolean())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -251,6 +412,81 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def getEarlyStopping(self):
         return self.getOrDefault(self.earlyStopping)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getStoppingMetric(self):
+        return self.getOrDefault(self.stoppingMetric)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
+
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
+    def getHGLM(self):
+        return self.getOrDefault(self.HGLM)
+
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getStartval(self):
+        return self.getOrDefault(self.startval)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
+    def getTheta(self):
+        return self.getOrDefault(self.theta)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getMaxActivePredictors(self):
+        return self.getOrDefault(self.maxActivePredictors)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getCalcLike(self):
+        return self.getOrDefault(self.calcLike)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
 
     ##
     # Setters
@@ -330,3 +566,78 @@ class H2OGLMParams(H2OAlgoSupervisedParams):
 
     def setEarlyStopping(self, value):
         return self._set(earlyStopping=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setStoppingMetric(self, value):
+        return self._set(stoppingMetric=value)
+
+    def setStoppingTolerance(self, value):
+        return self._set(stoppingTolerance=value)
+
+    def setStoppingRounds(self, value):
+        return self._set(stoppingRounds=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCols=value)
+
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCols=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)
+
+    def setHGLM(self, value):
+        return self._set(HGLM=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setStartval(self, value):
+        return self._set(startval=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)
+
+    def setTheta(self, value):
+        return self._set(theta=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
+
+    def setMaxActivePredictors(self, value):
+        return self._set(maxActivePredictors=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setCalcLike(self, value):
+        return self._set(calcLike=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)

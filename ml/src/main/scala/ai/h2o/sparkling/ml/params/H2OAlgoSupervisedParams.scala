@@ -22,12 +22,17 @@ import hex.Model.Parameters
   * A trait extracting a shared parameters among all supervised simple algorithms (all except Grid & AutoML).
   */
 trait H2OAlgoSupervisedParams[P <: Parameters]
-  extends H2OAlgoParamsHelper[P]
+  extends H2OAlgoParamsBase
   with H2OCommonSupervisedParams
   with H2OAlgoCommonParams[P] {
 
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
       Map("response_column" -> getLabelCol(), "offset_column" -> getOffsetCol())
+  }
+
+  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
+    super.getSWtoH2OParamNameMap() ++
+      Map("labelCol" -> "response_column", "offsetCol" -> "offset_column")
   }
 }

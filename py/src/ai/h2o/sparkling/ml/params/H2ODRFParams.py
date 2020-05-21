@@ -38,6 +38,128 @@ class H2ODRFParams(H2OSharedTreeParams):
         "to sqrt{p} for classification and p/3 for regression (where p is the # of predictors",
         H2OTypeConverters.toInt())
 
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    classSamplingFactors = Param(
+        Params._dummy(),
+        "classSamplingFactors",
+        "Desired over/under-sampling ratios per class (in lexicographic order). If not specified, sampling factors "
+        "will be automatically computed to obtain class balance during training. Requires balance_classes.",
+        H2OTypeConverters.toNullableListFloat())
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    ignoreConstCols = Param(
+        Params._dummy(),
+        "ignoreConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    maxAfterBalanceSize = Param(
+        Params._dummy(),
+        "maxAfterBalanceSize",
+        "Maximum relative size of the training data after balancing class counts (can be less than 1.0). "
+        "Requires balance_classes.",
+        H2OTypeConverters.toFloat())
+
+    balanceClasses = Param(
+        Params._dummy(),
+        "balanceClasses",
+        "Balance training data class counts via over/under-sampling (for imbalanced data).",
+        H2OTypeConverters.toBoolean())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    calibrateModel = Param(
+        Params._dummy(),
+        "calibrateModel",
+        "Use Platt Scaling to calculate calibrated class probabilities. Calibration can provide more accurate "
+        "estimates of class probabilities.",
+        H2OTypeConverters.toBoolean())
+
+    checkConstantResponse = Param(
+        Params._dummy(),
+        "checkConstantResponse",
+        "Check if response column is constant. If enabled, then an exception is thrown if the response column "
+        "is a constant value.If disabled, then model will train regardless of the response column being a constant "
+        "value or not.",
+        H2OTypeConverters.toBoolean())
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
     ##
     # Getters
     ##
@@ -47,6 +169,63 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getMtries(self):
         return self.getOrDefault(self.mtries)
 
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getClassSamplingFactors(self):
+        return self.getOrDefault(self.classSamplingFactors)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getMaxAfterBalanceSize(self):
+        return self.getOrDefault(self.maxAfterBalanceSize)
+
+    def getBalanceClasses(self):
+        return self.getOrDefault(self.balanceClasses)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getCalibrateModel(self):
+        return self.getOrDefault(self.calibrateModel)
+
+    def getCheckConstantResponse(self):
+        return self.getOrDefault(self.checkConstantResponse)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
     ##
     # Setters
     ##
@@ -55,3 +234,60 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setMtries(self, value):
         return self._set(mtries=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setClassSamplingFactors(self, value):
+        return self._set(classSamplingFactors=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCols=value)
+
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCols=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setMaxAfterBalanceSize(self, value):
+        return self._set(maxAfterBalanceSize=value)
+
+    def setBalanceClasses(self, value):
+        return self._set(balanceClasses=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setCalibrateModel(self, value):
+        return self._set(calibrateModel=value)
+
+    def setCheckConstantResponse(self, value):
+        return self._set(checkConstantResponse=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)

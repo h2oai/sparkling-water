@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2OGBMParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.tree.gbm.GBMModel.GBMParameters
-import org.apache.spark.ml.util.Identifiable
+package ai.h2o.sparkling.api.generation.common
 
-/**
-  * H2O GBM algorithm exposed via Spark ML pipelines.
-  */
-class H2OGBM(override val uid: String) extends H2OTreeBasedSupervisedAlgorithm[GBMParameters] with H2OGBMParams {
-
-  def this() = this(Identifiable.randomUID(classOf[H2OGBM].getSimpleName))
-}
-
-object H2OGBM extends H2OParamsReadable[H2OGBM]
+case class AlgorithmSubstitutionContext(
+    namespace: String,
+    entityName: String,
+    h2oSchemaClass: Class[_],
+    algorithmType: String,
+    extraInheritedEntities: Seq[String])
+  extends SubstitutionContextBase

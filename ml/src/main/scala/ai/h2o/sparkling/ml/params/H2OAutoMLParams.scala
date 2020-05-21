@@ -108,12 +108,12 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
   def setIncludeAlgos(value: Array[String]): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    val validated = EnumParamValidator.getValidatedEnumValues[Algo](value, nullEnabled = true)
     set(includeAlgos, validated)
   }
 
   def setExcludeAlgos(value: Array[String]): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValues[Algo](value, nullEnabled = true)
+    val validated = EnumParamValidator.getValidatedEnumValues[Algo](value, nullEnabled = true)
     set(excludeAlgos, validated)
   }
 
@@ -126,12 +126,12 @@ trait H2OAutoMLParams extends H2OCommonSupervisedParams with HasMonotoneConstrai
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
   def setStoppingMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
+    val validated = EnumParamValidator.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
     set(stoppingMetric, validated)
   }
 
   def setSortMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OAutoMLSortMetric](value)
+    val validated = EnumParamValidator.getValidatedEnumValue[H2OAutoMLSortMetric](value)
     set(sortMetric, validated)
   }
 

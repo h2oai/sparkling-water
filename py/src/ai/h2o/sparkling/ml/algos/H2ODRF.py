@@ -64,7 +64,26 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  namedMojoOutputColumns=True,
                  stoppingRounds=0,
                  stoppingMetric="AUTO",
-                 stoppingTolerance=0.001):
+                 stoppingTolerance=0.001,
+                 customDistributionFunc=None,
+                 customMetricFunc=None,
+                 maxRuntimeSecs=0.0,
+                 exportCheckpointsDir=None,
+                 classSamplingFactors=None,
+                 huberAlpha=0.9,
+                 tweediePower=1.5,
+                 quantileAlpha=0.5,
+                 ignoredCols=None,
+                 ignoreConstCols=True,
+                 scoreEachIteration=False,
+                 maxCategoricalLevels=10,
+                 maxAfterBalanceSize=5.0,
+                 balanceClasses=False,
+                 calibrateModel=False,
+                 checkConstantResponse=True,
+                 foldAssignment="AUTO",
+                 categoricalEncoding="AUTO",
+                 keepCrossValidationModels=True):
         Initializer.load_sparkling_jar()
         super(H2ODRF, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODRF", self.uid)

@@ -15,17 +15,8 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.params
+package ai.h2o.sparkling.api.generation.common
 
-import org.apache.spark.ml.param._
+case class Parameter(swName: String, h2oName: String, defaultValue: AnyRef, dataType: DataType, comment: String)
 
-trait HasQuantileAlpha extends Params {
-  private val quantileAlpha =
-    new DoubleParam(this, "quantileAlpha", "Desired quantile when performing quantile regression.")
-
-  setDefault(quantileAlpha -> 0.5)
-
-  def getQuantileAlpha(): Double = $(quantileAlpha)
-
-  def setQuantileAlpha(value: Double): this.type = set(quantileAlpha, value)
-}
+case class DataType(name: String, fullName: String, isEnum: Boolean)

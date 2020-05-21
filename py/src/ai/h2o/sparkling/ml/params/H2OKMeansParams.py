@@ -60,6 +60,122 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
         "Number of clusters to generate.",
         H2OTypeConverters.toInt())
 
+    quantileAlpha = Param(
+        Params._dummy(),
+        "quantileAlpha",
+        "Desired quantile for Quantile regression, must be between 0 and 1.",
+        H2OTypeConverters.toFloat())
+
+    tweediePower = Param(
+        Params._dummy(),
+        "tweediePower",
+        "Tweedie power for Tweedie regression, must be between 1 and 2.",
+        H2OTypeConverters.toFloat())
+
+    maxCategoricalLevels = Param(
+        Params._dummy(),
+        "maxCategoricalLevels",
+        "For every categorical feature, only use this many most frequent categorical levels for model training. "
+        "Only used for categorical_encoding == EnumLimited.",
+        H2OTypeConverters.toInt())
+
+    ignoredCols = Param(
+        Params._dummy(),
+        "ignoredCols",
+        "Names of columns to ignore for training.",
+        H2OTypeConverters.toNullableListString())
+
+    ignoreConstCols = Param(
+        Params._dummy(),
+        "ignoreConstCols",
+        "Ignore constant columns.",
+        H2OTypeConverters.toBoolean())
+
+    scoreEachIteration = Param(
+        Params._dummy(),
+        "scoreEachIteration",
+        "Whether to score during each iteration of model training.",
+        H2OTypeConverters.toBoolean())
+
+    customDistributionFunc = Param(
+        Params._dummy(),
+        "customDistributionFunc",
+        "Reference to custom distribution, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    customMetricFunc = Param(
+        Params._dummy(),
+        "customMetricFunc",
+        "Reference to custom evaluation function, format: `language:keyName=funcName`",
+        H2OTypeConverters.toNullableString())
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Automatically export generated models to this directory.",
+        H2OTypeConverters.toNullableString())
+
+    stoppingRounds = Param(
+        Params._dummy(),
+        "stoppingRounds",
+        "Early stopping based on convergence of stopping_metric. Stop if simple moving average of length k of"
+        " the stopping_metric does not improve for k:=stopping_rounds scoring events (0 to disable)",
+        H2OTypeConverters.toInt())
+
+    maxRuntimeSecs = Param(
+        Params._dummy(),
+        "maxRuntimeSecs",
+        "Maximum allowed runtime in seconds for model training. Use 0 to disable.",
+        H2OTypeConverters.toFloat())
+
+    clusterSizeConstraints = Param(
+        Params._dummy(),
+        "clusterSizeConstraints",
+        "An array specifying the minimum number of points that should be in each cluster. The length of the constraints"
+        " array has to be the same as the number of clusters.",
+        H2OTypeConverters.toNullableListFloat())
+
+    stoppingTolerance = Param(
+        Params._dummy(),
+        "stoppingTolerance",
+        "Relative tolerance for metric-based stopping criterion (stop if relative improvement is not"
+        " at least this much)",
+        H2OTypeConverters.toFloat())
+
+    foldAssignment = Param(
+        Params._dummy(),
+        "foldAssignment",
+        "Cross-validation fold assignment scheme, if fold_column is not specified. The 'Stratified' option will "
+        "stratify the folds based on the response variable, for classification problems.",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$FoldAssignmentScheme"))
+
+    categoricalEncoding = Param(
+        Params._dummy(),
+        "categoricalEncoding",
+        "Encoding scheme for categorical features",
+        H2OTypeConverters.toEnumString("hex.Model$Parameters$CategoricalEncodingScheme"))
+
+    stoppingMetric = Param(
+        Params._dummy(),
+        "stoppingMetric",
+        "Metric to use for early stopping (AUTO: logloss for classification, deviance for regression and"
+        " anonomaly_score for Isolation Forest). Note that custom and custom_increasing can only be used"
+        " in GBM and DRF with the Python client.",
+        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+
+    huberAlpha = Param(
+        Params._dummy(),
+        "huberAlpha",
+        "Desired quantile for Huber/M-regression (threshold between quadratic and linear loss,"
+        " must be between 0 and 1).",
+        H2OTypeConverters.toFloat())
+
+    keepCrossValidationModels = Param(
+        Params._dummy(),
+        "keepCrossValidationModels",
+        "Whether to keep the cross-validation models.",
+        H2OTypeConverters.toBoolean())
+
     #
     # Getters
     #
@@ -81,6 +197,60 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
     def getK(self):
         return self.getOrDefault(self.k)
 
+    def getQuantileAlpha(self):
+        return self.getOrDefault(self.quantileAlpha)
+
+    def getTweediePower(self):
+        return self.getOrDefault(self.tweediePower)
+
+    def getMaxCategoricalLevels(self):
+        return self.getOrDefault(self.maxCategoricalLevels)
+
+    def getIgnoredCols(self):
+        return self.getOrDefault(self.ignoredCols)
+
+    def getIgnoreConstCols(self):
+        return self.getOrDefault(self.ignoreConstCols)
+
+    def getScoreEachIteration(self):
+        return self.getOrDefault(self.scoreEachIteration)
+
+    def getCustomDistributionFunc(self):
+        return self.getOrDefault(self.customDistributionFunc)
+
+    def getCustomMetricFunc(self):
+        return self.getOrDefault(self.customMetricFunc)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getStoppingRounds(self):
+        return self.getOrDefault(self.stoppingRounds)
+
+    def getMaxRuntimeSecs(self):
+        return self.getOrDefault(self.maxRuntimeSecs)
+
+    def getClusterSizeConstraints(self):
+        return self.getOrDefault(self.clusterSizeConstraints)
+
+    def getStoppingTolerance(self):
+        return self.getOrDefault(self.stoppingTolerance)
+
+    def getFoldAssignment(self):
+        return self.getOrDefault(self.foldAssignment)
+
+    def getCategoricalEncoding(self):
+        return self.getOrDefault(self.categoricalEncoding)
+
+    def getStoppingMetric(self):
+        return self.getOrDefault(self.stoppingMetric)
+
+    def getHuberAlpha(self):
+        return self.getOrDefault(self.huberAlpha)
+
+    def getKeepCrossValidationModels(self):
+        return self.getOrDefault(self.keepCrossValidationModels)
+
     #
     # Setters
     #
@@ -101,3 +271,57 @@ class H2OKMeansParams(H2OAlgoUnsupervisedParams):
 
     def setK(self, value):
         return self._set(k=value)
+
+    def setQuantileAlpha(self, value):
+        return self._set(quantileAlpha=value)
+
+    def setTweediePower(self, value):
+        return self._set(tweediePower=value)
+
+    def setMaxCategoricalLevels(self, value):
+        return self._set(maxCategoricalLevels=value)
+
+    def setIgnoredCols(self, value):
+        return self._set(ignoredCols=value)
+
+    def setIgnoreConstCols(self, value):
+        return self._set(ignoreConstCols=value)
+
+    def setScoreEachIteration(self, value):
+        return self._set(scoreEachIteration=value)
+
+    def setCustomDistributionFunc(self, value):
+        return self._set(customDistributionFunc=value)
+
+    def setCustomMetricFunc(self, value):
+        return self._set(customMetricFunc=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setStoppingRounds(self, value):
+        return self._set(stoppingRounds=value)
+
+    def setMaxRuntimeSecs(self, value):
+        return self._set(maxRuntimeSecs=value)
+
+    def setClusterSizeConstraints(self, value):
+        return self._set(clusterSizeConstraints=value)
+
+    def setStoppingTolerance(self, value):
+        return self._set(stoppingTolerance=value)
+
+    def setFoldAssignment(self, value):
+        return self._set(foldAssignment=value)
+
+    def setCategoricalEncoding(self, value):
+        return self._set(categoricalEncoding=value)
+
+    def setStoppingMetric(self, value):
+        return self._set(stoppingMetric=value)
+
+    def setHuberAlpha(self, value):
+        return self._set(huberAlpha=value)
+
+    def setKeepCrossValidationModels(self, value):
+        return self._set(keepCrossValidationModels=value)

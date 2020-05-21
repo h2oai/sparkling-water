@@ -14,21 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2ODeepLearningParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import org.apache.spark.ml.util._
+package ai.h2o.sparkling.api.generation.common
 
-/**
-  * H2O DeepLearning algorithm exposed via Spark ML pipelines.
-  */
-class H2ODeepLearning(override val uid: String)
-  extends H2OSupervisedAlgorithm[DeepLearningParameters]
-  with H2ODeepLearningParams {
-
-  def this() = this(Identifiable.randomUID(classOf[H2ODeepLearning].getSimpleName))
+trait SubstitutionContextBase {
+  def namespace: String
+  def entityName: String
 }
-
-object H2ODeepLearning extends H2OParamsReadable[H2ODeepLearning]

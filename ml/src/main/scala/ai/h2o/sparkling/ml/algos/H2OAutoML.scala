@@ -74,10 +74,8 @@ class H2OAutoML(override val uid: String)
     } else {
       Map()
     }
-    Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ (if (algoParameters.nonEmpty)
-                                                                                    Map(
-                                                                                      "algo_parameters" -> algoParameters)
-                                                                                  else Map())
+    val extra = if (algoParameters.nonEmpty) Map("algo_parameters" -> algoParameters) else Map()
+    Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ extra
   }
 
   private def getBuildControl(): Map[String, Any] = {

@@ -111,7 +111,7 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   def setHyperParameters(value: java.util.Map[String, Array[AnyRef]]): this.type = set(hyperParameters, value)
 
   def setStrategy(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[HyperSpaceSearchCriteria.Strategy](value)
+    val validated = EnumParamValidator.getValidatedEnumValue[HyperSpaceSearchCriteria.Strategy](value)
     set(strategy, validated)
   }
 
@@ -124,12 +124,12 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   def setStoppingTolerance(value: Double): this.type = set(stoppingTolerance, value)
 
   def setStoppingMetric(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
+    val validated = EnumParamValidator.getValidatedEnumValue[ScoreKeeper.StoppingMetric](value)
     set(stoppingMetric, validated)
   }
 
   def setSelectBestModelBy(value: String): this.type = {
-    val validated = H2OAlgoParamsHelper.getValidatedEnumValue[H2OMetric](value)
+    val validated = EnumParamValidator.getValidatedEnumValue[H2OMetric](value)
     set(selectBestModelBy, validated)
   }
 

@@ -49,6 +49,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,
+                 keepCrossValidationModels=True,
                  parallelizeCrossValidation=True,
                  distribution="AUTO",
                  labelCol="label",
@@ -69,7 +70,24 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  monotoneConstraints={},
                  stoppingRounds=0,
                  stoppingMetric="AUTO",
-                 stoppingTolerance=0.001):
+                 stoppingTolerance=0.001,
+                 classSamplingFactors=None,
+                 checkConstantResponse=True,
+                 customDistributionFunc=None,
+                 customMetricFunc=None,
+                 maxRuntimeSecs=0.0,
+                 foldAssignment="AUTO",
+                 exportCheckpointsDir=None,
+                 maxAfterBalanceSize=5.0,
+                 calibrateModel=False,
+                 ignoredCols=None,
+                 ignoreConstCols=True,
+                 huberAlpha=0.9,
+                 tweediePower=1.5,
+                 scoreEachIteration=False,
+                 categoricalEncoding="AUTO",
+                 maxCategoricalLevels=10,
+                 balanceClasses=False):
         Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGBM", self.uid)

@@ -18,14 +18,14 @@
 package ai.h2o.sparkling.ml.param
 
 import ai.h2o.automl.Algo
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper._
+import ai.h2o.sparkling.ml.params.EnumParamValidator._
 import hex.genmodel.utils.DistributionFamily
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class H2OAlgoParamsHelperTestSuite extends FunSuite with Matchers {
+class EnumParamValidatorTestSuite extends FunSuite with Matchers {
 
   test("getValidatedEnumValue with unknown enum") {
     val thrown = intercept[IllegalArgumentException] {

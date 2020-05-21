@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.params.H2OGLMParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
-import hex.glm.GLMModel.GLMParameters
-import org.apache.spark.ml.util.Identifiable
+package ai.h2o.sparkling.api.generation.common
 
-/**
-  * H2O GLM algorithm exposed via Spark ML pipelines.
-  */
-class H2OGLM(override val uid: String) extends H2OSupervisedAlgorithm[GLMParameters] with H2OGLMParams {
+object ParameterNameConverter {
+  val h2oToSWExceptions: Map[String, String] = Map(
+    "lambda" -> "lambdaValue",
+    "alpha" -> "alphaValue",
+    "colsample_bylevel" -> "colSampleByLevel",
+    "colsample_bytree" -> "colSampleByTree")
 
-  def this() = this(Identifiable.randomUID(classOf[H2OGLM].getSimpleName))
+  val conversionRules: Map[String, String] = Map("Column" -> "Col")
+
+  def convertFromH2OToSW(parameterName: String): String = {
+    val parts = parameterName.split("_")
+    val capitalizedParts = parts.head +: parts.tail.map(_.capitalize)
+    val regularValue = conversionRules.foldLeft(capitalizedParts.mkString) {
+      case (input, (from, to)) => input.replace(from, to)
+    }
+    h2oToSWExceptions.getOrElse(parameterName, regularValue)
+  }
 }
-
-object H2OGLM extends H2OParamsReadable[H2OGLM]

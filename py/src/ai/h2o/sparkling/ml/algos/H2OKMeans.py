@@ -36,6 +36,7 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  modelId=None,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationFoldAssignment=False,
+                 keepCrossValidationModels=True,
                  parallelizeCrossValidation=True,
                  distribution="AUTO",
                  foldCol=None,
@@ -50,7 +51,24 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
-                 namedMojoOutputColumns=True):
+                 namedMojoOutputColumns=True,
+                 quantileAlpha=0.5,
+                 tweediePower=1.5,
+                 maxCategoricalLevels=10,
+                 ignoredCols=None,
+                 ignoreConstCols=True,
+                 scoreEachIteration=False,
+                 customDistributionFunc=None,
+                 customMetricFunc=None,
+                 exportCheckpointsDir=None,
+                 stoppingRounds=0,
+                 stoppingMetric="AUTO",
+                 maxRuntimeSecs=0.0,
+                 clusterSizeConstraints=None,
+                 stoppingTolerance=0.001,
+                 foldAssignment="AUTO",
+                 categoricalEncoding="AUTO",
+                 huberAlpha=0.9):
         Initializer.load_sparkling_jar()
         super(H2OKMeans, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OKMeans", self.uid)

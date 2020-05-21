@@ -25,7 +25,7 @@ class H2OTypeConverters(object):
     @staticmethod
     def toEnumListString(enumClass, nullEnabled=False):
         def convert(value):
-            package = getattr(_jvm().ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
+            package = getattr(_jvm().ai.h2o.sparkling.ml.params, "EnumParamValidator$")
             module = package.__getattr__("MODULE$")
             if nullEnabled:
                 converter = H2OTypeConverters.toNullableListString()
@@ -44,7 +44,7 @@ class H2OTypeConverters(object):
     @staticmethod
     def toEnumString(enumClass):
         def convert(value):
-            package = getattr(_jvm().ai.h2o.sparkling.ml.params, "H2OAlgoParamsHelper$")
+            package = getattr(_jvm().ai.h2o.sparkling.ml.params, "EnumParamValidator$")
             module = package.__getattr__("MODULE$")
             return module.getValidatedEnumValue(enumClass, H2OTypeConverters.toString()(value))
 
