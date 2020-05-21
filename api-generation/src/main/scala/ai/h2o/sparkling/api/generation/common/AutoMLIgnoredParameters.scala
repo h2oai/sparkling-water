@@ -17,23 +17,21 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-case class ParameterSubstitutionContext(
-    namespace: String,
-    entityName: String,
-    h2oSchemaClass: Class[_],
-    h2oParameterClass: Class[_],
-    ignoredParameters: Seq[String],
-    explicitFields: Seq[ExplicitField],
-    explicitDefaultValues: Map[String, String],
-    typeExceptions: Map[String, Class[_]],
-    defaultValueFieldPrefix: String = "_",
-    defaultValueSource: DefaultValueSource.DefaultValueSource,
-    generateParamTag: Boolean)
-  extends SubstitutionContextBase
+object AutoMLIgnoredParameters {
 
-case class ExplicitField(name: String, implementation: String)
-
-object DefaultValueSource extends Enumeration {
-  type DefaultValueSource = Value
-  val Field, Getter = Value
+  def all: Seq[String] =
+    Seq(
+      "__meta",
+      "job",
+      "training_frame",
+      "validation_frame",
+      "blending_frame",
+      "leaderboard_frame",
+      "monotone_constraints",
+      "stopping_criteria",
+      "response_column",
+      "weights_column",
+      "fold_column",
+      "modeling_plan",
+      "algo_parameters")
 }

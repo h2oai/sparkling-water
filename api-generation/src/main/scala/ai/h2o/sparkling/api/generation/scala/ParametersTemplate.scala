@@ -25,7 +25,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')
 
     val parameters = resolveParameters(parameterSubstitutionContext)
-    val imports = Seq(h2oParameterFullName) ++ parameters.filter(_.dataType.isEnum).map(_.dataType.fullName)
+    val imports = Seq(h2oParameterFullName) ++ parameters.filter(_.dataType.isEnum).map(_.dataType.getCanonicalName)
     val parents = Seq("H2OAlgoParamsBase") ++ parameterSubstitutionContext.explicitFields.map(_.implementation)
 
     val entitySubstitutionContext = EntitySubstitutionContext(
@@ -35,8 +35,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       imports)
 
     generateEntity(entitySubstitutionContext, "trait") {
-      s"""  protected def paramTag = reflect.classTag[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]
-         |
+      s"""${generateParamTag(parameterSubstitutionContext)}
          |  //
          |  // Parameter definitions
          |  //
@@ -59,7 +58,10 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
          |${generateSetters(parameters)}
          |
          |  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-         |    super.getH2OAlgorithmParams() ++
+         |    super.getH2OAlgorithmParams() ++ get${parameterSubstitutionContext.entityName}()
+         |  }
+         |
+         |  private[sparkling] def get${parameterSubstitutionContext.entityName}(): Map[String, Any] = {
          |      Map(
          |${generateH2OAssignments(parameters)})
          |  }
@@ -73,10 +75,18 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     }
   }
 
+  private def generateParamTag(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
+    if (parameterSubstitutionContext.generateParamTag) {
+      s"  protected def paramTag = reflect.classTag[${parameterSubstitutionContext.h2oParameterClass.getSimpleName}]\n"
+    } else {
+      ""
+    }
+  }
+
   private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
     parameters
       .map { parameter =>
-        val constructorMethod = resolveParameterConstructorMethod(parameter)
+        val constructorMethod = resolveParameterConstructorMethod(parameter.dataType, parameter.defaultValue)
         s"""  private val ${parameter.swName} = ${constructorMethod}(
            |    name = "${parameter.swName}",
            |    doc = "${parameter.comment}")""".stripMargin
@@ -88,7 +98,7 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
     parameters
       .map { parameter =>
         val defaultValue = if (parameter.dataType.isEnum) {
-          s"${parameter.dataType.name}.${parameter.defaultValue}.name()"
+          s"${parameter.dataType.getSimpleName}.${parameter.defaultValue}.name()"
         } else {
           parameter.defaultValue
         }
@@ -110,7 +120,8 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
   private def generateGetters(parameters: Seq[Parameter]): String = {
     parameters
       .map { parameter =>
-        s"  def get${parameter.swName.capitalize}(): ${resolveParameterType(parameter)} = $$(${parameter.swName})"
+        val resolvedType = resolveParameterType(parameter.dataType)
+        s"  def get${parameter.swName.capitalize}(): $resolvedType = $$(${parameter.swName})"
       }
       .mkString("\n\n")
   }
@@ -120,12 +131,19 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .map { parameter =>
         if (parameter.dataType.isEnum) {
           s"""  def set${parameter.swName.capitalize}(value: String): this.type = {
-             |    val validated = EnumParamValidator.getValidatedEnumValue[${parameter.dataType.name}](value)
+             |    val validated = EnumParamValidator.getValidatedEnumValue[${parameter.dataType.getSimpleName}](value)
+             |    set(${parameter.swName}, validated)
+             |  }
+           """.stripMargin
+        } else if (parameter.dataType.isArray && parameter.dataType.getComponentType.isEnum) {
+          val enumType = parameter.dataType.getComponentType.getCanonicalName
+          s"""  def set${parameter.swName.capitalize}(value: Array[String]): this.type = {
+             |    val validated = EnumParamValidator.getValidatedEnumValues[$enumType](value, nullEnabled = true)
              |    set(${parameter.swName}, validated)
              |  }
            """.stripMargin
         } else {
-          s"""  def set${parameter.swName.capitalize}(value: ${resolveParameterType(parameter)}): this.type = {
+          s"""  def set${parameter.swName.capitalize}(value: ${resolveParameterType(parameter.dataType)}): this.type = {
              |    set(${parameter.swName}, value)
              |  }
            """.stripMargin
@@ -150,27 +168,29 @@ object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
       .mkString(",\n")
   }
 
-  private def resolveParameterType(parameter: Parameter): String = {
-    if (parameter.dataType.isEnum) {
+  private def resolveParameterType(dataType: Class[_]): String = {
+    if (dataType.isEnum) {
       "String"
-    } else if (parameter.dataType.name.endsWith("[]")) {
-      s"Array[${parameter.dataType.name.stripSuffix("[]").capitalize}]"
+    } else if (dataType.isArray) {
+      s"Array[${resolveParameterType(dataType.getComponentType)}]"
     } else {
-      parameter.dataType.name.capitalize
+      dataType.getSimpleName.capitalize
     }
   }
 
-  private def resolveParameterConstructorMethod(parameter: Parameter): String = {
-    val rawPrefix = if (parameter.dataType.isEnum) {
+  private def resolveParameterConstructorMethodType(dataType: Class[_], defaultValue: Any): String = {
+    if (dataType.isEnum) {
       "string"
-    } else if (parameter.dataType.name.endsWith("[]")) {
-      s"${parameter.dataType.name.stripSuffix("[]").toLowerCase}Array"
+    } else if (dataType.isArray) {
+      s"${resolveParameterConstructorMethodType(dataType.getComponentType, defaultValue)}Array"
     } else {
-      parameter.dataType.name.toLowerCase
+      dataType.getSimpleName.toLowerCase
     }
+  }
 
-    val finalPrefix = if (parameter.defaultValue == null) s"nullable${rawPrefix.capitalize}" else rawPrefix
-
+  private def resolveParameterConstructorMethod(dataType: Class[_], defaultValue: Any): String = {
+    val rawPrefix = resolveParameterConstructorMethodType(dataType, defaultValue)
+    val finalPrefix = if (defaultValue == null) s"nullable${rawPrefix.capitalize}" else rawPrefix
     finalPrefix + "Param"
   }
 }

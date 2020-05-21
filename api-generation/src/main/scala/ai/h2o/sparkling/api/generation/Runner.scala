@@ -19,6 +19,7 @@ package ai.h2o.sparkling.api.generation
 
 import java.io.{File, PrintWriter}
 
+import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
 import ai.h2o.sparkling.api.generation.scala.{AlgorithmTemplate, ParametersTemplate}
 import ai.h2o.sparkling.utils.ScalaUtils._
@@ -29,6 +30,7 @@ import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
+import water.automl.api.schemas3.AutoMLBuildSpecV99._
 
 object Runner {
 
@@ -54,8 +56,12 @@ object Runner {
           entityName,
           h2oSchemaClass,
           h2oParametersClass,
+          IgnoredParameters.all,
           explicitFields,
-          explicitDefaultValues)
+          explicitDefaultValues,
+          typeExceptions=Map.empty,
+          defaultValueSource = DefaultValueSource.Field,
+          generateParamTag = true)
     }
   }
 
@@ -77,6 +83,33 @@ object Runner {
           h2oParametersClass,
           algorithmType,
           extraParents)
+    }
+  }
+
+  private def autoMLParameterConfiguration: Seq[ParameterSubstitutionContext] = {
+    import  DefaultValueSource._
+
+    val autoMLParameters = Seq[(String, Class[_], Class[_], DefaultValueSource)](
+      ("H2OAutoMLBuildControlParams", classOf[AutoMLBuildControlV99], classOf[AutoMLBuildControl], Field),
+      ("H2OAutoMLInputParams", classOf[AutoMLInputV99], classOf[AutoMLInput], Field),
+      ("H2OAutoMLStoppingCriteriaParams", classOf[AutoMLStoppingCriteriaV99], classOf[AutoMLStoppingCriteria], Getter),
+      ("H2OAutoMLBuildModelsParams", classOf[AutoMLBuildModelsV99], classOf[AutoMLBuildModels], Field)
+    )
+
+    autoMLParameters.map {
+      case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], source: DefaultValueSource) =>
+        ParameterSubstitutionContext(
+          namespace = "ai.h2o.sparkling.ml.params",
+          entityName,
+          h2oSchemaClass,
+          h2oParametersClass,
+          AutoMLIgnoredParameters.all,
+          explicitFields = Seq.empty,
+          explicitDefaultValues = Map("include_algos" -> "ai.h2o.automl.Algo.values().map(_.name())"),
+          defaultValueFieldPrefix = "",
+          typeExceptions=AutoMLTypeExceptions.all(),
+          defaultValueSource = source,
+          generateParamTag = false)
     }
   }
 
@@ -106,6 +139,11 @@ object Runner {
 
     for (substitutionContext <- algorithmConfiguration) {
       val content = AlgorithmTemplate(substitutionContext)
+      writeResultToFile(content, substitutionContext, language, destinationDir)
+    }
+
+    for (substitutionContext <- autoMLParameterConfiguration) {
+      val content = ParametersTemplate(substitutionContext)
       writeResultToFile(content, substitutionContext, language, destinationDir)
     }
   }
