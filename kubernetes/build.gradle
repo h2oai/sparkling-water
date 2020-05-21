@@ -15,11 +15,7 @@ ext {
 task createScalaDockerfile(type: Dockerfile) {
   destFile = outputFileScala
   arg "spark_version"
-  if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.0")) {
-    from 'spark:$spark_version'
-  } else {
-    from 'spark:$spark_version'
-  }
+  from 'spark:$spark_version'
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
 }
 
