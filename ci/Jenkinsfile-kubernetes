@@ -56,8 +56,8 @@ def getBuildAndPublishStage(sparkMajorVersion) {
                             }
                         }
 
-                        unstash "registryId"
-                        def repoId = readFile("registryId").trim()
+                        unstash "docker_registry_id"
+                        def repoId = readFile("docker_registry_id").trim()
                         def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                             sh """
@@ -100,7 +100,7 @@ node("docker") {
                     //        returnStdout: true
                     //).trim()
                     writeFile file: "docker_registry_id", text: "524466471676"//registryId
-                    stash name: "registryId", includes: "docker_registry_id"
+                    stash name: "docker_registry_id", includes: "docker_registry_id"
                     //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
                 //}
             }

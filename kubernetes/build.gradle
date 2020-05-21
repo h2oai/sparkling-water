@@ -37,7 +37,7 @@ task createRDockerfile(type: Dockerfile) {
     runCommand "apk add libc-dev linux-headers g++ libxml2-dev"
   }
   if (VersionNumber.parse(sparkVersion) < VersionNumber.parse("2.4.0")) {
-    runCommand "apk add --update R"
+    runCommand "apk add --update R R-dev make"
   }
   runCommand """\\
                 R -e 'install.packages("xml2", repos = "http://cran.us.r-project.org")' && \\
