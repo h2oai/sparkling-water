@@ -97,7 +97,7 @@ node("docker") {
     checkout scm
     def commons = load 'ci/commons.groovy'
     def props = readGradleProperties()
-    stage("Start EKS & ECR") {
+/*    stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
@@ -113,7 +113,7 @@ node("docker") {
                 commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
-    }
+    }*/
 
     parallel(getBuildAndPublishStages(props))
 
