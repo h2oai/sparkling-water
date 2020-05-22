@@ -104,9 +104,13 @@ def withKubectl(commons, code) {
                 sudo apt-get update
                 sudo apt-get install -y kubectl
                 kubectl version --client
-                ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
-                kubectl get svc
+                sudo cp ~/.local/bin/aws /usr/local/bin/aws
             """
+            sh """
+                aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
+                kubectl get svc
+                """
+            code
         }
     }
 }
