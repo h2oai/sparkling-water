@@ -40,6 +40,7 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  colSampleByLevel=1.0,
                  colSampleRatePerTree=1.0,
                  colSampleByTree=1.0,
+                 colSampleByNode=1.0,
                  maxAbsLeafnodePred=0.0,
                  maxDeltaStep=0.0,
                  scoreTreeInterval=0,
