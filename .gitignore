@@ -86,3 +86,6 @@ templates/src/terraform/aws/modules/network/*.tfvars
 templates/src/terraform/aws/modules/network/terraform.tfstate.backup
 
 jenkins/docker/regular-tests/Dockerfile
+
+# Generated ML code
+ml/src-gen
