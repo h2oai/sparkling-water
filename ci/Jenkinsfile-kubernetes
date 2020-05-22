@@ -92,6 +92,21 @@ def getBuildAndPublishStages(props) {
     return parallelStages
 }
 
+def installKubectl() {
+    commons.withSparklingWaterDockerImage {
+        unstash "properties"
+        sh """
+                sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
+                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+                sudo apt-get update
+                sudo apt-get install -y kubectl
+                kubectl version --client
+                ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
+                kubectl get svc
+            """
+    }
+}
 
 node("docker") {
     cleanWs()
@@ -115,34 +130,18 @@ node("docker") {
         }
     }
 
-
-    stage("Install kubectl") {
-        commons.withSparklingWaterDockerImage {
-            unstash "properties"
-            sh """
-                sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
-                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-                sudo apt-get update
-                sudo apt-get install -y kubectl
-                kubectl version --client
-                ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
-                kubectl get svc
-            """
-        }
-    }
-
-
     parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test internal backend Spark ${sparkMajorVersion}") {
+            installKubectl()
             sh "echo TODO"
         }
     }
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test external backend Spark ${sparkMajorVersion}") {
+            installKubectl()
             sh "echo TODO"
         }
     }
