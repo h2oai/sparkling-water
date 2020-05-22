@@ -139,7 +139,7 @@ node("docker") {
     //parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test internal backend Spark ${sparkMajorVersion}") {
+        stage("Test internal backend, cluster mode, Spark ${sparkMajorVersion}") {
             withKubectl(commons) {
                 sh "echo TODO"
             }
@@ -147,7 +147,7 @@ node("docker") {
     }
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test external backend Spark ${sparkMajorVersion}") {
+        stage("Test external backend, cluster mode, Spark ${sparkMajorVersion}") {
             withKubectl(commons) {
                 sh "echo TODO"
             }
