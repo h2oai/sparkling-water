@@ -125,7 +125,7 @@ node("docker") {
             sudo apt-get update
             sudo apt-get install -y kubectl
             
-            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
+           # ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
             kubectl get svc
             """
     }
