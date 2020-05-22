@@ -125,11 +125,10 @@ node("docker") {
             sudo apt-get update
             sudo apt-get install -y kubectl
             
-           # ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
             kubectl get svc
             """
     }
-
+//            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
 
 /*    parallel(getBuildAndPublishStages(props))
 
