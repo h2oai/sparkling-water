@@ -136,7 +136,7 @@ node("docker") {
         }
     }
 
-    //parallel(getBuildAndPublishStages(props))
+    parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test internal backend, cluster mode, Spark ${sparkMajorVersion}") {
