@@ -1,0 +1,130 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+
+properties(
+        [
+                pipelineTriggers([cron('H 16 * * *')]),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+def readGradleProperties() {
+    def properties = [:]
+    readFile("gradle.properties").split("\n").each { line ->
+        if (!line.startsWith("#")) {
+            def splits = line.split("=")
+            properties[splits[0]] = splits[1]
+        }
+    }
+    return properties
+}
+
+def getKubernetesSparkVersions(props) {
+    def sparkVersions = props["supportedSparkVersions"].split(" ").toList()
+    def boundaryVersion = props["kubernetesSupportSinceSpark"]
+    def list = new ArrayList<String>()
+    list.addAll(sparkVersions.subList(sparkVersions.indexOf(boundaryVersion), sparkVersions.size()))
+    return list
+}
+
+def getSparklingVersion(props, sparkMajorVersion) {
+    return "${props['version'].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
+}
+
+String getSparkVersion(sparkMajorVersion) {
+    def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
+    return versionLine.split("=")[1]
+}
+
+def getBuildAndPublishStage(props, sparkMajorVersion) {
+    return {
+        stage("Build & Publish Images For Spark $sparkMajorVersion") {
+            node('docker') {
+                ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                    cleanWs()
+                    checkout scm
+                    def commons = load 'ci/commons.groovy'
+                    commons.withSparklingWaterDockerImage {
+                        sh "sudo apt -y install docker.io"
+                        sh "sudo service docker start"
+                        sh "sudo chmod 666 /var/run/docker.sock"
+                        def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
+                        sh "./gradlew dist -Pspark=$sparkMajorVersion"
+                        def customEnv = [
+                                "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+                        ]
+                        withEnv(customEnv) {
+                            dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                                sh """
+                                    ./bin/build-kubernetes-images.sh scala
+                                    ./bin/build-kubernetes-images.sh python
+                                    ./bin/build-kubernetes-images.sh r
+                                   """
+                            }
+                        }
+
+                        unstash "docker_registry_id"
+                        def repoId = readFile("docker_registry_id").trim()
+                        def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
+                        docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
+                            sh """
+                            docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                            docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                            docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            """
+                        }
+                    }
+                    cleanWs()
+                }
+            }
+        }
+    }
+}
+
+def getBuildAndPublishStages(props) {
+    def parallelStages = [:]
+    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+        parallelStages["Build & Publish Spark ${sparkMajorVersion}"] = getBuildAndPublishStage(props, sparkMajorVersion)
+    }
+    return parallelStages
+}
+
+node("docker") {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    def props = readGradleProperties()
+    stage("Start EKS & ECR") {
+        commons.withAWSCredentials {
+            dir("kubernetes/src/terraform/aws") {
+                def code = {
+                    commons.terraformApply()
+                    def registryId = sh(
+                            script: "terraform output docker_registry_id",
+                            returnStdout: true
+                    ).trim()
+                    writeFile file: "docker_registry_id", text: registryId
+                    stash name: "docker_registry_id", includes: "docker_registry_id"
+                    arch "terraform.tfstate"
+                }
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+            }
+        }
+    }
+
+    parallel(getBuildAndPublishStages(props))
+
+    stage("Stop EKS & ECR") {
+        commons.withAWSCredentials {
+            dir("kubernetes/src/terraform/aws") {
+                def code = {
+                    commons.terraformDestroy()
+                }
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+            }
+        }
+    }
+}
