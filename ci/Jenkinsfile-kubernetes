@@ -110,7 +110,7 @@ def withKubectl(commons, code) {
                 aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
                 """
-            code
+            code()
         }
     }
 }
