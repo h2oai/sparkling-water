@@ -131,7 +131,7 @@ node("docker") {
     }
 
 
-    parallel(getBuildAndPublishStages(props))
+/*    parallel(getBuildAndPublishStages(props))
 
     stage("Stop EKS & ECR") {
         commons.withAWSCredentials {
@@ -142,5 +142,5 @@ node("docker") {
                 commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
-    }
+    }*/
 }
