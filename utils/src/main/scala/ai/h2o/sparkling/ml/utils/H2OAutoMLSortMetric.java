@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.ml.utils;
 
-import ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric
-
-object AutoMLTypeExceptions {
-  def all(): Map[String, Class[_]] = Map("sort_metric" -> classOf[H2OAutoMLSortMetric])
+public enum H2OAutoMLSortMetric {
+  AUTO,
+  deviance,
+  logloss,
+  MSE,
+  RMSE,
+  MAE,
+  RMSLE,
+  AUC,
+  mean_per_class_error
 }

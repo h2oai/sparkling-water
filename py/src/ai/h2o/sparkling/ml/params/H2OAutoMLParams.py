@@ -79,7 +79,7 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         Params._dummy(),
         "sortMetric",
         "Sort metric for the AutoML leaderboard",
-        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric"))
 
     balanceClasses = Param(
         Params._dummy(),
