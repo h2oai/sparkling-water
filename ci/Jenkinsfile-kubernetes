@@ -63,8 +63,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             }
                         }
 
-                        unstash "docker_registry_id"
-                        def repoId = readFile("docker_registry_id").trim()
+                        unstash "properties"
+                        def repoId = readFile("properties").trim()
                         def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                             sh """
@@ -92,6 +92,7 @@ def getBuildAndPublishStages(props) {
     return parallelStages
 }
 
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -102,18 +103,29 @@ node("docker") {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
                     commons.terraformApply()
-                    def registryId = sh(
-                            script: "terraform output docker_registry_id",
-                            returnStdout: true
-                    ).trim()
-                    writeFile file: "docker_registry_id", text: registryId
-                    stash name: "docker_registry_id", includes: "docker_registry_id"
+                    def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name"])
+                    def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n"
+                    writeFile file: "properties", text: valuesAsString
+                    stash name: "properties", includes: "properties"
                     arch "terraform.tfstate"
                 }
                 commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
+    stage("Install kubectl") {
+        sh """
+            sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
+            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+            echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+            sudo apt-get update
+            sudo apt-get install -y kubectl
+            
+            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name
+            kubectl get svc
+            """
+    }
+
 
     parallel(getBuildAndPublishStages(props))
 
@@ -123,7 +135,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
