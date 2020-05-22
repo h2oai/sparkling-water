@@ -101,6 +101,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "col sample by tree",
         H2OTypeConverters.toFloat())
 
+    colSampleByNode = Param(
+        Params._dummy(),
+        "colSampleByNode",
+        "col sample by node",
+        H2OTypeConverters.toFloat())
+
     maxAbsLeafnodePred = Param(
         Params._dummy(),
         "maxAbsLeafnodePred",
@@ -384,6 +390,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
     def getColSampleByTree(self):
         return self.getOrDefault(self.colSampleByTree)
 
+    def getColSampleByNode(self):
+        return self.getOrDefault(self.colSampleByNode)
+
     def getMaxAbsLeafnodePred(self):
         return self.getOrDefault(self.maxAbsLeafnodePred)
 
@@ -545,6 +554,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setColSampleByTree(self, value):
         return self._set(colSampleByTree=value)
+
+    def setColSampleByNode(self, value):
+        return self._set(colSampleByNode=value)
 
     def setMaxAbsLeafnodePred(self, value):
         return self._set(maxAbsLeafnodePred=value)
