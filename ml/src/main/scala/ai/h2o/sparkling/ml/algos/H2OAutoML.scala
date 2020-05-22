@@ -52,12 +52,12 @@ class H2OAutoML(override val uid: String)
 
   private def getInputSpec(train: H2OFrame, valid: Option[H2OFrame]): Map[String, Any] = {
     getH2OAutoMLInputParams() ++
-    Map(
-      "response_column" -> getLabelCol(),
-      "fold_column" -> getFoldCol(),
-      "weights_column" -> getWeightCol(),
-      "training_frame" -> train.frameId) ++
-    valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
+      Map(
+        "response_column" -> getLabelCol(),
+        "fold_column" -> getFoldCol(),
+        "weights_column" -> getWeightCol(),
+        "training_frame" -> train.frameId) ++
+      valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
   }
 
   private def getBuildModels(): Map[String, Any] = {

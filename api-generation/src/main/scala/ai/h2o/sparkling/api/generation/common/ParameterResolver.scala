@@ -29,13 +29,12 @@ trait ParameterResolver {
            if field.getAnnotation(classOf[API]) != null
            if !parameterSubstitutionContext.ignoredParameters.contains(field.getName)
            if !parameterSubstitutionContext.explicitFields.map(_.name).contains(field.getName))
-        yield
-          Parameter(
-            ParameterNameConverter.convertFromH2OToSW(field.getName),
-            field.getName,
-            null, // Schema class doesn't have such information
-            parameterSubstitutionContext.typeExceptions.getOrElse(field.getName, field.getType),
-            field.getAnnotation(classOf[API]).help())
+        yield Parameter(
+          ParameterNameConverter.convertFromH2OToSW(field.getName),
+          field.getName,
+          null, // Schema class doesn't have such information
+          parameterSubstitutionContext.typeExceptions.getOrElse(field.getName, field.getType),
+          field.getAnnotation(classOf[API]).help())
 
     val parameters = partialParameters.map { parameter =>
       val value = parameterSubstitutionContext.defaultValueSource match {

@@ -31,7 +31,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
     "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
       "For example, 0.8 -> 80% training 20% validation.")
 
-
   protected final val columnsToCategorical =
     new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categorical before modelling")
 

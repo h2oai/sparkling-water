@@ -59,7 +59,7 @@ object Runner {
           IgnoredParameters.all,
           explicitFields,
           explicitDefaultValues,
-          typeExceptions=Map.empty,
+          typeExceptions = Map.empty,
           defaultValueSource = DefaultValueSource.Field,
           generateParamTag = true)
     }
@@ -87,14 +87,13 @@ object Runner {
   }
 
   private def autoMLParameterConfiguration: Seq[ParameterSubstitutionContext] = {
-    import  DefaultValueSource._
+    import DefaultValueSource._
 
     val autoMLParameters = Seq[(String, Class[_], Class[_], DefaultValueSource)](
       ("H2OAutoMLBuildControlParams", classOf[AutoMLBuildControlV99], classOf[AutoMLBuildControl], Field),
       ("H2OAutoMLInputParams", classOf[AutoMLInputV99], classOf[AutoMLInput], Field),
       ("H2OAutoMLStoppingCriteriaParams", classOf[AutoMLStoppingCriteriaV99], classOf[AutoMLStoppingCriteria], Getter),
-      ("H2OAutoMLBuildModelsParams", classOf[AutoMLBuildModelsV99], classOf[AutoMLBuildModels], Field)
-    )
+      ("H2OAutoMLBuildModelsParams", classOf[AutoMLBuildModelsV99], classOf[AutoMLBuildModels], Field))
 
     autoMLParameters.map {
       case (entityName, h2oSchemaClass: Class[_], h2oParametersClass: Class[_], source: DefaultValueSource) =>
@@ -107,7 +106,7 @@ object Runner {
           explicitFields = Seq.empty,
           explicitDefaultValues = Map("include_algos" -> "ai.h2o.automl.Algo.values().map(_.name())"),
           defaultValueFieldPrefix = "",
-          typeExceptions=AutoMLTypeExceptions.all(),
+          typeExceptions = AutoMLTypeExceptions.all(),
           defaultValueSource = source,
           generateParamTag = false)
     }
