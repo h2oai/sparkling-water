@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend.NodeDesc
 import ai.h2o.sparkling.backend.converters._
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -178,20 +179,24 @@ object H2OContext extends Logging {
 
   private val instantiatedContext = new AtomicReference[H2OContext]()
 
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.34")
   def getOrCreate(): H2OContext = {
     val hc = ai.h2o.sparkling.H2OContext.getOrCreate()
     instantiatedContext.set(new H2OContext(hc))
     instantiatedContext.get()
   }
 
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.getOrCreate", "3.34")
   def getOrCreate(conf: H2OConf): H2OContext = synchronized {
     val hc = ai.h2o.sparkling.H2OContext.getOrCreate(conf)
     instantiatedContext.set(new H2OContext(hc))
     instantiatedContext.get()
   }
 
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.get", "3.34")
   def get(): Option[H2OContext] = Option(instantiatedContext.get())
 
+  @DeprecatedMethod("ai.h2o.sparkling.H2OContext.ensure", "3.34")
   def ensure(onError: => String = "H2OContext has to be running."): H2OContext = {
     Option(instantiatedContext.get()) getOrElse {
       throw new RuntimeException(onError)
