@@ -8,9 +8,9 @@ properties(
         ]
 )
 
-def readGradleProperties() {
+def readPropertiesFile(file) {
     def properties = [:]
-    readFile("gradle.properties").split("\n").each { line ->
+    readFile(file).split("\n").each { line ->
         if (!line.startsWith("#")) {
             def splits = line.split("=")
             properties[splits[0]] = splits[1]
@@ -64,7 +64,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         }
 
                         unstash "properties"
-                        def repoId = readFile("properties").trim()
+                        def repoId = readPropertiesFile("properties")["docker_registry_id"]
                         def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                             sh """
@@ -97,7 +97,7 @@ node("docker") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
-    def props = readGradleProperties()
+    def props = readPropertiesFile("gradle.properties")
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -113,7 +113,9 @@ node("docker") {
             }
         }
     }
+
     stage("Install kubectl") {
+        unstash "properties"
         sh """
             sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -121,7 +123,7 @@ node("docker") {
             sudo apt-get update
             sudo apt-get install -y kubectl
             
-            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name
+            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
             kubectl get svc
             """
     }
@@ -135,7 +137,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
