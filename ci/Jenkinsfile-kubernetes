@@ -98,7 +98,7 @@ node("docker") {
     checkout scm
     def commons = load 'ci/commons.groovy'
     def props = readPropertiesFile("gradle.properties")
-/*
+
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -114,11 +114,11 @@ node("docker") {
             }
         }
     }
-*/
+
 
     stage("Install kubectl") {
         commons.withSparklingWaterDockerImage {
-            //unstash "properties"
+            unstash "properties"
             sh """
                 sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
                 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -126,13 +126,27 @@ node("docker") {
                 sudo apt-get update
                 sudo apt-get install -y kubectl
                 kubectl version --client
+                ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
             """
         }
     }
-//            ~/.local/bin/aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
 
-/*    parallel(getBuildAndPublishStages(props))
+
+    parallel(getBuildAndPublishStages(props))
+
+    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+        stage("Test internal backend Spark ${sparkMajorVersion}") {
+            sh "echo TODO"
+        }
+    }
+
+    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+        stage("Test external backend Spark ${sparkMajorVersion}") {
+            sh "echo TODO"
+        }
+    }
+
 
     stage("Stop EKS & ECR") {
         commons.withAWSCredentials {
@@ -143,5 +157,5 @@ node("docker") {
                 commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
-    }*/
+    }
 }
