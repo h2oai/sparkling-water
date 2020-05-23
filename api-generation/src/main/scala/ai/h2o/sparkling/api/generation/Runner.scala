@@ -104,7 +104,8 @@ object Runner {
           h2oParametersClass,
           AutoMLIgnoredParameters.all,
           explicitFields = Seq.empty,
-          explicitDefaultValues = Map("include_algos" -> "ai.h2o.automl.Algo.values().map(_.name())"),
+          explicitDefaultValues =
+            Map("include_algos" -> "ai.h2o.automl.Algo.values().map(_.name())", "exclude_algos" -> "Array[String]()"),
           defaultValueFieldPrefix = "",
           typeExceptions = AutoMLTypeExceptions.all(),
           defaultValueSource = source,

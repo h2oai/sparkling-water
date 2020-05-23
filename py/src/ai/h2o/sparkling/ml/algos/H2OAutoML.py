@@ -42,6 +42,7 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
                  maxAfterBalanceSize=5.0,
                  keepCrossValidationPredictions=False,
                  keepCrossValidationModels=False,
+                 keepCrossValidationFoldAssignment=False,
                  maxModels=0,
                  labelCol="label",
                  foldCol=None,
@@ -58,6 +59,9 @@ class H2OAutoML(H2OAutoMLParams, H2OSupervisedAlgoBase):
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
                  namedMojoOutputColumns=True,
+                 maxRuntimeSecsPerModel=0.0,
+                 exportCheckpointsDir=None,
+                 exploitationRatio=0.0,
                  monotoneConstraints={}):
         Initializer.load_sparkling_jar()
         super(H2OAutoML, self).__init__()
