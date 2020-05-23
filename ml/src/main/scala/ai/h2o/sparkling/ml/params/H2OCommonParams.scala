@@ -59,6 +59,10 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
+  // To be overridden
+  def getSeed(): Long
+  def getNfolds(): Int
+
   //
   // Setters
   //
@@ -97,4 +101,8 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 
   protected def getExcludedCols(): Seq[String]
+
+  // To be overridden
+  def setSeed(value: Long): this.type
+  def setNfolds(value: Int): this.type
 }
