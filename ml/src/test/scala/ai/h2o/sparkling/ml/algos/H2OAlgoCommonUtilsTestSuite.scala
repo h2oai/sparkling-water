@@ -44,6 +44,14 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     override protected def getExcludedCols(): Seq[String] = Nil
 
     def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame], Array[String]) = prepareDatasetForFitting
+
+    override def getSeed(): Long = 1
+
+    override def getNfolds(): Int = 3
+
+    override def setSeed(value: Long): DummyTestClass.this.type = this
+
+    override def setNfolds(value: Int): DummyTestClass.this.type = this
   }
 
   test("Columns sanitation: DAI type of columns names") {
