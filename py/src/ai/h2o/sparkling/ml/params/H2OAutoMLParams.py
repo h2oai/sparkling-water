@@ -36,13 +36,13 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         Params._dummy(),
         "includeAlgos",
         "Algorithms to include when using automl",
-        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo"))
+        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo", True))
 
     excludeAlgos = Param(
         Params._dummy(),
         "excludeAlgos",
         "Algorithms to exclude when using automl",
-        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo"))
+        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo", True))
 
     projectName = Param(
         Params._dummy(),
