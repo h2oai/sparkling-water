@@ -22,22 +22,16 @@ import hex.Model
 import org.apache.spark.ml.param._
 
 object ParameterSetters {
-  implicit class SeedSetter(val algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]) {
-    def setSeed(value: Long): algo.type = {
-      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith("$$seed")).head
-      field.setAccessible(true)
-      val parameter = field.get(algo).asInstanceOf[LongParam]
-      algo.set(parameter, value)
-      field.setAccessible(false)
-      algo
-    }
-  }
+  implicit class AlgorithmWrapper(val algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]) {
 
-  implicit class NFoldsSetter(val algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]) {
-    def setNfolds(value: Int): algo.type = {
-      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith("$$nfolds")).head
+    def setSeed(value: Long): algo.type = setParam[Long, LongParam]("seed", value)
+
+    def setNfolds(value: Int): algo.type = setParam[Int, IntParam]("nfolds", value)
+
+    private def setParam[ValueType, ParamType <: Param[ValueType]](paramName: String, value: ValueType): algo.type = {
+      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith("$$" + paramName)).head
       field.setAccessible(true)
-      val parameter = field.get(algo).asInstanceOf[IntParam]
+      val parameter = field.get(algo).asInstanceOf[ParamType]
       algo.set(parameter, value)
       field.setAccessible(false)
       algo
