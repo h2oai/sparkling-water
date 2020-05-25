@@ -150,7 +150,7 @@ node("docker") {
             withKubectl(commons) {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                def master =  sh(
+                def master =  "k8s://" + sh(
                         script: 'kubectl config view -o jsonpath="{.clusters[0].cluster.server}',
                         returnStdout: true
                 ).trim()
@@ -158,7 +158,7 @@ node("docker") {
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
                      --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
-                     --master k8s://$master \
+                     --master $master \
                      --deploy-mode cluster \
                      --name test \
                      --class ai.h2o.sparkling.InitTest \
@@ -169,7 +169,7 @@ node("docker") {
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
                      --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
-                     --master k8s://$master \
+                     --master $master \
                      --deploy-mode cluster \
                      --name test \
                      --conf spark.executor.instances=3 \
@@ -177,7 +177,7 @@ node("docker") {
                     """
                 // Test R
                 sh """
-                    echo TODO
+                    R CMD BATCH submit.R $master $registryId $version
                     """
             }
         }
