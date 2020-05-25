@@ -58,6 +58,7 @@ task createRDockerfile(type: Dockerfile) {
   copyFile("rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
   copyFile("r/initTest.R", "/opt/sparkling-water/tests/initTest.R")
+  copyFile("r/submit.R", "/opt/sparkling-water/tests/submit.R")
 }
 
 task createPythonDockerfile(type: Dockerfile) {
@@ -99,7 +100,7 @@ task copyRExtras(type: Copy) {
 
 jar {
   archiveBaseName = 'initTest'
-  archiveVersion = null
+  archiveVersion = ""
 }
 
 task copyScalaExtras(type: Copy) {
