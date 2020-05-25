@@ -1,5 +1,6 @@
 library(sparklyr)
 
+args = commandArgs(trailingOnly=TRUE)
 master = args[1]
 registryId = args[2]
 version = args[3]

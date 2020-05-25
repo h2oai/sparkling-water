@@ -6,6 +6,10 @@ support only internal backend of sparkling water with cluster deployment mode, w
 that both executors and driver are running inside Kubernetes. Sparkling Water supports
 Kubernetes since Spark version 2.3.
 
+.. only:: Spark-2.3
+
+    Sparkling Water 2.3 supports only Scala applications running on top of Kubernetes as the same holds for vanilla Spark.
+
 Prerequisites:
  - Sparkling Water Distribution SUBST_SW_VERSION
  - Kubernetes Cluster
@@ -36,6 +40,8 @@ To start Sparkling Water on Kubernetes, the steps are:
 
                 ./bin/build-kubernetes-images.sh scala
 
+        .. only:: Spark-2.4
+
         .. tab-container:: Python
             :title: Python
 
@@ -62,6 +68,7 @@ To start Sparkling Water on Kubernetes, the steps are:
 
                 docker build -t "sparkling-water-scala-custom-app:SUBST_SW_VERSION" -f Dockerfile-Scala-CustomApp .
 
+        .. only:: Spark-2.4
 
         .. tab-container:: Python
             :title: Python
@@ -94,6 +101,7 @@ To start Sparkling Water on Kubernetes, the steps are:
                 --conf spark.executor.instances=3 \
                 local:///opt/app.jar
 
+        .. only:: Spark-2.4
 
         .. tab-container:: Python
             :title: Python
