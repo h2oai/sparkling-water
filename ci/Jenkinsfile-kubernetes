@@ -93,7 +93,7 @@ def getBuildAndPublishStages(props) {
 }
 
 
-def withKubectl(commons, code) {
+def withKubectl(commons, sparkMajorVersion, code) {
     commons.withSparklingWaterDockerImage {
         commons.withAWSCredentials {
             unstash "properties"
@@ -147,7 +147,7 @@ node("docker") {
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test internal backend, Spark ${sparkMajorVersion}") {
-            withKubectl(commons) {
+            withKubectl(commons, sparkMajorVersion) {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
                 def master =  "k8s://" + sh(
