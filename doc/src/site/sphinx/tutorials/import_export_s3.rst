@@ -80,7 +80,7 @@ Finally, read the data:
  .. code:: scala
 
     import java.net.URI
-    val fr = new H2OFrame(new URI("s3n://data.h2o.ai/h2o-open-tour/2016-nyc/weather.csv"))
+    val fr = H2OFrame(new URI("s3n://data.h2o.ai/h2o-open-tour/2016-nyc/weather.csv"))
 
 PySparkling Example Code
 ~~~~~~~~~~~~~~~~~~~~~~~~

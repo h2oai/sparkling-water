@@ -68,7 +68,7 @@ The following code reflects the use cases listed above. The code is executed in 
         val h2oContext = H2OContext.getOrCreate()
 
         import java.io.File
-        val df: H2OFrame = new H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.csv"))
+        val df: H2OFrame = H2OFrame(new File("examples/smalldata/airlines/allyears2k_headers.csv"))
 
     **Note**: The file must be present on all nodes. Specifically in the case of the Sparkling Water internal backend, this must be present on all nodes with Spark. In the case of the Sparkling Water external backend, this must be present on all nodes with H2O.
      
@@ -84,7 +84,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
         val path = "hdfs://mr-0xd6.0xdata.loc/datasets/airlines_all.csv"
         val uri = new java.net.URI(path)
-        val airlinesHF = new H2OFrame(uri)
+        val airlinesHF = H2OFrame(uri)
 
  - From S3N:
 
@@ -97,7 +97,7 @@ The following code reflects the use cases listed above. The code is executed in 
 
         val path = "s3n://h2o-airlines-unpacked/allyears2k.csv"
         val uri = new java.net.URI(path)
-        val airlinesHF = new H2OFrame(uri)
+        val airlinesHF = H2OFrame(uri)
 
     **Note**: Spark/H2O needs to know the AWS credentials specified in ``core-site.xml``. The credentials are passed via ``HADOOP_CONF_DIR``, which points to a configuration directory with ``core-site.xml``.
 
