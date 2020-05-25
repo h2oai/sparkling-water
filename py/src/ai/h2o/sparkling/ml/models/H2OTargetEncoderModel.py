@@ -19,10 +19,10 @@ from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
 from pyspark.sql import DataFrame
 
-from ai.h2o.sparkling.ml.params import H2OTargetEncoderParams
+from ai.h2o.sparkling.ml.params import H2OTargetEncoderMOJOParams
 
 
-class H2OTargetEncoderModel(H2OTargetEncoderParams, JavaModel, JavaMLWritable):
+class H2OTargetEncoderModel(H2OTargetEncoderMOJOParams, JavaModel, JavaMLWritable):
 
     def transformTrainingDataset(self, dataset):
         self._transfer_params_to_java()

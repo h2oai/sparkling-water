@@ -23,32 +23,25 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
-  protected def getExcludedCols(): Seq[String]
+
+  private[sparkling] def getExcludedCols(): Seq[String]
 
   private[sparkling] def getFeaturesCols(): Array[String]
 
-  private[sparkling] def getFeaturesColsInternal(): Array[String] = getFeaturesCols()
-
   private[sparkling] def getColumnsToCategorical(): Array[String]
-
-  private[sparkling] def getColumnsToCategoricalInternal(): Array[String] = getColumnsToCategorical()
 
   private[sparkling] def getSplitRatio(): Double
 
-  private[sparkling] def getSplitRatioInternal(): Double = getSplitRatio()
-
   private[sparkling] def setFeaturesCols(value: Array[String]): this.type
-
-  private[sparkling] def setFeaturesColsInternal(value: Array[String]): this.type = setFeaturesCols(value)
 
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val excludedCols = getExcludedCols()
 
-    if (getFeaturesColsInternal().isEmpty) {
+    if (getFeaturesCols().isEmpty) {
       val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
-      setFeaturesColsInternal(features)
+      setFeaturesCols(features)
     } else {
-      val missingColumns = getFeaturesColsInternal()
+      val missingColumns = getFeaturesCols()
         .filterNot(col => dataset.columns.contains(col))
 
       if (missingColumns.nonEmpty) {
@@ -58,7 +51,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
       }
     }
 
-    val featureColumns = getFeaturesColsInternal().map(sanitize).map(col)
+    val featureColumns = getFeaturesCols().map(sanitize).map(col)
     val excludedColumns = excludedCols.map(sanitize).map(col)
     val columns = featureColumns ++ excludedColumns
     val h2oContext = H2OContext.ensure(
@@ -67,10 +60,10 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(featureColumns: _*)).columns
-    trainFrame.convertColumnsToCategorical(getColumnsToCategoricalInternal())
+    trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
-    if (getSplitRatioInternal() < 1.0) {
-      val frames = trainFrame.split(getSplitRatioInternal())
+    if (getSplitRatio() < 1.0) {
+      val frames = trainFrame.split(getSplitRatio())
       if (frames.length > 1) {
         (frames(0), Some(frames(1)), internalFeatureCols)
       } else {

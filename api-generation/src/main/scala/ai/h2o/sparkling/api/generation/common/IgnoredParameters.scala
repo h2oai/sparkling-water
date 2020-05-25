@@ -23,15 +23,7 @@ object IgnoredParameters {
     "max_confusion_matrix_size", // Deep Learning
     "col_major") // Deep Learning
 
-  val implementedInParent: Seq[String] = Seq(
-    "model_id",
-    "training_frame",
-    "validation_frame",
-    "response_column",
-    "fold_column",
-    "weights_column",
-    "offset_column",
-    "distribution")
+  val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 
   val unimplemented = Seq(
     "__meta", // just for internal purposes

@@ -56,19 +56,13 @@ class H2OGridSearch(override val uid: String)
   private var gridModels: Array[H2OMOJOModel] = _
 
   private def getSearchCriteria(): String = {
-    val criteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
-      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete =>
-        Map(
-          "strategy" -> HyperSpaceSearchCriteria.Strategy.RandomDiscrete.name(),
-          "stopping_tolerance" -> getStoppingTolerance(),
-          "stopping_rounds" -> getStoppingRounds(),
-          "stopping_metric" -> getStoppingMetric(),
-          "seed" -> getSeed(),
-          "max_models" -> getMaxModels(),
-          "max_runtime_secs" -> getMaxRuntimeSecs())
-      case _ => Map("strategy" -> HyperSpaceSearchCriteria.Strategy.Cartesian.name())
+    val commonCriteria = getH2OGridSearchCommonCriteriaParams()
+    val specificCriteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
+      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete => getH2OGridSearchRandomDiscreteCriteriaParams()
+      case _ => getH2OGridSearchCartesianCriteriaParams()
     }
-    criteria.map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}")
+
+    (commonCriteria ++ specificCriteria).map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}")
   }
 
   private def getAlgoParams(
@@ -239,27 +233,13 @@ class H2OGridSearch(override val uid: String)
     }
   }
 
-  private[sparkling] override def getFeaturesColsInternal(): Array[String] = getAlgo().getFeaturesCols()
-
-  private[sparkling] override def getColumnsToCategoricalInternal(): Array[String] = getAlgo().getColumnsToCategorical()
-
-  private[sparkling] override def getSplitRatioInternal(): Double = getAlgo().getSplitRatioInternal()
-
-  private[sparkling] override def setFeaturesColsInternal(value: Array[String]): H2OGridSearch.this.type = {
-    propagateToAlgorithm.put("featuresCols", value)
-    val algorithm = getAlgo()
-    if (algorithm != null) algorithm.setFeaturesCols(value)
+  private[sparkling] def getColumnsToCategorical(): Array[String] = getAlgo().getColumnsToCategorical()
+  private[sparkling] def getExcludedCols(): Seq[String] = getAlgo().getExcludedCols()
+  private[sparkling] def getFeaturesCols(): Array[String] = getAlgo().getFeaturesCols()
+  private[sparkling] def getSplitRatio(): Double = getAlgo().getSplitRatio()
+  private[sparkling] def setFeaturesCols(value: Array[String]): this.type = {
+    getAlgo().setFeaturesCols(value)
     this
-  }
-
-  protected override def getExcludedCols(): Seq[String] = {
-    val algorithm = getAlgo()
-    if (algorithm == null) {
-      Seq.empty
-    } else {
-      Seq(algorithm.getLabelCol(), algorithm.getFoldCol(), algorithm.getWeightCol(), algorithm.getOffsetCol())
-        .flatMap(Option(_)) // Remove nulls
-    }
   }
 }
 
@@ -288,5 +268,4 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
       }
     }
   }
-
 }

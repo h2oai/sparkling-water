@@ -22,10 +22,8 @@ import scala.collection.JavaConverters._
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
-trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
+trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
 
-  protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  protected final val weightCol = new NullableStringParam(this, "weightCol", "Weight column name")
   protected final val splitRatio = new DoubleParam(
     this,
     "splitRatio",
@@ -39,8 +37,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   // Default values
   //
   setDefault(
-    foldCol -> null,
-    weightCol -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
     columnsToCategorical -> Array.empty[String])
 
@@ -52,10 +48,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
     $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
   }
 
-  def getFoldCol(): String = $(foldCol)
-
-  def getWeightCol(): String = $(weightCol)
-
   def getSplitRatio(): Double = $(splitRatio)
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
@@ -63,10 +55,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   //
   // Setters
   //
-  def setFoldCol(columnName: String): this.type = set(foldCol, columnName)
-
-  def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
-
   def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
 
   def setColumnsToCategorical(first: String, others: String*): this.type =
@@ -105,5 +93,5 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
 
-  protected def getExcludedCols(): Seq[String]
+  private[sparkling] def getExcludedCols(): Seq[String]
 }

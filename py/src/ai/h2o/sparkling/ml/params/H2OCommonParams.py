@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
+from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 
 
-class H2OCommonParams(H2OMOJOAlgoSharedParams):
+class H2OCommonParams(H2OBaseMOJOParams):
     foldCol = Param(
         Params._dummy(),
         "foldCol",
@@ -33,7 +33,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         "weightCol",
         "Weight column name",
         H2OTypeConverters.toNullableString())
-
     splitRatio = Param(
         Params._dummy(),
         "splitRatio",

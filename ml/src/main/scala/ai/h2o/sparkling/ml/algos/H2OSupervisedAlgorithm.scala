@@ -17,7 +17,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.models.H2OSupervisedMOJOModel
-import ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams
+
 import ai.h2o.sparkling.{H2OColumnType, H2OFrame}
 import hex.Model
 import hex.genmodel.utils.DistributionFamily
@@ -27,12 +27,19 @@ import org.apache.spark.sql.types.StructType
 
 import scala.reflect.ClassTag
 
-abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag]
-  extends H2OAlgorithm[P]
-  with H2OAlgoSupervisedParams[P] {
+abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H2OAlgorithm[P] {
+
+  def getLabelCol(): String
+
+  def getOffsetCol(): String
+
+  def setLabelCol(value: String): this.type
+
+  def setOffsetCol(value: String): this.type
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
+    val tranformedSchema = super.transformSchema(schema)
     require(
       schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
       s"Specified label column '${getLabelCol()} was not found in input dataset!")
@@ -40,12 +47,9 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag]
       !getFeaturesCols().exists(n => n.compareToIgnoreCase(getLabelCol()) == 0),
       "Specified input features cannot contain the label column!")
     require(
-      getWeightCol() == null || getWeightCol() != getFoldCol(),
-      "Specified weight column cannot be the same as the fold column!")
-    require(
       getOffsetCol() == null || getOffsetCol() != getFoldCol(),
       "Specified offset column cannot be the same as the fold column!")
-    schema
+    tranformedSchema
   }
 
   override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
@@ -60,5 +64,10 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag]
 
   override def fit(dataset: Dataset[_]): H2OSupervisedMOJOModel = {
     super.fit(dataset).asInstanceOf[H2OSupervisedMOJOModel]
+  }
+
+  override private[sparkling] def getExcludedCols(): Seq[String] = {
+    Seq(getLabelCol(), getFoldCol(), getWeightCol(), getOffsetCol())
+      .flatMap(Option(_)) // Remove nulls
   }
 }

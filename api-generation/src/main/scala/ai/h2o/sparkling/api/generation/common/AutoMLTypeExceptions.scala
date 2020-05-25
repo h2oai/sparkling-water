@@ -19,6 +19,8 @@ package ai.h2o.sparkling.api.generation.common
 
 import ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric
 
-object AutoMLTypeExceptions {
-  def all(): Map[String, Class[_]] = Map("sort_metric" -> classOf[H2OAutoMLSortMetric])
+object AutoMLTypeExceptions extends TypeExceptionsBase {
+  override def all(): Map[String, Class[_]] = {
+    super.all() ++ Map("sort_metric" -> classOf[H2OAutoMLSortMetric])
+  }
 }

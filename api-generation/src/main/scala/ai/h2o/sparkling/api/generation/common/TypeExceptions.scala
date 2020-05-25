@@ -14,25 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.params
 
-import hex.Model.Parameters
+package ai.h2o.sparkling.api.generation.common
 
-/**
-  * A trait extracting a shared parameters among all supervised simple algorithms (all except Grid & AutoML).
-  */
-trait H2OAlgoSupervisedParams[P <: Parameters]
-  extends H2OAlgoParamsBase
-  with H2OCommonSupervisedParams
-  with H2OAlgoCommonParams[P] {
-
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++
-      Map("response_column" -> getLabelCol(), "offset_column" -> getOffsetCol())
-  }
-
-  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++
-      Map("labelCol" -> "response_column", "offsetCol" -> "offset_column")
-  }
+trait TypeExceptionsBase {
+  def all(): Map[String, Class[_]] =
+    Map(
+      "model_id" -> classOf[String],
+      "response_column" -> classOf[String],
+      "fold_column" -> classOf[String],
+      "weights_column" -> classOf[String],
+      "offset_column" -> classOf[String])
 }
+
+object TypeExceptions extends TypeExceptionsBase
