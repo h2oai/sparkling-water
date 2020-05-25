@@ -25,7 +25,7 @@ task createScalaDockerfile(type: Dockerfile) {
   arg "spark_version"
   from 'spark:$spark_version'
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
-  copyFile("scala/initTest.jar", "/opt/sparkling-water/tests/initTest.R")
+  copyFile("scala/initTest.jar", "/opt/sparkling-water/tests/initTest.jar")
 }
 
 task createRDockerfile(type: Dockerfile) {
