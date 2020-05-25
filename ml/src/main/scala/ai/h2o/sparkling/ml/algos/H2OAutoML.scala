@@ -46,25 +46,18 @@ class H2OAutoML(override val uid: String)
   with H2OAutoMLParams
   with RestCommunication {
 
-  // Override default values
-  setDefault(nfolds, 5)
-
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
   private var amlKeyOption: Option[String] = None
 
   private def getInputSpec(train: H2OFrame, valid: Option[H2OFrame]): Map[String, Any] = {
-    Map(
-      "response_column" -> getLabelCol(),
-      "fold_column" -> getFoldCol(),
-      "weights_column" -> getWeightCol(),
-      "ignored_columns" -> getIgnoredCols(),
-      "sort_metric" -> getSortMetric(),
-      "training_frame" -> train.frameId) ++ valid
-      .map { fr =>
-        Map("validation_frame" -> fr.frameId)
-      }
-      .getOrElse(Map())
+    getH2OAutoMLInputParams() ++
+      Map(
+        "response_column" -> getLabelCol(),
+        "fold_column" -> getFoldCol(),
+        "weights_column" -> getWeightCol(),
+        "training_frame" -> train.frameId) ++
+      valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
   }
 
   private def getBuildModels(): Map[String, Any] = {
@@ -75,26 +68,18 @@ class H2OAutoML(override val uid: String)
       Map()
     }
     val extra = if (algoParameters.nonEmpty) Map("algo_parameters" -> algoParameters) else Map()
-    Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ extra
+
+    // Removing "include_algos", "exclude_algos" from s H2OAutoMLBuildModelsParams since an effective set algorithms
+    // needs to be calculated and stored into "include_algos". The "exclude_algos" are then reset to null and both
+    // altered parameters are added to the result.
+    val essentialParameters = getH2OAutoMLBuildModelsParams() - ("include_algos", "exclude_algos")
+
+    essentialParameters ++ Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ extra
   }
 
   private def getBuildControl(): Map[String, Any] = {
-    val stoppingCriteria = Map(
-      "seed" -> getSeed(),
-      "max_runtime_secs" -> getMaxRuntimeSecs(),
-      "stopping_rounds" -> getStoppingRounds(),
-      "stopping_tolerance" -> getStoppingTolerance(),
-      "stopping_metric" -> getStoppingMetric(),
-      "max_models" -> getMaxModels())
-    Map(
-      "project_name" -> getProjectName(),
-      "nfolds" -> getNfolds(),
-      "balance_classes" -> getBalanceClasses(),
-      "class_sampling_factors" -> getClassSamplingFactors(),
-      "max_after_balance_size" -> getMaxAfterBalanceSize(),
-      "keep_cross_validation_predictions" -> getKeepCrossValidationPredictions(),
-      "keep_cross_validation_models" -> getKeepCrossValidationModels(),
-      "stopping_criteria" -> stoppingCriteria)
+    val stoppingCriteria = getH2OAutoMLStoppingCriteriaParams()
+    getH2OAutoMLBuildControlParams() + ("stopping_criteria" -> stoppingCriteria)
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
@@ -113,7 +98,7 @@ class H2OAutoML(override val uid: String)
   }
 
   private def determineIncludedAlgos(): Array[String] = {
-    val bothIncludedExcluded = getIncludeAlgos().intersect(getExcludeAlgos())
+    val bothIncludedExcluded = getIncludeAlgos().intersect(Option(getExcludeAlgos()).getOrElse(Array.empty))
     bothIncludedExcluded.foreach { algo =>
       logWarning(
         s"Algorithm '$algo' was specified in both include and exclude parameters. " +

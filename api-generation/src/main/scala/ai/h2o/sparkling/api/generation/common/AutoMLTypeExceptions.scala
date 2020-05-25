@@ -17,23 +17,8 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-case class ParameterSubstitutionContext(
-    namespace: String,
-    entityName: String,
-    h2oSchemaClass: Class[_],
-    h2oParameterClass: Class[_],
-    ignoredParameters: Seq[String],
-    explicitFields: Seq[ExplicitField],
-    explicitDefaultValues: Map[String, String],
-    typeExceptions: Map[String, Class[_]],
-    defaultValueFieldPrefix: String = "_",
-    defaultValueSource: DefaultValueSource.DefaultValueSource,
-    generateParamTag: Boolean)
-  extends SubstitutionContextBase
+import ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric
 
-case class ExplicitField(name: String, implementation: String)
-
-object DefaultValueSource extends Enumeration {
-  type DefaultValueSource = Value
-  val Field, Getter = Value
+object AutoMLTypeExceptions {
+  def all(): Map[String, Class[_]] = Map("sort_metric" -> classOf[H2OAutoMLSortMetric])
 }

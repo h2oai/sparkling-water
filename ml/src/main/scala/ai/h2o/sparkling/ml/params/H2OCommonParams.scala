@@ -31,9 +31,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
     "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
       "For example, 0.8 -> 80% training 20% validation.")
 
-  protected final val seed = new LongParam(this, "seed", "Used to specify seed to reproduce the model run")
-  protected final val nfolds = new IntParam(this, "nfolds", "Number of fold columns")
-
   protected final val columnsToCategorical =
     new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categorical before modelling")
 
@@ -44,8 +41,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
     foldCol -> null,
     weightCol -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
-    seed -> -1,
-    nfolds -> 0,
     columnsToCategorical -> Array.empty[String])
 
   //
@@ -62,10 +57,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def getSplitRatio(): Double = $(splitRatio)
 
-  def getSeed(): Long = $(seed)
-
-  def getNfolds(): Int = $(nfolds)
-
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
 
   //
@@ -76,10 +67,6 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   def setWeightCol(columnName: String): this.type = set(weightCol, columnName)
 
   def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
-
-  def setSeed(value: Long): this.type = set(seed, value)
-
-  def setNfolds(value: Int): this.type = set(nfolds, value)
 
   def setColumnsToCategorical(first: String, others: String*): this.type =
     set(columnsToCategorical, Array(first) ++ others)

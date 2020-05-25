@@ -31,8 +31,6 @@ object IgnoredParameters {
     "fold_column",
     "weights_column",
     "offset_column",
-    "seed",
-    "nfolds",
     "distribution")
 
   val unimplemented = Seq(
@@ -48,7 +46,8 @@ object IgnoredParameters {
     "random_columns", // GLM
     "initial_biases", // DeepLearning
     "initial_weights", // DeepLearning
-    "pretrained_autoencoder") // DeepLearning
+    "pretrained_autoencoder", // DeepLearning
+    "build_control") //AutoML
 
   def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
 }

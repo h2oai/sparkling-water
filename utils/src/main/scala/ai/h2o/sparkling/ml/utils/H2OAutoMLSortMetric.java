@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.algos;
+package ai.h2o.sparkling.ml.utils;
 
 public enum H2OAutoMLSortMetric {
   AUTO,

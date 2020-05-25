@@ -5,6 +5,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 dependencies {
   implementation("org.scala-lang:scala-library:${scalaVersion}")
   implementation("ai.h2o:h2o-algos:${h2oVersion}")
+  implementation("ai.h2o:h2o-automl:${h2oVersion}")
   implementation("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
 
   implementation(project(':sparkling-water-utils'))

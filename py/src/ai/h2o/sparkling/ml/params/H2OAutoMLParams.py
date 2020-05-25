@@ -30,19 +30,19 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         Params._dummy(),
         "ignoredCols",
         "Ignored column names",
-        H2OTypeConverters.toListString())
+        H2OTypeConverters.toNullableListString())
 
     includeAlgos = Param(
         Params._dummy(),
         "includeAlgos",
         "Algorithms to include when using automl",
-        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo"))
+        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo", True))
 
     excludeAlgos = Param(
         Params._dummy(),
         "excludeAlgos",
         "Algorithms to exclude when using automl",
-        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo"))
+        H2OTypeConverters.toEnumListString("ai.h2o.automl.Algo", True))
 
     projectName = Param(
         Params._dummy(),
@@ -79,7 +79,7 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         Params._dummy(),
         "sortMetric",
         "Sort metric for the AutoML leaderboard",
-        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.algos.H2OAutoMLSortMetric"))
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric"))
 
     balanceClasses = Param(
         Params._dummy(),
@@ -111,11 +111,35 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
         "Keep cross validation models",
         H2OTypeConverters.toBoolean())
 
+    keepCrossValidationFoldAssignment = Param(
+        Params._dummy(),
+        "keepCrossValidationFoldAssignment",
+        "Whether to keep cross-validation assignments.",
+        H2OTypeConverters.toBoolean())
+
     maxModels = Param(
         Params._dummy(),
         "maxModels",
         "Max models to train in AutoML",
         H2OTypeConverters.toInt())
+
+    maxRuntimeSecsPerModel = Param(
+        Params._dummy(),
+        "maxRuntimeSecsPerModel",
+        "Maximum time to spend on each individual model (optional).",
+        H2OTypeConverters.toFloat())
+
+    exportCheckpointsDir = Param(
+        Params._dummy(),
+        "exportCheckpointsDir",
+        "Path to a directory where every generated model will be stored.",
+        H2OTypeConverters.toNullableString())
+
+    exploitationRatio = Param(
+        Params._dummy(),
+        "exploitationRatio",
+        "The budget ratio (between 0 and 1) dedicated to the exploitation (vs exploration) phase.",
+        H2OTypeConverters.toFloat())
 
     ##
     # Getters
@@ -165,8 +189,21 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
     def getKeepCrossValidationModels(self):
         return self.getOrDefault(self.keepCrossValidationModels)
 
+    def getKeepCrossValidationFoldAssignment(self):
+        return self.getOrDefault(self.keepCrossValidationFoldAssignment)
+
+
     def getMaxModels(self):
         return self.getOrDefault(self.maxModels)
+
+    def getMaxRuntimeSecsPerModel(self):
+        return self.getOrDefault(self.maxRuntimeSecsPerModel)
+
+    def getExportCheckpointsDir(self):
+        return self.getOrDefault(self.exportCheckpointsDir)
+
+    def getExploitationRatio(self):
+        return self.getOrDefault(self.exploitationRatio)
 
     ##
     # Setters
@@ -216,5 +253,17 @@ class H2OAutoMLParams(H2OCommonSupervisedParams, HasMonotoneConstraints):
     def setKeepCrossValidationModels(self, value):
         return self._set(keepCrossValidationModels=value)
 
+    def setKeepCrossValidationFoldAssignment(self, value):
+        return self._set(keepCrossValidationFoldAssignment=value)
+
     def setMaxModels(self, value):
         return self._set(maxModels=value)
+
+    def setMaxRuntimeSecsPerModel(self, value):
+        return self._set(maxRuntimeSecsPerModel=value)
+
+    def setExportCheckpointsDir(self, value):
+        return self._set(exportCheckpointsDir=value)
+
+    def setExploitationRatio(self, value):
+        return self._set(exploitationRatio=value)

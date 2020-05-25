@@ -57,6 +57,9 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
       | 0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
       | 1 -> Sequential model building, no parallelism
       | n>1 -> n models will be built in parallel if possible""".stripMargin)
+  private val seed = new LongParam(this, "seed", "Used to specify seed to reproduce the model run")
+  private val nfolds = new IntParam(this, "nfolds", "Number of fold columns")
+
   //
   // Default values
   //
@@ -70,7 +73,9 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
     stoppingTolerance -> 0.001,
     stoppingMetric -> ScoreKeeper.StoppingMetric.AUTO.name(),
     selectBestModelBy -> H2OMetric.AUTO.name(),
-    parallelism -> 1)
+    parallelism -> 1,
+    seed -> -1,
+    nfolds -> 0)
 
   //
   // Getters
@@ -94,6 +99,10 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   def getSelectBestModelBy(): String = $(selectBestModelBy)
 
   def getParallelism(): Int = $(parallelism)
+
+  def getSeed(): Long = $(seed)
+
+  def getNfolds(): Int = $(nfolds)
 
   //
   // Setters
@@ -134,4 +143,8 @@ trait H2OGridSearchParams extends H2OCommonSupervisedParams {
   }
 
   def setParallelism(value: Int): this.type = set(parallelism, value)
+
+  def setSeed(value: Long): this.type = set(seed, value)
+
+  def setNfolds(value: Int): this.type = set(nfolds, value)
 }
