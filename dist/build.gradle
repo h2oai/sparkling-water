@@ -133,7 +133,7 @@ def distTaskDependencies = [
   ":sparkling-water-scoring:publish",
   ":sparkling-water-extensions:publish",
   ":sparkling-water-utils:publish",
-  ":sparkling-water-kubernetes:buildDockerfiles"
+  ":sparkling-water-kubernetes:prepareKubernetesFiles",
 ]
 
 def copyAndSubstituteGradleProperties() {
@@ -170,7 +170,8 @@ task copyFilesForZipDistribution {
     copyAndKeepPath("README.rst", "$zipDir")
     copyAndSubstituteGradleProperties()
 
-    copyRecursive("kubernetes/build/", "$zipDir/kubernetes")
+    copyRecursive("kubernetes/build/dist", "$zipDir/kubernetes")
+
     copyRecursive("bin/", "$zipDir/bin")
     copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
   }

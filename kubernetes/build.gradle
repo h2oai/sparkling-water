@@ -1,15 +1,23 @@
 apply plugin: 'base'
 apply plugin: 'com.bmuschko.docker-remote-api'
+apply from: "$rootDir/gradle/scala.gradle"
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import org.gradle.util.VersionNumber
 
 description = "Build docker images for Kubernetes with Sparkling Water"
 
+dependencies {
+  api(project(path: ':sparkling-water-assembly'))
+  compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+}
+
 ext {
-  outputFilePython = file("$buildDir/Dockerfile-Python")
-  outputFileR = file("$buildDir/Dockerfile-R")
-  outputFileScala = file("$buildDir/Dockerfile-Scala")
+  outputFilePython = file("$buildDir/dist/Dockerfile-Python")
+  outputFileR = file("$buildDir/dist/Dockerfile-R")
+  outputFileScala = file("$buildDir/dist/Dockerfile-Scala")
 }
 
 task createScalaDockerfile(type: Dockerfile) {
@@ -17,6 +25,7 @@ task createScalaDockerfile(type: Dockerfile) {
   arg "spark_version"
   from 'spark:$spark_version'
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
+  copyFile("scala/initTest.jar", "/opt/sparkling-water/tests/initTest.R")
 }
 
 task createRDockerfile(type: Dockerfile) {
@@ -48,6 +57,7 @@ task createRDockerfile(type: Dockerfile) {
   runCommand "R -e \"install.packages('h2o', type = 'source', repos = 'http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R')\""
   copyFile("rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
+  copyFile("r/initTest.R", "/opt/sparkling-water/tests/initTest.R")
 }
 
 task createPythonDockerfile(type: Dockerfile) {
@@ -72,6 +82,28 @@ task createPythonDockerfile(type: Dockerfile) {
                 apk del build-base python-dev
                 """
   }
+  copyFile("python/initTest.py", "/opt/sparkling-water/tests/initTest.py")
 }
 
 task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])
+
+task copyPythonExtras(type: Copy) {
+  from 'src/python'
+  into file("$buildDir/dist/python")
+}
+
+task copyRExtras(type: Copy) {
+  from 'src/r'
+  into file("$buildDir/dist/r")
+}
+
+jar {
+  archiveBaseName = 'initTest'
+  archiveVersion = null
+}
+
+task copyScalaExtras(type: Copy) {
+  from jar
+  into file("$buildDir/dist/scala")
+}
+task prepareKubernetesFiles(dependsOn: [copyPythonExtras, copyRExtras, copyScalaExtras, buildDockerfiles])
