@@ -175,6 +175,10 @@ node("docker") {
                      --conf spark.executor.instances=3 \
                      local:///opt/sparkling-water/tests/initTest.py
                     """
+                // Test R
+                sh """
+                    echo TODO
+                    """
             }
         }
     }
