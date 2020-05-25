@@ -171,7 +171,6 @@ task copyFilesForZipDistribution {
     copyAndSubstituteGradleProperties()
 
     copyRecursive("kubernetes/build/dist", "$zipDir/kubernetes")
-
     copyRecursive("bin/", "$zipDir/bin")
     copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
   }
