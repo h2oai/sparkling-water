@@ -150,21 +150,31 @@ node("docker") {
             withKubectl(commons) {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-
+                def master =  sh(
+                        script: 'kubectl config view -o jsonpath="{.clusters[0].cluster.server}',
+                        returnStdout: true
+                ).trim()
                 // Test Scala
-/*                sh """
+                sh """
                     \$SPARK_HOME/bin/spark-submit \
                      --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
-                     --master k8s://https://80E97B1A748490452038C7BEA320385B.gr7.us-east-2.eks.amazonaws.com \
+                     --master k8s://$master \
                      --deploy-mode cluster \
-                     --name test2 \
+                     --name test \
                      --class ai.h2o.sparkling.InitTest \
                      --conf spark.executor.instances=3 \
                      local:///opt/sparkling-water/tests/initTest.jar
-                    """*/
+                    """
                 // Test Python
-
-                // Test R
+                sh """
+                    \$SPARK_HOME/bin/spark-submit \
+                     --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+                     --master k8s://$master \
+                     --deploy-mode cluster \
+                     --name test \
+                     --conf spark.executor.instances=3 \
+                     local:///opt/sparkling-water/tests/initTest.py
+                    """
             }
         }
     }
