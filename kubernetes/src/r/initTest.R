@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+args = commandArgs(trailingOnly=TRUE)
+master = args[1]
 library(sparklyr)
 library(rsparkling)
+sc <- spark_connect(master=master)
+hc <- H2OContext.getOrCreate()
+print(hc)
