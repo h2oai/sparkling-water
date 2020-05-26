@@ -4,17 +4,14 @@ Running Sparkling Water in Kubernetes
 Sparkling Water can be executed inside the Kubernetes cluster. Both cluster and client deployment modes
 are supported. Sparkling Water supports Kubernetes since Spark version 2.4.
 
-Prerequisites:
- - Sparkling Water Distribution SUBST_SW_VERSION
- - Kubernetes Cluster and ``kubectl`` installed
- - Apache Spark SUBST_SPARK_VERSION
-
 Before you start, please make check the following:
 
 0. Please make yourself familiar with how to run Spark on Kubernetes at
    `Spark Kubernetes documentation <https://spark.apache.org/docs/SUBST_SPARK_VERSION/running-on-kubernetes.html>`__.
 
-1. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution.
+1. Ensure that you have working Kubernetes Cluster and ``kubectl`` installed
+
+1. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution of version SUBST_SPARK_VERSION
 
 2. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
 
