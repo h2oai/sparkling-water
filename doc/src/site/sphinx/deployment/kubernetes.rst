@@ -21,14 +21,17 @@ Before you start, please make check the following:
 Internal backend
 ~~~~~~~~~~~~~~~~
 
-In internal backend of Sparkling Water, we recommend passing the option ``spark.scheduler.minRegisteredResourcesRatio=1``
-to your invocation. This ensures that Spark waits for all resources and therefore Sparkling Water will start H2O on all
-requested executors.
+In internal backend of Sparkling Water, we need to pas the option ``spark.scheduler.minRegisteredResourcesRatio=1``
+to your Spark job invocation. This ensures that Spark waits for all resources and therefore Sparkling Water will
+start H2O on all requested executors.
 
 Dynamic allocation must be disabled in Spark.
 
 Start Interactive Shell (client mode):
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Download Sparkling distribution from `H2O download page <https://s3.amazonaws.com/h2o-release/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/index.html>`_
+and extract it. Let's assume the path to extracted distribution is in env variable ``SW_HOME``.
 
 To start Sparkling Water with 3 worker nodes:
 
@@ -46,6 +49,8 @@ To start Sparkling Water with 3 worker nodes:
                 --conf spark.scheduler.minRegisteredResourcesRatio=1
                 --conf spark.kubernetes.container.image=sparkling-water-scala-custom-app:SUBST_SW_VERSION \
                 --conf spark.executor.instances=3 \
+                --jars $SW_HOME/jars/sparkling-water-assembly_2.11-SUBST_SW_VERSION-all
+
 
         .. tab-container:: Python
             :title: Python
@@ -59,10 +64,8 @@ To start Sparkling Water with 3 worker nodes:
                 --conf spark.scheduler.minRegisteredResourcesRatio=1
                 --conf spark.kubernetes.container.image=sparkling-water-python-custom-app:SUBST_SW_VERSION \
                 --conf spark.executor.instances=3 \
+                --py-files $SW_HOME/py/build/dist/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
 
-After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
-``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
-running ``kubectl get pods``.
 
 Submit Batch Jobs (cluster mode):
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
