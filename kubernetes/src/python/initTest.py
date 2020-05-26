@@ -22,7 +22,7 @@ import h2o
 # Start Cluster
 spark = SparkSession.builder.appName("App name").getOrCreate()
 hc = H2OContext.getOrCreate()
-assert h2o.cluster().cloud_size == spark.sparkContext.getConf().get("spark.executor.instances")
+assert h2o.cluster().cloud_size == int(spark.sparkContext.getConf().get("spark.executor.instances"))
 
 # Prepare Data
 frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")

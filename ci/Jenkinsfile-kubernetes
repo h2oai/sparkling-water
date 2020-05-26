@@ -132,7 +132,7 @@ node("docker") {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
                     commons.terraformApply()
-                    def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name"])
+                    def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name", "cluster_endpoint"])
                     def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n" + "version=$sparklingVersion" + "\n"
                     writeFile file: "properties", text: valuesAsString
                     stash name: "properties", includes: "properties"
@@ -150,10 +150,7 @@ node("docker") {
             withKubectl(commons, sparkMajorVersion) {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                def master =  "k8s://" + sh(
-                        script: 'kubectl config view -o jsonpath="{.clusters[0].cluster.server}',
-                        returnStdout: true
-                ).trim()
+                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
                 // Test Scala
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
