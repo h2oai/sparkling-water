@@ -200,15 +200,6 @@ node("docker") {
                 testRInternalBackend(registryId, master, version, "cluster")
             }
         }
-
-        stage("Test external backend, Spark ${sparkMajorVersion}") {
-            withKubectl(commons, sparkMajorVersion) {
-                def registryId = readPropertiesFile("properties")["docker_registry_id"]
-                def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-
-            }
-        }
     }
 
     stage("Stop EKS & ECR") {
@@ -217,7 +208,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
