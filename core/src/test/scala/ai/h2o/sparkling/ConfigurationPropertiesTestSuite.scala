@@ -103,7 +103,7 @@ class ConfigurationPropertiesTestSuite_SetNotifyLocalViaNodeExtraProperties
     } else {
       s"-notify_local $filePath"
     }
-    conf.setNodeExtraProperties(properties)
+    conf.setExtraProperties(properties)
   }
 
   test("test that notify_local set via node extra properties produce a file") {
