@@ -158,6 +158,7 @@ node("docker") {
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
                      --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
+                     --conf spark.kubernetes.driver.pod.name=driver-scala
                      --master $master \
                      --deploy-mode cluster \
                      --name test \
@@ -165,16 +166,21 @@ node("docker") {
                      --conf spark.executor.instances=3 \
                      local:///opt/sparkling-water/tests/initTest.jar
                     """
+                // Check exit code of the pod
+                sh "kubectl get pod driver-scala | grep -q && echo \"OK\" || exit 1"
                 // Test Python
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
                      --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+                     --conf spark.kubernetes.driver.pod.name=driver-python
                      --master $master \
                      --deploy-mode cluster \
                      --name test \
                      --conf spark.executor.instances=3 \
                      local:///opt/sparkling-water/tests/initTest.py
                     """
+                sh "kubectl get pod driver-python | grep -q && echo \"OK\" || exit 1"
+
                 // Test R
                 sh """
                     R CMD BATCH submit.R $master $registryId $version
