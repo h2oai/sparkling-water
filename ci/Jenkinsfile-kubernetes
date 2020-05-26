@@ -126,8 +126,8 @@ def testScalaInternalBackend(registryId, master, version, mode) {
     sh """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
-         --conf spark.kubernetes.driver.pod.name=driver-scala
-         --conf spark.scheduler.minRegisteredResourcesRatio=1
+         --conf spark.kubernetes.driver.pod.name=driver-scala \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --master $master \
          --deploy-mode $mode \
          --name test \
@@ -145,8 +145,8 @@ def testPythonInternalBackend(registryId, master, version, mode) {
     sh """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
-         --conf spark.kubernetes.driver.pod.name=driver-python
-         --conf spark.scheduler.minRegisteredResourcesRatio=1
+         --conf spark.kubernetes.driver.pod.name=driver-python \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --master $master \
          --deploy-mode $mode \
          --name test \
@@ -194,7 +194,7 @@ node("docker") {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                
+
                 testScalaInternalBackend(registryId, master, version, "cluster")
                 testScalaInternalBackend(registryId, master, version, "client")
                 testPythonInternalBackend(registryId, master, version, "cluster")
