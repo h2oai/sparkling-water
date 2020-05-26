@@ -196,11 +196,8 @@ node("docker") {
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
 
                 testScalaInternalBackend(registryId, master, version, "cluster")
-                //testScalaInternalBackend(registryId, master, version, "client")
                 testPythonInternalBackend(registryId, master, version, "cluster")
-                //testPythonInternalBackend(registryId, master, version, "client")
                 testRInternalBackend(registryId, master, version, "cluster")
-                //testRInternalBackend(registryId, master, version, "client")
             }
         }
 
