@@ -21,8 +21,7 @@ import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.SharedBackendUtils
 import org.apache.spark.expose.Logging
 import org.apache.spark.rpc.{RpcEndpointRef, RpcEnv}
-import org.apache.spark.scheduler.cluster.{CoarseGrainedSchedulerBackend, SchedulerBackendUtils}
-import org.apache.spark.scheduler.cluster.k8s.KubernetesClusterSchedulerBackend
+import org.apache.spark.scheduler.cluster.CoarseGrainedSchedulerBackend
 import org.apache.spark.scheduler.local.LocalSchedulerBackend
 import org.apache.spark.{SparkConf, SparkEnv}
 
@@ -109,7 +108,6 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
       sb match {
         case _: LocalSchedulerBackend => 1
         case b: CoarseGrainedSchedulerBackend => b.getExecutorIds.length
-        case b: KubernetesClusterSchedulerBackend => SchedulerBackendUtils.getInitialTargetExecutorNumber(sc.conf)
         case _ => SparkEnv.get.blockManager.master.getStorageStatus.length - 1
       }
     }

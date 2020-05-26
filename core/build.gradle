@@ -83,7 +83,6 @@ dependencies {
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-  compileOnly("org.apache.spark:spark-kubernetes_${scalaBaseVersion}:${sparkVersion}")
 
   testImplementation("org.scala-lang:scala-library:${scalaVersion}")
   testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
