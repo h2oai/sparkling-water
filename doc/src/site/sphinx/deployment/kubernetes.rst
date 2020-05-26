@@ -10,6 +10,8 @@ Prerequisites:
  - Sparkling Water Distribution SUBST_SW_VERSION
  - Kubernetes Cluster
  - Apache Spark SUBST_SPARK_VERSION
+ - Dynamic Allocation is disabled in Spark
+ - Pass ``spark.scheduler.minRegisteredResourcesRatio=1`` to your Spark config
 
 To start Sparkling Water on Kubernetes, the steps are:
 
