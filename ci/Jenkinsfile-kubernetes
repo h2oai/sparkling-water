@@ -120,6 +120,49 @@ def withKubectl(commons, sparkMajorVersion, code) {
         }
     }
 }
+
+def testScalaInternalBackend(registryId, master, version, mode) {
+    // Test Scala
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-scala
+         --conf spark.scheduler.minRegisteredResourcesRatio=1
+         --master $master \
+         --deploy-mode $mode \
+         --name test \
+         --class ai.h2o.sparkling.InitTest \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.jar
+        """
+    // Check exit code of the pod
+    sh "kubectl get pod driver-scala | grep -q Success && echo \"OK\" || exit 1"
+}
+
+
+
+def testPythonInternalBackend(registryId, master, version, mode) {
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-python
+         --conf spark.scheduler.minRegisteredResourcesRatio=1
+         --master $master \
+         --deploy-mode $mode \
+         --name test \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.py
+        """
+    sh "kubectl get pod driver-python | grep -q Success && echo \"OK\" || exit 1"
+}
+
+def testRInternalBackend(registryId, master, version, mode) {
+    sh """
+        R CMD BATCH submit.R $master $registryId $version $mode
+        """
+    sh "kubectl get pod driver-r | grep -q Success && echo \"OK\" || exit 1"
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -151,39 +194,22 @@ node("docker") {
                 def registryId = readPropertiesFile("properties")["docker_registry_id"]
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                // Test Scala
-                sh """
-                    \$SPARK_HOME/bin/spark-submit \
-                     --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
-                     --conf spark.kubernetes.driver.pod.name=driver-scala
-                     --conf spark.scheduler.minRegisteredResourcesRatio=1
-                     --master $master \
-                     --deploy-mode cluster \
-                     --name test \
-                     --class ai.h2o.sparkling.InitTest \
-                     --conf spark.executor.instances=3 \
-                     local:///opt/sparkling-water/tests/initTest.jar
-                    """
-                // Check exit code of the pod
-                sh "kubectl get pod driver-scala | grep -q Success && echo \"OK\" || exit 1"
-                // Test Python
-                sh """
-                    \$SPARK_HOME/bin/spark-submit \
-                     --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
-                     --conf spark.kubernetes.driver.pod.name=driver-python
-                     --conf spark.scheduler.minRegisteredResourcesRatio=1
-                     --master $master \
-                     --deploy-mode cluster \
-                     --name test \
-                     --conf spark.executor.instances=3 \
-                     local:///opt/sparkling-water/tests/initTest.py
-                    """
-                sh "kubectl get pod driver-python | grep -q Success && echo \"OK\" || exit 1"
+                
+                testScalaInternalBackend(registryId, master, version, "cluster")
+                testScalaInternalBackend(registryId, master, version, "client")
+                testPythonInternalBackend(registryId, master, version, "cluster")
+                testPythonInternalBackend(registryId, master, version, "client")
+                testRInternalBackend(registryId, master, version, "cluster")
+                testRInternalBackend(registryId, master, version, "client")
+            }
+        }
 
-                // Test R
-                sh """
-                    R CMD BATCH submit.R $master $registryId $version
-                    """
+        stage("Test external backend, Spark ${sparkMajorVersion}") {
+            withKubectl(commons, sparkMajorVersion) {
+                def registryId = readPropertiesFile("properties")["docker_registry_id"]
+                def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+
             }
         }
     }
