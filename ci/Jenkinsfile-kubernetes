@@ -168,7 +168,7 @@ node("docker") {
                      local:///opt/sparkling-water/tests/initTest.jar
                     """
                 // Check exit code of the pod
-                sh "kubectl get pod driver-scala | grep -q && echo \"OK\" || exit 1"
+                sh "kubectl get pod driver-scala | grep -q Success && echo \"OK\" || exit 1"
                 // Test Python
                 sh """
                     \$SPARK_HOME/bin/spark-submit \
@@ -181,7 +181,7 @@ node("docker") {
                      --conf spark.executor.instances=3 \
                      local:///opt/sparkling-water/tests/initTest.py
                     """
-                sh "kubectl get pod driver-python | grep -q && echo \"OK\" || exit 1"
+                sh "kubectl get pod driver-python | grep -q Success && echo \"OK\" || exit 1"
 
                 // Test R
                 sh """
