@@ -37,3 +37,4 @@ model = estimator.fit(trainingDF)
 
 # Run Predictions
 model.transform(testingDF).show(truncate = False)
+spark.stop()

@@ -44,5 +44,6 @@ object InitTest {
     val model = estimator.fit(trainingDF)
 
     model.transform(testingDF).show(false)
+    spark.stop()
   }
 }
