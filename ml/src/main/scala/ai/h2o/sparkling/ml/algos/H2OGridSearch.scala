@@ -104,22 +104,11 @@ class H2OGridSearch(override val uid: String)
       }
       checkedHyperParams.put(hyperParamName, values)
     }
-
-    // REST API expects parameters without the starting `_`.
-    // User in SW api should anyway specify Sparkling Water parameter names and we should map it to H2O ones internally.
-    // See https://0xdata.atlassian.net/browse/SW-1608
-    def prepareKey(key: String) = {
-      if (key.startsWith("_")) {
-        key.substring(1)
-      } else {
-        key
-      }
-    }
-
+    
     checkedHyperParams.asScala
       .map {
         case (key, value) =>
-          s"'${prepareKey(key)}': ${stringify(value)}"
+          s"'${getAlgo().getSWtoH2OParamNameMap()(key)}': ${stringify(value)}"
       }
       .mkString("{", ",", "}")
   }
@@ -202,16 +191,18 @@ class H2OGridSearch(override val uid: String)
   def getGridModelsParams(): DataFrame = {
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
+    val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
-        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
+        val outputParams =
+          model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains(h2oToSwParamMap(key)) }
         Row(Seq(id) ++ outputParams.values: _*)
     }
-
     val colNames = gridModels.headOption
       .map { model =>
-        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
-        outputParams.keys.map(name => StructField(s"_$name", StringType, nullable = false)).toList
+        val outputParamNames =
+          model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains(h2oToSwParamMap(key)) }.keys
+        outputParamNames.map(name => StructField(name, StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
@@ -227,7 +218,7 @@ class H2OGridSearch(override val uid: String)
     }
     val colNames = gridModels.headOption
       .map { model =>
-        model.getCurrentMetrics().map(_._1).map(StructField(_, DoubleType, nullable = false)).toList
+        model.getCurrentMetrics().keys.map(StructField(_, DoubleType, nullable = false)).toList
       }
       .getOrElse(List.empty)
 

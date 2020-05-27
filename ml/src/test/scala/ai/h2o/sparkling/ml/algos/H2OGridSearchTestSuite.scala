@@ -49,7 +49,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   test("H2O Grid Search GBM Pipeline") {
     val gbm = new H2OGBM()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += ("_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "_seed" -> Array(1, 2).map(
+    hyperParams += ("ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "seed" -> Array(1, 2).map(
       _.asInstanceOf[AnyRef]))
 
     testGridSearch(gbm, hyperParams)
@@ -65,8 +65,8 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   test("The getGridModelsParams() is able return nested hyper-parameter values") {
     val deeplearning = new H2ODeepLearning().setSeed(1)
     val hyperParams = Map[String, Array[AnyRef]](
-      "_hidden" -> Array(Array(10, 20, 30)),
-      "_epochs" -> Array[AnyRef](new java.lang.Double(3.0)))
+      "hidden" -> Array(Array(10, 20, 30)),
+      "epochs" -> Array[AnyRef](new java.lang.Double(3.0)))
     val grid = new H2OGridSearch()
       .setLabelCol("AGE")
       .setHyperParameters(hyperParams)
@@ -75,8 +75,8 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     grid.fit(dataset)
     val result = grid.getGridModelsParams().first()
 
-    result.getAs[String]("_hidden") shouldEqual "[10, 20, 30]"
-    result.getAs[String]("_epochs") shouldEqual "3.0"
+    result.getAs[String]("hidden") shouldEqual "[10, 20, 30]"
+    result.getAs[String]("epochs") shouldEqual "3.0"
   }
 
   test("H2O Grid Search XGBoost Pipeline") {
@@ -89,7 +89,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   test("Exception thrown when parameter is not gridable") {
     val drf = new H2ODRF()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += "_binomial_double_trees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
+    hyperParams += "binomialDoubleTrees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
     val thrown = intercept[IllegalArgumentException] {
       testGridSearch(drf, hyperParams)
     }
@@ -99,9 +99,9 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   test("H2O Grid Search DRF Pipeline") {
     val drf = new H2ODRF()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += "_ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
-    hyperParams += "_seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
-    hyperParams += "_mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
+    hyperParams += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
+    hyperParams += "seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
+    hyperParams += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
     testGridSearch(drf, hyperParams)
   }
 
