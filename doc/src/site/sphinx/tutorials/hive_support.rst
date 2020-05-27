@@ -6,7 +6,7 @@ In Sparkling Water you can decide which tool you want to use for this task. This
 to use H2O to read data from Hive in Sparkling Water environment.
 
 Import Data from Hive via Hive Metastore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------
 
 - Make sure ``$SPARK_HOME/conf`` contains the hive-site.xml with your Hive configuration.
 - In YARN client mode or any local mode, please copy the required connector jars for your Metastore to ``$SPARK_HOME/jars``.
@@ -158,10 +158,7 @@ via a delegation token and pass the delegation token to Sparkling Water.
 Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
 in long-running Sparkling Water applications.
 
-
-Generate Initial Token
-^^^^^^^^^^^^^^^^^^^^^^
-The initial delegation token can be generated with the following steps.
+First, we need to generate the initial token, which can be generated with the following steps.
 
 Authenticate your user against Kerberos.
 
@@ -190,9 +187,8 @@ Get the delegation token generated with arguments:
 
     hadoop jar $SW_ASSEMBLY water.hive.GenerateHiveToken -hiveHost <your_hive_host> -hivePrincipal <your_hive_principal> -tokenFile hive.token
 
-Run Sparkling Water with Hive Support for Kerberized Hadoop Cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To run Sparkling Water with Hive support for kerberized hadoop cluster, you must configure the following sparkling water options:
+With the token generated, we can run Sparkling Water with Hive support for kerberized
+hadoop cluster as:
 
 .. content-tabs::
 
