@@ -65,8 +65,8 @@ from in the following ways.
 - You can also retrieve this from Maven for the desired version using
   ``mvn dependency:get -Dartifact=groupId:artifactId:version``.
 
-Import Data from Hive in a non-Kerberized Hive
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import Data from a non-Kerberized Hive
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sparkling Water can import data from non-Kerberized hive. This also applies for the case when
 your Hadoop cluster is Kerberized but Hive is not.
