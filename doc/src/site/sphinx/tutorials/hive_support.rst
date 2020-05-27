@@ -89,10 +89,7 @@ To import data from non-Kerberized Hive, run:
         .. code:: scala
 
             import ai.h2o.sparkling._
-            val conf = new H2OConf()
-            conf.setHiveSupportEnabled()
-            conf.setHiveHost("hostname:10000") // The full address of HiveServer2
-            conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") // Doesn't have to be specified if host is set
+            val hc = H2OContext.getOrCreate()
 
         Import data table from Hive
 
@@ -114,9 +111,7 @@ To import data from non-Kerberized Hive, run:
         .. code:: python
 
             from pysparkling import *
-            conf = H2OConf()
-            conf.setHiveSupportEnabled()
-            conf.setHiveHost("hostname:10000") # The full address of HiveServer2
+            hc = H2OContext.getOrCreate()
 
         Import data table from Hive
 
@@ -137,15 +132,7 @@ To import data from non-Kerberized Hive, run:
             conf <- spark_config()
             conf$sparklyr.jars.default <- "/path/to/hive-jdbc-<version>-standalone.jar"
             sc <- spark_connect(master = "yarn-client", config = conf)
-
-        Create ``H2OContext`` with properties ensuring connectivity to Hive
-
-        .. code:: R
-
-            h2oConf <- H2OConf()
-            h2oConf$setHiveSupportEnabled()
-            h2oConf$setHiveHost("hostname:10000")
-            hc <- H2OContext.getOrCreate(h2oConf)
+            hc <- H2OContext.getOrCreate()
 
         Import data table from Hive
 
