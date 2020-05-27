@@ -77,10 +77,10 @@ class H2OGridSearch(override val uid: String)
       valid: Option[H2OFrame]): Map[String, Any] = {
     algo.getH2OAlgorithmParams() ++
       Map(
-        "nfolds" -> getNfolds(),
-        "fold_column" -> getFoldCol(),
-        "response_column" -> getLabelCol(),
-        "weights_column" -> getWeightCol(),
+        "nfolds" -> getAlgo().getNfolds(),
+        "fold_column" -> getAlgo().getFoldCol(),
+        "response_column" -> getAlgo().getLabelCol(),
+        "weights_column" -> getAlgo().getWeightCol(),
         "training_frame" -> train.frameId) ++
       valid
         .map { fr =>
@@ -122,7 +122,7 @@ class H2OGridSearch(override val uid: String)
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq((classOf[GridSchemaV99], "summary_table"), (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
-    val modelSettings = H2OMOJOSettings.createFromModelParams(this)
+    val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
     grid.model_ids.map { modelId =>
       H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
     }

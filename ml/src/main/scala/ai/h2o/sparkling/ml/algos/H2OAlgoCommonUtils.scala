@@ -22,12 +22,21 @@ import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
-trait H2OAlgoCommonUtils extends H2OCommonParams with EstimatorCommonUtils {
+trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
+  protected def getExcludedCols(): Seq[String]
+
+  private[sparkling] def getFeaturesCols(): Array[String]
+
+  private[sparkling] def getColumnsToCategorical(): Array[String]
+
+  private[sparkling] def getSplitRatio(): Double
+
+  private[sparkling] def setFeaturesCols(value: Array[String]): this.type
 
   protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val excludedCols = getExcludedCols()
 
-    if ($(featuresCols).isEmpty) {
+    if (getFeaturesCols().isEmpty) {
       val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
       setFeaturesCols(features)
     } else {
