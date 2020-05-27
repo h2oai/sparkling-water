@@ -26,6 +26,7 @@ dependencies {
   api("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
   api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
   api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
+  api(project(':sparkling-water-api-generation'))
 
   compileOnly(project(":sparkling-water-macros"))
   compileOnly(project(':sparkling-water-api-generation'))
@@ -46,7 +47,6 @@ dependencies {
   testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
   testImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
   testImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
-  testImplementation(project(':sparkling-water-api-generation'))
 }
 
 test {
