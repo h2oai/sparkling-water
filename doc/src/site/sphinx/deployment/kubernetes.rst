@@ -51,7 +51,7 @@ To submit Sparkling Water Job with 3 worker nodes:
                 --name CustomApplication \
                 --class ai.h2o.sparkling.InitTest
                 --conf spark.scheduler.minRegisteredResourcesRatio=1
-                --conf spark.kubernetes.container.image=sparkling-water-scala:SUBST_SW_VERSION \
+                --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
                 --conf spark.executor.instances=3 \
                 local:///opt/sparkling-water/tests/initTest.jar
 
@@ -65,7 +65,7 @@ To submit Sparkling Water Job with 3 worker nodes:
                 --deploy-mode client \
                 --name CustomApplication \
                 --conf spark.scheduler.minRegisteredResourcesRatio=1
-                --conf spark.kubernetes.container.image=sparkling-water-python:SUBST_SW_VERSION \
+                --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
                 --conf spark.executor.instances=3 \
                 local:///opt/sparkling-water/tests/initTest.py
 
@@ -74,7 +74,7 @@ To submit Sparkling Water Job with 3 worker nodes:
 
             .. code:: r
 
-                
+
 After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
 ``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
 running ``kubectl get pods``.
