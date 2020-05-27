@@ -21,8 +21,8 @@ registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
 config <- spark_config_kubernetes(master = master,
-                                 image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
-                                 driver = "driver-r",
-                                 account = "default",
-                                 executors = 3)
+                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
+                                  driver = "driver-r",
+                                  account = "default",
+                                  executors = 3)
 spark_submit(master = master, file = "initTest.R", config = config, spark_home = sparkHome)
