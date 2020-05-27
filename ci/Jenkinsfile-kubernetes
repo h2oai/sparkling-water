@@ -139,8 +139,6 @@ def testScalaInternalBackend(registryId, master, version, mode) {
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-
-
 def testPythonInternalBackend(registryId, master, version, mode) {
     sh """
         \$SPARK_HOME/bin/spark-submit \
