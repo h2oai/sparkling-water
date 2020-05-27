@@ -46,7 +46,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       startSingleH2OWorker(conf)
     } else {
       val endpoints = registerEndpoints(hc)
-      val workerNodes = startH2OWorkers(endpoints, conf, hc.sparkContext.sparkUser)
+      val workerNodes = startH2OWorkers(endpoints, conf)
       distributeFlatFile(endpoints, conf, workerNodes)
       tearDownEndpoints(endpoints)
       registerNewExecutorListener(hc)
@@ -153,10 +153,10 @@ object InternalH2OBackend extends InternalBackendUtils {
     endpointsFinal.map(ref => SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name))
   }
 
-  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf, user: String): Array[NodeDesc] = {
+  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf): Array[NodeDesc] = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     endpoints.map { ref =>
-      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf, user))
+      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf))
       val node = askTimeout.awaitResult(future)
       Log.info(s"H2O's worker node $node started.")
       node
