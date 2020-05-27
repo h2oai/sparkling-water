@@ -153,7 +153,7 @@ To import data from non-Kerberized Hadoop cluster, run:
 Import Data from Hive in a Kerberized Hadoop Cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before a given connection to Hive is made, a user hasto be authenticated with the Hive instance
+Before a given connection to Hive is made, a user has to be authenticated with the Hive instance
 via a delegation token and pass the delegation token to Sparkling Water.
 Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
 in long-running Sparkling Water applications.
