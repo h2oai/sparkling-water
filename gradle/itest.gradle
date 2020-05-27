@@ -34,8 +34,7 @@ task integTest(type: Test) {
     // Increase test runner memory
     maxHeapSize = "4g"
 
-    systemProperty "spark.ext.h2o.node.log.dir", new File(project.getBuildDir(), "h2ologs-itest/nodes")
-    systemProperty "spark.ext.h2o.client.log.dir", new File(project.getBuildDir(), "h2ologs-itest/client")
+    systemProperty "spark.ext.h2o.log.dir", new File(project.getBuildDir(), "h2ologs-itest/nodes")
     systemProperty "spark.ext.h2o.external.disable.version.check", "true"
     systemProperty "spark.ext.h2o.backend.cluster.mode", detectBackendClusterMode()
     systemProperty "spark.testing", "true"
