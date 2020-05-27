@@ -118,7 +118,7 @@ object InternalH2OBackend extends InternalBackendUtils {
   private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): Unit = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OHiveSupport(conf, hc.sparkContext.sparkUser)
+    initializeH2OKerberizedHiveSupport(conf, hc.sparkContext.sparkUser)
     H2OStarter.start(launcherArgs, true)
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
@@ -126,7 +126,7 @@ object InternalH2OBackend extends InternalBackendUtils {
   def startH2OWorker(conf: H2OConf, user: String): NodeDesc = {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OHiveSupport(conf, user)
+    initializeH2OKerberizedHiveSupport(conf, user)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
@@ -170,8 +170,8 @@ object InternalH2OBackend extends InternalBackendUtils {
     }
   }
 
-  private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
-    if (conf.isHiveSupportEnabled) {
+  private def initializeH2OKerberizedHiveSupport(conf: H2OConf, user: String): Unit = {
+    if (conf.isKerberizedHiveEnabled) {
       val configuration = new Configuration()
       conf.hiveHost.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_HOST, _))
       conf.hivePrincipal.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, _))

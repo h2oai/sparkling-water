@@ -198,7 +198,7 @@ hadoop cluster as:
 
             import ai.h2o.sparkling._
             val conf = new H2OConf()
-            conf.setHiveSupportEnabled()
+            conf.setKerberizedHiveEnabled()
             conf.setHiveHost("hostname:10000") // The full address of HiveServer2
             conf.setHivePrincipal("hive/hostname@DOMAIN.COM") // Hiveserver2 Kerberos principal
             conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") // Doesn't have to be specified if host is set
@@ -231,7 +231,7 @@ hadoop cluster as:
 
             from pysparkling import *
             conf = H2OConf()
-            conf.setHiveSupportEnabled()
+            conf.setKerberizedHiveEnabled()
             conf.setHiveHost("hostname:10000") # The full address of HiveServer2
             conf.setHivePrincipal("hive/hostname@DOMAIN.COM") # Hiveserver2 Kerberos principal
             conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") # Doesn't have to be specified if host is set
@@ -265,7 +265,7 @@ hadoop cluster as:
         .. code:: R
 
             h2oConf <- H2OConf()
-            h2oConf$setHiveSupportEnabled()
+            conf.setKerberizedHiveEnabled()
             h2oConf$setHiveHost("hostname:10000")
             h2oConf$setHivePrincipal("hive/hostname@DOMAIN.COM")
             tokenFile <- 'hive.token'
