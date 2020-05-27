@@ -89,6 +89,9 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def prepareHyperParameters(): String = {
+    logWarning(
+      "Starting from the version 3.32, hyper-parameter names will use the names corresponding to Sparkling Water parameters" +
+        " instead of H2O internal ones.")
     val it = getHyperParameters().entrySet().iterator()
     val checkedHyperParams = new java.util.HashMap[String, Array[AnyRef]]()
     while (it.hasNext) {
