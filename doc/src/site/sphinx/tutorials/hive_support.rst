@@ -1,12 +1,12 @@
 Hive Support in Sparkling Water
--------------------------------------
+===============================
 
 Spark support reading data natively from Hive and H2O supports that in a Hadoop environment as well.
 In Sparkling Water you can decide which tool you want to use for this task. This tutorial explains what is needed
 to use H2O to read data from Hive in Sparkling Water environment.
 
 Import Data from Hive via Hive Metastore
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------------
 
 - Make sure ``$SPARK_HOME/conf`` contains the hive-site.xml with your Hive configuration.
 - In YARN client mode or any local mode, please copy the required connector jars for your Metastore to ``$SPARK_HOME/jars``.
@@ -46,16 +46,12 @@ This is all preparation we need to do. The following code shows how to import th
 
 This call reads airlines table from default database.
 
-Import Data from Hive in a Kerberized Hadoop Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This feature reads data from Hive via a standard JDBC connection. Before a given connection to Hive is made, a user has
-to be authenticated with the Hive instance via a delegation token and pass the delegation token to Sparkling Water.
-Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
-in long-running Sparkling Water applications.
+Import Data from Hive via JDBC connection
+-----------------------------------------
+This feature reads data from Hive via a standard JDBC connection.
 
 Obtain the Hive JDBC Client Jar
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To be able to connect to Hive, Sparkling Water will need Hive JDBC Client Jar on the class path. The jar can be obtained
 from in the following ways.
 
@@ -69,9 +65,91 @@ from in the following ways.
 - You can also retrieve this from Maven for the desired version using
   ``mvn dependency:get -Dartifact=groupId:artifactId:version``.
 
-Generate Initial Token
-^^^^^^^^^^^^^^^^^^^^^^
-The initial delegation token can be generated with the following steps.
+Import Data from a non-Kerberized Hive
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sparkling Water can import data from non-Kerberized hive. This also applies for the case when
+your Hadoop cluster is Kerberized but Hive is not.
+
+To import data from non-Kerberized Hive, run:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        First, start Sparkling Shell with the  Hive JDBC client jar on the class path
+
+        .. code:: bash
+
+            ./bin/sparkling-shell --jars /path/to/hive-jdbc-<version>-standalone.jar
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: scala
+
+            import ai.h2o.sparkling._
+            val hc = H2OContext.getOrCreate()
+
+        Import data table from Hive
+
+        .. code:: scala
+
+            val frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+    .. tab-container:: Python
+        :title: Python
+
+        First, start PySparkling Shell with the  Hive JDBC client jar on the class path
+
+        .. code:: bash
+
+            ./bin/pysparkling --jars /path/to/hive-jdbc-<version>-standalone.jar
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: python
+
+            from pysparkling import *
+            hc = H2OContext.getOrCreate()
+
+        Import data table from Hive
+
+        .. code:: python
+
+            frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+    .. tab-container:: R
+        :title: R
+
+        Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
+        Spark context with the Hive JDBC client jar on the class path.
+
+        .. code:: R
+
+            library(sparklyr)
+            library(rsparkling)
+            conf <- spark_config()
+            conf$sparklyr.jars.default <- "/path/to/hive-jdbc-<version>-standalone.jar"
+            sc <- spark_connect(master = "yarn-client", config = conf)
+            hc <- H2OContext.getOrCreate()
+
+        Import data table from Hive
+
+        .. code:: R
+
+            frame <- hc$importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+
+Import Data from Kerberized Hive in a Kerberized Hadoop Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before a given connection to Hive is made, a user has to be authenticated with the Hive instance
+via a delegation token and pass the delegation token to Sparkling Water.
+Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
+in long-running Sparkling Water applications.
+
+First, we need to generate the initial token, which can be generated with the following steps.
 
 Authenticate your user against Kerberos.
 
@@ -100,9 +178,8 @@ Get the delegation token generated with arguments:
 
     hadoop jar $SW_ASSEMBLY water.hive.GenerateHiveToken -hiveHost <your_hive_host> -hivePrincipal <your_hive_principal> -tokenFile hive.token
 
-Run Sparkling Water with Hive Support for Kerberized Hadoop Cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To run Sparkling Water with Hive support for kerberized hadoop cluster, you must configure the following sparkling water options:
+With the token generated, we can run Sparkling Water with Hive support for kerberized
+hadoop cluster as:
 
 .. content-tabs::
 
