@@ -26,9 +26,9 @@ dependencies {
   api("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
   api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
   api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
+  implementation(project(':sparkling-water-api-generation'))
 
   compileOnly(project(":sparkling-water-macros"))
-  compileOnly(project(':sparkling-water-api-generation'))
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 

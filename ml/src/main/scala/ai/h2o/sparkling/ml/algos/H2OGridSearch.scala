@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
+import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
@@ -89,9 +90,6 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def prepareHyperParameters(): String = {
-    logWarning(
-      "Starting from the version 3.32, hyper-parameter names will use the names corresponding to Sparkling Water parameters" +
-        " instead of H2O internal ones.")
     val it = getHyperParameters().entrySet().iterator()
     val checkedHyperParams = new java.util.HashMap[String, Array[AnyRef]]()
     while (it.hasNext) {
@@ -108,21 +106,10 @@ class H2OGridSearch(override val uid: String)
       checkedHyperParams.put(hyperParamName, values)
     }
 
-    // REST API expects parameters without the starting `_`.
-    // User in SW api should anyway specify Sparkling Water parameter names and we should map it to H2O ones internally.
-    // See https://0xdata.atlassian.net/browse/SW-1608
-    def prepareKey(key: String) = {
-      if (key.startsWith("_")) {
-        key.substring(1)
-      } else {
-        key
-      }
-    }
-
     checkedHyperParams.asScala
       .map {
         case (key, value) =>
-          s"'${prepareKey(key)}': ${stringify(value)}"
+          s"'${getAlgo().getSWtoH2OParamNameMap()(key)}': ${stringify(value)}"
       }
       .mkString("{", ",", "}")
   }
@@ -205,16 +192,16 @@ class H2OGridSearch(override val uid: String)
   def getGridModelsParams(): DataFrame = {
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
+    val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
-        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
+        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
         Row(Seq(id) ++ outputParams.values: _*)
     }
-
     val colNames = gridModels.headOption
       .map { model =>
-        val outputParams = model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains("_" + key) }
-        outputParams.keys.map(name => StructField(s"_$name", StringType, nullable = false)).toList
+        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
+        outputParams.keys.map(name => StructField(name, StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
@@ -230,7 +217,7 @@ class H2OGridSearch(override val uid: String)
     }
     val colNames = gridModels.headOption
       .map { model =>
-        model.getCurrentMetrics().map(_._1).map(StructField(_, DoubleType, nullable = false)).toList
+        model.getCurrentMetrics().keys.map(StructField(_, DoubleType, nullable = false)).toList
       }
       .getOrElse(List.empty)
 
@@ -250,6 +237,16 @@ class H2OGridSearch(override val uid: String)
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+
+  private def extractParamsToShow(
+      model: H2OMOJOModel,
+      hyperParamNames: Seq[String],
+      h2oToSwParamMap: Map[String, String]): Map[String, String] = {
+    model.getTrainingParams().filter {
+      case (key, _) =>
+        !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+    }
+  }
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
