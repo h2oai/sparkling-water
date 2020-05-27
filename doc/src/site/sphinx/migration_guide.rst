@@ -150,6 +150,14 @@ From 3.30 to 3.32
   ``val df = spark.read.format("h2o").load(key)`` instead. The same holds for ``spark.write.h2o(key)``. Please use
   ``df.write.format("h2o").save("new_key")`` instead.
 
+- Starting from version 3.32, ``H2OGridSearch`` hyper-parameters now correspond to parameter names in Sparkling Water.
+  Previously, the hyper-parameters were specified using internal H2O names such as ``_ntrees`` or ``_max_depth``.
+  At this version, the parameter names follow the naming convention of getters and setters of the corresponding
+  parameter, such as ``ntrees`` or ``maxDepth``.
+
+  Also the output of ``getGridModelsParams`` now contains column names which correspond to Sparkling Water parameter names
+  instead of H2O internal ones. When updating to version 3.32, please make sure to update your hyper parameter names.
+
 From 3.28.1 to 3.30
 -------------------
 
