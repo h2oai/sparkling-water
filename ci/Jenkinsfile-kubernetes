@@ -161,6 +161,7 @@ def testRInternalBackend(registryId, master, version) {
         """
     sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
+
 node("docker") {
     cleanWs()
     checkout scm
