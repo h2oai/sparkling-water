@@ -90,6 +90,10 @@ To submit Sparkling Water Job with 3 worker nodes:
                                  executors = 3)
                 hc <- H2OContext.getOrCreate()
 
+            To submit a batch job:
+
+            .. code:: r
+
 After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
 ``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
 running ``kubectl get pods``.
