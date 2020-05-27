@@ -343,12 +343,12 @@ trait SharedBackendConf {
 
   def setKerberizedHiveEnabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, true)
 
-  @DeprecatedMethod("setKerberizedHiveEnabled", "3.34")
+  @DeprecatedMethod("setKerberizedHiveEnabled", "3.32")
   def setHiveSupportEnabled(): H2OConf = setKerberizedHiveEnabled()
 
   def setKerberizedHiveDisabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, false)
 
-  @DeprecatedMethod("setKerberizedHiveDisabled", "3.34")
+  @DeprecatedMethod("setKerberizedHiveDisabled", "3.32")
   def setHiveSupportDisabled(): H2OConf = setKerberizedHiveDisabled()
 
   def setHiveHost(host: String): H2OConf = set(PROP_HIVE_HOST._1, host)
