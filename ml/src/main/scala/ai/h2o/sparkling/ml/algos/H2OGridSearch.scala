@@ -192,8 +192,7 @@ class H2OGridSearch(override val uid: String)
   def getGridModelsParams(): DataFrame = {
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
-    val h2oToSwParamMap =
-      getAlgo().getSWtoH2OParamNameMap().map(_.swap)
+    val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
         val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
