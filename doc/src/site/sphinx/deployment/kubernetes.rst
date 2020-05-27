@@ -6,14 +6,16 @@ moment. Sparkling Water supports Kubernetes since Spark version 2.4.
 
 Before you start, please make check the following:
 
-0. Please make yourself familiar with how to run Spark on Kubernetes at
+1. Please make yourself familiar with how to run Spark on Kubernetes at
    `Spark Kubernetes documentation <https://spark.apache.org/docs/SUBST_SPARK_VERSION/running-on-kubernetes.html>`__.
 
-1. Ensure that you have working Kubernetes Cluster and ``kubectl`` installed
+2. Ensure that you have working Kubernetes Cluster and ``kubectl`` installed
 
-1. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution of version SUBST_SPARK_VERSION
+3. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution of version SUBST_SPARK_VERSION
 
-2. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
+4. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
+
+5. Have internet connection so kubernetes can download Sparkling Water docker images
 
 The examples bellow are using the default Kubernetes namespace which we enable for Spark as:
 
@@ -33,8 +35,12 @@ start H2O on all requested executors.
 
 Dynamic allocation must be disabled in Spark.
 
-Submit Batch Jobs (cluster mode):
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Cluster Mode of Kubernetes
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In case of Scala and Python, in cluster mode we can only submit batch jobs. In case of R we
+can submit batch jobs or use interactive shell. This is allowed because internal SparklyR
+implementation can connect to a remote Spark cluster.
 
 To submit Sparkling Water Job with 3 worker nodes:
 
@@ -62,7 +68,7 @@ To submit Sparkling Water Job with 3 worker nodes:
 
                 $SPARK_HOME/bin/spark-submit \
                 --master k8s://KUBERNETES_ENDPOINT \
-                --deploy-mode client \
+                --deploy-mode cluster \
                 --name CustomApplication \
                 --conf spark.scheduler.minRegisteredResourcesRatio=1
                 --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
@@ -72,8 +78,17 @@ To submit Sparkling Water Job with 3 worker nodes:
         .. tab-container:: R
             :title: R
 
+            To start ``H2OContext`` in interactive shell:
+
             .. code:: r
 
+                library(sparklyr)
+                library(rsparkling)
+                config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+                                 image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
+                                 account = "default",
+                                 executors = 3)
+                hc <- H2OContext.getOrCreate()
 
 After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
 ``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
