@@ -158,7 +158,8 @@ trait SharedBackendConf {
   def verifySslCertificates: Boolean =
     sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
-  def isKerberizedHiveEnabled: Boolean = sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
+  def isKerberizedHiveEnabled: Boolean =
+    sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
 
   @DeprecatedMethod("isKerberizedHiveEnabled", "3.32")
   def isHiveSupportEnabled: Boolean = isKerberizedHiveEnabled
