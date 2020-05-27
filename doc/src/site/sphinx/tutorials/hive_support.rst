@@ -1,5 +1,5 @@
 Hive Support in Sparkling Water
--------------------------------------
+===============================
 
 Spark support reading data natively from Hive and H2O supports that in a Hadoop environment as well.
 In Sparkling Water you can decide which tool you want to use for this task. This tutorial explains what is needed
@@ -46,16 +46,12 @@ This is all preparation we need to do. The following code shows how to import th
 
 This call reads airlines table from default database.
 
-Import Data from Hive in a Kerberized Hadoop Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This feature reads data from Hive via a standard JDBC connection. Before a given connection to Hive is made, a user has
-to be authenticated with the Hive instance via a delegation token and pass the delegation token to Sparkling Water.
-Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
-in long-running Sparkling Water applications.
+Import Data from Hive via JDBC connection
+-----------------------------------------
+This feature reads data from Hive via a standard JDBC connection.
 
 Obtain the Hive JDBC Client Jar
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To be able to connect to Hive, Sparkling Water will need Hive JDBC Client Jar on the class path. The jar can be obtained
 from in the following ways.
 
@@ -68,6 +64,100 @@ from in the following ways.
   The path to the jar then will be ``/usr/lib/hive/lib/hive-jdbc-<version>-standalone.jar``
 - You can also retrieve this from Maven for the desired version using
   ``mvn dependency:get -Dartifact=groupId:artifactId:version``.
+
+Import Data from Hive in a non-Kerberized Hadoop cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To import data from non-Kerberized Hadoop cluster, run:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        First, start Sparkling Shell with the  Hive JDBC client jar on the class path
+
+        .. code:: bash
+
+            ./bin/sparkling-shell --jars /path/to/hive-jdbc-<version>-standalone.jar
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: scala
+
+            import ai.h2o.sparkling._
+            val conf = new H2OConf()
+            conf.setHiveSupportEnabled()
+            conf.setHiveHost("hostname:10000") // The full address of HiveServer2
+            conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") // Doesn't have to be specified if host is set
+
+        Import data table from Hive
+
+        .. code:: scala
+
+            val frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+    .. tab-container:: Python
+        :title: Python
+
+        First, start PySparkling Shell with the  Hive JDBC client jar on the class path
+
+        .. code:: bash
+
+            ./bin/pysparkling --jars /path/to/hive-jdbc-<version>-standalone.jar
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: python
+
+            from pysparkling import *
+            conf = H2OConf()
+            conf.setHiveSupportEnabled()
+            conf.setHiveHost("hostname:10000") # The full address of HiveServer2
+
+        Import data table from Hive
+
+        .. code:: python
+
+            frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+    .. tab-container:: R
+        :title: R
+
+        Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
+        Spark context with the Hive JDBC client jar on the class path.
+
+        .. code:: R
+
+            library(sparklyr)
+            library(rsparkling)
+            conf <- spark_config()
+            conf$sparklyr.jars.default <- "/path/to/hive-jdbc-<version>-standalone.jar"
+            sc <- spark_connect(master = "yarn-client", config = conf)
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: R
+
+            h2oConf <- H2OConf()
+            h2oConf$setHiveSupportEnabled()
+            h2oConf$setHiveHost("hostname:10000")
+            hc <- H2OContext.getOrCreate(h2oConf)
+
+        Import data table from Hive
+
+        .. code:: R
+
+            frame <- hc$importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+
+
+Import Data from Hive in a Kerberized Hadoop Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before a given connection to Hive is made, a user hasto be authenticated with the Hive instance
+via a delegation token and pass the delegation token to Sparkling Water.
+Sparkling Water ensures that the delegation token is being automatically refreshed, thus delegation token never expires
+in long-running Sparkling Water applications.
+
 
 Generate Initial Token
 ^^^^^^^^^^^^^^^^^^^^^^
