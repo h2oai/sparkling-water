@@ -52,6 +52,11 @@ task createRDockerfile(type: Dockerfile) {
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
   copyFile("r/initTest.R", "/opt/sparkling-water/tests/initTest.R")
   copyFile("r/submit.R", "/opt/sparkling-water/tests/submit.R")
+  runCommand """
+              SPARKLYR_JARS=\$(R -e 'system.file("java/", package = "sparklyr")' 2>/dev/null | grep "\\[1\\]" | cut -d ' ' -f 2 | tr -d '"') && \\
+              mkdir -p /opt/sparklyr && \\
+              cp -R \$SPARKLYR_JARS /opt/sparklyr
+             """
 }
 
 task createPythonDockerfile(type: Dockerfile) {
