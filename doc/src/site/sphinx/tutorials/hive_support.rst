@@ -65,9 +65,13 @@ from in the following ways.
 - You can also retrieve this from Maven for the desired version using
   ``mvn dependency:get -Dartifact=groupId:artifactId:version``.
 
-Import Data from Hive in a non-Kerberized Hadoop cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To import data from non-Kerberized Hadoop cluster, run:
+Import Data from Hive in a non-Kerberized Hive
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sparkling Water can import data from non-Kerberized hive. This also applies for the case when
+your Hadoop cluster is Kerberized but Hive is not.
+
+To import data from non-Kerberized Hive, run:
 
 .. content-tabs::
 
@@ -150,8 +154,8 @@ To import data from non-Kerberized Hadoop cluster, run:
             frame <- hc$importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
 
 
-Import Data from Hive in a Kerberized Hadoop Cluster
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import Data from Kerberized Hive in a Kerberized Hadoop Cluster
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Before a given connection to Hive is made, a user has to be authenticated with the Hive instance
 via a delegation token and pass the delegation token to Sparkling Water.
