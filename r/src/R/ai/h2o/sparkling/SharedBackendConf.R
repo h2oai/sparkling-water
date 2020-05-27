@@ -339,14 +339,14 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveSupportEnabled = function() {
       warning("The method 'setHiveSupportEnabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveEnabled' instead!")
-      invoke(jconf, "setHiveSupportEnabled"); .self
+      invoke(jconf, "setKerberizedHiveEnabled"); .self
     },
 
     setKerberizedHiveDisabled = function() { invoke(jconf, "setKerberizedHiveDisabled"); .self },
 
     setHiveSupportDisabled = function() {
       warning("The method 'setHiveSupportDisabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveDisabled' instead!")
-      invoke(jconf, "setHiveSupportDisabled"); .self
+      invoke(jconf, "setKerberizedHiveDisabled"); .self
     },
 
     setHiveHost = function(host) { invoke(jconf, "setHiveHost", host); .self },

@@ -43,7 +43,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
   override def startH2OCluster(conf: H2OConf): Unit = {
     logInfo("Starting the H2O cluster inside Spark.")
     if (hc.sparkContext.isLocal) {
-      startSingleH2OWorker(hc, conf)
+      startSingleH2OWorker(conf)
     } else {
       val endpoints = registerEndpoints(hc)
       val workerNodes = startH2OWorkers(endpoints, conf, hc.sparkContext.sparkUser)
@@ -115,18 +115,18 @@ object InternalH2OBackend extends InternalBackendUtils {
     * Used in local mode where we start directly one H2O worker node
     * without additional client
     */
-  private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): Unit = {
+  private def startSingleH2OWorker(conf: H2OConf): Unit = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OKerberizedHiveSupport(conf, hc.sparkContext.sparkUser)
+    initializeH2OKerberizedHiveSupport(conf)
     H2OStarter.start(launcherArgs, true)
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
 
-  def startH2OWorker(conf: H2OConf, user: String): NodeDesc = {
+  def startH2OWorker(conf: H2OConf): NodeDesc = {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OKerberizedHiveSupport(conf, user)
+    initializeH2OKerberizedHiveSupport(conf)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
@@ -170,7 +170,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     }
   }
 
-  private def initializeH2OKerberizedHiveSupport(conf: H2OConf, user: String): Unit = {
+  private def initializeH2OKerberizedHiveSupport(conf: H2OConf): Unit = {
     if (conf.isKerberizedHiveEnabled) {
       val configuration = new Configuration()
       conf.hiveHost.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_HOST, _))

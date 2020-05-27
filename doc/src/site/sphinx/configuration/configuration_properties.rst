@@ -170,7 +170,7 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.kerberized.hive.enabled``          | ``false``      | ``setKerberizedHiveEnabled()``                  | If enabled, H2O instances will create  |
 |                                                    |                |                                                 | JDBC connections to a Kerberized Hive  |
-|                                                    |                | ``setKerberizedHiveSupport()``                  | so that H2O Python & R API will be     |
+|                                                    |                | ``setKerberizedHiveDisabled()``                 | so that H2O Python & R API will be     |
 |                                                    |                |                                                 | able to read data from HiveServer2.    |
 |                                                    |                |                                                 | Don't forget to put a jar with Hive    |
 |                                                    |                |                                                 | driver on Spark classpath if the       |
