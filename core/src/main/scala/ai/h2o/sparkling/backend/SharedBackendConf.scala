@@ -158,7 +158,10 @@ trait SharedBackendConf {
   def verifySslCertificates: Boolean =
     sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
-  def isHiveSupportEnabled: Boolean = sparkConf.getBoolean(PROP_HIVE_SUPPORT_ENABLED._1, PROP_HIVE_SUPPORT_ENABLED._2)
+  def isKerberizedHiveEnabled: Boolean = sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
+
+  @DeprecatedMethod("isKerberizedHiveEnabled", "3.32")
+  def isHiveSupportEnabled: Boolean = isKerberizedHiveEnabled
 
   def hiveHost: Option[String] = sparkConf.getOption(PROP_HIVE_HOST._1)
 
@@ -337,9 +340,15 @@ trait SharedBackendConf {
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
-  def setHiveSupportEnabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, true)
+  def setKerberizedHiveEnabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, true)
 
-  def setHiveSupportDisabled(): H2OConf = set(PROP_HIVE_SUPPORT_ENABLED._1, false)
+  @DeprecatedMethod("setKerberizedHiveEnabled", "3.34")
+  def setHiveSupportEnabled(): H2OConf = setKerberizedHiveEnabled()
+
+  def setKerberizedHiveDisabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, false)
+
+  @DeprecatedMethod("setKerberizedHiveDisabled", "3.34")
+  def setHiveSupportDisabled(): H2OConf = setKerberizedHiveDisabled()
 
   def setHiveHost(host: String): H2OConf = set(PROP_HIVE_HOST._1, host)
 
@@ -518,7 +527,7 @@ object SharedBackendConf {
     * If enabled, H2O instances will create JDBC connections to Hive and H2O Python & R API will be able to read data
     * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
     */
-  val PROP_HIVE_SUPPORT_ENABLED: (String, Boolean) = ("spark.ext.h2o.hive.enabled", false)
+  val PROP_KERBERIZED_HIVE_ENABLED: (String, Boolean) = ("spark.ext.h2o.kerberized.hive.enabled", false)
 
   /** The full address of HiveServer2, for example hostname:10000 */
   val PROP_HIVE_HOST: (String, None.type) = ("spark.ext.h2o.hive.host", None)

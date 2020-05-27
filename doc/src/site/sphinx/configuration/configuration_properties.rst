@@ -168,9 +168,9 @@ Configuration properties independent of selected backend
 |                                                    |                |                                                 | if the property |secureConnections| is |
 |                                                    |                |                                                 | set to ``true``.                       |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.enabled``                     | ``false``      | ``setHiveSupportEnabled()``                     | If enabled, H2O instances will create  |
+| ``spark.ext.h2o.kerberized.hive.enabled``          | ``false``      | ``setKerberizedHiveEnabled()``                  | If enabled, H2O instances will create  |
 |                                                    |                |                                                 | JDBC connections to Hive so that H2O   |
-|                                                    |                | ``setHiveSupportDisabled()``                    | Python & R API will be able to read    |
+|                                                    |                | ``setKerberizedHiveSupport()``                  | Python & R API will be able to read    |
 |                                                    |                |                                                 | data from HiveServer2. Don't forget to |
 |                                                    |                |                                                 | put a jar with Hive driver on Spark    |
 |                                                    |                |                                                 | classpath if the internal backend is   |
