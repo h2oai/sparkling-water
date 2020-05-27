@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.algos
 
 import java.util
 
+import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
@@ -104,7 +105,7 @@ class H2OGridSearch(override val uid: String)
       }
       checkedHyperParams.put(hyperParamName, values)
     }
-    
+
     checkedHyperParams.asScala
       .map {
         case (key, value) =>
@@ -191,17 +192,27 @@ class H2OGridSearch(override val uid: String)
   def getGridModelsParams(): DataFrame = {
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
-    val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
+    val h2oToSwParamMap =
+      getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
         val outputParams =
-          model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains(h2oToSwParamMap(key)) }
+          model.getTrainingParams().filter {
+            case (key, _) =>
+              !IgnoredParameters.unimplemented.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+          }
         Row(Seq(id) ++ outputParams.values: _*)
     }
     val colNames = gridModels.headOption
       .map { model =>
         val outputParamNames =
-          model.getTrainingParams().filter { case (key, _) => hyperParamNames.contains(h2oToSwParamMap(key)) }.keys
+          model
+            .getTrainingParams()
+            .filter {
+              case (key, _) =>
+                !IgnoredParameters.unimplemented.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+            }
+            .keys
         outputParamNames.map(name => StructField(name, StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
