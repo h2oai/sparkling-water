@@ -199,7 +199,7 @@ class H2OGridSearch(override val uid: String)
         val outputParams =
           model.getTrainingParams().filter {
             case (key, _) =>
-              !IgnoredParameters.unimplemented.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+              !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
           }
         Row(Seq(id) ++ outputParams.values: _*)
     }
@@ -210,7 +210,7 @@ class H2OGridSearch(override val uid: String)
             .getTrainingParams()
             .filter {
               case (key, _) =>
-                !IgnoredParameters.unimplemented.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+                !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
             }
             .keys
         outputParamNames.map(name => StructField(name, StringType, nullable = false)).toList
