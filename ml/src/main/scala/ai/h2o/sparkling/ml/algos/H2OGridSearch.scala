@@ -196,24 +196,13 @@ class H2OGridSearch(override val uid: String)
       getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
-        val outputParams =
-          model.getTrainingParams().filter {
-            case (key, _) =>
-              !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
-          }
+        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
         Row(Seq(id) ++ outputParams.values: _*)
     }
     val colNames = gridModels.headOption
       .map { model =>
-        val outputParamNames =
-          model
-            .getTrainingParams()
-            .filter {
-              case (key, _) =>
-                !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
-            }
-            .keys
-        outputParamNames.map(name => StructField(name, StringType, nullable = false)).toList
+        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
+        outputParams.keys.map(name => StructField(name, StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
     val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
@@ -249,6 +238,16 @@ class H2OGridSearch(override val uid: String)
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+
+  private def extractParamsToShow(
+      model: H2OMOJOModel,
+      hyperParamNames: Seq[String],
+      h2oToSwParamMap: Map[String, String]): Map[String, String] = {
+    model.getTrainingParams().filter {
+      case (key, _) =>
+        !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+    }
+  }
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
