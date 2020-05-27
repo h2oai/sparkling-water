@@ -136,7 +136,7 @@ def testScalaInternalBackend(registryId, master, version, mode) {
          local:///opt/sparkling-water/tests/initTest.jar
         """
     // Check exit code of the pod
-    sh "kubectl get pod driver-scala | grep -q Success && echo \"OK\" || exit 1"
+    sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 
@@ -153,14 +153,14 @@ def testPythonInternalBackend(registryId, master, version, mode) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.py
         """
-    sh "kubectl get pod driver-python | grep -q Success && echo \"OK\" || exit 1"
+    sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testRInternalBackend(registryId, master, version, mode) {
     sh """
         R CMD BATCH submit.R $master $registryId $version $mode
         """
-    sh "kubectl get pod driver-r | grep -q Success && echo \"OK\" || exit 1"
+    sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 node("docker") {
