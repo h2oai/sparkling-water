@@ -20,7 +20,7 @@ for (i in 1:4) {
   tryCatch(
     {
     sc <- spark_connect(master = "local[*]", config = config)
-  }
+  }, error = function(e) { }
   )
 }
 
