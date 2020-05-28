@@ -57,7 +57,6 @@ rsparkling.Rproj
 py/build
 py/__pycache__/
 *.py[cod]
-py/.pytest_cache
 
 # Terraform
 
