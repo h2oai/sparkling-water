@@ -160,11 +160,6 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     isKerberizedHiveEnabled = function() { invoke(jconf, "isKerberizedHiveEnabled") },
 
-    isHiveSupportEnabled = function() {
-      warning("The method 'isHiveSupportEnabled' is deprecated and will be removed in 3.32. Use 'isKerberizedHiveEnabled' instead!")
-      invoke(jconf, "isKerberizedHiveEnabled")
-    },
-
     hiveHost = function() { ConfUtils.getOption(invoke(jconf, "hiveHost")) },
 
     hivePrincipal = function() { ConfUtils.getOption(invoke(jconf, "hivePrincipal")) },
@@ -337,17 +332,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setKerberizedHiveEnabled = function() { invoke(jconf, "setKerberizedHiveEnabled"); .self },
 
-    setHiveSupportEnabled = function() {
-      warning("The method 'setHiveSupportEnabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveEnabled' instead!")
-      invoke(jconf, "setKerberizedHiveEnabled"); .self
-    },
-
     setKerberizedHiveDisabled = function() { invoke(jconf, "setKerberizedHiveDisabled"); .self },
-
-    setHiveSupportDisabled = function() {
-      warning("The method 'setHiveSupportDisabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveDisabled' instead!")
-      invoke(jconf, "setKerberizedHiveDisabled"); .self
-    },
 
     setHiveHost = function(host) { invoke(jconf, "setHiveHost", host); .self },
 

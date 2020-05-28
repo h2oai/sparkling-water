@@ -161,9 +161,6 @@ trait SharedBackendConf {
   def isKerberizedHiveEnabled: Boolean =
     sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
 
-  @DeprecatedMethod("isKerberizedHiveEnabled", "3.32")
-  def isHiveSupportEnabled: Boolean = isKerberizedHiveEnabled
-
   def hiveHost: Option[String] = sparkConf.getOption(PROP_HIVE_HOST._1)
 
   def hivePrincipal: Option[String] = sparkConf.getOption(PROP_HIVE_PRINCIPAL._1)
@@ -343,13 +340,7 @@ trait SharedBackendConf {
 
   def setKerberizedHiveEnabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, true)
 
-  @DeprecatedMethod("setKerberizedHiveEnabled", "3.32")
-  def setHiveSupportEnabled(): H2OConf = setKerberizedHiveEnabled()
-
   def setKerberizedHiveDisabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, false)
-
-  @DeprecatedMethod("setKerberizedHiveDisabled", "3.32")
-  def setHiveSupportDisabled(): H2OConf = setKerberizedHiveDisabled()
 
   def setHiveHost(host: String): H2OConf = set(PROP_HIVE_HOST._1, host)
 
