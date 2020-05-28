@@ -34,7 +34,10 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     .add("39_ClusterDist6:PAY_0.9", "double", nullable = true)
     .add("35_TruncSVD:AGE:BILL_AMT3:BILL_AMT4:PAY_3:PAY_6:PAY_AMT4.0", "double", nullable = false)
 
-  private class DummyTestClass(override val uid: String) extends Transformer with H2OAlgoCommonUtils with H2OCommonParams {
+  private class DummyTestClass(override val uid: String)
+    extends Transformer
+    with H2OAlgoCommonUtils
+    with H2OCommonParams {
 
     override def transform(dataset: Dataset[_]): DataFrame = throw new NotImplementedError()
 
