@@ -55,7 +55,7 @@ task createRDockerfile(type: Dockerfile) {
   runCommand """\\
               SPARKLYR_JARS=\$(R -e 'system.file("java/", package = "sparklyr")' 2>/dev/null | grep "\\[1\\]" | cut -d ' ' -f 2 | tr -d '"') && \\
               mkdir -p /opt/sparklyr && \\
-              cp -R \${SPARKLYR_JARS} /opt/sparklyr
+              cp -R "\${SPARKLYR_JARS}/." /opt/sparklyr
              """
 }
 
