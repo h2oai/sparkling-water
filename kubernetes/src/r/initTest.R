@@ -28,3 +28,4 @@ config <- spark_config_kubernetes(master = master,
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 print(hc)
+spark_disconnect(sc)
