@@ -87,7 +87,9 @@ To submit Sparkling Water Job with 3 worker nodes:
                 config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
                                  image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
                                  account = "default",
-                                 executors = 3)
+                                 executors = 3,
+                                 version = "SUBST_SPARK_VERSION",
+                                 ports = c(8880, 8881, 4040, 54323))
                 config["spark.home"] <- Sys.getenv("SPARK_HOME")
                 sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
                 hc <- H2OContext.getOrCreate()

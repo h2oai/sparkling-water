@@ -199,13 +199,13 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   def asSparkFrame(s: String): DataFrame = asSparkFrame(s, copyMetadata = true)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient: String = leaderNode.hostname + ":" + leaderNode.port + conf.contextPath.getOrElse("")
+  def h2oLocalClient: String = flowIp + ":" + flowPort + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
-  def h2oLocalClientIp: String = leaderNode.hostname
+  def h2oLocalClientIp: String = flowIp
 
   /** Returns port where H2O REST API is exposed */
-  def h2oLocalClientPort: Int = leaderNode.port
+  def h2oLocalClientPort: Int = flowPort
 
   def setH2OLogLevel(level: String): Unit = {
     if (H2OClientUtils.isH2OClientBased(conf)) {
