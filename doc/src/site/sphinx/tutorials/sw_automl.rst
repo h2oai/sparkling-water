@@ -27,8 +27,10 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         .. code:: scala
 
-            val frame = H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
-            val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+	        import org.apache.spark.SparkFiles
+            spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
+	        val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
+            val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Create a H2OAutoML instance and configure it according your use case via provided setters. If feature columns are not specified explicitly,
