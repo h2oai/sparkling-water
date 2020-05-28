@@ -1,7 +1,7 @@
 Hive Support in Sparkling Water
 ===============================
 
-Spark support reading data natively from Hive and H2O supports that in a Hadoop environment as well.
+Spark supports reading data natively from Hive and H2O supports that in a Hadoop environment as well.
 In Sparkling Water you can decide which tool you want to use for this task. This tutorial explains what is needed
 to use H2O to read data from Hive in Sparkling Water environment.
 
