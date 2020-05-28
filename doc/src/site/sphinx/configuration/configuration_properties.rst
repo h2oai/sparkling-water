@@ -170,11 +170,11 @@ Configuration properties independent of selected backend
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.kerberized.hive.enabled``          | ``false``      | ``setKerberizedHiveEnabled()``                  | If enabled, H2O instances will create  |
 |                                                    |                |                                                 | JDBC connections to a Kerberized Hive  |
-|                                                    |                | ``setKerberizedHiveDisabled()``                 | so that H2O Python & R API will be     |
-|                                                    |                |                                                 | able to read data from HiveServer2.    |
-|                                                    |                |                                                 | Don't forget to put a jar with Hive    |
-|                                                    |                |                                                 | driver on Spark classpath if the       |
-|                                                    |                |                                                 | internal backend is used.              |
+|                                                    |                | ``setKerberizedHiveDisabled()``                 | so that all clients can read data      |
+|                                                    |                |                                                 | from HiveServer2. Don't forget to put  |
+|                                                    |                |                                                 | a jar with Hive driver on Spark        |
+|                                                    |                |                                                 | classpath if the internal backend is   |
+|                                                    |                |                                                 | used.                                  |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.hive.host``                        | ``None``       | ``setHiveHost(String)``                         | The full address of HiveServer2,       |
 |                                                    |                |                                                 | for example hostname:10000             |

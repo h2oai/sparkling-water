@@ -525,8 +525,8 @@ object SharedBackendConf {
   val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
 
   /**
-    * If enabled, H2O instances will create JDBC connections to a Kerberized Hive and H2O Python & R API will be able to read data
-    * from hive. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
+    * If enabled, H2O instances will create JDBC connections to a Kerberized Hive so that all clients can read data
+    * from HiveServer2. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
     */
   val PROP_KERBERIZED_HIVE_ENABLED: (String, Boolean) = ("spark.ext.h2o.kerberized.hive.enabled", false)
 
