@@ -119,13 +119,13 @@ H2ODRF in both languages.
         .. code:: python
 
             from pysparkling.ml import H2ODRF
-            algorithm = H2ODRF(labelCol = "CAPSULE")
+            algo = H2ODRF(labelCol = "CAPSULE")
 
         Define a hyper space which will be traversed
 
         .. code:: python
 
-            hyperParameters={"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
+            hyperParameters = {"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
 
         Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
 
@@ -139,7 +139,7 @@ H2ODRF in both languages.
 
         .. code:: python
 
-            import ai.h2o.sparkling.ml.algos.GridSearch
+            from pysparkling.ml import H2OGridSearch
             grid = H2OGridSearch(labelCol="AGE", hyperParameters=hyperSpace, algo=algo, strategy="Cartesian")
 
         Fit the grid search to get the best DRF model.
