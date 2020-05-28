@@ -157,32 +157,32 @@ class H2OGridSearchParams(Params):
 
     def getLabelCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getLabelCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getLabelCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getLabelCol()
 
     def getOffsetCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getOffsetCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getOffsetCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getOffsetCol()
 
     def getFoldCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getFoldCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getFoldCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getFoldCol()
 
     def getWeightCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getWeightCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getWeightCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getWeightCol()
 
     def getSplitRatio(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getSplitRatio' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getSplitRatio' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getSplitRatio()
 
     def getNfolds(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getNfolds' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getNfolds' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getNfolds()
 
     def getAllStringColumnsToCategorical(self):
@@ -192,42 +192,42 @@ class H2OGridSearchParams(Params):
 
     def getColumnsToCategorical(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getColumnsToCategorical' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getColumnsToCategorical' method of a given algorithm instead.", DeprecationWarning)
         return H2OTypeConverters.toNullableListString()(self.getOrDefault(self.algo).getColumnsToCategorical())
 
     def getPredictionCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getPredictionCol()
 
     def getDetailedPredictionCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getDetailedPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getDetailedPredictionCol()
 
     def getWithDetailedPredictionCol(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getWithDetailedPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getWithDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getWithDetailedPredictionCol()
 
     def getFeaturesCols(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getFeaturesCols' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getFeaturesCols' method of a given algorithm instead.", DeprecationWarning)
         return H2OTypeConverters.toNullableListString()(self.getOrDefault(self.algo).getFeaturesCols())
 
     def getConvertUnknownCategoricalLevelsToNa(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getConvertUnknownCategoricalLevelsToNa' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getConvertUnknownCategoricalLevelsToNa' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getConvertUnknownCategoricalLevelsToNa()
 
     def getConvertInvalidNumbersToNa(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getConvertInvalidNumbersToNa' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getConvertInvalidNumbersToNa' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getConvertInvalidNumbersToNa()
 
     def getNamedMojoOutputColumns(self):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'getNamedMojoOutputColumns' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'getNamedMojoOutputColumns' method of a given algorithm instead.", DeprecationWarning)
         return self.getOrDefault(self.algo).getNamedMojoOutputColumns()
 
     ##
@@ -274,42 +274,42 @@ class H2OGridSearchParams(Params):
 
     def setLabelCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setLabelCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setLabelCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["labelCol"] = value
         self.getOrDefault(self.algo).setLabelCol(value)
         return self
 
     def setOffsetCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setOffsetCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setOffsetCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["offsetCol"] = value
         self.getOrDefault(self.algo).setOffsetCol(value)
         return self
 
     def setFoldCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setFoldCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setFoldCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["foldCol"] = value
         self.getOrDefault(self.algo).setFoldCol(value)
         return self
 
     def setWeightCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setWeightCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setWeightCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["weightCol"] = value
         self.getOrDefault(self.algo).setWeightCol(value)
         return self
 
     def setSplitRatio(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setSplitRatio' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setSplitRatio' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["splitRatio"] = value
         self.getOrDefault(self.algo).setSplitRatio(value)
         return self
 
     def setNfolds(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setNfolds' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setNfolds' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["nfolds"] = value
         self.getOrDefault(self.algo).setNfolds(value)
         return self
@@ -321,7 +321,7 @@ class H2OGridSearchParams(Params):
 
     def setColumnsToCategorical(self, value, *args):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setColumnsToCategorical' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setColumnsToCategorical' method of a given algorithm instead.", DeprecationWarning)
         finalValue = [value, ] + list(args)
         self.propagateValuesToAlgorithm["columnsToCategorical"] = finalValue
         self.getOrDefault(self.algo).setColumnsToCategorical(finalValue)
@@ -329,49 +329,49 @@ class H2OGridSearchParams(Params):
 
     def setPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["predictionCol"] = value
         self.getOrDefault(self.algo).setPredictionCol(value)
         return self
 
     def setDetailedPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setDetailedPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["detailedPredictionCol"] = value
         self.getOrDefault(self.algo).setDetailedPredictionCol(value)
         return self
 
     def setWithDetailedPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setWithDetailedPredictionCol' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setWithDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["withDetailedPredictionCol"] = value
         self.getOrDefault(self.algo).setWithDetailedPredictionCol(value)
         return self
 
     def setFeaturesCols(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setFeaturesCols' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setFeaturesCols' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["featuresCols"] = value
         self.getOrDefault(self.algo).setFeaturesCols(value)
         return self
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setConvertUnknownCategoricalLevelsToNa' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setConvertUnknownCategoricalLevelsToNa' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["convertUnknownCategoricalLevelsToNa"] = value
         self.getOrDefault(self.algo).setConvertUnknownCategoricalLevelsToNa(value)
         return self
 
     def setConvertInvalidNumbersToNa(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setConvertInvalidNumbersToNa' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setConvertInvalidNumbersToNa' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["convertInvalidNumbersToNa"] = value
         self.getOrDefault(self.algo).setConvertInvalidNumbersToNa(value)
         return self
 
     def setNamedMojoOutputColumns(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
-                      "Use 'setNamedMojoOutputColumns' method of a give algorithm instead.", DeprecationWarning)
+                      "Use 'setNamedMojoOutputColumns' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["namedMojoOutputColumns"] = value
         self.getOrDefault(self.algo).setNamedMojoOutputColumns(value)
         return self
