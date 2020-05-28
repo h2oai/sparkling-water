@@ -33,5 +33,4 @@ class H2OContextTestSuite extends FunSuite with SharedH2OTestContext {
     hc.setH2OLogLevel("DEBUG")
     assert(hc.getH2OLogLevel() == "DEBUG")
   }
-
 }
