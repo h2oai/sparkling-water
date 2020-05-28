@@ -36,12 +36,56 @@ H2ODRF in both languages.
             val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Train the model. You can configure all the available DRF arguments using provided setters, such as the label column.
+        Define the algorithm, which will be a subject of hyper parameter tuning
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2ODRF
-            val algorithm = new H2ODRF().setLabelCol("CAPSULE")
+            val algo = new H2ODRF().setLabelCol("CAPSULE")
+
+        Define a hyper space which will be traversed
+
+        .. code:: scala
+
+            val hyperSpace: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+            hyperSpace += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
+            hyperSpace += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
+
+        Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
+
+        Sparkling Water supports two strategies for traversing hyperspace:
+        - ``Cartesian`` - (Default) This strategies tries out every possible combination of hyper parameter values and
+        finishes after the whole space is traversed.
+        - ``RandomDiscrete`` - In each iteration, the strategy randomly selects the combination of values from the hyper space and
+        can be terminated before the whole space is traversed. The termination could be dependent on various criteria
+        (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
+        For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
+
+        .. code:: scala
+
+            import ai.h2o.sparkling.ml.algos.GridSearch
+            val grid = new H2OGridSearch()
+                .setHyperParameters(hyperSpace)
+                .setAlgo(algo)
+                .setStrategy("Cartesian")
+
+        Fit the grid search to get the best DRF model.
+
+        .. code:: scala
+
+            val model = grid.fit(trainingDF)
+
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+
+        .. code:: scala
+
+            model.getModelDetails()
+
+        Run Predictions
+
+        .. code:: scala
+
+            model.transform(testingDF).show(false)
 
 
     .. tab-container:: Python
@@ -77,3 +121,41 @@ H2ODRF in both languages.
             from pysparkling.ml import H2ODRF
             algorithm = H2ODRF(labelCol = "CAPSULE")
 
+        Define a hyper space which will be traversed
+
+        .. code:: python
+
+            hyperParameters={"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
+
+        Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
+
+        Sparkling Water supports two strategies for traversing hyperspace:
+        - ``Cartesian`` - (Default) This strategies tries out every possible combination of hyper parameter values and
+        finishes after the whole space is traversed.
+        - ``RandomDiscrete`` - In each iteration, the strategy randomly selects the combination of values from the hyper space and
+        can be terminated before the whole space is traversed. The termination could be dependent on various criteria
+        (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
+        For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
+
+        .. code:: python
+
+            import ai.h2o.sparkling.ml.algos.GridSearch
+            grid = H2OGridSearch(labelCol="AGE", hyperParameters=hyperSpace, algo=algo, strategy="Cartesian")
+
+        Fit the grid search to get the best DRF model.
+
+        .. code:: python
+
+            model = grid.fit(trainingDF)
+
+        You can also get raw model details by calling the *getModelDetails()* method available on the model as:
+
+        .. code:: python
+
+            model.getModelDetails()
+
+        Run Predictions
+
+        .. code:: python
+
+            model.transform(testingDF).show(truncate = False)
