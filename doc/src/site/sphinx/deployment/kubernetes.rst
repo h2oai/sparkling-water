@@ -88,6 +88,7 @@ To submit Sparkling Water Job with 3 worker nodes:
                                  image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
                                  account = "default",
                                  executors = 3)
+                sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
                 hc <- H2OContext.getOrCreate()
 
             To submit a batch job:
