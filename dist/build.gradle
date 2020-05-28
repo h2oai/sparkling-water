@@ -173,7 +173,6 @@ task copyFilesForZipDistribution {
     copyRecursive("kubernetes/build/", "$zipDir/kubernetes")
     copyRecursive("bin/", "$zipDir/bin")
     copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
-    copyRecursive("docker/", "$zipDir/docker")
   }
 }
 
