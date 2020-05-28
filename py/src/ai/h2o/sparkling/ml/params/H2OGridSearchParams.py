@@ -21,7 +21,7 @@ from pyspark.ml.param import *
 import warnings
 
 
-class H2OGridSearchParams:
+class H2OGridSearchParams(Params):
     ##
     # Param definitions
     ##
