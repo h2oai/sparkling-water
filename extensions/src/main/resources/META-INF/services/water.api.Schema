@@ -2,3 +2,4 @@ ai.h2o.sparkling.extensions.rest.api.schema.InitializeFrameV3
 ai.h2o.sparkling.extensions.rest.api.schema.FinalizeFrameV3
 ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3
 ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3$ChunkAssigmentV3
+ai.h2o.sparkling.extensions.rest.api.schema.LogLevelV3

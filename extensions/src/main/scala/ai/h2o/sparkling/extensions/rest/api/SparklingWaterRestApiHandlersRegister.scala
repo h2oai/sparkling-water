@@ -42,6 +42,20 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       classOf[ImportFrameHandler],
       "getUploadPlan",
       "Asks H2O to calculate upload plan for a given number of chunks.")
+
+    context.registerEndpoint(
+      "sw_set_log_level",
+      "POST " + Paths.LOG_LEVEL,
+      classOf[LogLevelHandler],
+      "setLogLevel",
+      "Set log level on H2O cluster")
+
+    context.registerEndpoint(
+      "sw_get_log_level",
+      "GET " + Paths.LOG_LEVEL,
+      classOf[LogLevelHandler],
+      "getLogLevel",
+      "Get log level of H2O cluster")
   }
 
   override def getName(): String = "Sparkling Water REST API Extensions"
