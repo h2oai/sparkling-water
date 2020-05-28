@@ -20,9 +20,14 @@ master <- Sys.getenv("KUBERNETES_MASTER")
 registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
+sparkVersion <- Sys.getenv("SPARK_VERSION")
 config <- spark_config_kubernetes(master = master,
                                   image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                   driver = "driver-r",
                                   account = "default",
-                                  executors = 3)
-spark_submit(master = master, file = "initTest.R", config = config, spark_home = sparkHome)
+                                  executors = 3,
+                                  version = sparkVersion,
+                                  ports = c(8880, 8881, 4040, 54323))
+config["spark.home"] <- Sys.getenv("SPARK_HOME")
+config["sparklyr.shell.files"] <- "/opt/sparkling-water/tests/initTest.R"
+spark_submit(master = master, file = "/opt/sparkling-water/tests/initTest.R", config = config, spark_home = sparkHome)
