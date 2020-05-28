@@ -147,7 +147,8 @@ object H2OConf extends Logging {
 
   def apply(sparkConf: SparkConf): H2OConf = new H2OConf(sparkConf)
 
-  private val deprecatedOptions = Map[String, String]()
+  private val deprecatedOptions =
+    Map[String, String]("spark.ext.h2o.hive.enabled" -> "spark.ext.h2o.kerberized.hive.enabled")
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
     deprecatedOptions.foreach {

@@ -1,7 +1,7 @@
 Hive Support in Sparkling Water
 ===============================
 
-Spark support reading data natively from Hive and H2O supports that in a Hadoop environment as well.
+Spark supports reading data natively from Hive and H2O supports that in a Hadoop environment as well.
 In Sparkling Water you can decide which tool you want to use for this task. This tutorial explains what is needed
 to use H2O to read data from Hive in Sparkling Water environment.
 
@@ -88,7 +88,7 @@ To import data from non-Kerberized Hive, run:
 
         .. code:: scala
 
-            import ai.h2o.sparkling._
+            import org.apache.spark.h2o._
             val hc = H2OContext.getOrCreate()
 
         Import data table from Hive
@@ -117,7 +117,8 @@ To import data from non-Kerberized Hive, run:
 
         .. code:: python
 
-            frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+            import h2o
+            frame = h2o.import_hive_table("jdbc:hive2://hostname:10000/default", "airlines")
 
     .. tab-container:: R
         :title: R
@@ -138,7 +139,8 @@ To import data from non-Kerberized Hive, run:
 
         .. code:: R
 
-            frame <- hc$importHiveTable("jdbc:hive2://hostname:10000/default", "airlines")
+            library(h2o)
+            frame <- h2o.import_hive_table("jdbc:hive2://hostname:10000/default", "airlines")
 
 
 Import Data from Kerberized Hive in a Kerberized Hadoop Cluster
@@ -183,6 +185,39 @@ hadoop cluster as:
 
 .. content-tabs::
 
+    .. tab-container:: Scala
+        :title: Scala
+
+        First, start Sparkling Shell with the  Hive JDBC client jar on the class path
+
+        .. code:: bash
+
+            ./bin/sparkling-shell --jars /path/to/hive-jdbc-<version>-standalone.jar
+
+        Create ``H2OContext`` with properties ensuring connectivity to Hive
+
+        .. code:: scala
+
+            import org.apache.spark.h2o._
+            val conf = new H2OConf()
+            conf.setKerberizedHiveEnabled()
+            conf.setHiveHost("hostname:10000") // The full address of HiveServer2
+            conf.setHivePrincipal("hive/hostname@DOMAIN.COM") // Hiveserver2 Kerberos principal
+            conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") // Doesn't have to be specified if host is set
+            val source = scala.io.Source.fromFile("hive.token")
+            try {
+                conf.setHiveToken(source.mkString())
+            } finally {
+                source.close()
+            }
+            val hc = H2OContext.getOrCreate(conf)
+
+        Import data table from Hive
+
+        .. code:: scala
+
+            val frame = hc.importHiveTable("jdbc:hive2://hostname:10000/default;auth=delegationToken", "airlines")
+
     .. tab-container:: Python
         :title: Python
 
@@ -198,7 +233,7 @@ hadoop cluster as:
 
             from pysparkling import *
             conf = H2OConf()
-            conf.setHiveSupportEnabled()
+            conf.setKerberizedHiveEnabled()
             conf.setHiveHost("hostname:10000") # The full address of HiveServer2
             conf.setHivePrincipal("hive/hostname@DOMAIN.COM") # Hiveserver2 Kerberos principal
             conf.setHiveJdbcUrlPattern("jdbc:hive2://{{host}}/;{{auth}}") # Doesn't have to be specified if host is set
@@ -209,7 +244,7 @@ hadoop cluster as:
 
         Import data table from Hive
 
-        .. code:: R
+        .. code:: python
 
             import h2o
             h2o.import_hive_table("jdbc:hive2://hostname:10000/default;auth=delegationToken", "airlines")
@@ -233,7 +268,7 @@ hadoop cluster as:
         .. code:: R
 
             h2oConf <- H2OConf()
-            h2oConf$setHiveSupportEnabled()
+            conf.setKerberizedHiveEnabled()
             h2oConf$setHiveHost("hostname:10000")
             h2oConf$setHivePrincipal("hive/hostname@DOMAIN.COM")
             tokenFile <- 'hive.token'

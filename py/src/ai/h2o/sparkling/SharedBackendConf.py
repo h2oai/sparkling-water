@@ -173,8 +173,12 @@ class SharedBackendConf(SharedBackendConfUtils):
     def verifySslCertificates(self):
         return self._jconf.verifySslCertificates()
 
+    def isKerberizedHiveEnabled(self):
+        return self._jconf.isKerberizedHiveEnabled()
+
     def isHiveSupportEnabled(self):
-        return self._jconf.isHiveSupportEnabled()
+        warnings.warn("The method 'isHiveSupportEnabled' is deprecated and will be removed in 3.32. Use 'isKerberizedHiveEnabled' instead!")
+        return self.isKerberizedHiveEnabled()
 
     def hiveHost(self):
         return self._get_option(self._jconf.hiveHost())
@@ -436,13 +440,21 @@ class SharedBackendConf(SharedBackendConfUtils):
         self._jconf.setVerifySslCertificates(verify)
         return self
 
+    def setKerberizedHiveEnabled(self):
+        self._jconf.setKerberizedHiveEnabled()
+        return self
+
     def setHiveSupportEnabled(self):
-        self._jconf.setHiveSupportEnabled()
+        warnings.warn("The method 'setHiveSupportEnabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveEnabled' instead!")
+        return self.setKerberizedHiveEnabled()
+
+    def setKerberizedHiveDisabled(self):
+        self._jconf.setKerberizedHiveDisabled()
         return self
 
     def setHiveSupportDisabled(self):
-        self._jconf.setHiveSupportDisabled()
-        return self
+        warnings.warn("The method 'setHiveSupportDisabled' is deprecated and will be removed in 3.32. Use 'setKerberizedHiveDisabled' instead!")
+        return self.setKerberizedHiveDisabled()
 
     def setHiveHost(self, host):
         self._jconf.setHiveHost(host)

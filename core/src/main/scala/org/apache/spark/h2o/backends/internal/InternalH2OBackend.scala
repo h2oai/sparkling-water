@@ -46,7 +46,7 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       startSingleH2OWorker(hc, conf)
     } else {
       val endpoints = registerEndpoints(hc)
-      val workerNodes = startH2OWorkers(endpoints, conf, hc.sparkContext.sparkUser)
+      val workerNodes = startH2OWorkers(endpoints, conf)
       distributeFlatFile(endpoints, conf, workerNodes)
       tearDownEndpoints(endpoints)
       registerNewExecutorListener(hc)
@@ -118,17 +118,17 @@ object InternalH2OBackend extends InternalBackendUtils {
   private def startSingleH2OWorker(hc: H2OContext, conf: H2OConf): Unit = {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OHiveSupport(conf, hc.sparkContext.sparkUser)
+    initializeH2OKerberizedHiveSupport(conf)
     H2OStarter.start(launcherArgs, false)
     RestAPIManager(hc).registerAll()
     H2O.startServingRestApi()
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
 
-  def startH2OWorker(conf: H2OConf, user: String): NodeDesc = {
+  def startH2OWorker(conf: H2OConf): NodeDesc = {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
-    initializeH2OHiveSupport(conf, user)
+    initializeH2OKerberizedHiveSupport(conf)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
@@ -155,10 +155,10 @@ object InternalH2OBackend extends InternalBackendUtils {
     endpointsFinal.map(ref => SparkEnv.get.rpcEnv.setupEndpointRef(ref.address, ref.name))
   }
 
-  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf, user: String): Array[NodeDesc] = {
+  private def startH2OWorkers(endpoints: Array[RpcEndpointRef], conf: H2OConf): Array[NodeDesc] = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     endpoints.map { ref =>
-      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf, user))
+      val future = ref.ask[NodeDesc](StartH2OWorkersMsg(conf))
       val node = askTimeout.awaitResult(future)
       Log.info(s"H2O's worker node $node started.")
       node
@@ -172,8 +172,8 @@ object InternalH2OBackend extends InternalBackendUtils {
     }
   }
 
-  private def initializeH2OHiveSupport(conf: H2OConf, user: String): Unit = {
-    if (conf.isHiveSupportEnabled) {
+  private def initializeH2OKerberizedHiveSupport(conf: H2OConf): Unit = {
+    if (conf.isKerberizedHiveEnabled) {
       val configuration = new Configuration()
       conf.hiveHost.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_HOST, _))
       conf.hivePrincipal.foreach(configuration.set(DelegationTokenRefresher.H2O_HIVE_PRINCIPAL, _))

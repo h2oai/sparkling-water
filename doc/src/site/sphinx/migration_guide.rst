@@ -119,6 +119,11 @@ From 3.30 to 3.32
   Also the output of ``getGridModelsParams`` now contains column names which correspond to Sparkling Water parameter names
   instead of H2O internal ones. When updating to version 3.32, please make sure to update your hyper parameter names.
 
+- On ``H2OConf``, the methods ``setHiveSupportEnabled``, ``setHiveSupportDisabled`` and ``isHiveSupportEnabled`` are
+  replaced by ``setKerberizedHiveEnabled``, ``setKerberizedHiveDisabled`` and ``isKerberizedHiveEnabled`` to reflect
+  their actual meaning. Also the option ``spark.ext.h2o.hive.enabled`` is replaced by
+  ``spark.ext.h2o.kerberized.hive.enabled``.
+
 From 3.28.1 to 3.30
 -------------------
 

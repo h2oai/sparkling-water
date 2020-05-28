@@ -51,8 +51,8 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv) extends ThreadSafeRpcEndpoint 
   }
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
-    case StartH2OWorkersMsg(conf, user) =>
-      val nodeDesc = InternalH2OBackend.startH2OWorker(conf, user)
+    case StartH2OWorkersMsg(conf) =>
+      val nodeDesc = InternalH2OBackend.startH2OWorker(conf)
       context.reply(nodeDesc)
   }
 }
@@ -61,4 +61,4 @@ case class StopEndpointMsg()
 
 case class FlatFileMsg(nodes: Array[NodeDesc], portOffset: Int)
 
-case class StartH2OWorkersMsg(conf: H2OConf, user: String)
+case class StartH2OWorkersMsg(conf: H2OConf)
