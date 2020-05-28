@@ -25,6 +25,6 @@ config <- spark_config_kubernetes(master = master,
                                   driver = "driver-r",
                                   account = "default",
                                   executors = 3)
-sc <- spark_connect(master = master, config = config, spark_home = sparkHome)
+sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 print(hc)

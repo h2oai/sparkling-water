@@ -157,7 +157,7 @@ def testRInternalBackend(registryId, master, version) {
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
-        R CMD BATCH submit.R $master $registryId $version
+        RScript submit.R
         """
     sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
