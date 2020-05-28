@@ -58,10 +58,10 @@ H2ODRF in both languages.
 
         Sparkling Water supports two strategies for traversing hyperspace:
 
-        - **Cartesian** - (Default) This strategies tries out every possible combination of hyper parameter values and
+        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper parameter values and
           finishes after the whole space is traversed.
         - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
-          can be terminated before the whole space is traversed. The termination could be dependent on various criteria
+          can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
           For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
 
@@ -135,10 +135,10 @@ H2ODRF in both languages.
 
         Sparkling Water supports two strategies for traversing hyperspace:
 
-        - **Cartesian** - (Default) This strategies tries out every possible combination of hyper parameter values and
+        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper parameter values and
           finishes after the whole space is traversed.
         - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
-          can be terminated before the whole space is traversed. The termination could be dependent on various criteria
+          can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
           For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
 

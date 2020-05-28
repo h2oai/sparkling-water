@@ -100,6 +100,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val drf = new H2ODRF()
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
+    hyperParams += "seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
     hyperParams += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
     testGridSearch(drf, hyperParams)
   }
@@ -154,7 +155,6 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
       .setLabelCol("AGE")
       .setHyperParameters(hyperParams)
       .setAlgo(algo)
-      .setStrategy()
 
     val pipeline = new Pipeline().setStages(Array(stage))
     val algoName = algo.getClass.getSimpleName
