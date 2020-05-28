@@ -5,3 +5,4 @@ library(h2o)
 library(rsparkling)
 
 test_check("rsparkling")
+quit()
