@@ -32,8 +32,10 @@ H2ODRF in both languages.
 
         .. code:: scala
 
-            val frame = H2OFrame(new URI("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
-            val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+	        import org.apache.spark.SparkFiles
+            spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
+	        val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
+            val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Define the algorithm, which will be a subject of hyper parameter tuning
@@ -47,7 +49,8 @@ H2ODRF in both languages.
 
         .. code:: scala
 
-            val hyperSpace: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+            import scala.collection.mutable.HashMap
+            val hyperSpace: HashMap[String, Array[AnyRef]] = HashMap()
             hyperSpace += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
             hyperSpace += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
 
@@ -64,7 +67,7 @@ H2ODRF in both languages.
 
         .. code:: scala
 
-            import ai.h2o.sparkling.ml.algos.GridSearch
+            import ai.h2o.sparkling.ml.algos.H2OGridSearch
             val grid = new H2OGridSearch()
                 .setHyperParameters(hyperSpace)
                 .setAlgo(algo)
@@ -126,7 +129,7 @@ H2ODRF in both languages.
 
         .. code:: python
 
-            hyperParameters = {"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
+            hyperSpace = {"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
 
         Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
 
@@ -142,7 +145,7 @@ H2ODRF in both languages.
         .. code:: python
 
             from pysparkling.ml import H2OGridSearch
-            grid = H2OGridSearch(labelCol="AGE", hyperParameters=hyperSpace, algo=algo, strategy="Cartesian")
+            grid = H2OGridSearch(hyperParameters=hyperSpace, algo=algo, strategy="Cartesian")
 
         Fit the grid search to get the best DRF model.
 
