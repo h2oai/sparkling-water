@@ -51,7 +51,6 @@ task createRDockerfile(type: Dockerfile) {
   copyFile("rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
   copyFile("r/initTest.R", "/opt/sparkling-water/tests/initTest.R")
-  copyFile("r/submit.R", "/opt/sparkling-water/tests/submit.R")
   copyFile("sparkling-water-assembly_2.11-${version}-all.jar", "/opt/spark/jars/sparkling-water-assembly_2.11-${version}-all.jar")
   runCommand """\\
               SPARKLYR_JARS=\$(R -e 'system.file("java/", package = "sparklyr")' 2>/dev/null | grep "\\[1\\]" | cut -d ' ' -f 2 | tr -d '"') && \\

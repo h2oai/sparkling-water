@@ -38,16 +38,15 @@ Dynamic allocation must be disabled in Spark.
 Cluster Mode of Kubernetes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In case of Scala and Python, in cluster mode we can only submit batch jobs. In case of R we
-can submit batch jobs or use interactive shell. This is allowed because internal SparklyR
-implementation can connect to a remote Spark cluster.
-
-To submit Sparkling Water Job with 3 worker nodes:
+In case of Scala and Python, in cluster mode we can only submit batch jobs. In case of R we can
+only use interactive shell in cluster mode.
 
     .. content-tabs::
 
         .. tab-container:: Scala
             :title: Scala
+
+            To submit Scala job:
 
             .. code:: bash
 
@@ -63,6 +62,8 @@ To submit Sparkling Water Job with 3 worker nodes:
 
         .. tab-container:: Python
             :title: Python
+
+            To submit Python job:
 
             .. code:: bash
 
