@@ -16,19 +16,7 @@
 #
 library(sparklyr)
 library(rsparkling)
-master <- Sys.getenv("KUBERNETES_MASTER")
-registryId <- Sys.getenv("REGISTRY_ID")
-version <- Sys.getenv("SW_VERSION")
-sparkHome <- Sys.getenv("SPARK_HOME")
-sparkVersion <- Sys.getenv("SPARK_VERSION")
-config <- spark_config_kubernetes(master = master,
-                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
-                                  driver = "driver-r",
-                                  account = "default",
-                                  executors = 3,
-                                  version = sparkVersion)
 config["spark.home"] <- Sys.getenv("SPARK_HOME")
-sc <- spark_connect(config = config, spark_home = sparkHome)
+sc <- spark_connect(master = "local", spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
-print(hc)
 spark_disconnect(sc)
