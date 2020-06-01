@@ -76,17 +76,8 @@ class H2OGridSearch(override val uid: String)
       train: H2OFrame,
       valid: Option[H2OFrame]): Map[String, Any] = {
     algo.getH2OAlgorithmParams() ++
-      Map(
-        "nfolds" -> getNfolds(),
-        "fold_column" -> getFoldCol(),
-        "response_column" -> getLabelCol(),
-        "weights_column" -> getWeightCol(),
-        "training_frame" -> train.frameId) ++
-      valid
-        .map { fr =>
-          Map("validation_frame" -> fr.frameId)
-        }
-        .getOrElse(Map())
+      Map("training_frame" -> train.frameId) ++
+      valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
   }
 
   private def prepareHyperParameters(): String = {
@@ -122,7 +113,7 @@ class H2OGridSearch(override val uid: String)
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq((classOf[GridSchemaV99], "summary_table"), (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
-    val modelSettings = H2OMOJOSettings.createFromModelParams(this)
+    val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
     grid.model_ids.map { modelId =>
       H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
     }
@@ -245,6 +236,29 @@ class H2OGridSearch(override val uid: String)
     model.getTrainingParams().filter {
       case (key, _) =>
         !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+    }
+  }
+
+  private[sparkling] override def getFeaturesColsInternal(): Array[String] = getAlgo().getFeaturesCols()
+
+  private[sparkling] override def getColumnsToCategoricalInternal(): Array[String] = getAlgo().getColumnsToCategorical()
+
+  private[sparkling] override def getSplitRatioInternal(): Double = getAlgo().getSplitRatioInternal()
+
+  private[sparkling] override def setFeaturesColsInternal(value: Array[String]): H2OGridSearch.this.type = {
+    propagateToAlgorithm.put("featuresCols", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFeaturesCols(value)
+    this
+  }
+
+  protected override def getExcludedCols(): Seq[String] = {
+    val algorithm = getAlgo()
+    if (algorithm == null) {
+      Seq.empty
+    } else {
+      Seq(algorithm.getLabelCol(), algorithm.getFoldCol(), algorithm.getWeightCol(), algorithm.getOffsetCol())
+        .flatMap(Option(_)) // Remove nulls
     }
   }
 }
