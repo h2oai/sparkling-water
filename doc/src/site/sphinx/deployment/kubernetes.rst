@@ -38,7 +38,7 @@ Dynamic allocation must be disabled in Spark.
 Cluster Mode of Kubernetes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In case of Scala and Python, in cluster mode we can only submit batch jobs. In case of R we can
+In case of Scala and Python, we can only submit batch jobs in cluster mode. In case of R we can
 only use interactive shell in cluster mode.
 
     .. content-tabs::
