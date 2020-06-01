@@ -153,8 +153,8 @@ def testPythonInternalBackend(registryId, master, version) {
 }
 
 def testRInternalBackend(registryId, master, version) {
+    checkout scm
     sh """
-        checkout scm
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version

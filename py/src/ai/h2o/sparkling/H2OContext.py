@@ -79,7 +79,7 @@ class H2OContext(object):
             selected_conf = conf
         else:
             selected_conf = H2OConf()
-
+        conf.set("spark.ext.h2o.client.language", "python")
         h2o_context = H2OContext()
 
         # Create backing H2OContext
