@@ -154,10 +154,11 @@ def testPythonInternalBackend(registryId, master, version) {
 
 def testRInternalBackend(registryId, master, version) {
     sh """
+        checkout scm
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
-        Rscript initTest.R
+        Rscript kubernetes/src/r/initTest.R
         """
     sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
