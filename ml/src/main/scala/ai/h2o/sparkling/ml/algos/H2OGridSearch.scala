@@ -254,7 +254,7 @@ class H2OGridSearch(override val uid: String)
 
   protected override def getExcludedCols(): Seq[String] = {
     val algorithm = getAlgo()
-    if(algorithm == null){
+    if (algorithm == null) {
       Seq.empty
     } else {
       Seq(algorithm.getLabelCol(), algorithm.getFoldCol(), algorithm.getWeightCol(), algorithm.getOffsetCol())
