@@ -105,7 +105,6 @@ def testGetGridModels(prostateDataset):
     models = grid.getGridModels()
     assert len(models) == 3
 
-
 def testGetAlgoViaConstructor():
     # SW-2276, 3rd call of getAlgo failed
     grid = H2OGridSearch(labelCol="AGE", hyperParameters={"seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM().setNtrees(100),
