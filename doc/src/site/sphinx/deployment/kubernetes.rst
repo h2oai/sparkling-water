@@ -41,6 +41,19 @@ RSparkling in Internal Backend
 In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
 It is also possible to run only interactive sessions.
 
+First, make sure that RSparkling is installed on the node you use to start the interactive shell. You can install
+RSparkling as:
+
+.. code:: r
+
+   # Download, install, and initialize the H2O package for R.
+   # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
+   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+
+   # Download, install, and initialize the RSparkling
+   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
+
+
 To start ``H2OContext`` in interactive shell:
 
 .. code:: r
