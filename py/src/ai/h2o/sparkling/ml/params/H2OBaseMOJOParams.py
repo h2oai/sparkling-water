@@ -20,7 +20,7 @@ from pyspark.ml.param import *
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
-class H2OMOJOAlgoSharedParams(Params):
+class H2OBaseMOJOParams(Params):
     predictionCol = Param(
         Params._dummy(),
         "predictionCol",

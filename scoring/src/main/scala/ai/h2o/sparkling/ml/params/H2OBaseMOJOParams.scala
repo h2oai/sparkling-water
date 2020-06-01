@@ -23,7 +23,7 @@ import org.apache.spark.ml.param._
 /**
   * Parameters available on the algorithm & MOJO Model
   */
-trait H2OMOJOAlgoSharedParams extends Params with Logging {
+trait H2OBaseMOJOParams extends Params with Logging {
 
   //
   // Param definitions

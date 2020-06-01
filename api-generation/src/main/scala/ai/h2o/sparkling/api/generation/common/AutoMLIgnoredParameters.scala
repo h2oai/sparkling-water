@@ -29,9 +29,6 @@ object AutoMLIgnoredParameters {
       "leaderboard_frame",
       "monotone_constraints",
       "stopping_criteria",
-      "response_column",
-      "weights_column",
-      "fold_column",
       "modeling_plan",
       "algo_parameters")
 }

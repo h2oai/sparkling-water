@@ -17,9 +17,14 @@
 package ai.h2o.sparkling.ml.params
 
 trait H2OAutoMLParams
-  extends H2OCommonSupervisedParams
+  extends H2OCommonParams
   with H2OAutoMLBuildControlParams
   with H2OAutoMLBuildModelsParams
   with H2OAutoMLInputParams
   with H2OAutoMLStoppingCriteriaParams
-  with HasMonotoneConstraints
+  with HasMonotoneConstraints {
+  override private[sparkling] def getExcludedCols(): Seq[String] = {
+    Seq(getLabelCol(), getFoldCol(), getWeightCol())
+      .flatMap(Option(_)) // Remove nulls
+  }
+}

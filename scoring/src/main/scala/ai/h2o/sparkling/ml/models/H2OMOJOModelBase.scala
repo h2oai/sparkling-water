@@ -17,14 +17,14 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams
+import ai.h2o.sparkling.ml.params.H2OBaseMOJOParams
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.types.{StructField, StructType}
 
 abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
   extends SparkModel[T]
-  with H2OMOJOAlgoSharedParams
+  with H2OBaseMOJOParams
   with HasMojo
   with H2OMOJOWritable
   with H2OMOJOFlattenedInput {

@@ -24,7 +24,6 @@ from pyspark import keyword_only
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
-import warnings
 
 class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
 
@@ -40,41 +39,14 @@ class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
                  stoppingMetric="AUTO",
                  selectBestModelBy="AUTO",
                  parallelism=1,
-                 seed=-1,
-                 **DeprecatedParams):
+                 seed=-1):
         Initializer.load_sparkling_jar()
         super(H2OGridSearch, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
-        self.checkDeprecatedProperty(kwargs, "labelCol")
-        self.checkDeprecatedProperty(kwargs, "offsetCol")
-        self.checkDeprecatedProperty(kwargs, "foldCol")
-        self.checkDeprecatedProperty(kwargs, "weightCol")
-        self.checkDeprecatedProperty(kwargs, "splitRatio")
-        self.checkDeprecatedProperty(kwargs, "nfolds")
-        self.checkDeprecatedProperty(kwargs, "allStringColumnsToCategorical")
-        self.checkDeprecatedProperty(kwargs, "columnsToCategorical")
-        self.checkDeprecatedProperty(kwargs, "predictionCol")
-        self.checkDeprecatedProperty(kwargs, "detailedPredictionCol")
-        self.checkDeprecatedProperty(kwargs, "withDetailedPredictionCol")
-        self.checkDeprecatedProperty(kwargs, "featuresCols")
-        self.checkDeprecatedProperty(kwargs, "convertUnknownCategoricalLevelsToNa")
-        self.checkDeprecatedProperty(kwargs, "convertInvalidNumbersToNa")
-        self.checkDeprecatedProperty(kwargs, "namedMojoOutputColumns")
         self._set(**kwargs)
         self._transfer_params_to_java()
-        if (algo is not None):
-            algo._set(**self.propagateValuesToAlgorithm)
-            algo._transfer_params_to_java()
-
-    def checkDeprecatedProperty(self, kwargs, deprecatedOption):
-        if deprecatedOption in kwargs:
-            warnings.warn(
-                "The parameter '{}' is deprecated. Please use the same parameter on a given algorithm directly!".format(
-                    deprecatedOption))
-            self.propagateValuesToAlgorithm[deprecatedOption] = kwargs[deprecatedOption]
-            del kwargs[deprecatedOption]
 
     def getGridModels(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]

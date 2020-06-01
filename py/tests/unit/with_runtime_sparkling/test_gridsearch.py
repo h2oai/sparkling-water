@@ -68,7 +68,7 @@ def testPipelineSerializationDRF(prostateDataset):
 
 
 def testGetGridModelsParams(prostateDataset):
-    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(labelCol="AGE", splitRatio=0.8),
+    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(splitRatio=0.8, labelCol="AGE"),
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
     grid.fit(prostateDataset)

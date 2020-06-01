@@ -21,7 +21,7 @@ import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
-import ai.h2o.sparkling.ml.params.H2OAlgoCommonParams
+import ai.h2o.sparkling.ml.params.H2OCommonParams
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -37,10 +37,31 @@ import scala.reflect.ClassTag
   */
 abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   extends Estimator[H2OMOJOModel]
+  with H2OCommonParams
   with H2OAlgoCommonUtils
   with DefaultParamsWritable
-  with H2OAlgoCommonParams[P]
   with RestCommunication {
+
+  def getFoldCol(): String
+
+  def getWeightCol(): String
+
+  def getDistribution(): String
+
+  def getModelId(): String
+
+  def setFoldCol(value: String): this.type
+
+  def setWeightCol(value: String): this.type
+
+  def setDistribution(value: String): this.type
+
+  def setModelId(value: String): this.type
+
+  // Class tag for parameters to get runtime class
+  protected def paramTag: ClassTag[P]
+
+  protected var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
 
   protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 
@@ -72,7 +93,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
     if (H2OModel.modelExists(key)) {
       val replacement = findAlternativeKey(key)
       logWarning(
-        s"Model id '$modelId' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
+        s"Model id '$key' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
       replacement
     } else {
       key
@@ -91,6 +112,9 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
+    require(
+      getWeightCol() == null || getWeightCol() != getFoldCol(),
+      "Specified weight column cannot be the same as the fold column!")
     schema
   }
 

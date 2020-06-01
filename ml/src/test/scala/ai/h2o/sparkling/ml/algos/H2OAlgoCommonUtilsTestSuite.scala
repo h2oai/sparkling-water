@@ -45,7 +45,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
 
     override def transformSchema(schema: StructType): StructType = throw new NotImplementedError()
 
-    override protected def getExcludedCols(): Seq[String] = Nil
+    override private[sparkling] def getExcludedCols(): Seq[String] = Nil
 
     def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame], Array[String]) = prepareDatasetForFitting
   }

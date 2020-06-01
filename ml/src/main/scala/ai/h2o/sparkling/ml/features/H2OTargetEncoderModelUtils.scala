@@ -18,9 +18,9 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
+import ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams
 
-trait H2OTargetEncoderModelUtils extends H2OTargetEncoderParams {
+trait H2OTargetEncoderModelUtils extends H2OTargetEncoderMOJOParams {
   protected def convertRelevantColumnsToCategorical(frame: H2OFrame): Unit = {
     val relevantColumns = getInputCols() ++ Array(getLabelCol())
     frame.convertColumnsToCategorical(relevantColumns)

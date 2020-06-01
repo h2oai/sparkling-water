@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.ml.param._
 
-trait H2OTargetEncoderParams extends Params {
+trait H2OTargetEncoderMOJOParams extends Params {
   //
   // List of Parameters
   //

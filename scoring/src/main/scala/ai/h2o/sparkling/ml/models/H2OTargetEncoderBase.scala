@@ -17,11 +17,11 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.H2OTargetEncoderParams
+import ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams
 import org.apache.spark.ml.PipelineStage
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 
-trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderParams {
+trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams {
   override def transformSchema(schema: StructType): StructType = {
     validateSchema(schema)
     StructType(schema.fields ++ getOutputCols().map(StructField(_, DoubleType, nullable = true)))
