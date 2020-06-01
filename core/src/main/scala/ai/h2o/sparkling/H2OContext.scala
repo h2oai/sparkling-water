@@ -96,13 +96,16 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   if (conf.getBoolean("spark.ui.enabled", defaultValue = true)) {
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
+
   private val (flowIp, flowPort) = {
     val uri = ProxyStarter.startFlowProxy(conf)
     // SparklyR implementation of Kubernetes connection works in a way that it does port-forwarding
     // from the driver node to the node where interactive session is running. We also need to make
     // sure that we provide valid ip. If this wouldn't be done, we would return dns record internal to
     // kubernetes
-    if (conf.get("spark.ext.h2o.client.language") == "r" && sparkContext.master.startsWith("k8s")) {
+    if (conf.get("spark.ext.h2o.client.language") == "r"
+      && sparkContext.master.startsWith("k8s")
+      && conf.get("spark.submit.deployMode") == "cluster") {
       ("127.0.0.1", uri.getPort)
     } else {
       (uri.getHost, uri.getPort)
