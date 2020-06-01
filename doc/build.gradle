@@ -48,6 +48,7 @@ task substitute() {
 
 sphinx {
   environments = ["PYTHONWARNINGS" : ""]
+  warningsAsErrors = true
 }
 
 task docJar(type: Jar) {
