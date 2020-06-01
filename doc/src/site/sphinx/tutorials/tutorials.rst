@@ -38,17 +38,11 @@ How to...
 
    sw_xgboost
    sw_automl
+   sw_grid
    sw_kmeans
    sw_target_encoder
    sw_drf
    shap_values
-
-**Spark Pipelines**
-
-.. toctree::
-   :maxdepth: 2
-
-   grid_gbm_pipeline
 
 **Logging**
 
