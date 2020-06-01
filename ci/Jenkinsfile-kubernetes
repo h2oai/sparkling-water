@@ -202,8 +202,13 @@ node("docker") {
                 def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
 
+                // Cluster Mode
                 testScalaInternalBackend(registryId, master, version)
                 testPythonInternalBackend(registryId, master, version)
+
+                // Client Mode
+
+                // R sets deployment mode automatically
                 testRInternalBackend(commons, registryId, master, version)
             }
         }
