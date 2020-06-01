@@ -46,6 +46,7 @@ class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)
+        self._transfer_params_to_java()
 
     def getGridModels(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
