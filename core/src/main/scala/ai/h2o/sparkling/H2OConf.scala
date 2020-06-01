@@ -34,7 +34,9 @@ class H2OConf(val sparkConf: SparkConf)
   with ExternalBackendConf
   with Serializable {
 
-  sparkConf.set("spark.ext.h2o.client.language", "scala")
+  if (!sparkConf.contains("spark.ext.h2o.client.language")) {
+    sparkConf.set("spark.ext.h2o.client.language", "scala")
+  }
   def this() = this(SparkSessionUtils.active.sparkContext.getConf)
 
   H2OConf.checkDeprecatedOptions(sparkConf)
