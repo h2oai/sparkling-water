@@ -35,75 +35,77 @@ start H2O on all requested executors.
 
 Dynamic allocation must be disabled in Spark.
 
-RSparkling in Internal Backend
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. content-tabs::
 
-In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
-It is also possible to run only interactive sessions.
+    .. tab-container:: R
+        :title: R
 
-First, make sure that RSparkling is installed on the node you use to start the interactive shell. You can install
-RSparkling as:
+        In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+        It is also possible to run only interactive sessions.
 
-.. code:: r
+        First, make sure that RSparkling is installed on the node you use to start the interactive shell. You can install
+        RSparkling as:
 
-   # Download, install, and initialize the H2O package for R.
-   # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
-   install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+        .. code:: r
 
-   # Download, install, and initialize the RSparkling
-   install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
+           # Download, install, and initialize the H2O package for R.
+           # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
+           install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+
+           # Download, install, and initialize the RSparkling
+           install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
 
-To start ``H2OContext`` in interactive shell:
+        To start ``H2OContext`` in interactive shell:
 
-.. code:: r
+        .. code:: r
 
-    library(sparklyr)
-    library(rsparkling)
-    config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
-                     image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
-                     account = "default",
-                     executors = 3,
-                     version = "SUBST_SPARK_VERSION",
-                     ports = c(8880, 8881, 4040, 54321))
-    config["spark.home"] <- Sys.getenv("SPARK_HOME")
-    sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
-    hc <- H2OContext.getOrCreate()
-    spark_disconnect(sc)
+            library(sparklyr)
+            library(rsparkling)
+            config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+                             image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
+                             account = "default",
+                             executors = 3,
+                             version = "SUBST_SPARK_VERSION",
+                             ports = c(8880, 8881, 4040, 54321))
+            config["spark.home"] <- Sys.getenv("SPARK_HOME")
+            sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
+            hc <- H2OContext.getOrCreate()
+            spark_disconnect(sc)
 
-PySparkling in Internal Backend
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    .. tab-container:: Python
+        :title: Python
 
-Currently, only cluster deployment mode of Kubernetes is supported.
+        Currently, only cluster deployment mode of Kubernetes is supported.
 
-To submit Python job, run:
+        To submit Python job, run:
 
-.. code:: bash
+        .. code:: bash
 
-    $SPARK_HOME/bin/spark-submit \
-    --master k8s://KUBERNETES_ENDPOINT \
-    --deploy-mode cluster \
-    --name CustomApplication \
-    --conf spark.scheduler.minRegisteredResourcesRatio=1
-    --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
-    --conf spark.executor.instances=3 \
-    local:///opt/sparkling-water/tests/initTest.py
+            $SPARK_HOME/bin/spark-submit \
+            --master k8s://KUBERNETES_ENDPOINT \
+            --deploy-mode cluster \
+            --name CustomApplication \
+            --conf spark.scheduler.minRegisteredResourcesRatio=1
+            --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
+            --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.py
 
-Sparkling Water in Internal Backend
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    .. tab-container:: Scala
+        :title: Scala
 
-Currently, only cluster deployment mode of Kubernetes is supported.
+        Currently, only cluster deployment mode of Kubernetes is supported.
 
-To submit Scala job:
+        To submit Scala job:
 
-.. code:: bash
+        .. code:: bash
 
-    $SPARK_HOME/bin/spark-submit \
-    --master k8s://KUBERNETES_ENDPOINT \
-    --deploy-mode cluster \
-    --name CustomApplication \
-    --class ai.h2o.sparkling.InitTest
-    --conf spark.scheduler.minRegisteredResourcesRatio=1
-    --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
-    --conf spark.executor.instances=3 \
-    local:///opt/sparkling-water/tests/initTest.jar
+            $SPARK_HOME/bin/spark-submit \
+            --master k8s://KUBERNETES_ENDPOINT \
+            --deploy-mode cluster \
+            --name CustomApplication \
+            --class ai.h2o.sparkling.InitTest
+            --conf spark.scheduler.minRegisteredResourcesRatio=1
+            --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
+            --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.jar
