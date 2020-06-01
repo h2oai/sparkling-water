@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
+import scala.collection.JavaConverters._
 
 /**
   * This trait contains parameters that are shared across all algorithms.
@@ -93,6 +94,10 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def setColumnsToCategorical(columns: Array[String]): this.type = set(columnsToCategorical, columns)
 
+  def setColumnsToCategorical(columnNames: java.util.ArrayList[String]): this.type = {
+    setColumnsToCategorical(columnNames.asScala.toArray)
+  }
+
   // Setters for parameters which are defined on MOJO as well
   def setPredictionCol(columnName: String): this.type = set(predictionCol, columnName)
 
@@ -107,6 +112,10 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
   def setFeaturesCols(columnNames: Array[String]): this.type = {
     require(columnNames.length > 0, "Array with feature columns must contain at least one column.")
     set(featuresCols, columnNames)
+  }
+
+  def setFeaturesCols(columnNames: java.util.ArrayList[String]): this.type = {
+    setFeaturesCols(columnNames.asScala.toArray)
   }
 
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type =

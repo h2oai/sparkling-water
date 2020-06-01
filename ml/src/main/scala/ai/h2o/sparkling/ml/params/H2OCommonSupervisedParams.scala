@@ -29,6 +29,10 @@ trait H2OCommonSupervisedParams extends H2OSupervisedMOJOParams with H2OCommonPa
 
   def getLabelCol(): String = $(labelCol)
 
+  def getNfolds(): Int
+
+  def setNfolds(value: Int): this.type
+
   def setLabelCol(columnName: String): this.type = set(labelCol, columnName)
 
   def setOffsetCol(columnName: String): this.type = set(offsetCol, columnName)
