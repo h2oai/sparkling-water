@@ -63,7 +63,7 @@ H2ODRF in both languages.
         - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
           can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
-          For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
+          For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html>`_
 
         .. code:: scala
 
@@ -140,7 +140,7 @@ H2ODRF in both languages.
         - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
           can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
-          For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html`__
+          For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html>`_
 
         .. code:: python
 
