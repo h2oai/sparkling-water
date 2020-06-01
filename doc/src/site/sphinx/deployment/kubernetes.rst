@@ -94,10 +94,7 @@ only use interactive shell in cluster mode.
                 config["spark.home"] <- Sys.getenv("SPARK_HOME")
                 sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
                 hc <- H2OContext.getOrCreate()
-
-            To submit a batch job:
-
-            .. code:: r
+                spark_disconnect(sc)
 
 After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
 ``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
