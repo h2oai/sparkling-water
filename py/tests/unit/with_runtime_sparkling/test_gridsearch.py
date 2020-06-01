@@ -107,7 +107,7 @@ def testGetGridModels(prostateDataset):
 
 def testGetAlgoViaConstructor():
     # SW-2276, 3rd call of getAlgo failed
-    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"seed": [1, 2, 3]}, splitRatio=0.8, algo=H2OGBM().setNtrees(100),
+    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(labelCol="AGE", ntrees=100, splitRatio=0.8),
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
     grid.getAlgo()
     grid.getAlgo()
@@ -115,9 +115,9 @@ def testGetAlgoViaConstructor():
 
 def testGetAlgoViaSetter():
     # SW-2276, 3rd call of getAlgo failed
-    grid = H2OGridSearch(labelCol="AGE", hyperParameters={"seed": [1, 2, 3]}, splitRatio=0.8, strategy="RandomDiscrete",
+    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, strategy="RandomDiscrete",
                          maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
-    grid.setAlgo(H2OGBM().setNtrees(100))
+    grid.setAlgo(H2OGBM().setNtrees(100).setLabelCol("AGE").setSplitRatio(0.8))
     grid.getAlgo()
     grid.getAlgo()
     assert grid.getAlgo().getNtrees() == 100
