@@ -147,7 +147,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     # Setters
     ##
     def setAlgo(self, value):
-        return self._set(algo=value)
+        self._set(algo=value)
+        self._transfer_params_to_java()
+        return self
 
     def setHyperParameters(self, value):
         return self._set(hyperParameters=value)
