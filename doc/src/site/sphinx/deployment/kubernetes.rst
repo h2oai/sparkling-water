@@ -90,7 +90,7 @@ only use interactive shell in cluster mode.
                                  account = "default",
                                  executors = 3,
                                  version = "SUBST_SPARK_VERSION",
-                                 ports = c(8880, 8881, 4040, 54323))
+                                 ports = c(8880, 8881, 4040, 54321))
                 config["spark.home"] <- Sys.getenv("SPARK_HOME")
                 sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
                 hc <- H2OContext.getOrCreate()

@@ -26,7 +26,7 @@ config <- spark_config_kubernetes(master = master,
                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                  account = "default",
                                  executors = 3,
-                                 ports = c(8880, 8881, 4040, 54323))
+                                 ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <-  sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
