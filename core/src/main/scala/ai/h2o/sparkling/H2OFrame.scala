@@ -157,7 +157,6 @@ class H2OFrame private (
     * @return new frame
     */
   def outerJoin(another: H2OFrame): H2OFrame = {
-    join(another, allFromCurrent = true, allFromAnother = true, "radix")
     // Outer join is broken in H2O, simulate H2O's join via Spark for now
     joinUsingSpark(another, "outer")
   }
