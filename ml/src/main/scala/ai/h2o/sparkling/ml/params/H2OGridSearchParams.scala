@@ -155,7 +155,7 @@ trait H2OGridSearchParams extends Params with Logging {
   def setAlgo(value: H2OSupervisedAlgorithm[_ <: Model.Parameters]): this.type = {
     H2OGridSearch.SupportedAlgos.checkIfSupported(value)
     for ((paramName, paramValue) <- propagateToAlgorithm) {
-      value.set(paramName, paramValue)
+      value.set(value.getParam(paramName), paramValue)
     }
     set(algo, value)
   }
@@ -196,29 +196,33 @@ trait H2OGridSearchParams extends Params with Logging {
 
   @DeprecatedMethod("the 'setFoldCol' method of a given algorithm", "3.32")
   def setFoldCol(columnName: String): this.type = {
-    getAlgo().setFoldCol(columnName)
     propagateToAlgorithm.put("foldCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFoldCol(columnName)
     this
   }
 
   @DeprecatedMethod("the 'setWeightCol' method of a given algorithm", "3.32")
   def setWeightCol(columnName: String): this.type = {
-    getAlgo().setWeightCol(columnName)
     propagateToAlgorithm.put("weightCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setWeightCol(columnName)
     this
   }
 
   @DeprecatedMethod("the 'setSplitRatio' method of a given algorithm", "3.32")
   def setSplitRatio(ratio: Double): this.type = {
-    getAlgo().setSplitRatio(ratio)
     propagateToAlgorithm.put("splitRatio", ratio)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setSplitRatio(ratio)
     this
   }
 
   @DeprecatedMethod("the 'setNfolds' method of a given algorithm", "3.32")
   def setNfolds(value: Int): this.type = {
-    getAlgo().setNfolds(value)
     propagateToAlgorithm.put("nfolds", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setNfolds(value)
     this
   }
 
@@ -227,97 +231,105 @@ trait H2OGridSearchParams extends Params with Logging {
 
   @DeprecatedMethod("the 'setColumnsToCategorical' method of a given algorithm", "3.32")
   def setColumnsToCategorical(first: String, others: String*): this.type = {
-    getAlgo().setColumnsToCategorical(first, others: _*)
-    propagateToAlgorithm.put("columnsToCategorical", (first +: others).toArray)
+    propagateToAlgorithm.put("columnsToCategorical", Array(first) ++ others)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setColumnsToCategorical(first, others: _*)
     this
   }
 
   @DeprecatedMethod("the 'setColumnsToCategorical' method of a given algorithm", "3.32")
   def setColumnsToCategorical(columns: Array[String]): this.type = {
-    getAlgo().setColumnsToCategorical(columns)
     propagateToAlgorithm.put("columnsToCategorical", columns)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setColumnsToCategorical(columns)
     this
   }
 
   @DeprecatedMethod("the 'setPredictionCol' method of a given algorithm", "3.32")
   def setPredictionCol(columnName: String): this.type = {
-    getAlgo().setPredictionCol(columnName)
     propagateToAlgorithm.put("predictionCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setPredictionCol(columnName)
     this
   }
 
   @DeprecatedMethod("the 'setDetailedPredictionCol' method of a given algorithm", "3.32")
   def setDetailedPredictionCol(columnName: String): this.type = {
-    getAlgo().setDetailedPredictionCol(columnName)
     propagateToAlgorithm.put("detailedPredictionCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setDetailedPredictionCol(columnName)
     this
   }
 
   @DeprecatedMethod("the 'setWithDetailedPredictionCol' method of a given algorithm", "3.32")
   def setWithDetailedPredictionCol(enabled: Boolean): this.type = {
-    getAlgo().setWithDetailedPredictionCol(enabled)
     propagateToAlgorithm.put("withDetailedPredictionCol", enabled)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setWithDetailedPredictionCol(enabled)
     this
   }
 
   @DeprecatedMethod("the 'setFeaturesCol' method of a given algorithm", "3.32")
   def setFeaturesCol(first: String): this.type = {
-    getAlgo().setFeaturesCol(first)
     propagateToAlgorithm.put("featuresCols", Array(first))
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFeaturesCol(first)
     this
   }
 
   @DeprecatedMethod("the 'setFeaturesCols' method of a given algorithm", "3.32")
   def setFeaturesCols(first: String, others: String*): this.type = {
-    getAlgo().setFeaturesCols(first, others: _*)
-    propagateToAlgorithm.put("featuresCols", (first +: others).toArray)
+    propagateToAlgorithm.put("featuresCols", Array(first) ++ others)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFeaturesCols(first, others: _*)
     this
   }
 
   @DeprecatedMethod("the 'setFeaturesCols' method of a given algorithm", "3.32")
   def setFeaturesCols(columnNames: Array[String]): this.type = {
-    getAlgo().setFeaturesCols(columnNames)
     propagateToAlgorithm.put("featuresCols", columnNames)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFeaturesCols(columnNames)
     this
   }
 
   @DeprecatedMethod("the 'setConvertUnknownCategoricalLevelsToNa' method of a given algorithm", "3.32")
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type = {
-    getAlgo().setConvertUnknownCategoricalLevelsToNa(value)
     propagateToAlgorithm.put("convertUnknownCategoricalLevelsToNa", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setConvertUnknownCategoricalLevelsToNa(value)
     this
   }
 
   @DeprecatedMethod("the 'setConvertInvalidNumbersToNa' method of a given algorithm", "3.32")
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = {
-    getAlgo().setConvertInvalidNumbersToNa(value)
     propagateToAlgorithm.put("convertInvalidNumbersToNa", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setConvertInvalidNumbersToNa(value)
     this
   }
 
   @DeprecatedMethod("the 'setNamedMojoOutputColumns' method of a given algorithm", "3.32")
   def setNamedMojoOutputColumns(value: Boolean): this.type = {
-    getAlgo().setNamedMojoOutputColumns(value)
     propagateToAlgorithm.put("namedMojoOutputColumns", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setNamedMojoOutputColumns(value)
     this
   }
 
   @DeprecatedMethod("the 'setLabelCol' method of a given algorithm", "3.32")
   def setLabelCol(columnName: String): this.type = {
-    getAlgo().setLabelCol(columnName)
     propagateToAlgorithm.put("labelCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setLabelCol(columnName)
     this
   }
 
   @DeprecatedMethod("the 'setOffsetCol' method of a given algorithm", "3.32")
   def setOffsetCol(columnName: String): this.type = {
-    getAlgo().setOffsetCol(columnName)
     propagateToAlgorithm.put("offsetCol", columnName)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setOffsetCol(columnName)
     this
-  }
-
-  protected def getExcludedCols(): Seq[String] = {
-    Seq(getLabelCol(), getFoldCol(), getWeightCol(), getOffsetCol())
-      .flatMap(Option(_)) // Remove nulls
   }
 }

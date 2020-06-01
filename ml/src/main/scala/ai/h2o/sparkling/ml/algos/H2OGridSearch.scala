@@ -238,6 +238,29 @@ class H2OGridSearch(override val uid: String)
         !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
     }
   }
+
+  private[sparkling] override def getFeaturesColsInternal(): Array[String] = getAlgo().getFeaturesCols()
+
+  private[sparkling] override def getColumnsToCategoricalInternal(): Array[String] = getAlgo().getColumnsToCategorical()
+
+  private[sparkling] override def getSplitRatioInternal(): Double = getAlgo().getSplitRatioInternal()
+
+  private[sparkling] override def setFeaturesColsInternal(value: Array[String]): H2OGridSearch.this.type = {
+    propagateToAlgorithm.put("featuresCols", value)
+    val algorithm = getAlgo()
+    if (algorithm != null) algorithm.setFeaturesCols(value)
+    this
+  }
+
+  protected override def getExcludedCols(): Seq[String] = {
+    val algorithm = getAlgo()
+    if(algorithm == null){
+      Seq.empty
+    } else {
+      Seq(algorithm.getLabelCol(), algorithm.getFoldCol(), algorithm.getWeightCol(), algorithm.getOffsetCol())
+        .flatMap(Option(_)) // Remove nulls
+    }
+  }
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {

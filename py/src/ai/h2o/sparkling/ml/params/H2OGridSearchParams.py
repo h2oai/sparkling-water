@@ -276,42 +276,54 @@ class H2OGridSearchParams(Params):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setLabelCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["labelCol"] = value
-        self.getOrDefault(self.algo).setLabelCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setLabelCol(value)
         return self
 
     def setOffsetCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setOffsetCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["offsetCol"] = value
-        self.getOrDefault(self.algo).setOffsetCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setOffsetCol(value)
         return self
 
     def setFoldCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setFoldCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["foldCol"] = value
-        self.getOrDefault(self.algo).setFoldCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setFoldCol(value)
         return self
 
     def setWeightCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setWeightCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["weightCol"] = value
-        self.getOrDefault(self.algo).setWeightCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setWeightCol(value)
         return self
 
     def setSplitRatio(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setSplitRatio' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["splitRatio"] = value
-        self.getOrDefault(self.algo).setSplitRatio(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setSplitRatio(value)
         return self
 
     def setNfolds(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setNfolds' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["nfolds"] = value
-        self.getOrDefault(self.algo).setNfolds(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setNfolds(value)
         return self
 
     def setAllStringColumnsToCategorical(self, value):
@@ -324,54 +336,70 @@ class H2OGridSearchParams(Params):
                       "Use 'setColumnsToCategorical' method of a given algorithm instead.", DeprecationWarning)
         finalValue = [value, ] + list(args)
         self.propagateValuesToAlgorithm["columnsToCategorical"] = finalValue
-        self.getOrDefault(self.algo).setColumnsToCategorical(finalValue)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setColumnsToCategorical(finalValue)
         return self
 
     def setPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["predictionCol"] = value
-        self.getOrDefault(self.algo).setPredictionCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setPredictionCol(value)
         return self
 
     def setDetailedPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["detailedPredictionCol"] = value
-        self.getOrDefault(self.algo).setDetailedPredictionCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setDetailedPredictionCol(value)
         return self
 
     def setWithDetailedPredictionCol(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setWithDetailedPredictionCol' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["withDetailedPredictionCol"] = value
-        self.getOrDefault(self.algo).setWithDetailedPredictionCol(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setWithDetailedPredictionCol(value)
         return self
 
     def setFeaturesCols(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setFeaturesCols' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["featuresCols"] = value
-        self.getOrDefault(self.algo).setFeaturesCols(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setFeaturesCols(value)
         return self
 
     def setConvertUnknownCategoricalLevelsToNa(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setConvertUnknownCategoricalLevelsToNa' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["convertUnknownCategoricalLevelsToNa"] = value
-        self.getOrDefault(self.algo).setConvertUnknownCategoricalLevelsToNa(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setConvertUnknownCategoricalLevelsToNa(value)
         return self
 
     def setConvertInvalidNumbersToNa(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setConvertInvalidNumbersToNa' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["convertInvalidNumbersToNa"] = value
-        self.getOrDefault(self.algo).setConvertInvalidNumbersToNa(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setConvertInvalidNumbersToNa(value)
         return self
 
     def setNamedMojoOutputColumns(self, value):
         warnings.warn("The method will be removed in the version 3.32. "
                       "Use 'setNamedMojoOutputColumns' method of a given algorithm instead.", DeprecationWarning)
         self.propagateValuesToAlgorithm["namedMojoOutputColumns"] = value
-        self.getOrDefault(self.algo).setNamedMojoOutputColumns(value)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is not None:
+            javaAlgo.setNamedMojoOutputColumns(value)
         return self
