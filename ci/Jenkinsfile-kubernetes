@@ -163,7 +163,7 @@ def testRInternalBackend(registryId, master, version, sparkMajorVersion) {
             export KUBERNETES_MASTER=$master
             export REGISTRY_ID=$registryId
             export SW_VERSION=$version
-            Rscript kubernetes/src/r/initTest.R
+            Rscript --default-packages=methods,utils kubernetes/src/r/initTest.R
             """
         sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }

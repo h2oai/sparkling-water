@@ -25,6 +25,7 @@ sparkHome <- Sys.getenv("SPARK_HOME")
 config <- spark_config_kubernetes(master = master,
                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                  account = "default",
+                                 driver ="driver-r",
                                  executors = 3,
                                  ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <-  sparkHome
