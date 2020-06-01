@@ -84,7 +84,7 @@ object ProxyStarter extends Logging {
         case _ => 0
       }
     } else {
-      0
+      1
     }
     conf.basePort + numSkipped
   }
