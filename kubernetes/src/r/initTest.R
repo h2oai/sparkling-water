@@ -16,7 +16,7 @@
 #
 library(sparklyr)
 library(rsparkling)
-
+library(testthat)
 master <- Sys.getenv("KUBERNETES_MASTER")
 registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
@@ -30,4 +30,5 @@ config <- spark_config_kubernetes(master = master,
 config["spark.home"] <-  sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
+expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 3)
 spark_disconnect(sc)

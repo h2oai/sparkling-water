@@ -152,22 +152,20 @@ def testPythonInternalBackend(registryId, master, version) {
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testRInternalBackend(commons, registryId, master, version) {
-    unstash "properties"
-    def repoId = readPropertiesFile("properties")["docker_registry_id"]
-    def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
-    docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
-        def code = {
-            sh """
-                export KUBERNETES_MASTER=$master
-                export REGISTRY_ID=$registryId
-                export SW_VERSION=$version
-                Rscript kubernetes/src/r/initTest.R
-                """
-            sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
-        }
-        commons.withDocker("${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}", code)
-    }
+def testRInternalBackend(registryId, master, version, sparkMajorVersion) {
+        checkout scm
+        sh """
+            ./gradlew dist -Pspark=$sparkMajorVersion
+            ./gradlew installH2ORPackage
+            ./gradlew installRSparklingPackage
+            """
+        sh """
+            export KUBERNETES_MASTER=$master
+            export REGISTRY_ID=$registryId
+            export SW_VERSION=$version
+            Rscript kubernetes/src/r/initTest.R
+            """
+        sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 node("docker") {
@@ -209,7 +207,7 @@ node("docker") {
                 // Client Mode
 
                 // R sets deployment mode automatically
-                testRInternalBackend(commons, registryId, master, version)
+                testRInternalBackend(registryId, master, version, sparkMajorVersion)
             }
         }
     }
