@@ -91,7 +91,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     # Getters
     ##
     def getAlgo(self):
-        javaAlgo = self.getOrDefault(self.algo)
+        javaAlgo = self._java_obj.getAlgo()
+        if javaAlgo is None:
+            return None
         algoName = javaAlgo.parameters().algoName()
         if algoName == "GBM":
             from ai.h2o.sparkling.ml.algos import H2OGBM
@@ -147,7 +149,9 @@ class H2OGridSearchParams(H2OCommonSupervisedParams):
     # Setters
     ##
     def setAlgo(self, value):
-        return self._set(algo=value)
+        self._set(algo=value)
+        self._transfer_params_to_java()
+        return self
 
     def setHyperParameters(self, value):
         return self._set(hyperParameters=value)
