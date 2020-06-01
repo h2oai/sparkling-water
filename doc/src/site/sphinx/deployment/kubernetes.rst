@@ -35,67 +35,62 @@ start H2O on all requested executors.
 
 Dynamic allocation must be disabled in Spark.
 
-Cluster Mode of Kubernetes
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+RSparkling in Internal Backend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In case of Scala and Python, we can only submit batch jobs in cluster mode. In case of R we can
-only use interactive shell in cluster mode.
+In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+It is also possible to run only interactive sessions.
 
-    .. content-tabs::
+To start ``H2OContext`` in interactive shell:
 
-        .. tab-container:: Scala
-            :title: Scala
+.. code:: r
 
-            To submit Scala job:
+    library(sparklyr)
+    library(rsparkling)
+    config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+                     image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
+                     account = "default",
+                     executors = 3,
+                     version = "SUBST_SPARK_VERSION",
+                     ports = c(8880, 8881, 4040, 54321))
+    config["spark.home"] <- Sys.getenv("SPARK_HOME")
+    sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
+    hc <- H2OContext.getOrCreate()
+    spark_disconnect(sc)
 
-            .. code:: bash
+PySparkling in Internal Backend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-                $SPARK_HOME/bin/spark-submit \
-                --master k8s://KUBERNETES_ENDPOINT \
-                --deploy-mode cluster \
-                --name CustomApplication \
-                --class ai.h2o.sparkling.InitTest
-                --conf spark.scheduler.minRegisteredResourcesRatio=1
-                --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
-                --conf spark.executor.instances=3 \
-                local:///opt/sparkling-water/tests/initTest.jar
+Currently, only cluster deployment mode of Kubernetes is supported.
 
-        .. tab-container:: Python
-            :title: Python
+To submit Python job, run:
 
-            To submit Python job:
+.. code:: bash
 
-            .. code:: bash
+    $SPARK_HOME/bin/spark-submit \
+    --master k8s://KUBERNETES_ENDPOINT \
+    --deploy-mode cluster \
+    --name CustomApplication \
+    --conf spark.scheduler.minRegisteredResourcesRatio=1
+    --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
+    --conf spark.executor.instances=3 \
+    local:///opt/sparkling-water/tests/initTest.py
 
-                $SPARK_HOME/bin/spark-submit \
-                --master k8s://KUBERNETES_ENDPOINT \
-                --deploy-mode cluster \
-                --name CustomApplication \
-                --conf spark.scheduler.minRegisteredResourcesRatio=1
-                --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
-                --conf spark.executor.instances=3 \
-                local:///opt/sparkling-water/tests/initTest.py
+Sparkling Water in Internal Backend
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        .. tab-container:: R
-            :title: R
+Currently, only cluster deployment mode of Kubernetes is supported.
 
-            To start ``H2OContext`` in interactive shell:
+To submit Scala job:
 
-            .. code:: r
+.. code:: bash
 
-                library(sparklyr)
-                library(rsparkling)
-                config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
-                                 image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
-                                 account = "default",
-                                 executors = 3,
-                                 version = "SUBST_SPARK_VERSION",
-                                 ports = c(8880, 8881, 4040, 54321))
-                config["spark.home"] <- Sys.getenv("SPARK_HOME")
-                sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
-                hc <- H2OContext.getOrCreate()
-                spark_disconnect(sc)
-
-After this step, your job is submitted into Kubernetes cluster. You can see the logs by running
-``kubectl logs pod_id``. You can get the pod id of the desired executor or driver by
-running ``kubectl get pods``.
+    $SPARK_HOME/bin/spark-submit \
+    --master k8s://KUBERNETES_ENDPOINT \
+    --deploy-mode cluster \
+    --name CustomApplication \
+    --class ai.h2o.sparkling.InitTest
+    --conf spark.scheduler.minRegisteredResourcesRatio=1
+    --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
+    --conf spark.executor.instances=3 \
+    local:///opt/sparkling-water/tests/initTest.jar
