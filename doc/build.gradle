@@ -52,6 +52,7 @@ sphinx {
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesSupportSinceSpark)) {
     tags = "SupportsKubernetes"
   }
+  warningsAsErrors = true
 }
 
 task docJar(type: Jar) {
