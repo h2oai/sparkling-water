@@ -22,10 +22,7 @@ if (!exists("InternalBackendConf")) source(file.path("R", "InternalBackendConf.R
 #' @export H2OConf
 H2OConf <- setRefClass("H2OConf", fields = list(jconf = "ANY"),
                        contains = c("SharedBackendConf", "ExternalBackendConf", "InternalBackendConf"), methods = list(
-    initialize = function(spark = NULL) {
-        if (!is.null(spark)) {
-            print("Constructor H2OConf(spark) with the spark argument is deprecated. Please use just H2OConf(). The argument will be removed in release 3.32.")
-        }
+    initialize = function() {
         sc <- spark_connection_find()[[1]]
         .self$jconf <- invoke_new(sc, "ai.h2o.sparkling.H2OConf")
     },
