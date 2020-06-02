@@ -36,5 +36,5 @@ estimator = H2OXGBoost(labelCol = "CAPSULE")
 model = estimator.fit(trainingDF)
 
 # Run Predictions
-model.transform(testingDF).show(truncate = False)
+model.transform(testingDF).collect()
 spark.stop()

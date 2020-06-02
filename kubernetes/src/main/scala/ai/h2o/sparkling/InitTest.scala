@@ -43,7 +43,7 @@ object InitTest {
     val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
     val model = estimator.fit(trainingDF)
 
-    model.transform(testingDF).show(false)
+    model.transform(testingDF).collect()
     spark.stop()
   }
 }
