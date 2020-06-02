@@ -535,4 +535,7 @@ object SharedBackendConf {
 
   /** Location of iced directory for H2O nodes */
   val PROP_ICED_DIR: (String, None.type) = ("spark.ext.h2o.iced.dir", None)
+
+  /** Language of the connectec client. */
+  private[sparkling] val PROP_CLIENT_LANGUAGE: (String, String) = ("spark.ext.h2o.client.language", "scala")
 }
