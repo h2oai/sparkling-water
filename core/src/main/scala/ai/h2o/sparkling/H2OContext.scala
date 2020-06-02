@@ -103,8 +103,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     // from the driver node to the node where interactive session is running. We also need to make
     // sure that we provide valid ip. If this wouldn't be done, we would return dns record internal to
     // kubernetes
-    if (conf.get("spark.ext.h2o.client.language") == "r"
-        && sparkContext.master.startsWith("k8s")) {
+    if (conf.getClientLanguage == "r" && sparkContext.master.startsWith("k8s")) {
       ("127.0.0.1", uri.getPort)
     } else {
       (uri.getHost, uri.getPort)
