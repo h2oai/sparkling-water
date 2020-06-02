@@ -115,6 +115,9 @@ class H2OGridSearchParams(Params):
         elif algoName == "DRF":
             from ai.h2o.sparkling.ml.algos import H2ODRF
             algo = H2ODRF()
+        elif algoName == "KMeans":
+            from ai.h2o.sparkling.ml.algos import H2OKMeans
+            algo = H2OKMeans()
         else:
             raise ValueError('Unsupported algorithm for H2OGridSearch')
 

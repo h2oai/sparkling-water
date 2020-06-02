@@ -18,7 +18,7 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF
+from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF, H2OKMeans
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -34,7 +34,7 @@ def testParamsPassedBySetters():
 
 
 def gridSearchTester(algo, prostateDataset):
-    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=algo.setLabelCol("AGE").setSplitRatio(0.8),
+    grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=algo.setSplitRatio(0.8),
                          strategy="RandomDiscrete", maxModels=3, maxRuntimeSecs=60, selectBestModelBy="RMSE")
 
     pipeline = Pipeline(stages=[grid])
@@ -49,22 +49,27 @@ def gridSearchTester(algo, prostateDataset):
 
 
 def testPipelineSerializationGBM(prostateDataset):
-    gridSearchTester(H2OGBM(), prostateDataset)
+    gridSearchTester(H2OGBM().setLabelCol("AGE"), prostateDataset)
 
 
 def testPipelineSerializationGLM(prostateDataset):
-    gridSearchTester(H2OGLM(), prostateDataset)
+    gridSearchTester(H2OGLM().setLabelCol("AGE"), prostateDataset)
 
 
 def testPipelineSerializationDeepLearning(prostateDataset):
-    gridSearchTester(H2ODeepLearning(), prostateDataset)
+    gridSearchTester(H2ODeepLearning().setLabelCol("AGE"), prostateDataset)
 
 
 def testPipelineSerializationXGBoost(prostateDataset):
-    gridSearchTester(H2OXGBoost(), prostateDataset)
+    gridSearchTester(H2OXGBoost().setLabelCol("AGE"), prostateDataset)
+
 
 def testPipelineSerializationDRF(prostateDataset):
-    gridSearchTester(H2ODRF(), prostateDataset)
+    gridSearchTester(H2ODRF().setLabelCol("AGE"), prostateDataset)
+
+
+def testPipelineSerializationKMeans(prostateDataset):
+    gridSearchTester(H2OKMeans(), prostateDataset)
 
 
 def testGetGridModelsParams(prostateDataset):

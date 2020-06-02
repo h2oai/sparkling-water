@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.params.AlgoParam
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
+import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
@@ -40,14 +41,14 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
   test("H2O Grid Search GLM Pipeline") {
-    val glm = new H2OGLM()
+    val glm = new H2OGLM().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(glm, hyperParams)
   }
 
   test("H2O Grid Search GBM Pipeline") {
-    val gbm = new H2OGBM()
+    val gbm = new H2OGBM().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += ("ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef]), "seed" -> Array(1, 2).map(
       _.asInstanceOf[AnyRef]))
@@ -56,7 +57,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   test("H2O Grid Search DeepLearning Pipeline") {
-    val deeplearning = new H2ODeepLearning()
+    val deeplearning = new H2ODeepLearning().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(deeplearning, hyperParams)
@@ -81,14 +82,14 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   test("H2O Grid Search XGBoost Pipeline") {
-    val xgboost = new H2OXGBoost()
+    val xgboost = new H2OXGBoost().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
 
     testGridSearch(xgboost, hyperParams)
   }
 
   test("Exception thrown when parameter is not gridable") {
-    val drf = new H2ODRF()
+    val drf = new H2ODRF().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "binomialDoubleTrees" -> Array(true, false).map(_.asInstanceOf[AnyRef])
     val thrown = intercept[IllegalArgumentException] {
@@ -98,12 +99,19 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   test("H2O Grid Search DRF Pipeline") {
-    val drf = new H2ODRF()
+    val drf = new H2ODRF().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
     hyperParams += "seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
     hyperParams += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
     testGridSearch(drf, hyperParams)
+  }
+
+  test("H2O Grid Search KMeans Pipeline") {
+    val kmeans = new H2OKMeans()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += "k" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
+    testGridSearch(kmeans, hyperParams)
   }
 
   private val parentParams = new Params {
@@ -138,7 +146,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val gbm = new H2OGBM().setLabelCol("AGE").setColumnsToCategorical(Array("a", "b"))
     val encoded = algoParam.jsonEncode(gbm)
 
-    val algo = algoParam.jsonDecode(encoded)
+    val algo = algoParam.jsonDecode(encoded).asInstanceOf[H2OSupervisedAlgorithm[GBMParameters]]
     assert(algo.isInstanceOf[H2OGBM])
     assert(algo.getLabelCol() == "AGE")
     val gbmParamMap = gbm.extractParamMap()
@@ -150,11 +158,11 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   private def testGridSearch(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters],
+      algo: H2OAlgorithm[_ <: Model.Parameters],
       hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
     val stage = new H2OGridSearch()
       .setHyperParameters(hyperParams)
-      .setAlgo(algo.setLabelCol("AGE"))
+      .setAlgo(algo)
 
     val pipeline = new Pipeline().setStages(Array(stage))
     val algoName = algo.getClass.getSimpleName

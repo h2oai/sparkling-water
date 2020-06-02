@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import java.util
 
-import ai.h2o.sparkling.ml.algos.{H2OGridSearch, H2OSupervisedAlgorithm}
+import ai.h2o.sparkling.ml.algos.{H2OAlgorithm, H2OGridSearch}
 import ai.h2o.sparkling.ml.internals.H2OMetric
 import hex.Model
 import org.apache.spark.ml.param._
@@ -62,7 +62,7 @@ trait H2OGridSearchParams
   //
   // Getters
   //
-  def getAlgo(): H2OSupervisedAlgorithm[_ <: Model.Parameters] = $(algo)
+  def getAlgo(): H2OAlgorithm[_ <: Model.Parameters] = $(algo)
 
   def getHyperParameters(): util.Map[String, Array[AnyRef]] = $(hyperParameters)
 
@@ -73,7 +73,7 @@ trait H2OGridSearchParams
   //
   // Setters
   //
-  def setAlgo(value: H2OSupervisedAlgorithm[_ <: Model.Parameters]): this.type = {
+  def setAlgo(value: H2OAlgorithm[_ <: Model.Parameters]): this.type = {
     H2OGridSearch.SupportedAlgos.checkIfSupported(value)
     set(algo, value)
   }
