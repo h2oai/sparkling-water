@@ -32,4 +32,15 @@ config["spark.home"] <-  sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 3)
+
+# Test conversions
+df <- as.data.frame(t(c(1, 2, 3, 4, "A")))
+sdf <- copy_to(sc, df, overwrite = TRUE)
+hc <- H2OContext.getOrCreate()
+hf <- hc$asH2OFrame(sdf)
+sdf2 <- hc$asSparkFrame(hf)
+expect_equal(sdf_nrow(sdf2), nrow(hf))
+expect_equal(sdf_ncol(sdf2), ncol(hf))
+expect_equal(colnames(sdf2), colnames(hf))
+
 spark_disconnect(sc)
