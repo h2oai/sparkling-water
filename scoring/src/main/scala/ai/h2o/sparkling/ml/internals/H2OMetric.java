@@ -39,7 +39,11 @@ public enum H2OMetric {
   MaxPerClassError(false),
   Accuracy(true),
   MSE(false),
-  RMSE(false);
+  RMSE(false),
+  Withinss(false),
+  Betweenss(true),
+  TotWithinss(false),
+  Totss(false);
 
   public boolean higherTheBetter() {
     return higherTheBetter;

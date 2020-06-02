@@ -155,7 +155,7 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Regression => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
-        case H2OModelCategory.Clustering => return gridModels // no sorting for unsupervised clustering
+        case H2OModelCategory.Clustering => H2OMetric.TotWithinss
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
