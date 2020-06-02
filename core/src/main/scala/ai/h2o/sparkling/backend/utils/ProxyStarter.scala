@@ -38,7 +38,6 @@ object ProxyStarter extends Logging {
     var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
-        port = findNextFreeFlowPort(conf.clientWebPort, port + 1)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         val server = new Server(pool)
@@ -46,6 +45,7 @@ object ProxyStarter extends Logging {
         server.updateBean(s, new ScheduledExecutorScheduler(null, true))
         server.setHandler(getContextHandler(conf))
         val connector = new ServerConnector(server, new HttpConnectionFactory())
+        port = findNextFreeFlowPort(conf.clientWebPort, port)
         connector.setPort(port)
         server.setConnectors(Array(connector))
         // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
@@ -53,7 +53,7 @@ object ProxyStarter extends Logging {
         return new URI(
           s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
-        case _: BindException =>
+        case _: BindException => port = port + 1
       }
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
