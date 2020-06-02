@@ -66,7 +66,7 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def getAlgoParams(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters],
+      algo: H2OAlgorithm[_ <: Model.Parameters],
       train: H2OFrame,
       valid: Option[H2OFrame]): Map[String, Any] = {
     algo.getH2OAlgorithmParams() ++
@@ -155,6 +155,7 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Regression => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
+        case H2OModelCategory.Clustering => return gridModels // no sorting for unsupervised clustering
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -246,7 +247,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans = Value
 
     def checkIfSupported(algo: H2OAlgorithm[_ <: Model.Parameters]): Unit = {
       val exists = values.exists(_.toString == algo.getClass.getSimpleName)
@@ -265,6 +266,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2ODeepLearning => "deeplearning"
         case H2OXGBoost => "xgboost"
         case H2ODRF => "drf"
+        case H2OKMeans => "kmeans"
       }
     }
   }

@@ -18,7 +18,7 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF
+from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF, H2OKMeans
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -63,8 +63,13 @@ def testPipelineSerializationDeepLearning(prostateDataset):
 def testPipelineSerializationXGBoost(prostateDataset):
     gridSearchTester(H2OXGBoost(), prostateDataset)
 
+
 def testPipelineSerializationDRF(prostateDataset):
     gridSearchTester(H2ODRF(), prostateDataset)
+
+
+def testPipelineSerializationKMeans(prostateDataset):
+    gridSearchTester(H2OKMeans(), prostateDataset)
 
 
 def testGetGridModelsParams(prostateDataset):
