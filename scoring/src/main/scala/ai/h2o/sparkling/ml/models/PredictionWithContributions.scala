@@ -17,24 +17,20 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm
-import hex.Model
-import org.apache.spark.ml.param._
+import hex.genmodel.easy.EasyPredictModelWrapper
+import org.apache.spark.sql.types._
 
-object ParameterSetters {
-  implicit class AlgorithmWrapper(val algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]) {
+trait PredictionWithContributions {
+  protected def getContributionsSchema(): DataType = MapType(StringType, FloatType, valueContainsNull = false)
 
-    def setSeed(value: Long): algo.type = setParam[Long, LongParam]("seed", value)
-
-    def setNfolds(value: Int): algo.type = setParam[Int, IntParam]("nfolds", value)
-
-    private def setParam[ValueType, ParamType <: Param[ValueType]](paramName: String, value: ValueType): algo.type = {
-      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith("$$" + paramName)).head
-      field.setAccessible(true)
-      val parameter = field.get(algo).asInstanceOf[ParamType]
-      algo.set(parameter, value)
-      field.setAccessible(false)
-      algo
+  protected def convertContributionsToMap(
+      wrapper: EasyPredictModelWrapper,
+      contributions: Array[Float]): Map[String, Float] = {
+    if(contributions == null) {
+      null
+    } else {
+      val contributionNames = wrapper.getContributionNames()
+      contributionNames.zip(contributions).toMap
     }
   }
 }
