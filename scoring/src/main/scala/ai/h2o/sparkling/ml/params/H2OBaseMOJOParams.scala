@@ -42,7 +42,7 @@ trait H2OBaseMOJOParams extends Params with Logging {
 
   protected final val withContributions = new BooleanParam(
     this,
-    "withContributionsCol",
+    "withContributions",
     "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values.")
 
   protected final val featuresCols: StringArrayParam =

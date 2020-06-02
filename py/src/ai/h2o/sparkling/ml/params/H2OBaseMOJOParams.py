@@ -41,7 +41,7 @@ class H2OBaseMOJOParams(Params):
 
     withContributions = Param(
         Params._dummy(),
-        "withContributions ",
+        "withContributions",
         "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values.",
         H2OTypeConverters.toBoolean())
 

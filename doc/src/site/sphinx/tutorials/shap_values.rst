@@ -61,13 +61,13 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
 
         .. code:: scala
 
-            val predictions = model.transform(testingDF).show(false)
+            val predictions = model.transform(testingDF)
 
         Show contributions
 
         .. code:: scala
 
-            predictions.select("detailed_prediction.contribution").show()
+            predictions.select("detailed_prediction.contributions").show(false)
 
 
 
@@ -113,13 +113,13 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
 
         .. code:: python
 
-            model.transform(testingDF).show(truncate = False)
+            predictions = model.transform(testingDF)
 
         Show contributions
 
         .. code:: python
 
-            predictions.select("detailed_prediction.contributions").show()
+            predictions.select("detailed_prediction.contributions").show(truncate = False)
 
 Get Contributions from Raw MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -152,7 +152,7 @@ there is no need to start ``H2OContext``.
             import ai.h2o.sparkling.ml.models._
 
             val path = "/path/to/mojo.zip"
-            val settings = H2OMOJOSettings(withDetailedPredictionCol = true)
+            val settings = H2OMOJOSettings(withDetailedPredictionCol = true, withContributions = true)
             val model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions
@@ -191,7 +191,7 @@ there is no need to start ``H2OContext``.
             from pysparkling.ml import *
 
             val path = '/path/to/mojo.zip'
-            settings = H2OMOJOSettings(withDetailedPredictionCol=True)
+            settings = H2OMOJOSettings(withDetailedPredictionCol=True, withContributions=True)
             model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions
