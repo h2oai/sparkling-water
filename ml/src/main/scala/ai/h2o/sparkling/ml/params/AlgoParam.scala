@@ -24,11 +24,7 @@ import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
-class AlgoParam(
-    parent: Params,
-    name: String,
-    doc: String,
-    isValid: H2OAlgorithm[_ <: Model.Parameters] => Boolean)
+class AlgoParam(parent: Params, name: String, doc: String, isValid: H2OAlgorithm[_ <: Model.Parameters] => Boolean)
   extends Param[H2OAlgorithm[_ <: Model.Parameters]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
