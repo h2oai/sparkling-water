@@ -26,7 +26,7 @@ trait PredictionWithContributions {
   protected def convertContributionsToMap(
       wrapper: EasyPredictModelWrapper,
       contributions: Array[Float]): Map[String, Float] = {
-    if(contributions == null) {
+    if (contributions == null) {
       null
     } else {
       val contributionNames = wrapper.getContributionNames()

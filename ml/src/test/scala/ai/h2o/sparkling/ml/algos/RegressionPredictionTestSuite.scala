@@ -89,7 +89,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     assert(contributions == null)
   }
 
-  for(algo <- Seq(new H2OGBM(), new H2OGLM())) {
+  for (algo <- Seq(new H2OGBM(), new H2OGLM())) {
     test(s"transformSchema with detailed prediction col - ${algo.getClass.getSimpleName}") {
       import ai.h2o.sparkling.ml.ParameterSetters._
       algo

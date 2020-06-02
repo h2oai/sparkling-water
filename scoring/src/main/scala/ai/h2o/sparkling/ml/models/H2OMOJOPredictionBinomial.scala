@@ -56,7 +56,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
         }
       } else {
         if (getWithContributions()) {
-           udf[DetailedWithContributions, Row, Double] { (r: Row, offset: Double) =>
+          udf[DetailedWithContributions, Row, Double] { (r: Row, offset: Double) =>
             val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
             val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
             val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
