@@ -17,6 +17,7 @@
 package ai.h2o.sparkling
 
 import java.io.File
+import java.net.URI
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
@@ -181,6 +182,20 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
 
     val result = leftFrame.outerJoin(rightFrame)
     assertAfterJoin(result, expected)
+  }
+
+  test("Create h2o frame from https resource") {
+    val fr = H2OFrame(
+      new URI(
+        "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv"))
+    assert(fr.numberOfRows == 380)
+    assert(fr.numberOfColumns == 9)
+  }
+
+  test("Create h2o frame from file resource") {
+    val fr = H2OFrame(new URI("file://" + TestUtils.locate("smalldata/prostate/prostate.csv")))
+    assert(fr.numberOfRows == 380)
+    assert(fr.numberOfColumns == 9)
   }
 
   private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
