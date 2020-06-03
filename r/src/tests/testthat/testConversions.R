@@ -116,3 +116,5 @@ test_that("Test transformation from dataframe to h2o frame", {
 
   expect_equal(h2o.getId(mtcars_hf_name), "frame1")
 })
+
+spark_disconnect(sc)
