@@ -44,24 +44,28 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2OXGBoost
-            val estimator = new H2OXGBoost().setLabelCol("CAPSULE").setWithDetailedPredictionCol(true)
+            val estimator = new H2OXGBoost()
+                .setLabelCol("CAPSULE")
+                .setWithDetailedPredictionCol(true)
+                .setWithContributions(true)
             val model = estimator.fit(trainingDF)
 
         The call ``setWithDetailedPredictionCol(true)`` tells Sparkling Water to create additional prediction column with
-        additional prediction details, such as the contributions. The name of this column is by default "detailed_prediction"
-        and can be modified via ``setDetailedPredictionCol`` setter.
+        additional prediction details and the call ``setWithContributions(true)`` tells to include contributions to
+        this column. The name of this column is by default "detailed_prediction" and can be modified via
+        ``setDetailedPredictionCol`` setter.
 
         Run Predictions
 
         .. code:: scala
 
-            val predictions = model.transform(testingDF).show(false)
+            val predictions = model.transform(testingDF)
 
         Show contributions
 
         .. code:: scala
 
-            predictions.select("detailed_prediction.contribution").show()
+            predictions.select("detailed_prediction.contributions").show(false)
 
 
 
@@ -96,24 +100,24 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
         .. code:: python
 
             from pysparkling.ml import H2OXGBoost
-            estimator = H2OXGBoost(labelCol = "CAPSULE", withDetailedPredictionCol = True)
+            estimator = H2OXGBoost(labelCol = "CAPSULE", withDetailedPredictionCol = True, withContributions = True)
             model = estimator.fit(trainingDF)
 
-        The parameter ``withDetailedPredictionCol = True`` tells Sparkling Water to create additional prediction column with
-        additional prediction details, such as the contributions. The name of this column is by default "detailed_prediction"
-        and can be modified via ``detailedPredictionCol`` parameter.
+        The parameter ``withDetailedPredictionCol = True`` tells Sparkling Water to create an additional prediction column with
+        additional prediction details and the parameter ``withContributions = True`` tells to include contributions to this column.
+        The name of this column is by default "detailed_prediction" and can be modified via ``detailedPredictionCol`` parameter.
 
         Run Predictions
 
         .. code:: python
 
-            model.transform(testingDF).show(truncate = False)
+            predictions = model.transform(testingDF)
 
         Show contributions
 
         .. code:: python
 
-            predictions.select("detailed_prediction.contributions").show()
+            predictions.select("detailed_prediction.contributions").show(truncate = False)
 
 Get Contributions from Raw MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,7 +150,7 @@ there is no need to start ``H2OContext``.
             import ai.h2o.sparkling.ml.models._
 
             val path = "/path/to/mojo.zip"
-            val settings = H2OMOJOSettings(withDetailedPredictionCol = true)
+            val settings = H2OMOJOSettings(withDetailedPredictionCol = true, withContributions = true)
             val model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions
@@ -185,7 +189,7 @@ there is no need to start ``H2OContext``.
             from pysparkling.ml import *
 
             val path = '/path/to/mojo.zip'
-            settings = H2OMOJOSettings(withDetailedPredictionCol=True)
+            settings = H2OMOJOSettings(withDetailedPredictionCol=True, withContributions=True)
             model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions

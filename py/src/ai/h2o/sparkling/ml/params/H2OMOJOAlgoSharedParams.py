@@ -39,6 +39,12 @@ class H2OMOJOAlgoSharedParams(Params):
         "Enables or disables generating additional prediction column, but with more details",
         H2OTypeConverters.toBoolean())
 
+    withContributions = Param(
+        Params._dummy(),
+        "withContributions",
+        "Enables or disables generating a sub-column of detailedPredictionCol containing Shapley values.",
+        H2OTypeConverters.toBoolean())
+
     featuresCols = Param(
         Params._dummy(),
         "featuresCols",
@@ -74,6 +80,9 @@ class H2OMOJOAlgoSharedParams(Params):
 
     def getWithDetailedPredictionCol(self):
         return self.getOrDefault(self.withDetailedPredictionCol)
+
+    def getWithContributions(self):
+        return self.getOrDefault(self.withContributions)
 
     def getFeaturesCols(self):
         return self.getOrDefault(self.featuresCols)

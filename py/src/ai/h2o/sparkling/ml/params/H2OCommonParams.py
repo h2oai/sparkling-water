@@ -145,3 +145,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
 
     def setNamedMojoOutputColumns(self, value):
         return self._set(namedMojoOutputColumns=value)
+
+    def setWithContributions(self, value):
+        return self._set(withContributions=value)

@@ -57,7 +57,8 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  namedMojoOutputColumns=True,
                  stoppingRounds=5,
                  stoppingMetric="AUTO",
-                 stoppingTolerance=0.001):
+                 stoppingTolerance=0.001,
+                 withContributions=False):
         Initializer.load_sparkling_jar()
         super(H2ODeepLearning, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2ODeepLearning", self.uid)

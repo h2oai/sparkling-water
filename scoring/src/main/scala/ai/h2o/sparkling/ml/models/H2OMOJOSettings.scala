@@ -25,7 +25,8 @@ case class H2OMOJOSettings(
     withDetailedPredictionCol: Boolean = false,
     convertUnknownCategoricalLevelsToNa: Boolean = false,
     convertInvalidNumbersToNa: Boolean = false,
-    namedMojoOutputColumns: Boolean = true)
+    namedMojoOutputColumns: Boolean = true,
+    withContributions: Boolean = false)
 
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()
@@ -35,6 +36,7 @@ object H2OMOJOSettings {
       predictionCol = params.getPredictionCol(),
       detailedPredictionCol = params.getDetailedPredictionCol(),
       withDetailedPredictionCol = params.getWithDetailedPredictionCol(),
+      withContributions = params.getWithContributions(),
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa())
   }

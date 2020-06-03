@@ -49,3 +49,6 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
 
     def getNamedMojoOutputColumns(self):
         return self._java_obj.getNamedMojoOutputColumns()
+
+    def getWithContributions(self):
+        return self._java_obj.getWithContributions()
