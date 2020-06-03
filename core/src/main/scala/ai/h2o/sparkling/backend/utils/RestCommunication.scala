@@ -306,10 +306,10 @@ trait RestCommunication extends Logging with RestEncodingUtils {
   }
 
   private def getServerError(connection: HttpURLConnection): String = {
-    withResource(connection.getErrorStream) { errorStream =>
-      if (errorStream == null) {
-        "No error"
-      } else {
+    if (connection.getErrorStream == null) {
+      "No error"
+    } else {
+      withResource(connection.getErrorStream) { errorStream =>
         IOUtils.toString(errorStream)
       }
     }
