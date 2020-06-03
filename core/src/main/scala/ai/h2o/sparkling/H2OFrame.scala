@@ -22,7 +22,7 @@ import java.net.URI
 import java.text.MessageFormat
 
 import ai.h2o.sparkling.backend.utils.RestApiUtils._
-import ai.h2o.sparkling.backend.utils.{RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.backend.{H2OChunk, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.Paths
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3}
@@ -265,30 +265,22 @@ object H2OFrame extends RestCommunication {
     val gson = new Gson()
     val unparsedFrameId =
       gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonPrimitive("destination_frame").getAsString
-
-    val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, Map("source_frames" -> unparsedFrameId))
-    val params = Map(
-      "source_frames" -> unparsedFrameId,
-      "destination_frame" -> parseSetup.destination_frame,
-      "parse_type" -> parseSetup.parse_type,
-      "separator" -> parseSetup.separator,
-      "single_quotes" -> parseSetup.single_quotes,
-      "check_header" -> parseSetup.check_header,
-      "number_columns" -> parseSetup.number_columns,
-      "chunk_size" -> parseSetup.chunk_size,
-      "column_types" -> parseSetup.column_types,
-      "column_names" -> parseSetup.column_names,
-      "skipped_columns" -> parseSetup.skipped_columns,
-      "custom_non_data_line_markers" -> parseSetup.custom_non_data_line_markers,
-      "delete_on_done" -> true)
-
-    val parse = update[ParseV3](endpoint, "/3/Parse", conf, params)
-    val jobId = parse.job.key.name
-    H2OJob(jobId).waitForFinish()
-    H2OFrame(parse.destination_frame.name)
+    parse(endpoint, conf, unparsedFrameId)
   }
 
-  def apply(uri: URI): H2OFrame = apply(new File(uri))
+  def apply(uri: URI): H2OFrame = {
+    val scheme = uri.getScheme
+    if (scheme == null || scheme == "file") {
+      apply(new File(uri))
+    } else {
+      val conf = H2OContext.ensure().getConf
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      val params = Map("paths" -> Array(uri.toString))
+      val importFilesV3 = RestApiUtils.update[ImportFilesMultiV3](endpoint, "/3/ImportFilesMulti", conf, params)
+      val frameId = importFilesV3.destination_frames.head
+      parse(endpoint, conf, frameId)
+    }
+  }
 
   def listFrames(): Array[H2OFrame] = {
     val conf = H2OContext.ensure().getConf
@@ -362,5 +354,28 @@ object H2OFrame extends RestCommunication {
       "rows_per_chunk" -> Base64Encoding.encode(rowsPerChunk),
       "column_types" -> Base64Encoding.encode(columnTypes))
     update[FinalizeFrameV3](endpoint, Paths.FINALIZE_FRAME, conf, parameters)
+  }
+
+  private def parse(endpoint: URI, conf: H2OConf, unparsedFrameId: String): H2OFrame = {
+    val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, Map("source_frames" -> unparsedFrameId))
+    val params = Map(
+      "source_frames" -> unparsedFrameId,
+      "destination_frame" -> parseSetup.destination_frame,
+      "parse_type" -> parseSetup.parse_type,
+      "separator" -> parseSetup.separator,
+      "single_quotes" -> parseSetup.single_quotes,
+      "check_header" -> parseSetup.check_header,
+      "number_columns" -> parseSetup.number_columns,
+      "chunk_size" -> parseSetup.chunk_size,
+      "column_types" -> parseSetup.column_types,
+      "column_names" -> parseSetup.column_names,
+      "skipped_columns" -> parseSetup.skipped_columns,
+      "custom_non_data_line_markers" -> parseSetup.custom_non_data_line_markers,
+      "delete_on_done" -> true)
+
+    val parse = update[ParseV3](endpoint, "/3/Parse", conf, params)
+    val jobId = parse.job.key.name
+    H2OJob(jobId).waitForFinish()
+    H2OFrame(parse.destination_frame.name)
   }
 }
