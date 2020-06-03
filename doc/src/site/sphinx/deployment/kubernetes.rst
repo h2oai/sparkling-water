@@ -17,6 +17,10 @@ Before you start, please make check the following:
 
 5. Have internet connection so kubernetes can download Sparkling Water docker images
 
+6. If you have non-default network policies applied to the namespace where Sparkling Water is supposed to run,
+   please make sure to expose all Spark ports and ports 54321 and 54322 as these are also necessary by H2O
+   to be able to communicate.
+
 The examples bellow are using the default Kubernetes namespace which we enable for Spark as:
 
 .. code:: bash
