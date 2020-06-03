@@ -303,7 +303,7 @@ object H2OFrame extends RestCommunication {
     val chunks = if (frame.rows == 0) {
       Array.empty[H2OChunk]
     } else {
-      val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
+      val clusterNodes = getNodes(getClusterInfo(conf))
       val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
       frameChunks.chunks.map(convertChunk(_, clusterNodes))
     }
