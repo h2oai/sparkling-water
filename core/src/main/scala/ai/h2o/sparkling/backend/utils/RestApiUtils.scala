@@ -77,10 +77,6 @@ trait RestApiUtils extends RestCommunication {
     }
   }
 
-  def getCloudInfoFromNode(endpoint: URI, conf: H2OConf): CloudV3 = {
-    query[CloudV3](endpoint, "/3/Cloud", conf)
-  }
-
   private def executeStringRapidsExpression(conf: H2OConf, expression: String): String = {
     val endpoint = getClusterEndpoint(conf)
     val params = Map("ast" -> expression)
