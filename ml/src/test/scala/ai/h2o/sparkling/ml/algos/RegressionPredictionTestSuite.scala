@@ -55,6 +55,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
+      .setWithContributions(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
@@ -64,33 +65,57 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val expectedCols = Seq("value", "contributions")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
+    val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Double](0)
     assert(contributions != null)
     assert(contributions.size == 8)
   }
 
-  test("transformSchema with detailed prediction col") {
-    val algo = new H2OGBM()
+  test("contributions on unsupported algorithm") {
+    val algo = new H2OGLM()
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
+      .setWithContributions(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
+
     val model = algo.fit(dataset)
 
-    val datasetFields = dataset.schema.fields
-    val valueField = StructField("value", DoubleType, nullable = false)
-    val predictionColField = StructField("prediction", DoubleType, nullable = true)
-    val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
-    val detailedPredictionColField =
-      StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = true)
+    val predictions = model.transform(dataset)
 
-    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
+    val expectedCols = Seq("value", "contributions")
+    assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
+    val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Double](0)
+    assert(contributions == null)
+  }
 
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
+  for (algo <- Seq(new H2OGBM(), new H2OGLM())) {
+    test(s"transformSchema with detailed prediction col - ${algo.getClass.getSimpleName}") {
+      import ai.h2o.sparkling.ml.ParameterSetters._
+      algo
+        .setSplitRatio(0.8)
+        .setWithDetailedPredictionCol(true)
+        .setSeed(1)
+        .setWithContributions(true)
+        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+        .setLabelCol("AGE")
+      val model = algo.fit(dataset)
+
+      val datasetFields = dataset.schema.fields
+      val valueField = StructField("value", DoubleType, nullable = false)
+      val predictionColField = StructField("prediction", DoubleType, nullable = true)
+      val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
+      val contributionsField = StructField("contributions", contributionsType, nullable = true)
+      val detailedPredictionColField =
+        StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = true)
+
+      val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+      val expectedSchemaByTransform = model.transform(dataset).schema
+      val schema = model.transformSchema(dataset.schema)
+
+      assert(schema == expectedSchema)
+      assert(schema == expectedSchemaByTransform)
+    }
   }
 
   test("transformSchema without detailed prediction col") {

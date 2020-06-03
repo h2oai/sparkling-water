@@ -73,6 +73,8 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
 
   def setWithDetailedPredictionCol(enabled: Boolean): this.type = set(withDetailedPredictionCol, enabled)
 
+  def setWithContributions(enabled: Boolean): this.type = set(withContributions, enabled)
+
   def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
 
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)

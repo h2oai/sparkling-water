@@ -57,6 +57,7 @@ class H2ODRFTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
+      .setWithContributions(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
@@ -65,7 +66,7 @@ class H2ODRFTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
     val expectedCols = Seq("value", "contributions")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Seq[Double]](0)
+    val contributions = predictions.select("detailed_prediction.contributions").head().getAs[Map[String, Double]](0)
     assert(contributions != null)
     assert(contributions.size == 8)
   }

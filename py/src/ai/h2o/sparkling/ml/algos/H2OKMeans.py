@@ -68,6 +68,7 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  stoppingTolerance=0.001,
                  foldAssignment="AUTO",
                  categoricalEncoding="AUTO",
+                 withContributions=False,
                  huberAlpha=0.9):
         Initializer.load_sparkling_jar()
         super(H2OKMeans, self).__init__()

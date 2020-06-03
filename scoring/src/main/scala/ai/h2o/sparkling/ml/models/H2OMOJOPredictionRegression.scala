@@ -22,16 +22,16 @@ import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
-trait H2OMOJOPredictionRegression {
+trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   self: H2OMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
+    if (getWithDetailedPredictionCol() && getWithContributions()) {
       udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictRegression(RowConverter.toH2ORowData(r), offset)
-        WithContributions(pred.value, pred.contributions)
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+        val contributions = convertContributionsToMap(model, pred.contributions)
+        WithContributions(pred.value, contributions)
       }
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
@@ -52,8 +52,8 @@ trait H2OMOJOPredictionRegression {
 
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
     val valueField = StructField("value", DoubleType, nullable = false)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val contributionsField = StructField("contributions", ArrayType(FloatType, containsNull = false), nullable = true)
+    val fields = if (getWithDetailedPredictionCol() && getWithContributions()) {
+      val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
       valueField :: contributionsField :: Nil
     } else {
       valueField :: Nil
@@ -71,6 +71,6 @@ object H2OMOJOPredictionRegression {
 
   case class Base(value: Double)
 
-  case class WithContributions(value: Double, contributions: Array[Float])
+  case class WithContributions(value: Double, contributions: Map[String, Float])
 
 }
