@@ -93,7 +93,7 @@ def getBuildAndPublishStages(props) {
 }
 
 
-def withKubectl(commons, code) {
+def withKubectl(commons, sparkMajorVersion, code) {
     commons.withSparklingWaterDockerImage {
         commons.withAWSCredentials {
             unstash "properties"
@@ -109,24 +109,80 @@ def withKubectl(commons, code) {
             sh """
                 aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
+                kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default
                 """
-            code()
+            def customEnv = [
+                    "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+            ]
+            withEnv(customEnv) {
+                code()
+            }
         }
     }
 }
+
+def testScalaInternalBackend(registryId, master, version) {
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-scala \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --master $master \
+         --deploy-mode cluster \
+         --name test \
+         --class ai.h2o.sparkling.InitTest \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.jar
+        """
+    sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testPythonInternalBackend(registryId, master, version) {
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-python \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --master $master \
+         --deploy-mode cluster \
+         --name test \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.py
+        """
+    sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testRInternalBackend(registryId, master, version, sparkMajorVersion) {
+        checkout scm
+        sh """
+            ./gradlew dist -Pspark=$sparkMajorVersion
+            ./gradlew installH2ORPackage
+            ./gradlew installRSparklingPackage
+            """
+        sh """
+            export KUBERNETES_MASTER=$master
+            export REGISTRY_ID=$registryId
+            export SW_VERSION=$version
+            Rscript --default-packages=methods,utils kubernetes/src/r/initTest.R
+            """
+        sh 'sleep 60'
+        sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
+}
+
 node("docker") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
     def props = readPropertiesFile("gradle.properties")
+    def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
                     commons.terraformApply()
-                    def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name"])
-                    def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n"
+                    def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name", "cluster_endpoint"])
+                    def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n" + "version=$sparklingVersion" + "\n"
                     writeFile file: "properties", text: valuesAsString
                     stash name: "properties", includes: "properties"
                     arch "terraform.tfstate"
@@ -139,21 +195,23 @@ node("docker") {
     parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test internal backend, cluster mode, Spark ${sparkMajorVersion}") {
-            withKubectl(commons) {
-                sh "echo TODO"
+        stage("Test internal backend, Spark ${sparkMajorVersion}") {
+            withKubectl(commons, sparkMajorVersion) {
+                def registryId = readPropertiesFile("properties")["docker_registry_id"]
+                def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+
+                // Cluster Mode
+                testScalaInternalBackend(registryId, master, version)
+                testPythonInternalBackend(registryId, master, version)
+
+                // Client Mode
+
+                // R sets deployment mode automatically
+                testRInternalBackend(registryId, master, version, sparkMajorVersion)
             }
         }
     }
-
-    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test external backend, cluster mode, Spark ${sparkMajorVersion}") {
-            withKubectl(commons) {
-                sh "echo TODO"
-            }
-        }
-    }
-
 
     stage("Stop EKS & ECR") {
         commons.withAWSCredentials {

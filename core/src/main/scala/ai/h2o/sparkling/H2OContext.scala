@@ -92,13 +92,21 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     logWarning("Spark shutdown hook called, stopping H2OContext!")
     stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
   }
-  private val leaderNode = RestApiUtils.getLeaderNode(conf)
   if (conf.getBoolean("spark.ui.enabled", defaultValue = true)) {
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
+
   private val (flowIp, flowPort) = {
     val uri = ProxyStarter.startFlowProxy(conf)
-    (uri.getHost, uri.getPort)
+    // SparklyR implementation of Kubernetes connection works in a way that it does port-forwarding
+    // from the driver node to the node where interactive session is running. We also need to make
+    // sure that we provide valid ip. If this wouldn't be done, we would return dns record internal to
+    // kubernetes
+    if (conf.getClientLanguage == "r" && sparkContext.master.startsWith("k8s")) {
+      ("127.0.0.1", uri.getPort)
+    } else {
+      (uri.getHost, uri.getPort)
+    }
   }
   updateUIAfterStart() // updates the spark UI
   backendHeartbeatThread.start() // start backend heartbeats
@@ -199,13 +207,13 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   def asSparkFrame(s: String): DataFrame = asSparkFrame(s, copyMetadata = true)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient: String = leaderNode.hostname + ":" + leaderNode.port + conf.contextPath.getOrElse("")
+  def h2oLocalClient: String = flowIp + ":" + flowPort + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
-  def h2oLocalClientIp: String = leaderNode.hostname
+  def h2oLocalClientIp: String = flowIp
 
   /** Returns port where H2O REST API is exposed */
-  def h2oLocalClientPort: Int = leaderNode.port
+  def h2oLocalClientPort: Int = flowPort
 
   def setH2OLogLevel(level: String): Unit = {
     if (H2OClientUtils.isH2OClientBased(conf)) {

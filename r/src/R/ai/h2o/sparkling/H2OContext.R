@@ -40,7 +40,7 @@ H2OContext.getOrCreate <- function(conf = NULL) {
   if (is.null(conf)) {
     conf <- H2OConf()
   }
-
+  conf$set("spark.ext.h2o.client.language", "r")
   sc <- spark_connection_find()[[1]]
   jhc <- invoke_static(sc, "ai.h2o.sparkling.H2OContext", "getOrCreate", conf$jconf)
   hc <- H2OContext(jhc)
