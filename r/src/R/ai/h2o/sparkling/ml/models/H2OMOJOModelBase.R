@@ -29,6 +29,9 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   getWithDetailedPredictionCol = function() {
     invoke(.self$jmojo, "getWithDetailedPredictionCol")
   },
+  getWithContributions = function() {
+    invoke(.self$jmojo, "getWithContributions")
+  },
   getFeaturesCols = function() {
     invoke(.self$jmojo, "getFeaturesCols")
   },
