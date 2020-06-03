@@ -30,5 +30,4 @@ object Paths {
   // which ensures that H2O Flow expose additional Sparkling Water related buttons
   val VERIFY_WEB_OPEN: String = "/3/verifyWebOpen"
   val VERIFY_VERSION: String = "/3/verifyVersion"
-
 }
