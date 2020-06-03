@@ -41,14 +41,9 @@ trait RestApiUtils extends RestCommunication {
     new URI(conf.getScheme(), null, node.hostname, node.port, conf.contextPath.orNull, null, null)
   }
 
-  def getCloudInfoFromNode(node: NodeDesc, conf: H2OConf): CloudV3 = {
-    val endpoint = resolveNodeEndpoint(node, conf)
-    getCloudInfoFromNode(endpoint, conf)
-  }
-
   def getClusterInfo(conf: H2OConf): CloudV3 = {
     val endpoint = getClusterEndpoint(conf)
-    getCloudInfoFromNode(endpoint, conf)
+    query[CloudV3](endpoint, "/3/Cloud", conf)
   }
 
   def getNodes(conf: H2OConf): Array[NodeDesc] = {

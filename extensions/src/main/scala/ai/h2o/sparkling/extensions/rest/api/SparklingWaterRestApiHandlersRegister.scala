@@ -63,6 +63,20 @@ class SparklingWaterRestApiHandlersRegister extends AbstractRegister {
       classOf[SparklingWaterAvailableHandler],
       "isSWAvailable",
       "Checks whether SW endpoints should be exposed in H2O Flow")
+
+    context.registerEndpoint(
+      "verify_web_open",
+      "GET " + Paths.VERIFY_WEB_OPEN,
+      classOf[VerificationHandler],
+      "verifyWebOpen",
+      "Checks whether web is opened on all worker nodes")
+
+    context.registerEndpoint(
+      "verify_version",
+      "GET " + Paths.VERIFY_VERSION,
+      classOf[VerificationHandler],
+      "verifyVersion",
+      "Checks version on all H2O nodes")
   }
 
   override def getName(): String = "Sparkling Water REST API Extensions"

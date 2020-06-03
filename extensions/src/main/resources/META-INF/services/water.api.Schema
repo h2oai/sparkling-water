@@ -5,3 +5,5 @@ ai.h2o.sparkling.extensions.rest.api.schema.UploadPlanV3$ChunkAssigmentV3
 ai.h2o.sparkling.extensions.rest.api.schema.LogLevelV3
 ai.h2o.sparkling.extensions.rest.api.schema.SWAvailableV3
 ai.h2o.sparkling.extensions.rest.api.schema.ScalaCodeResultV3
+ai.h2o.sparkling.extensions.rest.api.schema.VerifyWebOpenV3
+ai.h2o.sparkling.extensions.rest.api.schema.VerifyVersionV3
