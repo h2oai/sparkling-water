@@ -153,40 +153,44 @@ object Runner {
   private def writeResultToFile(
       content: String,
       substitutionContext: SubstitutionContextBase,
-      language: String,
+      languageExtension: String,
       destinationDir: String) = {
     val fileName = substitutionContext.entityName
     val namespacePath = substitutionContext.namespace.replace('.', '/')
     val destinationDirWithNamespace = new File(destinationDir, namespacePath)
     destinationDirWithNamespace.mkdirs()
-    val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$language")
+    val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$languageExtension")
     withResource(new PrintWriter(destinationFile)) { outputStream =>
       outputStream.print(content)
     }
   }
 
+  private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
+
+  private val parameterTemplates = Map("scala" -> scala.ParametersTemplate, "py" -> python.ParametersTemplate)
+
   def main(args: Array[String]): Unit = {
-    val language = args(0)
+    val languageExtension = args(0)
     val destinationDir = args(1)
 
     for (substitutionContext <- parametersConfiguration) {
-      val content = ParametersTemplate(substitutionContext)
-      writeResultToFile(content, substitutionContext, language, destinationDir)
+      val content = parameterTemplates(languageExtension)(substitutionContext)
+      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
     for (substitutionContext <- algorithmConfiguration) {
-      val content = AlgorithmTemplate(substitutionContext)
-      writeResultToFile(content, substitutionContext, language, destinationDir)
+      val content = algorithmTemplates(languageExtension)(substitutionContext)
+      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
     for (substitutionContext <- autoMLParameterConfiguration) {
-      val content = ParametersTemplate(substitutionContext)
-      writeResultToFile(content, substitutionContext, language, destinationDir)
+      val content = parameterTemplates(languageExtension)(substitutionContext)
+      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
     for (substitutionContext <- gridSearchParameterConfiguration) {
-      val content = ParametersTemplate(substitutionContext)
-      writeResultToFile(content, substitutionContext, language, destinationDir)
+      val content = parameterTemplates(languageExtension)(substitutionContext)
+      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
   }
 }

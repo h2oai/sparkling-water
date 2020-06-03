@@ -22,35 +22,16 @@ from pyspark.ml.param import *
 
 
 class H2OCommonParams(H2OBaseMOJOParams):
-    foldCol = Param(
-        Params._dummy(),
-        "foldCol",
-        "Fold column name",
-        H2OTypeConverters.toNullableString())
 
-    weightCol = Param(
-        Params._dummy(),
-        "weightCol",
-        "Weight column name",
-        H2OTypeConverters.toNullableString())
+    ##
+    # Param definitions
+    ##
     splitRatio = Param(
         Params._dummy(),
         "splitRatio",
         "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training"
         " and for validation. For example, 0.8 -> 80% training 20% validation.",
         H2OTypeConverters.toFloat())
-
-    seed = Param(
-        Params._dummy(),
-        "seed",
-        "Used to specify seed to reproduce the model run",
-        H2OTypeConverters.toInt())
-
-    nfolds = Param(
-        Params._dummy(),
-        "nfolds",
-        "Number of fold columns",
-        H2OTypeConverters.toInt())
 
     columnsToCategorical = Param(
         Params._dummy(),
@@ -61,20 +42,8 @@ class H2OCommonParams(H2OBaseMOJOParams):
     ##
     # Getters
     ##
-    def getFoldCol(self):
-        return self.getOrDefault(self.foldCol)
-
-    def getWeightCol(self):
-        return self.getOrDefault(self.weightCol)
-
     def getSplitRatio(self):
         return self.getOrDefault(self.splitRatio)
-
-    def getSeed(self):
-        return self.getOrDefault(self.seed)
-
-    def getNfolds(self):
-        return self.getOrDefault(self.nfolds)
 
     def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
@@ -82,20 +51,8 @@ class H2OCommonParams(H2OBaseMOJOParams):
     ##
     # Setters
     ##
-    def setFoldCol(self, value):
-        return self._set(foldCol=value)
-
-    def setWeightCol(self, value):
-        return self._set(weightCol=value)
-
     def setSplitRatio(self, value):
         return self._set(splitRatio=value)
-
-    def setSeed(self, value):
-        return self._set(seed=value)
-
-    def setNfolds(self, value):
-        return self._set(nfolds=value)
 
     def setColumnsToCategorical(self, value, *args):
         assert_is_type(value, [str], str)

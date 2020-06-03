@@ -155,6 +155,17 @@ def copyPySetup() {
   }
 
   copy {
+    from("$projectDir/src-gen") {
+      include 'MANIFEST.in'
+      include 'setup.cfg'
+      include 'pysparkling/**/*'
+      include 'ai/**/*'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/conda/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION") {
       include 'bld.bat'
       include 'build.sh'
@@ -341,10 +352,24 @@ task cleanPython(type: Delete) {
   delete getBuildDir()
 }
 
+task cleanGeneratedApi(type: Delete) {
+  delete "$projectDir/src-gen"
+}
+
+task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
+  group = "Execution"
+  classpath = files("../api-generation/build/libs/sparkling-water-api-generation_${scalaBaseVersion}-${version}-all.jar")
+  main = "ai.h2o.sparkling.api.generation.Runner"
+  args = ["py", "$projectDir/src-gen"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
 //
 // Setup execution graph
 //
 clean.dependsOn cleanPython
+clean.dependsOn cleanGeneratedApi
 createVersionFile.dependsOn clean
 distPython.dependsOn createVersionFile
 
