@@ -106,7 +106,7 @@ object ProxyStarter extends Logging {
     val handler = new ServletHandler()
     val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
 
-    val ipPort = RestApiUtils.getLeaderNode(conf).ipPort()
+    val ipPort = conf.h2oCluster.get
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     handler
   }

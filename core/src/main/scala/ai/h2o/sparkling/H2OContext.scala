@@ -92,7 +92,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     logWarning("Spark shutdown hook called, stopping H2OContext!")
     stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
   }
-  private val leaderNode = RestApiUtils.getLeaderNode(conf)
   if (conf.getBoolean("spark.ui.enabled", defaultValue = true)) {
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
