@@ -156,9 +156,6 @@ def copyPySetup() {
 
   copy {
     from("$projectDir/src-gen") {
-      include 'MANIFEST.in'
-      include 'setup.cfg'
-      include 'pysparkling/**/*'
       include 'ai/**/*'
       exclude '**/*.pyc'
     }
@@ -372,6 +369,7 @@ clean.dependsOn cleanPython
 clean.dependsOn cleanGeneratedApi
 createVersionFile.dependsOn clean
 distPython.dependsOn createVersionFile
+distPython.dependsOn generateApi
 
 build.dependsOn distPython
 test.dependsOn testPython
