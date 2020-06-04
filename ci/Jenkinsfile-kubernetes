@@ -92,36 +92,36 @@ def getBuildAndPublishStages(props) {
     return parallelStages
 }
 
-
-def withKubectl(commons, sparkMajorVersion, code) {
-    commons.withSparklingWaterDockerImage {
+def withTestEnv(commons, image, code) {
+    def dockerCode = {
         commons.withAWSCredentials {
             unstash "properties"
             sh """
-                sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
-                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-                sudo apt-get update
-                sudo apt-get install -y kubectl
+                apt-get update && apt-get install -y apt-transport-https gnupg2 curl unzip procps
+                curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+                echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+                apt-get update
+                apt-get install -y kubectl
                 kubectl version --client
-                sudo cp ~/.local/bin/aws /usr/local/bin/aws
-            """
-            sh """
+                rm -rf awscliv2 && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                unzip awscliv2.zip -d awscliv2
+                ./awscliv2/aws/install -i /usr/local/aws-cli -b /usr/local/bin
                 aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
+                kubectl delete clusterrolebinding default
                 kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default
                 """
-            def customEnv = [
-                    "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
-            ]
-            withEnv(customEnv) {
                 code()
-            }
         }
+    }
+    def repoId = readPropertiesFile("properties")["docker_registry_id"]
+    docker.withRegistry("https://${repoId}.dkr.ecr.us-east-2.amazonaws.com", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
+        commons.withDocker(image, dockerCode, "-u 0:0")
     }
 }
 
 def testScalaInternalBackend(registryId, master, version) {
+    sh "kubectl delete pod driver-scala --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
@@ -138,6 +138,7 @@ def testScalaInternalBackend(registryId, master, version) {
 }
 
 def testPythonInternalBackend(registryId, master, version) {
+    sh "kubectl delete pod driver-python --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
@@ -152,18 +153,13 @@ def testPythonInternalBackend(registryId, master, version) {
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testRInternalBackend(registryId, master, version, sparkMajorVersion) {
-        checkout scm
-        sh """
-            ./gradlew dist -Pspark=$sparkMajorVersion
-            ./gradlew installH2ORPackage
-            ./gradlew installRSparklingPackage
-            """
-        sh """
+def testRInternalBackend(registryId, master, version) {
+    sh "kubectl delete pod driver-r --ignore-not-found"
+    sh """
             export KUBERNETES_MASTER=$master
             export REGISTRY_ID=$registryId
             export SW_VERSION=$version
-            Rscript --default-packages=methods,utils kubernetes/src/r/initTest.R
+            Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
             """
         sh 'sleep 60'
         sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
@@ -195,20 +191,41 @@ node("docker") {
     parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test internal backend, Spark ${sparkMajorVersion}") {
-            withKubectl(commons, sparkMajorVersion) {
-                def registryId = readPropertiesFile("properties")["docker_registry_id"]
-                def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-
+        stage("Test Scala internal backend, Spark ${sparkMajorVersion}") {
+            unstash "properties"
+            def registryId = readPropertiesFile("properties")["docker_registry_id"]
+            def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+            withTestEnv(commons, image) {
                 // Cluster Mode
                 testScalaInternalBackend(registryId, master, version)
-                testPythonInternalBackend(registryId, master, version)
-
                 // Client Mode
+            }
+        }
 
+        stage("Test Python internal backend, Spark ${sparkMajorVersion}") {
+            unstash "properties"
+            def registryId = readPropertiesFile("properties")["docker_registry_id"]
+            def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+            withTestEnv(commons, image) {
+                // Cluster Mode
+                testPythonInternalBackend(registryId, master, version)
+                // Client Mode
+            }
+        }
+
+        stage("Test R internal backend, Spark ${sparkMajorVersion}") {
+            unstash "properties"
+            def registryId = readPropertiesFile("properties")["docker_registry_id"]
+            def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
+            withTestEnv(commons, image) {
                 // R sets deployment mode automatically
-                testRInternalBackend(registryId, master, version, sparkMajorVersion)
+                testRInternalBackend(registryId, master, version)
             }
         }
     }

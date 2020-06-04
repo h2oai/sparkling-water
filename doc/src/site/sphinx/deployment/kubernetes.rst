@@ -44,11 +44,8 @@ Dynamic allocation must be disabled in Spark.
     .. tab-container:: R
         :title: R
 
-        In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
-        It is also possible to run only interactive sessions.
-
-        First, make sure that RSparkling is installed on the node you use to start the interactive shell. You can install
-        RSparkling as:
+        First, make sure that RSparkling is installed on the node you want to run RSparkling from.
+        You can install RSparkling as:
 
         .. code:: r
 
@@ -60,7 +57,7 @@ Dynamic allocation must be disabled in Spark.
            install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
 
-        To start ``H2OContext`` in interactive shell:
+        To start ``H2OContext`` in interactive shell, run the following code in R or RStudio:
 
         .. code:: r
 
@@ -76,6 +73,15 @@ Dynamic allocation must be disabled in Spark.
             sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
             hc <- H2OContext.getOrCreate()
             spark_disconnect(sc)
+
+        You can also submit RSparkling batch job. In that case create a file called `batch.R` with the content
+        from the code box above and run:
+
+        .. code:: r
+
+            Rscript --default-packages=methods,utils batch.R
+
+        Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
 
     .. tab-container:: Python
         :title: Python
