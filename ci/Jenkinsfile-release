@@ -379,7 +379,7 @@ def publishDockerImages() {
                        """
                 }
                 params.commons.withDockerHubCredentials {
-                    docker.withRegistry("https://registry.hub.docker.com", 'dockerhub') {
+                    docker.withRegistry('', 'dockerhub') {
                         sh """
                             docker tag sparkling-water-r:${version} h2oai/sparkling-water:r-${version}
                             docker tag sparkling-water-python:${version} h2oai/sparkling-water:python-${version}
