@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+v3.30.0.4-1 (2020-06-04)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.4-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.4-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.4-1-2.4/index.html>`__
+
+-  Bug
+        
+   -  `SW-2271 <https://0xdata.atlassian.net/browse/SW-2271>`__ - Missing LogUtil class on external h2o backend
+   -  `SW-2276 <https://0xdata.atlassian.net/browse/SW-2276>`__ - The .getAlgo() Method of Pysparkling H2OGridSearch Throws Exception 
+   -  `SW-2277 <https://0xdata.atlassian.net/browse/SW-2277>`__ - Update GridSearch Documentation
+   -  `SW-2289 <https://0xdata.atlassian.net/browse/SW-2289>`__ - java.lang.IllegalArgumentException: requirement failed: The auto-closable resource can&#39;t be null!
+                
+-  Improvement
+        
+   -  `SW-1668 <https://0xdata.atlassian.net/browse/SW-1668>`__ - Structure Contributions in the &#39;detailed_prediction&#39; Column as MapType
+   -  `SW-2264 <https://0xdata.atlassian.net/browse/SW-2264>`__ - Warn user of upcomming change in grid search in 3.32
+   -  `SW-2267 <https://0xdata.atlassian.net/browse/SW-2267>`__ - Document hive support in non-kerberized environments
+   -  `SW-2268 <https://0xdata.atlassian.net/browse/SW-2268>`__ - Rename(Deprecate) setHiveSupportEnabled to setKerberizedHadoopEnabled or similar equivalent 
+   -  `SW-2270 <https://0xdata.atlassian.net/browse/SW-2270>`__ - Deprecate GridSearch Parameters which Are Exposed also on Algorithms 
+   -  `SW-2281 <https://0xdata.atlassian.net/browse/SW-2281>`__ - Treat sphinx warnings as errors as they usually mean doc is broken
+   -  `SW-2282 <https://0xdata.atlassian.net/browse/SW-2282>`__ - Upgrade H2O to 3.30.0.4
+   -  `SW-2283 <https://0xdata.atlassian.net/browse/SW-2283>`__ - Switch right join implementation to use H2O
+                
+                                                                                                                                                                                                                                                                                                    
 v3.30.0.3-1 (2020-05-14)
 ------------------------
 Downloads:
