@@ -24,10 +24,13 @@ import java.util.Date
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
+import ai.h2o.sparkling.extensions.rest.api.schema.{VerifyVersionV3, VerifyWebOpenV3}
 import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
 import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
+
+import scala.collection.JavaConverters._
 
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
   _: H2OContext =>
@@ -113,10 +116,9 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
   protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
     try {
       lockCloud(conf)
-      val nodes = RestApiUtils.getNodes(conf)
-      verifyWebOpen(nodes, conf)
+      verifyWebOpen(conf)
       if (!conf.isBackendVersionCheckDisabled) {
-        verifyVersion(conf, nodes)
+        verifyVersion(conf)
       }
       val leaderIpPort = RestApiUtils.getLeaderNode(conf).ipPort()
       if (conf.h2oCluster.get != leaderIpPort) {
@@ -125,7 +127,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
             .format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
         conf.setH2OCluster(leaderIpPort)
       }
-      nodes
+      RestApiUtils.getNodes(conf)
     } catch {
       case cause: RestApiException =>
         val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
@@ -144,36 +146,41 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
   }
 
-  private def verifyWebOpen(nodes: Array[NodeDesc], conf: H2OConf): Unit = {
-    val nodesWithoutWeb = nodes.flatMap { node =>
-      try {
-        RestApiUtils.getCloudInfoFromNode(node, conf)
-        None
-      } catch {
-        case cause: RestApiException => Some((node, cause))
-      }
-    }
+  private def verifyWebOpen(conf: H2OConf): Unit = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val verifyWebOpenV3 = RestApiUtils.query[VerifyWebOpenV3](endpoint, "/3/verifyWebOpen", conf)
+    val nodesWithoutWeb = verifyWebOpenV3.nodes_web_disabled
     if (nodesWithoutWeb.nonEmpty) {
-      throw new H2OClusterNotReachableException(
-        s"""
+      throw new H2OClusterNotReachableException(s"""
     The following worker nodes are not reachable, but belong to the cluster:
     ${conf.h2oCluster.get} - ${conf.cloudName.get}:
     ----------------------------------------------
-    ${nodesWithoutWeb.map(_._1.ipPort()).mkString("\n    ")}""",
-        nodesWithoutWeb.head._2)
+    ${nodesWithoutWeb.mkString("\n    ")}
+
+    The common reason for this error are disabled web interfaces on the H2O worker nodes.""".stripMargin)
     }
   }
 
-  private def verifyVersion(conf: H2OConf, nodes: Array[NodeDesc]): Unit = {
+  private def verifyVersion(conf: H2OConf): Unit = {
     val referencedVersion = BuildInfo.H2OVersion
-    for (node <- nodes) {
-      val externalVersion = RestApiUtils.getCloudInfoFromNode(node, conf).version
-      if (referencedVersion != externalVersion && !referencedVersion.endsWith("-SNAPSHOT")) {
+    if (!referencedVersion.endsWith("-SNAPSHOT")) {
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      val params = Map("referenced_version" -> referencedVersion)
+      val verifyVersionV3 = RestApiUtils.query[VerifyVersionV3](endpoint, "/3/verifyVersion", conf, params)
+      val nodesWrongVersion = verifyVersionV3.nodes_wrong_version
+      if (nodesWrongVersion.nonEmpty) {
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
-        throw new RuntimeException(s"""The H2O node ${node.ipPort()} is of version $externalVersion but Sparkling Water
-             |is using version of H2O $referencedVersion. Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
+        throw new RuntimeException(
+          s"""
+    Sparkling Water is using version of H2O $referencedVersion, but the following nodes have different version:
+    ----------------------------------------------
+    ${nodesWrongVersion
+               .map(nodeWithVersion => nodeWithVersion.ipPort + " - " + nodeWithVersion.version)
+               .mkString("\n    ")}
+
+    Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
       }
     }
   }
