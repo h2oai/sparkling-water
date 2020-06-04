@@ -165,7 +165,7 @@ def testRInternalBackend(registryId, master, version) {
         sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def installHeadlessService() {
+def installSparkHeadlessService() {
     sh """
 kubectl delete service sparkling-water-app --ignore-not-found
 cat <<EOF | kubectl apply -f -
@@ -183,7 +183,7 @@ EOF
 
 def testScalaInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    installHeadlessService()
+    installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
@@ -196,14 +196,14 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --conf spark.driver.host=sparkling-water-app \
          --deploy-mode client \
          --conf spark.executor.instances=3 \
-          local:///opt/sparkling-water/tests/initTest.jar
+         local:///opt/sparkling-water/tests/initTest.jar
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    installHeadlessService()
+    installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
@@ -215,7 +215,7 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
          --conf spark.driver.host=sparkling-water-app \
          --deploy-mode client \
          --conf spark.executor.instances=3 \
-        local:///opt/sparkling-water/tests/initTest.py \
+         local:///opt/sparkling-water/tests/initTest.py
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
