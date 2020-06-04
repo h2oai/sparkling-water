@@ -7,3 +7,4 @@ ai.h2o.sparkling.extensions.rest.api.schema.SWAvailableV3
 ai.h2o.sparkling.extensions.rest.api.schema.ScalaCodeResultV3
 ai.h2o.sparkling.extensions.rest.api.schema.VerifyWebOpenV3
 ai.h2o.sparkling.extensions.rest.api.schema.VerifyVersionV3
+ai.h2o.sparkling.extensions.rest.api.schema.VerifyVersionV3$NodeWithVersionV3

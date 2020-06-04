@@ -17,14 +17,12 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import java.util
-
+import ai.h2o.sparkling.extensions.rest.api.schema.VerifyVersionV3.NodeWithVersionV3
 import ai.h2o.sparkling.extensions.rest.api.schema.{VerifyVersionV3, VerifyWebOpenV3}
 import water.api.Handler
 import water.{H2O, MRTask}
 
 import scala.collection.mutable.ArrayBuffer
-import collection.JavaConverters._
 
 final class VerificationHandler extends Handler {
 
@@ -36,8 +34,7 @@ final class VerificationHandler extends Handler {
 
   def verifyVersion(version: Int, request: VerifyVersionV3): VerifyVersionV3 = {
     val nodesWithWrongVersion = new VerifyVersionMRTask(request.referenced_version).doAllNodes().nodesWithWrongVersion
-    request.nodes_wrong_version = nodesWithWrongVersion.asScala.keys.toArray
-    request.versions = nodesWithWrongVersion.asScala.values.toArray
+    request.nodes_wrong_version = nodesWithWrongVersion.toArray
     request
   }
 
@@ -56,19 +53,20 @@ final class VerificationHandler extends Handler {
   }
 
   class VerifyVersionMRTask(referencedVersion: String) extends MRTask[VerifyVersionMRTask] {
-    var nodesWithWrongVersion: util.HashMap[String, String] = new util.HashMap[String, String]()
+    var nodesWithWrongVersion: ArrayBuffer[NodeWithVersionV3] = ArrayBuffer.empty
 
     override def setupLocal(): Unit = {
       val currentVersion = H2O.ABV.projectVersion
       if (referencedVersion != currentVersion) {
-        nodesWithWrongVersion.put(H2O.getIpPortString, currentVersion)
+        val nodeWithVersion = new NodeWithVersionV3
+        nodeWithVersion.ipPort = H2O.getIpPortString
+        nodeWithVersion.version = currentVersion
+        nodesWithWrongVersion += nodeWithVersion
       }
     }
 
     override def reduce(mrt: VerifyVersionMRTask): Unit = {
-      mrt.nodesWithWrongVersion.asScala.foreach { pair =>
-        nodesWithWrongVersion.put(pair._1, pair._2)
-      }
+      mrt.nodesWithWrongVersion.appendAll(mrt.nodesWithWrongVersion)
     }
   }
 }

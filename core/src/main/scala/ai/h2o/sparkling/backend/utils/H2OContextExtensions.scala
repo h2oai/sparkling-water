@@ -30,6 +30,8 @@ import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
 
+import scala.collection.JavaConverters._
+
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
   _: H2OContext =>
 
@@ -165,15 +167,18 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       val endpoint = RestApiUtils.getClusterEndpoint(conf)
       val params = Map("referenced_version" -> referencedVersion)
       val verifyVersionV3 = RestApiUtils.query[VerifyVersionV3](endpoint, "/3/verifyVersion", conf, params)
-      val nodesWrongVersion = verifyVersionV3.nodes_wrong_version.zip(verifyVersionV3.versions)
+      val nodesWrongVersion = verifyVersionV3.nodes_wrong_version
       if (nodesWrongVersion.nonEmpty) {
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
-        throw new RuntimeException(s"""
+        throw new RuntimeException(
+          s"""
     Sparkling Water is using version of H2O $referencedVersion, but the following nodes have different version:
     ----------------------------------------------
-    ${nodesWrongVersion.map(info => info._1 + " - " + info._2).mkString("\n    ")}
+    ${nodesWrongVersion
+               .map(nodeWithVersion => nodeWithVersion.ipPort + " - " + nodeWithVersion.version)
+               .mkString("\n    ")}
 
     Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
       }

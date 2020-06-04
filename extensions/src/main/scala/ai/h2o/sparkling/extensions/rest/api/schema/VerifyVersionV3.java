@@ -27,8 +27,13 @@ public class VerifyVersionV3 extends RequestSchemaV3<Iced, VerifyVersionV3> {
   public String referenced_version;
 
   @API(help = "Nodes with wrong versions", direction = API.Direction.OUTPUT)
-  public String[] nodes_wrong_version;
+  public NodeWithVersionV3[] nodes_wrong_version;
 
-  @API(help = "Corresponding versions", direction = API.Direction.OUTPUT)
-  public String[] versions;
+  public static class NodeWithVersionV3 extends RequestSchemaV3<Iced, NodeWithVersionV3> {
+    @API(help = "Node address", direction = API.Direction.OUTPUT)
+    public String ipPort;
+
+    @API(help = "Node version", direction = API.Direction.OUTPUT)
+    public String version;
+  }
 }
