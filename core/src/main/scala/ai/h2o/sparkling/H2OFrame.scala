@@ -211,13 +211,14 @@ object H2OFrame extends RestCommunication {
       Map("row_count" -> 0),
       Seq((classOf[FrameV3], "chunk_summary"), (classOf[FrameV3], "distribution_summary")))
     val frame = frames.frames(0)
-    val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
-    val clusterNodes = getNodes(getCloudInfoFromNode(endpoint, conf))
-
-    new H2OFrame(
-      frame.frame_id.name,
-      frame.columns.map(convertColumn),
-      frameChunks.chunks.map(convertChunk(_, clusterNodes)))
+    val chunks = if (frame.rows == 0) {
+      Array.empty[H2OChunk]
+    } else {
+      val clusterNodes = getNodes(getClusterInfo(conf))
+      val frameChunks = query[FrameChunksV3](endpoint, s"/3/FrameChunks/$frameId", conf)
+      frameChunks.chunks.map(convertChunk(_, clusterNodes))
+    }
+    new H2OFrame(frame.frame_id.name, frame.columns.map(convertColumn), chunks)
   }
 
   private def convertColumn(sourceColumn: ColV3): H2OColumn = {
