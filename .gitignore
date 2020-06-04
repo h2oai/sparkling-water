@@ -85,3 +85,4 @@ jenkins/docker/regular-tests/Dockerfile
 
 # Generated ML code
 ml/src-gen
+py/src-gen

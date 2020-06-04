@@ -19,7 +19,10 @@ package ai.h2o.sparkling.api.generation.scala
 
 import ai.h2o.sparkling.api.generation.common._
 
-object ParametersTemplate extends ScalaEntityTemplate with ParameterResolver {
+object ParametersTemplate
+  extends ((ParameterSubstitutionContext) => String)
+  with ScalaEntityTemplate
+  with ParameterResolver {
 
   def apply(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
     val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')

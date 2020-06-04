@@ -20,9 +20,11 @@ from pyspark import keyword_only
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OTreeBasedSupervisedAlgoBase import H2OTreeBasedSupervisedAlgoBase
-from ai.h2o.sparkling.ml.params import H2OGBMParams
+from ai.h2o.sparkling.ml.params.H2OGBMParams import H2OGBMParams
+from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 
-class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
+
+class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase, H2OCommonParams):
 
     @keyword_only
     def __init__(self,

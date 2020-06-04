@@ -1,6 +1,7 @@
 description = "Sparkling Water API Generation"
 
 apply from: "$rootDir/gradle/utils.gradle"
+apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
   implementation("org.scala-lang:scala-library:${scalaVersion}")
@@ -10,3 +11,13 @@ dependencies {
 
   implementation(project(':sparkling-water-utils'))
 }
+
+shadowJar {
+  mergeServiceFiles()
+}
+
+artifacts {
+  api shadowJar
+}
+
+build.dependsOn shadowJar

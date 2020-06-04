@@ -16,10 +16,17 @@
 #
 
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.H2OGridSearchRandomDiscreteCriteriaParams import H2OGridSearchRandomDiscreteCriteriaParams
+from ai.h2o.sparkling.ml.params.H2OGridSearchCartesianCriteriaParams import H2OGridSearchCartesianCriteriaParams
+from ai.h2o.sparkling.ml.params.H2OGridSearchCommonCriteriaParams import H2OGridSearchCommonCriteriaParams
 from pyspark.ml.param import *
 
 
-class H2OGridSearchParams(Params):
+class H2OGridSearchParams(
+    H2OGridSearchRandomDiscreteCriteriaParams,
+    H2OGridSearchCartesianCriteriaParams,
+    H2OGridSearchCommonCriteriaParams):
+
     ##
     # Param definitions
     ##
@@ -35,42 +42,6 @@ class H2OGridSearchParams(Params):
         "Grid Search Hyper Params map",
         H2OTypeConverters.toDictionaryWithAnyElements())
 
-    strategy = Param(
-        Params._dummy(),
-        "strategy",
-        "strategy",
-        H2OTypeConverters.toEnumString("hex.grid.HyperSpaceSearchCriteria$Strategy"))
-
-    maxRuntimeSecs = Param(
-        Params._dummy(),
-        "maxRuntimeSecs",
-        "maxRuntimeSecs",
-        H2OTypeConverters.toFloat())
-
-    maxModels = Param(
-        Params._dummy(),
-        "maxModels",
-        "maxModels",
-        H2OTypeConverters.toInt())
-
-    stoppingRounds = Param(
-        Params._dummy(),
-        "stoppingRounds",
-        "stoppingRounds",
-        H2OTypeConverters.toInt())
-
-    stoppingTolerance = Param(
-        Params._dummy(),
-        "stoppingTolerance",
-        "stoppingTolerance",
-        H2OTypeConverters.toFloat())
-
-    stoppingMetric = Param(
-        Params._dummy(),
-        "stoppingMetric",
-        "stoppingMetric",
-        H2OTypeConverters.toEnumString("hex.ScoreKeeper$StoppingMetric"))
-
     selectBestModelBy = Param(
         Params._dummy(),
         "selectBestModelBy",
@@ -84,12 +55,6 @@ class H2OGridSearchParams(Params):
            0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
            1 -> Sequential model building, no parallelism
            n>1 -> n models will be built in parallel if possible""",
-        H2OTypeConverters.toInt())
-
-    seed = Param(
-        Params._dummy(),
-        "seed",
-        "Used to specify seed to reproduce the model run",
         H2OTypeConverters.toInt())
 
     ##
@@ -129,32 +94,11 @@ class H2OGridSearchParams(Params):
     def getHyperParameters(self):
         return self.getOrDefault(self.hyperParameters)
 
-    def getStrategy(self):
-        return self.getOrDefault(self.strategy)
-
-    def getMaxRuntimeSecs(self):
-        return self.getOrDefault(self.maxRuntimeSecs)
-
-    def getMaxModels(self):
-        return self.getOrDefault(self.maxModels)
-
-    def getStoppingRounds(self):
-        return self.getOrDefault(self.stoppingRounds)
-
-    def getStoppingTolerance(self):
-        return self.getOrDefault(self.stoppingTolerance)
-
-    def getStoppingMetric(self):
-        return self.getOrDefault(self.stoppingMetric)
-
     def getSelectBestModelBy(self):
         return self.getOrDefault(self.selectBestModelBy)
 
     def getParallelism(self):
         return self.getOrDefault(self.parallelism)
-
-    def getSeed(self):
-        return self.getOrDefault(self.seed)
 
     ##
     # Setters
@@ -167,29 +111,8 @@ class H2OGridSearchParams(Params):
     def setHyperParameters(self, value):
         return self._set(hyperParameters=value)
 
-    def setStrategy(self, value):
-        return self._set(strategy=value)
-
-    def setMaxRuntimeSecs(self, value):
-        return self._set(maxRuntimeSecs=value)
-
-    def setMaxModels(self, value):
-        return self._set(maxModels=value)
-
-    def setStoppingRounds(self, value):
-        return self._set(stoppingRounds=value)
-
-    def setStoppingTolerance(self, value):
-        return self._set(stoppingTolerance=value)
-
-    def setStoppingMetric(self, value):
-        return self._set(stoppingMetric=value)
-
     def setSelectBestModelBy(self, value):
         return self._set(selectBestModelBy=value)
 
     def setParallelism(self, value):
         return self._set(parallelism=value)
-
-    def setSeed(self, value):
-        return self._set(seed=value)

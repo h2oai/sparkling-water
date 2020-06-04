@@ -20,10 +20,11 @@ from pyspark import keyword_only
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OTreeBasedSupervisedAlgoBase import H2OTreeBasedSupervisedAlgoBase
-from ai.h2o.sparkling.ml.params import H2OXGBoostParams
+from ai.h2o.sparkling.ml.params.H2OXGBoostParams import H2OXGBoostParams
+from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 
 
-class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
+class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase, H2OCommonParams):
 
     @keyword_only
     def __init__(self,
