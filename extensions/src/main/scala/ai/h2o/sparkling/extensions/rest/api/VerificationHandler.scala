@@ -60,7 +60,7 @@ final class VerificationHandler extends Handler {
 
     override def setupLocal(): Unit = {
       val currentVersion = H2O.ABV.projectVersion
-      if (referencedVersion != currentVersion && !referencedVersion.endsWith("-SNAPSHOT")) {
+      if (referencedVersion != currentVersion) {
         nodesWithWrongVersion.put(H2O.getIpPortString, currentVersion)
       }
     }

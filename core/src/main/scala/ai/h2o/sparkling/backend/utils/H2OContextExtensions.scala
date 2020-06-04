@@ -153,26 +153,30 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     The following worker nodes are not reachable, but belong to the cluster:
     ${conf.h2oCluster.get} - ${conf.cloudName.get}:
     ----------------------------------------------
-    ${nodesWithoutWeb.mkString("\n    ")}""".stripMargin)
+    ${nodesWithoutWeb.mkString("\n    ")}
+
+    The common reason for this error are disabled web interfaces on the H2O worker nodes.""".stripMargin)
     }
   }
 
   private def verifyVersion(conf: H2OConf): Unit = {
     val referencedVersion = BuildInfo.H2OVersion
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val params = Map("referenced_version" -> referencedVersion)
-    val verifyVersionV3 = RestApiUtils.query[VerifyVersionV3](endpoint, "/3/verifyVersion", conf, params)
-    val nodesWrongVersion = verifyVersionV3.nodes_wrong_version.zip(verifyVersionV3.versions)
-    if (nodesWrongVersion.nonEmpty) {
-      if (conf.isAutoClusterStartUsed) {
-        stopExternalH2OCluster(conf)
-      }
-      throw new RuntimeException(s"""
+    if (!referencedVersion.endsWith("-SNAPSHOT")) {
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      val params = Map("referenced_version" -> referencedVersion)
+      val verifyVersionV3 = RestApiUtils.query[VerifyVersionV3](endpoint, "/3/verifyVersion", conf, params)
+      val nodesWrongVersion = verifyVersionV3.nodes_wrong_version.zip(verifyVersionV3.versions)
+      if (nodesWrongVersion.nonEmpty) {
+        if (conf.isAutoClusterStartUsed) {
+          stopExternalH2OCluster(conf)
+        }
+        throw new RuntimeException(s"""
     Sparkling Water is using version of H2O $referencedVersion, but the following nodes have different version:
     ----------------------------------------------
     ${nodesWrongVersion.map(info => info._1 + " - " + info._2).mkString("\n    ")}
 
     Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)
+      }
     }
   }
 
