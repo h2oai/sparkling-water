@@ -16,16 +16,9 @@
 #
 
 from ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams import H2OTargetEncoderMOJOParams
-from ai.h2o.sparkling.ml.params.H2OKMeansParams import H2OKMeansParams
-from ai.h2o.sparkling.ml.params.H2OGBMParams import H2OGBMParams
-from ai.h2o.sparkling.ml.params.H2ODeepLearningParams import H2ODeepLearningParams
 from ai.h2o.sparkling.ml.params.H2OAutoMLParams import H2OAutoMLParams
-from ai.h2o.sparkling.ml.params.H2OXGBoostParams import H2OXGBoostParams
-from ai.h2o.sparkling.ml.params.H2OGLMParams import H2OGLMParams
 from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
 from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
-from ai.h2o.sparkling.ml.params.H2ODRFParams import H2ODRFParams
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
-from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
