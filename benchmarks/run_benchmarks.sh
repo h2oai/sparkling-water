@@ -53,8 +53,6 @@ if [ -z "$run_local_internal" ]; then
     run_local_internal="true"
 fi
 
-
-
 cd "$(dirname "$0")"
 script_path=$(pwd)
 cd build/terraform/aws
