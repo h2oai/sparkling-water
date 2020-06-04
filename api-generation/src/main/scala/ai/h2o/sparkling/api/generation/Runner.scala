@@ -165,7 +165,7 @@ object Runner {
     }
   }
 
-  private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
+  private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate)
 
   private val parameterTemplates = Map("scala" -> scala.ParametersTemplate, "py" -> python.ParametersTemplate)
 
@@ -178,9 +178,11 @@ object Runner {
       writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
-    for (substitutionContext <- algorithmConfiguration) {
-      val content = algorithmTemplates(languageExtension)(substitutionContext)
-      writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
+    if (languageExtension != "py") {
+      for (substitutionContext <- algorithmConfiguration) {
+        val content = algorithmTemplates(languageExtension)(substitutionContext)
+        writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
+      }
     }
 
     for (substitutionContext <- autoMLParameterConfiguration) {
