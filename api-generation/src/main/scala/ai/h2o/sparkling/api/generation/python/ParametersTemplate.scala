@@ -32,7 +32,7 @@ object ParametersTemplate
       parameterSubstitutionContext.explicitFields.map { ef =>
         s"ai.h2o.sparkling.ml.params.${ef.implementation}.${ef.implementation}"
       }
-    val parents = Seq("Params") ++ parameterSubstitutionContext.explicitFields.map(_.implementation)
+    val parents = parameterSubstitutionContext.explicitFields.map(_.implementation) ++ Seq("Params")
 
     val entitySubstitutionContext = EntitySubstitutionContext(
       parameterSubstitutionContext.namespace,
@@ -101,6 +101,7 @@ object ParametersTemplate
     } else {
       dataType.getSimpleName.capitalize match {
         case "Double" => "Float"
+        case "Long" => "Int"
         case t => t
       }
     }

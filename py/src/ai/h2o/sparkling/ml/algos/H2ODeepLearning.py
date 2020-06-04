@@ -21,11 +21,12 @@ from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgoBase import H2OSupervisedAlgoBase
 from ai.h2o.sparkling.ml.params.H2ODeepLearningParams import H2ODeepLearningParams
+from ai.h2o.sparkling.ml.params.H2OCommonParams import H2OCommonParams
 
 import sys
 
 
-class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
+class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase, H2OCommonParams):
 
     @keyword_only
     def __init__(self,

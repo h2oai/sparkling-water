@@ -23,7 +23,11 @@ from pyspark.ml.util import _jvm
 class H2OTypeConverters(object):
 
     @staticmethod
-    def toEnumListString(enumClass, nullEnabled=False):
+    def toNullableListEnumString(enumClass):
+        return H2OTypeConverters.toListEnumString(enumClass, True)
+
+    @staticmethod
+    def toListEnumString(enumClass, nullEnabled=False):
         def convert(value):
             package = getattr(_jvm().ai.h2o.sparkling.ml.params, "EnumParamValidator$")
             module = package.__getattr__("MODULE$")
