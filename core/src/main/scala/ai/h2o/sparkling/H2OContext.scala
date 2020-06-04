@@ -85,6 +85,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   if (H2OClientUtils.isH2OClientBased(conf)) {
     H2OClientUtils.startH2OClient(this, conf, nodes)
   }
+  verifyExtensionJarIsAvailable()
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
   // resources before Spark does as we run as embedded application inside the Spark
@@ -356,6 +357,18 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
           }
         }
       }
+    }
+  }
+
+  private def verifyExtensionJarIsAvailable(): Unit = {
+    try {
+      // Method getH2OLogLevel requires rest api endpoint which is part of the extensions jar. This call
+      // will fail in case the extensions are not available.
+      getH2OLogLevel()
+    } catch {
+      case _: Throwable =>
+        throw new RuntimeException("External H2O cluster is missing extension jar on its classpath." +
+          " Read the documentation to learn how to add the extension jar to the manually started external H2O cluster.")
     }
   }
 }
