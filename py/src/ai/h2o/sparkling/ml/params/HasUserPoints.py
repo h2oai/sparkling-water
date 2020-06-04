@@ -15,11 +15,23 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams import H2OTargetEncoderMOJOParams
-from ai.h2o.sparkling.ml.params.H2OAutoMLParams import H2OAutoMLParams
-from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
-from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
-from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
-from ai.h2o.sparkling.ml.params.H2OBaseMOJOParams import H2OBaseMOJOParams
-from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
-from ai.h2o.sparkling.ml.params.HasUserPoints import HasUserPoints
+from pyspark.ml.param import *
+
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
+class HasUserPoints(Params):
+    userPoints = Param(
+        Params._dummy(),
+        "userPoints",
+        "This option allows you to specify array of points, where each point represents coordinates of an initial"
+        " cluster center. The user-specified"
+        " points must have the same number of columns as the training observations. The number of rows must equal"
+        " the number of clusters.",
+        H2OTypeConverters.toNullableListListFloat())
+
+    def getUserPoints(self):
+        return self.getOrDefault(self.userPoints)
+
+    def setUserPoints(self, value):
+        return self._set(userPoints=value)
