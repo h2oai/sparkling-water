@@ -14,8 +14,10 @@ def withRequiredCredentials(commons, groovy.lang.Closure code) {
                                 commons.withAWSPrivateKey {
                                     commons.withCondaCredentials {
                                         commons.withPipyCredentials {
-                                            commons.withNexusCredentials {
-                                                code()
+                                            commons.withDockerHubCredentials {
+                                                commons.withNexusCredentials {
+                                                    code()
+                                                }
                                             }
                                         }
                                     }
@@ -65,6 +67,8 @@ node("mr-0xc10") {
                             .replaceAll("SUBST_PIPY_PASSWORD", env.PIPY_PASSWORD)
                             .replaceAll("SUBST_ANACONDA_USERNAME", env.ANACONDA_USERNAME)
                             .replaceAll("SUBST_ANACONDA_PASSWORD", env.ANACONDA_PASSWORD)
+                            .replaceAll("SUBST_DOCKERHUB_USERNAME", env.DOCKERHUB_USERNAME)
+                            .replaceAll("SUBST_DOCKERHUB_PASSWORD", env.DOCKERHUB_PASSWORD)
 
                     def initSSLFile = "modules/jenkins/scripts/init-ssl.sh"
                     writeFile file: initSSLFile, text: readFile(initSSLFile)

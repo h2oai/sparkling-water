@@ -14,6 +14,7 @@ properties(
                          booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3'),
                          booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy'),
                          booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda'),
+                         booleanParam(name: 'publishDockerImages', defaultValue: true, description: 'Publish Docker Images to Docker Hub'),
                          booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
                         ]
                 )
@@ -46,6 +47,7 @@ def getParallelStageDefinition(params) {
                                 publishToS3()(params)
                                 publishToPipy()(params)
                                 publishToConda()(params)
+                                publishDockerImages()(params)
                             }
                         }
                     }
@@ -353,6 +355,39 @@ def publishToConda() {
                                 publishCondaArtifact(arch, pkgName)
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+def publishDockerImages() {
+    return { params ->
+        stage('Publish to Docker Hub') {
+            if (params.publishDockerImages.toBoolean()) {
+                sh "sudo apt -y install docker.io"
+                sh "sudo service docker start"
+                sh "sudo chmod 666 /var/run/docker.sock"
+                def version = getVersion(params)
+                sh "./gradlew dist -Pspark=${params.spark} -Pversion=${version}"
+                dir("./dist/build/zip/sparkling-water-${version}") {
+                    sh """
+                        ./bin/build-kubernetes-images.sh scala
+                        ./bin/build-kubernetes-images.sh python
+                        ./bin/build-kubernetes-images.sh r
+                       """
+                }
+                params.commons.withDockerHubCredentials {
+                    docker.withRegistry("https://registry.hub.docker.com", 'dockerhub') {
+                        sh """
+                            docker tag sparkling-water-r:${version} h2oai/sparkling-water:r-${version}
+                            docker tag sparkling-water-python:${version} h2oai/sparkling-water:python-${version}
+                            docker tag sparkling-water-scala:${version} h2oai/sparkling-water:scala-${version}
+                            docker push h2oai/sparkling-water:r-${version}
+                            docker push h2oai/sparkling-water:python-${version}
+                            docker push h2oai/sparkling-water:scala-${version}
+                            """
                     }
                 }
             }

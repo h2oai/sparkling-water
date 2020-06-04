@@ -18,6 +18,11 @@ def withAWSDocker(groovy.lang.Closure code) {
     }
 }
 
+def withDockerHubCredentials(groovy.lang.Closure code) {
+    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+        code()
+    }
+}
 Integer getDockerImageVersion() {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
     return versionLine.split("=")[1].toInteger()
