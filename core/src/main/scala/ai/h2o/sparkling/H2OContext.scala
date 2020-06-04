@@ -81,8 +81,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   H2OContext.verifySparkVersion()
   backend.startH2OCluster(conf)
   logInfo("Connecting to H2O cluster.")
-  private val nodes = RestApiUtils.getNodes(conf)
-  verifyWorkerNodes(conf)
+  private val nodes = getAndVerifyWorkerNodes(conf)
   if (H2OClientUtils.isH2OClientBased(conf)) {
     H2OClientUtils.startH2OClient(this, conf, nodes)
   }

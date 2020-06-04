@@ -111,7 +111,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     }
   }
 
-  protected def verifyWorkerNodes(conf: H2OConf): Unit = {
+  protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
     try {
       lockCloud(conf)
       verifyWebOpen(conf)
@@ -125,6 +125,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
             .format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
         conf.setH2OCluster(leaderIpPort)
       }
+      RestApiUtils.getNodes(conf)
     } catch {
       case cause: RestApiException =>
         val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
