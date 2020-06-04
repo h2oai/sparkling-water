@@ -120,7 +120,7 @@ def withTestEnv(commons, image, code) {
     }
 }
 
-def testScalaInternalBackend(registryId, master, version) {
+def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod driver-scala --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
@@ -137,7 +137,7 @@ def testScalaInternalBackend(registryId, master, version) {
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testPythonInternalBackend(registryId, master, version) {
+def testPythonInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod driver-python --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
@@ -165,13 +165,68 @@ def testRInternalBackend(registryId, master, version) {
         sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
 }
 
+def installSparkHeadlessService() {
+    sh """
+kubectl delete service sparkling-water-app --ignore-not-found
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: sparkling-water-app
+spec:
+  clusterIP: "None"
+  selector:
+    spark-driver-selector: sparkling-water-app
+EOF
+        """
+}
+
+def testScalaInternalBackendClientMode(registryId, master, version) {
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- \
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --conf spark.kubernetes.container.image=${image}  \
+         --master $master \
+         --class ai.h2o.sparkling.InitTest \
+         --conf spark.driver.host=sparkling-water-app \
+         --deploy-mode client \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.jar
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testPythonInternalBackendClientMode(registryId, master, version) {
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- \
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --conf spark.kubernetes.container.image=${image}  \
+         --master $master \
+         --conf spark.driver.host=sparkling-water-app \
+         --deploy-mode client \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.py
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
+}
+
 node("docker") {
     cleanWs()
     checkout scm
     def commons = load 'ci/commons.groovy'
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
-
+    
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -198,9 +253,8 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             withTestEnv(commons, image) {
-                // Cluster Mode
-                testScalaInternalBackend(registryId, master, version)
-                // Client Mode
+                testScalaInternalBackendClusterMode(registryId, master, version)
+                testScalaInternalBackendClientMode(registryId, master, version)
             }
         }
 
@@ -211,9 +265,8 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             withTestEnv(commons, image) {
-                // Cluster Mode
-                testPythonInternalBackend(registryId, master, version)
-                // Client Mode
+                testPythonInternalBackendClusterMode(registryId, master, version)
+                testPythonInternalBackendClientMode(registryId, master, version)
             }
         }
 

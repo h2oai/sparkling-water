@@ -41,6 +41,170 @@ Dynamic allocation must be disabled in Spark.
 
 .. content-tabs::
 
+    .. tab-container:: Scala
+        :title: Scala
+
+        Both cluster and client deployment modes of Kubernetes are supported.
+
+        **To submit Scala job in a cluster mode, run:**
+
+        .. code:: bash
+
+            $SPARK_HOME/bin/spark-submit \
+            --master k8s://KUBERNETES_ENDPOINT \
+            --deploy-mode cluster \
+            --class ai.h2o.sparkling.InitTest \
+            --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+            --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
+            --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.jar
+
+        **To start a interactive shell in a client mode:**
+
+        1. Create Headless so Spark executors can reach the driver node
+
+        .. code:: bash
+
+            cat <<EOF | kubectl apply -f -
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: sparkling-water-app
+            spec:
+              clusterIP: "None"
+              selector:
+                spark-driver-selector: sparkling-water-app
+            EOF
+
+        2. Start pod from where we run the shell:
+
+        .. code:: bash
+
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash
+
+        3. Inside the container, start the shell:
+
+        .. code:: bash
+
+            $SPARK_HOME/bin/spark-shell \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
+             --master "k8s://KUBERNETES_ENDPOINT" \
+             --conf spark.driver.host=sparkling-water-app \
+             --deploy-mode client \
+             --conf spark.executor.instances=3
+
+        4. Inside the shell, run:
+
+        .. code:: python
+
+            import ai.h2o.sparkling._
+            val hc = H2OContext.getOrCreate()
+
+        5. To access flow, we need to enable port-forwarding from the driver pod:
+
+        .. code:: bash
+
+            kubectl port-forward sparkling-water-app 54321:54321
+
+        **To submit a batch job using client mode:**
+
+        First create the headless service as mentioned in the step 1 above and run:
+
+        .. code:: bash
+
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash \
+            /opt/spark/bin/spark-submit \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
+             --master "k8s://KUBERNETES_ENDPOINT" \
+             --class ai.h2o.sparkling.InitTest \
+             --conf spark.driver.host=sparkling-water-app \
+             --deploy-mode client \
+             --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.jar
+
+    .. tab-container:: Python
+        :title: Python
+
+        Both cluster and client deployment mode of Kubernetes are supported.
+
+        **To submit Python job in a cluster mode, run:**
+
+        .. code:: bash
+
+            $SPARK_HOME/bin/spark-submit \
+            --master k8s://KUBERNETES_ENDPOINT \
+            --deploy-mode cluster \
+            --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+            --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
+            --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.py
+
+        **To start a interactive shell in a client mode:**
+
+        1. Create Headless so Spark executors can reach the driver node:
+
+        .. code:: bash
+
+            cat <<EOF | kubectl apply -f -
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: sparkling-water-app
+            spec:
+              clusterIP: "None"
+              selector:
+                spark-driver-selector: sparkling-water-app
+            EOF
+
+        2. Start pod from where we run the shell:
+
+        .. code:: bash
+
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- /bin/bash
+
+        3. Inside the container, start the shell:
+
+        .. code:: bash
+
+            $SPARK_HOME/bin/pyspark \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
+             --master "k8s://KUBERNETES_ENDPOINT" \
+             --conf spark.driver.host=sparkling-water-app \
+             --deploy-mode client \
+             --conf spark.executor.instances=3 \
+
+        4. Inside the shell, run:
+
+        .. code:: python
+
+            from pysparkling import *
+            hc = H2OContext.getOrCreate()
+
+        5. To access flow, we need to enable port-forwarding from the driver pod as:
+
+        .. code:: bash
+
+            kubectl port-forward sparkling-water-app 54321:54321
+
+        **To submit a batch job using client mode:**
+
+        First create the headless service as mentioned in the step 1 above and run:
+
+        .. code:: bash
+
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- \
+            $SPARK_HOME/bin/spark-submit \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
+             --master "k8s://KUBERNETES_ENDPOINT" \
+             --conf spark.driver.host=sparkling-water-app \
+             --deploy-mode client \
+             --conf spark.executor.instances=3 \
+            local:///opt/sparkling-water/tests/initTest.py
+
     .. tab-container:: R
         :title: R
 
@@ -82,40 +246,3 @@ Dynamic allocation must be disabled in Spark.
             Rscript --default-packages=methods,utils batch.R
 
         Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
-
-    .. tab-container:: Python
-        :title: Python
-
-        Currently, only cluster deployment mode of Kubernetes is supported.
-
-        To submit Python job, run:
-
-        .. code:: bash
-
-            $SPARK_HOME/bin/spark-submit \
-            --master k8s://KUBERNETES_ENDPOINT \
-            --deploy-mode cluster \
-            --name CustomApplication \
-            --conf spark.scheduler.minRegisteredResourcesRatio=1
-            --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
-            --conf spark.executor.instances=3 \
-            local:///opt/sparkling-water/tests/initTest.py
-
-    .. tab-container:: Scala
-        :title: Scala
-
-        Currently, only cluster deployment mode of Kubernetes is supported.
-
-        To submit Scala job:
-
-        .. code:: bash
-
-            $SPARK_HOME/bin/spark-submit \
-            --master k8s://KUBERNETES_ENDPOINT \
-            --deploy-mode cluster \
-            --name CustomApplication \
-            --class ai.h2o.sparkling.InitTest
-            --conf spark.scheduler.minRegisteredResourcesRatio=1
-            --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
-            --conf spark.executor.instances=3 \
-            local:///opt/sparkling-water/tests/initTest.jar
