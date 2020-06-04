@@ -108,7 +108,7 @@ def withTestEnv(commons, image, code) {
                 ./awscliv2/aws/install -i /usr/local/aws-cli -b /usr/local/bin
                 aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
-                kubectl delete clusterrolebinding default
+                kubectl delete clusterrolebinding default --ignore-not-found
                 kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default
                 """
                 code()
