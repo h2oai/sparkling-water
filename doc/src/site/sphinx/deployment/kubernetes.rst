@@ -281,7 +281,7 @@ Kubernetes. This can be achieved by the following steps:
     kind: StatefulSet
     metadata:
       name: h2o-stateful-set
-      namespace: h2o-statefulset
+      namespace: default
     spec:
       serviceName: h2o-service
       replicas: 2
