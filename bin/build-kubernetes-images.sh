@@ -30,6 +30,7 @@ if [ "$1" = "external-backend" ]; then
   cp "$path" "$WORKDIR/h2o.jar"
   docker build -t "sparkling-water-external-backend:$VERSION" -f "$WORKDIR/Dockerfile-External-backend" "$WORKDIR"
   echo "Done!"
+  exit 0
 fi
 
 ( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" build )
