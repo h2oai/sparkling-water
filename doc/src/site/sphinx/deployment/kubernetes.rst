@@ -30,7 +30,7 @@ The examples bellow are using the default Kubernetes namespace which we enable f
 You can also use different namespace setup for Spark. In that case please don't forget to pass
 ``--conf spark.kubernetes.authenticate.driver.serviceAccountName=serviceName`` to your Spark commands.
 
-Internal backend
+Internal Backend
 ~~~~~~~~~~~~~~~~
 
 In internal backend of Sparkling Water, we need to pas the option ``spark.scheduler.minRegisteredResourcesRatio=1``
@@ -246,3 +246,9 @@ Dynamic allocation must be disabled in Spark.
             Rscript --default-packages=methods,utils batch.R
 
         Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+
+External Backend
+~~~~~~~~~~~~~~~~
+
+Sparkling Water External backend can be also used in Kubernetes. First, we need to start external H2O backend on
+Kubernetes. This can be achieved by the following steps:

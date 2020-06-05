@@ -59,6 +59,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                                     ./bin/build-kubernetes-images.sh scala
                                     ./bin/build-kubernetes-images.sh python
                                     ./bin/build-kubernetes-images.sh r
+                                    ./bin/build-kubernetes-images.sh external-backend
                                    """
                             }
                         }
@@ -71,9 +72,11 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
                             docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
                             docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            docker tag sparkling-water-external-backend:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
                             docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
                             docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
                             docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
                             """
                         }
                     }
@@ -220,24 +223,42 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testRExternalBackend(registryId, master, version) {
+def startExternalH2OBackend() {
 
+}
+
+def stopExternalH2OBackend() {
+
+}
+
+def testRExternalBackend(registryId, master, version) {
+    startExternalH2OBackend()
+    //TODO
+    stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
-
+    startExternalH2OBackend()
+    //TODO
+    stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClientMode(registryId, master, version) {
-
+    startExternalH2OBackend()
+    //TODO
+    stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
-
+    startExternalH2OBackend()
+    //TODO
+    stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClientMode(registryId, master, version) {
-
+    startExternalH2OBackend()
+    //TODO
+    stopExternalH2OBackend()
 }
 
 node("docker") {
