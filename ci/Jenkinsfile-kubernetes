@@ -49,9 +49,10 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
+                        def sparkVersion = getSparkVersion(sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
                         def customEnv = [
-                                "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+                                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                         ]
                         unstash "properties"
                         def repoId = readPropertiesFile("properties")["docker_registry_id"]
@@ -78,9 +79,9 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                                         docker rmi sparkling-water-r:${sparklingVersion}
                                         docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
 
-                                        docker rmi spark-r:${getSparkVersion(sparkMajorVersion)}
-                                        docker rmi spark-py:${getSparkVersion(sparkMajorVersion)}
-                                        docker rmi spark:${getSparkVersion(sparkMajorVersion)}
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
 
                                         ./bin/build-kubernetes-images.sh external-backend
                                         docker tag sparkling-water-external-backend:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
