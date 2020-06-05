@@ -59,7 +59,7 @@ final class VerificationHandler extends Handler {
       val currentVersion = H2O.ABV.projectVersion
       if (referencedVersion != currentVersion) {
         val nodeWithVersion = new NodeWithVersionV3
-        nodeWithVersion.ipPort = H2O.getIpPortString
+        nodeWithVersion.ip_port = H2O.getIpPortString
         nodeWithVersion.version = currentVersion
         nodesWithWrongVersion += nodeWithVersion
       }

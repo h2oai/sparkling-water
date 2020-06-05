@@ -177,7 +177,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     Sparkling Water is using version of H2O $referencedVersion, but the following nodes have different version:
     ----------------------------------------------
     ${nodesWrongVersion
-               .map(nodeWithVersion => nodeWithVersion.ipPort + " - " + nodeWithVersion.version)
+               .map(nodeWithVersion => nodeWithVersion.ip_port + " - " + nodeWithVersion.version)
                .mkString("\n    ")}
 
     Please make sure to use the corresponding assembly H2O JAR.""".stripMargin)

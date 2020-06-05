@@ -31,7 +31,7 @@ public class VerifyVersionV3 extends RequestSchemaV3<Iced, VerifyVersionV3> {
 
   public static class NodeWithVersionV3 extends RequestSchemaV3<Iced, NodeWithVersionV3> {
     @API(help = "Node address", direction = API.Direction.OUTPUT)
-    public String ipPort;
+    public String ip_port;
 
     @API(help = "Node version", direction = API.Direction.OUTPUT)
     public String version;
