@@ -53,31 +53,41 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         def customEnv = [
                                 "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
                         ]
-                        withEnv(customEnv) {
-                            dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                                sh """
-                                    ./bin/build-kubernetes-images.sh scala
-                                    ./bin/build-kubernetes-images.sh python
-                                    ./bin/build-kubernetes-images.sh r
-                                    ./bin/build-kubernetes-images.sh external-backend
-                                   """
-                            }
-                        }
-
                         unstash "properties"
                         def repoId = readPropertiesFile("properties")["docker_registry_id"]
                         def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
-                            sh """
-                            docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                            docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                            docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                            docker tag sparkling-water-external-backend:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
-                            """
+                            withEnv(customEnv) {
+                                dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                                    sh """
+                                        ./bin/build-kubernetes-images.sh scala
+                                        docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+                                        docker rmi sparkling-water-scala:${sparklingVersion}
+                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
+
+                                        ./bin/build-kubernetes-images.sh python
+                                        docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+                                        docker rmi sparkling-water-python:${sparklingVersion}
+                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
+
+                                        ./bin/build-kubernetes-images.sh r
+                                        docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+                                        docker rmi sparkling-water-r:${sparklingVersion}
+                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
+
+                                        docker rmi spark-r:${getSparkVersion(sparkMajorVersion)}
+                                        docker rmi spark-py:${getSparkVersion(sparkMajorVersion)}
+                                        docker rmi spark:${getSparkVersion(sparkMajorVersion)}
+
+                                        ./bin/build-kubernetes-images.sh external-backend
+                                        docker tag sparkling-water-external-backend:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
+                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
+                                       """
+                                }
+                            }
                         }
                     }
                     cleanWs()
