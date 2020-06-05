@@ -30,12 +30,19 @@ config <- c(config, list(
   "spark.ext.h2o.external.disable.version.check" = "true"
 ))
 
+for (i in 1:4) {
+  tryCatch(
+    {
+    sc <- spark_connect(master = "local[*]", config = config)
+  }, error = function(e) { }
+  )
+}
+
 locate <- function(fileName) {
   normalizePath(file.path("../../../../examples/", fileName))
 }
 
 test_that("test MOJO predictions", {
-  sc <- spark_connect(master = "local[*]", config = config)
   path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
   dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
   # Try loading the Mojo and prediction on it without starting H2O Context
@@ -46,7 +53,6 @@ test_that("test MOJO predictions", {
 })
 
 test_that("test getDomainValues", {
-  sc <- spark_connect(master = "local[*]", config = config)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   domainValues <- model$getDomainValues()
   expect_true(is.null(domainValues[["DPROS"]]))
@@ -61,7 +67,6 @@ test_that("test getDomainValues", {
 })
 
 test_that("test training params", {
-  sc <- spark_connect(master = "local[*]", config = config)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   params <- model$getTrainingParams()
   expect_equal(params[["distribution"]], "bernoulli")
@@ -70,14 +75,12 @@ test_that("test training params", {
 })
 
 test_that("test model category", {
-  sc <- spark_connect(master = "local[*]", config = config)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   category <- model$getModelCategory()
   expect_equal(category, "Binomial")
 })
 
 test_that("test training metrics", {
-  sc <- spark_connect(master = "local[*]", config = config)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetrics()
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
@@ -85,14 +88,12 @@ test_that("test training metrics", {
 })
 
 test_that("test current metrics", {
-  sc <- spark_connect(master = "local[*]", config = config)
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getCurrentMetrics()
   expect_equal(metrics, model$getTrainingMetrics())
 })
 
 test_that("test MOJO predictions on unseen categoricals", {
-  sc <- spark_connect(master = "local[*]", config = config)
   path <- paste0("file://", normalizePath("../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
   settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE)
   mojo <- H2OMOJOModel.createFromMojo(path, settings)
@@ -110,3 +111,5 @@ test_that("test MOJO predictions on unseen categoricals", {
   expect_equal(as.double(dplyr::select(data, sepal_wid)), 3.5)
   expect_equal(as.double(dplyr::select(data, prediction)), 5.240174068202646)
 })
+
+spark_disconnect(sc)
