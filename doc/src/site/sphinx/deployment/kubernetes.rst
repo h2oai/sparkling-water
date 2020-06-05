@@ -252,3 +252,105 @@ External Backend
 
 Sparkling Water External backend can be also used in Kubernetes. First, we need to start external H2O backend on
 Kubernetes. This can be achieved by the following steps:
+
+1. Create Headless Service for H2O node discovery
+
+.. code:: bash
+
+    cat <<EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: h2o-service
+    spec:
+      type: ClusterIP
+      clusterIP: None
+      selector:
+        app: h2o-k8s
+      ports:
+      - protocol: TCP
+        port: 54321
+    EOF
+
+2. Deploy external H2O cluster of size 2 as:
+
+.. code:: bash
+
+    cat <<EOF | kubectl apply -f -
+    apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: h2o-stateful-set
+      namespace: h2o-statefulset
+    spec:
+      serviceName: h2o-service
+      replicas: 2
+      selector:
+        matchLabels:
+          app: h2o-k8s
+      template:
+        metadata:
+          labels:
+            app: h2o-k8s
+        spec:
+          terminationGracePeriodSeconds: 10
+          containers:
+            - name: h2o-k8s
+              image: 'h2oai/sparkling-water-external-backend:SUBST_SW_VERSION'
+              resources:
+                requests:
+                  memory: "4Gi"
+              ports:
+                - containerPort: 54321
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /kubernetes/isLeaderNode
+                  port: 8081
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                failureThreshold: 1
+              env:
+              - name: H2O_KUBERNETES_SERVICE_DNS
+                value: h2o-service.h2o-statefulset.svc.cluster.local
+              - name: H2O_NODE_LOOKUP_TIMEOUT
+                value: '180'
+              - name: H2O_NODE_EXPECTED_COUNT
+                value: '2'
+              - name: H2O_KUBERNETES_API_PORT
+                value: '8081'
+    EOF
+
+It is important the image to be `h2oai/sparkling-water-external-backend:SUBST_SW_VERSION` and not the base H2O image.
+Sparkling Water enhances the H2O image with additional dependencies.
+
+For more information, please read the `H2O on Kubernetes Blog Post <https://www.h2o.ai/blog/running-h2o-cluster-on-a-kubernetes-cluster/>`__.
+
+After we created the external H2O backend, we can connect to it from Sparkling Water clients as:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        Both cluster and client deployment modes of Kubernetes are supported.
+
+    .. tab-container:: Python
+        :title: Python
+
+        Both cluster and client deployment modes of Kubernetes are supported.
+
+    .. tab-container:: R
+        :title: R
+
+        First, make sure that RSparkling is installed on the node you want to run RSparkling from.
+        You can install RSparkling as:
+
+        .. code:: r
+
+           # Download, install, and initialize the H2O package for R.
+           # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
+           install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+
+           # Download, install, and initialize the RSparkling
+           install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
