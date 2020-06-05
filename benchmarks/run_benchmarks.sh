@@ -12,6 +12,19 @@ fi
 if [ -z "$aws_ssh_public_key" ]; then
     read -p "Enter your aws ssh public key: "  aws_ssh_public_key
 fi
+if [ -z "$aws_vpc" ]; then
+    mac=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/")
+    aws_vpc=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/vpc-id")
+fi
+if [ -z "$aws_subnet" ]; then
+    if [ -z "$mac" ]; then
+        mac=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/")
+    fi
+    aws_subnet=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/subnet-id")
+fi
+if [ -z "$aws_ssh_public_key" ]; then
+    read -p "Enter your aws ssh public key: "  aws_ssh_public_key
+fi
 if [ -z "$aws_instance_type" ]; then
     aws_instance_type="m5.2xlarge"
 fi
@@ -45,9 +58,6 @@ script_path=$(pwd)
 cd build/terraform/aws
 terraform init
 
-mac=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/")
-vpc=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/vpc-id")
-subnet=$(curl "http://169.254.169.254/latest/meta-data/network/interfaces/macs/${mac}/subnet-id")
 echo "Creating new cluster..."
 output_block=$(terraform apply \
     -var "aws_access_key=$aws_access_key" \
@@ -63,8 +73,8 @@ output_block=$(terraform apply \
     -var "benchmarks_run_yarn_internal=$run_yarn_internal" \
     -var "benchmarks_run_yarn_external=$run_yarn_external" \
     -var "benchmarks_run_local_internal=$run_local_internal" \
-    -var "aws_vpc_id=$vpc" \
-    -var "aws_subnet_id=$subnet" \
+    -var "aws_vpc_id=$aws_vpc" \
+    -var "aws_subnet_id=$aws_subnet" \
     -auto-approve \
     | tee /dev/stderr | tail -n 6)
 

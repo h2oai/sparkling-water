@@ -44,7 +44,7 @@ object Runner {
     val conf = new SparkConf()
 
     // If master is not defined in system properties or environment variables, fallback to local.
-    val master = conf.get("spark.master", "local")
+    val master = conf.get("spark.master", "local[*]")
     conf.setMaster(master)
 
     // If the application name is not defined in system properties or environment variables,

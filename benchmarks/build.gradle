@@ -76,6 +76,15 @@ task runBenchmarks(dependsOn: [":sparkling-water-assembly:shadowJar", substitute
       environment("aws_access_key", accessKey)
       environment("aws_secret_key", secretKey)
       environment("aws_ssh_public_key", publicKey)
+
+      if (project.hasProperty("aws_vpc")) {
+        def vpc = project.property("aws_vpc")
+        environment("aws_vpc", vpc)
+      }
+      if (project.hasProperty("aws_subnet")) {
+        def subnet = project.property("aws_subnet")
+        environment("aws_subnet", subnet)
+      }
       environment("datasets", "datasets.json")
 
       commandLine "./run_benchmarks.sh"
@@ -93,6 +102,15 @@ task runBigDataSparkToH2OConversionBenchmarks(dependsOn: [":sparkling-water-asse
       environment("aws_access_key", accessKey)
       environment("aws_secret_key", secretKey)
       environment("aws_ssh_public_key", publicKey)
+
+      if (project.hasProperty("aws_vpc")) {
+        def vpc = project.property("aws_vpc")
+        environment("aws_vpc", vpc)
+      }
+      if (project.hasProperty("aws_subnet")) {
+        def subnet = project.property("aws_subnet")
+        environment("aws_subnet", subnet)
+      }
       environment("aws_instance_type", "m5.4xlarge")
       environment("aws_core_instance_count", "10")
       environment("datasets", "bigDatasets.json")
@@ -118,6 +136,15 @@ task runBigDataH2OtoSparkConversionBenchmarks(dependsOn: [":sparkling-water-asse
       environment("aws_access_key", accessKey)
       environment("aws_secret_key", secretKey)
       environment("aws_ssh_public_key", publicKey)
+
+      if (project.hasProperty("aws_vpc")) {
+        def vpc = project.property("aws_vpc")
+        environment("aws_vpc", vpc)
+      }
+      if (project.hasProperty("aws_subnet")) {
+        def subnet = project.property("aws_subnet")
+        environment("aws_subnet", subnet)
+      }
       environment("aws_instance_type", "m5.4xlarge")
       environment("aws_core_instance_count", "10")
       environment("datasets", "bigDatasets.json")
