@@ -3,7 +3,7 @@
 
 properties(
         [
-                pipelineTriggers([cron('H 16 * * *')]),
+                //pipelineTriggers([cron('H 16 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -220,6 +220,26 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
+def testRExternalBackend(registryId, master, version) {
+
+}
+
+def testScalaExternalBackendClusterMode(registryId, master, version) {
+
+}
+
+def testScalaExternalBackendClientMode(registryId, master, version) {
+
+}
+
+def testPythonExternalBackendClusterMode(registryId, master, version) {
+
+}
+
+def testPythonExternalBackendClientMode(registryId, master, version) {
+
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -255,6 +275,8 @@ node("docker") {
             withTestEnv(commons, image) {
                 testScalaInternalBackendClusterMode(registryId, master, version)
                 testScalaInternalBackendClientMode(registryId, master, version)
+                testScalaExternalBackendClusterMode(registryId, master, version)
+                testScalaExternalBackendClientMode(registryId, master, version)
             }
         }
 
@@ -267,6 +289,8 @@ node("docker") {
             withTestEnv(commons, image) {
                 testPythonInternalBackendClusterMode(registryId, master, version)
                 testPythonInternalBackendClientMode(registryId, master, version)
+                testPythonExternalBackendClusterMode(registryId, master, version)
+                testPythonExternalBackendClientMode(registryId, master, version)
             }
         }
 
@@ -279,6 +303,7 @@ node("docker") {
             withTestEnv(commons, image) {
                 // R sets deployment mode automatically
                 testRInternalBackend(registryId, master, version)
+                testRExternalBackend(registryId, master, version)
             }
         }
     }
@@ -289,7 +314,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
