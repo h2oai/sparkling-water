@@ -18,10 +18,10 @@
 from pyspark.ml.wrapper import JavaEstimator
 
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
-from ai.h2o.sparkling.ml.models import H2OUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.models import H2OMOJOModel
 
 
-class H2OUnsupervisedAlgoBase(H2OStageBase, JavaEstimator):
+class H2OAlgorithm(H2OStageBase, JavaEstimator):
 
     def _create_model(self, java_model):
-        return H2OUnsupervisedMOJOModel(java_model)
+        return H2OMOJOModel(java_model)

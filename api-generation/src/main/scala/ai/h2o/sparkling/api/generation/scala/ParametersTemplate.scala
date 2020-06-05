@@ -25,7 +25,7 @@ object ParametersTemplate
   with ParameterResolver {
 
   def apply(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
-    val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')
+    val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getCanonicalName
 
     val parameters = resolveParameters(parameterSubstitutionContext)
     val imports = Seq(h2oParameterFullName) ++ parameters.filter(_.dataType.isEnum).map(_.dataType.getCanonicalName)
@@ -97,16 +97,15 @@ object ParametersTemplate
       .mkString("\n\n")
   }
 
-  private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, String]): String = {
+  private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, Any]): String = {
     parameters
       .map { parameter =>
         val defaultValue = if (parameter.dataType.isEnum) {
           s"${parameter.dataType.getSimpleName}.${parameter.defaultValue}.name()"
         } else {
-          parameter.defaultValue
+          stringify(explicitDefaultValues.getOrElse(parameter.h2oName, parameter.defaultValue))
         }
-        val finalDefaultValue = explicitDefaultValues.getOrElse(parameter.h2oName, stringify(defaultValue))
-        s"    ${parameter.swName} -> $finalDefaultValue"
+        s"    ${parameter.swName} -> $defaultValue"
       }
       .mkString(",\n")
   }
@@ -116,7 +115,9 @@ object ParametersTemplate
     case d: java.lang.Double => d.toString.toLowerCase
     case l: java.lang.Long => s"${l}L"
     case a: Array[_] => s"Array(${a.map(stringify).mkString(", ")})"
+    case s: String => s""""$s""""
     case v if v == null => null
+    case v if v == "null" => null
     case v => v.toString
   }
 

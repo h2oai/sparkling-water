@@ -21,7 +21,7 @@ from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel
 
 
-class H2OSupervisedAlgoBase(H2OStageBase, JavaEstimator):
+class H2OSupervisedAlgorithm(H2OStageBase, JavaEstimator):
 
     def _create_model(self, java_model):
         return H2OSupervisedMOJOModel(java_model)

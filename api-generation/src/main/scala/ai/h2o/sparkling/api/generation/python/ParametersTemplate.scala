@@ -25,7 +25,7 @@ object ParametersTemplate
   with ParameterResolver {
 
   def apply(parameterSubstitutionContext: ParameterSubstitutionContext): String = {
-    val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getName.replace('$', '.')
+    val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getCanonicalName
 
     val parameters = resolveParameters(parameterSubstitutionContext)
     val imports = Seq("pyspark.ml.param.*", "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters") ++
@@ -40,7 +40,7 @@ object ParametersTemplate
       parents,
       imports)
 
-    generateEntity(entitySubstitutionContext, "trait") {
+    generateEntity(entitySubstitutionContext) {
       if (parameters.isEmpty) {
         "    pass"
       } else {

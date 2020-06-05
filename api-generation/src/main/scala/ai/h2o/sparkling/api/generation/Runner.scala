@@ -18,10 +18,10 @@
 package ai.h2o.sparkling.api.generation
 
 import java.io.{File, PrintWriter}
+import java.util
 
 import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
-import ai.h2o.sparkling.api.generation.scala.{AlgorithmTemplate, ParametersTemplate}
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
@@ -37,13 +37,26 @@ import water.automl.api.schemas3.AutoMLBuildSpecV99._
 
 object Runner {
 
+  val defaultValuesOfCommonParameters = Map(
+    "featuresCols" -> Array.empty[String],
+    "predictionCol" -> "prediction",
+    "detailedPredictionCol" -> "detailed_prediction",
+    "withDetailedPredictionCol" -> false,
+    "convertUnknownCategoricalLevelsToNa" -> false,
+    "convertInvalidNumbersToNa" -> false,
+    "namedMojoOutputColumns" -> true,
+    "withContributions" -> false,
+    "splitRatio" -> 1.0,
+    "columnsToCategorical" -> Array.empty[String])
+
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
-    val monotonicity = ExplicitField("monotone_constraints", "HasMonotoneConstraints")
-    val userPoints = ExplicitField("user_points", "HasUserPoints")
+    val monotonicity =
+      ExplicitField("monotone_constraints", "HasMonotoneConstraints", new util.HashMap[String, Double]())
+    val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val explicitDefaultValues =
-      Map("max_w2" -> "java.lang.Float.MAX_VALUE", "response_column" -> """"label"""", "model_id" -> "null")
+      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> "null")
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], Seq(monotonicity)),
@@ -66,6 +79,7 @@ object Runner {
           explicitDefaultValues,
           typeExceptions = TypeExceptions.all(),
           defaultValueSource = DefaultValueSource.Field,
+          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
           generateParamTag = true)
     }
   }
@@ -110,10 +124,11 @@ object Runner {
           AutoMLIgnoredParameters.all,
           explicitFields = Seq.empty,
           explicitDefaultValues =
-            Map("include_algos" -> "ai.h2o.automl.Algo.values().map(_.name())", "response_column" -> """"label""""),
+            Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
           defaultValueFieldPrefix = "",
           typeExceptions = AutoMLTypeExceptions.all(),
           defaultValueSource = source,
+          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
           generateParamTag = false)
     }
   }
@@ -146,6 +161,7 @@ object Runner {
           explicitDefaultValues = Map.empty,
           typeExceptions = Map.empty,
           defaultValueSource = DefaultValueSource.Getter,
+          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
           generateParamTag = false)
     }
   }
@@ -165,7 +181,7 @@ object Runner {
     }
   }
 
-  private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate)
+  private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
 
   private val parameterTemplates = Map("scala" -> scala.ParametersTemplate, "py" -> python.ParametersTemplate)
 
@@ -178,11 +194,9 @@ object Runner {
       writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
-    if (languageExtension != "py") {
-      for (substitutionContext <- algorithmConfiguration) {
-        val content = algorithmTemplates(languageExtension)(substitutionContext)
-        writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
-      }
+    for ((algorithmContext, parameterContext) <- algorithmConfiguration.zip(parametersConfiguration)) {
+      val content = algorithmTemplates(languageExtension)(algorithmContext, parameterContext)
+      writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
     }
 
     for (substitutionContext <- autoMLParameterConfiguration) {
