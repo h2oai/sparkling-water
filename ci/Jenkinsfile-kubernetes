@@ -3,7 +3,7 @@
 
 properties(
         [
-                pipelineTriggers([cron('H 16 * * *')]),
+                //pipelineTriggers([cron('H 16 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -315,7 +315,25 @@ def testRExternalBackend(registryId, master, version) {
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
     def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
-    //TODO
+    sh "kubectl delete pod driver-scala --ignore-not-found"
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-scala \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --master $master \
+         --deploy-mode cluster \
+         --name test \
+         --conf spark.ext.h2o.backend.cluster.mode=external \
+         --conf spark.ext.h2o.external.start.mode=manual \
+         --conf spark.ext.h2o.hadoop.memory=2G \
+         --conf spark.ext.h2o.cloud.representative=$leaderNodeIpPort \
+         --conf spark.ext.h2o.cloud.name=root \
+         --class ai.h2o.sparkling.InitTest \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.jar
+        """
+    sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -327,7 +345,24 @@ def testScalaExternalBackendClientMode(registryId, master, version) {
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
     def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
-    //TODO
+    sh "kubectl delete pod driver-python --ignore-not-found"
+    sh """
+        \$SPARK_HOME/bin/spark-submit \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+         --conf spark.kubernetes.driver.pod.name=driver-python \
+         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+         --master $master \
+         --deploy-mode cluster \
+         --name test \
+         --conf spark.ext.h2o.backend.cluster.mode=external \
+         --conf spark.ext.h2o.external.start.mode=manual \
+         --conf spark.ext.h2o.hadoop.memory=2G \
+         --conf spark.ext.h2o.cloud.representative=$leaderNodeIpPort \
+         --conf spark.ext.h2o.cloud.name=root \
+         --conf spark.executor.instances=3 \
+         local:///opt/sparkling-water/tests/initTest.py
+        """
+    sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -411,7 +446,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
