@@ -385,9 +385,9 @@ def publishNightly() {
 def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
     sh """
         ./bin/build-kubernetes-images.sh ${type}
-        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker push h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker rmi h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker tag sparkling-water-${type}:${version} distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker push distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker rmi distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
     """
 }
 

@@ -20,16 +20,16 @@ node("docker") {
 
 pipeline(params) { p ->
     sparkMajorVersions = sparkVersions
-    runUnitTests = "true"
-    runPyUnitTests = "true"
-    runRUnitTests = "true"
-    runIntegTests = "true"
-    runPyIntegTests = "true"
+    runUnitTests = "false"
+    runPyUnitTests = "false"
+    runRUnitTests = "false"
+    runIntegTests = "false"
+    runPyIntegTests = "false"
     buildAgainstH2OBranch = "true"
     h2oBranch = "master"
     hadoopVersion = "2.7"
     backendMode = "both"
     driverHadoopVersion = "hdp2.2"
-    uploadNightly = "true"
+    uploadNightly = "false"
     uploadNightlyDockerImages = "true"
 }
