@@ -19,9 +19,20 @@ from pyspark.ml.wrapper import JavaEstimator
 
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
+from ai.h2o.sparkling.ml.models import H2OUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel
+from ai.h2o.sparkling.ml.models import H2OTreeBasedSupervisedMOJOModel
 
 
 class H2OAlgorithm(H2OStageBase, JavaEstimator):
 
-    def _create_model(self, java_model):
-        return H2OMOJOModel(java_model)
+    def _create_model(self, javaModel):
+        className = javaModel.getClass().getSimpleName()
+        if className == "H2OTreeBasedSupervisedMOJOModel":
+            return H2OTreeBasedSupervisedMOJOModel(javaModel)
+        elif className == "H2OSupervisedMOJOModel":
+            return H2OSupervisedMOJOModel(javaModel)
+        elif className == "H2OUnsupervisedMOJOModel":
+            return H2OUnsupervisedMOJOModel(javaModel)
+        else:
+            return H2OMOJOModel(javaModel)

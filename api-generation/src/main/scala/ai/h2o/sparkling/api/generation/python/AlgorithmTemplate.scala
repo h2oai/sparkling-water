@@ -20,14 +20,15 @@ package ai.h2o.sparkling.api.generation.python
 import ai.h2o.sparkling.api.generation.common._
 
 object AlgorithmTemplate
-  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext) => String)
+  extends ((AlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext]) => String)
   with PythonEntityTemplate
   with ParameterResolver {
 
   def apply(
       algorithmSubstitutionContext: AlgorithmSubstitutionContext,
-      parameterSubstitutionContext: ParameterSubstitutionContext): String = {
-    val parameters = resolveParameters(parameterSubstitutionContext)
+      parameterSubstitutionContexts: Seq[ParameterSubstitutionContext]): String = {
+    val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
+    val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
     val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
     val algorithmType = algorithmSubstitutionContext.algorithmType
@@ -43,15 +44,16 @@ object AlgorithmTemplate
 
     generateEntity(entitySubstitutionContext) {
       s"""    @keyword_only
-         |    def __init__(self,${generateDefaultValuesFromExplicitFields(parameterSubstitutionContext.explicitFields)}
-         |${generateCommonDefaultValues(parameterSubstitutionContext.defaultValuesOfCommonParameters)},
-         |${generateDefaultValues(parameters, parameterSubstitutionContext.explicitDefaultValues)}):
+         |    def __init__(self,${generateDefaultValuesFromExplicitFields(commonSubstitutionContext.explicitFields)}
+         |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
+         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}):
          |        Initializer.load_sparkling_jar()
          |        super($entityName, self).__init__()
          |        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.$entityName", self.uid)
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
-         |        self._set(**kwargs)""".stripMargin
+         |        self._set(**kwargs)
+         |        self._transfer_params_to_java()""".stripMargin
     }
   }
 

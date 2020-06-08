@@ -15,38 +15,12 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling import Initializer
-from ai.h2o.sparkling.ml.Utils import Utils
-from ai.h2o.sparkling.ml.algos.H2OAlgorithm import H2OAlgorithm
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
-from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
-from pyspark import keyword_only
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 
-class H2OGridSearch(H2OGridSearchParams, H2OAlgorithm):
-
-    @keyword_only
-    def __init__(self,
-                 algo=None,
-                 hyperParameters={},
-                 strategy="Cartesian",
-                 maxRuntimeSecs=0.0,
-                 maxModels=0,
-                 stoppingRounds=0,
-                 stoppingTolerance=0.001,
-                 stoppingMetric="AUTO",
-                 selectBestModelBy="AUTO",
-                 parallelism=1,
-                 seed=-1):
-        Initializer.load_sparkling_jar()
-        super(H2OGridSearch, self).__init__()
-        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.H2OGridSearch", self.uid)
-        self._setDefaultValuesFromJava()
-        kwargs = Utils.getInputKwargs(self)
-        self._set(**kwargs)
-        self._transfer_params_to_java()
+class H2OGridSearchExtras:
 
     def getGridModels(self):
         return [H2OMOJOModel(m) for m in self._java_obj.getGridModels()]
