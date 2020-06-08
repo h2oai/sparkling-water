@@ -128,9 +128,19 @@ object Runner {
           defaultValueFieldPrefix = "",
           typeExceptions = AutoMLTypeExceptions.all(),
           defaultValueSource = source,
-          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
+            Map("monotoneConstraints" -> new util.HashMap[String, Double]()),
           generateParamTag = false)
     }
+  }
+
+  private def autoMLAlgorithmContext: AlgorithmSubstitutionContext = {
+    AlgorithmSubstitutionContext(
+      namespace = "ai.h2o.sparkling.ml.algos",
+      "H2OAutoML",
+      null,
+      "H2OSupervisedAlgorithm",
+      Seq("H2OAutoMLExtras"))
   }
 
   private def gridSearchParameterConfiguration: Seq[ParameterSubstitutionContext] = {
@@ -161,9 +171,22 @@ object Runner {
           explicitDefaultValues = Map.empty,
           typeExceptions = Map.empty,
           defaultValueSource = DefaultValueSource.Getter,
-          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+          defaultValuesOfCommonParameters = Map(
+            "algo" -> null,
+            "hyperParameters" -> new util.HashMap[String, AnyRef](),
+            "selectBestModelBy" -> "AUTO",
+            "parallelism" -> 1),
           generateParamTag = false)
     }
+  }
+
+  private def gridSearchAlgorithmContext: AlgorithmSubstitutionContext = {
+    AlgorithmSubstitutionContext(
+      namespace = "ai.h2o.sparkling.ml.algos",
+      "H2OGridSearch",
+      null,
+      "H2OAlgorithm",
+      Seq("H2OGridSearchExtras"))
   }
 
   private def writeResultToFile(
@@ -195,7 +218,7 @@ object Runner {
     }
 
     for ((algorithmContext, parameterContext) <- algorithmConfiguration.zip(parametersConfiguration)) {
-      val content = algorithmTemplates(languageExtension)(algorithmContext, parameterContext)
+      val content = algorithmTemplates(languageExtension)(algorithmContext, Seq(parameterContext))
       writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
     }
 
@@ -204,9 +227,19 @@ object Runner {
       writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }
 
+    if (languageExtension != "scala") {
+      val content = algorithmTemplates(languageExtension)(autoMLAlgorithmContext, autoMLParameterConfiguration)
+      writeResultToFile(content, autoMLAlgorithmContext, languageExtension, destinationDir)
+    }
+
     for (substitutionContext <- gridSearchParameterConfiguration) {
       val content = parameterTemplates(languageExtension)(substitutionContext)
       writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
+    }
+
+    if (languageExtension != "scala") {
+      val content = algorithmTemplates(languageExtension)(gridSearchAlgorithmContext, gridSearchParameterConfiguration)
+      writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
     }
   }
 }
