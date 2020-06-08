@@ -312,7 +312,7 @@ Kubernetes. This can be achieved by the following steps:
                 failureThreshold: 1
               env:
               - name: H2O_KUBERNETES_SERVICE_DNS
-                value: h2o-service.h2o-statefulset.svc.cluster.local
+                value: h2o-service.default.svc.cluster.local
               - name: H2O_NODE_LOOKUP_TIMEOUT
                 value: '180'
               - name: H2O_NODE_EXPECTED_COUNT
