@@ -327,8 +327,9 @@ Sparkling Water enhances the H2O image with additional dependencies.
 For more information about H2O on Kubernetes, please read the
 `H2O on Kubernetes Blog Post <https://www.h2o.ai/blog/running-h2o-cluster-on-a-kubernetes-cluster/>`__.
 
-In order to Sparkling Water to be able to connect to the H2O cluster, we need to get the H2O
-leader node address. This address can be obtained as:
+In order for Sparkling Water to be able to connect to the H2O cluster, we need to get the H2O
+leader node address. The address is used to specify H2O endpoint during Sparkling Water
+configuration phase. This address can be obtained as:
 
 .. code:: bash
 
