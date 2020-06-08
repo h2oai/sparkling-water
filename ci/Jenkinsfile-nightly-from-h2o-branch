@@ -31,4 +31,5 @@ pipeline(params) { p ->
     backendMode = "both"
     driverHadoopVersion = "hdp2.2"
     uploadNightly = "true"
+    uploadNightlyDockerImages = "true"
 }

@@ -382,4 +382,44 @@ def publishNightly() {
     }
 }
 
+def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
+    sh """
+        ./bin/build-kubernetes-images.sh ${type}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker push h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker rmi h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+    """
+}
+
+def publishNightlyDockerImages() {
+    return { config ->
+        stage('Publish to Docker Hub') {
+            if (config.uploadNightlyDockerImages.toBoolean()) {
+                config.commons.withSigningCredentials {
+                    sh "sudo apt -y install docker.io"
+                    sh "sudo service docker start"
+                    sh "sudo chmod 666 /var/run/docker.sock"
+                    def version = getNightlyVersion(config)
+                    sh """
+                    sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                    echo "doRelease=true" >> gradle.properties
+                    ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                   """
+                    sh "${getGradleCommand(config)} dist -Pspark=${config.sparkMajorVersion} -Pversion=${version}"
+                    params.commons.withDockerHubCredentials {
+                        docker.withRegistry('', 'dockerhub') {
+                            dir("./dist/build/zip/sparkling-water-${version}") {
+                                publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
+                                publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
+                                publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
+                                publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 return this
