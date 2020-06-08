@@ -299,7 +299,7 @@ Kubernetes. This can be achieved by the following steps:
               image: 'h2oai/sparkling-water-external-backend:SUBST_SW_VERSION'
               resources:
                 requests:
-                  memory: "4Gi"
+                  memory: "2Gi"
               ports:
                 - containerPort: 54321
                   protocol: TCP
