@@ -309,7 +309,16 @@ def stopExternalH2OBackend() {
 
 def testRExternalBackend(registryId, master, version) {
     def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
-    //TODO
+    sh "kubectl delete pod driver-r --ignore-not-found"
+    sh """
+            export KUBERNETES_MASTER=$master
+            export REGISTRY_ID=$registryId
+            export SW_VERSION=$version
+            export EXTRA_OPTIONS="spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=$leaderNodeIpPort spark.ext.h2o.cloud.name=root"
+            Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+            """
+    sh 'sleep 60'
+    sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
