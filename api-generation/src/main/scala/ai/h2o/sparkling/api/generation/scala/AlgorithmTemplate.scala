@@ -20,11 +20,12 @@ package ai.h2o.sparkling.api.generation.scala
 import ai.h2o.sparkling.api.generation.common._
 
 object AlgorithmTemplate
-  extends ((AlgorithmSubstitutionContext) => String)
-  with ScalaEntityTemplate
-  with ParameterResolver {
+  extends ((AlgorithmSubstitutionContext, ParameterSubstitutionContext) => String)
+  with ScalaEntityTemplate {
 
-  def apply(algorithmSubstitutionContext: AlgorithmSubstitutionContext): String = {
+  def apply(
+      algorithmSubstitutionContext: AlgorithmSubstitutionContext,
+      parameterSubstitutionContext: ParameterSubstitutionContext): String = {
     val entityName = algorithmSubstitutionContext.entityName
     val h2oSchemaClassName = algorithmSubstitutionContext.h2oSchemaClass.getSimpleName
     val parents = Seq(s"${algorithmSubstitutionContext.algorithmType}[${h2oSchemaClassName}]", s"${entityName}Params") ++

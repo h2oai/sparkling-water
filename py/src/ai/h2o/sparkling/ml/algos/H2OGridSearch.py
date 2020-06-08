@@ -17,7 +17,7 @@
 
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.Utils import Utils
-from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgoBase import H2OSupervisedAlgoBase
+from ai.h2o.sparkling.ml.algos.H2OAlgorithm import H2OAlgorithm
 from ai.h2o.sparkling.ml.models import H2OMOJOModel
 from ai.h2o.sparkling.ml.params.H2OGridSearchParams import H2OGridSearchParams
 from pyspark import keyword_only
@@ -25,7 +25,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
 
 
-class H2OGridSearch(H2OGridSearchParams, H2OSupervisedAlgoBase):
+class H2OGridSearch(H2OGridSearchParams, H2OAlgorithm):
 
     @keyword_only
     def __init__(self,

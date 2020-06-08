@@ -24,14 +24,15 @@ case class ParameterSubstitutionContext(
     h2oParameterClass: Class[_],
     ignoredParameters: Seq[String],
     explicitFields: Seq[ExplicitField],
-    explicitDefaultValues: Map[String, String],
+    explicitDefaultValues: Map[String, Any],
     typeExceptions: Map[String, Class[_]],
     defaultValueFieldPrefix: String = "_",
     defaultValueSource: DefaultValueSource.DefaultValueSource,
+    defaultValuesOfCommonParameters: Map[String, Any],
     generateParamTag: Boolean)
   extends SubstitutionContextBase
 
-case class ExplicitField(name: String, implementation: String)
+case class ExplicitField(name: String, implementation: String, defaultValue: Any)
 
 object DefaultValueSource extends Enumeration {
   type DefaultValueSource = Value
