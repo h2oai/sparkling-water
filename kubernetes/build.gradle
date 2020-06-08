@@ -34,6 +34,7 @@ task createExternalBackendDockerfile(type: Dockerfile) {
     "-cp",
     "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_2.11-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
     "-XX:+UseContainerSupport",
+    "-XX:MaxRAMPercentage=50",
     "water.H2OApp")
 }
 
