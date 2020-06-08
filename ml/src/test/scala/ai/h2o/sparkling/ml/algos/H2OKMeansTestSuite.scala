@@ -78,21 +78,4 @@ class H2OKMeansTestSuite extends FunSuite with Matchers with SharedH2OTestContex
       thrown.getMessage == "The following feature columns are not available on" +
         " the training dataset: 'not_exist_1, not_exist_2'")
   }
-
-  test("H2OKMeans with constant column") {
-    import org.apache.spark.sql.functions.lit
-    val datasetWithConst = dataset.withColumn("constant", lit(1))
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setFeaturesCols("constant")
-
-    val thrown = intercept[IllegalArgumentException] {
-      algo.fit(datasetWithConst)
-    }
-    assert(
-      thrown.getMessage.startsWith("H2O could not use any of the specified feature" +
-        " columns: 'constant'. H2O ignores constant columns, are all the columns constants?"))
-  }
 }
