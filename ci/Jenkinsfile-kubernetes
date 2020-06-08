@@ -316,6 +316,7 @@ def stopExternalH2OBackend() {
 
 def testRExternalBackend(registryId, master, version) {
     def leaderNodeIp = startExternalH2OBackend()
+    sh "echo Leader Node is $leaderNodeIp"
     //TODO
     stopExternalH2OBackend()
 }
