@@ -18,6 +18,24 @@ ext {
   outputFilePython = file("$buildDir/dist/Dockerfile-Python")
   outputFileR = file("$buildDir/dist/Dockerfile-R")
   outputFileScala = file("$buildDir/dist/Dockerfile-Scala")
+  outputFileExternalBackend = file("$buildDir/dist/Dockerfile-External-backend")
+}
+
+task createExternalBackendDockerfile(type: Dockerfile) {
+  // Based on h2o-3/docker/public/Dockerfile-h2o-release
+  // After official H2O image is out, remove duplication as mentioned in https://0xdata.atlassian.net/browse/SW-2294
+  destFile = outputFileExternalBackend
+  from "openjdk:11"
+  runCommand "mkdir -p /opt/h2oai/h2o-3/"
+  copyFile("h2o.jar", "/opt/h2oai/h2o-3/")
+  copyFile("sparkling-water-assembly-extensions_2.11-${version}-all.jar", "/opt/h2oai/h2o-3/")
+  defaultCommand(
+    "java",
+    "-cp",
+    "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_2.11-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
+    "-XX:+UseContainerSupport",
+    "-XX:MaxRAMPercentage=50",
+    "water.H2OApp")
 }
 
 task createScalaDockerfile(type: Dockerfile) {
@@ -77,7 +95,7 @@ task createPythonDockerfile(type: Dockerfile) {
   copyFile("python/initTest.py", "/opt/sparkling-water/tests/initTest.py")
 }
 
-task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile])
+task buildDockerfiles(dependsOn: [createPythonDockerfile, createRDockerfile, createScalaDockerfile, createExternalBackendDockerfile])
 
 task copyPythonExtras(type: Copy) {
   from 'src/python'

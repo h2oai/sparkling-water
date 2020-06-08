@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [[ "$#" -ne 1 ]] || [[ "$1" != "scala" && "$1" != "python" && "$1" != "r" ]]; then
-  echo "This script expects exactly one argument which specifies for which client the image should be build."
-  echo "The possible values are: scala, r, python"
+if [[ "$#" -ne 1 ]] || [[ "$1" != "scala" && "$1" != "python" && "$1" != "r"  && "$1" != "external-backend" ]]; then
+  echo "This script expects exactly one argument which specifies type of image to be build."
+  echo "The possible values are: scala, r, python, external-backend"
   exit -1
 fi
 
@@ -17,13 +17,23 @@ checkSparkHome
 # Verify if correct Spark version is used
 checkSparkVersion
 
-( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" build )
-
 echo "Creating Working Directory"
 WORKDIR=$(mktemp -d)
 echo "Working directory created: $WORKDIR"
-
 K8DIR="$TOPDIR/kubernetes"
+
+if [ "$1" = "external-backend" ]; then
+  cp "$K8DIR/Dockerfile-External-backend" "$WORKDIR"
+  echo "Building Docker Image for External Backend ..."
+  cp "$TOPDIR/jars/sparkling-water-assembly-extensions_$SCALA_VERSION-$VERSION-all.jar" "$WORKDIR"
+  path=$($TOPDIR/bin/get-h2o-driver.sh standalone)
+  cp "$path" "$WORKDIR/h2o.jar"
+  docker build -t "sparkling-water-external-backend:$VERSION" -f "$WORKDIR/Dockerfile-External-backend" "$WORKDIR"
+  echo "Done!"
+  exit 0
+fi
+
+( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" build )
 
 if [ "$1" = "scala" ]; then
   cp "$K8DIR/Dockerfile-Scala" "$WORKDIR"

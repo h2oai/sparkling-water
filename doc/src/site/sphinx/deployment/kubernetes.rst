@@ -30,7 +30,7 @@ The examples bellow are using the default Kubernetes namespace which we enable f
 You can also use different namespace setup for Spark. In that case please don't forget to pass
 ``--conf spark.kubernetes.authenticate.driver.serviceAccountName=serviceName`` to your Spark commands.
 
-Internal backend
+Internal Backend
 ~~~~~~~~~~~~~~~~
 
 In internal backend of Sparkling Water, we need to pas the option ``spark.scheduler.minRegisteredResourcesRatio=1``
@@ -246,3 +246,50 @@ Dynamic allocation must be disabled in Spark.
             Rscript --default-packages=methods,utils batch.R
 
         Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+
+External Backend
+~~~~~~~~~~~~~~~~
+
+Sparkling Water External backend can be also used in Kubernetes. First, we need to start
+external H2O backend on Kubernetes. To achieve this, please follow the steps on the
+`H2O on Kubernetes Documentation <https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/welcome.html#kubernetes-integration/>`__ with
+**one important exception**. The image to be used need to be `h2oai/sparkling-water-external-backend:SUBST_SW_VERSION` and not the base H2O image as mentioned in
+H2O documentation as Sparkling Water enhances the H2O image with additional dependencies.
+
+In order for Sparkling Water to be able to connect to the H2O cluster, we need to get the H2O
+leader node address. The address is used to specify H2O endpoint during Sparkling Water
+configuration phase. First, make wait for the H2O cluster to cloud up and then obtain the
+address as:
+
+.. code:: bash
+
+    kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'
+
+After we created the external H2O backend, we can connect to it from Sparkling Water clients as:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        Both cluster and client deployment modes of Kubernetes are supported.
+
+    .. tab-container:: Python
+        :title: Python
+
+        Both cluster and client deployment modes of Kubernetes are supported.
+
+    .. tab-container:: R
+        :title: R
+
+        First, make sure that RSparkling is installed on the node you want to run RSparkling from.
+        You can install RSparkling as:
+
+        .. code:: r
+
+           # Download, install, and initialize the H2O package for R.
+           # In this case we are using rel-SUBST_H2O_RELEASE_NAME SUBST_H2O_BUILD_NUMBER (SUBST_H2O_VERSION)
+           install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R")
+
+           # Download, install, and initialize the RSparkling
+           install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")

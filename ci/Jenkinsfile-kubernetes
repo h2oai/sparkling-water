@@ -36,6 +36,16 @@ String getSparkVersion(sparkMajorVersion) {
     return versionLine.split("=")[1]
 }
 
+def buildAndPublishSparklingWaterImage(String type, String sparklingVersion, String repoUrl) {
+    sh """
+        ./bin/build-kubernetes-images.sh $type
+        docker tag sparkling-water-$type:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        docker rmi sparkling-water-$type:${sparklingVersion}
+        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        """
+}
+
 def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
@@ -49,32 +59,29 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
+                        def sparkVersion = getSparkVersion(sparkMajorVersion)
                         sh "./gradlew dist -Pspark=$sparkMajorVersion"
                         def customEnv = [
-                                "SPARK_HOME=/home/jenkins/spark-${getSparkVersion(sparkMajorVersion)}-bin-hadoop2.7",
+                                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                         ]
-                        withEnv(customEnv) {
-                            dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                                sh """
-                                    ./bin/build-kubernetes-images.sh scala
-                                    ./bin/build-kubernetes-images.sh python
-                                    ./bin/build-kubernetes-images.sh r
-                                   """
-                            }
-                        }
-
                         unstash "properties"
                         def repoId = readPropertiesFile("properties")["docker_registry_id"]
                         def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
-                            sh """
-                            docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                            docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                            docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                            docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                            """
+                            withEnv(customEnv) {
+                                dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                                    buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
+                                    sh """
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
+                                       """
+                                    buildAndPublishSparklingWaterImage("external-backend", sparklingVersion, repoUrl)
+
+                                }
+                            }
                         }
                     }
                     cleanWs()
@@ -220,6 +227,116 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
+def installH2OHeadlessService() {
+    sh "kubectl delete service h2o-service --ignore-not-found"
+    sh """
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: h2o-service
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: h2o-k8s
+  ports:
+  - protocol: TCP
+    port: 54321
+EOF
+    """
+}
+
+def startExternalH2OBackend(registryId, version) {
+    installH2OHeadlessService()
+    sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
+    sh """
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: h2o-stateful-set
+  namespace: default
+spec:
+  serviceName: h2o-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: h2o-k8s
+  template:
+    metadata:
+      labels:
+        app: h2o-k8s
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: h2o-k8s
+          image: '${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version}'
+          resources:
+            requests:
+              memory: "2Gi"
+          ports:
+            - containerPort: 54321
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /kubernetes/isLeaderNode
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 1
+          env:
+          - name: H2O_KUBERNETES_SERVICE_DNS
+            value: h2o-service.default.svc.cluster.local
+          - name: H2O_NODE_LOOKUP_TIMEOUT
+            value: '180'
+          - name: H2O_NODE_EXPECTED_COUNT
+            value: '2'
+          - name: H2O_KUBERNETES_API_PORT
+            value: '8081'
+EOF
+    """
+    sh 'sleep 60'
+    return sh(
+            script: "kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'",
+            returnStdout: true
+    ).trim() + ":54321"
+}
+
+def stopExternalH2OBackend() {
+    sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
+}
+
+def testRExternalBackend(registryId, master, version) {
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    //TODO
+    stopExternalH2OBackend()
+}
+
+def testScalaExternalBackendClusterMode(registryId, master, version) {
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    //TODO
+    stopExternalH2OBackend()
+}
+
+def testScalaExternalBackendClientMode(registryId, master, version) {
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    //TODO
+    stopExternalH2OBackend()
+}
+
+def testPythonExternalBackendClusterMode(registryId, master, version) {
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    //TODO
+    stopExternalH2OBackend()
+}
+
+def testPythonExternalBackendClientMode(registryId, master, version) {
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    //TODO
+    stopExternalH2OBackend()
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -255,6 +372,8 @@ node("docker") {
             withTestEnv(commons, image) {
                 testScalaInternalBackendClusterMode(registryId, master, version)
                 testScalaInternalBackendClientMode(registryId, master, version)
+                testScalaExternalBackendClusterMode(registryId, master, version)
+                testScalaExternalBackendClientMode(registryId, master, version)
             }
         }
 
@@ -267,6 +386,8 @@ node("docker") {
             withTestEnv(commons, image) {
                 testPythonInternalBackendClusterMode(registryId, master, version)
                 testPythonInternalBackendClientMode(registryId, master, version)
+                testPythonExternalBackendClusterMode(registryId, master, version)
+                testPythonExternalBackendClientMode(registryId, master, version)
             }
         }
 
@@ -279,6 +400,7 @@ node("docker") {
             withTestEnv(commons, image) {
                 // R sets deployment mode automatically
                 testRInternalBackend(registryId, master, version)
+                testRExternalBackend(registryId, master, version)
             }
         }
     }
