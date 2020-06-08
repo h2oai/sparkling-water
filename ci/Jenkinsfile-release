@@ -362,6 +362,18 @@ def publishToConda() {
     }
 }
 
+def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
+    sh """
+        ./bin/build-kubernetes-images.sh ${type}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:${version}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-scala:${type}-${sparkMajorVersion}
+        docker push h2oai/sparkling-water-${type}:${version}
+        docker push h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker rmi h2oai/sparkling-water-${type}:${version}
+        docker rmi h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+    """
+}
+
 def publishDockerImages() {
     return { params ->
         stage('Publish to Docker Hub') {
@@ -374,29 +386,10 @@ def publishDockerImages() {
                 params.commons.withDockerHubCredentials {
                     docker.withRegistry('', 'dockerhub') {
                         dir("./dist/build/zip/sparkling-water-${version}") {
-                            sh """
-                        ./bin/build-kubernetes-images.sh scala
-                        docker tag sparkling-water-scala:${version} h2oai/sparkling-water-scala:${version}
-                        docker tag sparkling-water-scala:${version} h2oai/sparkling-water-scala:latest-${params.spark}
-                        docker push h2oai/sparkling-water-scala:${version}
-                        docker push h2oai/sparkling-water-scala:latest-${params.spark}
-                        docker rmi h2oai/sparkling-water-scala:${version}
-                        docker rmi h2oai/sparkling-water-scala:latest-${params.spark}
-
-                        ./bin/build-kubernetes-images.sh python
-                        ./bin/build-kubernetes-images.sh r
-                        ./bin/build-kubernetes-images.sh external-backend
-                       """
-
-
-                            sh """
-                            docker tag sparkling-water-r:${version} h2oai/sparkling-water-r:${version}
-                            docker tag sparkling-water-python:${version} h2oai/sparkling-water-python:${version}
-                            docker tag sparkling-water-external-backend:${version} h2oai/sparkling-water-external-backend:${version}
-                            docker push h2oai/sparkling-water-r:${version}
-                            docker push h2oai/sparkling-water-python:${version}
-                            docker push h2oai/sparkling-water-external-backend:${version}
-                            """
+                            publishSparklingWaterDockerImage("scala", version, params.spark)
+                            publishSparklingWaterDockerImage("r", version, params.spark)
+                            publishSparklingWaterDockerImage("python", version, params.spark)
+                            publishSparklingWaterDockerImage("external-backend", version, params.spark)
                         }
                     }
                 }
