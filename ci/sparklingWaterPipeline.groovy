@@ -133,6 +133,7 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     publishNightly()(config)
+                    publishNightlyDockerImages()(config)
                 }
             }
         }
