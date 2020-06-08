@@ -36,6 +36,16 @@ String getSparkVersion(sparkMajorVersion) {
     return versionLine.split("=")[1]
 }
 
+def buildAndPublishSparklingWaterImage(String type, String sparklingVersion, String repoUrl) {
+    sh """
+        ./bin/build-kubernetes-images.sh $type
+        docker tag sparkling-water-$type:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        docker rmi sparkling-water-$type:${sparklingVersion}
+        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
+        """
+}
+
 def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
@@ -60,33 +70,16 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
                             withEnv(customEnv) {
                                 dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                                    buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
                                     sh """
-                                        ./bin/build-kubernetes-images.sh scala
-                                        docker tag sparkling-water-scala:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-                                        docker rmi sparkling-water-scala:${sparklingVersion}
-                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:scala-${sparklingVersion}
-
-                                        ./bin/build-kubernetes-images.sh python
-                                        docker tag sparkling-water-python:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-                                        docker rmi sparkling-water-python:${sparklingVersion}
-                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:python-${sparklingVersion}
-
-                                        ./bin/build-kubernetes-images.sh r
-                                        docker tag sparkling-water-r:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-                                        docker rmi sparkling-water-r:${sparklingVersion}
-                                        docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:r-${sparklingVersion}
-
                                         docker rmi spark-r:${sparkVersion}
                                         docker rmi spark-py:${sparkVersion}
                                         docker rmi spark:${sparkVersion}
-
-                                        ./bin/build-kubernetes-images.sh external-backend
-                                        docker tag sparkling-water-external-backend:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
-                                        docker push $repoUrl/sw_kubernetes_repo/sparkling-water:external-backend-${sparklingVersion}
                                        """
+                                    buildAndPublishSparklingWaterImage("external-backend", sparklingVersion, repoUrl)
+
                                 }
                             }
                         }
