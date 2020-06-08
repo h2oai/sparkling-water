@@ -56,7 +56,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
     if (dataset.select(featureColumns: _*).distinct().count() == 1) {
       throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
-        s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
+        s" columns: '${getFeaturesCols().mkString(", ")}' because they are all constants. H2O ignores constant columns.")
     }
     val excludedColumns = excludedCols.map(sanitize).map(col)
     val columns = featureColumns ++ excludedColumns
