@@ -75,13 +75,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
           Map("validation_frame" -> fr.frameId)
         }
         .getOrElse(Map())
-    val modelId = try {
-      trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
-    } catch {
-      case e: RestApiCommunicationException if e.getMessage.contains("There are no usable columns to generate model") =>
-        throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
-          s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
-    }
+    val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
     H2OModel(modelId).toMOJOModel(
       Identifiable.randomUID(parameters.algoName()),
       H2OMOJOSettings.createFromModelParams(this),

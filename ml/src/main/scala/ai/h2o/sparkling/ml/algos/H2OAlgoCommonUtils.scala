@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.ml.params.H2OCommonParams
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
@@ -52,6 +53,11 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     }
 
     val featureColumns = getFeaturesCols().map(sanitize).map(col)
+
+    if (dataset.select(featureColumns: _*).distinct().count() == 1) {
+      throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
+        s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
+    }
     val excludedColumns = excludedCols.map(sanitize).map(col)
     val columns = featureColumns ++ excludedColumns
     val h2oContext = H2OContext.ensure(
