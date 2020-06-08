@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.params.H2OCommonParams
-import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext}
+import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.StructType
@@ -60,5 +60,27 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     val (_, testHf, internalFeatureCols) = utils.exposedTestMethod(dataset)
     testHf shouldBe None
     internalFeatureCols shouldBe datasetSchema.fields.map(_.name)
+  }
+
+  test("Run algorithm with a constant column") {
+    val dataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
+
+    import org.apache.spark.sql.functions.lit
+    val datasetWithConst = dataset.withColumn("constant", lit(1))
+    val algo = new H2OKMeans()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setK(3)
+      .setFeaturesCols("constant")
+
+    val thrown = intercept[IllegalArgumentException] {
+      algo.fit(datasetWithConst)
+    }
+    assert(
+      thrown.getMessage.startsWith("H2O could not use any of the specified features" +
+        " columns: 'constant' because they are all constants. H2O requires at least one non-constant column."))
   }
 }
