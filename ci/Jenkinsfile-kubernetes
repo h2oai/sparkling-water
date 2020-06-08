@@ -307,7 +307,7 @@ EOF
     return sh(
             script: "kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'",
             returnStdout: true
-    ).trim()
+    ).trim() + ":54321"
 }
 
 def stopExternalH2OBackend() {
@@ -315,32 +315,32 @@ def stopExternalH2OBackend() {
 }
 
 def testRExternalBackend(registryId, master, version) {
-    def leaderNodeIp = startExternalH2OBackend()
-    sh "echo Leader Node is $leaderNodeIp"
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    sh "echo Leader Node is $leaderNodeIpPort"
     //TODO
     stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
-    def leaderNodeIp = startExternalH2OBackend()
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
     //TODO
     stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClientMode(registryId, master, version) {
-    def leaderNodeIp = startExternalH2OBackend()
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
     //TODO
     stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
-    def leaderNodeIp = startExternalH2OBackend()
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
     //TODO
     stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClientMode(registryId, master, version) {
-    def leaderNodeIp = startExternalH2OBackend()
+    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
     //TODO
     stopExternalH2OBackend()
 }
