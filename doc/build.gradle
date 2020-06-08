@@ -47,6 +47,10 @@ task substitute() {
   }
 }
 
+task deleteDocTrees(type: Delete) {
+  delete "${buildDir}/site/.doctrees"
+}
+
 sphinx {
   environments = ["PYTHONWARNINGS" : ""]
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesSupportSinceSpark)) {
@@ -95,7 +99,8 @@ createVersionFile.dependsOn cleanDoc
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
 substitute.dependsOn sphinx
-sourcesDocJar.dependsOn substitute
+deleteDocTrees.dependsOn substitute
+sourcesDocJar.dependsOn deleteDocTrees
 docJar.dependsOn sourcesDocJar
 site.dependsOn docJar
 
