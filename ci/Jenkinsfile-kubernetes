@@ -303,7 +303,7 @@ spec:
             value: '8081'
 EOF
     """
-
+    sh 'sleep 60'
     return sh(
             script: "kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'",
             returnStdout: true
