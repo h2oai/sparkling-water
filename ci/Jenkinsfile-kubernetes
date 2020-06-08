@@ -3,7 +3,7 @@
 
 properties(
         [
-                //pipelineTriggers([cron('H 16 * * *')]),
+                pipelineTriggers([cron('H 16 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -419,7 +419,7 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                //commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
             }
         }
     }
