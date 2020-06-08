@@ -324,7 +324,15 @@ Kubernetes. This can be achieved by the following steps:
 It is important the image to be `h2oai/sparkling-water-external-backend:SUBST_SW_VERSION` and not the base H2O image.
 Sparkling Water enhances the H2O image with additional dependencies.
 
-For more information, please read the `H2O on Kubernetes Blog Post <https://www.h2o.ai/blog/running-h2o-cluster-on-a-kubernetes-cluster/>`__.
+For more information about H2O on Kubernetes, please read the
+`H2O on Kubernetes Blog Post <https://www.h2o.ai/blog/running-h2o-cluster-on-a-kubernetes-cluster/>`__.
+
+In order to Sparkling Water to be able to connect to the H2O cluster, we need to get the H2O
+leader node address. This address can be obtained as:
+
+.. code:: bash
+
+    kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'
 
 After we created the external H2O backend, we can connect to it from Sparkling Water clients as:
 

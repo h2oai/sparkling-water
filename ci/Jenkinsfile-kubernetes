@@ -303,38 +303,43 @@ spec:
             value: '8081'
 EOF
     """
+
+    return sh(
+            script: "kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'",
+            returnStdout: true
+    ).trim()
 }
 
 def stopExternalH2OBackend() {
-
+    sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
 }
 
 def testRExternalBackend(registryId, master, version) {
-    startExternalH2OBackend()
+    def leaderNodeIp = startExternalH2OBackend()
     //TODO
     stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
-    startExternalH2OBackend()
+    def leaderNodeIp = startExternalH2OBackend()
     //TODO
     stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClientMode(registryId, master, version) {
-    startExternalH2OBackend()
+    def leaderNodeIp = startExternalH2OBackend()
     //TODO
     stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
-    startExternalH2OBackend()
+    def leaderNodeIp = startExternalH2OBackend()
     //TODO
     stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClientMode(registryId, master, version) {
-    startExternalH2OBackend()
+    def leaderNodeIp = startExternalH2OBackend()
     //TODO
     stopExternalH2OBackend()
 }
