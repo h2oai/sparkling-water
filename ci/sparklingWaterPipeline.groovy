@@ -407,7 +407,7 @@ def publishNightlyDockerImages() {
                         echo "doRelease=true" >> gradle.properties
                         ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                        """
-                    params.commons.withDockerHubCredentials {
+                    config.commons.withDockerHubCredentials {
                         docker.withRegistry('', 'dockerhub') {
                             dir("./dist/build/zip/sparkling-water-${version}") {
                                 publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
