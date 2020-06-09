@@ -362,8 +362,8 @@ def testScalaExternalBackendClientMode(registryId, master, version) {
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
-        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=${image} -- \
+        ${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
