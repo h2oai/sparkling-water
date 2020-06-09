@@ -247,6 +247,21 @@ and in case regression problem the predicted number. If we need to access more d
 additional column will be created during predictions, by default named ``detailed_prediction`` which contains, for example,
 predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
 
+Customizing the MOJO Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
+
+- ``predictionCol`` - Specifies the name of the generated prediction column. Default value is `prediction`
+- ``detailedPredictionCol`` - Specified the name of the generated detailed prediction column. The detailed prediction column,
+  if enabled, contains additional details such as probabilities, shapley values etc. The default value is `detailed_prediction`.
+- ``withDetailedPredictionCol`` - Enables or disables generation of detailed prediction column. It is disabled by default.
+- ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default it is disabled.
+- ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default it is disabled.
+- ``withContributions`` - Enables or disables computing shapley values. Shapley values are generated as a sub-column for the de
+  detailed prediction column. Therefore to obtain shapley value, both this option and ``withDetailedPredictionCol`` needs to be
+  enabled. By default it is disabled.
+
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
