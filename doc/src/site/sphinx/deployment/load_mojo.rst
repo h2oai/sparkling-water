@@ -107,7 +107,7 @@ Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO st
 The call loads the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate_mojo.zip``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
 
 
-You can also manually specify the type of data source you need to use, in that case, you need to provide the schema:
+We can also manually specify the type of data source we need to use, in that case, we need to provide the schema:
 
 
 .. content-tabs::
@@ -247,13 +247,28 @@ and in case regression problem the predicted number. If we need to access more d
 additional column will be created during predictions, by default named ``detailed_prediction`` which contains, for example,
 predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
 
+Customizing the MOJO Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
+
+- ``predictionCol`` - Specifies the name of the generated prediction column. Default value is `prediction`.
+- ``detailedPredictionCol`` - Specifies the name of the generated detailed prediction column. The detailed prediction column,
+  if enabled, contains additional details, such as probabilities, shapley values etc. The default value is `detailed_prediction`.
+- ``withDetailedPredictionCol`` - Enables or disables the generation of the detailed prediction column. By default, it is disabled.
+- ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
+- ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
+- ``withContributions`` - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the
+  detailed prediction column. Therefore, to compute Shapley values, both this option and ``withDetailedPredictionCol`` needs to be
+  enabled. By default, it is disabled.
+
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Obtaining Domain Values
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain domain values of the trained model, you can run ``getDomainValues()`` on the model. This call
+To obtain domain values of the trained model, we can run ``getDomainValues()`` on the model. This call
 returns a mapping from a column name to it's domain in a form of array.
 
 Obtaining Model Category

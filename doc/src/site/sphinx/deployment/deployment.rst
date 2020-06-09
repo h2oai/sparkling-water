@@ -6,8 +6,8 @@ Deployment
 
    backends.rst
    load_mojo.rst
+   load_mojo_pipeline.rst
    pysparkling_pipeline.rst
-   scoring_mojo_pipeline.rst
 
 **Amazon EMR**
 
