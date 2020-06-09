@@ -403,11 +403,10 @@ def publishNightlyDockerImages() {
                     sh "sudo chmod 666 /var/run/docker.sock"
                     def version = getNightlyVersion(config)
                     sh """
-                    sed -i 's/^version=.*\$/version=${version}/' gradle.properties
-                    echo "doRelease=true" >> gradle.properties
-                    ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
-                   """
-                    sh "${getGradleCommand(config)} dist -Pspark=${config.sparkMajorVersion} -Pversion=${version}"
+                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                        echo "doRelease=true" >> gradle.properties
+                        ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
+                       """
                     params.commons.withDockerHubCredentials {
                         docker.withRegistry('', 'dockerhub') {
                             dir("./dist/build/zip/sparkling-water-${version}") {
