@@ -426,7 +426,7 @@ node("docker") {
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test Scala internal backend, Spark ${sparkMajorVersion}") {
-            def valuesAsString = "version=3.32.0.1-1-2.4\ndocker_registry_id=524466471676\ncluster_name=SWKubernetes-8ZRRJyAG\ncluster_endpoint=https://91F60C742ECD736D3441B2D8FA007C6E.gr7.us-east-2.eks.amazonaws.com\n"
+            def valuesAsString = "version=3.32.0.1-1\ndocker_registry_id=524466471676\ncluster_name=SWKubernetes-8ZRRJyAG\ncluster_endpoint=https://91F60C742ECD736D3441B2D8FA007C6E.gr7.us-east-2.eks.amazonaws.com\n"
             writeFile file: "properties", text: valuesAsString
             stash name: "properties", includes: "properties"
             unstash "properties"
