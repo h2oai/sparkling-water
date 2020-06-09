@@ -91,14 +91,14 @@ Prepare the dataset to score on:
 
         .. code:: scala
 
-            val dataFrame = spark.read.option("header", "true").csv("file:///path/to/the/data.csv")
+            val dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
 
     .. tab-container:: Python
         :title: Python
 
         .. code:: python
 
-            dataFrame = spark.read.csv("file:///path/to/the/data.csv", header=True)
+            dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
 
 And finally, score the mojo on the loaded dataset:
 
