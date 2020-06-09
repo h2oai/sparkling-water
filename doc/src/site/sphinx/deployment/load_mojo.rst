@@ -107,7 +107,7 @@ Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO st
 The call loads the mojo file from the following location ``hdfs://{server}:{port}/user/peter/prostate_mojo.zip``, where ``{server}`` and ``{port}`` is automatically filled in by Spark.
 
 
-You can also manually specify the type of data source you need to use, in that case, you need to provide the schema:
+We can also manually specify the type of data source we need to use, in that case, we need to provide the schema:
 
 
 .. content-tabs::
@@ -268,7 +268,7 @@ Methods available on MOJO Model
 Obtaining Domain Values
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain domain values of the trained model, you can run ``getDomainValues()`` on the model. This call
+To obtain domain values of the trained model, we can run ``getDomainValues()`` on the model. This call
 returns a mapping from a column name to it's domain in a form of array.
 
 Obtaining Model Category

@@ -7,7 +7,7 @@ Sparkling Water.
 
 **Note**: Sparkling Water is backward compatible with MOJO versions produced by different Driverless AI versions.
 
-One advantage of scoring the MOJO artifacts is that ``H2OContext`` does not have to be created if you only want to
+One advantage of scoring the MOJO artifacts is that ``H2OContext`` does not have to be created if we only want to
 run predictions on MOJOs using Spark. This is because the scoring is independent of the H2O run-time.
 
 Requirements
@@ -24,7 +24,7 @@ After we downloaded the Sparkling Water distribution, extract it, and go to the 
 Loading and Score the MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, start the environment for your language with Driverless AI license. There are two variants. We can use
+First, start the environment for the desired language with Driverless AI license. There are two variants. We can use
 Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark directly
 and add the dependencies manually.
 
@@ -54,7 +54,7 @@ and add the dependencies manually.
             ./bin/pysparkling --jars license.sig
 
 
-At this point, you should have Spark interactive terminal where we can carry out predictions.
+At this point, we should have Spark interactive terminal where we can carry out predictions.
 For productionalizing the scoring process, we can use the same configuration,
 except instead of using Spark shell, we would submit the application using ``./bin/spark-submit``.
 
