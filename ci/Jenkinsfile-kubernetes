@@ -342,7 +342,7 @@ static String externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, maste
 
 static String scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
     return """
-         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "scala")}
+         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "scala")} \
          --class ai.h2o.sparkling.InitTest \
          local:///opt/sparkling-water/tests/initTest.jar
         """
@@ -371,7 +371,7 @@ def testScalaExternalBackendClientMode(registryId, master, version) {
 
 static String pythonExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
     return """
-         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "python")}
+         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "python")} \
          local:///opt/sparkling-water/tests/initTest.py
         """
 }
