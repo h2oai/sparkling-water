@@ -33,7 +33,8 @@ if (extraOptions == "") {
   }
 }
 
-if (extraOptionsParsed["spark.ext.h2o.backend.cluster.mode"] == "external") {
+optionName <- "spark.ext.h2o.backend.cluster.mode"
+if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] == "external") {
   numExecutors <- 1
 } else {
   numExecutors <- 2
