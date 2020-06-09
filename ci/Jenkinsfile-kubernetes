@@ -323,21 +323,20 @@ def testRExternalBackend(registryId, master, version) {
 }
 
 static String externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, language) {
-    return """
-        \$SPARK_HOME/bin/spark-submit \
-         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
-         --conf spark.kubernetes.driver.pod.name=driver-${language} \
-         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
-         --master $master \
-         --deploy-mode $mode \
-         --name test \
-         --conf spark.ext.h2o.backend.cluster.mode=external \
-         --conf spark.ext.h2o.external.start.mode=manual \
-         --conf spark.ext.h2o.hadoop.memory=2G \
-         --conf spark.ext.h2o.cloud.representative=$leaderNodeIpPort \
-         --conf spark.ext.h2o.cloud.name=root \
-         --conf spark.executor.instances=2 \
-        """
+    return """\$SPARK_HOME/bin/spark-submit \
+             --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
+             --conf spark.kubernetes.driver.pod.name=driver-${language} \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --master $master \
+             --deploy-mode $mode \
+             --name test \
+             --conf spark.ext.h2o.backend.cluster.mode=external \
+             --conf spark.ext.h2o.external.start.mode=manual \
+             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.cloud.representative=$leaderNodeIpPort \
+             --conf spark.ext.h2o.cloud.name=root \
+             --conf spark.executor.instances=2 \
+            """
 }
 
 static String scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
