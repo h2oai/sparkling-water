@@ -100,8 +100,7 @@ sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
 substitute.dependsOn sphinx
 deleteDocTrees.dependsOn substitute
-sourcesDocJar.dependsOn deleteDocTrees
-docJar.dependsOn sourcesDocJar
+docJar.dependsOn sourcesDocJar, deleteDocTrees
 site.dependsOn docJar
 
 defineStandardPublication().call()
