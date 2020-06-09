@@ -146,17 +146,11 @@ Customizing the MOJO Settings
 We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
 
 - ``predictionCol`` - Specifies the name of the generated prediction column. Default value is `prediction`
-- ``detailedPredictionCol`` - Specified the name of the generated detailed prediction column. The detailed prediction column,
-  if enabled, contains additional details such as probabilities, shapley values etc. The default value is `detailed_prediction`.
-- ``withDetailedPredictionCol`` - Enables or disables generation of detailed prediction column. It is disabled by default.
 - ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default it is disabled.
 - ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default it is disabled.
 - ``namedMojoOutputColumns`` - Enables or disables named output columns. When enabled, the ``predictionCol`` contains sub-columns
   with names corresponding the the labels we try to predict. If disables, the ``predictionCol`` contains the array of predictions without
   the column names. By default it is enabled.
-- ``withContributions`` - Enables or disables computing shapley values. Shapley values are generated as a sub-column for the de
-  detailed prediction column. Therefore to obtain shapley value, both this option and ``withDetailedPredictionCol`` needs to be
-  enabled. By default it is disabled.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
