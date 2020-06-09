@@ -21,17 +21,36 @@ master <- Sys.getenv("KUBERNETES_MASTER")
 registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
+extraOptions <- Sys.getenv("EXTRA_OPTIONS")
+if (extraOptions == "") {
+  extraOptionsParsed <- NULL
+} else {
+  options <- unlist(strsplit(extraOptions," "))
+  extraOptionsParsed <- list()
+  for (pair in options) {
+    parsedPair <- unlist(strsplit(pair, "="))
+    extraOptionsParsed[parsedPair[1]] <- parsedPair[2]
+  }
+}
+
+optionName <- "spark.ext.h2o.backend.cluster.mode"
+if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] == "external") {
+  numExecutors <- 1
+} else {
+  numExecutors <- 2
+}
 
 config <- spark_config_kubernetes(master = master,
                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                  account = "default",
                                  driver ="driver-r",
-                                 executors = 3,
+                                 executors = numExecutors,
+                                 conf = extraOptionsParsed,
                                  ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <-  sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
-expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 3)
+expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 2)
 
 # Test conversions
 df <- as.data.frame(t(c(1, 2, 3, 4, "A")))
