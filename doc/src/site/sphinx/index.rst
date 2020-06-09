@@ -25,6 +25,7 @@ Have questions about Sparkling Water? Post them on Stack Overflow using the `spa
    design/design
    configuration/configuration
    deployment/deployment
+   ml/ml
    tutorials/tutorials
    devel/devel
    pysparkling

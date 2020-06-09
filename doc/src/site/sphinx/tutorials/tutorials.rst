@@ -31,19 +31,6 @@ How to...
    h2oframe_as_data_source
    import_export_s3
 
-**Modelling**
-
-.. toctree::
-   :maxdepth: 2
-
-   sw_xgboost
-   sw_automl
-   sw_grid
-   sw_kmeans
-   sw_target_encoder
-   sw_drf
-   shap_values
-
 **Logging**
 
 .. toctree::
