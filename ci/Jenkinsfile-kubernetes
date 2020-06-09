@@ -19,7 +19,7 @@ def readPropertiesFile(file) {
     return properties
 }
 
-def getKubernetesSparkVersions(props) {
+static def getKubernetesSparkVersions(props) {
     def sparkVersions = props["supportedSparkVersions"].split(" ").toList()
     def boundaryVersion = props["kubernetesSupportSinceSpark"]
     def list = new ArrayList<String>()
@@ -27,7 +27,7 @@ def getKubernetesSparkVersions(props) {
     return list
 }
 
-def getSparklingVersion(props, sparkMajorVersion) {
+static String getSparklingVersion(props, sparkMajorVersion) {
     return "${props['version'].replace("-SNAPSHOT", "")}-${sparkMajorVersion}"
 }
 
