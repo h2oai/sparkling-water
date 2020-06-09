@@ -68,7 +68,7 @@ Now Load the MOJO as:
         .. code:: scala
 
             import ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel
-            val settings = H2OMOJOSettings()
+            val settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = true)
             val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
 
     .. tab-container:: Python
@@ -77,7 +77,7 @@ Now Load the MOJO as:
         .. code:: python
 
             from pysparkling.ml import H2OMOJOPipelineModel
-            settings = H2OMOJOSettings()
+            settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = True)
             mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
 
 In the examples above ``settings`` is an optional argument. If it's not specified, the default values are used.
