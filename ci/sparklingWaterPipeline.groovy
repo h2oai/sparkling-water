@@ -115,7 +115,7 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     //sh "sudo -E /usr/sbin/startup.sh"
-                    //buildAndLint()(config)
+                    buildAndLint()(config)
                     //unitTests()(config)
                     //pyUnitTests()(config)
                     //rUnitTests()(config)
@@ -397,6 +397,7 @@ def publishNightlyDockerImages() {
         stage('Publish to Docker Hub') {
             if (config.uploadNightlyDockerImages.toBoolean()) {
                 config.commons.withSigningCredentials {
+                    unstash "shared"
                     sh "sudo apt -y install docker.io"
                     sh "sudo service docker start"
                     sh "sudo chmod 666 /var/run/docker.sock"
