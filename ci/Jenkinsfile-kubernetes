@@ -341,11 +341,10 @@ static String externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, maste
 }
 
 static String scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
-    return """
-         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "scala")} \
-         --class ai.h2o.sparkling.InitTest \
-         local:///opt/sparkling-water/tests/initTest.jar
-        """
+    return """${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "scala")} \
+              --class ai.h2o.sparkling.InitTest \
+              local:///opt/sparkling-water/tests/initTest.jar
+            """
 }
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
@@ -362,18 +361,17 @@ def testScalaExternalBackendClientMode(registryId, master, version) {
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
-        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=${image} -- \
-        ${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
 static String pythonExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
-    return """
-         ${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "python")} \
-         local:///opt/sparkling-water/tests/initTest.py
-        """
+    return """${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "python")} \
+              local:///opt/sparkling-water/tests/initTest.py
+            """
 }
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
