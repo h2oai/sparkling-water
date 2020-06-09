@@ -19,7 +19,7 @@ node("docker") {
 }
 
 pipeline(params) { p ->
-    sparkMajorVersions = sparkVersions
+    sparkMajorVersions = "2.1"
     runUnitTests = "false"
     runPyUnitTests = "false"
     runRUnitTests = "false"
