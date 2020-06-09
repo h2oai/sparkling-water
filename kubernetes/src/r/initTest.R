@@ -25,7 +25,12 @@ extraOptions <- Sys.getenv("EXTRA_OPTIONS")
 if (extraOptions == "") {
   extraOptionsParsed <- NULL
 } else {
-  extraOptionsParsed <- unlist(strsplit(extraOptions," "))
+  options <- unlist(strsplit(extraOptions," "))
+  extraOptionsParsed <- list()
+  for (pair in options) {
+    parsedPair <- unlist(strsplit(pair, "="))
+    extraOptionsParsed[parsedPair[1]] <- parsedPair[2]
+  }
 }
 
 config <- spark_config_kubernetes(master = master,
