@@ -432,8 +432,8 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             withTestEnv(commons, image) {
-                //testScalaInternalBackendClusterMode(registryId, master, version)
-                //testScalaInternalBackendClientMode(registryId, master, version)
+                testScalaInternalBackendClusterMode(registryId, master, version)
+                testScalaInternalBackendClientMode(registryId, master, version)
                 testScalaExternalBackendClusterMode(registryId, master, version)
                 testScalaExternalBackendClientMode(registryId, master, version)
             }
