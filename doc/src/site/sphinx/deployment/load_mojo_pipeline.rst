@@ -3,9 +3,9 @@ Importing MOJO Pipelines from Driverless AI
 
 MOJO scoring pipeline artifacts, created in Driverless AI, can be used in Spark to carry out predictions in parallel
 using the Sparkling Water API. This section shows how to load and run predictions on the MOJO scoring pipeline in
-Sparkling Water
+Sparkling Water.
 
-**Note**: Sparkling Water is backwards compatible with MOJO versions produced by different Driverless AI versions.
+**Note**: Sparkling Water is backward compatible with MOJO versions produced by different Driverless AI versions.
 
 One advantage of scoring the MOJO artifacts is that ``H2OContext`` does not have to be created if you only want to
 run predictions on MOJOs using Spark. This is because the scoring is independent of the H2O run-time.
@@ -16,10 +16,10 @@ Requirements
 In order to use the MOJO scoring pipeline, Driverless AI license has to be passed to Spark.
 This can be achieved via ``--jars`` argument of the Spark launcher scripts.
 
-**Note**: In Local Spark mode, please use ``--driver-class-path`` to specify path to the license file.
+**Note**: In Local Spark mode, please use ``--driver-class-path`` to specify the path to the license file.
 
 We also need Sparkling Water distribution which can be obtained from `H2O Download page <https://www.h2o.ai/download/>`__.
-After we downloaded the Sparkling Water distribution, extract it and go to the extracted directory.
+After we downloaded the Sparkling Water distribution, extract it, and go to the extracted directory.
 
 Loading and Score the MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,7 +137,7 @@ We can select the predictions as:
             predictions.select("prediction")
 
 The output data frame contains all the original columns plus the prediction column which is by default named
-``prediction``. The prediction columns contains all the prediction detail. Its name can be modified via the ``H2OMOJOSettings``
+``prediction``. The prediction column contains all the prediction detail. Its name can be modified via the ``H2OMOJOSettings``
 object.
 
 Customizing the MOJO Settings
@@ -145,12 +145,12 @@ Customizing the MOJO Settings
 
 We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
 
-- ``predictionCol`` - Specifies the name of the generated prediction column. Default value is `prediction`
-- ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default it is disabled.
-- ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default it is disabled.
+- ``predictionCol`` - Specifies the name of the generated prediction column. The default value is `prediction`.
+- ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
+- ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
 - ``namedMojoOutputColumns`` - Enables or disables named output columns. When enabled, the ``predictionCol`` contains sub-columns
-  with names corresponding the the labels we try to predict. If disables, the ``predictionCol`` contains the array of predictions without
-  the column names. By default it is enabled.
+  with names corresponding the the labels we try to predict. If disabled, the ``predictionCol`` contains the array of predictions without
+  the column names. By default, it is enabled.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
