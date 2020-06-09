@@ -256,16 +256,10 @@ external H2O backend on Kubernetes. To achieve this, please follow the steps on 
 **one important exception**. The image to be used need to be `h2oai/sparkling-water-external-backend:SUBST_SW_VERSION` and not the base H2O image as mentioned in
 H2O documentation as Sparkling Water enhances the H2O image with additional dependencies.
 
-In order for Sparkling Water to be able to connect to the H2O cluster, we need to get the H2O
-leader node address. The address is used to specify H2O endpoint during Sparkling Water
-configuration phase. First, make wait for the H2O cluster to cloud up and then obtain the
-address as:
-
-.. code:: bash
-
-    kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'
-
-We will reference the leader node ip in the examples bellow as *LEADER_NODE_IP*.
+In order for Sparkling Water to be able to connect to the H2O cluster, we need to get the address of the leader node
+of the H2O cluster. If you followed the H2O documentation on how to start H2O cluster on Kubernetes, the address is
+``h2o-service.default.svc.cluster.local:54321`` where the first part is H2O headless service name and the second part is name
+of the namespace.
 
 After we created the external H2O backend, we can connect to it from Sparkling Water clients as:
 
@@ -290,7 +284,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=manual \
             --conf spark.ext.h2o.hadoop.memory=2G \
-            --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+            --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.jar
 
@@ -330,7 +324,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
              --conf spark.ext.h2o.hadoop.memory=2G \
-             --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3
 
@@ -364,7 +358,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
              --conf spark.ext.h2o.hadoop.memory=2G \
-             --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
             local:///opt/sparkling-water/tests/initTest.jar
@@ -387,7 +381,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=manual \
             --conf spark.ext.h2o.hadoop.memory=2G \
-            --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+            --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.py
 
@@ -427,7 +421,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
              --conf spark.ext.h2o.hadoop.memory=2G \
-             --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
 
@@ -460,7 +454,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
              --conf spark.ext.h2o.hadoop.memory=2G \
-             --conf spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321 \
+             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
             local:///opt/sparkling-water/tests/initTest.py
@@ -495,7 +489,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
                                      "spark.ext.h2o.backend.cluster.mode=external",
                                      "spark.ext.h2o.external.start.mode=manual",
                                      "spark.ext.h2o.hadoop.memory=2G",
-                                     "spark.ext.h2o.cloud.representative=LEADER_NODE_IP:54321",
+                                     "spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321",
                                      "spark.ext.h2o.cloud.name=root")
                              ports = c(8880, 8881, 4040, 54321))
             config["spark.home"] <- Sys.getenv("SPARK_HOME")

@@ -297,10 +297,6 @@ spec:
 EOF
     """
     sh 'sleep 60'
-    return sh(
-            script: "kubectl get endpoints h2o-service -o jsonpath='{.subsets[0].addresses[0].ip}'",
-            returnStdout: true
-    ).trim() + ":54321"
 }
 
 def stopExternalH2OBackend() {
@@ -308,13 +304,13 @@ def stopExternalH2OBackend() {
 }
 
 def testRExternalBackend(registryId, master, version) {
-    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
-        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=$leaderNodeIpPort spark.ext.h2o.cloud.name=root"
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
@@ -322,7 +318,7 @@ def testRExternalBackend(registryId, master, version) {
     stopExternalH2OBackend()
 }
 
-static String externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, language) {
+static String externalBackendSharedSubmitCmd(registryId, master, version, mode, language) {
     return """\$SPARK_HOME/bin/spark-submit \
              --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
              --conf spark.kubernetes.driver.pod.name=driver-${language} \
@@ -333,62 +329,62 @@ static String externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, maste
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
              --conf spark.ext.h2o.hadoop.memory=2G \
-             --conf spark.ext.h2o.cloud.representative=$leaderNodeIpPort \
+             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=2 \
             """
 }
 
-static String scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "scala")} \
+static String scalaExternalBackendSubmitCmd(registryId, master, version, mode) {
+    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "scala")} \
               --class ai.h2o.sparkling.InitTest \
               local:///opt/sparkling-water/tests/initTest.jar
             """
 }
 
 def testScalaExternalBackendClusterMode(registryId, master, version) {
-    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-scala --ignore-not-found"
-    sh "${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "cluster")}"
+    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
 def testScalaExternalBackendClientMode(registryId, master, version) {
-    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-static String pythonExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(leaderNodeIpPort, registryId, master, version, mode, "python")} \
+static String pythonExternalBackendSubmitCmd(registryId, master, version, mode) {
+    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "python")} \
               local:///opt/sparkling-water/tests/initTest.py
             """
 }
 
 def testPythonExternalBackendClusterMode(registryId, master, version) {
-    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-python --ignore-not-found"
-    sh "${pythonExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "cluster")}"
+    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
 def testPythonExternalBackendClientMode(registryId, master, version) {
-    def leaderNodeIpPort = startExternalH2OBackend(registryId, version)
+    startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(leaderNodeIpPort, registryId, master, version, "client")}
+        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
