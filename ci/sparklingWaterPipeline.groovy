@@ -114,13 +114,13 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
-                    sh "sudo -E /usr/sbin/startup.sh"
-                    buildAndLint()(config)
-                    unitTests()(config)
-                    pyUnitTests()(config)
-                    rUnitTests()(config)
-                    integTests()(config)
-                    pyIntegTests()(config)
+                    //sh "sudo -E /usr/sbin/startup.sh"
+                    //buildAndLint()(config)
+                    //unitTests()(config)
+                    //pyUnitTests()(config)
+                    //rUnitTests()(config)
+                    //integTests()(config)
+                    //pyIntegTests()(config)
                 }
             }
         }
@@ -132,7 +132,7 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
-                    publishNightly()(config)
+                    //publishNightly()(config)
                     publishNightlyDockerImages()(config)
                 }
             }
