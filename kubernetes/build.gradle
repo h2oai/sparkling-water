@@ -65,7 +65,8 @@ task createRDockerfile(type: Dockerfile) {
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")'
                 """
-  runCommand "R -e \"install.packages('h2o', type = 'source', repos = 'http://h2o-release.s3.amazonaws.com/h2o/rel-${h2oMajorName}/${h2oBuild}/R')\""
+  copyFile("h2o.tar.gz", "/opt/spark/R/lib/h2o.tar.gz")
+  runCommand "cd /opt/spark/R/lib && R CMD INSTALL h2o.tar.gz"
   copyFile("rsparkling_${version}.tar.gz", "/opt/spark/R/lib/rsparkling_${version}.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL rsparkling_${version}.tar.gz"
   copyFile("r/initTest.R", "/opt/sparkling-water/tests/initTest.R")
@@ -116,4 +117,5 @@ task copyScalaExtras(type: Copy) {
   from jar
   into file("$buildDir/dist/scala")
 }
+
 task prepareKubernetesFiles(dependsOn: [copyPythonExtras, copyRExtras, copyScalaExtras, buildDockerfiles])

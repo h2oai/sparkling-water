@@ -362,6 +362,9 @@ def publishNightly() {
                         def path = getS3Path(config)
                         sh """
                             sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorName=${getH2OBranchMajorVersion()}/' gradle.properties
+                            sed -i 's/^h2oBuild=.*\$/h2oMajorName=${getH2OBranchBuildVersion()}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
                             ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
@@ -413,6 +416,9 @@ def publishNightlyDockerImages() {
                         def version = getNightlyVersion(config)
                         sh """
                         sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorName=${getH2OBranchMajorVersion()}/' gradle.properties
+                        sed -i 's/^h2oBuild=.*\$/h2oMajorName=${getH2OBranchBuildVersion()}/' gradle.properties
                         echo "doRelease=true" >> gradle.properties
                         ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                        """
