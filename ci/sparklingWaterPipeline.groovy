@@ -76,7 +76,9 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 checkout scm
                 config.commons = load 'ci/commons.groovy'
                 config.put("sparkVersion", getSparkVersion(config))
-
+                def kubernetesBoundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
+                def kubernetesBoundaryVersion = kubernetesBoundaryVersionLine.split("=")[1]
+                config.put("kubernetesBoundaryVersion", kubernetesBoundaryVersion)
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
                 } else {
@@ -392,28 +394,36 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
     """
 }
 
+def getKubernetesSparkVersions(sparkMajorVersions, boundaryVersion) {
+    def list = new ArrayList<String>()
+    list.addAll(sparkMajorVersions.subList(sparkMajorVersions.indexOf(boundaryVersion), sparkMajorVersions.size()))
+    return list
+}
+
 def publishNightlyDockerImages() {
     return { config ->
-        stage('Publish to Docker Hub') {
-            if (config.uploadNightlyDockerImages.toBoolean()) {
-                config.commons.withSigningCredentials {
-                    unstash "shared"
-                    sh "sudo apt -y install docker.io"
-                    sh "sudo service docker start"
-                    sh "sudo chmod 666 /var/run/docker.sock"
-                    def version = getNightlyVersion(config)
-                    sh """
+        getKubernetesSparkVersions(config.sparkMajorVersions, config.kubernetesBoundaryVersion).each {
+            stage('Publish to Docker Hub') {
+                if (config.uploadNightlyDockerImages.toBoolean()) {
+                    config.commons.withSigningCredentials {
+                        unstash "shared"
+                        sh "sudo apt -y install docker.io"
+                        sh "sudo service docker start"
+                        sh "sudo chmod 666 /var/run/docker.sock"
+                        def version = getNightlyVersion(config)
+                        sh """
                         sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                         echo "doRelease=true" >> gradle.properties
                         ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
                        """
-                    config.commons.withDockerHubCredentials {
-                        docker.withRegistry('', 'dockerhub') {
-                            dir("./dist/build/zip/sparkling-water-${version}") {
-                                publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
-                                publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
-                                publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
-                                publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
+                        config.commons.withDockerHubCredentials {
+                            docker.withRegistry('', 'dockerhub') {
+                                dir("./dist/build/zip/sparkling-water-${version}") {
+                                    publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
+                                    publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
+                                    publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
+                                    publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
+                                }
                             }
                         }
                     }
