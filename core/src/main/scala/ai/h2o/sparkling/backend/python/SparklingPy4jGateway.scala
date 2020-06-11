@@ -28,7 +28,7 @@ object SparklingPy4jGateway extends Logging {
       logError("GatewayServer failed to bind; exiting")
       System.exit(1)
     } else {
-      logDebug(s"Started PythonGatewayServer on port $boundPort")
+      logInfo(s"Running Py4j Gateway on port ${boundPort}")
     }
 
     // Exit on EOF or broken pipe to ensure that this process dies when the Python driver dies:
@@ -50,7 +50,7 @@ object SparklingPy4jGateway extends Logging {
   private val PROP_GATEWAY_PORT = ("spark.ext.h2o.py4j.gateway.port", None)
   private val PROP_GATEWAY_SECRET_FILE_NAME = ("spark.ext.h2o.py4j.gateway.secret.file.name", None)
 
-  private def gatewayPort(conf: SparkConf)= {
+  private def gatewayPort(conf: SparkConf) = {
     val option = conf.getOption(PROP_GATEWAY_PORT._1)
     if (option.isEmpty) {
       throw new RuntimeException(s"Missing $PROP_GATEWAY_PORT")
@@ -58,7 +58,7 @@ object SparklingPy4jGateway extends Logging {
       option.get.toInt
     }
   }
-  private def gatewaySecretFileName(conf: SparkConf)= {
+  private def gatewaySecretFileName(conf: SparkConf) = {
     val option = conf.getOption(PROP_GATEWAY_SECRET_FILE_NAME._1)
     if (option.isEmpty) {
       throw new RuntimeException(s"Missing $PROP_GATEWAY_SECRET_FILE_NAME")
