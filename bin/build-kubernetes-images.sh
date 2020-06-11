@@ -65,6 +65,8 @@ if [ "$1" = "r" ]; then
   cp "$TOPDIR/rsparkling_$VERSION.tar.gz" "$WORKDIR"
   # Enable build Kubernetes images for nightlies. We build nightlies against specific H2O branches and in that
   # case, the name of H2O is always bleeding_edge
+  echo "${H2O_NAME}"
+  echo "http://h2o-release.s3.amazonaws.com/h2o/rel-${H2O_NAME}/${H2O_BUILD}/R/src/contrib/h2o_${H2O_VERSION}.${H2O_BUILD}.tar.gz"
   if [ "${H2O_NAME}" = "bleeding_edge" ]; then
     cp "$H2O_HOME/h2o-r/h2o_${H2O_VERSION}.99999.tar.gz" "$WORKDIR/h2o.tar.gz"
   else
