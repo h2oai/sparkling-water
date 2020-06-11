@@ -41,27 +41,7 @@ def testImportPysparklingStandaloneApp(integ_spark_conf):
 def testPy4jGatewayConnection(integ_spark_conf):
     token = "my_super_secret_token"
     startJavaGateway(integ_spark_conf, token)
-    gateway = JavaGateway(
-        gateway_parameters=GatewayParameters(
-            address="127.0.0.1",
-            port=55555,
-            auth_token=token,
-            auto_convert=True))
-    java_import(gateway.jvm, "org.apache.spark.SparkConf")
-    java_import(gateway.jvm, "org.apache.spark.api.java.*")
-    java_import(gateway.jvm, "org.apache.spark.api.python.*")
-    java_import(gateway.jvm, "org.apache.spark.ml.python.*")
-    java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
-    java_import(gateway.jvm, "org.apache.spark.resource.*")
-    java_import(gateway.jvm, "org.apache.spark.sql.*")
-    java_import(gateway.jvm, "org.apache.spark.sql.api.python.*")
-    java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
-    java_import(gateway.jvm, "scala.Tuple2")
-    jsc = gateway.jvm.org.apache.spark.api.java.JavaSparkContext(
-        gateway.jvm.org.apache.spark.SparkContext.getOrCreate())
-    SparkContext(gateway=gateway, jsc=jsc)
-    from pyspark.sql.session import SparkSession
-    spark = SparkSession.builder.getOrCreate()
+    spark = obtainSparkSession()
     from pysparkling import H2OContext
     hc = H2OContext.getOrCreate()
     spark.stop()
@@ -82,3 +62,26 @@ def startJavaGateway(integ_spark_conf, token):
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
     time.sleep(60)
     return proc
+
+def obtainSparkSession():
+    gateway = JavaGateway(
+        gateway_parameters=GatewayParameters(
+            address="127.0.0.1",
+            port=55555,
+            auth_token=token,
+            auto_convert=True))
+    java_import(gateway.jvm, "org.apache.spark.SparkConf")
+    java_import(gateway.jvm, "org.apache.spark.api.java.*")
+    java_import(gateway.jvm, "org.apache.spark.api.python.*")
+    java_import(gateway.jvm, "org.apache.spark.ml.python.*")
+    java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
+    java_import(gateway.jvm, "org.apache.spark.resource.*")
+    java_import(gateway.jvm, "org.apache.spark.sql.*")
+    java_import(gateway.jvm, "org.apache.spark.sql.api.python.*")
+    java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+    java_import(gateway.jvm, "scala.Tuple2")
+    jsc = gateway.jvm.org.apache.spark.api.java.JavaSparkContext(
+        gateway.jvm.org.apache.spark.SparkContext.getOrCreate())
+    SparkContext(gateway=gateway, jsc=jsc)
+    from pyspark.sql.session import SparkSession
+    return SparkSession.builder.getOrCreate()
