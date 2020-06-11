@@ -30,10 +30,9 @@ object SparklingPy4jGateway extends Logging {
     } else {
       logInfo(s"Running Py4j Gateway on port ${boundPort}")
     }
-
     // Exit on EOF or broken pipe to ensure that this process dies when the Python driver dies:
-    while (System.in.read() != -1) {
-      // Do nothing
+    while (!spark.sparkContext.isStopped) {
+      Thread.sleep(1000)
     }
     logDebug("Exiting due to broken pipe from Python driver")
     System.exit(0)

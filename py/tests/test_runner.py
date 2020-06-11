@@ -36,6 +36,6 @@ os.environ['PYSPARK_PYTHON'] = sys.executable
 
 sys.path.insert(0, dist)
 pytestConfigArgs = sys.argv[1].replace("'", "").split(" ")
-args = pytestConfigArgs + ["--dist", dist, "--spark_conf", ' '.join(sys.argv[3:])]
+args = pytestConfigArgs + ["-s", "--dist", dist, "--spark_conf", ' '.join(sys.argv[3:])]
 code = pytest.main(args)
 sys.exit(code)
