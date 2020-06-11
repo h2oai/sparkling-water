@@ -18,7 +18,7 @@
 import subprocess
 import time
 from py4j.java_gateway import *
-from pysparkling import *
+from pyspark.context import SparkContext
 
 from tests.integration.integ_test_utils import *
 
@@ -39,20 +39,12 @@ from tests.integration.integ_test_utils import *
 
 def testPy4jGatewayConnection(integ_spark_conf):
     token = "my_super_secret_token"
-    proc = startJavaGateway(integ_spark_conf, token)
+    startJavaGateway(integ_spark_conf, token)
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(
             address="127.0.0.1",
             port=55555,
             auth_token=token,
-            auto_convert=True))
-    from pyspark.context import SparkContext
-    from py4j.java_gateway import *
-    gateway = JavaGateway(
-        gateway_parameters=GatewayParameters(
-            address="127.0.0.1",
-            port=55555,
-            auth_token="my_super_secret_token",
             auto_convert=True))
     java_import(gateway.jvm, "org.apache.spark.SparkConf")
     java_import(gateway.jvm, "org.apache.spark.api.java.*")
@@ -69,6 +61,7 @@ def testPy4jGatewayConnection(integ_spark_conf):
     SparkContext(gateway=gateway, jsc=jsc)
     from pyspark.sql.session import SparkSession
     spark = SparkSession.builder.getOrCreate()
+    from pysparkling import H2OContext
     hc = H2OContext.getOrCreate()
     spark.stop()
 
