@@ -23,25 +23,10 @@ from pyspark.context import SparkContext
 from tests.integration.integ_test_utils import *
 
 
-def testHamOrSpamPipelineAlgos(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/HamOrSpamMultiAlgorithmDemo.py")
-    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
-
-
-def testChicagoCrime(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/ChicagoCrimeDemo.py")
-    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
-
-
-def testImportPysparklingStandaloneApp(integ_spark_conf):
-    return_code = launch(integ_spark_conf, "examples/tests/pysparkling_ml_import_overrides_spark_test.py")
-    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
-
-
 def testPy4jGatewayConnection(integ_spark_conf):
     token = "my_super_secret_token"
     startJavaGateway(integ_spark_conf, token)
-    spark = obtainSparkSession()
+    spark = obtainSparkSession(token)
     from pysparkling import H2OContext
     hc = H2OContext.getOrCreate()
     spark.stop()
@@ -53,7 +38,7 @@ def startJavaGateway(integ_spark_conf, token):
 
     cmd = [
         get_submit_script(integ_spark_conf["spark.test.home"]),
-        "--class", "ai.h2o.sparkling.backend.python.SparklingPy4jGateway",
+        "--class", "ai.h2o.sparkling.backend.SparklingGateway",
         "--conf", "spark.ext.h2o.py4j.gateway.port=55555",
         "--conf", "spark.ext.h2o.py4j.gateway.secret.file.name=secret.txt",
         "--files", "build/secret.txt",
@@ -63,7 +48,7 @@ def startJavaGateway(integ_spark_conf, token):
     time.sleep(60)
     return proc
 
-def obtainSparkSession():
+def obtainSparkSession(token):
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(
             address="127.0.0.1",

@@ -1,4 +1,4 @@
-package ai.h2o.sparkling.backend.python
+package ai.h2o.sparkling.backend
 
 import java.net.InetAddress
 
@@ -10,17 +10,22 @@ import py4j.GatewayServer
 
 import scala.io.Source
 
-object SparklingPy4jGateway extends Logging {
+object SparklingGateway extends Logging {
+
+  private def createServerSocketFactory() = {
+    // TODO
+  }
 
   def main(args: Array[String]) {
     val spark = SparkSession.builder.getOrCreate()
     val conf = spark.sparkContext.getConf
-    H2OContext.getOrCreate()
+    val hc = H2OContext.getOrCreate()
     val address = InetAddress.getByName("0.0.0.0")
     val builder = new GatewayServer.GatewayServerBuilder()
       .javaPort(gatewayPort(conf))
       .javaAddress(address)
       .authToken(readSecret(conf))
+      .serverSocketFactory(createServerSocketFactory())
     val gatewayServer: GatewayServer = builder.build()
     gatewayServer.start()
     val boundPort: Int = gatewayServer.getListeningPort
@@ -31,7 +36,7 @@ object SparklingPy4jGateway extends Logging {
       logInfo(s"Running Py4j Gateway on port ${boundPort}")
     }
     // Exit on EOF or broken pipe to ensure that this process dies when the Python driver dies:
-    while (!spark.sparkContext.isStopped) {
+    while (!(spark.sparkContext.isStopped && hc.isStopped())) {
       Thread.sleep(1000)
     }
     logDebug("Exiting due to broken pipe from Python driver")
