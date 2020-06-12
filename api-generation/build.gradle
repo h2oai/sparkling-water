@@ -4,7 +4,7 @@ apply from: "$rootDir/gradle/utils.gradle"
 apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
-  implementation("org.scala-lang:scala-library:${scalaVersion}")
+  compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   implementation("ai.h2o:h2o-algos:${h2oVersion}")
   implementation("ai.h2o:h2o-automl:${h2oVersion}")
   implementation("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
