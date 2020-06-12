@@ -49,7 +49,11 @@ def createBuildInfoFile(String basePath) {
   f.append("${version}")
 }
 
-task distR(type: Exec, dependsOn: configurations.sparklingWaterAssemblyJar) {
+task cleanR(type: Delete) {
+  delete getBuildDir()
+}
+
+task distR(type: Exec, dependsOn: [configurations.sparklingWaterAssemblyJar, cleanR]) {
   doFirst {
     copyRSetup()
   }
@@ -57,18 +61,13 @@ task distR(type: Exec, dependsOn: configurations.sparklingWaterAssemblyJar) {
   commandLine getOsSpecificCommandLine(['R', 'CMD', 'build', 'src'])
 }
 
-task cleanR(type: Delete) {
-  delete getBuildDir()
-}
-
-
 task test(type: Exec, dependsOn: distR) {
   environment["spark.version"] = sparkVersion
   environment["SPARK_HOME"] = sparkHome
   environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
-  workingDir file("src/tests")
-  commandLine getOsSpecificCommandLine(['R', '-f', 'testthat.R'])
+  workingDir buildDir
+  commandLine getOsSpecificCommandLine(['R', 'CMD', 'CHECK', "rsparkling_${version}.tar.gz"])
 }
 
 task installH2ORPackage(type: Exec) {

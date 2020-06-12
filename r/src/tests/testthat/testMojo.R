@@ -39,21 +39,21 @@ for (i in 1:4) {
 }
 
 locate <- function(fileName) {
-  normalizePath(file.path("../../../../examples/", fileName))
+  normalizePath(file.path("../../../../../examples/", fileName))
 }
 
 test_that("test MOJO predictions", {
   path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
   dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
   # Try loading the Mojo and prediction on it without starting H2O Context
-  mojo <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  mojo <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   sdf <- mojo$transform(dataset)
   data <- dplyr::collect(mojo$transform(sdf))
   expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "prediction"))
 })
 
 test_that("test getDomainValues", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   domainValues <- model$getDomainValues()
   expect_true(is.null(domainValues[["DPROS"]]))
   expect_true(is.null(domainValues[["DCAPS"]]))
@@ -67,7 +67,7 @@ test_that("test getDomainValues", {
 })
 
 test_that("test training params", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   params <- model$getTrainingParams()
   expect_equal(params[["distribution"]], "bernoulli")
   expect_equal(params[["ntrees"]], "2")
@@ -75,26 +75,26 @@ test_that("test training params", {
 })
 
 test_that("test model category", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   category <- model$getModelCategory()
   expect_equal(category, "Binomial")
 })
 
 test_that("test training metrics", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetrics()
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
   expect_equal(length(metrics), 6)
 })
 
 test_that("test current metrics", {
-  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getCurrentMetrics()
   expect_equal(metrics, model$getTrainingMetrics())
 })
 
 test_that("test MOJO predictions on unseen categoricals", {
-  path <- paste0("file://", normalizePath("../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
+  path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
   settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE)
   mojo <- H2OMOJOModel.createFromMojo(path, settings)
 
