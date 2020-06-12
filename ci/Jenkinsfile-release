@@ -394,7 +394,7 @@ def publishDockerImages() {
                     sh "sudo service docker start"
                     sh "sudo chmod 666 /var/run/docker.sock"
                     def version = getVersion(params)
-                    withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params)}-bin-hadoop2.7"]) {
+                    withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params.spark)}-bin-hadoop2.7"]) {
                         params.commons.withDockerHubCredentials {
                             docker.withRegistry('', 'dockerhub') {
                                 dir("./dist/build/zip/sparkling-water-${version}") {
