@@ -78,7 +78,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 config.put("sparkVersion", getSparkVersion(config))
                 def kubernetesBoundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
                 def kubernetesBoundaryVersion = kubernetesBoundaryVersionLine.split("=")[1]
-                config.put("kubernetesSupported", config.commons.isKubernetesSupported(sparkMajorVersion, kubernetesBoundaryVersion))
+                config.put("kubernetesSupported", config.commons.isKubernetesSupported(kubernetesBoundaryVersion, sparkMajorVersion))
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
                 } else {
