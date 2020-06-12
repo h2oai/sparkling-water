@@ -62,6 +62,11 @@ String getVersion(params) {
     return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${params.spark}"
 }
 
+String getSparkVersion(params) {
+    def versionLine = readFile("gradle-spark${params.spark}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
+    return versionLine.split("=")[1]
+}
+
 String getVersionNoSuffix() {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
     return versionLine.split("=")[1].replace("-SNAPSHOT", "")
@@ -382,13 +387,15 @@ def publishDockerImages() {
                 sh "sudo service docker start"
                 sh "sudo chmod 666 /var/run/docker.sock"
                 def version = getVersion(params)
-                params.commons.withDockerHubCredentials {
-                    docker.withRegistry('', 'dockerhub') {
-                        dir("./dist/build/zip/sparkling-water-${version}") {
-                            publishSparklingWaterDockerImage("scala", version, params.spark)
-                            publishSparklingWaterDockerImage("r", version, params.spark)
-                            publishSparklingWaterDockerImage("python", version, params.spark)
-                            publishSparklingWaterDockerImage("external-backend", version, params.spark)
+                withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params)}-bin-hadoop2.7"]) {
+                    params.commons.withDockerHubCredentials {
+                        docker.withRegistry('', 'dockerhub') {
+                            dir("./dist/build/zip/sparkling-water-${version}") {
+                                publishSparklingWaterDockerImage("scala", version, params.spark)
+                                publishSparklingWaterDockerImage("r", version, params.spark)
+                                publishSparklingWaterDockerImage("python", version, params.spark)
+                                publishSparklingWaterDockerImage("external-backend", version, params.spark)
+                            }
                         }
                     }
                 }
