@@ -67,7 +67,7 @@ task test(type: Exec, dependsOn: distR) {
   environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
   workingDir buildDir
-  commandLine getOsSpecificCommandLine(['R', 'CMD', 'CHECK', "rsparkling_${version}.tar.gz"])
+  commandLine getOsSpecificCommandLine(['R', 'CMD', 'check', "rsparkling_${version}.tar.gz"])
 }
 
 task installH2ORPackage(type: Exec) {
