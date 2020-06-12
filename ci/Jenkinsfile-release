@@ -376,12 +376,12 @@ def publishToConda() {
 def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
     sh """
         ./bin/build-kubernetes-images.sh ${type}
-        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:${version}
-        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
-        docker push h2oai/sparkling-water-${type}:${version}
-        docker push h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
-        docker rmi h2oai/sparkling-water-${type}:${version}
-        docker rmi h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker tag sparkling-water-${type}:${version} distrace/sparkling-water-${type}:${version}
+        docker tag sparkling-water-${type}:${version} distrace/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker push distrace/sparkling-water-${type}:${version}
+        docker push distrace/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker rmi distrace/sparkling-water-${type}:${version}
+        docker rmi distrace/sparkling-water-${type}:latest-${sparkMajorVersion}
     """
 }
 
