@@ -78,7 +78,7 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 config.put("sparkVersion", getSparkVersion(config))
                 def kubernetesBoundaryVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
                 def kubernetesBoundaryVersion = kubernetesBoundaryVersionLine.split("=")[1]
-                config.put("kubernetesBoundaryVersion", kubernetesBoundaryVersion)
+                config.put("kubernetesSupported", config.commons.isKubernetesSupported(sparkMajorVersion, kubernetesBoundaryVersion))
                 if (config.buildAgainstH2OBranch.toBoolean()) {
                     config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
                 } else {
@@ -399,7 +399,7 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
 
 def publishNightlyDockerImages() {
     return { config ->
-        config.commons.isKubernetesSupported(config.sparkMajorVersion, config.kubernetesBoundaryVersion) {
+        if (config.kubernetesSupported.toBoolean()) {
             stage('Publish to Docker Hub') {
                 if (config.uploadNightlyDockerImages.toBoolean()) {
                     config.commons.withSigningCredentials {
@@ -422,6 +422,11 @@ def publishNightlyDockerImages() {
                                     publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
                                     publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
                                     publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
+                                    sh """
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
+                                       """
                                     publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
                                 }
                             }
