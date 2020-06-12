@@ -399,7 +399,7 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
 
 def publishNightlyDockerImages() {
     return { config ->
-        config.commons.getKubernetesSparkVersions(config.sparkMajorVersions, config.kubernetesBoundaryVersion).each {
+        config.commons.isKubernetesSupported(config.sparkMajorVersion, config.kubernetesBoundaryVersio) {
             stage('Publish to Docker Hub') {
                 if (config.uploadNightlyDockerImages.toBoolean()) {
                     config.commons.withSigningCredentials {
