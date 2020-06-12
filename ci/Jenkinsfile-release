@@ -394,13 +394,19 @@ def publishDockerImages() {
                     sh "sudo service docker start"
                     sh "sudo chmod 666 /var/run/docker.sock"
                     def version = getVersion(params)
-                    withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params.spark)}-bin-hadoop2.7"]) {
+                    def sparkVersion = getSparkVersion(params.spark)
+                    withEnv(["SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7"]) {
                         params.commons.withDockerHubCredentials {
                             docker.withRegistry('', 'dockerhub') {
                                 dir("./dist/build/zip/sparkling-water-${version}") {
                                     publishSparklingWaterDockerImage("scala", version, params.spark)
                                     publishSparklingWaterDockerImage("r", version, params.spark)
                                     publishSparklingWaterDockerImage("python", version, params.spark)
+                                    sh """
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
+                                       """
                                     publishSparklingWaterDockerImage("external-backend", version, params.spark)
                                 }
                             }
