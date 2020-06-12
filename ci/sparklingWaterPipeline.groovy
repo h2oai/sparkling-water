@@ -397,15 +397,9 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
     """
 }
 
-def getKubernetesSparkVersions(sparkMajorVersions, boundaryVersion) {
-    def list = new ArrayList<String>()
-    list.addAll(sparkMajorVersions.subList(sparkMajorVersions.indexOf(boundaryVersion), sparkMajorVersions.size()))
-    return list
-}
-
 def publishNightlyDockerImages() {
     return { config ->
-        getKubernetesSparkVersions(config.sparkMajorVersions, config.kubernetesBoundaryVersion).each {
+        config.commons.getKubernetesSparkVersions(config.sparkMajorVersions, config.kubernetesBoundaryVersion).each {
             stage('Publish to Docker Hub') {
                 if (config.uploadNightlyDockerImages.toBoolean()) {
                     config.commons.withSigningCredentials {

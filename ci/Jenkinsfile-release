@@ -62,8 +62,13 @@ String getVersion(params) {
     return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${params.spark}"
 }
 
-String getSparkVersion(params) {
-    def versionLine = readFile("gradle-spark${params.spark}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
+String getKubernetesBoundaryVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
+    return versionLine.split("=")[1]
+}
+
+String getSparkVersion(sparkMajorVersion) {
+    def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
     return versionLine.split("=")[1]
 }
 
@@ -201,6 +206,7 @@ node("docker") {
         params.each { k, v -> config[k] = v }
         config["spark"] = version
         config["commons"] = commons
+        config["kubernetesSupported"] = commons.isKubernetesSupported(sparkMajorVersions, getKubernetesBoundaryVersion(), getSparkVersion(sparkMajorVersions))
         parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
     }
 
@@ -381,20 +387,22 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
 
 def publishDockerImages() {
     return { params ->
-        stage('Publish to Docker Hub') {
-            if (params.publishDockerImages.toBoolean()) {
-                sh "sudo apt -y install docker.io"
-                sh "sudo service docker start"
-                sh "sudo chmod 666 /var/run/docker.sock"
-                def version = getVersion(params)
-                withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params)}-bin-hadoop2.7"]) {
-                    params.commons.withDockerHubCredentials {
-                        docker.withRegistry('', 'dockerhub') {
-                            dir("./dist/build/zip/sparkling-water-${version}") {
-                                publishSparklingWaterDockerImage("scala", version, params.spark)
-                                publishSparklingWaterDockerImage("r", version, params.spark)
-                                publishSparklingWaterDockerImage("python", version, params.spark)
-                                publishSparklingWaterDockerImage("external-backend", version, params.spark)
+        if (params.kubernetesSupported.toBoolean()) {
+            stage('Publish to Docker Hub') {
+                if (params.publishDockerImages.toBoolean()) {
+                    sh "sudo apt -y install docker.io"
+                    sh "sudo service docker start"
+                    sh "sudo chmod 666 /var/run/docker.sock"
+                    def version = getVersion(params)
+                    withEnv(["SPARK_HOME=/home/jenkins/spark-${getSparkVersion(params)}-bin-hadoop2.7"]) {
+                        params.commons.withDockerHubCredentials {
+                            docker.withRegistry('', 'dockerhub') {
+                                dir("./dist/build/zip/sparkling-water-${version}") {
+                                    publishSparklingWaterDockerImage("scala", version, params.spark)
+                                    publishSparklingWaterDockerImage("r", version, params.spark)
+                                    publishSparklingWaterDockerImage("python", version, params.spark)
+                                    publishSparklingWaterDockerImage("external-backend", version, params.spark)
+                                }
                             }
                         }
                     }

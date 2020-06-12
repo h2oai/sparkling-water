@@ -18,6 +18,16 @@ def withAWSDocker(groovy.lang.Closure code) {
     }
 }
 
+def getKubernetesSparkVersions(sparkMajorVersions, boundaryVersion) {
+    def list = new ArrayList<String>()
+    list.addAll(sparkMajorVersions.subList(sparkMajorVersions.indexOf(boundaryVersion), sparkMajorVersions.size()))
+    return list
+}
+
+def isKubernetesSupported(sparkMajorVersions, boundaryVersion, currentVersion) {
+    return getKubernetesSparkVersions(sparkMajorVersions, boundaryVersion).contains(currentVersion)
+}
+
 def withDockerHubCredentials(groovy.lang.Closure code) {
     withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
         code()
