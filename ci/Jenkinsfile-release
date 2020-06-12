@@ -206,7 +206,7 @@ node("docker") {
         params.each { k, v -> config[k] = v }
         config["spark"] = version
         config["commons"] = commons
-        config["kubernetesSupported"] = commons.isKubernetesSupported(sparkMajorVersions, getKubernetesBoundaryVersion(), getSparkVersion(sparkMajorVersion))
+        config["kubernetesSupported"] = commons.isKubernetesSupported(sparkMajorVersions, getKubernetesBoundaryVersion(), getSparkVersion(version)
         parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
     }
 
