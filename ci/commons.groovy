@@ -57,7 +57,7 @@ def withSparklingWaterDockerImage(code) {
     def repoUrl = getAWSDockerRepo()
     withAWSDocker {
         def image = "${repoUrl}/opsh2oai/sparkling_water_tests:" + getDockerImageVersion()
-        def dockerOptions = "--init --privileged --storage-opt size=30G"
+        def dockerOptions = "--init --privileged"
         groovy.lang.Closure initCode = {
             sh "activate_java_8"
         }
