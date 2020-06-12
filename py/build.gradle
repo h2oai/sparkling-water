@@ -47,10 +47,13 @@ python {
 
 configurations {
   sparklingWaterAssemblyJar
+  apiGeneration
 }
 
 dependencies {
   sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
+  apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
 }
 
 //
@@ -355,7 +358,7 @@ task cleanGeneratedApi(type: Delete) {
 
 task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
-  classpath = files("../api-generation/build/libs/sparkling-water-api-generation_${scalaBaseVersion}-${version}-all.jar")
+  classpath = files(* (configurations.apiGeneration.files as List))
   main = "ai.h2o.sparkling.api.generation.Runner"
   args = ["py", "$projectDir/src-gen"]
   standardOutput = System.out
