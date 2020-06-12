@@ -423,9 +423,9 @@ def publishNightlyDockerImages() {
                                     publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
                                     publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
                                     sh """
-                                        docker rmi spark-r:${sparkVersion}
-                                        docker rmi spark-py:${sparkVersion}
-                                        docker rmi spark:${sparkVersion}
+                                        docker rmi spark-r:${getSparkVersion(config)}
+                                        docker rmi spark-py:${getSparkVersion(config)}
+                                        docker rmi spark:${getSparkVersion(config)}
                                        """
                                     publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
                                 }
