@@ -219,7 +219,13 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     val endpointAsString = endpoint.toString
     val endpointWithDelimiter = if (endpointAsString.endsWith("/")) endpointAsString else endpointAsString + "/"
     val suffixWithoutDelimiter = suffix.stripPrefix("/")
-    new URI(endpointWithDelimiter).resolve(suffixWithoutDelimiter).toURL
+    val handler = if (endpoint.getScheme == "https") {
+      new sun.net.www.protocol.https.Handler()
+    } else {
+      new sun.net.www.protocol.http.Handler()
+    }
+    val spec = new URI(endpointWithDelimiter).resolve(suffixWithoutDelimiter).toURL.toString
+    new URL(null, spec, handler)
   }
 
   private def setHeaders(
