@@ -134,6 +134,15 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
+                    def version = getNightlyVersion(config)
+                    sh """
+                        sed - i 's/^version=.*\$/version=${version}/' gradle.properties
+                        sed - i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                        sed - i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                        sed - i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                        echo "doRelease=true" >> gradle.properties
+                        """
+
                     publishNightly()(config)
                     publishNightlyDockerImages()(config)
                 }
@@ -361,10 +370,10 @@ def publishNightly() {
                         def version = getNightlyVersion(config)
                         def path = getS3Path(config)
                         sh """
-                            sed -i 's/^version=.*\$/version=${version}/' gradle.properties
-                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorName=${getH2OBranchMajorVersion()}/' gradle.properties
-                            sed -i 's/^h2oBuild=.*\$/h2oMajorName=${getH2OBranchBuildVersion()}/' gradle.properties
+                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
                             ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
 
@@ -409,14 +418,7 @@ def publishNightlyDockerImages() {
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def version = getNightlyVersion(config)
                         def sparkVersion = getSparkVersion(config)
-                        sh """
-                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
-                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
-                        echo "doRelease=true" >> gradle.properties
-                        ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
-                       """
+                        sh "${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
                         config.commons.withDockerHubCredentials {
                             docker.withRegistry('', 'dockerhub') {
                                 dir("./dist/build/zip/sparkling-water-${version}") {
