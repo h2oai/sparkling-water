@@ -116,13 +116,13 @@ def getTestingStagesDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion} - ${config.backendMode}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
-                    //sh "sudo -E /usr/sbin/startup.sh"
+                    sh "sudo -E /usr/sbin/startup.sh"
                     buildAndLint()(config)
-                    //unitTests()(config)
-                    //pyUnitTests()(config)
-                    //rUnitTests()(config)
-                    //integTests()(config)
-                    //pyIntegTests()(config)
+                    unitTests()(config)
+                    pyUnitTests()(config)
+                    rUnitTests()(config)
+                    integTests()(config)
+                    pyIntegTests()(config)
                 }
             }
         }
@@ -134,7 +134,7 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
-                    //publishNightly()(config)
+                    publishNightly()(config)
                     publishNightlyDockerImages()(config)
                 }
             }
@@ -391,9 +391,9 @@ def publishNightly() {
 def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
     sh """
         H2O_HOME=${env.WORKSPACE}/h2o-3 ./bin/build-kubernetes-images.sh ${type}
-        docker tag sparkling-water-${type}:${version} distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker push distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker rmi distrace/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker push h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker rmi h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
     """
 }
 
