@@ -14,24 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package ai.h2o.sparkling.backend.api
 
 import javax.servlet.Servlet
-import org.apache.spark.h2o.H2OConf
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletMapping}
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import org.apache.spark.h2o.{H2OConf, H2OContext}
+import water.exceptions.H2ONotFoundArgumentException
 
-private[api] trait ServletRegister {
-  protected def getServlet(conf: H2OConf): Servlet
+/**
+  * Handler for the /3/shutdown POST request
+  */
+private[api] class ShutdownServlet extends ServletBase {
 
-  protected def getRequestPaths(): Array[String]
-
-  def register(context: ServletContextHandler, conf: H2OConf): Unit = {
-    val holder = new ServletHolder(getServlet(conf))
-    context.getServletHandler.addServlet(holder)
-    val m = new ServletMapping()
-    m.setPathSpecs(getRequestPaths())
-    m.setServletName(holder.getName)
-    context.getServletHandler.addServletMapping(m)
+  override def doPost(req: HttpServletRequest, resp: HttpServletResponse): Unit = {
+    val obj = req.getPathInfo match {
+      case null =>
+        H2OContext.get().foreach(_.stop(stopSparkContext = true))
+      case invalid => throw new H2ONotFoundArgumentException(s"Invalid endpoint $invalid")
+    }
+    sendResult(obj, resp)
   }
+}
+
+object ShutdownServlet extends ServletRegister {
+
+  override protected def getRequestPaths(): Array[String] = Array("/3/shutdown")
+
+  override protected def getServlet(conf: H2OConf): Servlet = new ShutdownServlet
 }

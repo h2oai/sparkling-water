@@ -16,6 +16,7 @@
  */
 package water.webserver.jetty9
 
+import ai.h2o.sparkling.backend.api.ShutdownServlet
 import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
@@ -42,6 +43,7 @@ class SparklingWaterJettyHelper(conf: H2OConf, h2oHttpView: H2OHttpView) extends
     RDDsServlet.register(context, conf)
     H2OFramesServlet.register(context, conf)
     DataFramesServlet.register(context, conf)
+    ShutdownServlet.register(context, conf)
     context
   }
 
