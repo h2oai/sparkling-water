@@ -9,10 +9,10 @@ library(h2o)
 library(rsparkling)
 
 # If you don't already have it installed, Spark can be installed via the sparklyr command:
-spark_install(version = "2.4.5")
+spark_install(version = "2.4.6")
 
 # Create a spark connection
-sc <- spark_connect(master = "local", version = "2.4.5")
+sc <- spark_connect(master = "local", version = "2.4.6")
 
 # Start H2OContext
 hc <- H2OContext.getOrCreate()
