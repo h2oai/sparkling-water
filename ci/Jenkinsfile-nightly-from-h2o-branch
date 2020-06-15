@@ -20,11 +20,11 @@ node("docker") {
 
 pipeline(params) { p ->
     sparkMajorVersions = sparkVersions
-    runUnitTests = "false"
-    runPyUnitTests = "false"
-    runRUnitTests = "false"
-    runIntegTests = "false"
-    runPyIntegTests = "false"
+    runUnitTests = "true"
+    runPyUnitTests = "true"
+    runRUnitTests = "true"
+    runIntegTests = "true"
+    runPyIntegTests = "true"
     buildAgainstH2OBranch = "true"
     h2oBranch = "master"
     hadoopVersion = "2.7"
