@@ -25,13 +25,13 @@ import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, Res
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.SparkContext
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.SparkSpecificUtils
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.{SparkConf, SparkContext}
 import water._
 import water.util.PrettyPrint
 
@@ -244,6 +244,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
           RestApiUtils.shutdownCluster(conf)
         }
       }
+      ProxyStarter.stopFlowProxy()
       H2OContext.instantiatedContext.set(null)
       stopped = true
       if (stopJvm && H2OClientUtils.isH2OClientBased(conf)) {
