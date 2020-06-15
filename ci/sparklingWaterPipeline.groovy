@@ -408,6 +408,7 @@ def publishNightlyDockerImages() {
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def version = getNightlyVersion(config)
+                        def sparkVersion = getSparkVersion(config)
                         sh """
                         sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                         sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
@@ -423,9 +424,9 @@ def publishNightlyDockerImages() {
                                     publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
                                     publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
                                     sh """
-                                        docker rmi spark-r:${getSparkVersion(config)}
-                                        docker rmi spark-py:${getSparkVersion(config)}
-                                        docker rmi spark:${getSparkVersion(config)}
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
                                        """
                                     publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
                                 }
