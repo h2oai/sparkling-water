@@ -307,6 +307,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
           RestApiUtils.shutdownCluster(conf)
         }
       }
+      ProxyStarter.stopFlowProxy()
       H2OContext.instantiatedContext.set(null)
       stopped = true
       if (stopJvm && H2OClientUtils.isH2OClientBased(conf)) {

@@ -30,6 +30,7 @@ import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
 import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 object ProxyStarter extends Logging {
+  private var server: Server = _
   def startFlowProxy(conf: H2OConf): URI = {
     var port = findFlowProxyBasePort(conf)
     while (true) {
@@ -37,7 +38,7 @@ object ProxyStarter extends Logging {
         port = findNextFreeFlowPort(conf.clientWebPort, port + 1)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
-        val server = new Server(pool)
+        server = new Server(pool)
         val s = server.getBean(classOf[Scheduler])
         server.updateBean(s, new ScheduledExecutorScheduler(null, true))
         server.setHandler(getContextHandler(conf))
@@ -54,6 +55,13 @@ object ProxyStarter extends Logging {
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
   }
+
+  def stopFlowProxy(): Unit =
+    try {
+      server.stop()
+    } catch {
+      case _: Throwable =>
+    }
 
   /**
     * In several scenarios we know that the port is likely to be occupied by H2O, so we can
