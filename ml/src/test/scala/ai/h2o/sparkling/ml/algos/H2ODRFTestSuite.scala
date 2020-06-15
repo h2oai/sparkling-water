@@ -70,4 +70,16 @@ class H2ODRFTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     assert(contributions != null)
     assert(contributions.size == 8)
   }
+
+  test("H2ODRF with nfolds") {
+    val algo = new H2ODRF()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(true)
+      .setWithContributions(true)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setNfolds(5)
+      .setLabelCol("AGE")
+    algo.fit(dataset).transform(dataset).collect()
+  }
 }

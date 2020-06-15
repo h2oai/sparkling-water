@@ -36,6 +36,7 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import water.api.schemas3.TwoDimTableV3
 
 import scala.collection.JavaConverters._
 
@@ -105,7 +106,10 @@ class H2OGridSearch(override val uid: String)
       internalFeatureCols: Array[String]): Array[H2OMOJOModel] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val skippedFields = Seq((classOf[GridSchemaV99], "summary_table"), (classOf[GridSchemaV99], "scoring_history"))
+    val skippedFields = Seq(
+      (classOf[GridSchemaV99], "cross_validation_metrics_summary"),
+      (classOf[GridSchemaV99], "summary_table"),
+      (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
     grid.model_ids.map { modelId =>

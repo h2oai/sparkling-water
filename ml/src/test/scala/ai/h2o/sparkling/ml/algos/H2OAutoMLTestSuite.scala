@@ -69,4 +69,17 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
 
     algo.getLeaderboard("ALL").columns.length should be > algo.getLeaderboard().columns.length
   }
+
+  test("AutoML with nfolds") {
+    val automl = new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setSortMetric("AUC")
+      .setNfolds(5)
+      .setMaxModels(5)
+
+    val model = automl.fit(dataset)
+    model.transform(dataset).collect()
+  }
 }
