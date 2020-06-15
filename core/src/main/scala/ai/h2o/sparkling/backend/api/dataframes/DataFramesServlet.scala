@@ -77,9 +77,7 @@ private[api] class DataFramesServlet extends ServletBase {
 
 object DataFramesServlet extends ServletRegister {
 
-  override protected def getRequestPaths(): Array[String] = {
-    Array("/3/dataframes", "/3/dataframes/*")
-  }
+  override protected def getRequestPaths(): Array[String] = Array("/3/dataframes", "/3/dataframes/*")
 
   override protected def getServlet(conf: H2OConf): Servlet = new DataFramesServlet
 }

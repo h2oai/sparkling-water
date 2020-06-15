@@ -105,9 +105,7 @@ private[api] class RDDsServlet extends ServletBase {
 
 object RDDsServlet extends ServletRegister {
 
-  override protected def getRequestPaths(): Array[String] = {
-    Array("/3/RDDs", "/3/RDDs/*")
-  }
+  override protected def getRequestPaths(): Array[String] = Array("/3/RDDs", "/3/RDDs/*")
 
   override protected def getServlet(conf: H2OConf): Servlet = new RDDsServlet
 }
