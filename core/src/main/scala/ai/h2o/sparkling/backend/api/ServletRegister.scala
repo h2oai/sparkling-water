@@ -24,13 +24,13 @@ import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder, ServletM
 private[api] trait ServletRegister {
   protected def getServlet(conf: H2OConf): Servlet
 
-  protected def getEndpoints(): Array[String]
+  protected def getRequestPaths(): Array[String]
 
   def register(context: ServletContextHandler, conf: H2OConf): Unit = {
     val holder = new ServletHolder(getServlet(conf))
     context.getServletHandler.addServlet(holder)
     val m = new ServletMapping()
-    m.setPathSpecs(getEndpoints())
+    m.setPathSpecs(getRequestPaths())
     m.setServletName(holder.getName)
     context.getServletHandler.addServletMapping(m)
   }
