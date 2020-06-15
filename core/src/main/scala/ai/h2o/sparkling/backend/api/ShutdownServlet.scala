@@ -22,7 +22,7 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.exceptions.H2ONotFoundArgumentException
 
 /**
-  * Handler for the /3/shutdown POST command
+  * Handler for the /3/shutdown POST request
   */
 private[api] class ShutdownServlet extends ServletBase {
 
@@ -34,7 +34,6 @@ private[api] class ShutdownServlet extends ServletBase {
     }
     sendResult(obj, resp)
   }
-
 }
 
 object ShutdownServlet extends ServletRegister {
