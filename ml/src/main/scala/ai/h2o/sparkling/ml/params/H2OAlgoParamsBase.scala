@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.param._
 
 trait H2OAlgoParamsBase extends Params {
@@ -86,5 +88,45 @@ trait H2OAlgoParamsBase extends Params {
 
   protected def nullableStringArrayParam(name: String, doc: String): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, doc)
+  }
+
+  protected def convert2dArrayToH2OFrame(input: Array[Array[Double]]): String = {
+    if (input == null) {
+      null
+    } else {
+      val spark = SparkSessionUtils.active
+      import spark.implicits._
+      val df = spark.sparkContext.parallelize(input).toDF()
+      val hc = H2OContext.ensure(
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
+      hc.asH2OFrame(df).frameId
+    }
+  }
+
+  protected def convert2dArrayToH2OFrameKeyArray(input: Array[Array[Double]]): Array[String] = {
+    if (input == null) {
+      null
+    } else {
+      val spark = SparkSessionUtils.active
+      import spark.implicits._
+      val hc = H2OContext.ensure(
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
+      input.map(i => hc.asH2OFrame(spark.sparkContext.parallelize(i).toDF()).frameId)
+    }
+  }
+
+  protected def convert3dArrayToH2OFrameKeyArray(input: Array[Array[Array[Double]]]): Array[String] = {
+    if (input == null) {
+      null
+    } else {
+      val spark = SparkSessionUtils.active
+      import spark.implicits._
+      val hc = H2OContext.ensure(
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
+      input.map(i => hc.asH2OFrame(spark.sparkContext.parallelize(i).toDF()).frameId)
+    }
   }
 }

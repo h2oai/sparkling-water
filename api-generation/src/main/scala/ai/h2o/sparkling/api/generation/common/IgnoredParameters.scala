@@ -36,8 +36,6 @@ object IgnoredParameters {
     "rand_link", // GLM
     "rand_family", // GLM
     "random_columns", // GLM
-    "initial_biases", // DeepLearning
-    "initial_weights", // DeepLearning
     "pretrained_autoencoder", // DeepLearning
     "build_control") //AutoML
 

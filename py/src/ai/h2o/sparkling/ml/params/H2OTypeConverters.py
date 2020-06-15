@@ -227,6 +227,26 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableListListListFloat():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toListListListFloat()(value)
+
+        return convert
+
+    @staticmethod
+    def toListListListFloat():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            else:
+                return [H2OTypeConverters.toListListFloat()(v) for v in TypeConverters.toList(value)]
+
+        return convert
+
+    @staticmethod
     def toJavaObj():
         def convert(value):
             if value is None:
