@@ -18,6 +18,16 @@ def withAWSDocker(groovy.lang.Closure code) {
     }
 }
 
+def isKubernetesSupported(supportedSinceMajorVersion, currentMajorVersion) {
+    return currentMajorVersion >= supportedSinceMajorVersion
+}
+
+def withDockerHubCredentials(groovy.lang.Closure code) {
+    withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+        code()
+    }
+}
+
 Integer getDockerImageVersion() {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('dockerImageVersion') }
     return versionLine.split("=")[1].toInteger()
@@ -192,6 +202,30 @@ def gitCommit(files, msg) {
                 git commit -m "${msg}"
                 git push --set-upstream origin ${BRANCH_NAME}
                """
+}
+
+def installDocker() {
+    sh "sudo apt -y install docker.io"
+    sh "sudo service docker start"
+    sh "sudo chmod 666 /var/run/docker.sock"
+}
+
+def removeSparkImages(sparkVersion) {
+    sh """
+        docker rmi spark-r:${sparkVersion}
+        docker rmi spark-py:${sparkVersion}
+        docker rmi spark:${sparkVersion}
+       """
+}
+
+def publishDockerImages(version, code) {
+    withDockerHubCredentials {
+        docker.withRegistry('', 'dockerhub') {
+            dir("./dist/build/zip/sparkling-water-${version}") {
+                code()
+            }
+        }
+    }
 }
 
 return this

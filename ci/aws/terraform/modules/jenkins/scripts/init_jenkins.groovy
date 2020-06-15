@@ -136,6 +136,15 @@ def nexus = new UsernamePasswordCredentialsImpl(
 )
 store.addCredentials(domain, nexus)
 
+def dockerHub = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'dockerhub',
+        'Docker Hub Credentials',
+        'SUBST_DOCKERHUB_USERNAME',
+        'SUBST_DOCKERHUB_PASSWORD'
+)
+store.addCredentials(domain, dockerHub)
+
 def pipy = new UsernamePasswordCredentialsImpl(
         CredentialsScope.GLOBAL,
         'pypi-credentials',
@@ -244,7 +253,7 @@ def ami = new SlaveTemplate(
         false, // useDedicatedTenancy
         '', // launchTimeoutStr
         true, // associatePublicIp
-        '/dev/xvda=:60', // customDeviceMapping
+        '/dev/xvda=:70', // customDeviceMapping
         true, // connectBySSHProcess
         false, // monitoring
         false, // t2Unlimited

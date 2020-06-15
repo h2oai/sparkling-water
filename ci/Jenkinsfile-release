@@ -14,6 +14,7 @@ properties(
                          booleanParam(name: 'publishToS3', defaultValue: true, description: 'Publish to S3'),
                          booleanParam(name: 'publishToPiPy', defaultValue: true, description: 'Publish to PiPy'),
                          booleanParam(name: 'publishConda', defaultValue: true, description: 'Publish to Conda'),
+                         booleanParam(name: 'publishDockerImages', defaultValue: true, description: 'Publish Docker Images to Docker Hub'),
                          booleanParam(name: 'releaseOnGithub', defaultValue: true, description: 'Release on Github')
                         ]
                 )
@@ -46,6 +47,7 @@ def getParallelStageDefinition(params) {
                                 publishToS3()(params)
                                 publishToPipy()(params)
                                 publishToConda()(params)
+                                publishDockerImages()(params)
                             }
                         }
                     }
@@ -58,6 +60,16 @@ def getParallelStageDefinition(params) {
 String getVersion(params) {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('version') }
     return "${versionLine.split("=")[1].replace("-SNAPSHOT", "")}-${params.spark}"
+}
+
+String getKubernetesBoundaryVersion() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('kubernetesSupportSinceSpark') }
+    return versionLine.split("=")[1]
+}
+
+String getSparkVersion(sparkMajorVersion) {
+    def versionLine = readFile("gradle-spark${sparkMajorVersion}.properties").split("\n").find() { line -> line.startsWith('sparkVersion') }
+    return versionLine.split("=")[1]
 }
 
 String getVersionNoSuffix() {
@@ -194,6 +206,7 @@ node("docker") {
         params.each { k, v -> config[k] = v }
         config["spark"] = version
         config["commons"] = commons
+        config["kubernetesSupported"] = commons.isKubernetesSupported(getKubernetesBoundaryVersion(), version)
         parallelStages["Spark ${version}"] = getParallelStageDefinition(config.clone())
     }
 
@@ -352,6 +365,41 @@ def publishToConda() {
                             for (arch in ['osx-64', 'linux-32', 'linux-64', 'win-32', 'win-64']) {
                                 publishCondaArtifact(arch, pkgName)
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
+    sh """
+        ./bin/build-kubernetes-images.sh ${type}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:${version}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker push h2oai/sparkling-water-${type}:${version}
+        docker push h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+        docker rmi h2oai/sparkling-water-${type}:${version}
+        docker rmi h2oai/sparkling-water-${type}:latest-${sparkMajorVersion}
+    """
+}
+
+def publishDockerImages() {
+    return { params ->
+        if (params.kubernetesSupported.toBoolean()) {
+            stage('Publish to Docker Hub') {
+                if (params.publishDockerImages.toBoolean()) {
+                    params.commons.installDocker()
+                    def version = getVersion(params)
+                    def sparkVersion = getSparkVersion(params.spark)
+                    withEnv(["SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7"]) {
+                        params.commons.publishDockerImages(version) {
+                            publishSparklingWaterDockerImage("scala", version, params.spark)
+                            publishSparklingWaterDockerImage("r", version, params.spark)
+                            publishSparklingWaterDockerImage("python", version, params.spark)
+                            params.commons.removeSparkImages(sparkVersion)
+                            publishSparklingWaterDockerImage("external-backend", version, params.spark)
                         }
                     }
                 }
