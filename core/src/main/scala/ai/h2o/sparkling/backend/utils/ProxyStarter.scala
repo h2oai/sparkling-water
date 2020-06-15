@@ -60,11 +60,12 @@ private[sparkling] object ProxyStarter extends Logging {
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
   }
 
-  def stopFlowProxy(): Unit = try {
-    server.stop()
-  } catch {
-    case _ : Throwable =>
-  }
+  def stopFlowProxy(): Unit =
+    try {
+      server.stop()
+    } catch {
+      case _: Throwable =>
+    }
 
   /**
     * In several scenarios we know that the port is likely to be occupied by H2O, so we can
