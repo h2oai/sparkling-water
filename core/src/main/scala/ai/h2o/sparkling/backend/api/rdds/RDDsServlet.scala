@@ -105,7 +105,7 @@ private[api] class RDDsServlet extends ServletBase {
 
 object RDDsServlet extends ServletRegister {
 
-  override protected def getEndpoints(): Array[String] = {
+  override protected def getRequestPaths(): Array[String] = {
     Array("/3/RDDs", "/3/RDDs/*")
   }
 

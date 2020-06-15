@@ -39,7 +39,7 @@ private[api] class ShutdownServlet extends ServletBase {
 
 object ShutdownServlet extends ServletRegister {
 
-  override protected def getEndpoints(): Array[String] = {
+  override protected def getRequestPaths(): Array[String] = {
     Array("/3/shutdown")
   }
 

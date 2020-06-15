@@ -77,7 +77,7 @@ private[api] class DataFramesServlet extends ServletBase {
 
 object DataFramesServlet extends ServletRegister {
 
-  override protected def getEndpoints(): Array[String] = {
+  override protected def getRequestPaths(): Array[String] = {
     Array("/3/dataframes", "/3/dataframes/*")
   }
 

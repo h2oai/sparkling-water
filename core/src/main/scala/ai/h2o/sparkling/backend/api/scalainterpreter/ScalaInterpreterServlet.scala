@@ -140,7 +140,7 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
 }
 
 object ScalaInterpreterServlet extends ServletRegister {
-  override protected def getEndpoints(): Array[String] = Array("/3/scalaint", "/3/scalaint/*")
+  override protected def getRequestPaths(): Array[String] = Array("/3/scalaint", "/3/scalaint/*")
 
   override protected def getServlet(conf: H2OConf): Servlet = new ScalaInterpreterServlet(conf)
 }
