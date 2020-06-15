@@ -204,4 +204,28 @@ def gitCommit(files, msg) {
                """
 }
 
+def installDocker() {
+    sh "sudo apt -y install docker.io"
+    sh "sudo service docker start"
+    sh "sudo chmod 666 /var/run/docker.sock"
+}
+
+def removeSparkImages(sparkVersion) {
+    sh """
+        docker rmi spark-r:${sparkVersion}
+        docker rmi spark-py:${sparkVersion}
+        docker rmi spark:${sparkVersion}
+       """
+}
+
+def publishDockerImages(version, code) {
+    withDockerHubCredentials {
+        docker.withRegistry('', 'dockerhub') {
+            dir("./dist/build/zip/sparkling-water-${version}") {
+                code()
+            }
+        }
+    }
+}
+
 return this

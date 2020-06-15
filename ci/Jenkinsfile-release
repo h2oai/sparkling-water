@@ -390,26 +390,16 @@ def publishDockerImages() {
         if (params.kubernetesSupported.toBoolean()) {
             stage('Publish to Docker Hub') {
                 if (params.publishDockerImages.toBoolean()) {
-                    sh "sudo apt -y install docker.io"
-                    sh "sudo service docker start"
-                    sh "sudo chmod 666 /var/run/docker.sock"
+                    params.commons.installDocker()
                     def version = getVersion(params)
                     def sparkVersion = getSparkVersion(params.spark)
                     withEnv(["SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7"]) {
-                        params.commons.withDockerHubCredentials {
-                            docker.withRegistry('', 'dockerhub') {
-                                dir("./dist/build/zip/sparkling-water-${version}") {
-                                    publishSparklingWaterDockerImage("scala", version, params.spark)
-                                    publishSparklingWaterDockerImage("r", version, params.spark)
-                                    publishSparklingWaterDockerImage("python", version, params.spark)
-                                    sh """
-                                        docker rmi spark-r:${sparkVersion}
-                                        docker rmi spark-py:${sparkVersion}
-                                        docker rmi spark:${sparkVersion}
-                                       """
-                                    publishSparklingWaterDockerImage("external-backend", version, params.spark)
-                                }
-                            }
+                        params.commons.publishDockerImages(version) {
+                            publishSparklingWaterDockerImage("scala", version, params.spark)
+                            publishSparklingWaterDockerImage("r", version, params.spark)
+                            publishSparklingWaterDockerImage("python", version, params.spark)
+                            params.commons.removeSparkImages(sparkVersion)
+                            publishSparklingWaterDockerImage("external-backend", version, params.spark)
                         }
                     }
                 }
