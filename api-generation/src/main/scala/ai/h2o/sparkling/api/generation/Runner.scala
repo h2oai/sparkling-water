@@ -56,7 +56,7 @@ object Runner {
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val explicitDefaultValues =
-      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> "null")
+      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null)
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], Seq(monotonicity)),
