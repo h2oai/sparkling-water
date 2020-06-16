@@ -138,10 +138,10 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
                         def version = getNightlyVersion(config)
                         unstash "shared"
                         sh """
-                            sed - i 's/^version=.*\$/version=${version}/' gradle.properties
-                            sed - i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                            sed - i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                            sed - i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                            sed -i 's/^version=.*\$/version=${version}/' gradle.properties
+                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                            sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
                             """
                         sh "${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
