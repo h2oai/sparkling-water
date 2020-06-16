@@ -19,7 +19,6 @@ package ai.h2o.sparkling.ml.algos
 import java.util
 
 import ai.h2o.sparkling.api.generation.common.IgnoredParameters
-import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
@@ -27,6 +26,7 @@ import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import hex.Model
 import hex.grid.HyperSpaceSearchCriteria
 import hex.schemas.GridSchemaV99
@@ -36,7 +36,6 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import water.api.schemas3.TwoDimTableV3
 
 import scala.collection.JavaConverters._
 
