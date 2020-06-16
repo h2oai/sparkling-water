@@ -149,6 +149,25 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     }
   }
 
+  test("H2O GridSearch with nfolds") {
+    val drf = new H2ODRF()
+      .setFeaturesCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
+      .setLabelCol("CAPSULE")
+      .setColumnsToCategorical(Array("RACE", "DPROS", "DCAPS", "GLEASON", "CAPSULE"))
+      .setSplitRatio(0.8)
+      .setNfolds(4)
+
+    val hyperParams = Map("ntrees" -> Array(10, 50).map(_.asInstanceOf[AnyRef]))
+
+    val search = new H2OGridSearch()
+      .setHyperParameters(hyperParams)
+      .setAlgo(drf)
+      .setStrategy("RandomDiscrete")
+
+    val model = search.fit(dataset)
+    model.transform(dataset).collect()
+  }
+
   private def testGridSearch(
       algo: H2OSupervisedAlgorithm[_ <: Model.Parameters],
       hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
