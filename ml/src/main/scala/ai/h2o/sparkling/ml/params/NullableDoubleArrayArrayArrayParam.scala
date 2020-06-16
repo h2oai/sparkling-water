@@ -34,7 +34,8 @@ class NullableDoubleArrayArrayArrayParam(
     this(parent, name, doc, _ => true)
 
   /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[java.util.List[java.util.List[java.lang.Double]]]): ParamPair[Array[Array[Array[Double]]]] =
+  def w(
+      value: java.util.List[java.util.List[java.util.List[java.lang.Double]]]): ParamPair[Array[Array[Array[Double]]]] =
     w(value.asScala.map(_.asScala.map(_.asScala.map(_.asInstanceOf[Double]).toArray).toArray).toArray)
 
   override def jsonEncode(value: Array[Array[Array[Double]]]): String = {
