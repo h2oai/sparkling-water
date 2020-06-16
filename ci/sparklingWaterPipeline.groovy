@@ -134,17 +134,20 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
         stage("Spark ${sparkMajorVersion}") {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
-                    def version = getNightlyVersion(config)
-                    sh """
-                        sed - i 's/^version=.*\$/version=${version}/' gradle.properties
-                        sed - i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                        sed - i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                        sed - i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
-                        echo "doRelease=true" >> gradle.properties
-                        """
-
-                    publishNightly()(config)
-                    publishNightlyDockerImages()(config)
+                    config.commons.withSigningCredentials {
+                        def version = getNightlyVersion(config)
+                        unstash "shared"
+                        sh """
+                            sed - i 's/^version=.*\$/version=${version}/' gradle.properties
+                            sed - i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                            sed - i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                            sed - i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                            echo "doRelease=true" >> gradle.properties
+                            """
+                        sh "${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
+                        publishNightly()(config)
+                        publishNightlyDockerImages()(config)
+                    }
                 }
             }
         }
@@ -365,32 +368,20 @@ def publishNightly() {
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             if (config.uploadNightly.toBoolean()) {
                 config.commons.withAWSCredentials {
-                    config.commons.withSigningCredentials {
-                        unstash "shared"
-                        def version = getNightlyVersion(config)
-                        def path = getS3Path(config)
-                        sh """
-                        sed -i 's/^version=.*\$/version=${version}/' gradle.properties
-                        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
-                            echo "doRelease=true" >> gradle.properties
-                            ${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password=
-
-                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                            ~/.local/bin/aws s3 sync dist/build/dist "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}" --acl public-read
-
-                            echo UPDATE LATEST POINTER
-                            echo ${version} > latest
-                            echo "<head>" > latest.html
-                            echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
-                            echo "</head>" >> latest.html
-                            ~/.local/bin/aws s3 cp latest "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest" --acl public-read
-                            ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
-                            ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
-                            """
-                    }
+                    def version = getNightlyVersion(config)
+                    def path = getS3Path(config)
+                    sh """
+                        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                        ~/.local/bin/aws s3 sync dist/build/dist "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}${version}" --acl public-read
+                        echo ${version} > latest
+                        echo "<head>" > latest.html
+                        echo "<meta http-equiv=\\"refresh\\" content=\\"0; url=${version}/index.html\\" />" >> latest.html
+                        echo "</head>" >> latest.html
+                        ~/.local/bin/aws s3 cp latest "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest" --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}latest.html" --acl public-read
+                        ~/.local/bin/aws s3 cp latest.html "s3://h2o-release/sparkling-water/spark-${config.sparkMajorVersion}/${path}index.html" --acl public-read
+                        """
                 }
             }
         }
@@ -411,19 +402,15 @@ def publishNightlyDockerImages() {
         if (config.kubernetesSupported.toBoolean()) {
             stage('Publish to Docker Hub') {
                 if (config.uploadNightlyDockerImages.toBoolean()) {
-                    config.commons.withSigningCredentials {
-                        unstash "shared"
                         config.commons.installDocker()
                         def version = getNightlyVersion(config)
                         def sparkVersion = getSparkVersion(config)
-                        sh "${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
                         config.commons.publishDockerImages(version) {
                             publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
                             publishSparklingWaterDockerImage("r", version, config.sparkMajorVersion)
                             publishSparklingWaterDockerImage("python", version, config.sparkMajorVersion)
                             config.commons.removeSparkImages(sparkVersion)
                             publishSparklingWaterDockerImage("external-backend", version, config.sparkMajorVersion)
-                        }
                     }
                 }
             }
