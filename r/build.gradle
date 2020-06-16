@@ -66,8 +66,9 @@ task test(type: Exec, dependsOn: distR) {
   environment["SPARK_HOME"] = sparkHome
   environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
-  workingDir buildDir
-  commandLine getOsSpecificCommandLine(['R', 'CMD', 'check', "rsparkling_${version}.tar.gz"])
+  workingDir "${project.buildDir}/src"
+  def testCmd = "library(sparklyr);library(devtools);devtools::test()"
+  commandLine getOsSpecificCommandLine(["R", "-e", testCmd])
 }
 
 task installH2ORPackage(type: Exec) {
