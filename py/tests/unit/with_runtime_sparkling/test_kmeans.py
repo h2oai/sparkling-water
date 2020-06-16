@@ -25,7 +25,6 @@ from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OKMeans
 
-from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 

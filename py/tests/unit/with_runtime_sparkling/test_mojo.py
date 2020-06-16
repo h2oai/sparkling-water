@@ -14,18 +14,11 @@
 # limitations under the License.
 #
 
-import os
 import pytest
-import json
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGBM, H2OMOJOModel, H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel
-from pyspark.sql.functions import log, col, min, max, mean, lit
-from h2o.estimators.gbm import H2OGradientBoostingEstimator
-
-from tests import unit_test_utils
-from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
 
 @pytest.fixture(scope="module")
