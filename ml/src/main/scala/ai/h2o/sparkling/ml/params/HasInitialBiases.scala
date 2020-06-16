@@ -21,7 +21,8 @@ trait HasInitialBiases extends H2OAlgoParamsBase {
   private val initialBiases = new NullableDoubleArrayArrayParam(
     this,
     "initialBiases",
-    "A array of weight vectors to be used for bias initialization of every network layer.")
+    "A array of weight vectors to be used for bias initialization of every network layer." +
+      "If this parameter is set, the parameter 'initialWeights' has to be set as well.")
 
   setDefault(initialBiases -> null)
 

@@ -21,7 +21,8 @@ trait HasInitialWeights extends H2OAlgoParamsBase {
   private val initialWeights = new NullableDoubleArrayArrayArrayParam(
     this,
     "initialWeights",
-    "A array of weight matrices to be used for initialization of the neural network.")
+    "A array of weight matrices to be used for initialization of the neural network. " +
+      "If this parameter is set, the parameter 'initialBiases' has to be set as well.")
 
   setDefault(initialWeights -> null)
 
