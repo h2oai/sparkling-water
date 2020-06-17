@@ -120,13 +120,6 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       if (!conf.isBackendVersionCheckDisabled) {
         verifyVersion(conf)
       }
-      val leaderIpPort = RestApiUtils.getLeaderNode(conf).ipPort()
-      if (conf.h2oCluster.get != leaderIpPort) {
-        logInfo(
-          s"Updating %s to H2O's leader node %s"
-            .format(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderIpPort))
-        conf.setH2OCluster(leaderIpPort)
-      }
       RestApiUtils.getNodes(conf)
     } catch {
       case cause: RestApiException =>

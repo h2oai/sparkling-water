@@ -51,16 +51,6 @@ trait RestApiUtils extends RestCommunication {
     getNodes(cloudV3)
   }
 
-  def getLeaderNode(conf: H2OConf): NodeDesc = {
-    val cloudV3 = getClusterInfo(conf)
-    val nodes = getNodes(cloudV3)
-    if (cloudV3.leader_idx < 0 || cloudV3.leader_idx >= nodes.length) {
-      throw new RuntimeException(
-        s"The leader index '${cloudV3.leader_idx}' doesn't correspond to the size of the H2O cluster ${nodes.length}.")
-    }
-    nodes(cloudV3.leader_idx)
-  }
-
   def getClusterEndpoint(conf: H2OConf): URI = {
     val uriBuilder = new URIBuilder(s"${conf.getScheme()}://${conf.h2oCluster.get}")
     uriBuilder.setPath(conf.contextPath.orNull)
