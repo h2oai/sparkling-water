@@ -8,9 +8,13 @@ def getS3Path(config) {
     return sh(script: "${getGradleCommand(config)} -q s3path", returnStdout: true).trim()
 }
 
+String getVersion(config) {
+    return readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
+}
+
 String getNightlyVersion(config) {
     def sparkMajorVersion = config.sparkMajorVersion
-    def version = readFile("gradle.properties").split("\n").find() { line -> line.startsWith("version") }.split("=")[1]
+    def version = getVersion(config)
     def versionParts = version.split("-")
     def h2oPart = versionParts[0]
     def swPatch = versionParts[1]
@@ -370,7 +374,7 @@ def publishNightly() {
         stage('Nightly: Publishing Artifacts to S3 - ' + config.backendMode) {
             if (config.uploadNightly.toBoolean()) {
                 config.commons.withAWSCredentials {
-                    def version = getNightlyVersion(config)
+                    def version = getVersion(config)
                     def path = getS3Path(config)
                     sh """
                         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -405,7 +409,7 @@ def publishNightlyDockerImages() {
             stage('Publish to Docker Hub') {
                 if (config.uploadNightlyDockerImages.toBoolean()) {
                         config.commons.installDocker()
-                        def version = getNightlyVersion(config)
+                        def version = getVersion(config)
                         def sparkVersion = getSparkVersion(config)
                         config.commons.publishDockerImages(version) {
                             publishSparklingWaterDockerImage("scala", version, config.sparkMajorVersion)
