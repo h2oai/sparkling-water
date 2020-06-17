@@ -233,7 +233,7 @@ def call(params, body) {
         }
     }
     prepareSparklingEnvironmentStage(config)
-    //parallel(parallelStages)
+    parallel(parallelStages)
     // Publish nightly only in case all tests for all Spark succeeded
     parallel(nightlyParallelStages)
 }
