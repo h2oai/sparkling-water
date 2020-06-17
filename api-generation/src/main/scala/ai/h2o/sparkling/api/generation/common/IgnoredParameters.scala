@@ -33,8 +33,6 @@ object IgnoredParameters {
     "plug_values", // GLM
     "interaction_pairs", // GLM
     "beta_constraints", // GLM
-    "rand_link", // GLM
-    "rand_family", // GLM
     "random_columns", // GLM
     "initial_biases", // DeepLearning
     "initial_weights", // DeepLearning
