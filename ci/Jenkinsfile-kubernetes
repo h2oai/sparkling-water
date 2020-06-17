@@ -464,7 +464,9 @@ node("docker") {
                 def code = {
                     commons.terraformDestroy()
                 }
-                commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                retryWithDelay(3, 60, {
+                    commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")
+                })
             }
         }
     }
