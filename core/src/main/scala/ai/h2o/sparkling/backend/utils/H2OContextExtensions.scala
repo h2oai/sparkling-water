@@ -135,7 +135,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
           stopExternalH2OCluster(conf)
         }
         throw new H2OClusterNotReachableException(
-          s"""External H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+          s"""H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
              |H2OContext has not been created.""".stripMargin,
           cause)
     }

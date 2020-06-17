@@ -299,13 +299,13 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       connection.getResponseCode()
     }
     statusCode match {
-      case HttpURLConnection.HTTP_OK => logInfo(s"External H2O node $url successfully responded for the $requestType.")
+      case HttpURLConnection.HTTP_OK => logInfo(s"H2O node $url successfully responded for the $requestType.")
       case HttpURLConnection.HTTP_UNAUTHORIZED =>
         throw new RestApiUnauthorisedException(
-          s"""External H2O node ${urlToString(url)} could not be reached because the client is not authorized.
+          s"""H2O node ${urlToString(url)} could not be reached because the client is not authorized.
            |Please make sure you have passed valid credentials to the client.
            |Status code $statusCode : ${connection.getResponseMessage()}.""".stripMargin)
-      case _ => throw new RestApiCommunicationException(s"""External H2O node ${urlToString(url)} responded with
+      case _ => throw new RestApiCommunicationException(s"""H2O node ${urlToString(url)} responded with
            |Status code: $statusCode : ${connection.getResponseMessage()}
            |Server error: ${getServerError(connection)}""".stripMargin)
     }
@@ -323,7 +323,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
 
   private def throwRestApiNotReachableException(url: URL, e: Exception) = {
     throw new RestApiNotReachableException(
-      s"""External H2O node ${urlToString(url)} is not reachable.
+      s"""H2O node ${urlToString(url)} is not reachable.
          |Please verify that you are passing ip and port of existing cluster node and the cluster
          |is running with web enabled.""".stripMargin,
       e)
