@@ -43,6 +43,7 @@ private[backend] object SecurityUtils {
   def enableFlowSSL(conf: H2OConf): H2OConf = {
     val sslPair = generateSSLPair("h2o-internal-auto-flow-ssl")
     conf.setJks(sslPair.jks.getLocation)
+    System.setProperty("javax.net.ssl.trustStore", sslPair.jks.getLocation)
     conf.setJksPass(sslPair.jks.pass)
   }
 

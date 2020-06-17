@@ -25,6 +25,7 @@ import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, Res
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import javax.net.ssl.{HostnameVerifier, HttpsURLConnection, SSLSession}
 import org.apache.spark.SparkContext
 import org.apache.spark.expose.{Logging, Utils}
 import org.apache.spark.h2o.SparkSpecificUtils
@@ -97,7 +98,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
 
-  private val (flowIp, flowPort) = {
+  private[sparkling] val (flowIp, flowPort) = {
     val uri = ProxyStarter.startFlowProxy(conf)
     // SparklyR implementation of Kubernetes connection works in a way that it does port-forwarding
     // from the driver node to the node where interactive session is running. We also need to make
@@ -481,4 +482,8 @@ object H2OContext extends Logging {
           s" Spark and re-run the application.")
     }
   }
+  // H2O Py/R Clients does not support certificate verification as well
+  HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+    def verify(string: String, ssls: SSLSession) = true
+  })
 }

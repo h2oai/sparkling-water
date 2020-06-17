@@ -30,8 +30,6 @@ import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
 
-import scala.collection.JavaConverters._
-
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
   _: H2OContext =>
 
