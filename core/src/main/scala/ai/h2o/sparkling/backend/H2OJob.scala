@@ -34,8 +34,7 @@ private[sparkling] class H2OJob private (val id: String) extends Logging {
         case H2OJobStatus.DONE =>
           logInfo(s"H2O Job $id finished successfully.")
           return
-        case H2OJobStatus.FAILED => throw new Exception(
-            s"""H2O Job $id has failed!
+        case H2OJobStatus.FAILED => throw new Exception(s"""H2O Job $id has failed!
                |Exception: ${job.exception}
                |StackTrace: ${job.stacktrace}""".stripMargin)
         case H2OJobStatus.CANCELLED => throw new Exception(s"H2O Job $id has been cancelled!")
