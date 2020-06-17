@@ -48,10 +48,12 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
       val endpoints = registerEndpoints(hc)
       val workerNodes = startH2OWorkers(endpoints, conf)
       distributeFlatFile(endpoints, conf, workerNodes)
+      waitForClusterSize(endpoints, conf, workerNodes.length)
+      lockCloud(endpoints)
+      val leaderNodeDesc = getLeaderNode(endpoints, conf)
       tearDownEndpoints(endpoints)
       registerNewExecutorListener(hc)
-      conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, workerNodes.head.ipPort())
-      waitForClusterSize(conf, workerNodes.length)
+      conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, leaderNodeDesc.ipPort())
     }
   }
 
@@ -60,12 +62,23 @@ class InternalH2OBackend(@transient val hc: H2OContext) extends SparklingBackend
 
 object InternalH2OBackend extends InternalBackendUtils {
 
-  private def waitForClusterSize(conf: H2OConf, expectedSize: Int): Unit = {
+  private def getLeaderNode(endpoints: Array[RpcEndpointRef], conf: H2OConf): NodeDesc = {
+    val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
+    endpoints
+      .map { ref =>
+        val future = ref.ask[(NodeDesc, Boolean)](IsLeaderNodeMsg())
+        askTimeout.awaitResult(future)
+      }
+      .find(_._2)
+      .get
+      ._1
+  }
+
+  private def waitForClusterSize(endpoints: Array[RpcEndpointRef], conf: H2OConf, expectedSize: Int): Unit = {
     val start = System.currentTimeMillis()
     val timeout = conf.cloudTimeout
     while (System.currentTimeMillis() - start < timeout) {
-      val cloudInfo = RestApiUtils.getClusterInfo(conf)
-      if (cloudInfo.cloud_size >= expectedSize && cloudInfo.consensus) {
+      if (isClusterOfExpectedSize(endpoints, conf, expectedSize)) {
         return
       }
       try {
@@ -74,6 +87,23 @@ object InternalH2OBackend extends InternalBackendUtils {
         case _: InterruptedException =>
       }
     }
+  }
+
+  private def lockCloud(endpoints: Array[RpcEndpointRef]): Unit = {
+    endpoints.foreach {
+      _.send(LockClusterMsg())
+    }
+  }
+
+  private def isClusterOfExpectedSize(endpoints: Array[RpcEndpointRef], conf: H2OConf, expectedSize: Int): Boolean = {
+    val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
+    !endpoints
+      .map { ref =>
+        val future = ref.ask[Int](CheckClusterSizeMsg())
+        val clusterSize = askTimeout.awaitResult(future)
+        clusterSize
+      }
+      .exists(_ != expectedSize)
   }
 
   override def checkAndUpdateConf(conf: H2OConf): H2OConf = {

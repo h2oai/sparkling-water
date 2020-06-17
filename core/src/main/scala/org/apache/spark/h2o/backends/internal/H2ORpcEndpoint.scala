@@ -21,9 +21,10 @@ import java.net.InetAddress
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.NodeDesc
+import org.apache.spark.SparkEnv
 import org.apache.spark.rpc.{RpcCallContext, RpcEnv, ThreadSafeRpcEndpoint}
 import water.util.Log
-import water.{H2O, H2ONode}
+import water.{H2O, H2ONode, Paxos}
 
 import scala.collection.JavaConverters._
 
@@ -48,12 +49,19 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv) extends ThreadSafeRpcEndpoint 
 
     case StopEndpointMsg =>
       this.stop()
+    case LockClusterMsg() =>
+      Paxos.lockCloud("Locking the cloud from Sparkling Water as we have reached the expected cluster size.")
   }
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
     case StartH2OWorkersMsg(conf) =>
       val nodeDesc = InternalH2OBackend.startH2OWorker(conf)
       context.reply(nodeDesc)
+    case CheckClusterSizeMsg() =>
+      context.reply(H2O.CLOUD.size())
+    case IsLeaderNodeMsg() =>
+      val currentNode = NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
+      context.reply((currentNode, H2O.SELF.isLeaderNode))
   }
 }
 
@@ -62,3 +70,9 @@ case class StopEndpointMsg()
 case class FlatFileMsg(nodes: Array[NodeDesc], portOffset: Int)
 
 case class StartH2OWorkersMsg(conf: H2OConf)
+
+case class CheckClusterSizeMsg()
+
+case class LockClusterMsg()
+
+case class IsLeaderNodeMsg()
