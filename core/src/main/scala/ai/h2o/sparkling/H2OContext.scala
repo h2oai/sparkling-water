@@ -324,7 +324,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
             val swHeartBeatInfo = getSparklingWaterHeartbeatEvent()
             if (conf.runsInExternalClusterMode) {
               if (!swHeartBeatInfo.cloudHealthy) {
-                logError("External H2O cluster not healthy!")
+                logError("H2O cluster not healthy!")
                 if (conf.isKillOnUnhealthyClusterEnabled) {
                   logError("Stopping external H2O cluster as it is not healthy.")
                   if (H2OClientUtils.isH2OClientBased(conf)) {
@@ -343,10 +343,10 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
               }
               if (!Utils.inShutdown()) {
                 throw new H2OClusterNotReachableException(
-                  s"""External H2O cluster ${conf.h2oCluster.get + conf.contextPath
+                  s"""H2O cluster ${conf.h2oCluster.get + conf.contextPath
                        .getOrElse("")} - ${conf.cloudName.get} is not reachable,
                      |H2OContext has been closed! Please create a new H2OContext to a healthy and reachable (web enabled)
-                     |external H2O cluster.""".stripMargin,
+                     |H2O cluster.""".stripMargin,
                   cause)
               }
           }
