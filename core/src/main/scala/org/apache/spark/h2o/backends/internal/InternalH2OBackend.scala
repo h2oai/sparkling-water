@@ -64,14 +64,10 @@ object InternalH2OBackend extends InternalBackendUtils {
 
   private def getLeaderNode(endpoints: Array[RpcEndpointRef], conf: H2OConf): NodeDesc = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
-    endpoints
-      .map { ref =>
-        val future = ref.ask[(NodeDesc, Boolean)](IsLeaderNodeMsg())
-        askTimeout.awaitResult(future)
-      }
-      .find(_._2)
-      .get
-      ._1
+    endpoints.flatMap { ref =>
+      val future = ref.ask[Option[NodeDesc]](IsLeaderNodeMsg)
+      askTimeout.awaitResult(future)
+    }.head
   }
 
   private def waitForClusterSize(endpoints: Array[RpcEndpointRef], conf: H2OConf, expectedSize: Int): Unit = {
@@ -90,16 +86,14 @@ object InternalH2OBackend extends InternalBackendUtils {
   }
 
   private def lockCloud(endpoints: Array[RpcEndpointRef]): Unit = {
-    endpoints.foreach {
-      _.send(LockClusterMsg())
-    }
+    endpoints.head.send(LockClusterMsg)
   }
 
   private def isClusterOfExpectedSize(endpoints: Array[RpcEndpointRef], conf: H2OConf, expectedSize: Int): Boolean = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     !endpoints
       .map { ref =>
-        val future = ref.ask[Int](CheckClusterSizeMsg())
+        val future = ref.ask[Int](CheckClusterSizeMsg)
         val clusterSize = askTimeout.awaitResult(future)
         clusterSize
       }
