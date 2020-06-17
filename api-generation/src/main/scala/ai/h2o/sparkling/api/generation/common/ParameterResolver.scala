@@ -37,19 +37,19 @@ trait ParameterResolver {
           field.getAnnotation(classOf[API]).help())
 
     val parameters = partialParameters.map { parameter =>
-      if (parameterSubstitutionContext.explicitDefaultValues.getOrElse(parameter.h2oName, null) == "null") {
-        parameter
-      } else {
-        val value = parameterSubstitutionContext.defaultValueSource match {
-          case DefaultValueSource.Getter =>
-            val getter = h2oParameterClass.getMethod(parameter.h2oName)
-            getter.invoke(h2oParameterInstance)
-          case DefaultValueSource.Field =>
-            val fieldName = parameterSubstitutionContext.defaultValueFieldPrefix + parameter.h2oName
-            val field = h2oParameterClass.getField(fieldName)
-            field.get(h2oParameterInstance)
-        }
-        parameter.copy(defaultValue = value)
+      parameterSubstitutionContext.explicitDefaultValues.get(parameter.h2oName) match {
+        case Some(value) => parameter.copy(defaultValue = value)
+        case None =>
+          val value = parameterSubstitutionContext.defaultValueSource match {
+            case DefaultValueSource.Getter =>
+              val getter = h2oParameterClass.getMethod(parameter.h2oName)
+              getter.invoke(h2oParameterInstance)
+            case DefaultValueSource.Field =>
+              val fieldName = parameterSubstitutionContext.defaultValueFieldPrefix + parameter.h2oName
+              val field = h2oParameterClass.getField(fieldName)
+              field.get(h2oParameterInstance)
+          }
+          parameter.copy(defaultValue = value)
       }
     }
     parameters

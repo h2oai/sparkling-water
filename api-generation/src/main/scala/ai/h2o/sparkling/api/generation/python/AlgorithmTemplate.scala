@@ -90,7 +90,6 @@ object AlgorithmTemplate
     case a: Array[_] => s"[${a.map(stringify).mkString(", ")}]"
     case b: Boolean => b.toString.capitalize
     case s: String => s""""$s""""
-    case v if v == "null" => "None"
     case v if v == null => "None"
     case v if v.getClass.isEnum => s""""$v""""
     case v => v.toString

@@ -117,7 +117,6 @@ object ParametersTemplate
     case a: Array[_] => s"Array(${a.map(stringify).mkString(", ")})"
     case s: String => s""""$s""""
     case v if v == null => null
-    case v if v == "null" => null
     case v => v.toString
   }
 
