@@ -65,7 +65,7 @@ object InternalH2OBackend extends InternalBackendUtils {
   private def getLeaderNode(endpoints: Array[RpcEndpointRef], conf: H2OConf): NodeDesc = {
     val askTimeout = RpcUtils.askRpcTimeout(conf.sparkConf)
     endpoints.flatMap { ref =>
-      val future = ref.ask[Option[NodeDesc]](IsLeaderNodeMsg)
+      val future = ref.ask[Option[NodeDesc]](GetLeaderNodeMsg)
       askTimeout.awaitResult(future)
     }.head
   }
