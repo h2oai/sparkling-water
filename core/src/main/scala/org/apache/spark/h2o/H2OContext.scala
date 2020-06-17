@@ -90,7 +90,6 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     logWarning("Spark shutdown hook called, stopping H2OContext!")
     stop(stopSparkContext = false, stopJvm = false, inShutdownHook = true)
   }
-  private val leaderNode = RestApiUtils.getLeaderNode(conf)
   if (sparkContext.ui.isDefined) {
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
@@ -265,13 +264,13 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   def asSparkFrame(s: String): DataFrame = asSparkFrame(s, copyMetadata = true)
 
   /** Returns location of REST API of H2O client */
-  def h2oLocalClient = leaderNode.hostname + ":" + leaderNode.port + conf.contextPath.getOrElse("")
+  def h2oLocalClient = conf.h2oClusterHost.get + ":" + conf.h2oClusterPort.get + conf.contextPath.getOrElse("")
 
   /** Returns IP of H2O client */
-  def h2oLocalClientIp = leaderNode.hostname
+  def h2oLocalClientIp = conf.h2oClusterHost.get
 
   /** Returns port where H2O REST API is exposed */
-  def h2oLocalClientPort = leaderNode.port
+  def h2oLocalClientPort = conf.h2oClusterPort.get
 
   @DeprecatedMethod("setH2OLogLevel", "3.32")
   def setH2OClientLogLevel(level: String): Unit = setH2OLogLevel(level)
