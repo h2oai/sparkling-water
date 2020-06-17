@@ -139,8 +139,8 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
             withSharedSetup(sparkMajorVersion, config) {
                 config.commons.withSparklingWaterDockerImage {
                     config.commons.withSigningCredentials {
-                        def version = getNightlyVersion(config)
                         unstash "shared"
+                        def version = getNightlyVersion(config)
                         sh """
                             sed -i 's/^version=.*\$/version=${version}/' gradle.properties
                             sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
