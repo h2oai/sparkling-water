@@ -19,6 +19,8 @@ package ai.h2o.sparkling.ml.params
 
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.DefaultFormats
+import org.json4s.JsonAST.JNull
+import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import org.json4s.jackson.Serialization.{read, write}
 
 import scala.collection.JavaConverters._
@@ -31,7 +33,19 @@ class DictionaryParam(parent: Params, name: String, doc: String, isValid: java.u
 
   implicit val formats = DefaultFormats
 
-  override def jsonEncode(dictionary: java.util.Map[String, Double]): String = write(dictionary.asScala)
+  override def jsonEncode(dictionary: java.util.Map[String, Double]): String = {
+    if (dictionary == null) {
+      compact(render(JNull))
+    } else {
+      write(dictionary.asScala)
+    }
+  }
 
-  override def jsonDecode(json: String): java.util.Map[String, Double] = read[Map[String, Double]](json).asJava
+  override def jsonDecode(json: String): java.util.Map[String, Double] = {
+    if(parse(json) == JNull) {
+      return null
+    } else {
+      read[Map[String, Double]](json).asJava
+    }
+  }
 }

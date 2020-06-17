@@ -1,0 +1,35 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+from pyspark.ml.param import *
+
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
+class HasPlugValues(Params):
+    plugValues = Param(
+        Params._dummy(),
+        "plugValues",
+        "A dictionary containing values that will be used to impute missing values of the training/validation frame, "
+        "use with conjunction missing_values_handling = PlugValues)",
+        H2OTypeConverters.toNullableDictionaryWithFloatElements())
+
+    def getPlugValues(self):
+        return self.getOrDefault(self.plugValues)
+
+    def setPlugValues(self, value):
+        return self._set(plugValues=value)

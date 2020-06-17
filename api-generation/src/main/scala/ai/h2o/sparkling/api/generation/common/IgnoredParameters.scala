@@ -30,12 +30,10 @@ object IgnoredParameters {
     "calibration_frame", // GBM, DRF, XGBoost
     "max_hit_ratio_k", // GBM, DRF, Deep Learning
     "checkpoint", // GBM, DRF, XGBoost, Deep Learning
-    "plug_values", // GLM
     "interaction_pairs", // GLM
     "beta_constraints", // GLM
     "random_columns", // GLM
-    "pretrained_autoencoder", // DeepLearning
-    "build_control") //AutoML
+    "pretrained_autoencoder") // DeepLearning
 
   def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
 }
