@@ -30,7 +30,7 @@ trait HasPlugValues extends H2OAlgoParamsBase {
     this,
     "plugValues",
     "A map containing values that will be used to impute missing values of the training/validation frame, " +
-      "use with conjunction missing_values_handling = PlugValues)")
+      """use with conjunction missingValuesHandling = "PlugValues")""")
 
   setDefault(plugValues -> null)
 
