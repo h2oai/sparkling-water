@@ -24,8 +24,11 @@ artifacts {
   api shadowJar
 }
 
-task embeddedAssemblyJar(type: Copy, dependsOn: shadowJar) {
-  duplicatesStrategy = 'include'
+task cleanBuildDir(type: Delete) {
+  delete getBuildDir()
+}
+
+task embeddedAssemblyJar(type: Copy, dependsOn: [shadowJar, cleanBuildDir]) {
   from file("$buildDir/libs")
   into file("$buildDir/embedded")
   rename { _ -> 'assembly-extensions.jar.embedded' }
