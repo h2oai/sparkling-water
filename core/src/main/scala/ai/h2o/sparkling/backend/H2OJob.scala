@@ -26,18 +26,17 @@ import water.api.schemas3.{JobV3, JobsV3}
 private[sparkling] class H2OJob private (val id: String) extends Logging {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
-  private def fetchStatus(): H2OJobStatus.Value = {
-    H2OJobStatus.fromString(H2OJob.verifyAndGetJob(conf, id).status)
-  }
-
   def waitForFinish(): Unit = {
     while (true) {
-      val status = fetchStatus()
+      val job = H2OJob.verifyAndGetJob(conf, id)
+      val status = H2OJobStatus.fromString(job.status)
       status match {
         case H2OJobStatus.DONE =>
           logInfo(s"H2O Job $id finished successfully.")
           return
-        case H2OJobStatus.FAILED => throw new Exception(s"H2O Job $id has failed!")
+        case H2OJobStatus.FAILED => throw new Exception(s"""H2O Job $id has failed!
+               |Exception: ${job.exception}
+               |StackTrace: ${job.stacktrace}""".stripMargin)
         case H2OJobStatus.CANCELLED => throw new Exception(s"H2O Job $id has been cancelled!")
         case H2OJobStatus.RUNNING =>
           logInfo(s"Waiting for job $id to finish...")
