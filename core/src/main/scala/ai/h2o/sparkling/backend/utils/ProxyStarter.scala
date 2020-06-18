@@ -30,7 +30,8 @@ import org.apache.spark.h2o.H2OConf
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler, ServletHolder, ServletMapping}
+import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 object ProxyStarter extends Logging {
@@ -39,14 +40,18 @@ object ProxyStarter extends Logging {
     var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
-        port = findNextFreeFlowPort(conf.clientWebPort, port + 1)
         val pool = new QueuedThreadPool()
         pool.setDaemon(true)
         server = new Server(pool)
         val s = server.getBean(classOf[Scheduler])
         server.updateBean(s, new ScheduledExecutorScheduler(null, true))
         server.setHandler(getContextHandler(conf))
-        val connector = new ServerConnector(server, new HttpConnectionFactory())
+        val connector = if (conf.jks.isDefined) {
+          new ServerConnector(server, createSSLContextFactory(conf))
+        } else {
+          new ServerConnector(server, new HttpConnectionFactory())
+        }
+        port = findNextFreeFlowPort(conf.clientWebPort, port)
         connector.setPort(port)
         server.setConnectors(Array(connector))
         // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
@@ -54,10 +59,22 @@ object ProxyStarter extends Logging {
         return new URI(
           s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
-        case _: BindException =>
+        case _: BindException => port = port + 1
       }
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
+  }
+
+  private def createSSLContextFactory(conf: H2OConf): SslContextFactory = {
+    if (conf.jksPass.isEmpty) {
+      throw new RuntimeException("JKS is specified but JKS password is missing!")
+    }
+    val sslFactory = new SslContextFactory(conf.jks.get)
+    sslFactory.setKeyStorePassword(conf.jksPass.get)
+    if (conf.jksAlias.isDefined) {
+      sslFactory.setCertAlias(conf.jksAlias.get)
+    }
+    sslFactory
   }
 
   def stopFlowProxy(): Unit =
@@ -112,16 +129,25 @@ object ProxyStarter extends Logging {
 
   private def proxyContextHandler(conf: H2OConf): ServletHandler = {
     val handler = new ServletHandler()
-    val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
-
+    val holder = new ServletHolder(new H2OFlowProxyServlet(conf))
+    handler.addServlet(holder)
+    val m = new ServletMapping()
+    m.setServletName(holder.getName)
+    m.setPathSpec("/*")
+    handler.addServletMapping(m)
     val ipPort = conf.h2oCluster.get
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     handler
   }
 
-  class H2OFlowProxyServlet extends Transparent {
+  class H2OFlowProxyServlet(val conf: H2OConf) extends Transparent {
     override def newHttpClient(): HttpClient = {
-      val client = super.newHttpClient()
+      val client = if (conf.jks.isDefined) {
+        val sslFactory = createSSLContextFactory(conf)
+        new HttpClient(sslFactory)
+      } else {
+        new HttpClient()
+      }
       client.setScheduler(new ScheduledExecutorScheduler(null, true))
       client
     }

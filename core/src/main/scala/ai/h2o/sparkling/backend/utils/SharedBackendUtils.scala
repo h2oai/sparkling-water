@@ -63,6 +63,10 @@ trait SharedBackendUtils extends Logging with Serializable {
       SecurityUtils.enableSSL(conf)
     }
 
+    if (conf.jks.isDefined) {
+      System.setProperty("javax.net.ssl.trustStore", conf.jks.get)
+    }
+
     if (conf.autoFlowSsl) {
       SecurityUtils.enableFlowSSL(conf)
     }

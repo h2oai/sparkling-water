@@ -20,12 +20,13 @@ package org.apache.spark.h2o
 import java.util.concurrent.atomic.AtomicReference
 
 import ai.h2o.sparkling.backend._
-import ai.h2o.sparkling.backend.converters.{SupportedDatasetConverter, SparkDataFrameConverter, SupportedDataset, SupportedRDD, SupportedRDDConverter}
+import ai.h2o.sparkling.backend.converters.{SparkDataFrameConverter, SupportedDataset, SupportedDatasetConverter, SupportedRDD, SupportedRDDConverter}
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiException}
 import ai.h2o.sparkling.backend.external._
 import ai.h2o.sparkling.backend.utils._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import javax.net.ssl.{HostnameVerifier, HttpsURLConnection, SSLSession}
 import org.apache.spark._
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
@@ -560,6 +561,11 @@ object H2OContext extends Logging {
           s" Spark and re-run the application.")
     }
   }
+
+  // H2O Py/R Clients does not support certificate verification as well
+  HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+    def verify(string: String, ssls: SSLSession) = true
+  })
 }
 
 class WrongSparkVersion(msg: String) extends Exception(msg) with NoStackTrace
