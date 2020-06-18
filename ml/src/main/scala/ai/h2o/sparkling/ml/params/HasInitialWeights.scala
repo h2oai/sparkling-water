@@ -17,8 +17,10 @@
 
 package ai.h2o.sparkling.ml.params
 
+import org.apache.spark.ml.linalg.DenseMatrix
+
 trait HasInitialWeights extends H2OAlgoParamsBase {
-  private val initialWeights = new NullableDoubleArrayArrayArrayParam(
+  private val initialWeights = new NullableMatrixArrayParam(
     this,
     "initialWeights",
     "A array of weight matrices to be used for initialization of the neural network. " +
@@ -26,12 +28,12 @@ trait HasInitialWeights extends H2OAlgoParamsBase {
 
   setDefault(initialWeights -> null)
 
-  def getInitialWeights(): Array[Array[Array[Double]]] = $(initialWeights)
+  def getInitialWeights(): Array[DenseMatrix] = $(initialWeights)
 
-  def setInitialWeights(value: Array[Array[Array[Double]]]): this.type = set(initialWeights, value)
+  def setInitialWeights(value: Array[DenseMatrix]): this.type = set(initialWeights, value)
 
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("initial_weights" -> convert3dArrayToH2OFrameKeyArray(getInitialWeights()))
+    super.getH2OAlgorithmParams() ++ Map("initial_weights" -> convertMatrixToH2OFrameKeyArray(getInitialWeights()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

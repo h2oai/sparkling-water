@@ -17,8 +17,10 @@
 
 package ai.h2o.sparkling.ml.params
 
+import org.apache.spark.ml.linalg.DenseVector
+
 trait HasInitialBiases extends H2OAlgoParamsBase {
-  private val initialBiases = new NullableDoubleArrayArrayParam(
+  private val initialBiases = new NullableVectorArrayParam(
     this,
     "initialBiases",
     "A array of weight vectors to be used for bias initialization of every network layer." +
@@ -26,12 +28,12 @@ trait HasInitialBiases extends H2OAlgoParamsBase {
 
   setDefault(initialBiases -> null)
 
-  def getInitialBiases(): Array[Array[Double]] = $(initialBiases)
+  def getInitialBiases(): Array[DenseVector] = $(initialBiases)
 
-  def setInitialBiases(value: Array[Array[Double]]): this.type = set(initialBiases, value)
+  def setInitialBiases(value: Array[DenseVector]): this.type = set(initialBiases, value)
 
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("initial_biases" -> convert2dArrayToH2OFrameKeyArray(getInitialBiases()))
+    super.getH2OAlgorithmParams() ++ Map("initial_biases" -> convertVectorArrayToH2OFrameKeyArray(getInitialBiases()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

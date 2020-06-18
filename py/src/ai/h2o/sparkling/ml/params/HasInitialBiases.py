@@ -24,9 +24,9 @@ class HasInitialBiases(Params):
     initialBiases = Param(
         Params._dummy(),
         "initialBiases",
-        "A array of weight vectors to be used for bias initialization of every network layer."
+        "A array of weight vectors to be used for bias initialization of every network layer. "
         "If this parameter is set, the parameter 'initialWeights' has to be set as well.",
-        H2OTypeConverters.toNullableListListFloat())
+        H2OTypeConverters.toNullableListDenseVector())
 
     def getInitialBiases(self):
         return self.getOrDefault(self.initialBiases)
