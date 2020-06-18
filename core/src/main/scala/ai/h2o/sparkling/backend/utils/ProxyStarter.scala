@@ -19,19 +19,20 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
+import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.backend.api.ShutdownServlet
 import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
-import ai.h2o.sparkling.H2OConf
-import ai.h2o.sparkling.backend.api.ShutdownServlet
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler}
+import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler, ServletHolder, ServletMapping}
+import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
 
 private[sparkling] object ProxyStarter extends Logging {
@@ -46,7 +47,11 @@ private[sparkling] object ProxyStarter extends Logging {
         val s = server.getBean(classOf[Scheduler])
         server.updateBean(s, new ScheduledExecutorScheduler(null, true))
         server.setHandler(getContextHandler(conf))
-        val connector = new ServerConnector(server, new HttpConnectionFactory())
+        val connector = if (conf.jks.isDefined) {
+          new ServerConnector(server, createSSLContextFactory(conf))
+        } else {
+          new ServerConnector(server, new HttpConnectionFactory())
+        }
         port = findNextFreeFlowPort(conf.clientWebPort, port)
         connector.setPort(port)
         server.setConnectors(Array(connector))
@@ -59,6 +64,18 @@ private[sparkling] object ProxyStarter extends Logging {
       }
     }
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
+  }
+
+  private def createSSLContextFactory(conf: H2OConf): SslContextFactory = {
+    if (conf.jksPass.isEmpty) {
+      throw new RuntimeException("JKS is specified but JKS password is missing!")
+    }
+    val sslFactory = new SslContextFactory(conf.jks.get)
+    sslFactory.setKeyStorePassword(conf.jksPass.get)
+    if (conf.jksAlias.isDefined) {
+      sslFactory.setCertAlias(conf.jksAlias.get)
+    }
+    sslFactory
   }
 
   def stopFlowProxy(): Unit =
@@ -114,16 +131,25 @@ private[sparkling] object ProxyStarter extends Logging {
 
   private def proxyContextHandler(conf: H2OConf): ServletHandler = {
     val handler = new ServletHandler()
-    val holder = handler.addServletWithMapping(classOf[H2OFlowProxyServlet], "/*")
-
+    val holder = new ServletHolder(new H2OFlowProxyServlet(conf))
+    handler.addServlet(holder)
+    val m = new ServletMapping()
+    m.setServletName(holder.getName)
+    m.setPathSpec("/*")
+    handler.addServletMapping(m)
     val ipPort = conf.h2oCluster.get
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
     handler
   }
 
-  class H2OFlowProxyServlet extends Transparent {
+  class H2OFlowProxyServlet(val conf: H2OConf) extends Transparent {
     override def newHttpClient(): HttpClient = {
-      val client = super.newHttpClient()
+      val client = if (conf.jks.isDefined) {
+        val sslFactory = createSSLContextFactory(conf)
+        new HttpClient(sslFactory)
+      } else {
+        new HttpClient()
+      }
       client.setScheduler(new ScheduledExecutorScheduler(null, true))
       client
     }
