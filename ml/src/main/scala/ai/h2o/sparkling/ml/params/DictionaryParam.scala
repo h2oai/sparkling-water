@@ -42,7 +42,7 @@ class DictionaryParam(parent: Params, name: String, doc: String, isValid: java.u
   }
 
   override def jsonDecode(json: String): java.util.Map[String, Double] = {
-    if(parse(json) == JNull) {
+    if (parse(json) == JNull) {
       return null
     } else {
       read[Map[String, Double]](json).asJava

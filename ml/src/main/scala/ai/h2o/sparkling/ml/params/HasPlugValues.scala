@@ -34,12 +34,12 @@ trait HasPlugValues extends H2OAlgoParamsBase {
 
   setDefault(plugValues -> null)
 
-  def getPlugValues(): Map[String, Double] ={
+  def getPlugValues(): Map[String, Double] = {
     val values = $(plugValues)
     if (values == null) null else values.asScala.toMap
   }
 
-  def setPlugValues(value: Map[String, Double]): this.type = set(plugValues, if (value == null ) null else value.asJava)
+  def setPlugValues(value: Map[String, Double]): this.type = set(plugValues, if (value == null) null else value.asJava)
 
   private def getPlugValuesFrameKey(): String = {
     val plugValues = getPlugValues()
