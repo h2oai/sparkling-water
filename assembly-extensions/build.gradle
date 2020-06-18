@@ -25,6 +25,7 @@ artifacts {
 }
 
 task embeddedAssemblyJar(type: Copy, dependsOn: shadowJar) {
+  duplicatesStrategy = 'include'
   from file("$buildDir/libs")
   into file("$buildDir/embedded")
   rename { _ -> 'assembly-extensions.jar.embedded' }
