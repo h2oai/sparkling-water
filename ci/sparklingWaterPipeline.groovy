@@ -302,7 +302,7 @@ def rUnitTests() {
                             """
                     }
                     sh "${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage"
-                    timeout(time: 4, unit: 'MINUTES') {
+                    timeout(time: 7, unit: 'MINUTES') {
                         sh "${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}"
                     }
                 } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e){
