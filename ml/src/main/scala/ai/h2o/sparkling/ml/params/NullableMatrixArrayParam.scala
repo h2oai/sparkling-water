@@ -56,11 +56,12 @@ class NullableMatrixArrayParam(parent: Params, name: String, doc: String, isVali
         null
       case JArray(matrices) =>
         matrices.map {
-          case JObject(List(
-              JField("numRows", JInt(numRows)),
-              JField("numCols", JInt(numCols)),
-              JField("values", JArray(valueArray)),
-              JField("transposed", JBool(transposed)))) =>
+          case JObject(
+              List(
+                JField("numRows", JInt(numRows)),
+                JField("numCols", JInt(numCols)),
+                JField("values", JArray(valueArray)),
+                JField("transposed", JBool(transposed)))) =>
             val values = valueArray.map(DoubleParam.jValueDecode).toArray
             new DenseMatrix(numRows.toInt, numCols.toInt, values, transposed)
           case _ =>

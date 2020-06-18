@@ -92,15 +92,15 @@ trait H2OAlgoParamsBase extends Params {
     new NullableStringArrayParam(this, name, doc)
   }
 
-  private def convertWithH2OContext[TInput <: AnyRef, TOutput <: AnyRef](input: TInput)
-      (body: (SparkSession, H2OContext) => TOutput): TOutput = {
+  private def convertWithH2OContext[TInput <: AnyRef, TOutput <: AnyRef](input: TInput)(
+      body: (SparkSession, H2OContext) => TOutput): TOutput = {
     if (input == null) {
       null.asInstanceOf[TOutput]
     } else {
       val spark = SparkSessionUtils.active
       val hc = H2OContext.ensure(
-      s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
-        "Please create one as H2OContext.getOrCreate().")
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
       body(spark, hc)
     }
   }
