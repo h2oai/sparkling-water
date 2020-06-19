@@ -48,7 +48,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
-  private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.8, 0.2), 1234L).map(_.cache())
+  private lazy val trainingDataset = dataset.limit(300).cache()
+  private lazy val testingDataset = dataset.except(trainingDataset).cache()
   private lazy val expectedTestingDataset =
     loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed.csv").cache()
 
@@ -238,7 +239,8 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .withColumn("DPROS", 'DPROS cast StringType)
       .withColumn("DCAPS", 'DCAPS cast StringType)
       .withColumn("CAPSULE", 'CAPSULE cast StringType)
-    val Array(trainingDataset, testingDataset) = datasetWithStrings.randomSplit(Array(0.8, 0.2), 1234L)
+    val trainingDataset = dataset.limit(300).cache()
+    val testingDataset = dataset.except(trainingDataset).cache()
     val model = targetEncoder.fit(trainingDataset)
 
     val transformedByModel = model.transformTrainingDataset(testingDataset)
