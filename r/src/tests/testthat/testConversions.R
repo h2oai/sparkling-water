@@ -13,7 +13,8 @@ config <- c(config, list(
   "spark.ext.h2o.external.start.mode" = "auto",
   "spark.ext.h2o.external.disable.version.check" = "true",
   "sparklyr.gateway.port" = 55555,
-  "sparklyr.connect.timeout" = 60 * 5
+  "sparklyr.connect.timeout" = 60 * 5,
+  "spark.master" = "local[*]"
 ))
 
 for (i in 1:4) {
