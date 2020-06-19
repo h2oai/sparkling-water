@@ -18,9 +18,11 @@
 package ai.h2o.sparkling.ml
 
 import ai.h2o.sparkling.SharedH2OTestContext
+import ai.h2o.sparkling.backend.BuildInfo
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.ml.feature.{HashingTF, IDF, RegexTokenizer, StopWordsRemover}
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -61,7 +63,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
       .setCaseSensitive(false)
 
     // Hash the words
-    val hashingTF = new HashingTF()
+    val hashingTF = createHashingTF()
       .setNumFeatures(1 << 10)
       .setInputCol(stopWordsRemover.getOutputCol)
       .setOutputCol("wordToIndex")
@@ -92,5 +94,18 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
     val data = load(spark.sparkContext, "smsData.txt")
     val model = pipeline.fit(data)
     model
+  }
+
+  private def createHashingTF(): HashingTF = {
+    if (BuildInfo.buildSparkMajorVersion.split("\\.")(0).toInt < 3) {
+      new HashingTF()
+    } else {
+      // Spark 3.0 + uses by default different hashing function and does not allow to publicly
+      // change the function. For test purposes, we specify the old hashing function which is represented by
+      // numeric value of 1
+      val constructor = classOf[HashingTF].getDeclaredConstructor(classOf[String], classOf[Int])
+      constructor.setAccessible(true)
+      constructor.newInstance(Identifiable.randomUID("hashingTF").asInstanceOf[AnyRef], 1.asInstanceOf[AnyRef])
+    }
   }
 }
