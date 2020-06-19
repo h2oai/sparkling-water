@@ -1,7 +1,7 @@
 from pysparkling import *
 from pyspark.sql import SparkSession
 
-spark = SparkSession.builder.appName("App name").getOrCreate()
+spark = SparkSession.builder.appName("App name").master("local").getOrCreate()
 # Check if Sparkling Water classes are available
 jvm = spark.sparkContext._jvm
 package = getattr(jvm.ai.h2o.sparkling.backend, "BuildInfo$")
