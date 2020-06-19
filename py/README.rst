@@ -5,6 +5,7 @@ PySparkling
 
 PySparkling Documentation is hosted at our documentation page:
 
+- For Spark 3.0 - http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/pysparkling.html
 - For Spark 2.4 - http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/pysparkling.html
 - For Spark 2.3 - http://docs.h2o.ai/sparkling-water/2.3/latest-stable/doc/pysparkling.html
 - For Spark 2.2 - http://docs.h2o.ai/sparkling-water/2.2/latest-stable/doc/pysparkling.html
