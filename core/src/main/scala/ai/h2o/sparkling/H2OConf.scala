@@ -82,7 +82,7 @@ class H2OConf(val sparkConf: SparkConf)
 
   /** Set multiple parameters together */
   def setAll(settings: Traversable[(String, String)]): H2OConf = {
-    sparkConf.setAll(settings)
+    sparkConf.setAll(settings.toIterable)
     this
   }
 
