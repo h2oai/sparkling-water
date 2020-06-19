@@ -16,9 +16,10 @@
 #
 
 import os
-from pyspark.mllib.linalg import *
+from pyspark.ml.linalg import DenseMatrix, DenseVector
 from pyspark.sql.types import *
 from pysparkling.ml import H2OMOJOModel, H2ODeepLearning
+from tests import unit_test_utils
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -45,3 +46,28 @@ def testLoadAndTrainMojo(prostateDataset):
     assert len(predMojo) == len(predModel)
     for i in range(0, len(predMojo)):
         assert predMojo[i] == predModel[i]
+
+
+def testInitialBiasAndWeightsAffectsTheResult(prostateDataset):
+    [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
+    def createInitialDeepLearningDefinition():
+        return H2ODeepLearning(
+            seed=42,
+            reproducible=True,
+            labelCol="CAPSULE",
+            featuresCols=["AGE", "RACE", "DPROS", "DCAPS"],
+            hidden=[3, ])
+
+    referenceDeepLearning = createInitialDeepLearningDefinition()
+    referenceModel = referenceDeepLearning.fit(traningDataset)
+    referenceResult = referenceModel.transform(testingDataset)
+
+    deepLearning = createInitialDeepLearningDefinition()
+    matrix0 = DenseMatrix(3, 4, [.1, .2, .3, .4, .4, .5, .6, .7, .7, .8, .9, .6], False)
+    matrix1 = DenseMatrix(1, 3, [.2, .3, .4], False)
+    deepLearning.setInitialWeights([matrix0, matrix1])
+    deepLearning.setInitialBiases([DenseVector([.1, .2, .3]), DenseVector([.1])])
+    model = deepLearning.fit(traningDataset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)

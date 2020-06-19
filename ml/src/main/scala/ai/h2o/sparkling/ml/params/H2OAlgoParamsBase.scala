@@ -17,7 +17,11 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.ml.linalg.{DenseMatrix, DenseVector}
 import org.apache.spark.ml.param._
+import org.apache.spark.sql.SparkSession
 
 trait H2OAlgoParamsBase extends Params {
   private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = Map.empty
@@ -86,5 +90,47 @@ trait H2OAlgoParamsBase extends Params {
 
   protected def nullableStringArrayParam(name: String, doc: String): NullableStringArrayParam = {
     new NullableStringArrayParam(this, name, doc)
+  }
+
+  private def convertWithH2OContext[TInput <: AnyRef, TOutput <: AnyRef](input: TInput)(
+      body: (SparkSession, H2OContext) => TOutput): TOutput = {
+    if (input == null) {
+      null.asInstanceOf[TOutput]
+    } else {
+      val spark = SparkSessionUtils.active
+      val hc = H2OContext.ensure(
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
+      body(spark, hc)
+    }
+  }
+
+  protected def convert2dArrayToH2OFrame(input: Array[Array[Double]]): String = {
+    convertWithH2OContext(input) { (spark, hc) =>
+      import spark.implicits._
+      val df = spark.sparkContext.parallelize(input).toDF()
+      hc.asH2OFrame(df).frameId
+    }
+  }
+
+  protected def convertVectorArrayToH2OFrameKeyArray(vectors: Array[DenseVector]): Array[String] = {
+    convertWithH2OContext(vectors) { (spark, hc) =>
+      import spark.implicits._
+      vectors.map { vector =>
+        val df = spark.sparkContext.parallelize(vector.values).toDF()
+        hc.asH2OFrame(df).frameId
+      }
+    }
+  }
+
+  protected def convertMatrixToH2OFrameKeyArray(matrix: Array[DenseMatrix]): Array[String] = {
+    convertWithH2OContext(matrix) { (spark, hc) =>
+      import spark.implicits._
+      matrix.map { matrix =>
+        val rows = matrix.rowIter.map(_.toArray).toArray
+        val df = spark.sparkContext.parallelize(rows).toDF()
+        hc.asH2OFrame(df).frameId
+      }
+    }
   }
 }

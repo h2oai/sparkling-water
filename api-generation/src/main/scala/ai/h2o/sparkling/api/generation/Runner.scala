@@ -53,6 +53,9 @@ object Runner {
     val monotonicity =
       ExplicitField("monotone_constraints", "HasMonotoneConstraints", new util.HashMap[String, Double]())
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
+    val deepLearningFields = Seq(
+      ExplicitField("initial_biases", "HasInitialBiases", null),
+      ExplicitField("initial_weights", "HasInitialWeights", null))
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val explicitDefaultValues =
@@ -63,7 +66,7 @@ object Runner {
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity)),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq.empty),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq.empty),
-      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], Seq.empty),
+      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq(userPoints)))
 
     algorithmParameters.map {

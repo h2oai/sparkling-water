@@ -56,7 +56,7 @@ def get_default_spark_conf(additional_conf=None):
     return conf
 
 
-def assert_data_frames_are_identical(expected, produced):
+def assert_data_frame_counts(expected, produced):
     expected.cache()
     produced.cache()
 
@@ -74,6 +74,10 @@ def assert_data_frames_are_identical(expected, produced):
         'The expected data frame has %s distinct rows whereas the produced data frame has %s distinct rows.' \
         % (expectedDistinctCount, producedDistinctCount)
 
+
+def assert_data_frames_are_identical(expected, produced):
+    assert_data_frame_counts(expected, produced)
+
     numberOfExtraRowsInExpected = expected.subtract(produced).count()
     numberOfExtraRowsInProduced = produced.subtract(expected).count()
 
@@ -81,6 +85,16 @@ def assert_data_frames_are_identical(expected, produced):
         """The expected data frame contains %s distinct rows that are not in the produced data frame.
         The produced data frame contains %s distinct rows that are not in the expected data frame.""" \
         % (numberOfExtraRowsInExpected, numberOfExtraRowsInProduced)
+
+
+def assert_data_frames_have_different_values(expected, produced):
+    assert_data_frame_counts(expected, produced)
+
+    numberOfExtraRowsInExpected = expected.subtract(produced).count()
+    numberOfExtraRowsInProduced = produced.subtract(expected).count()
+
+    assert numberOfExtraRowsInExpected > 0 or numberOfExtraRowsInProduced > 0, \
+        "The data frames should have a different values."
 
 
 def assert_h2o_frames_are_identical(expected, produced):

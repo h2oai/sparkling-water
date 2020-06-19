@@ -18,6 +18,7 @@
 from py4j.java_gateway import JavaObject
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
+from pyspark.ml.linalg import DenseVector, DenseMatrix
 
 
 class H2OTypeConverters(object):
@@ -223,6 +224,63 @@ class H2OTypeConverters(object):
                 raise TypeError("None is not allowed.")
             else:
                 return [H2OTypeConverters.toListFloat()(v) for v in TypeConverters.toList(value)]
+
+        return convert
+
+    @staticmethod
+    def toDenseMatrix():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            elif isinstance(value, JavaObject):
+                return value
+            elif isinstance(value, DenseMatrix):
+                package = getattr(_jvm().ai.h2o.sparkling.ml.params, "ConversionUtils$")
+                module = package.__getattr__("MODULE$")
+                return _jvm().org.apache.spark.ml.linalg.DenseMatrix(
+                    value.numRows,
+                    value.numCols,
+                    module.toDoubleArray(H2OTypeConverters.toListFloat()(value.values)),
+                    value.isTransposed)
+            else:
+                raise TypeError("Invalid type. The expected type is pyspark.ml.linalg.DenseMatrix.")
+
+        return convert
+
+    @staticmethod
+    def toNullableListDenseMatrix():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return [H2OTypeConverters.toDenseMatrix()(v) for v in TypeConverters.toList(value)]
+
+        return convert
+
+    @staticmethod
+    def toDenseVector():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            elif isinstance(value, JavaObject):
+                return value
+            elif isinstance(value, DenseVector):
+                package = getattr(_jvm().ai.h2o.sparkling.ml.params, "ConversionUtils$")
+                module = package.__getattr__("MODULE$")
+                return _jvm().org.apache.spark.ml.linalg.DenseVector(
+                    module.toDoubleArray(H2OTypeConverters.toListFloat()(value.values)))
+            else:
+                raise TypeError("Invalid type. The expected type is pyspark.ml.linalg.DenseVector.")
+
+        return convert
+
+    @staticmethod
+    def toNullableListDenseVector():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return [H2OTypeConverters.toDenseVector()(v) for v in TypeConverters.toList(value)]
 
         return convert
 

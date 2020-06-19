@@ -14,28 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package ai.h2o.sparkling.ml.params
 
-package ai.h2o.sparkling.api.generation.common
+import java.util
+import scala.collection.JavaConverters._
 
-object IgnoredParameters {
-  val deprecated: Seq[String] = Seq(
-    "r2_stopping", // All
-    "max_confusion_matrix_size", // Deep Learning
-    "col_major") // Deep Learning
-
-  val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
-
-  val unimplemented = Seq(
-    "__meta", // just for internal purposes
-    "calibration_frame", // GBM, DRF, XGBoost
-    "max_hit_ratio_k", // GBM, DRF, Deep Learning
-    "checkpoint", // GBM, DRF, XGBoost, Deep Learning
-    "plug_values", // GLM
-    "interaction_pairs", // GLM
-    "beta_constraints", // GLM
-    "random_columns", // GLM
-    "pretrained_autoencoder", // DeepLearning
-    "build_control") //AutoML
-
-  def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
+object ConversionUtils {
+  def toDoubleArray(input: util.ArrayList[Double]): Array[Double] = input.asScala.toArray
 }
