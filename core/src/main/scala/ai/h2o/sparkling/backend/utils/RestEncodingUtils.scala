@@ -62,9 +62,9 @@ private[sparkling] trait RestEncodingUtils {
   }
 
   protected def stringify(value: Any): String = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
     value match {
-      case map: java.util.AbstractMap[_, _] => stringifyMap(map.toMap)
+      case map: java.util.AbstractMap[_, _] => stringifyMap(map.asScala.toMap)
       case map: Map[_, _] => stringifyMap(map)
       case arr: Array[_] => stringifyArray(arr)
       case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
