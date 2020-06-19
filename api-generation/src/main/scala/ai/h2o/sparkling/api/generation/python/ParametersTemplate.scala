@@ -98,6 +98,8 @@ object ParametersTemplate
       "EnumString"
     } else if (dataType.isArray) {
       s"List${resolveConverterType(dataType.getComponentType, defaultValue)}"
+    } else if (dataType.getSimpleName == "StringPairV3") {
+      "PairString"
     } else if (TypeExceptions.stringTypes.contains(dataType.getSimpleName)) {
       "String"
     } else {
