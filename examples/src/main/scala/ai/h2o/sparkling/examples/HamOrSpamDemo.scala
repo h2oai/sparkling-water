@@ -19,10 +19,12 @@ package ai.h2o.sparkling.examples
 
 import java.io.File
 
+import ai.h2o.sparkling.backend.BuildInfo
 import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.ml.features.ColumnPruner
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.feature.{HashingTF, IDF, _}
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.ml.{Pipeline, PipelineModel, PipelineStage}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -103,7 +105,17 @@ object HamOrSpamDemo {
   }
 
   def createHashingTF(stopWordsRemover: StopWordsRemover): HashingTF = {
-    new HashingTF().setNumFeatures(1 << 10).setInputCol(stopWordsRemover.getOutputCol).setOutputCol("wordToIndex")
+    val hashingTf = if (BuildInfo.buildSparkMajorVersion.split("\\.")(0).toInt < 3) {
+      new HashingTF()
+    } else {
+      // Spark 3.0 + uses by default different hashing function and does not allow to publicly
+      // change the function. For test purposes, we specify the old hashing function which is represented by
+      // numeric value of 1
+      val constructor = classOf[HashingTF].getDeclaredConstructor(classOf[String], classOf[Int])
+      constructor.setAccessible(true)
+      constructor.newInstance(Identifiable.randomUID("hashingTF").asInstanceOf[AnyRef], 1.asInstanceOf[AnyRef])
+    }
+    hashingTf.setNumFeatures(1 << 10).setInputCol(stopWordsRemover.getOutputCol).setOutputCol("wordToIndex")
   }
 
   def createIDF(hashingTF: HashingTF): IDF = {
