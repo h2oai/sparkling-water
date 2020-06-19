@@ -93,10 +93,10 @@ object ProxyStarter extends Logging {
         case LOCAL_N_REGEX(_) => 2
         case LOCAL_N_FAILURES_REGEX(_, _) => 2
         case LOCAL_CLUSTER_REGEX(nodes, _, _) => nodes.toInt * 2
-        case _ => 1
+        case _ => 0
       }
     } else {
-      1
+      0
     }
     conf.clientBasePort + numSkipped
   }
