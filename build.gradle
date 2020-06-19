@@ -122,7 +122,7 @@ configure(allprojects) { project ->
   apply plugin: "com.diffplug.gradle.spotless"
   // Version of main components
   ext {
-    scalaBaseVersion = project.findProperty('scalaBaseVersion') ?: defaultScalaBaseVersion
+    scalaBaseVersion = loadVersionSpecificProp("scalaBaseVersion", versionSpecificProps)
     scalaVersion = supportedScalaBaseVersions[scalaBaseVersion]
     scalaTestVersion = scalaTestVersions[scalaBaseVersion]
     // h2oBuild property is defined in gradle.properties
