@@ -57,7 +57,7 @@ class IntegrationTestSuite extends FunSuite with SharedH2OTestContext {
       println(s"Number of columns: $numberOfFields")
       assert(numberOfFields > expectedNumberOfColumns)
       assert(fieldTypeNames.intersect(Array("struct", "array", "map")).isEmpty)
-      flattened.foreach((r: Row) => r.toSeq.length)
+      flattened.foreach{ _: Row => {}}
     }
   }
 
