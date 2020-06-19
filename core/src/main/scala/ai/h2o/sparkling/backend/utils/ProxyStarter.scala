@@ -19,20 +19,15 @@ package ai.h2o.sparkling.backend.utils
 
 import java.net._
 
-import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
-import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
-import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
-import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.H2OConf
-import org.eclipse.jetty.client.HttpClient
-import org.eclipse.jetty.proxy.ProxyServlet.Transparent
-import org.eclipse.jetty.server.{HttpConnectionFactory, Server, ServerConnector}
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHandler, ServletHolder, ServletMapping}
-import org.eclipse.jetty.util.ssl.SslContextFactory
-import org.eclipse.jetty.util.thread.{QueuedThreadPool, ScheduledExecutorScheduler, Scheduler}
+import org.eclipse.jetty.server.Server
+import water.H2O
+import water.init.NetworkInit
+import water.webserver.H2OHttpViewImpl
+import water.webserver.jetty9.SparklingWaterJettyHelper
 
 object ProxyStarter extends Logging {
   private var server: Server = _
@@ -40,22 +35,11 @@ object ProxyStarter extends Logging {
     var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
-        val pool = new QueuedThreadPool()
-        pool.setDaemon(true)
-        server = new Server(pool)
-        val s = server.getBean(classOf[Scheduler])
-        server.updateBean(s, new ScheduledExecutorScheduler(null, true))
-        server.setHandler(getContextHandler(conf))
-        val connector = if (conf.jks.isDefined) {
-          new ServerConnector(server, createSSLContextFactory(conf))
-        } else {
-          new ServerConnector(server, new HttpConnectionFactory())
-        }
+        val config = NetworkInit.webServerConfig(confToH2OArgs(conf))
+        val h2oHttpView = new H2OHttpViewImpl(config)
+        val helper = new SparklingWaterJettyHelper(conf, h2oHttpView)
         port = findNextFreeFlowPort(conf.clientWebPort, port)
-        connector.setPort(port)
-        server.setConnectors(Array(connector))
-        // the port discovered by findNextFreeFlowPort(conf) might get occupied since we discovered it
-        server.start()
+        server = helper.startServer(port)
         return new URI(
           s"${conf.getScheme()}://${SparkEnv.get.blockManager.blockManagerId.host}:$port${conf.contextPath.getOrElse("")}")
       } catch {
@@ -65,16 +49,19 @@ object ProxyStarter extends Logging {
     throw new RuntimeException(s"Could not find any free port for the Flow proxy!")
   }
 
-  private def createSSLContextFactory(conf: H2OConf): SslContextFactory = {
-    if (conf.jksPass.isEmpty) {
-      throw new RuntimeException("JKS is specified but JKS password is missing!")
-    }
-    val sslFactory = new SslContextFactory(conf.jks.get)
-    sslFactory.setKeyStorePassword(conf.jksPass.get)
-    if (conf.jksAlias.isDefined) {
-      sslFactory.setCertAlias(conf.jksAlias.get)
-    }
-    sslFactory
+  private def confToH2OArgs(conf: H2OConf): H2O.OptArgs = {
+    val args = new H2O.OptArgs
+    args.jks = conf.jks.orNull
+    args.jks_pass = conf.jksPass.orNull
+    args.jks_alias = conf.jksAlias.orNull
+    args.login_conf = conf.loginConf.orNull
+    args.user_name = conf.userName.orNull
+    args.context_path = conf.contextPath.orNull
+    args.hash_login = conf.hashLogin
+    args.ldap_login = conf.ldapLogin
+    args.kerberos_login = conf.kerberosLogin
+    args.embedded = true
+    args
   }
 
   def stopFlowProxy(): Unit =
@@ -112,45 +99,6 @@ object ProxyStarter extends Logging {
       1
     }
     conf.clientBasePort + numSkipped
-  }
-
-  private def getContextHandler(conf: H2OConf): ServletContextHandler = {
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.setContextPath(conf.contextPath.getOrElse("/"))
-    context.setServletHandler(proxyContextHandler(conf))
-    if (conf.isH2OReplEnabled) {
-      ScalaInterpreterServlet.register(context, conf)
-    }
-    RDDsServlet.register(context, conf)
-    H2OFramesServlet.register(context, conf)
-    DataFramesServlet.register(context, conf)
-    context
-  }
-
-  private def proxyContextHandler(conf: H2OConf): ServletHandler = {
-    val handler = new ServletHandler()
-    val holder = new ServletHolder(new H2OFlowProxyServlet(conf))
-    handler.addServlet(holder)
-    val m = new ServletMapping()
-    m.setServletName(holder.getName)
-    m.setPathSpec("/*")
-    handler.addServletMapping(m)
-    val ipPort = conf.h2oCluster.get
-    holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
-    handler
-  }
-
-  class H2OFlowProxyServlet(val conf: H2OConf) extends Transparent {
-    override def newHttpClient(): HttpClient = {
-      val client = if (conf.jks.isDefined) {
-        val sslFactory = createSSLContextFactory(conf)
-        new HttpClient(sslFactory)
-      } else {
-        new HttpClient()
-      }
-      client.setScheduler(new ScheduledExecutorScheduler(null, true))
-      client
-    }
   }
 
   private def isTcpPortAvailable(port: Int): Boolean = {
