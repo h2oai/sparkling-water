@@ -32,13 +32,13 @@ You can run examples by typing ``./bin/run-example.sh <name of demo>`` or follow
 Building and Running Examples
 -----------------------------
 
-Please see `Running Sparkling Water Examples <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/devel/running_examples.html>`__ for more information how to build
+Please see `Running Sparkling Water Examples <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/devel/running_examples.html>`__ for more information how to build
 and run examples.
 
 Configuring Sparkling Water Variables
 -------------------------------------
 
-Please see `Available Sparkling Water Configuration Properties <http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/configuration/configuration_properties.html>`__ for
+Please see `Available Sparkling Water Configuration Properties <http://docs.h2o.ai/sparkling-water/3.0/latest-stable/doc/configuration/configuration_properties.html>`__ for
 more information about possible Sparkling Water configurations.
 
 Step-by-Step Weather Data Example
