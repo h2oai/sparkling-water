@@ -163,7 +163,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       val verifyVersionV3 = RestApiUtils.query[VerifyVersionV3](endpoint, "/3/verifyVersion", conf, params)
       val nodesWrongVersion = verifyVersionV3.nodes_wrong_version
       if (nodesWrongVersion.nonEmpty) {
-        if (conf.isAutoClusterStartUsed) {
+        if (conf.runsInExternalClusterMode && conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
         throw new RuntimeException(
