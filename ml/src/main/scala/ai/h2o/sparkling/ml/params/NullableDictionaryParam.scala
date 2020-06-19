@@ -25,23 +25,31 @@ import org.json4s.jackson.Serialization.{read, write}
 
 import scala.collection.JavaConverters._
 
-class DictionaryParam(
+class NullableDictionaryParam[T: Manifest](
     parent: Params,
     name: String,
     doc: String,
-    isValid: java.util.Map[String, Double] => Boolean)
-  extends Param[java.util.Map[String, Double]](parent, name, doc, isValid) {
+    isValid: java.util.Map[String, T] => Boolean)
+  extends Param[java.util.Map[String, T]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
-    this(parent, name, doc, (_: java.util.Map[String, Double]) => true)
+    this(parent, name, doc, (_: java.util.Map[String, T]) => true)
 
   implicit val formats = DefaultFormats
 
-  override def jsonEncode(dictionary: java.util.Map[String, Double]): String = {
-    write(dictionary.asScala)
+  override def jsonEncode(dictionary: java.util.Map[String, T]): String = {
+    if (dictionary == null) {
+      compact(render(JNull))
+    } else {
+      write(dictionary.asScala)
+    }
   }
 
-  override def jsonDecode(json: String): java.util.Map[String, Double] = {
-    read[Map[String, Double]](json).asJava
+  override def jsonDecode(json: String): java.util.Map[String, T] = {
+    if (parse(json) == JNull) {
+      return null
+    } else {
+      read[Map[String, T]](json).asJava
+    }
   }
 }

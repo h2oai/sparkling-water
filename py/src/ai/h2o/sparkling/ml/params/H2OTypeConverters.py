@@ -332,6 +332,16 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableDictionaryWithAnyElements():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toDictionaryWithAnyElements()(value)
+
+        return convert
+
+    @staticmethod
     def toDictionaryWithFloatElements():
         def convert(value):
             if value is None:

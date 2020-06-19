@@ -26,7 +26,7 @@ class HasPlugValues(Params):
         "plugValues",
         "A dictionary containing values that will be used to impute missing values of the training/validation frame, "
         "use with conjunction missingValuesHandling = 'PlugValues')",
-        H2OTypeConverters.toNullableDictionaryWithFloatElements())
+        H2OTypeConverters.toNullableDictionaryWithAnyElements())
 
     def getPlugValues(self):
         return self.getOrDefault(self.plugValues)
