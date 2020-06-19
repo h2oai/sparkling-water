@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.backend.utils.SupportedTypes
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -26,7 +27,7 @@ import org.apache.spark.sql.types._
 import scala.collection.JavaConverters._
 
 trait HasPlugValues extends H2OAlgoParamsBase {
-  private val plugValues = new DictionaryParam(
+  private val plugValues = new NullableDictionaryParam[Any](
     this,
     "plugValues",
     "A map containing values that will be used to impute missing values of the training/validation frame, " +
@@ -34,12 +35,12 @@ trait HasPlugValues extends H2OAlgoParamsBase {
 
   setDefault(plugValues -> null)
 
-  def getPlugValues(): Map[String, Double] = {
+  def getPlugValues(): Map[String, Any] = {
     val values = $(plugValues)
     if (values == null) null else values.asScala.toMap
   }
 
-  def setPlugValues(value: Map[String, Double]): this.type = set(plugValues, if (value == null) null else value.asJava)
+  def setPlugValues(value: Map[String, Any]): this.type = set(plugValues, if (value == null) null else value.asJava)
 
   private def getPlugValuesFrameKey(): String = {
     val plugValues = getPlugValues()
@@ -49,7 +50,11 @@ trait HasPlugValues extends H2OAlgoParamsBase {
       val spark = SparkSessionUtils.active
       val row = new GenericRow(plugValues.values.map(_.asInstanceOf[Any]).toArray)
       val rows = Seq[Row](row).asJava
-      val schema = StructType(plugValues.keys.map(StructField(_, DoubleType, nullable = false)).toArray)
+      val fields = plugValues.map{ case (key, value) =>
+        val sparkType = SupportedTypes.simpleByName(value.getClass.getSimpleName).sparkType
+        StructField(key, sparkType, nullable = false)
+      }.toArray
+      val schema = StructType(fields)
       val df = spark.createDataFrame(rows, schema)
       val hc = H2OContext.ensure(
         s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
