@@ -46,7 +46,7 @@ class NullableDictionaryParam[T: Manifest](
   }
 
   override def jsonDecode(json: String): java.util.Map[String, T] = {
-    if (parse(json) == JNull) {
+    if (json == "null") {
       return null
     } else {
       read[Map[String, T]](json).asJava

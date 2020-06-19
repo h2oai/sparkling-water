@@ -48,7 +48,7 @@ trait HasPlugValues extends H2OAlgoParamsBase {
       null
     } else {
       val spark = SparkSessionUtils.active
-      val row = new GenericRow(plugValues.values.map(_.asInstanceOf[Any]).toArray)
+      val row = new GenericRow(plugValues.values.toArray)
       val rows = Seq[Row](row).asJava
       val fields = plugValues.map{ case (key, value) =>
         val sparkType = SupportedTypes.simpleByName(value.getClass.getSimpleName).sparkType
@@ -59,7 +59,12 @@ trait HasPlugValues extends H2OAlgoParamsBase {
       val hc = H2OContext.ensure(
         s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
           "Please create one as H2OContext.getOrCreate().")
-      hc.asH2OFrame(df).frameId
+      val frame = hc.asH2OFrame(df)
+      val stringFieldsIndices = fields.zipWithIndex.filter(_._1.dataType == StringType).map(_._2)
+      if (stringFieldsIndices.nonEmpty) {
+        frame.convertColumnsToCategorical(stringFieldsIndices)
+      }
+      frame.frameId
     }
   }
 
