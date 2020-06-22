@@ -5,3 +5,11 @@ task test(group: "Verification", description: "Unit Tests")
 task integTest(group: "Verification", description: "Integration Tests")
 
 check.dependsOn test
+
+spotless {
+    format 'python', {
+        target 'src/**/*.py', 'examples/**/*.py'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
