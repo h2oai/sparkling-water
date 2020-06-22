@@ -1,6 +1,52 @@
 Change Log
 ==========
 
+v3.30.0.5-1 (2020-06-22)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.5-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.5-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.5-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.5-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.5-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.5-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.5-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.5-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.5-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.5-1-3.0/index.html>`__
+
+-  Bug
+        
+   -  `SW-2302 <https://0xdata.atlassian.net/browse/SW-2302>`__ - Fix org.apache.hadoop.fs.FsUrlConnection cannot be cast to java.net.HttpURLConnection
+   -  `SW-2307 <https://0xdata.atlassian.net/browse/SW-2307>`__ - H2O Flow Proxy is not stopped as part of hc.stop() call
+   -  `SW-2310 <https://0xdata.atlassian.net/browse/SW-2310>`__ - Ensure that endpoints on Spark driver respect authentication options
+   -  `SW-2312 <https://0xdata.atlassian.net/browse/SW-2312>`__ - JsonSyntaxException when using setNfolds() on algorithm
+   -  `SW-2314 <https://0xdata.atlassian.net/browse/SW-2314>`__ - Flow proxy is broken when https is used
+   -  `SW-2328 <https://0xdata.atlassian.net/browse/SW-2328>`__ - Ensure we do not skipped available ports
+   -  `SW-2329 <https://0xdata.atlassian.net/browse/SW-2329>`__ - Improve check for version ( do not call external stop in case of internal backend)
+   -  `SW-2330 <https://0xdata.atlassian.net/browse/SW-2330>`__ - Unit tests fail on Spark 3.0 -&gt; randomSplit gives different result on Spark 3.0 and Spark 2.4 and lower
+   -  `SW-2331 <https://0xdata.atlassian.net/browse/SW-2331>`__ - HashingTF uses different hashing function since Spark 3. Use the old one in tests
+                
+-  Improvement
+        
+   -  `SW-2284 <https://0xdata.atlassian.net/browse/SW-2284>`__ - Ensure that all requests to backend cluster goes via leader node
+   -  `SW-2297 <https://0xdata.atlassian.net/browse/SW-2297>`__ - Exclude Content of site/.doctrees from SW Distribution Archive
+   -  `SW-2298 <https://0xdata.atlassian.net/browse/SW-2298>`__ - Update mojo pipeline doc
+   -  `SW-2299 <https://0xdata.atlassian.net/browse/SW-2299>`__ - Move ml related tutorials to ML sub-page in our doc
+   -  `SW-2300 <https://0xdata.atlassian.net/browse/SW-2300>`__ - Document output of DAI mojo better
+   -  `SW-2305 <https://0xdata.atlassian.net/browse/SW-2305>`__ - Ensure that call /3/Shutdown handles H2OContext stop in case of Sparkling Water ( via Flow Proxy)
+   -  `SW-2315 <https://0xdata.atlassian.net/browse/SW-2315>`__ - Failed H2O Job should Report Exception and StackTrace
+   -  `SW-2317 <https://0xdata.atlassian.net/browse/SW-2317>`__ - Use leader node from the beginning of Rest API communication 
+   -  `SW-2319 <https://0xdata.atlassian.net/browse/SW-2319>`__ - Replace &quot;External H2O Node&quot; with just &quot;H2O Node&quot; as the code is now used in both backends
+   -  `SW-2323 <https://0xdata.atlassian.net/browse/SW-2323>`__ - Uprade shadowjar plugin to 6.0.0 ( fixes deprecation warnings)
+   -  `SW-2326 <https://0xdata.atlassian.net/browse/SW-2326>`__ - Add support for spark 3.0
+   -  `SW-2327 <https://0xdata.atlassian.net/browse/SW-2327>`__ - Upgrade H2O to 3.30.0.5
+                
+-  Engineering Story
+        
+   -  `SW-2216 <https://0xdata.atlassian.net/browse/SW-2216>`__ - ScalaInt, DataFrames, H2oFrames and RDDS endpoints must be handled on Spark driver side as we require both Spark and h2o features
+   -  `SW-2290 <https://0xdata.atlassian.net/browse/SW-2290>`__ - Enable to Run Benchmarks from Local PC by Passing VPC and Subnet
+   -  `SW-2308 <https://0xdata.atlassian.net/browse/SW-2308>`__ - Upgrade to Spark 2.4.6
+   -  `SW-2309 <https://0xdata.atlassian.net/browse/SW-2309>`__ - Upgrade Gradle to 6.5
+   -  `SW-2333 <https://0xdata.atlassian.net/browse/SW-2333>`__ - Update spotless to 4.4.0
+   -  `SW-2334 <https://0xdata.atlassian.net/browse/SW-2334>`__ - Update release plugin to 2.8.1
+                
+                            
 v3.30.0.4-1 (2020-06-04)
 ------------------------
 Downloads:
