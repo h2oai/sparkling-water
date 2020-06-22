@@ -28,7 +28,8 @@ object ParametersTemplate
     val h2oParameterFullName = parameterSubstitutionContext.h2oParameterClass.getCanonicalName
 
     val parameters = resolveParameters(parameterSubstitutionContext)
-    val imports = Seq(h2oParameterFullName) ++ parameters.filter(_.dataType.isEnum).map(_.dataType.getCanonicalName)
+    val imports = Seq(h2oParameterFullName, "ai.h2o.sparkling.H2OFrame") ++
+      parameters.filter(_.dataType.isEnum).map(_.dataType.getCanonicalName)
     val parents = Seq("H2OAlgoParamsBase") ++ parameterSubstitutionContext.explicitFields.map(_.implementation)
 
     val entitySubstitutionContext = EntitySubstitutionContext(
@@ -60,8 +61,8 @@ object ParametersTemplate
          |  //
          |${generateSetters(parameters)}
          |
-         |  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-         |    super.getH2OAlgorithmParams() ++ get${parameterSubstitutionContext.entityName}()
+         |  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+         |    super.getH2OAlgorithmParams(trainingFrame) ++ get${parameterSubstitutionContext.entityName}()
          |  }
          |
          |  private[sparkling] def get${parameterSubstitutionContext.entityName}(): Map[String, Any] = {

@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OFrame
+
 trait HasUserPoints extends H2OAlgoParamsBase {
   private val userPoints = new NullableDoubleArrayArrayParam(
     this,
@@ -32,8 +34,8 @@ trait HasUserPoints extends H2OAlgoParamsBase {
 
   def setUserPoints(value: Array[Array[Double]]): this.type = set(userPoints, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("user_points" -> convert2dArrayToH2OFrame(getUserPoints()))
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("user_points" -> convert2dArrayToH2OFrame(getUserPoints()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

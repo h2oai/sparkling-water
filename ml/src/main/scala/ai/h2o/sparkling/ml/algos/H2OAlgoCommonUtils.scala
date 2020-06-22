@@ -24,7 +24,7 @@ import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
-  private[sparkling] def getExcludedCols(): Seq[String]
+  private[sparkling] def getExcludedCols(): Seq[String] = Seq.empty
 
   private[sparkling] def getFeaturesCols(): Array[String]
 

@@ -15,12 +15,15 @@
 #
 
 import os
+import pytest
 
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGLM
 from tests import unit_test_utils
+from py4j.protocol import Py4JJavaError
+from pyspark.sql.utils import AnalysisException
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -111,3 +114,30 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
         plugValues=plugValues)
 
     glm.fit(df)
+
+def createInitialGlmDefinitionForRandomCols():
+    return H2OGLM(featuresCols=["x1", "x3", "x5", "x6"],
+                  labelCol="y",
+                  family="gaussian",
+                  randomFamily=["gaussian"],
+                  randomLink=["identity"],
+                  seed=1,
+                  HGLM=True,
+                  calcLike=True)
+
+def testRandomColsArePropagatedToInternals(semiconductorDataset):
+    semiconductorDataset = semiconductorDataset.withColumn("Device", semiconductorDataset.Device.cast("string"))
+    referenceDeepLearning = createInitialGlmDefinitionForRandomCols()
+    with pytest.raises(Py4JJavaError, match=r".*Need to specify the random component columns for HGLM.*"):
+        referenceDeepLearning.fit(semiconductorDataset)
+
+    glm = createInitialGlmDefinitionForRandomCols()
+    glm.setRandomCols(["Device"])
+    glm.fit(semiconductorDataset)
+
+
+def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
+    glm = createInitialGlmDefinitionForRandomCols()
+    glm.setRandomCols(["someColumn"])
+    with pytest.raises(AnalysisException, match=r".*cannot resolve '`someColumn`' given input columns.*"):
+        glm.fit(semiconductorDataset)

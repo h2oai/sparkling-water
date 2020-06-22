@@ -68,7 +68,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
-    val params = getH2OAlgorithmParams() ++
+    val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey()) ++
       valid
         .map { fr =>

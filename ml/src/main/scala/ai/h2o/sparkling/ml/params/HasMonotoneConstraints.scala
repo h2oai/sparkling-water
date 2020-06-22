@@ -19,8 +19,8 @@ package ai.h2o.sparkling.ml.params
 
 import java.util
 
+import ai.h2o.sparkling.H2OFrame
 import hex.KeyValue
-import org.apache.spark.ml.param.Params
 
 import scala.collection.JavaConverters._
 
@@ -47,8 +47,8 @@ trait HasMonotoneConstraints extends H2OAlgoParamsBase {
     }
   }
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("monotone_constraints" -> getMonotoneConstraintsAsKeyValuePairs())
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("monotone_constraints" -> getMonotoneConstraintsAsKeyValuePairs())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

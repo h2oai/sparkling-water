@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.ml.linalg.DenseVector
 
 trait HasInitialBiases extends H2OAlgoParamsBase {
@@ -32,8 +33,9 @@ trait HasInitialBiases extends H2OAlgoParamsBase {
 
   def setInitialBiases(value: Array[DenseVector]): this.type = set(initialBiases, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("initial_biases" -> convertVectorArrayToH2OFrameKeyArray(getInitialBiases()))
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame) ++
+      Map("initial_biases" -> convertVectorArrayToH2OFrameKeyArray(getInitialBiases()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

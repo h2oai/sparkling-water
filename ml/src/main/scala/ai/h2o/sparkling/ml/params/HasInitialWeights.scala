@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.ml.linalg.DenseMatrix
 
 trait HasInitialWeights extends H2OAlgoParamsBase {
@@ -32,8 +33,9 @@ trait HasInitialWeights extends H2OAlgoParamsBase {
 
   def setInitialWeights(value: Array[DenseMatrix]): this.type = set(initialWeights, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("initial_weights" -> convertMatrixToH2OFrameKeyArray(getInitialWeights()))
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame)++
+      Map("initial_weights" -> convertMatrixToH2OFrameKeyArray(getInitialWeights()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
