@@ -89,7 +89,7 @@ resource "aws_s3_bucket_object" "juputer_init_script" {
    echo $ADMIN_TOKEN | aws s3 cp - ${format("s3://%s/user.token", aws_s3_bucket.sw_bucket.bucket)} --acl private --content-type "text/plain"
 
     PYSPARKLING_ZIP=$(find /home/hadoop/h2o/ -name h2o_pysparkling_*.zip)
-    SPARKLING_WATER_JAR=$(find /home/hadoop/h2o/ -name sparkling-water-assembly_2.11*-all.jar)
+    SPARKLING_WATER_JAR=$(find /home/hadoop/h2o/ -name sparkling-water-assembly_*-all.jar)
     # Disable Dynamic Allocation
     sudo -E sh -c "echo spark.dynamicAllocation.enabled false >> /etc/spark/conf/spark-defaults.conf"
     sudo -E sh -c "echo spark.jars   $SPARKLING_WATER_JAR >> /etc/spark/conf/spark-defaults.conf"

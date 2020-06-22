@@ -73,7 +73,6 @@ ext {
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 
-  defaultScalaBaseVersion = '2.11'
   supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
   scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
 }

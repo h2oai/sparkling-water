@@ -37,7 +37,7 @@ and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/spark-shell --jars license.sig,jars/sparkling-water-assembly_2.11-SUBST_SW_VERSION-all.jar
+            ./bin/spark-shell --jars license.sig,jars/sparkling-water-assembly_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
 
         .. code:: bash
 
