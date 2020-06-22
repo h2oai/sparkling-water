@@ -25,7 +25,7 @@ object SparklingGateway extends Logging {
       .javaPort(gatewayPort(conf))
       .javaAddress(address)
       .authToken(readSecret(conf))
-      .serverSocketFactory(createServerSocketFactory())
+      //.serverSocketFactory(createServerSocketFactory())
     val gatewayServer: GatewayServer = builder.build()
     gatewayServer.start()
     val boundPort: Int = gatewayServer.getListeningPort
@@ -36,7 +36,7 @@ object SparklingGateway extends Logging {
       logInfo(s"Running Py4j Gateway on port ${boundPort}")
     }
     // Exit on EOF or broken pipe to ensure that this process dies when the Python driver dies:
-    while (!(spark.sparkContext.isStopped && hc.isStopped())) {
+    while (!(spark.sparkContext.isStopped || hc.isStopped())) {
       Thread.sleep(1000)
     }
     logDebug("Exiting due to broken pipe from Python driver")
