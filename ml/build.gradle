@@ -14,7 +14,7 @@ sourceSets {
 spotless {
   scala {
     target project.fileTree(project.rootDir) {
-      include '**/*.scala'
+      include 'ml/src/**/*.scala'
       exclude "ml/src-gen/main/**/*.scala"
     }
   }
