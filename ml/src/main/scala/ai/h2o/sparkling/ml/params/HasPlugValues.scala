@@ -50,9 +50,10 @@ trait HasPlugValues extends H2OAlgoParamsBase {
       val spark = SparkSessionUtils.active
       val row = new GenericRow(plugValues.values.toArray)
       val rows = Seq[Row](row).asJava
-      val fields = plugValues.map{ case (key, value) =>
-        val sparkType = SupportedTypes.simpleByName(value.getClass.getSimpleName).sparkType
-        StructField(key, sparkType, nullable = false)
+      val fields = plugValues.map {
+        case (key, value) =>
+          val sparkType = SupportedTypes.simpleByName(value.getClass.getSimpleName).sparkType
+          StructField(key, sparkType, nullable = false)
       }.toArray
       val schema = StructType(fields)
       val df = spark.createDataFrame(rows, schema)
