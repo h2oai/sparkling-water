@@ -64,6 +64,11 @@ task scaladocJar(type: Jar, dependsOn: scaladoc) {
     from scaladoc
 }
 
+task javadocJar (type: Jar, dependsOn: scaladoc) {
+    archiveClassifier = 'javadoc'
+    from scaladoc
+}
+
 // Create a configuration containing only for test artifacts
 configurations {
     publishArchives
@@ -73,6 +78,7 @@ configurations {
 artifacts {
     publishArchives sourcesJar
     publishArchives scaladocJar
+    publishArchives javadocJar
 }
 
 // Explicitly
