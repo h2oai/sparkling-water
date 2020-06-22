@@ -129,7 +129,7 @@ object ChicagoCrimeApp {
     // Join table with census data
     val row = censusTable.join(df).where('Community_Area === 'Community_Area_Number)
     val predictTable = model.transform(row)
-    predictTable.select("prediction").head().get(0).toString == "1"
+    predictTable.collect().head.getAs[String]("prediction") == "1"
   }
 
   def createWeatherTable(spark: SparkSession, datafile: String): DataFrame = {
@@ -167,7 +167,6 @@ object ChicagoCrimeApp {
       .withColumn("Season", seasonUdf('Month))
       .withColumn("WeekDay", dayOfWeekUdf(date_format('Date, "E")))
       .withColumn("Weekend", weekendUdf('WeekDay))
-      .drop('Date)
   }
 
   private def getSeason(month: Int): String = {
