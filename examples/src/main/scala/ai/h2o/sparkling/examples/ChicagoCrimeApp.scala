@@ -158,15 +158,16 @@ object ChicagoCrimeApp {
   def addAdditionalDateColumns(spark: SparkSession, df: DataFrame): DataFrame = {
     import org.apache.spark.sql.functions._
     import spark.implicits._
-    df.withColumn("Date", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
-      .withColumn("Year", year('Date))
-      .withColumn("Month", month('Date))
-      .withColumn("Day", dayofmonth('Date))
-      .withColumn("WeekNum", weekofyear('Date))
-      .withColumn("HourOfDay", hour('Date))
+    df.withColumn("DateTmp", from_unixtime(unix_timestamp('Date, "MM/dd/yyyy hh:mm:ss a")))
+      .withColumn("Year", year('DateTmp))
+      .withColumn("Month", month('DateTmp))
+      .withColumn("Day", dayofmonth('DateTmp))
+      .withColumn("WeekNum", weekofyear('DateTmp))
+      .withColumn("HourOfDay", hour('DateTmp))
       .withColumn("Season", seasonUdf('Month))
-      .withColumn("WeekDay", dayOfWeekUdf(date_format('Date, "E")))
+      .withColumn("WeekDay", dayOfWeekUdf(date_format('DateTmp, "E")))
       .withColumn("Weekend", weekendUdf('WeekDay))
+      .drop('DateTmp)
   }
 
   private def getSeason(month: Int): String = {
