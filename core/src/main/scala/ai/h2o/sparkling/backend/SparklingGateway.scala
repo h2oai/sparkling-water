@@ -1,6 +1,9 @@
 package ai.h2o.sparkling.backend
 
 import java.net.InetAddress
+import java.security.KeyFactory
+import java.security.interfaces.RSAPrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
 
 import ai.h2o.sparkling.H2OContext
 import org.apache.spark.expose.Logging
@@ -9,11 +12,62 @@ import org.apache.spark.{SparkConf, SparkFiles}
 import py4j.GatewayServer
 
 import scala.io.Source
+import java.io.ByteArrayInputStream
+import java.security.cert.{Certificate, CertificateFactory, X509Certificate}
+
+import javax.xml.bind.DatatypeConverter
+import java.security.KeyStore
+
+import javax.net.ServerSocketFactory
+import javax.net.ssl.{KeyManagerFactory, SSLContext}
 
 object SparklingGateway extends Logging {
 
-  private def createServerSocketFactory() = {
-    // TODO
+  private def readFile(file: String): String = {
+    val source = Source.fromFile(file)
+    val content = source.mkString
+    source.close()
+    content
+  }
+
+  private def parseDERFromPEM(data: String, beginDelimiter: String, endDelimiter: String): Array[Byte] = {
+    val der = data.split(beginDelimiter)(1).split(endDelimiter)(0)
+    DatatypeConverter.parseBase64Binary(der)
+  }
+
+  private def getPrivateKey(path: String): RSAPrivateKey = {
+    val data = readFile(path)
+    val keyBytes = parseDERFromPEM(data, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----")
+    val spec = new PKCS8EncodedKeySpec(keyBytes)
+    val factory = KeyFactory.getInstance("RSA")
+    factory.generatePrivate(spec).asInstanceOf[RSAPrivateKey]
+  }
+
+  private def getCert(path: String): X509Certificate = {
+    val data = readFile(path)
+    val certBytes = parseDERFromPEM(data, "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----")
+    val factory = CertificateFactory.getInstance("X.509")
+    factory.generateCertificate(new ByteArrayInputStream(certBytes)).asInstanceOf[X509Certificate]
+  }
+
+  private def createJKS(key: RSAPrivateKey, cert: X509Certificate): KeyStore = {
+    val keystore = KeyStore.getInstance("JKS")
+    keystore.load(null)
+    keystore.setCertificateEntry("cert-alias", cert)
+    keystore.setKeyEntry("key-alias", key, "pass".toCharArray, Array[Certificate](cert))
+    keystore
+  }
+
+  private def createServerSocketFactory(): ServerSocketFactory = {
+    val kmf = KeyManagerFactory.getInstance("SunX509")
+    val privateKey = getPrivateKey("/Users/kuba/Desktop/key.pem")
+    val cert = getCert("/Users/kuba/Desktop/cert.pem")
+    val jks = createJKS(privateKey, cert)
+    kmf.init(jks, "pass".toCharArray())
+    val km = kmf.getKeyManagers
+    val context = SSLContext.getInstance("TLS")
+    context.init(km, null, null)
+    context.getServerSocketFactory
   }
 
   def main(args: Array[String]) {
@@ -25,7 +79,7 @@ object SparklingGateway extends Logging {
       .javaPort(gatewayPort(conf))
       .javaAddress(address)
       .authToken(readSecret(conf))
-      //.serverSocketFactory(createServerSocketFactory())
+      .serverSocketFactory(createServerSocketFactory())
     val gatewayServer: GatewayServer = builder.build()
     gatewayServer.start()
     val boundPort: Int = gatewayServer.getListeningPort
