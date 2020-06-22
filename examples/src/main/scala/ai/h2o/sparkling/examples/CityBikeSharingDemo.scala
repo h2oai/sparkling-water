@@ -31,6 +31,7 @@ object CityBikeSharingDemo {
 
   val daysToTimestampUdf: UserDefinedFunction = udf(daysToTimestamp _)
   val numberOfDaysSinceEpochUdf: UserDefinedFunction = udf(numberOfDaysSinceEpoch _)
+  private val dayOfWeekUdf = udf(dayOfWeek _)
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
@@ -60,7 +61,7 @@ object CityBikeSharingDemo {
       .withColumnRenamed("count", "bikes")
       .withColumn("date", from_unixtime(daysToTimestampUdf('Days)))
       .withColumn("Month", month('date))
-      .withColumn("DayOfweek", date_format('date, "u"))
+      .withColumn("DayOfweek", dayOfWeekUdf(date_format('date, "E")))
       .drop('date)
   }
 
@@ -123,6 +124,19 @@ object CityBikeSharingDemo {
   def printPredictions(model: H2OMOJOModel, input: DataFrame): Unit = {
     val predictions = model.transform(input).select("prediction").collect()
     println(predictions.mkString("\n===> Model predictions from GBM: ", ", ", ", ...\n"))
+  }
+
+  private def dayOfWeek(day: String): Int = {
+    day match {
+      case "Mon" => 1
+      case "Tue" => 2
+      case "Wed" => 3
+      case "Thu" => 4
+      case "Fri" => 5
+      case "Sat" => 6
+      case "Sun" => 7
+      case _ => throw new RuntimeException("Invalid day!")
+    }
   }
 
   def daysToTimestamp(days: Int): String = (days * (60 * 60 * 24)).toString

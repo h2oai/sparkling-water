@@ -30,6 +30,7 @@ object ChicagoCrimeApp {
 
   private val seasonUdf = udf(getSeason _)
   private val weekendUdf = udf(isWeekend _)
+  private val dayOfWeekUdf = udf(dayOfWeek _)
 
   def main(args: Array[String]) {
     val spark = SparkSession
@@ -164,7 +165,7 @@ object ChicagoCrimeApp {
       .withColumn("WeekNum", weekofyear('Date))
       .withColumn("HourOfDay", hour('Date))
       .withColumn("Season", seasonUdf('Month))
-      .withColumn("WeekDay", date_format('Date, "u"))
+      .withColumn("WeekDay", dayOfWeekUdf(date_format('Date, "E")))
       .withColumn("Weekend", weekendUdf('WeekDay))
       .drop('Date)
   }
@@ -181,6 +182,19 @@ object ChicagoCrimeApp {
   private def SEASONS: Array[String] = Array[String]("Spring", "Summer", "Autumn", "Winter")
 
   private def isWeekend(dayOfWeek: Int): Int = if (dayOfWeek == 7 || dayOfWeek == 6) 1 else 0
+
+  private def dayOfWeek(day: String): Int = {
+    day match {
+      case "Mon" => 1
+      case "Tue" => 2
+      case "Wed" => 3
+      case "Thu" => 4
+      case "Fri" => 5
+      case "Sat" => 6
+      case "Sun" => 7
+      case _ => throw new RuntimeException("Invalid day!")
+    }
+  }
 
   case class Crime(
       date: String,
