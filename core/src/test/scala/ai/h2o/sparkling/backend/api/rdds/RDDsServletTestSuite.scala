@@ -33,7 +33,7 @@ class RDDsServletTestSuite extends FunSuite with SharedH2OTestContext with RDDsR
     val rname = "Test"
     val rpart = 21
     sc.parallelize(1 to 10, rpart).setName(rname).cache()
-
+    Thread.sleep(10000)
     val result = listRDDs()
     assert(result.rdds.length == 1, "Number of created and persisted RDDs should be 1")
     assert(result.rdds(0).name.equals(rname), "Name matches")
