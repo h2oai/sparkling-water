@@ -39,7 +39,7 @@ if [ "$1" = "external-backend" ]; then
   exit 0
 fi
 
-( cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" build )
+(cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile build)
 
 if [ "$1" = "scala" ]; then
   cp "$K8DIR/Dockerfile-Scala" "$WORKDIR"
