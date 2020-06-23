@@ -418,7 +418,7 @@ node("docker") {
     parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Test Scala internal backend, Spark ${sparkMajorVersion}") {
+        stage("Test Scala, Spark ${sparkMajorVersion}") {
             unstash "properties"
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
@@ -432,7 +432,7 @@ node("docker") {
             }
         }
 
-        stage("Test Python internal backend, Spark ${sparkMajorVersion}") {
+        stage("Test Python, Spark ${sparkMajorVersion}") {
             unstash "properties"
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
@@ -446,7 +446,7 @@ node("docker") {
             }
         }
 
-        stage("Test R internal backend, Spark ${sparkMajorVersion}") {
+        stage("Test R, Spark ${sparkMajorVersion}") {
             unstash "properties"
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
