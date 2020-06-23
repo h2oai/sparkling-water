@@ -446,18 +446,16 @@ node("docker") {
             }
         }
 
-        if (sparkMajorVersion != "3.0") {
-            stage("Test R, Spark ${sparkMajorVersion}") {
-                unstash "properties"
-                def registryId = readPropertiesFile("properties")["docker_registry_id"]
-                def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
-                def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-                def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
-                withTestEnv(commons, image) {
-                    // R sets deployment mode automatically
-                    testRInternalBackend(registryId, master, version)
-                    testRExternalBackend(registryId, master, version)
-                }
+        stage("Test R, Spark ${sparkMajorVersion}") {
+            unstash "properties"
+            def registryId = readPropertiesFile("properties")["docker_registry_id"]
+            def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
+            def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
+            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
+            withTestEnv(commons, image) {
+                // R sets deployment mode automatically
+                testRInternalBackend(registryId, master, version)
+                testRExternalBackend(registryId, master, version)
             }
         }
     }
