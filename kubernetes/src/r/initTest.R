@@ -22,6 +22,7 @@ registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
 extraOptions <- Sys.getenv("EXTRA_OPTIONS")
+sparkVersion <- Sys.getenv("SPARK_VERSION")
 if (extraOptions == "") {
   extraOptionsParsed <- NULL
 } else {
@@ -43,11 +44,12 @@ if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] 
 config <- spark_config_kubernetes(master = master,
                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                  account = "default",
-                                 driver ="driver-r",
+                                 driver = "driver-r",
+                                 version = sparkVersion,
                                  executors = numExecutors,
                                  conf = extraOptionsParsed,
                                  ports = c(8880, 8881, 4040, 54321))
-config["spark.home"] <-  sparkHome
+config["spark.home"] <- sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
 

@@ -160,12 +160,13 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testRInternalBackend(registryId, master, version) {
+def testRInternalBackend(registryId, master, version, sparkVersion) {
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
             export KUBERNETES_MASTER=$master
             export REGISTRY_ID=$registryId
             export SW_VERSION=$version
+            export SPARK_VERSION=$sparkVersion
             Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
             """
         sh 'sleep 60'
@@ -304,13 +305,14 @@ def stopExternalH2OBackend() {
     sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
 }
 
-def testRExternalBackend(registryId, master, version) {
+def testRExternalBackend(registryId, master, version, sparkVersion) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
+        export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
@@ -452,10 +454,11 @@ node("docker") {
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
+            def sparkVersion = getSparkVersion(sparkMajorVersion)
             withTestEnv(commons, image) {
                 // R sets deployment mode automatically
-                testRInternalBackend(registryId, master, version)
-                testRExternalBackend(registryId, master, version)
+                testRInternalBackend(registryId, master, version, sparkVersion)
+                testRExternalBackend(registryId, master, version, sparkVersion)
             }
         }
     }
