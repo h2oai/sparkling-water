@@ -201,74 +201,81 @@ object ExternalH2OBackend extends SharedBackendUtils {
           Valid options are "${ExternalBackendConf.YARN_BACKEND}" or "${ExternalBackendConf.KUBERNETES_BACKEND}".
       """)
       }
+      if (conf.externalAutoStartBackend == ExternalBackendConf.YARN_BACKEND) {
+        val envDriverJar = ExternalH2OBackend.ENV_H2O_DRIVER_JAR
 
-      val envDriverJar = ExternalH2OBackend.ENV_H2O_DRIVER_JAR
-
-      lazy val driverPath = sys.env.get(envDriverJar)
-      if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
-        throw new IllegalArgumentException(
-          s"""Path to the H2O driver has to be specified when using automatic cluster start.
-             |It can be specified either via method available on the configuration object or
-             |by using the '$envDriverJar' environmental property.
+        lazy val driverPath = sys.env.get(envDriverJar)
+        if (conf.h2oDriverPath.isEmpty && driverPath.isEmpty) {
+          throw new IllegalArgumentException(
+            s"""Path to the H2O driver has to be specified when using automatic cluster start.
+               |It can be specified either via method available on the configuration object or
+               |by using the '$envDriverJar' environmental property.
           """.stripMargin)
-      }
+        }
 
-      if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
-        logInfo(s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
-             |Specified path is: ${driverPath.get}""".stripMargin)
-        conf.setH2ODriverPath(driverPath.get)
-      }
+        if (conf.h2oDriverPath.isEmpty && driverPath.isDefined) {
+          logInfo(s"""Obtaining path to the H2O driver from the environment variable $envDriverJar.
+               |Specified path is: ${driverPath.get}""".stripMargin)
+          conf.setH2ODriverPath(driverPath.get)
+        }
 
-      if (conf.clientCheckRetryTimeout < conf.backendHeartbeatInterval) {
-        logWarning(
-          s"%s needs to be larger than %s, increasing the value to %d".format(
-            SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
-            SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
-            conf.backendHeartbeatInterval * 6))
-        conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
+        if (conf.clientCheckRetryTimeout < conf.backendHeartbeatInterval) {
+          logWarning(
+            s"%s needs to be larger than %s, increasing the value to %d".format(
+              SharedBackendConf.PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1,
+              SharedBackendConf.PROP_BACKEND_HEARTBEAT_INTERVAL._1,
+              conf.backendHeartbeatInterval * 6))
+          conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
+        }
+
+        if (conf.clusterInfoFile.isEmpty) {
+          conf.setClusterInfoFile("notify_" + conf.cloudName.get)
+        }
+
+        if (conf.cloudName.isEmpty) {
+          conf.setCloudName(H2O_JOB_NAME.format(SparkSessionUtils.active.sparkContext.applicationId))
+        }
+
+        if (conf.getOption("spark.yarn.principal").isDefined &&
+            conf.kerberosPrincipal.isEmpty) {
+          logInfo(
+            s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
+              s" not set. Passing the configuration to H2O.")
+          conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
+        }
+
+        if (conf.getOption("spark.yarn.keytab").isDefined &&
+            conf.kerberosKeytab.isEmpty) {
+          logInfo(
+            s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
+              s" not set. Passing the configuration to H2O.")
+          conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
+        }
+
+        if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
+          throw new IllegalArgumentException(s"""
+                                                |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+                                                |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+                                                |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
+          """.stripMargin)
+        } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
+          throw new IllegalArgumentException(s"""
+                                                |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
+                                                |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
+                                                |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
+          """.stripMargin)
+        }
+      } else {
+        if (conf.cloudName.isEmpty) {
+          // H2O on Kubernetes in Docker image provided by us is running as root and sets
+          // the cluster name as root as well
+          conf.setCloudName("root")
+        }
       }
 
       if (conf.clusterSize.isEmpty) {
         throw new IllegalArgumentException(
           "Cluster size of external H2O cluster has to be specified in automatic mode of external H2O backend!")
-      }
-
-      if (conf.cloudName.isEmpty) {
-        conf.setCloudName(H2O_JOB_NAME.format(SparkSessionUtils.active.sparkContext.applicationId))
-      }
-
-      if (conf.clusterInfoFile.isEmpty) {
-        conf.setClusterInfoFile("notify_" + conf.cloudName.get)
-      }
-
-      if (conf.getOption("spark.yarn.principal").isDefined &&
-          conf.kerberosPrincipal.isEmpty) {
-        logInfo(
-          s"spark.yarn.principal provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} is" +
-            s" not set. Passing the configuration to H2O.")
-        conf.setKerberosPrincipal(conf.get("spark.yarn.principal"))
-      }
-
-      if (conf.getOption("spark.yarn.keytab").isDefined &&
-          conf.kerberosKeytab.isEmpty) {
-        logInfo(
-          s"spark.yarn.keytab provided and ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} is" +
-            s" not set. Passing the configuration to H2O.")
-        conf.setKerberosKeytab(conf.get("spark.yarn.keytab"))
-      }
-
-      if (conf.kerberosKeytab.isDefined && conf.kerberosPrincipal.isEmpty) {
-        throw new IllegalArgumentException(s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1}
-          """.stripMargin)
-      } else if (conf.kerberosPrincipal.isDefined && conf.kerberosKeytab.isEmpty) {
-        throw new IllegalArgumentException(s"""
-             |  Both options ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_KEYTAB._1} and
-             |  ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1} need to be provided, specified has
-             |  been just ${ExternalBackendConf.PROP_EXTERNAL_KERBEROS_PRINCIPAL._1}
-          """.stripMargin)
       }
     } else {
       if (conf.cloudName.isEmpty) {
