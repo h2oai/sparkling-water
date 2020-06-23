@@ -21,10 +21,7 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
 
 trait HasRandomCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
-  private val randomCols = new NullableStringArrayParam(
-    this,
-    "randomCols",
-    "Names of random columns for HGLM.")
+  private val randomCols = new NullableStringArrayParam(this, "randomCols", "Names of random columns for HGLM.")
 
   setDefault(randomCols -> null)
 

@@ -21,10 +21,8 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
 
 trait HasIgnoredCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
-  private val ignoredCols = new NullableStringArrayParam(
-    this,
-    "ignoredCols",
-    "Names of columns to ignore for training.")
+  private val ignoredCols =
+    new NullableStringArrayParam(this, "ignoredCols", "Names of columns to ignore for training.")
 
   setDefault(ignoredCols -> null)
 
