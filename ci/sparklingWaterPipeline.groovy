@@ -93,7 +93,6 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                     config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
                 }
                 config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin-hadoop2.7")
-                sh "unset MASTER"
                 def customEnv = [
                         "SPARK_HOME=${config.sparkHome}",
                         "HADOOP_CONF_DIR=/etc/hadoop/conf",
@@ -323,7 +322,10 @@ def rUnitTests() {
                     }
                     sh "${getGradleCommand(config)} :sparkling-water-r:installRSparklingPackage"
                     timeout(time: 7, unit: 'MINUTES') {
-                        sh "${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}"
+                        sh """
+                        unset MASTER
+                        ${getGradleCommand(config)} :sparkling-water-r:test -x check -PbackendMode=${config.backendMode}
+                           """
                     }
                 } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e){
                     currentBuild.result = "SUCCESS"
