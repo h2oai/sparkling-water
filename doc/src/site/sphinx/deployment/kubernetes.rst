@@ -3,37 +3,37 @@ Running Sparkling Water in Kubernetes
 
 Sparkling Water can be executed inside the Kubernetes cluster. Sparkling Water supports Kubernetes since Spark version 2.4.
 
-Before you start, please make check the following:
+Before we start, please make check the following:
 
-1. Please make yourself familiar with how to run Spark on Kubernetes at
+1. Please make sure we are familiar with how to run Spark on Kubernetes at
    `Spark Kubernetes documentation <https://spark.apache.org/docs/SUBST_SPARK_VERSION/running-on-kubernetes.html>`__.
 
-2. Ensure that you have working Kubernetes Cluster and ``kubectl`` installed
+2. Ensure that we have a working Kubernetes Cluster and ``kubectl`` installed
 
-3. Ensure you have ``SPARK_HOME`` set up to home of your Spark distribution of version SUBST_SPARK_VERSION
+3. Ensure we have ``SPARK_HOME`` set up to home of our Spark distribution of version SUBST_SPARK_VERSION
 
 4. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
 
-5. Have internet connection so kubernetes can download Sparkling Water docker images
+5. Have internet connection so Kubernetes can download Sparkling Water docker images
 
-6. If you have non-default network policies applied to the namespace where Sparkling Water is supposed to run,
+6. If we have some non-default network policies applied to the namespace where Sparkling Water is supposed to run,
    make sure that the following ports are exposed: all Spark ports and ports 54321 and 54322 as these are
    also necessary by H2O to be able to communicate.
 
-The examples bellow are using the default Kubernetes namespace which we enable for Spark as:
+The examples below are using the default Kubernetes namespace which we enable for Spark as:
 
 .. code:: bash
 
     kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default
 
-You can also use different namespace setup for Spark. In that case please don't forget to pass
-``--conf spark.kubernetes.authenticate.driver.serviceAccountName=serviceName`` to your Spark commands.
+We can also use different namespace setup for Spark. In that case please don't forget to pass
+``--conf spark.kubernetes.authenticate.driver.serviceAccountName=serviceName`` to our Spark commands.
 
 Internal Backend
 ~~~~~~~~~~~~~~~~
 
-In internal backend of Sparkling Water, we need to pas the option ``spark.scheduler.minRegisteredResourcesRatio=1``
-to your Spark job invocation. This ensures that Spark waits for all resources and therefore Sparkling Water will
+In the internal backend of Sparkling Water, we need to pass the option ``spark.scheduler.minRegisteredResourcesRatio=1``
+to our Spark job invocation. This ensures that Spark waits for all resources and therefore Sparkling Water will
 start H2O on all requested executors.
 
 Dynamic allocation must be disabled in Spark.
@@ -58,7 +58,7 @@ Dynamic allocation must be disabled in Spark.
             --conf spark.executor.instances=3 \
             local:///opt/sparkling-water/tests/initTest.jar
 
-        **To start a interactive shell in a client mode:**
+        **To start an interactive shell in a client mode:**
 
         1. Create Headless so Spark executors can reach the driver node
 
@@ -108,7 +108,7 @@ Dynamic allocation must be disabled in Spark.
 
         **To submit a batch job using client mode:**
 
-        First create the headless service as mentioned in the step 1 above and run:
+        First, create the headless service as mentioned in the step 1 above and run:
 
         .. code:: bash
 
@@ -126,7 +126,7 @@ Dynamic allocation must be disabled in Spark.
     .. tab-container:: Python
         :title: Python
 
-        Both cluster and client deployment mode of Kubernetes are supported.
+        Both cluster and client deployment modes of Kubernetes are supported.
 
         **To submit Python job in a cluster mode, run:**
 
@@ -140,7 +140,7 @@ Dynamic allocation must be disabled in Spark.
             --conf spark.executor.instances=3 \
             local:///opt/sparkling-water/tests/initTest.py
 
-        **To start a interactive shell in a client mode:**
+        **To start an interactive shell in a client mode:**
 
         1. Create Headless so Spark executors can reach the driver node:
 
@@ -190,7 +190,7 @@ Dynamic allocation must be disabled in Spark.
 
         **To submit a batch job using client mode:**
 
-        First create the headless service as mentioned in the step 1 above and run:
+        First, create the headless service as mentioned in the step 1 above and run:
 
         .. code:: bash
 
@@ -207,7 +207,7 @@ Dynamic allocation must be disabled in Spark.
     .. tab-container:: R
         :title: R
 
-        First, make sure that RSparkling is installed on the node you want to run RSparkling from.
+        First, make sure that RSparkling is installed on the node we want to run RSparkling from.
         You can install RSparkling as:
 
         .. code:: r
@@ -220,7 +220,7 @@ Dynamic allocation must be disabled in Spark.
            install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
 
-        To start ``H2OContext`` in interactive shell, run the following code in R or RStudio:
+        To start ``H2OContext`` in an interactive shell, run the following code in R or RStudio:
 
         .. code:: r
 
@@ -237,27 +237,27 @@ Dynamic allocation must be disabled in Spark.
             hc <- H2OContext.getOrCreate()
             spark_disconnect(sc)
 
-        You can also submit RSparkling batch job. In that case create a file called `batch.R` with the content
+        You can also submit RSparkling batch job. In that case, create a file called `batch.R` with the content
         from the code box above and run:
 
         .. code:: r
 
             Rscript --default-packages=methods,utils batch.R
 
-        Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+        Note: In the case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
 
 External Backend
 ~~~~~~~~~~~~~~~~
 
 Sparkling Water External backend can be also used in Kubernetes. First, we need to start
-external H2O backend on Kubernetes. To achieve this, please follow the steps on the
+an external H2O backend on Kubernetes. To achieve this, please follow the steps on the
 `H2O on Kubernetes Documentation <https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/welcome.html#kubernetes-integration/>`__ with
 **one important exception**. The image to be used need to be `h2oai/sparkling-water-external-backend:SUBST_SW_VERSION` and not the base H2O image as mentioned in
 H2O documentation as Sparkling Water enhances the H2O image with additional dependencies.
 
 In order for Sparkling Water to be able to connect to the H2O cluster, we need to get the address of the leader node
-of the H2O cluster. If you followed the H2O documentation on how to start H2O cluster on Kubernetes, the address is
-``h2o-service.default.svc.cluster.local:54321`` where the first part is H2O headless service name and the second part is name
+of the H2O cluster. If we followed the H2O documentation on how to start H2O cluster on Kubernetes, the address is
+``h2o-service.default.svc.cluster.local:54321`` where the first part is the H2O headless service name and the second part is the name
 of the namespace.
 
 After we created the external H2O backend, we can connect to it from Sparkling Water clients as:
@@ -287,7 +287,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.jar
 
-        **To start a interactive shell in a client mode:**
+        **To start an interactive shell in a client mode:**
 
         1. Create Headless so Spark executors can reach the driver node
 
@@ -342,7 +342,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         **To submit a batch job using client mode:**
 
-        First create the headless service as mentioned in the step 1 above and run:
+        First, create the headless service as mentioned in the step 1 above and run:
 
         .. code:: bash
 
@@ -384,7 +384,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.py
 
-        **To start a interactive shell in a client mode:**
+        **To start an interactive shell in a client mode:**
 
         1. Create Headless so Spark executors can reach the driver node:
 
@@ -439,7 +439,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         **To submit a batch job using client mode:**
 
-        First create the headless service as mentioned in the step 1 above and run:
+        First, create the headless service as mentioned in the step 1 above and run:
 
         .. code:: bash
 
@@ -461,7 +461,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
     .. tab-container:: R
         :title: R
 
-        First, make sure that RSparkling is installed on the node you want to run RSparkling from.
+        First, make sure that RSparkling is installed on the node we want to run RSparkling from.
         You can install RSparkling as:
 
         .. code:: r
@@ -473,7 +473,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
            # Download, install, and initialize the RSparkling
            install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-SUBST_SPARK_MAJOR_VERSION/SUBST_SW_VERSION/R")
 
-        To start ``H2OContext`` in interactive shell, run the following code in R or RStudio:
+        To start ``H2OContext`` in an interactive shell, run the following code in R or RStudio:
 
         .. code:: r
 
@@ -496,11 +496,11 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             hc <- H2OContext.getOrCreate()
             spark_disconnect(sc)
 
-        You can also submit RSparkling batch job. In that case create a file called `batch.R` with the content
+        You can also submit RSparkling batch job. In that case, create a file called `batch.R` with the content
         from the code box above and run:
 
         .. code:: r
 
             Rscript --default-packages=methods,utils batch.R
 
-        Note: In case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
+        Note: In the case of RSparkling, SparklyR automatically sets the Spark deployment mode and it is not possible to specify it.
