@@ -58,6 +58,9 @@ object Runner {
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
 
+    val xgboostFields = Seq(monotonicity, ignoredCols)
+    val kmeansFields = Seq(userPoints, ignoredCols)
+
     val deepLearningFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
@@ -68,12 +71,12 @@ object Runner {
       Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null)
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
-      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], Seq(monotonicity, ignoredCols)),
+      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostFields),
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity, ignoredCols)),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(ignoredCols)),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq(randomCols, ignoredCols, plugValues)),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
-      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq(userPoints, ignoredCols)))
+      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields))
 
     algorithmParameters.map {
       case (entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) =>
@@ -138,7 +141,7 @@ object Runner {
           typeExceptions = AutoMLTypeExceptions.all(),
           defaultValueSource = source,
           defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
-            Map("monotoneConstraints" -> new util.HashMap[String, Double]()),
+            Map("monotoneConstraints" -> new util.HashMap[String, Double](), "ignoredCols" -> ignoredCols.defaultValue),
           generateParamTag = false)
     }
   }

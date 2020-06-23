@@ -37,8 +37,10 @@ trait HasIgnoredCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
     val existingMap = super.getH2OAlgorithmParams(trainingFrame)
     val oldIgnoredCols = existingMap.getOrElse("ignored_columns", null).asInstanceOf[Array[String]]
 
-    if (oldIgnoredCols == null || newIgnoredCols == null) {
+    if (oldIgnoredCols == null) {
       existingMap + ("ignored_columns" -> newIgnoredCols)
+    } else if (newIgnoredCols == null) {
+      existingMap + ("ignored_columns" -> oldIgnoredCols)
     } else {
       existingMap + ("ignored_columns" -> (oldIgnoredCols ++ newIgnoredCols))
     }

@@ -32,7 +32,6 @@ object IgnoredParameters {
     "checkpoint", // GBM, DRF, XGBoost, Deep Learning
     "interaction_pairs", // GLM
     "beta_constraints", // GLM
-    "random_columns", // GLM
     "pretrained_autoencoder") // DeepLearning
 
   def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented

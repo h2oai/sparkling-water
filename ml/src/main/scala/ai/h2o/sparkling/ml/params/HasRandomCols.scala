@@ -42,18 +42,15 @@ trait HasRandomCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
       indices
     }
 
-    val result = super.getH2OAlgorithmParams(trainingFrame) + ("random_columns" -> indices)
+    val basicMap = super.getH2OAlgorithmParams(trainingFrame) + ("random_columns" -> indices)
 
-
-    if (randomColumnNames == null) {
-      result
+    val ignoredColumns = basicMap.getOrElse("ignored_columns", null).asInstanceOf[Array[String]]
+    if (ignoredColumns == null) {
+      basicMap + ("ignored_columns" -> randomColumnNames)
+    } else if (randomColumnNames == null) {
+      basicMap + ("ignored_columns" -> ignoredColumns)
     } else {
-      val ignoredColumns = result.getOrElse("ignored_columns", null).asInstanceOf[Array[String]]
-      if (ignoredColumns == null) {
-        result + ("ignored_columns" -> randomColumnNames)
-      } else {
-        result + ("ignored_columns" -> (ignoredColumns ++ randomColumnNames))
-      }
+      basicMap + ("ignored_columns" -> (ignoredColumns ++ randomColumnNames))
     }
   }
 
