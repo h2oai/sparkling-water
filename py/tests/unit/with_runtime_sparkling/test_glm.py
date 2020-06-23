@@ -133,7 +133,6 @@ def testRandomColsArePropagatedToInternals(semiconductorDataset):
 
     glm = createInitialGlmDefinitionForRandomCols()
     glm.setRandomCols(["Device"])
-    glm.setIgnoredCols(["Device"])
     glm.fit(semiconductorDataset)
 
 
