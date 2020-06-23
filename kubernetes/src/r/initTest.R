@@ -58,8 +58,16 @@ sdf <- copy_to(sc, df, overwrite = TRUE)
 hc <- H2OContext.getOrCreate()
 hf <- hc$asH2OFrame(sdf)
 sdf2 <- hc$asSparkFrame(hf)
-expect_equal(sdf_nrow(sdf2), nrow(hf))
-expect_equal(sdf_ncol(sdf2), ncol(hf))
-expect_equal(colnames(sdf2), colnames(hf))
+if (sdf_nrow(sdf2) != nrow(hf)) {
+  print("ASSERTION ERROR")
+}
+
+if (sdf_ncol(sdf2) != ncol(hf)) {
+  print("ASSERTION ERROR")
+}
+
+if (colnames(sdf2) != colnames(hf)) {
+  print("ASSERTION ERROR")
+}
 
 spark_disconnect(sc)

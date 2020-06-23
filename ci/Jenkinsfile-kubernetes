@@ -169,7 +169,8 @@ def testRInternalBackend(registryId, master, version) {
             Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
             """
         sh 'sleep 60'
-        sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
+        sh "kubectl logs driver-r | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
+        sh "kubectl logs driver-r | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
 }
 
 def installSparkHeadlessService() {
@@ -314,7 +315,8 @@ def testRExternalBackend(registryId, master, version) {
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
-    sh "kubectl get pod driver-r | grep -q Completed && echo \"OK\" || exit 1"
+    sh "kubectl logs driver-r | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
+    sh "kubectl logs driver-r | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
