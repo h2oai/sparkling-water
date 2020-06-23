@@ -93,9 +93,11 @@ task createPythonDockerfile(type: Dockerfile) {
     user "0"
   }
   copyFile("h2o_pysparkling_${sparkMajorVersion}-${version}.zip", "/opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip")
+  runCommand "pip3 install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
   runCommand "pip install /opt/spark/pyspark/python/lib/h2o_pysparkling_${sparkMajorVersion}-${version}.zip"
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse("2.4.5")) {
     runCommand "pip install numpy"
+    runCommand "pip3 install numpy"
   } else {
     runCommand """\\
                 apk add build-base python-dev && \\
