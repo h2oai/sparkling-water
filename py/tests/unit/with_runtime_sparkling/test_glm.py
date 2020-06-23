@@ -121,18 +121,19 @@ def createInitialGlmDefinitionForRandomCols():
                   family="gaussian",
                   randomFamily=["gaussian"],
                   randomLink=["identity"],
-                  seed=1,
                   HGLM=True,
                   calcLike=True)
 
 def testRandomColsArePropagatedToInternals(semiconductorDataset):
     semiconductorDataset = semiconductorDataset.withColumn("Device", semiconductorDataset.Device.cast("string"))
+
     referenceDeepLearning = createInitialGlmDefinitionForRandomCols()
     with pytest.raises(Py4JJavaError, match=r".*Need to specify the random component columns for HGLM.*"):
         referenceDeepLearning.fit(semiconductorDataset)
 
     glm = createInitialGlmDefinitionForRandomCols()
     glm.setRandomCols(["Device"])
+    glm.setIgnoredCols(["Device"])
     glm.fit(semiconductorDataset)
 
 
