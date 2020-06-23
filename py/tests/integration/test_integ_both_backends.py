@@ -49,10 +49,15 @@ def startJavaGateway(integ_spark_conf, token):
     return proc
 
 def obtainSparkSession(token):
+    import ssl
+    client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
+    client_ssl_context.verify_mode = ssl.CERT_NONE
+    client_ssl_context.check_hostname = False
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(
             address="127.0.0.1",
             port=55555,
+            #ssl_context=client_ssl_context,
             auth_token=token,
             auto_convert=True))
     java_import(gateway.jvm, "org.apache.spark.SparkConf")

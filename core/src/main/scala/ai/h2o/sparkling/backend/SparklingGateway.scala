@@ -37,7 +37,7 @@ object SparklingGateway extends Logging {
 
   private def getPrivateKey(path: String): RSAPrivateKey = {
     val data = readFile(path)
-    val keyBytes = parseDERFromPEM(data, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----")
+    val keyBytes = parseDERFromPEM(data, "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----")
     val spec = new PKCS8EncodedKeySpec(keyBytes)
     val factory = KeyFactory.getInstance("RSA")
     factory.generatePrivate(spec).asInstanceOf[RSAPrivateKey]
@@ -60,12 +60,12 @@ object SparklingGateway extends Logging {
 
   private def createServerSocketFactory(): ServerSocketFactory = {
     val kmf = KeyManagerFactory.getInstance("SunX509")
-    val privateKey = getPrivateKey("//Users/kuba/devel/repos/sparkling-water/rsakey.pem")
+    val privateKey = getPrivateKey("/Users/kuba/devel/repos/sparkling-water/rsakey.pem")
     val cert = getCert("/Users/kuba/Desktop/cert.pem")
     val jks = createJKS(privateKey, cert)
     kmf.init(jks, "pass".toCharArray())
     val km = kmf.getKeyManagers
-    val context = SSLContext.getInstance("TLS")
+    val context = SSLContext.getInstance("TLSv1.1")
     context.init(km, null, null)
     context.getServerSocketFactory
   }
@@ -87,7 +87,7 @@ object SparklingGateway extends Logging {
       logError("GatewayServer failed to bind; exiting")
       System.exit(1)
     } else {
-      logInfo(s"Running Py4j Gateway on port ${boundPort}")
+      logInfo(s"""Running Py4j Gateway on port $boundPort""")
     }
     // Exit on EOF or broken pipe to ensure that this process dies when the Python driver dies:
     while (!(spark.sparkContext.isStopped || hc.isStopped())) {
