@@ -67,7 +67,6 @@ def testPlugValuesAffectResult(spark, carsDatasetPath):
     carsDataset=spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
     carsDataset=carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
     [traningDataset, testingDataset] = carsDataset.randomSplit([0.9, 0.1], 1)
-    testingDataset=testingDataset.na.fill({"economy_20mpg": "0"})
 
     def createInitialGlmDefinition():
         featuresCols=["economy","displacement", "power", "weight", "acceleration", "year", "economy_20mpg"]
