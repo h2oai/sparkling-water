@@ -1,8 +1,7 @@
 Running Sparkling Water in Kubernetes
 -------------------------------------
 
-Sparkling Water can be executed inside the Kubernetes cluster. Only cluster deployment mode is supported at this
-moment. Sparkling Water supports Kubernetes since Spark version 2.4.
+Sparkling Water can be executed inside the Kubernetes cluster. Sparkling Water supports Kubernetes since Spark version 2.4.
 
 Before you start, please make check the following:
 
