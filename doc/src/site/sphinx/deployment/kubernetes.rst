@@ -79,7 +79,7 @@ Dynamic allocation must be disabled in Spark.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash
 
         3. Inside the container, start the shell:
 
@@ -112,7 +112,7 @@ Dynamic allocation must be disabled in Spark.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash \
             /opt/spark/bin/spark-submit \
              --conf spark.scheduler.minRegisteredResourcesRatio=1 \
              --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
@@ -161,7 +161,7 @@ Dynamic allocation must be disabled in Spark.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- /bin/bash
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-python:SUBST_SW_VERSION -- /bin/bash
 
         3. Inside the container, start the shell:
 
@@ -194,7 +194,7 @@ Dynamic allocation must be disabled in Spark.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-python:SUBST_SW_VERSION -- \
             $SPARK_HOME/bin/spark-submit \
              --conf spark.scheduler.minRegisteredResourcesRatio=1 \
              --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
@@ -308,7 +308,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash
 
         3. Inside the container, start the shell:
 
@@ -346,7 +346,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:scala-SUBST_SW_VERSION -- /bin/bash \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash \
             /opt/spark/bin/spark-submit \
              --conf spark.scheduler.minRegisteredResourcesRatio=1 \
              --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
@@ -405,7 +405,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- /bin/bash
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-python:SUBST_SW_VERSION -- /bin/bash
 
         3. Inside the container, start the shell:
 
@@ -443,7 +443,8 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water:python-SUBST_SW_VERSION -- \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-python:SUBST_SW_VERSION -- \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-app-selector=yoursparkapp --image=h2oai/sparkling-water-python:SUBST_SW_VERSION -- \
             $SPARK_HOME/bin/spark-submit \
              --conf spark.scheduler.minRegisteredResourcesRatio=1 \
              --conf spark.kubernetes.container.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
