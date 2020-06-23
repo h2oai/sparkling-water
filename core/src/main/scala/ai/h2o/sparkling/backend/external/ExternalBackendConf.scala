@@ -90,7 +90,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalCommunicationCompression: String =
     sparkConf.get(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, PROP_EXTERNAL_COMMUNICATION_COMPRESSION._2)
 
-  def externalAutoStartBackend: String = sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
+  def externalAutoStartBackend: String =
+    sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
 
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
@@ -176,8 +177,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setExternalAutoStartBackend(backend: String): H2OConf = {
     if (!Array(YARN_BACKEND, KUBERNETES_BACKEND).contains(backend)) {
-      throw new IllegalArgumentException("Backend for auto start mode of external H2O backend can be either" +
-        s" $YARN_BACKEND or $KUBERNETES_BACKEND")
+      throw new IllegalArgumentException(
+        "Backend for auto start mode of external H2O backend can be either" +
+          s" $YARN_BACKEND or $KUBERNETES_BACKEND")
     }
     set(PROP_EXTERNAL_AUTO_START_BACKEND._1, backend)
   }
