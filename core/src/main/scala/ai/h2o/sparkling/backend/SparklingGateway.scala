@@ -60,7 +60,7 @@ object SparklingGateway extends Logging {
 
   private def createServerSocketFactory(): ServerSocketFactory = {
     val kmf = KeyManagerFactory.getInstance("SunX509")
-    val privateKey = getPrivateKey("/Users/kuba/Desktop/key.pem")
+    val privateKey = getPrivateKey("//Users/kuba/devel/repos/sparkling-water/rsakey.pem")
     val cert = getCert("/Users/kuba/Desktop/cert.pem")
     val jks = createJKS(privateKey, cert)
     kmf.init(jks, "pass".toCharArray())
