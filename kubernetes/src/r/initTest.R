@@ -50,7 +50,10 @@ config <- spark_config_kubernetes(master = master,
 config["spark.home"] <-  sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)
 hc <- H2OContext.getOrCreate()
-expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 2)
+
+if (length(invoke(hc$jhc, "getH2ONodes")) != 2) {
+  print("ASSERTION ERROR")
+}
 
 # Test conversions
 df <- as.data.frame(t(c(1, 2, 3, 4, "A")))
@@ -58,6 +61,7 @@ sdf <- copy_to(sc, df, overwrite = TRUE)
 hc <- H2OContext.getOrCreate()
 hf <- hc$asH2OFrame(sdf)
 sdf2 <- hc$asSparkFrame(hf)
+
 if (sdf_nrow(sdf2) != nrow(hf)) {
   print("ASSERTION ERROR")
 }
@@ -66,7 +70,7 @@ if (sdf_ncol(sdf2) != ncol(hf)) {
   print("ASSERTION ERROR")
 }
 
-if (colnames(sdf2) != colnames(hf)) {
+if (!all(colnames(sdf2)==colnames(hf))) {
   print("ASSERTION ERROR")
 }
 
