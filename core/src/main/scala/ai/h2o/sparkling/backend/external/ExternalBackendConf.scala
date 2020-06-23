@@ -90,6 +90,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalCommunicationCompression: String =
     sparkConf.get(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, PROP_EXTERNAL_COMMUNICATION_COMPRESSION._2)
 
+  def externalAutoStartBackend: String = sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -172,6 +174,14 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
     set(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, compressionType)
   }
 
+  def setExternalAutoStartBackend(backend: String): H2OConf = {
+    if (!Array(YARN_BACKEND, KUBERNETES_BACKEND).contains(backend)) {
+      throw new IllegalArgumentException("Backend for auto start mode of external H2O backend can be either" +
+        s" $YARN_BACKEND or $KUBERNETES_BACKEND")
+    }
+    set(PROP_EXTERNAL_AUTO_START_BACKEND._1, backend)
+  }
+
   def externalConfString: String =
     s"""Sparkling Water configuration:
        |  backend cluster mode : $backendClusterMode
@@ -187,6 +197,9 @@ object ExternalBackendConf {
 
   val EXTERNAL_BACKEND_AUTO_MODE: String = "auto"
   val EXTERNAL_BACKEND_MANUAL_MODE: String = "manual"
+
+  val YARN_BACKEND: String = "yarn"
+  val KUBERNETES_BACKEND: String = "kubernetes"
 
   val PROP_EXTERNAL_DRIVER_IF: (String, None.type) = ("spark.ext.h2o.external.driver.if", None)
 
@@ -269,4 +282,7 @@ object ExternalBackendConf {
 
   /** ID of external H2O backend started on YARN application */
   val PROP_EXTERNAL_CLUSTER_YARN_APP_ID: (String, None.type) = ("spark.ext.h2o.external.yarn.app.id", None)
+
+  /** Backend determining where external H2O should be started */
+  val PROP_EXTERNAL_AUTO_START_BACKEND: (String, String) = ("spark.ext.h2o.external.auto.start.backend", YARN_BACKEND)
 }

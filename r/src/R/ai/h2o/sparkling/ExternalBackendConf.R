@@ -73,6 +73,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
 
+    externalAutoStartBackend = function() { invoke(jconf, "externalAutoStartBackend") },
 #
 # Setters
 #
@@ -120,5 +121,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalExtraJars = function(paths) { invoke(jconf, "setExternalExtraJars", paths); .self },
 
-    setExternalCommunicationCompression = function(compression) { invoke(jconf, "setExternalCommunicationCompression", compression); .self }
+    setExternalCommunicationCompression = function(compression) { invoke(jconf, "setExternalCommunicationCompression", compression); .self },
+
+    setExternalAutoStartBackend = function(backend) { invoke(jconf, "setExternalAutoStartBackend", backend); .self }
 ))

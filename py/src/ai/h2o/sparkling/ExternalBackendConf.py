@@ -99,6 +99,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalCommunicationCompression(self):
         return self._jconf.externalCommunicationCompression()
 
+    def externalAutoStartBackend(self):
+        return self._jconf.externalAutoStartBackend()
+
     #
     # Setters
     #
@@ -193,4 +196,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalCommunicationCompression(self, compression):
         self._jconf.setExternalCommunicationCompression(compression)
+        return self
+
+    def setExternalAutoStartBackend(self, backend):
+        self._jconf.setExternalAutoStartBackend(backend)
         return self

@@ -187,6 +187,15 @@ object ExternalH2OBackend extends SharedBackendUtils {
     }
 
     if (conf.isAutoClusterStartUsed) {
+
+      if (conf.externalAutoStartBackend != ExternalBackendConf.YARN_BACKEND &&
+        conf.externalAutoStartBackend != ExternalBackendConf.KUBERNETES_BACKEND) {
+        throw new IllegalArgumentException(
+          s"""'${ExternalBackendConf.PROP_EXTERNAL_AUTO_START_BACKEND._1}' property is set to ${conf.externalAutoStartBackend}.
+          Valid options are "${ExternalBackendConf.YARN_BACKEND}" or "${ExternalBackendConf.KUBERNETES_BACKEND}".
+      """)
+      }
+
       val envDriverJar = ExternalH2OBackend.ENV_H2O_DRIVER_JAR
 
       lazy val driverPath = sys.env.get(envDriverJar)

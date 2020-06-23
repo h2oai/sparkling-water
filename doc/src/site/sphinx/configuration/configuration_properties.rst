@@ -354,6 +354,11 @@ External backend configuration properties
 |                                                       |                |                                                 | node. Possible values are ``NONE``, |
 |                                                       |                |                                                 | ``DEFLATE``, ``GZIP``, ``SNAPPY``.  |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.auto.start.backend``         | ``YARN``       | ``setExternalAutoStartBackend(String)``         | The backend on which the external   |
+|                                                       |                |                                                 | H2O backend will be started in auto |
+|                                                       |                |                                                 | start mode. Possible values are     |
+|                                                       |                |                                                 | ``YARN`` and ``KUBERNETES``.        |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
