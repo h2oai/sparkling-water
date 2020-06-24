@@ -486,11 +486,11 @@ After we created the external H2O backend, we can connect to it from Sparkling W
                              executors = 3,
                              version = "SUBST_SPARK_VERSION",
                              conf = list(
-                                     "spark.ext.h2o.backend.cluster.mode=external",
-                                     "spark.ext.h2o.external.start.mode=manual",
-                                     "spark.ext.h2o.hadoop.memory=2G",
-                                     "spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321",
-                                     "spark.ext.h2o.cloud.name=root",
+                                     "spark.ext.h2o.backend.cluster.mode"="external",
+                                     "spark.ext.h2o.external.start.mode"="manual",
+                                     "spark.ext.h2o.hadoop.memory"="2G",
+                                     "spark.ext.h2o.cloud.representative"="h2o-service.default.svc.cluster.local:54321",
+                                     "spark.ext.h2o.cloud.name"="root",
                                      "spark.kubernetes.file.upload.path"="file:///tmp")
                              ports = c(8880, 8881, 4040, 54321))
             config["spark.home"] <- Sys.getenv("SPARK_HOME")
