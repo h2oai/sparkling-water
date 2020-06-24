@@ -15,11 +15,11 @@
 # limitations under the License.
 #
 
+import os
 import subprocess
 import time
 from py4j.java_gateway import *
 from pyspark.context import SparkContext
-import os
 
 from tests.integration.integ_test_utils import *
 
@@ -35,11 +35,28 @@ def testPy4jGatewayConnection(integ_spark_conf):
     print(hc)
     hc.stop()
 
+
+def testHamOrSpamPipelineAlgos(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/HamOrSpamMultiAlgorithmDemo.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
+
+
+def testChicagoCrime(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/ChicagoCrimeDemo.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
+
+
+def testImportPysparklingStandaloneApp(integ_spark_conf):
+    return_code = launch(integ_spark_conf, "examples/tests/pysparkling_ml_import_overrides_spark_test.py")
+    assert return_code == 0, "Process ended in a wrong way. It ended with return code " + str(return_code)
+
+
 def generateSSLFiles(token):
     # CA key in PKCS1 format
     os.system('openssl genrsa -out build/ca.key 2048')
     # CA certificate
-    os.system('openssl req -x509 -new -nodes -key build/ca.key -sha256 -days 1825 -out build/ca.crt -subj "/CN=localhost"')
+    os.system(
+        'openssl req -x509 -new -nodes -key build/ca.key -sha256 -days 1825 -out build/ca.crt -subj "/CN=localhost"')
     # Server Key in PKCS8 format
     os.system('openssl genpkey -out build/server.key -algorithm RSA -pkeyopt rsa_keygen_bits:2048')
     # Server certificate signing request
@@ -56,9 +73,12 @@ def generateSSLFiles(token):
                 DNS.1 = localhost
                 ''')
     # Server certificate
-    os.system('openssl x509 -req -in build/server.csr -CA build/ca.crt -CAkey build/ca.key -CAcreateserial -out build/server.crt -days 825 -sha256 -extfile build/server.ext')
+    os.system(
+        'openssl x509 -req -in build/server.csr -CA build/ca.crt -CAkey build/ca.key -CAcreateserial -out build/server.crt -days 825 -sha256 -extfile build/server.ext')
     # Keystore containing the certificate and private key
-    os.system('openssl pkcs12 -export -inkey build/server.key -in build/server.crt -out build/keystore.pk12 -password pass:' + token)
+    os.system(
+        'openssl pkcs12 -export -inkey build/server.key -in build/server.crt -out build/keystore.pk12 -password pass:' + token)
+
 
 def startJavaGateway(integ_spark_conf, token):
     with open('build/secret.txt', 'w') as f:
@@ -77,6 +97,7 @@ def startJavaGateway(integ_spark_conf, token):
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
     time.sleep(60)
     return proc
+
 
 def obtainSparkSession(token):
     import ssl
