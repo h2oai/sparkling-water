@@ -14,19 +14,21 @@ import org.apache.spark.{SparkConf, SparkFiles}
 import py4j.GatewayServer
 
 import scala.io.Source
+import scala.util.Random
 
 object SparklingGateway extends Logging {
 
   def main(args: Array[String]) {
     val spark = SparkSession.builder.getOrCreate()
     val conf = spark.sparkContext.getConf
+    val secret = readSecret(conf)
     val hc = H2OContext.getOrCreate()
     val address = InetAddress.getByName("0.0.0.0")
     val builder = new GatewayServer.GatewayServerBuilder()
       .javaPort(gatewayPort(conf))
       .javaAddress(address)
-      .authToken(readSecret(conf))
-      .serverSocketFactory(createServerSocketFactory(conf))
+      .authToken(secret)
+      .serverSocketFactory(createServerSocketFactory(conf, secret))
     val gatewayServer: GatewayServer = builder.build()
     gatewayServer.start()
     val boundPort: Int = gatewayServer.getListeningPort
@@ -57,6 +59,7 @@ object SparklingGateway extends Logging {
   // Sparkling Water expect keystore in a format of PKCS12 containing private key encoded as PKCS8 and certificate
   // Also we expect that the PKCS12 keystore is not protected by a password
   private val PROP_GATEWAY_KEYSTORE_FILE_NAME = ("spark.ext.h2o.py4j.gateway.keystore.file.name", None)
+  private val DUMMY_JKS_PASSWORD = Random.alphanumeric.take(20).mkString("").toCharArray
 
   private def gatewayPort(conf: SparkConf) = {
     val option = conf.getOption(PROP_GATEWAY_PORT._1)
@@ -84,10 +87,10 @@ object SparklingGateway extends Logging {
     }
   }
 
-  private def loadInputKeyStore(conf: SparkConf): KeyStore = {
+  private def loadInputKeyStore(conf: SparkConf, secret: String): KeyStore = {
     val stream = new FileInputStream(pkcs12KeyStoreFileName(conf))
     val ks = KeyStore.getInstance("PKCS12")
-    ks.load(stream, null)
+    ks.load(stream, secret.toCharArray)
     ks
   }
 
@@ -95,17 +98,18 @@ object SparklingGateway extends Logging {
     val keystore = KeyStore.getInstance("JKS")
     keystore.load(null)
     keystore.setCertificateEntry("cert-alias", cert)
-    keystore.setKeyEntry("key-alias", key, "pass".toCharArray, Array(cert))
+    keystore.setKeyEntry("key-alias", key, DUMMY_JKS_PASSWORD, Array(cert))
     keystore
   }
 
-  private def createServerSocketFactory(conf: SparkConf): ServerSocketFactory = {
-    val inputKeyStore = loadInputKeyStore(conf)
+  private def createServerSocketFactory(conf: SparkConf, secret: String): ServerSocketFactory = {
+    val inputKeyStore = loadInputKeyStore(conf, secret)
     val kmf = KeyManagerFactory.getInstance("SunX509")
-    val privateKey = inputKeyStore.getKey(inputKeyStore.aliases().nextElement(), null).asInstanceOf[PrivateKey]
+    val privateKey =
+      inputKeyStore.getKey(inputKeyStore.aliases().nextElement(), secret.toCharArray).asInstanceOf[PrivateKey]
     val cert = inputKeyStore.getCertificate(inputKeyStore.aliases().nextElement())
     val jks = createJKS(privateKey, cert)
-    kmf.init(jks, "pass".toCharArray())
+    kmf.init(jks, DUMMY_JKS_PASSWORD)
     val km = kmf.getKeyManagers
     val context = SSLContext.getInstance("TLSv1.2")
     context.init(km, null, null)
