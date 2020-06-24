@@ -253,7 +253,7 @@ def ami = new SlaveTemplate(
         false, // useDedicatedTenancy
         '', // launchTimeoutStr
         true, // associatePublicIp
-        '/dev/xvda=:70', // customDeviceMapping
+        '/dev/xvda=:80', // customDeviceMapping
         true, // connectBySSHProcess
         false, // monitoring
         false, // t2Unlimited
