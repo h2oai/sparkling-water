@@ -28,9 +28,9 @@ import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.net.ssl.{HostnameVerifier, HttpsURLConnection, SSLSession}
 import org.apache.spark._
+import org.apache.spark.expose.Logging
 import org.apache.spark.h2o.backends.internal.InternalH2OBackend
 import org.apache.spark.h2o.ui._
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.util.ShutdownHookManager
 import water._
