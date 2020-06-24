@@ -7,7 +7,7 @@ Frequently Asked Questions
 
     **YARN mode**: The executors logs are available via the ``yarn logs -applicationId <appId>`` command. Driver logs are by default printed to console; however, H2O also writes logs into ``current_dir/h2ologs``.
 
-    The location of H2O driver logs can be controlled via the Spark property ``spark.ext.h2o.client.log.dir`` (passed via ``--conf``).
+    The location of H2O driver logs can be controlled via the Spark property ``spark.ext.h2o.log.dir`` (passed via ``--conf``).
 
 -  How can I display Sparkling Water information in the Spark History Server?
 

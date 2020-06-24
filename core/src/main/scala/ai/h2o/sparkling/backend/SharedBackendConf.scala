@@ -483,12 +483,6 @@ object SharedBackendConf {
   /** IP of H2O client node */
   val PROP_CLIENT_IP: (String, None.type) = ("spark.ext.h2o.client.ip", None)
 
-  /** Location of iced directory for the driver instance. */
-  val PROP_CLIENT_ICED_DIR: (String, None.type) = ("spark.ext.h2o.client.iced.dir", None)
-
-  /** Location of log directory for the driver instance. */
-  val PROP_CLIENT_LOG_DIR: (String, None.type) = ("spark.ext.h2o.client.log.dir", None)
-
   /** Exact client port to access web UI.
     * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
   val PROP_CLIENT_WEB_PORT: (String, Int) = ("spark.ext.h2o.client.web.port", -1)
