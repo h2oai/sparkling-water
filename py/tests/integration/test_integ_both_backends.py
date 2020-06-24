@@ -70,6 +70,7 @@ def startJavaGateway(integ_spark_conf, token):
         "--conf", "spark.ext.h2o.py4j.gateway.port=55555",
         "--conf", "spark.ext.h2o.py4j.gateway.secret.file.name=secret.txt",
         "--conf", "spark.ext.h2o.py4j.gateway.keystore.file.name=keystore.pk12",
+        "--conf", "spark.master=local[*]",
         "--files", "build/secret.txt,build/keystore.pk12",
         integ_spark_conf["spark.ext.h2o.testing.path.to.sw.jar"]]
     import sys
