@@ -23,16 +23,15 @@ version <- Sys.getenv("SW_VERSION")
 sparkHome <- Sys.getenv("SPARK_HOME")
 extraOptions <- Sys.getenv("EXTRA_OPTIONS")
 sparkVersion <- Sys.getenv("SPARK_VERSION")
-if (extraOptions == "") {
-  extraOptionsParsed <- NULL
-} else {
+extraOptionsParsed <- list()
+if (extraOptions != "") {
   options <- unlist(strsplit(extraOptions," "))
-  extraOptionsParsed <- list()
   for (pair in options) {
     parsedPair <- unlist(strsplit(pair, "="))
     extraOptionsParsed[parsedPair[1]] <- parsedPair[2]
   }
 }
+extraOptionsParsed["spark.kubernetes.file.upload.path"] <-"file:///tmp"
 
 optionName <- "spark.ext.h2o.backend.cluster.mode"
 if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] == "external") {
