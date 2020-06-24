@@ -102,9 +102,8 @@ object SparklingGateway extends Logging {
   private def createServerSocketFactory(conf: SparkConf): ServerSocketFactory = {
     val inputKeyStore = loadInputKeyStore(conf)
     val kmf = KeyManagerFactory.getInstance("SunX509")
-    val aliases = inputKeyStore.aliases()
-    val privateKey = inputKeyStore.getKey(aliases.nextElement(), null).asInstanceOf[PrivateKey]
-    val cert = inputKeyStore.getCertificate(aliases.nextElement())
+    val privateKey = inputKeyStore.getKey(inputKeyStore.aliases().nextElement(), null).asInstanceOf[PrivateKey]
+    val cert = inputKeyStore.getCertificate(inputKeyStore.aliases().nextElement())
     val jks = createJKS(privateKey, cert)
     kmf.init(jks, "pass".toCharArray())
     val km = kmf.getKeyManagers
