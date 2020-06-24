@@ -28,7 +28,7 @@ import scala.reflect.runtime.universe._
 /**
   * All type associations are gathered in this file.
   */
-private[backend] object SupportedTypes extends Enumeration {
+private[sparkling] object SupportedTypes extends Enumeration {
 
   type VecType = Byte
 

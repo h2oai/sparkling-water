@@ -55,5 +55,10 @@ def irisDatasetPath():
 
 
 @pytest.fixture(scope="module")
+def carsDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/cars_20mpg.csv")
+
+
+@pytest.fixture(scope="module")
 def prostateDataset(spark, prostateDatasetPath):
     return spark.read.csv(prostateDatasetPath, header=True, inferSchema=True)

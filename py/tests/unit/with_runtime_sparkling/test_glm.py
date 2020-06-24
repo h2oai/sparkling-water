@@ -20,6 +20,7 @@ from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGLM
+from tests import unit_test_utils
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 
@@ -60,3 +61,53 @@ def testPropagationOfPredictionCol(prostateDataset):
     model = algo.fit(prostateDataset)
     columns = model.transform(prostateDataset).columns
     assert True == (predictionCol in columns)
+
+
+def testPlugValuesAffectResult(spark, carsDatasetPath):
+    carsDataset=spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
+    carsDataset=carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
+    [traningDataset, testingDataset] = carsDataset.randomSplit([0.9, 0.1], 1)
+
+    def createInitialGlmDefinition():
+        featuresCols=["economy","displacement", "power", "weight", "acceleration", "year", "economy_20mpg"]
+        return H2OGLM(featuresCols=featuresCols, labelCol="cylinders", seed=1,splitRatio=0.8)
+
+    referenceGlm = createInitialGlmDefinition()
+    referenceModel = referenceGlm.fit(traningDataset)
+    referenceResult = referenceModel.transform(testingDataset)
+
+    plugValues = {
+        "economy": 1.1,
+        "displacement": 2.2,
+        "power": 3.3,
+        "weight": 4.4,
+        "acceleration": 5.5,
+        "year": 2000,
+        "economy_20mpg": "0"}
+    glm = createInitialGlmDefinition()
+    glm.setMissingValuesHandling("PlugValues")
+    glm.setPlugValues(plugValues)
+    model = glm.fit(traningDataset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)
+
+
+def testInteractionColumnNamesArePassedWithoutException(spark):
+    data = [(0.0, "a", 2.0),
+            (float("nan"), "b", 8.0),
+            (0.0, "a", 4.0),
+            (1.0, "b", 1.0)]
+    df = spark.createDataFrame(data, ["x", "y", "z"])
+
+    plugValues = {"x": 0, "x_y.a": 1, "x_y.b": 2, "y": "b"}
+    glm = H2OGLM(
+        labelCol="z",
+        seed=42,
+        ignoreConstCols=False,
+        standardize=False,
+        family="gaussian",
+        missingValuesHandling="PlugValues",
+        plugValues=plugValues)
+
+    glm.fit(df)

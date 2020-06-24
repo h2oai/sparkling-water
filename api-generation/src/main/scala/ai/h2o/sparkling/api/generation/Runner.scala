@@ -52,6 +52,7 @@ object Runner {
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity =
       ExplicitField("monotone_constraints", "HasMonotoneConstraints", new util.HashMap[String, Double]())
+    val plugValues = ExplicitField("plug_values", "HasPlugValues", null)
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val deepLearningFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -65,7 +66,7 @@ object Runner {
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], Seq(monotonicity)),
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity)),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq.empty),
-      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq.empty),
+      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq(plugValues)),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], Seq(userPoints)))
 
