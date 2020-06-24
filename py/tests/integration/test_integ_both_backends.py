@@ -29,6 +29,7 @@ def testPy4jGatewayConnection(integ_spark_conf):
     spark = obtainSparkSession(token)
     from pysparkling import H2OContext
     hc = H2OContext.getOrCreate()
+    print(hc)
     spark.stop()
 
 
@@ -41,7 +42,8 @@ def startJavaGateway(integ_spark_conf, token):
         "--class", "ai.h2o.sparkling.backend.SparklingGateway",
         "--conf", "spark.ext.h2o.py4j.gateway.port=55555",
         "--conf", "spark.ext.h2o.py4j.gateway.secret.file.name=secret.txt",
-        "--files", "build/secret.txt",
+        "--conf", "spark.ext.h2o.py4j.gateway.keystore.file.name=keystore.pk12",
+        "--files", "build/secret.txt,/Users/kuba/devel/server/keystore.pk12",
         integ_spark_conf["spark.ext.h2o.testing.path.to.sw.jar"]]
     import sys
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
@@ -50,14 +52,14 @@ def startJavaGateway(integ_spark_conf, token):
 
 def obtainSparkSession(token):
     import ssl
-    client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
+    client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     client_ssl_context.verify_mode = ssl.CERT_NONE
-    client_ssl_context.check_hostname = False
+
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(
             address="127.0.0.1",
             port=55555,
-            #ssl_context=client_ssl_context,
+            ssl_context=client_ssl_context,
             auth_token=token,
             auto_convert=True))
     java_import(gateway.jvm, "org.apache.spark.SparkConf")
