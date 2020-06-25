@@ -40,5 +40,5 @@ object ShutdownServlet extends ServletRegister {
 
   override protected def getRequestPaths(): Array[String] = Array("/3/shutdown")
 
-  override protected def getServlet(conf: H2OConf): Servlet = new ShutdownServlet
+  override protected def getServlet(conf: H2OConf, hc: H2OContext): Servlet = new ShutdownServlet
 }

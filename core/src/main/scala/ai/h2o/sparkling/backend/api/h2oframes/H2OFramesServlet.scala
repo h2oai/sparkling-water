@@ -52,5 +52,5 @@ private[api] class H2OFramesServlet extends ServletBase {
 object H2OFramesServlet extends ServletRegister {
   override protected def getRequestPaths(): Array[String] = Array("/3/h2oframes/*")
 
-  override protected def getServlet(conf: H2OConf): Servlet = new H2OFramesServlet
+  override protected def getServlet(conf: H2OConf, hc: H2OContext): Servlet = new H2OFramesServlet
 }

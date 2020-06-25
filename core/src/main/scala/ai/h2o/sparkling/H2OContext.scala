@@ -83,6 +83,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   backend.startH2OCluster(conf)
   logInfo("Connecting to H2O cluster.")
   private val nodes = getAndVerifyWorkerNodes(conf)
+  backendHeartbeatThread.start() // start backend heartbeats
   if (H2OClientUtils.isH2OClientBased(conf)) {
     H2OClientUtils.startH2OClient(this, conf, nodes)
   }
@@ -99,7 +100,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   }
 
   private[sparkling] val (flowIp, flowPort) = {
-    val uri = ProxyStarter.startFlowProxy(conf)
+    val uri = ProxyStarter.startFlowProxy(this, conf)
     // SparklyR implementation of Kubernetes connection works in a way that it does port-forwarding
     // from the driver node to the node where interactive session is running. We also need to make
     // sure that we provide valid ip. If this wouldn't be done, we would return dns record internal to
@@ -111,7 +112,6 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     }
   }
   updateUIAfterStart() // updates the spark UI
-  backendHeartbeatThread.start() // start backend heartbeats
   logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
 
   def getH2ONodes(): Array[NodeDesc] = nodes
