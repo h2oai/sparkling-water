@@ -60,29 +60,23 @@ object SparklingGateway extends Logging {
   private val PROP_GATEWAY_KEYSTORE_FILE_NAME = ("spark.ext.h2o.py4j.gateway.keystore.file.name", None)
   private val DUMMY_JKS_PASSWORD = Random.alphanumeric.take(20).mkString("").toCharArray
 
-  private def gatewayPort(conf: SparkConf) = {
-    val option = conf.getOption(PROP_GATEWAY_PORT._1)
-    if (option.isEmpty) {
-      throw new RuntimeException(s"Missing $PROP_GATEWAY_PORT")
-    } else {
-      option.get.toInt
-    }
+  private def gatewayPort(conf: SparkConf): Int = {
+    getOption(conf, PROP_GATEWAY_PORT._1).toInt
   }
-  private def gatewaySecretFileName(conf: SparkConf) = {
-    val option = conf.getOption(PROP_GATEWAY_SECRET_FILE_NAME._1)
-    if (option.isEmpty) {
-      throw new RuntimeException(s"Missing $PROP_GATEWAY_SECRET_FILE_NAME")
-    } else {
-      SparkFiles.get(option.get)
-    }
+  private def gatewaySecretFileName(conf: SparkConf): String = {
+    SparkFiles.get(getOption(conf, PROP_GATEWAY_SECRET_FILE_NAME._1))
   }
 
-  private def pkcs12KeyStoreFileName(conf: SparkConf) = {
-    val option = conf.getOption(PROP_GATEWAY_KEYSTORE_FILE_NAME._1)
+  private def pkcs12KeyStoreFileName(conf: SparkConf): String = {
+    SparkFiles.get(getOption(conf, PROP_GATEWAY_KEYSTORE_FILE_NAME._1))
+  }
+
+  private def getOption(conf: SparkConf, optionName: String): String = {
+    val option = conf.getOption(optionName)
     if (option.isEmpty) {
-      throw new RuntimeException(s"Missing $PROP_GATEWAY_KEYSTORE_FILE_NAME")
+      throw new RuntimeException(s"Missing ${optionName}")
     } else {
-      SparkFiles.get(option.get)
+      option.get
     }
   }
 
