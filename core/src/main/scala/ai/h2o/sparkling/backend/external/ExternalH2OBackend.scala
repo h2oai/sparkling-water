@@ -30,7 +30,7 @@ import org.apache.spark.SparkFiles
 
 import scala.io.Source
 
-class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ShellUtils {
+class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with ShellUtils with KubernetesUtils {
 
   override def startH2OCluster(conf: H2OConf): Unit = {
     if (conf.isAutoClusterStartUsed) {

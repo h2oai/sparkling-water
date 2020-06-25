@@ -104,6 +104,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalK8sH2OApiPort: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_API_PORT._1, PROP_EXTERNAL_K8S_H2O_API_PORT._2)
 
+  def externalK8sNamespace: String = sparkConf.get(PROP_EXTERNAL_K8S_NAMESPACE._1, PROP_EXTERNAL_K8S_NAMESPACE._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -209,6 +211,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setExternalK8sH2OApiPort(port: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_API_PORT._1, port.toString)
+  }
+
+  def externalK8sNamespace(namespace: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_NAMESPACE._1, namespace)
   }
 
   def externalConfString: String =
@@ -328,4 +334,7 @@ object ExternalBackendConf {
 
   /** H2O Kubernetes API Port */
   val PROP_EXTERNAL_K8S_H2O_API_PORT: (String, Int) = ("spark.ext.h2o.external.k8s.h2o.api.port", 8081)
+
+  /** Kubernetes namespace where external H2O is started */
+  val PROP_EXTERNAL_K8S_NAMESPACE: (String, String) = ("spark.ext.h2o.external.k8s.namespace", "default")
 }

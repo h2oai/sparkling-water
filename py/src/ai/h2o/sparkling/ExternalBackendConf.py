@@ -114,6 +114,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalK8sH2OApiPort(self):
         return self._jconf.externalK8sH2OApiPort()
 
+    def externalK8sNamespace(self):
+        return self._jconf.externalK8sNamespace()
+
     #
     # Setters
     #
@@ -228,4 +231,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalK8sH2OApiPort(self, port):
         self._jconf.setExternalK8sH2OApiPort(port)
+        return self
+
+    def setExternalK8sNamespace(self, namespace):
+        self._jconf.setExternalK8sNamespace(namespace)
         return self
