@@ -102,6 +102,18 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalAutoStartBackend(self):
         return self._jconf.externalAutoStartBackend()
 
+    def externalK8sH2OServiceName(self):
+        return self._jconf.externalK8sH2OServiceName()
+
+    def externalK8sH2OStatefulsetName(self):
+        return self._jconf.externalK8sH2OStatefulsetName()
+
+    def externalK8sH2OLabel(self):
+        return self._jconf.externalK8sH2OLabel()
+
+    def externalK8sH2OApiPort(self):
+        return self._jconf.externalK8sH2OApiPort()
+
     #
     # Setters
     #
@@ -200,4 +212,20 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalAutoStartBackend(self, backend):
         self._jconf.setExternalAutoStartBackend(backend)
+        return self
+
+    def setExternalK8sH2OServiceName(self, serviceName):
+        self._jconf.setExternalK8sH2OServiceName(serviceName)
+        return self
+
+    def setExternalK8sH2OStatefulsetName(self, statefulsetName):
+        self._jconf.setExternalK8sH2OStatefulsetName(statefulsetName)
+        return self
+
+    def setExternalK8sH2OLabel(self, label):
+        self._jconf.setExternalK8sH2OLabel(label)
+        return self
+
+    def setExternalK8sH2OApiPort(self, port):
+        self._jconf.setExternalK8sH2OApiPort(port)
         return self
