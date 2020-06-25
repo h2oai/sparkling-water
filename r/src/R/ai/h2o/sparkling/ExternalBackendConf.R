@@ -74,6 +74,14 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
     externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
 
     externalAutoStartBackend = function() { invoke(jconf, "externalAutoStartBackend") },
+
+    externalK8sH2OServiceName = function() { invoke(jconf, "externalK8sH2OServiceName") },
+
+    externalK8sH2OStatefulsetName = function() { invoke(jconf, "externalK8sH2OStatefulsetName") },
+
+    externalK8sH2OLabel = function() { invoke(jconf, "externalK8sH2OLabel") },
+
+    externalK8sH2OApiPort = function() { invoke(jconf, "externalK8sH2OApiPort") },
 #
 # Setters
 #
@@ -123,5 +131,13 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalCommunicationCompression = function(compression) { invoke(jconf, "setExternalCommunicationCompression", compression); .self },
 
-    setExternalAutoStartBackend = function(backend) { invoke(jconf, "setExternalAutoStartBackend", backend); .self }
+    setExternalAutoStartBackend = function(backend) { invoke(jconf, "setExternalAutoStartBackend", backend); .self },
+
+    setExternalK8sH2OServiceName = function(serviceName) { invoke(jconf, "setExternalK8sH2OServiceName", serviceName); .self },
+
+    setExternalK8sH2OStatefulsetName = function(statefulsetName) { invoke(jconf, "setExternalK8sH2OStatefulsetName", statefulsetName); .self },
+
+    setExternalK8sH2OLabel = function(label) { invoke(jconf, "setExternalK8sH2OLabel", label); .self },
+
+    setExternalK8sH2OApiPort = function(port) { invoke(jconf, "setExternalK8sH2OApiPort", port); .self }
 ))
