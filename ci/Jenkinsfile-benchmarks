@@ -24,7 +24,7 @@ node("docker") {
         stage("Basic Benchmarks") {
             if (params.runBasicBenchmarks.toBoolean()) {
                 commons.withSparklingWaterDockerImage {
-                    sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
+                    sh "./gradlew :sparkling-water-benchmarks:runBenchmarks -Pspark=2.4 -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
                     arch '**/output/*'
                 }
             }
@@ -33,7 +33,7 @@ node("docker") {
         stage("H2O to Spark Conversion Benchmarks") {
             if (params.runBigDataH2OToSparkBenchmarks.toBoolean()) {
                 commons.withSparklingWaterDockerImage {
-                    sh "./gradlew :sparkling-water-benchmarks:runBigDataH2OtoSparkConversionBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
+                    sh "./gradlew :sparkling-water-benchmarks:runBigDataH2OtoSparkConversionBenchmarks -Pspark=2.4 -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
                     arch '**/output/*'
                 }
             }
@@ -42,7 +42,7 @@ node("docker") {
         stage("Spark to H2O Conversion Benchmarks") {
             if (params.runBigDataSparkToH2OBenchmarks.toBoolean()) {
                 commons.withSparklingWaterDockerImage {
-                    sh "./gradlew :sparkling-water-benchmarks:runBigDataSparkToH2OConversionBenchmarks -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
+                    sh "./gradlew :sparkling-water-benchmarks:runBigDataSparkToH2OConversionBenchmarks -Pspark=2.4 -Paws_access_key=${AWS_ACCESS_KEY_ID} -Paws_secret_key=${AWS_SECRET_ACCESS_KEY} -Paws_ssh_public_key=default"
                     arch '**/output/*'
                 }
             }
