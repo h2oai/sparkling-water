@@ -22,7 +22,7 @@ import java.net._
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.expose.Logging
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.eclipse.jetty.server.Server
 import water.H2O
 import water.init.NetworkInit
@@ -31,13 +31,13 @@ import water.webserver.jetty9.SparklingWaterJettyHelper
 
 object ProxyStarter extends Logging {
   private var server: Server = _
-  def startFlowProxy(conf: H2OConf): URI = {
+  def startFlowProxy(hc: H2OContext, conf: H2OConf): URI = {
     var port = findFlowProxyBasePort(conf)
     while (true) {
       try {
         val config = NetworkInit.webServerConfig(confToH2OArgs(conf))
         val h2oHttpView = new H2OHttpViewImpl(config)
-        val helper = new SparklingWaterJettyHelper(conf, h2oHttpView)
+        val helper = new SparklingWaterJettyHelper(hc, conf, h2oHttpView)
         port = findNextFreeFlowPort(conf.clientWebPort, port)
         server = helper.startServer(port)
         return new URI(

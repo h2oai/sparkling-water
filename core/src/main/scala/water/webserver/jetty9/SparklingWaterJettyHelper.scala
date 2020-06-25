@@ -21,7 +21,7 @@ import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.proxy.ProxyServlet.Transparent
 import org.eclipse.jetty.security.SecurityHandler
@@ -31,19 +31,20 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler
 import water.webserver.iface.{H2OHttpView, LoginType}
 
-class SparklingWaterJettyHelper(conf: H2OConf, h2oHttpView: H2OHttpView) extends Jetty9Helper(h2oHttpView) {
+class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OHttpView)
+  extends Jetty9Helper(h2oHttpView) {
 
   override def createServletContextHandler(): ServletContextHandler = {
     val context = new ServletContextHandler(ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS)
     context.setContextPath(conf.contextPath.getOrElse("/"))
     context.setServletHandler(proxyContextHandler(conf))
     if (conf.isH2OReplEnabled) {
-      ScalaInterpreterServlet.register(context, conf)
+      ScalaInterpreterServlet.register(context, conf, hc)
     }
-    RDDsServlet.register(context, conf)
-    H2OFramesServlet.register(context, conf)
-    DataFramesServlet.register(context, conf)
-    ShutdownServlet.register(context, conf)
+    RDDsServlet.register(context, conf, hc)
+    H2OFramesServlet.register(context, conf, hc)
+    DataFramesServlet.register(context, conf, hc)
+    ShutdownServlet.register(context, conf, hc)
     context
   }
 

@@ -83,6 +83,7 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
   H2OContext.logStartingInfo(conf)
   H2OContext.verifySparkVersion()
   backend.startH2OCluster(conf)
+  backendHeartbeatThread.start() // start backend heartbeats
   private val nodes = connectToH2OCluster()
   RestApiUtils.setTimeZone(conf, "UTC")
   // The lowest priority used by Spark is 25 (removing temp dirs). We need to perform cleaning up of H2O
@@ -95,11 +96,10 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     SparkSpecificUtils.addSparklingWaterTab(sparkContext)
   }
   private val (flowIp, flowPort) = {
-    val uri = ProxyStarter.startFlowProxy(conf)
+    val uri = ProxyStarter.startFlowProxy(this, conf)
     (uri.getHost, uri.getPort)
   }
   updateUIAfterStart() // updates the spark UI
-  backendHeartbeatThread.start() // start backend heartbeats
   logInfo(s"Sparkling Water ${BuildInfo.SWVersion} started, status of context: $this ")
 
   def getH2ONodes(): Array[NodeDesc] = nodes

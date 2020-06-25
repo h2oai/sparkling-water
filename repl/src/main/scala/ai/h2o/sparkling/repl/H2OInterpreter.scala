@@ -34,9 +34,11 @@ import scala.tools.nsc._
   * H2O Interpreter which is use to interpret scala code
   *
   * @param sparkContext spark context
+  * @param hc H2OContext
   * @param sessionId    session ID for interpreter
   */
-class H2OInterpreter(sparkContext: SparkContext, sessionId: Int) extends BaseH2OInterpreter(sparkContext, sessionId) {
+class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
+  extends BaseH2OInterpreter(sparkContext, hc, sessionId) {
 
   override def createInterpreter(): H2OIMain = {
     H2OIMain.createInterpreter(sparkContext, settings, responseWriter, sessionId)

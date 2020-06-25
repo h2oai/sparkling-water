@@ -26,7 +26,7 @@ import ai.h2o.sparkling.repl.H2OInterpreter
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import org.apache.spark.h2o.H2OConf
+import org.apache.spark.h2o.{H2OConf, H2OContext}
 import water.exceptions.H2ONotFoundArgumentException
 
 import scala.collection.concurrent.TrieMap
@@ -34,7 +34,7 @@ import scala.collection.concurrent.TrieMap
 /**
   * This servlet class handles requests for /3/scalaint endpoint
   */
-private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase with RestCommunication {
+private[api] class ScalaInterpreterServlet(hc: H2OContext, conf: H2OConf) extends ServletBase with RestCommunication {
 
   private val intrPoolSize = conf.scalaIntDefaultNum
   private val freeInterpreters = new java.util.concurrent.ConcurrentLinkedQueue[H2OInterpreter]
@@ -83,7 +83,7 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
       } else {
         // pool is empty at the moment and is being filled, return new interpreter without using the pool
         val id = lastIdUsed.incrementAndGet()
-        val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, id)
+        val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, hc, id)
         mapIntr.put(intp.sessionId, intp)
         intp
       }
@@ -98,7 +98,7 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
 
   private def createInterpreterInPool(): H2OInterpreter = {
     val id = lastIdUsed.incrementAndGet()
-    val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, id)
+    val intp = new H2OInterpreter(SparkSessionUtils.active.sparkContext, hc, id)
     freeInterpreters.add(intp)
     intp
   }
@@ -142,5 +142,5 @@ private[api] class ScalaInterpreterServlet(conf: H2OConf) extends ServletBase wi
 object ScalaInterpreterServlet extends ServletRegister {
   override protected def getRequestPaths(): Array[String] = Array("/3/scalaint", "/3/scalaint/*")
 
-  override protected def getServlet(conf: H2OConf): Servlet = new ScalaInterpreterServlet(conf)
+  override protected def getServlet(conf: H2OConf, hc: H2OContext): Servlet = new ScalaInterpreterServlet(hc, conf)
 }
