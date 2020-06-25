@@ -62,7 +62,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
   private def yarnAppId: Option[String] = {
     hc.getConf.getOption(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1)
   }
-  private def startExternalH2OOnKuberentes(conf: H2OConf): Unit = {}
+
   private def launchExternalH2OOnYarn(conf: H2OConf): Unit = {
     logInfo("Starting the external H2O cluster on YARN.")
     val cmdToLaunch = getExternalH2ONodesArguments(conf)
