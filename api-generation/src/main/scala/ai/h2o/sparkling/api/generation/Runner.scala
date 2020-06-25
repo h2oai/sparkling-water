@@ -59,6 +59,7 @@ object Runner {
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
 
     val xgboostFields = Seq(monotonicity, ignoredCols)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues)
     val kmeansFields = Seq(userPoints, ignoredCols)
 
     val deepLearningFields = Seq(
@@ -74,7 +75,7 @@ object Runner {
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostFields),
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity, ignoredCols)),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(ignoredCols)),
-      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], Seq(randomCols, ignoredCols, plugValues)),
+      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields))
 
