@@ -93,6 +93,17 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalAutoStartBackend: String =
     sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
 
+  def externalK8sH2OServiceName: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._2)
+
+  def externalK8sH2OStatefulsetName: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._2)
+
+  def externalK8sH2OLabel: String = sparkConf.get(PROP_EXTERNAL_K8S_H2O_LABEL._1, PROP_EXTERNAL_K8S_H2O_LABEL._2)
+
+  def externalK8sH2OApiPort: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_API_PORT._1, PROP_EXTERNAL_K8S_H2O_API_PORT._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -182,6 +193,22 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
           s" $YARN_BACKEND or $KUBERNETES_BACKEND")
     }
     set(PROP_EXTERNAL_AUTO_START_BACKEND._1, backend)
+  }
+
+  def setExternalK8sH2OServiceName(serviceName: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, serviceName)
+  }
+
+  def setExternalK8sH2OStatefulsetName(statefulsetName: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, statefulsetName)
+  }
+
+  def setExternalK8sH2OLabel(label: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_LABEL._1, label)
+  }
+
+  def setExternalK8sH2OApiPort(port: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_API_PORT._1, port.toString)
   }
 
   def externalConfString: String =
@@ -287,4 +314,18 @@ object ExternalBackendConf {
 
   /** Backend determining where external H2O should be started */
   val PROP_EXTERNAL_AUTO_START_BACKEND: (String, String) = ("spark.ext.h2o.external.auto.start.backend", YARN_BACKEND)
+
+  /** Name of H2O service required to start H2O on K8s */
+  val PROP_EXTERNAL_K8S_H2O_SERVICE_NAME: (String, String) =
+    ("spark.ext.h2o.external.k8s.h2o.service.name", "h2o-service")
+
+  /** Name of H2O stateful set required to start H2O on K8s */
+  val PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME: (String, String) =
+    ("spark.ext.h2o.external.k8s.h2o.statefulset.name", "h2o-statefulset")
+
+  /** Label used to select node for H2O cluster formation */
+  val PROP_EXTERNAL_K8S_H2O_LABEL: (String, String) = ("spark.ext.h2o.external.k8s.h2o.label", "h2o")
+
+  /** H2O Kubernetes API Port */
+  val PROP_EXTERNAL_K8S_H2O_API_PORT: (String, Int) = ("spark.ext.h2o.external.k8s.h2o.api.port", 8081)
 }

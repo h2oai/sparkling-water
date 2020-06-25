@@ -359,6 +359,17 @@ External backend configuration properties
 |                                                       |                |                                                 | start mode. Possible values are     |
 |                                                       |                |                                                 | ``YARN`` and ``KUBERNETES``.        |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.service.name``       | |h2oSer|       | ``setExternalK8sH2OServceName(String)``         | Name of H2O service required to     |
+|                                                       |                |                                                 | start H2O on K8s.                   |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.statefulset.name``   | |h2oSet|       | ``setExternalK8sH2OStatefulsetName(String)``    | Name of H2O stateful set required   |
+|                                                       |                |                                                 | to start H2O on K8s.                |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.label``              | ``h2o``        | ``setExternalK8sH2OLabel(String)``              | Label used to select node for       |
+|                                                       |                |                                                 | H2O cluster formation.              |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.api.port``           | ``8081``       | ``setExternalK8sH2OApiPort(String)``            | H2O Kubernetes API Port.            |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
@@ -372,3 +383,5 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
 .. |yarnDir| replace:: YARN container dir
 .. |secureConnections| replace:: ``spark.ext.h2o.internal_secure_connections``
+.. |h2oSer| replace:: ``h2o-service``
+.. |h2oSet| replace:: ``h2o-statefulSet``
