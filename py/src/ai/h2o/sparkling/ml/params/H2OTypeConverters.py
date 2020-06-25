@@ -19,6 +19,7 @@ from py4j.java_gateway import JavaObject
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
 from pyspark.ml.linalg import DenseVector, DenseMatrix
+from pyspark.sql import DataFrame
 
 
 class H2OTypeConverters(object):
@@ -281,6 +282,30 @@ class H2OTypeConverters(object):
                 return None
             else:
                 return [H2OTypeConverters.toDenseVector()(v) for v in TypeConverters.toList(value)]
+
+        return convert
+
+    @staticmethod
+    def toDataFrame():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            elif isinstance(value, JavaObject):
+                return value
+            elif isinstance(value, DataFrame):
+                return value._jdf
+            else:
+                raise TypeError("Invalid type. The expected type is pyspark.sql.DataFrame.")
+
+        return convert
+
+    @staticmethod
+    def toNullableDataFrame():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toDataFrame()(value)
 
         return convert
 

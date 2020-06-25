@@ -27,7 +27,8 @@ object ParameterNameConverter {
     "colsample_bytree" -> "colSampleByTree",
     "colsample_bynode" -> "colSampleByNode",
     "rand_family" -> "randomFamily",
-    "rand_link" -> "randomLink")
+    "rand_link" -> "randomLink",
+    "calibration_frame" -> "calibrationDataFrame")
 
   val conversionRules: Map[String, String] = Map("Column" -> "Col")
 
