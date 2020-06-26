@@ -16,7 +16,7 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-
+import warnings
 
 class ExternalBackendConf(SharedBackendConfUtils):
 
@@ -43,7 +43,11 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clusterInfoFile())
 
     def mapperXmx(self):
-        return self._jconf.mapperXmx()
+        warnings.warn("The method 'mapperXmx' is deprecated and will be removed in 3.34. Use 'externalMemory' instead!")
+        return self.externalMemory()
+
+    def externalMemory(self):
+        return self._jconf.externalMemory()
 
     def HDFSOutputDir(self):
         return self._get_option(self._jconf.HDFSOutputDir())
@@ -141,7 +145,11 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setMapperXmx(self, mem):
-        self._jconf.setMapperXmx(mem)
+        warnings.warn("The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
+        return self.setExternalMemory(mem)
+
+    def setExternalMemory(self, memory):
+        self._jconf.setExternalMemory(memory)
         return self
 
     def setHDFSOutputDir(self, dir):

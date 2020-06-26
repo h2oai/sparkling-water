@@ -18,30 +18,20 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
-import io.fabric8.kubernetes.api.model.{IntOrString, Quantity, Service}
+import io.fabric8.kubernetes.api.model.{IntOrString, Quantity}
 import io.fabric8.kubernetes.client.{DefaultKubernetesClient, KubernetesClient}
 
 import scala.collection.JavaConverters._
 
 trait KubernetesUtils {
 
-  def getH2OHeadlessServiceURL(client: KubernetesClient, conf: H2OConf): String = {
-    client
-      .services()
-      .inNamespace(conf.externalK8sH2OServiceName)
-      .withName(conf.externalK8sH2OServiceName)
-      .getURL("dummy")
+  def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
+    val client = new DefaultKubernetesClient
+    installH2OHeadlessService(client, conf)
+    installH2OStateFulSet(client, conf)
   }
 
-  def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
-    client
-      .services()
-      .inNamespace(conf.externalK8sH2OServiceName)
-      .withName(conf.externalK8sH2OServiceName)
-      .delete()
-  }
-
-  def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
@@ -54,7 +44,7 @@ trait KubernetesUtils {
       .withNewSpec()
       .withType("ClusterIP")
       .withClusterIP("None")
-      .withSelector(Map("app" -> conf.externalK8sH2OLabel).asJava)
+      .withSelector(convertLabelToMap(conf.externalK8sH2OLabel).asJava)
       .addNewPort()
       .withProtocol("TCP")
       .withPort(54321)
@@ -63,16 +53,7 @@ trait KubernetesUtils {
       .done()
   }
 
-  def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
-    client
-      .apps()
-      .statefulSets()
-      .inNamespace(conf.externalK8sH2OServiceName)
-      .withName(conf.externalK8sH2OStatefulsetName)
-      .delete()
-  }
-
-  def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .apps()
       .statefulSets()
@@ -87,19 +68,19 @@ trait KubernetesUtils {
       .withServiceName(conf.externalK8sH2OServiceName)
       .withReplicas(conf.clusterSize.get.toInt)
       .withNewSelector()
-      .withMatchLabels(Map("app" -> conf.externalK8sH2OLabel).asJava)
+      .withMatchLabels(convertLabelToMap(conf.externalK8sH2OLabel).asJava)
       .endSelector()
       .withNewTemplate()
       .withNewMetadata()
-      .withLabels(Map("app" -> conf.externalK8sH2OLabel).asJava)
+      .withLabels(convertLabelToMap(conf.externalK8sH2OLabel).asJava)
       .endMetadata()
       .withNewSpec()
       .withTerminationGracePeriodSeconds(10.toLong)
       .addNewContainer()
       .withName(conf.externalK8sH2OServiceName)
-      .withImage("IMAGE")
+      .withImage(conf.externalK8sDockerImage)
       .withNewResources()
-      .addToRequests("memory", Quantity.parse(conf.mapperXmx))
+      .addToRequests("memory", Quantity.parse(conf.externalMemory))
       .endResources()
       .addNewPort()
       .withContainerPort(54321)
@@ -137,11 +118,20 @@ trait KubernetesUtils {
       .done()
   }
 
-  def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
-    val client = new DefaultKubernetesClient
-    deleteH2OHeadlessService(client, conf)
-    installH2OHeadlessService(client, conf)
-    deleteH2OStatefulSet(client, conf)
-    installH2OStateFulSet(client, conf)
+  private def getH2OHeadlessServiceURL(client: KubernetesClient, conf: H2OConf): String = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OServiceName)
+      .get()
+
+    val a = "a"
+    a
   }
+
+  private def convertLabelToMap(label: String): Map[String, String] = {
+    val split = label.split("=")
+    Map(split(0) -> split(1))
+  }
+
 }

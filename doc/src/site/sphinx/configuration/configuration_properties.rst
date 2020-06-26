@@ -284,8 +284,8 @@ External backend configuration properties
 |                                                       |                |                                                 | sd the notification file for the    |
 |                                                       |                |                                                 | startup of external H2O cluster.    |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.hadoop.memory``                       | ``6G``         | ``setMapperXmx(String)``                        | Amount of memory assigned to each   |
-|                                                       |                |                                                 | H2O node on YARN/Hadoop.            |
+| ``spark.ext.h2o.external.memory``                     | ``6G``         | ``setExternalMemory(String)``                   | Amount of memory assigned to each   |
+|                                                       |                |                                                 | external H2O node.                  |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.hdfs.dir``                   | ``None``       | ``setHDFSOutputDir(String)``                    | Path to the directory on HDFS used  |
 |                                                       |                |                                                 | for storing temporary files.        |
@@ -329,9 +329,9 @@ External backend configuration properties
 |                                                       |                |                                                 | 50000-55000.                        |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | ``setExternalExtraMemoryPercent(Integer)``      | This option is a percentage of      |
-|                                                       |                |                                                 | ``spark.ext.h2o.hadoop.memory`` and |
-|                                                       |                |                                                 | specifies memory for internal JVM   |
-|                                                       |                |                                                 | use outside of Java heap.           |
+|                                                       |                |                                                 | ``spark.ext.h2o.external.memory``   |
+|                                                       |                |                                                 | and specifies memory for internal   |
+|                                                       |                |                                                 | JVM use outside of Java heap.       |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.backend.stop.timeout``       | ``10000ms``    | ``setExternalBackendStopTimeout(Integer)``      | Timeout for confirmation from       |
 |                                                       |                |                                                 | worker nodes when stopping the      |

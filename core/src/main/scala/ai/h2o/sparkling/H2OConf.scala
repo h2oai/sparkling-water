@@ -131,7 +131,8 @@ object H2OConf extends Logging {
     "spark.ext.h2o.node.log.dir" -> "spark.ext.h2o.log.dir",
     "spark.ext.h2o.client.log.dir" -> "spark.ext.h2o.log.dir",
     "spark.ext.h2o.node.extra" -> "spark.ext.h2o.extra.properties",
-    "spark.ext.h2o.client.extra" -> "spark.ext.h2o.extra.properties")
+    "spark.ext.h2o.client.extra" -> "spark.ext.h2o.extra.properties",
+    "spark.ext.h2o.hadoop.memory" -> "spark.ext.h2o.external.memory")
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
     deprecatedOptions.foreach {

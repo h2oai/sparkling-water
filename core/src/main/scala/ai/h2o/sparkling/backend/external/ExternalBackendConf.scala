@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -47,7 +48,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def clusterInfoFile: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
 
-  def mapperXmx: String = sparkConf.get(PROP_EXTERNAL_H2O_MEMORY._1, PROP_EXTERNAL_H2O_MEMORY._2)
+  @DeprecatedMethod("externalMemory", "3.34")
+  def mapperXmx: String = externalMemory
+
+  def externalMemory: String = sparkConf.get(PROP_EXTERNAL_MEMORY._1, PROP_EXTERNAL_MEMORY._2)
 
   def HDFSOutputDir: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
 
@@ -136,7 +140,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setClusterInfoFile(path: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
 
-  def setMapperXmx(mem: String): H2OConf = set(PROP_EXTERNAL_H2O_MEMORY._1, mem)
+  @DeprecatedMethod("setExternalMemory", "3.34")
+  def setMapperXmx(mem: String): H2OConf = setExternalMemory(mem)
+
+  def setExternalMemory(memory: String): H2OConf = set(PROP_EXTERNAL_MEMORY._1, memory)
 
   def setHDFSOutputDir(dir: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1, dir)
 
@@ -264,7 +271,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_INFO_FILE: (String, None.type) = ("spark.ext.h2o.cluster.info.name", None)
 
   /** Number of memory assigned to each external h2o node when starting in auto mode */
-  val PROP_EXTERNAL_H2O_MEMORY: (String, String) = ("spark.ext.h2o.hadoop.memory", "6g")
+  val PROP_EXTERNAL_MEMORY: (String, String) = ("spark.ext.h2o.external.memory", "6g")
 
   /** HDFS dir for external h2o nodes when starting in auto mode */
   val PROP_EXTERNAL_CLUSTER_HDFS_DIR: (String, None.type) = ("spark.ext.h2o.external.hdfs.dir", None)
@@ -337,7 +344,7 @@ object ExternalBackendConf {
     ("spark.ext.h2o.external.k8s.h2o.statefulset.name", "h2o-statefulset")
 
   /** Label used to select node for H2O cluster formation */
-  val PROP_EXTERNAL_K8S_H2O_LABEL: (String, String) = ("spark.ext.h2o.external.k8s.h2o.label", "h2o")
+  val PROP_EXTERNAL_K8S_H2O_LABEL: (String, String) = ("spark.ext.h2o.external.k8s.h2o.label", "app=h2o")
 
   /** H2O Kubernetes API Port */
   val PROP_EXTERNAL_K8S_H2O_API_PORT: (String, Int) = ("spark.ext.h2o.external.k8s.h2o.api.port", 8081)

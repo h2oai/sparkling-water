@@ -305,7 +305,7 @@ def testRExternalBackend(registryId, master, version, sparkVersion) {
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
-        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
@@ -324,7 +324,7 @@ static String externalBackendSharedSubmitCmd(registryId, master, version, mode, 
              --name test \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=2 \

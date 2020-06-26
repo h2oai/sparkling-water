@@ -35,7 +35,12 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     clusterInfoFile = function() { ConfUtils.getOption(invoke(jconf, "clusterInfoFile")) },
 
-    mapperXmx = function() { invoke(jconf, "mapperXmx") },
+    mapperXmx = function() {
+      warning("The method 'mapperXmx' is deprecated and will be removed in 3.34. Use 'externalMemory' instead!")
+      invoke(jconf, "externalMemory")
+    },
+
+    externalMemory = function() { invoke(jconf, "externalMemory") },
 
     HDFSOutputDir = function() { ConfUtils.getOption(invoke(jconf, "HDFSOutputDir")) },
 
@@ -97,7 +102,12 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setClusterInfoFile = function(path) { invoke(jconf, "setClusterInfoFile", path); .self },
 
-    setMapperXmx = function(mem) { invoke(jconf, "setMapperXmx", mem); .self },
+    setMapperXmx = function(mem) {
+      warning("The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
+      invoke(jconf, "setExternalMemory", mem); .self
+    },
+
+    setExternalMemory = function(memory) { invoke(jconf, "setExternalMemory", memory); .self },
 
     setHDFSOutputDir = function(dir) { invoke(jconf, "setHDFSOutputDir", dir); .self },
 

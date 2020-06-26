@@ -283,7 +283,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.executor.instances=3 \
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=manual \
-            --conf spark.ext.h2o.hadoop.memory=2G \
+            --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.jar
@@ -323,7 +323,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --deploy-mode client \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3
@@ -357,7 +357,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --deploy-mode client \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
@@ -380,7 +380,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.executor.instances=3 \
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=manual \
-            --conf spark.ext.h2o.hadoop.memory=2G \
+            --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
             local:///opt/sparkling-water/tests/initTest.py
@@ -420,7 +420,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --deploy-mode client \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
@@ -453,7 +453,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
              --deploy-mode client \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=3 \
@@ -488,7 +488,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
                              conf = list(
                                      "spark.ext.h2o.backend.cluster.mode"="external",
                                      "spark.ext.h2o.external.start.mode"="manual",
-                                     "spark.ext.h2o.hadoop.memory"="2G",
+                                     "spark.ext.h2o.external.memory"="2G",
                                      "spark.ext.h2o.cloud.representative"="h2o-service.default.svc.cluster.local:54321",
                                      "spark.ext.h2o.cloud.name"="root",
                                      "spark.kubernetes.file.upload.path"="file:///tmp")
