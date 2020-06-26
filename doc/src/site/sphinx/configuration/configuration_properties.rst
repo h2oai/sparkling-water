@@ -373,6 +373,10 @@ External backend configuration properties
 | ``spark.ext.h2o.external.k8s.namespace``              | ``default``    | ``setExternalK8sNamespace(String)``             | Kubernetes namespace where          |
 |                                                       |                |                                                 | external H2O is started.            |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.docker.image``           | |Image|        | ``setExternalK8sDockerImage(String)``           | Docker image name containing        |
+|                                                       |                |                                                 | Sparkling Water External H2O        |
+|                                                       |                |                                                 | backend.                            |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
@@ -388,3 +392,4 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |secureConnections| replace:: ``spark.ext.h2o.internal_secure_connections``
 .. |h2oSer| replace:: ``h2o-service``
 .. |h2oSet| replace:: ``h2o-statefulSet``
+.. |Image| replace:: ``h2oai/sparkling-water-external-backend:SUBST_SW_VERSION``

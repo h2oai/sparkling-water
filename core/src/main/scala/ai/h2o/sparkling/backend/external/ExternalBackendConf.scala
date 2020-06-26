@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
-import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -105,6 +105,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
     sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_API_PORT._1, PROP_EXTERNAL_K8S_H2O_API_PORT._2)
 
   def externalK8sNamespace: String = sparkConf.get(PROP_EXTERNAL_K8S_NAMESPACE._1, PROP_EXTERNAL_K8S_NAMESPACE._2)
+
+  def externalK8sDockerImage: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, PROP_EXTERNAL_K8S_DOCKER_IMAGE._2)
 
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
@@ -215,6 +218,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def externalK8sNamespace(namespace: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_NAMESPACE._1, namespace)
+  }
+
+  def setExternalK8sDockerImage(name: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, name)
   }
 
   def externalConfString: String =
@@ -337,4 +344,8 @@ object ExternalBackendConf {
 
   /** Kubernetes namespace where external H2O is started */
   val PROP_EXTERNAL_K8S_NAMESPACE: (String, String) = ("spark.ext.h2o.external.k8s.namespace", "default")
+
+  /** Docker image name containing Sparkling Water External H2O Backend */
+  val PROP_EXTERNAL_K8S_DOCKER_IMAGE: (String, String) =
+    ("spark.ext.h2o.external.k8s.docker.image", s"h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}")
 }

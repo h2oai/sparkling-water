@@ -37,7 +37,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       if (conf.externalAutoStartBackend == ExternalBackendConf.YARN_BACKEND) {
         launchExternalH2OOnYarn(conf)
       } else if (conf.externalAutoStartBackend == ExternalBackendConf.KUBERNETES_BACKEND) {
-        startExternalH2OOnKuberentes(conf)
+        startExternalH2OOnKubernetes(conf)
       } else {
         throw new RuntimeException(s"Invalid backend type for auto cluster start - ${conf.externalAutoStartBackend}")
       }

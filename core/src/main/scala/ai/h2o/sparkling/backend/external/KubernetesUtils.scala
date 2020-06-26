@@ -18,11 +18,20 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
+import io.fabric8.kubernetes.api.model.{IntOrString, Quantity, Service}
 import io.fabric8.kubernetes.client.{DefaultKubernetesClient, KubernetesClient}
 
 import scala.collection.JavaConverters._
 
 trait KubernetesUtils {
+
+  def getH2OHeadlessServiceURL(client: KubernetesClient, conf: H2OConf): String = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sH2OServiceName)
+      .withName(conf.externalK8sH2OServiceName)
+      .getURL("dummy")
+  }
 
   def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
     client
@@ -35,6 +44,7 @@ trait KubernetesUtils {
   def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .services()
+      .inNamespace(conf.externalK8sNamespace)
       .createOrReplaceWithNew()
       .withApiVersion("v1")
       .withKind("Service")
@@ -53,9 +63,85 @@ trait KubernetesUtils {
       .done()
   }
 
+  def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sH2OServiceName)
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .delete()
+  }
+
+  def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sH2OServiceName)
+      .createOrReplaceWithNew()
+      .withApiVersion("apps/v1")
+      .withKind("StatefulSet")
+      .withNewMetadata()
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .endMetadata()
+      .withNewSpec()
+      .withServiceName(conf.externalK8sH2OServiceName)
+      .withReplicas(conf.clusterSize.get.toInt)
+      .withNewSelector()
+      .withMatchLabels(Map("app" -> conf.externalK8sH2OLabel).asJava)
+      .endSelector()
+      .withNewTemplate()
+      .withNewMetadata()
+      .withLabels(Map("app" -> conf.externalK8sH2OLabel).asJava)
+      .endMetadata()
+      .withNewSpec()
+      .withTerminationGracePeriodSeconds(10.toLong)
+      .addNewContainer()
+      .withName(conf.externalK8sH2OServiceName)
+      .withImage("IMAGE")
+      .withNewResources()
+      .addToRequests("memory", Quantity.parse(conf.mapperXmx))
+      .endResources()
+      .addNewPort()
+      .withContainerPort(54321)
+      .withProtocol("TCP")
+      .endPort()
+      .withNewReadinessProbe()
+      .withNewHttpGet()
+      .withPath("/kubernetes/isLeaderNode")
+      .withPort(new IntOrString(conf.externalK8sH2OApiPort))
+      .endHttpGet()
+      .withInitialDelaySeconds(5)
+      .withPeriodSeconds(5)
+      .withFailureThreshold(1)
+      .endReadinessProbe()
+      .addNewEnv()
+      .withName("H2O_KUBERNETES_SERVICE_DNS")
+      .withValue(getH2OHeadlessServiceURL(client, conf))
+      .endEnv()
+      .addNewEnv()
+      .withName("H2O_NODE_LOOKUP_TIMEOUT")
+      .withValue("180")
+      .endEnv()
+      .addNewEnv()
+      .withName("H2O_NODE_EXPECTED_COUNT")
+      .withValue(conf.clusterSize.get)
+      .endEnv()
+      .addNewEnv()
+      .withName("H2O_KUBERNETES_API_PORT")
+      .withValue(conf.externalK8sH2OApiPort.toString)
+      .endEnv()
+      .endContainer()
+      .endSpec()
+      .endTemplate()
+      .endSpec()
+      .done()
+  }
+
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
     deleteH2OHeadlessService(client, conf)
     installH2OHeadlessService(client, conf)
+    deleteH2OStatefulSet(client, conf)
+    installH2OStateFulSet(client, conf)
   }
 }

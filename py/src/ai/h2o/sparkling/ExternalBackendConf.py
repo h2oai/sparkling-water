@@ -117,6 +117,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalK8sNamespace(self):
         return self._jconf.externalK8sNamespace()
 
+    def externalK8sDockerImage(self):
+        return self._jconf.externalK8sDockerImage()
+
     #
     # Setters
     #
@@ -235,4 +238,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalK8sNamespace(self, namespace):
         self._jconf.setExternalK8sNamespace(namespace)
+        return self
+
+    def setExternalK8sDockerImage(self, name):
+        self._jconf.setExternalK8sDockerImage(name)
         return self
