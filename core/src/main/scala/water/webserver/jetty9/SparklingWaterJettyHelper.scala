@@ -20,6 +20,7 @@ import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.api.ShutdownServlet
 import ai.h2o.sparkling.backend.api.dataframes.DataFramesServlet
 import ai.h2o.sparkling.backend.api.h2oframes.H2OFramesServlet
+import ai.h2o.sparkling.backend.api.options.OptionsServlet
 import ai.h2o.sparkling.backend.api.rdds.RDDsServlet
 import ai.h2o.sparkling.backend.api.scalainterpreter.ScalaInterpreterServlet
 import org.eclipse.jetty.client.HttpClient
@@ -45,6 +46,7 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
     H2OFramesServlet.register(context, conf, hc)
     DataFramesServlet.register(context, conf, hc)
     ShutdownServlet.register(context, conf, hc)
+    OptionsServlet.register(context, conf, hc)
     context
   }
 

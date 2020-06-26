@@ -5,7 +5,7 @@ import java.net.InetAddress
 import java.security.cert.Certificate
 import java.security.{KeyStore, PrivateKey}
 
-import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import javax.net.ServerSocketFactory
 import javax.net.ssl.{KeyManagerFactory, SSLContext}
 import org.apache.spark.expose.Logging
@@ -22,7 +22,6 @@ object SparklingGateway extends Logging {
     val spark = SparkSession.builder.getOrCreate()
     val conf = spark.sparkContext.getConf
     val secret = readSecret(conf)
-    val hc = H2OContext.getOrCreate()
     val address = InetAddress.getByName("0.0.0.0")
     val builder = new GatewayServer.GatewayServerBuilder()
       .javaPort(gatewayPort(conf))
@@ -31,13 +30,16 @@ object SparklingGateway extends Logging {
       .serverSocketFactory(createServerSocketFactory(conf, secret))
     val gatewayServer: GatewayServer = builder.build()
     gatewayServer.start()
-    val boundPort: Int = gatewayServer.getListeningPort
+    val boundPort = gatewayServer.getListeningPort
     if (boundPort == -1) {
       logError("GatewayServer failed to bind; exiting")
       System.exit(1)
     } else {
       logInfo(s"""Running Py4j Gateway on port $boundPort""")
     }
+    conf.set(PROP_PY4J_GATEWAY_PORT._1, boundPort.toString)
+    val hc = H2OContext.getOrCreate(new H2OConf(conf))
+
     while (!(spark.sparkContext.isStopped || hc.isStopped())) {
       Thread.sleep(1000)
     }
@@ -53,7 +55,8 @@ object SparklingGateway extends Logging {
     secret
   }
 
-  private val PROP_GATEWAY_PORT = ("spark.ext.h2o.py4j.gateway.port", None)
+  /** Port for the Python Gateway. 0 means automatic selection */
+  private val PROP_PY4J_GATEWAY_PORT: (String, Int) = ("spark.ext.h2o.py4j.gateway.port", 0)
   private val PROP_GATEWAY_SECRET_FILE_NAME = ("spark.ext.h2o.py4j.gateway.secret.file.name", None)
   // Sparkling Water expect keystore in a format of PKCS12 containing private key encoded as PKCS8 and certificate
   // Also we expect that the PKCS12 keystore is not protected by a password
@@ -61,8 +64,9 @@ object SparklingGateway extends Logging {
   private val DUMMY_JKS_PASSWORD = Random.alphanumeric.take(20).mkString("").toCharArray
 
   private def gatewayPort(conf: SparkConf): Int = {
-    getOption(conf, PROP_GATEWAY_PORT._1).toInt
+    conf.getInt(PROP_PY4J_GATEWAY_PORT._1, PROP_PY4J_GATEWAY_PORT._2)
   }
+
   private def gatewaySecretFileName(conf: SparkConf): String = {
     SparkFiles.get(getOption(conf, PROP_GATEWAY_SECRET_FILE_NAME._1))
   }

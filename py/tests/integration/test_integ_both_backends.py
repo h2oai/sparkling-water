@@ -20,6 +20,8 @@ import subprocess
 import time
 from py4j.java_gateway import *
 from pyspark.context import SparkContext
+import requests
+import json
 
 from tests.integration.integ_test_utils import *
 
@@ -87,7 +89,6 @@ def startJavaGateway(integ_spark_conf, token):
     cmd = [
         get_submit_script(integ_spark_conf["spark.test.home"]),
         "--class", "ai.h2o.sparkling.backend.SparklingGateway",
-        "--conf", "spark.ext.h2o.py4j.gateway.port=55555",
         "--conf", "spark.ext.h2o.py4j.gateway.secret.file.name=secret.txt",
         "--conf", "spark.ext.h2o.py4j.gateway.keystore.file.name=keystore.pk12",
         "--conf", "spark.master=local[*]",
@@ -105,10 +106,14 @@ def obtainSparkSession(token):
     client_ssl_context.verify_mode = ssl.CERT_REQUIRED
     client_ssl_context.check_hostname = True
     client_ssl_context.load_verify_locations(cafile='build/ca.crt')
+
+    link = "http://localhost:54323/3/option?name=spark.ext.h2o.py4j.gateway.port"
+    f = requests.get(link)
+    port = int(json.loads(f.text)["value"])
     gateway = JavaGateway(
         gateway_parameters=GatewayParameters(
             address="localhost",
-            port=55555,
+            port=port,
             ssl_context=client_ssl_context,
             auth_token=token,
             auto_convert=True))
