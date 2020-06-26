@@ -77,7 +77,7 @@ dependencies {
   api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
   api("ai.h2o:h2o-automl:${h2oVersion}")
 
-  api("io.kubernetes:client-java:8.0.2")
+  api("io.fabric8:kubernetes-client:4.10.2")
   compileOnly(project(':sparkling-water-macros'))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
