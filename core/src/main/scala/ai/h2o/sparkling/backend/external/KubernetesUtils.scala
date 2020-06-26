@@ -27,8 +27,27 @@ trait KubernetesUtils {
 
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
+    deleteH2OHeadlessService(client, conf)
     installH2OHeadlessService(client, conf)
+    deleteH2OStatefulSet(client, conf)
     installH2OStateFulSet(client, conf)
+  }
+
+  private def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OServiceName)
+      .delete()
+  }
+
+  private def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .delete()
   }
 
   private def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
