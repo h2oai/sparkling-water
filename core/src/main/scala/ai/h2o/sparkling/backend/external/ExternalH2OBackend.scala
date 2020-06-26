@@ -110,7 +110,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-nodes", conf.clusterSize)
       .add("-notify", conf.clusterInfoFile)
       .add("-jobname", conf.cloudName)
-      .add("-mapperXmx", conf.mapperXmx)
+      .add("-mapperXmx", conf.externalMemory)
       .add("-nthreads", conf.nthreads)
       .add(Seq("-J", "-log_level", "-J", conf.logLevel))
       .add(conf.icedDir.map(dir => Seq("-J", "-ice_root", "-J", dir)).getOrElse(Seq()))

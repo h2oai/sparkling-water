@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
-import ai.h2o.sparkling.backend.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.external.{ExternalBackendConf, KubernetesUtils}
 import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.schema.{VerifyVersionV3, VerifyWebOpenV3}
 import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
@@ -30,7 +30,7 @@ import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
 
-trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils {
+trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils with KubernetesUtils {
   _: H2OContext =>
 
   def downloadH2OLogs(destinationDir: String, logContainer: String): String = {
@@ -133,8 +133,13 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
   }
 
   private def stopExternalH2OCluster(conf: H2OConf): Unit = {
-    val yarnAppId = conf.getOption(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1)
-    launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
+    conf.externalAutoStartBackend match {
+      case ExternalBackendConf.YARN_BACKEND =>
+        val yarnAppId = conf.getOption(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_YARN_APP_ID._1)
+        launchShellCommand(Seq[String]("yarn", "application", "-kill", yarnAppId.get))
+      case ExternalBackendConf.KUBERNETES_BACKEND => stopExternalH2OOnKubernetes(conf)
+      case _ => throw new RuntimeException("Invalid auto cluster start backend!")
+    }
   }
 
   private def verifyWebOpen(conf: H2OConf): Unit = {
