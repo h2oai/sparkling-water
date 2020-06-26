@@ -277,7 +277,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_INFO_FILE: (String, None.type) = ("spark.ext.h2o.cluster.info.name", None)
 
   /** Number of memory assigned to each external h2o node when starting in auto mode */
-  val PROP_EXTERNAL_MEMORY: (String, String) = ("spark.ext.h2o.external.memory", "6g")
+  val PROP_EXTERNAL_MEMORY: (String, String) = ("spark.ext.h2o.external.memory", "6G")
 
   /** HDFS dir for external h2o nodes when starting in auto mode */
   val PROP_EXTERNAL_CLUSTER_HDFS_DIR: (String, None.type) = ("spark.ext.h2o.external.hdfs.dir", None)

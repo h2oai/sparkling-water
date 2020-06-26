@@ -27,15 +27,34 @@ trait KubernetesUtils {
 
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
+    deleteH2OHeadlessService(client, conf)
     installH2OHeadlessService(client, conf)
+    deleteH2OStatefulSet(client, conf)
     installH2OStateFulSet(client, conf)
+  }
+
+  private def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OServiceName)
+      .delete()
+  }
+
+  private def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .delete()
   }
 
   private def installH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
-      .createOrReplaceWithNew()
+      .createNew()
       .withApiVersion("v1")
       .withKind("Service")
       .withNewMetadata()
@@ -58,7 +77,7 @@ trait KubernetesUtils {
       .apps()
       .statefulSets()
       .inNamespace(conf.externalK8sH2OServiceName)
-      .createOrReplaceWithNew()
+      .createNew()
       .withApiVersion("apps/v1")
       .withKind("StatefulSet")
       .withNewMetadata()
@@ -97,7 +116,7 @@ trait KubernetesUtils {
       .endReadinessProbe()
       .addNewEnv()
       .withName("H2O_KUBERNETES_SERVICE_DNS")
-      .withValue(getH2OHeadlessServiceURL(client, conf))
+      .withValue(getH2OHeadlessServiceURL(conf))
       .endEnv()
       .addNewEnv()
       .withName("H2O_NODE_LOOKUP_TIMEOUT")
@@ -118,15 +137,8 @@ trait KubernetesUtils {
       .done()
   }
 
-  private def getH2OHeadlessServiceURL(client: KubernetesClient, conf: H2OConf): String = {
-    client
-      .services()
-      .inNamespace(conf.externalK8sNamespace)
-      .withName(conf.externalK8sH2OServiceName)
-      .get()
-
+  private def getH2OHeadlessServiceURL(conf: H2OConf): String = {
     s"${conf.externalK8sH2OServiceName}.${conf.externalK8sNamespace}.svc.${conf.externalK8sDomain}"
-
   }
 
   private def convertLabelToMap(label: String): Map[String, String] = {
