@@ -377,6 +377,8 @@ External backend configuration properties
 |                                                       |                |                                                 | Sparkling Water External H2O        |
 |                                                       |                |                                                 | backend.                            |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.domain``                 | |Domain|       | ``setExternalK8sDomain(String)``                | Domain of the Kubernetes cluster.   |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
@@ -393,3 +395,4 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |h2oSer| replace:: ``h2o-service``
 .. |h2oSet| replace:: ``h2o-statefulSet``
 .. |Image| replace:: ``h2oai/sparkling-water-external-backend:SUBST_SW_VERSION``
+.. |Domain| replace:: ``cluster.local``

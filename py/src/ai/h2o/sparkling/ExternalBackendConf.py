@@ -124,6 +124,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalK8sDockerImage(self):
         return self._jconf.externalK8sDockerImage()
 
+    def externalK8sDomain(self):
+        return self._jconf.externalK8sDomain()
+
     #
     # Setters
     #
@@ -250,4 +253,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalK8sDockerImage(self, name):
         self._jconf.setExternalK8sDockerImage(name)
+        return self
+
+    def setExternalK8sDomain(self, domain):
+        self._jconf.setExternalK8sDomain(self, domain)
         return self

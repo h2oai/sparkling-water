@@ -125,8 +125,8 @@ trait KubernetesUtils {
       .withName(conf.externalK8sH2OServiceName)
       .get()
 
-    val a = "a"
-    a
+    s"${conf.externalK8sH2OServiceName}.${conf.externalK8sNamespace}.svc.${conf.externalK8sDomain}"
+
   }
 
   private def convertLabelToMap(label: String): Map[String, String] = {

@@ -113,6 +113,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalK8sDockerImage: String =
     sparkConf.get(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, PROP_EXTERNAL_K8S_DOCKER_IMAGE._2)
 
+  def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -229,6 +231,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setExternalK8sDockerImage(name: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, name)
+  }
+
+  def setExternalK8sDomain(domain: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
   }
 
   def externalConfString: String =
@@ -355,4 +361,7 @@ object ExternalBackendConf {
   /** Docker image name containing Sparkling Water External H2O Backend */
   val PROP_EXTERNAL_K8S_DOCKER_IMAGE: (String, String) =
     ("spark.ext.h2o.external.k8s.docker.image", s"h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}")
+
+  /** Domain of the Kubernetes Cluster */
+  val PROP_EXTERNAL_K8S_DOMAIN: (String, String) = ("spark.ext.h2o.external.k8s.domain", s"cluster.local")
 }
