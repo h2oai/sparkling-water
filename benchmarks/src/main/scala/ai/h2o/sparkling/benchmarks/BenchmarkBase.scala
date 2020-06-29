@@ -20,21 +20,14 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{OutputStream, PrintWriter}
 import java.net.URI
 
-import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
-import hex.glm.GLM
-import hex.glm.GLMModel.GLMParameters
-import hex.tree.gbm.GBM
-import hex.tree.gbm.GBMModel.GBMParameters
-import hex.{Model, ModelBuilder}
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
+import _root_.hex.Model
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
-import water.{Key, MRTask}
-import water.fvec.{Chunk, Frame, Vec}
-import water.parser.ParseSetup
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
@@ -98,7 +91,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def removeFromCache(dataFrame: DataFrame): Unit = dataFrame.unpersist(blocking = true)
 
-  def loadDataToH2OFrame(): Frame = {
+  def loadDataToH2OFrame(): H2OFrame = {
     if (context.datasetDetails.isVirtual) {
       loadVirtualH2OFrame()
     } else {
@@ -106,37 +99,29 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     }
   }
 
-  def loadRegularH2OFrame(): Frame = {
+  def loadRegularH2OFrame(): H2OFrame = {
     val uri = new URI(context.datasetDetails.url.get)
-    val s = uri.toString
-    val baseName = s.substring(s.lastIndexOf('/') + 1)
-    val key = Key.make(ParseSetup.createHexName(baseName))
-    val frame = new Frame(water.util.FrameUtils.parseFrame(key, uri))
+    val frame = H2OFrame(uri)
     frame
   }
 
-  def loadVirtualH2OFrame(): Frame = {
+  def loadVirtualH2OFrame(): H2OFrame = {
     val numberOfRows = context.datasetDetails.nRows.get
     val numberOfPartitions = context.datasetDetails.nPartitions.getOrElse(200)
     val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
     val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
     val rangeSize = maxValue - minValue
     val columns = generateVirtualColumns().toArray
-    val initialVectors = columns.map(_ => Vec.makeConN(numberOfRows, numberOfPartitions))
-    val frame = new Frame(columns, initialVectors)
-
-    new MRTask() {
-      override def map(c: Chunk): Unit = {
-        var i = 0
-        while (i < c._len) {
-          val randDouble = scala.util.Random.nextDouble()
-          val randInteger = ((randDouble * rangeSize) + minValue).asInstanceOf[Int]
-          c.set(i, randInteger)
-          i = i + 1
-        }
-      }
-    }.doAll(frame)
-    new Frame(frame)
+    def getNextRandomNumber: Int = {
+      val randDouble = scala.util.Random.nextDouble()
+      ((randDouble * rangeSize) + minValue).asInstanceOf[Int]
+    }
+    val nextRandomNumberUdf = udf(getNextRandomNumber _)
+    var initialDS = SparkSession.active.range(0, numberOfRows, 1, numberOfPartitions).toDF("drop")
+    columns.foreach { col =>
+      initialDS = initialDS.withColumn(col, nextRandomNumberUdf())
+    }
+    H2OContext.ensure().asH2OFrame(initialDS.drop("drop"))
   }
 
   def run(): Unit = {
@@ -165,28 +150,24 @@ abstract class AlgorithmBenchmarkBase[TInput](context: BenchmarkContext, algorit
   extends BenchmarkBase[TInput](context) {
 
   override protected def getResultHeader(): String = {
-    s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm.getClass.getSimpleName}'"
+    s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm._1}'"
   }
 }
 
 object AlgorithmBenchmarkBase {
   val supportedAlgorithms: Seq[AlgorithmBundle] = {
     Seq(
-      AlgorithmBundle(new H2OGBM, new GBM(new GBMParameters)),
-      AlgorithmBundle(new H2OGLM, new GLM(new GLMParameters)))
+      AlgorithmBundle(new H2OGBM, ("gbm", Map.empty[String, String])),
+      AlgorithmBundle(new H2OGLM, ("glm", Map.empty[String, String])))
   }
 }
 
 case class AlgorithmBundle(
     swAlgorithm: H2OSupervisedAlgorithm[_ <: Model.Parameters],
-    h2oAlgorithm: ModelBuilder[_, _ <: Model.Parameters, _]) {
+    h2oAlgorithm: (String, Map[String, String])) {
   def newInstance(): AlgorithmBundle = {
     val clonedSwAlgorithm = swAlgorithm.copy(ParamMap.empty)
-    val clonedH2OParams = h2oAlgorithm._parms.clone()
-    val h2oAlgorithmClass = h2oAlgorithm.getClass
-    val constructor = h2oAlgorithmClass.getConstructor(clonedH2OParams.getClass)
-    val newH2OAlgorithm = constructor.newInstance(clonedH2OParams)
-    AlgorithmBundle(clonedSwAlgorithm, newH2OAlgorithm)
+    AlgorithmBundle(clonedSwAlgorithm, h2oAlgorithm)
   }
 }
 
