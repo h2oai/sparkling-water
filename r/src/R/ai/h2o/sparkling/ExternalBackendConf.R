@@ -94,7 +94,7 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     externalK8sDomain = function() { invoke(jconf, "externalK8sDomain") },
 
-    externalK8sExposeLeader = function() { invoke(jconf, "externalK8sExposeLeader") }
+    externalK8sExposeLeader = function() { invoke(jconf, "externalK8sExposeLeader") },
 #
 # Setters
 #
