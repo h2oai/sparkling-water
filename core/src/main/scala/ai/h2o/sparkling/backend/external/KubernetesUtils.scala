@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.backend.utils.RestApiUtils
 import io.fabric8.kubernetes.api.model.{IntOrString, Pod, Quantity}
 import io.fabric8.kubernetes.client.{DefaultKubernetesClient, KubernetesClient}
 
@@ -45,7 +46,16 @@ trait KubernetesUtils {
     } else {
       conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
     }
-    Thread.sleep(10000)
+    // It takes for example for Amazon to expose required port when we expose the node
+    // via the LoadBalancer
+    while (true) {
+      try {
+        RestApiUtils.getClusterInfo(conf)
+        return
+      } catch {
+        case _: Throwable => Thread.sleep(10000)
+      }
+    }
   }
 
   private def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
