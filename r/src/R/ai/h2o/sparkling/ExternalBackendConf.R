@@ -93,6 +93,8 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
     externalK8sDockerImage = function() { invoke(jconf, "externalK8sDockerImage") },
 
     externalK8sDomain = function() { invoke(jconf, "externalK8sDomain") },
+
+    externalK8sExposeLeader = function() { invoke(jconf, "externalK8sExposeLeader") }
 #
 # Setters
 #
@@ -161,6 +163,8 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalK8sDockerImage = function(name) { invoke(jconf, "setExternalK8sDockerImage", name); .self },
 
-    setExternalK8sDomain = function(domain) { invoke(jconf, "setExternalK8sDomain", domain); .self }
+    setExternalK8sDomain = function(domain) { invoke(jconf, "setExternalK8sDomain", domain); .self },
+
+    setExternalK8sExposeLeader = function(expose) { invoke(jconf, "setExternalK8sExposeLeader", expose); .self }
 
 ))

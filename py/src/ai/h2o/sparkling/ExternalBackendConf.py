@@ -127,6 +127,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalK8sDomain(self):
         return self._jconf.externalK8sDomain()
 
+    def externalK8sExposeLeader(self):
+        return self._jconf.externalK8sExposeLeader()
+
     #
     # Setters
     #
@@ -256,5 +259,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setExternalK8sDomain(self, domain):
-        self._jconf.setExternalK8sDomain(self, domain)
+        self._jconf.setExternalK8sDomain(domain)
+        return self
+
+    def setExternalK8sExposeLeader(self, expose):
+        self._jconf.setExternalK8sExposeLeader(expose)
         return self

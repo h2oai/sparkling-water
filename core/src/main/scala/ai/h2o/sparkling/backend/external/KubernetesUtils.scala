@@ -204,6 +204,9 @@ trait KubernetesUtils {
     }
   }
 
+  private def exposeLeaderNodeExternally(conf: H2OConf): String = {
+
+  }
   private def getH2OHeadlessServiceURL(conf: H2OConf): String = {
     s"${conf.externalK8sH2OServiceName}.${conf.externalK8sNamespace}.svc.${conf.externalK8sDomain}"
   }
