@@ -26,11 +26,7 @@ import org.json4s.JsonAST.{JNull, JString}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 
-class NullableDataFrameParam(
-    parent: Params,
-    name: String,
-    doc: String,
-    isValid: DataFrame => Boolean)
+class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid: DataFrame => Boolean)
   extends Param[DataFrame](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, (_: DataFrame) => true)
