@@ -366,6 +366,8 @@ class H2OContext private (private val conf: H2OConf) extends H2OContextExtension
     basic ++ sparkYarnAppId ++ backend.epilog
   }
 
+  def isStopped(): Boolean = stopped
+
   // scalastyle:off
   // Disable style checker so "implicits" object can start with lowercase i
   /** Define implicits available via h2oContext.implicits._ */
