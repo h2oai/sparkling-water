@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
 
 trait HasBetaConstraints extends H2OAlgoParamsBase {
@@ -45,8 +45,8 @@ trait HasBetaConstraints extends H2OAlgoParamsBase {
     }
   }
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("beta_constraints" -> getBetaConstraintsFrameId())
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("beta_constraints" -> getBetaConstraintsFrameId())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
