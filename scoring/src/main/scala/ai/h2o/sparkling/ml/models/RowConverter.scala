@@ -59,8 +59,7 @@ object RowConverter {
             case DateType => put(name, row.getAs[java.sql.Date](idxRow).getTime.toString)
             case ArrayType(_, _) => // for now assume that all arrays and vecs have the same size - we can store max size as part of the model
               row.getAs[Seq[_]](idxRow).zipWithIndex.foreach {
-                case (v, idx) =>
-                  put(name + idx, v.toString)
+                case (v, idx) => put(name + "." + idx, v.toString)
               }
             // WRONG this patter needs to share the same code as in the SparkDataFrameConverter
             // Currently, In SparkDataFrameConverter we handle arrays, binary types and vectors of different size
@@ -68,12 +67,12 @@ object RowConverter {
             case v if ExposeUtils.isMLVectorUDT(v) =>
               val vector = row.getAs[ml.linalg.Vector](idxRow)
               (0 until vector.size).foreach { idx =>
-                put(name + idx, vector(idx).toString)
+                put(name + "." + idx, vector(idx).toString)
               }
             case _: mllib.linalg.VectorUDT =>
               val vector = row.getAs[mllib.linalg.Vector](idxRow)
               (0 until vector.size).foreach { idx =>
-                put(name + idx, vector(idx).toString)
+                put(name + "." + idx, vector(idx).toString)
               }
             case udt if ExposeUtils.isUDT(udt) =>
               throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")

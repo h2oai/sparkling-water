@@ -19,6 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -30,6 +31,8 @@ import org.scalatest.{FunSuite, Matchers}
 class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
+
+  import spark.implicits._
 
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture()
@@ -129,10 +132,23 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     mojo.transform(df).show(3, truncate = false)
   }
 
-  test("DataFrame contains structs") {
-    import spark.implicits._
+  def compareGbmOnTwoDatasets(reference: DataFrame, tested: DataFrame) = {
+    val columnsForComparison = Seq(
+      $"prediction",
+      $"detailed_prediction.probabilities.0",
+      $"detailed_prediction.probabilities.1")
 
-    val structuredDF = prostateDataFrame.select(
+    val expectedModel = configureGBMForProstateDF().fit(reference)
+    val expectedPredictionDF = expectedModel.transform(reference).select(columnsForComparison: _*)
+
+    val model = configureGBMForProstateDF().fit(tested)
+    val predictionDF = model.transform(tested).select(columnsForComparison: _*)
+
+    TestUtils.assertDataFramesAreIdentical(expectedPredictionDF, predictionDF)
+  }
+
+  test("DataFrame contains structs") {
+    val structuredDataFrame = prostateDataFrame.select(
       'ID,
       'CAPSULE,
       'AGE,
@@ -140,13 +156,35 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       'VOL,
       'GLEASON)
 
-    val expectedModel = configureGBMforProstateDF().fit(prostateDataFrame)
-    val expectedPredictionDF = expectedModel.transform(prostateDataFrame).select('prediction)
+    compareGbmOnTwoDatasets(prostateDataFrame, structuredDataFrame)
+  }
 
-    val model = configureGBMforProstateDF().fit(structuredDF)
-    val predictionDF = model.transform(structuredDF).select('prediction)
+  def prostateDataFrameWithDoubles = prostateDataFrame.select(
+    'CAPSULE cast "string" as "CAPSULE",
+    'AGE cast "double" as "AGE",
+    'RACE cast "double" as "RACE",
+    'DPROS cast "double" as "DPROS",
+    'DCAPS cast "double" as "DCAPS",
+    'PSA,
+    'VOL,
+    'GLEASON cast "double" as "GLEASON")
 
-    TestUtils.assertDataFramesAreIdentical(expectedPredictionDF, predictionDF)
+  test("DataFrame contains array") {
+    val arrayDataFrame = prostateDataFrameWithDoubles.select(
+      'CAPSULE,
+      array('AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON) as "features")
+
+    compareGbmOnTwoDatasets(prostateDataFrameWithDoubles, arrayDataFrame)
+  }
+
+  test("DataFrame contains vector") {
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
+      .setOutputCol("features")
+
+    val vectorDataFrame = assembler.transform(prostateDataFrameWithDoubles).select("CAPSULE", "features")
+
+    compareGbmOnTwoDatasets(prostateDataFrameWithDoubles, vectorDataFrame)
   }
 
   test("Testing dataset is missing one of feature columns") {
@@ -154,7 +192,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val testingDF = rawTestingDF
       .drop("CAPSULE", "AGE") // Remove label and one of feature columns
       .cache()
-    val gbm = configureGBMforProstateDF()
+    val gbm = configureGBMForProstateDF()
 
     val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
     val predictionDF = model.transform(testingDF)
@@ -168,7 +206,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .drop("CAPSULE") // Remove label column
       .withColumn("EXTRA", rand()) // Add an extra column
       .cache()
-    val gbm = configureGBMforProstateDF()
+    val gbm = configureGBMForProstateDF()
 
     val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
     val predictionDF = model.transform(testingDF)
@@ -176,11 +214,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assertGBMPredictions(testingDF, predictionDF)
   }
 
-  private def configureGBMforProstateDF(): H2OGBM = {
+  private def configureGBMForProstateDF(): H2OGBM = {
     new H2OGBM()
-      .setNtrees(2)
       .setSeed(42)
       .setDistribution("bernoulli")
+      .setWithDetailedPredictionCol(true)
       .setLabelCol("CAPSULE")
   }
 

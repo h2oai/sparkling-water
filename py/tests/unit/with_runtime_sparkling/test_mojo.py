@@ -18,7 +18,9 @@ import pytest
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
+from pyspark.sql.functions import *
 from pysparkling.ml import H2OGBM, H2OMOJOModel, H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel
+from h2o.estimators import H2OGradientBoostingEstimator
 
 
 @pytest.fixture(scope="module")
@@ -56,3 +58,29 @@ def testTrainingMetrics(gbmModel):
 def getCurrentMetrics():
     metrics = gbmModel.getCurrentMetrics()
     assert metrics == gbmModel.getTrainingMetrics()
+
+@pytest.fixture(scope="module")
+def prostateDatasetWithDoubles(prostateDataset):
+    prostateDataset.select(
+        prostateDataset.CAPSULE.cast("string").alias("CAPSULE"),
+        prostateDataset.AGE.cast("double").alias("AGE"),
+        prostateDataset.RACE.cast("double").alias("RACE"),
+        prostateDataset.DPROS.cast("double").alias("DPROS"),
+        prostateDataset.DCAPS.cast("double").alias("DCAPS"),
+        prostateDataset.PSA,
+        prostateDataset.VOL,
+        prostateDataset.GLEASON.cast("double").alias("GLEASON"))
+
+#def trainAndTestH2OPythonGbm(hc, dataset):
+#    h2oframe = hc.h2oFrame(dataset)
+#    features = ["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
+#    label = "CAPSULE"
+#    gbm = H2OGradientBoostingEstimator(nfolds=5, seed=42, keep_cross_validation_predictions = True)
+#    gbm.train(x=features, y=label, training_frame=h2oframe)
+#
+#
+#def compareH2OPythonGbmOnTwoDatasets(reference, tested):
+#
+#
+#
+#def testMojoTrainedWithH2OAPISupportsArrays(prostateDatasetWithDoubles):
