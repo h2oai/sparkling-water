@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
-import io.fabric8.kubernetes.api.model.{IntOrString, PodList, Quantity}
+import io.fabric8.kubernetes.api.model.{IntOrString, Pod, Quantity}
 import io.fabric8.kubernetes.client.{DefaultKubernetesClient, KubernetesClient}
 
 import scala.collection.JavaConverters._
@@ -41,12 +41,14 @@ trait KubernetesUtils {
     val leaderPodName = installH2OStateFulSet(client, conf)
     if (conf.externalK8sExposeLeader) {
       installLeaderNodeExposeService(client, conf, leaderPodName)
+      conf.setH2OCluster(getExposeServiceURL(client, conf))
     } else {
       conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
     }
+    Thread.sleep(10000)
   }
 
-  def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
@@ -78,7 +80,7 @@ trait KubernetesUtils {
       .exists(_.getMetadata.getName == conf.externalK8sH2OStatefulsetName)
   }
 
-  def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def deleteH2OStatefulSet(client: KubernetesClient, conf: H2OConf): Unit = {
     client
       .apps()
       .statefulSets()
@@ -185,30 +187,35 @@ trait KubernetesUtils {
     while (!H2OStatefulSetExist(client, conf)) {
       Thread.sleep(100)
     }
-    while (getPodsForStatefulSet(client, conf).getItems.size() < conf.clusterSize.get.toInt) {
+    while (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt) {
       Thread.sleep(100)
     }
-    while (listReadyPods(client, conf).size != 1) {
+    while (listReadyPods(client, conf).length != 1) {
       Thread.sleep(100)
     }
     listReadyPods(client, conf).head.getMetadata.getName
   }
 
-  def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): PodList = {
+  def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): Array[Pod] = {
     client
       .pods()
       .inNamespace(conf.externalK8sNamespace)
       .withLabels(convertLabelToMap(conf.externalK8sH2OLabel).asJava)
       .list()
+      .getItems
+      .asScala
+      .filter(_.getStatus.getPhase == "Running")
+      .toArray
   }
 
   def listReadyPods(client: KubernetesClient, conf: H2OConf) = {
-    getPodsForStatefulSet(client, conf).getItems.asScala.filter { pod =>
-      client
+    getPodsForStatefulSet(client, conf).filter { pod =>
+      val newPod = client
         .pods()
         .inNamespace(conf.externalK8sNamespace)
         .withName(pod.getMetadata.getName)
-        .isReady
+
+      newPod.isReady
     }
   }
 
@@ -216,14 +223,17 @@ trait KubernetesUtils {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
-      .withName(conf.externalK8sH2OServiceName + "-expose-leader")
+      .withName(exposeLeaderServiceName(conf))
       .delete()
-    while (serviceExist(client, conf, conf.externalK8sH2OServiceName + "-expose-leader")) {
+    while (serviceExist(client, conf, exposeLeaderServiceName(conf))) {
       Thread.sleep(100)
     }
   }
 
-  private def installLeaderNodeExposeService(client: KubernetesClient, conf: H2OConf, leaderNodePodName: String): Unit = {
+  private def installLeaderNodeExposeService(
+      client: KubernetesClient,
+      conf: H2OConf,
+      leaderNodePodName: String): Unit = {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
@@ -231,7 +241,7 @@ trait KubernetesUtils {
       .withApiVersion("v1")
       .withKind("Service")
       .withNewMetadata()
-      .withName(conf.externalK8sH2OServiceName + "-expose-leader")
+      .withName(exposeLeaderServiceName(conf))
       .endMetadata()
       .withNewSpec()
       .withType("LoadBalancer")
@@ -247,6 +257,31 @@ trait KubernetesUtils {
     while (!serviceExist(client, conf, conf.externalK8sH2OServiceName + "-expose-leader")) {
       Thread.sleep(100)
     }
+    while (client
+             .services()
+             .inNamespace(conf.externalK8sNamespace)
+             .withName(exposeLeaderServiceName(conf))
+             .get()
+             .getStatus
+             .getLoadBalancer
+             .getIngress
+             .isEmpty) {
+      Thread.sleep(100)
+    }
+  }
+
+  private def getExposeServiceURL(client: KubernetesClient, conf: H2OConf): String = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(exposeLeaderServiceName(conf))
+      .get()
+      .getStatus
+      .getLoadBalancer
+      .getIngress
+      .asScala
+      .head
+      .getHostname
   }
 
   private def getH2OHeadlessServiceURL(conf: H2OConf): String = {
@@ -258,4 +293,7 @@ trait KubernetesUtils {
     Map(split(0) -> split(1))
   }
 
+  private def exposeLeaderServiceName(conf: H2OConf): String = {
+    conf.externalK8sH2OServiceName + "-expose-leader"
+  }
 }
