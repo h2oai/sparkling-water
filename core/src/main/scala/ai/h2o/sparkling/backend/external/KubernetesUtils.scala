@@ -29,14 +29,21 @@ trait KubernetesUtils {
     val client = new DefaultKubernetesClient
     deleteH2OHeadlessService(client, conf)
     deleteH2OStatefulSet(client, conf)
+    if (conf.externalK8sExposeLeader) {
+      deleteLeaderNodeExposeService(client, conf)
+    }
   }
 
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
     stopExternalH2OOnKubernetes(conf)
     installH2OHeadlessService(client, conf)
-    installH2OStateFulSet(client, conf)
-    conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
+    val leaderPodName = installH2OStateFulSet(client, conf)
+    if (conf.externalK8sExposeLeader) {
+      installLeaderNodeExposeService(client, conf, leaderPodName)
+    } else {
+      conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
+    }
   }
 
   def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {
@@ -45,19 +52,19 @@ trait KubernetesUtils {
       .inNamespace(conf.externalK8sNamespace)
       .withName(conf.externalK8sH2OServiceName)
       .delete()
-    while (H2OHeadlessServiceExist(client, conf)) {
+    while (serviceExist(client, conf, conf.externalK8sH2OServiceName)) {
       Thread.sleep(100)
     }
   }
 
-  private def H2OHeadlessServiceExist(client: KubernetesClient, conf: H2OConf): Boolean = {
+  private def serviceExist(client: KubernetesClient, conf: H2OConf, service: String): Boolean = {
     client
       .services()
       .inNamespace(conf.externalK8sNamespace)
       .list()
       .getItems
       .asScala
-      .exists(_.getMetadata.getName == conf.externalK8sH2OServiceName)
+      .exists(_.getMetadata.getName == service)
   }
 
   private def H2OStatefulSetExist(client: KubernetesClient, conf: H2OConf): Boolean = {
@@ -103,12 +110,12 @@ trait KubernetesUtils {
       .endPort()
       .endSpec()
       .done()
-    while (!H2OHeadlessServiceExist(client, conf)) {
+    while (!serviceExist(client, conf, conf.externalK8sH2OServiceName)) {
       Thread.sleep(100)
     }
   }
 
-  private def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): String = {
     client
       .apps()
       .statefulSets()
@@ -174,7 +181,7 @@ trait KubernetesUtils {
     waitForClusterToBeReady(client, conf)
   }
 
-  private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): Unit = {
+  private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): String = {
     while (!H2OStatefulSetExist(client, conf)) {
       Thread.sleep(100)
     }
@@ -184,6 +191,7 @@ trait KubernetesUtils {
     while (listReadyPods(client, conf).size != 1) {
       Thread.sleep(100)
     }
+    listReadyPods(client, conf).head.getMetadata.getName
   }
 
   def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): PodList = {
@@ -204,9 +212,43 @@ trait KubernetesUtils {
     }
   }
 
-  private def exposeLeaderNodeExternally(conf: H2OConf): String = {
-
+  def deleteLeaderNodeExposeService(client: KubernetesClient, conf: H2OConf): Unit = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OServiceName + "-expose-leader")
+      .delete()
+    while (serviceExist(client, conf, conf.externalK8sH2OServiceName + "-expose-leader")) {
+      Thread.sleep(100)
+    }
   }
+
+  private def installLeaderNodeExposeService(client: KubernetesClient, conf: H2OConf, leaderNodePodName: String): Unit = {
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .createOrReplaceWithNew()
+      .withApiVersion("v1")
+      .withKind("Service")
+      .withNewMetadata()
+      .withName(conf.externalK8sH2OServiceName + "-expose-leader")
+      .endMetadata()
+      .withNewSpec()
+      .withType("LoadBalancer")
+      .withExternalTrafficPolicy("Local")
+      .withSelector(Map("statefulset.kubernetes.io/pod-name" -> leaderNodePodName).asJava)
+      .addNewPort()
+      .withProtocol("TCP")
+      .withPort(80)
+      .withTargetPort(new IntOrString(54321))
+      .endPort()
+      .endSpec()
+      .done()
+    while (!serviceExist(client, conf, conf.externalK8sH2OServiceName + "-expose-leader")) {
+      Thread.sleep(100)
+    }
+  }
+
   private def getH2OHeadlessServiceURL(conf: H2OConf): String = {
     s"${conf.externalK8sH2OServiceName}.${conf.externalK8sNamespace}.svc.${conf.externalK8sDomain}"
   }
