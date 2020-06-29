@@ -304,6 +304,8 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
     basic ++ sparkYarnAppId ++ backend.epilog
   }
 
+  def isStopped(): Boolean = stopped
+
   /** Define implicits available via h2oContext.implicits._ */
   object implicits extends H2OContextImplicits with Serializable {
     protected override def hc: H2OContext = self

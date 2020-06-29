@@ -306,7 +306,8 @@ def createIntegTestArgs() {
     "spark.ext.h2o.backend.cluster.mode=${detectBackendClusterMode()}",
     "spark.test.home=${sparkHome}",
     "spark.ext.h2o.log.dir=${buildDir}/h2ologs-itest",
-    "spark.ext.h2o.external.disable.version.check=true"
+    "spark.ext.h2o.external.disable.version.check=true",
+    "spark.ext.h2o.testing.path.to.sw.jar=${configurations.sparklingWaterAssemblyJar.singleFile}"
   ]
 }
 
