@@ -16,9 +16,8 @@
  */
 package ai.h2o.sparkling.backend.api.options
 
-import ai.h2o.sparkling.{H2OConf, H2OContext}
-import ai.h2o.sparkling.backend.api.h2oframes.{H2OFrameToDataFrame, H2OFramesServlet}
 import ai.h2o.sparkling.backend.api.{ServletBase, ServletRegister}
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import javax.servlet.Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import water.exceptions.H2ONotFoundArgumentException
