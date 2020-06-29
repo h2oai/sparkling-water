@@ -54,12 +54,14 @@ object Runner {
   private def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
     val monotonicity =
       ExplicitField("monotone_constraints", "HasMonotoneConstraints", new util.HashMap[String, Double]())
+    val calibrationDataFrame = ExplicitField("calibration_frame", "HasCalibrationDataFrame", null)
     val plugValues = ExplicitField("plug_values", "HasPlugValues", null)
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
 
-    val xgboostFields = Seq(monotonicity, ignoredCols)
+    val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues)
+    val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
 
     val deepLearningFields = Seq(
@@ -73,8 +75,8 @@ object Runner {
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostFields),
-      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], Seq(monotonicity, ignoredCols)),
-      ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(ignoredCols)),
+      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields),
+      ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(calibrationDataFrame, ignoredCols)),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields))

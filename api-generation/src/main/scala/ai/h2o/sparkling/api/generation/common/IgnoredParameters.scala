@@ -21,14 +21,13 @@ object IgnoredParameters {
   val deprecated: Seq[String] = Seq(
     "r2_stopping", // All
     "max_confusion_matrix_size", // Deep Learning
-    "col_major") // Deep Learning
+    "col_major", // Deep Learning
+    "max_hit_ratio_k") // GBM, DRF, Deep Learning
 
   val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 
   val unimplemented = Seq(
     "__meta", // just for internal purposes
-    "calibration_frame", // GBM, DRF, XGBoost
-    "max_hit_ratio_k", // GBM, DRF, Deep Learning
     "checkpoint", // GBM, DRF, XGBoost, Deep Learning
     "interaction_pairs", // GLM
     "beta_constraints", // GLM
