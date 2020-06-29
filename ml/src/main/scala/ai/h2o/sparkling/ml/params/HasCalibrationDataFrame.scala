@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
 
 trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
@@ -46,8 +46,8 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
     }
   }
 
-  override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
-    super.getH2OAlgorithmParams() ++ Map("calibration_frame" -> getCalibrationFrame())
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("calibration_frame" -> getCalibrationFrame())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
