@@ -314,7 +314,7 @@ def testRExternalBackend(registryId, master, version, sparkVersion) {
     stopExternalH2OBackend()
 }
 
-static String externalBackendSharedSubmitCmd(registryId, master, version, mode, language) {
+static String externalBackendManualSharedSubmitCmd(registryId, master, version, mode, language) {
     return """\$SPARK_HOME/bin/spark-submit \
              --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
              --conf spark.kubernetes.driver.pod.name=driver-${language} \
@@ -331,32 +331,77 @@ static String externalBackendSharedSubmitCmd(registryId, master, version, mode, 
             """
 }
 
-static String scalaExternalBackendSubmitCmd(registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "scala")} \
+static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, language, driverInK8s) {
+    return """\$SPARK_HOME/bin/spark-submit \
+             --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
+             --conf spark.kubernetes.driver.pod.name=driver-${language} \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --master $master \
+             --deploy-mode $mode \
+             --name test \
+             --conf spark.ext.h2o.backend.cluster.mode=external \
+             --conf spark.ext.h2o.external.start.mode=auto \
+             --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.memory=2G \
+             --conf spark.ext.h2o.external.k8s.expose.leader=${driverInK8s} \
+             --conf spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version}
+             --conf spark.executor.instances=2 \
+            """
+}
+
+static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, startMode, driverOutsideK8s) {
+    def prefix
+    if (startMode == "manual") {
+        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "scala")
+    } else {
+        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala", driverOutsideK8s)
+    }
+    return """${prefix} \
               --class ai.h2o.sparkling.InitTest \
               local:///opt/sparkling-water/tests/initTest.jar
             """
 }
 
-def testScalaExternalBackendClusterMode(registryId, master, version) {
+def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-scala --ignore-not-found"
-    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
+    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual", "false")}"
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-def testScalaExternalBackendClientMode(registryId, master, version) {
+def testScalaExternalBackendManualClientMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client")}
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual", "false")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
+}
+
+def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
+    sh "kubectl delete pod driver-scala --ignore-not-found"
+    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto", "false")}"
+    sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testScalaExternalBackendAutoClientMode(registryId, master, version) {
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto", "false")}
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version) {
+    sh "${scalaExternalBackendSubmitCmd(registryId, "local", version, "cluster", "auto", "true")} && echo \"OK\" || exit 1"
 }
 
 static String pythonExternalBackendSubmitCmd(registryId, master, version, mode) {
@@ -421,8 +466,11 @@ node("docker") {
             withTestEnv(commons, image) {
                 testScalaInternalBackendClusterMode(registryId, master, version)
                 testScalaInternalBackendClientMode(registryId, master, version)
-                testScalaExternalBackendClusterMode(registryId, master, version)
-                testScalaExternalBackendClientMode(registryId, master, version)
+                testScalaExternalBackendManualClusterMode(registryId, master, version)
+                testScalaExternalBackendManualClientMode(registryId, master, version)
+                testScalaExternalBackendAutoClusterMode(registryId, master, version)
+                testScalaExternalBackendAutoClientMode(registryId, master, version)
+                testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
             }
         }
 
