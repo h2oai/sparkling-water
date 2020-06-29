@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "sw_kubernetes_repo" {
-  name                 = "sw_kubernetes_repo_test/sparkling-water"
+  name                 = "sw_kubernetes_repo/sparkling-water"
   image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
