@@ -225,7 +225,7 @@ trait KubernetesUtils {
         .inNamespace(conf.externalK8sNamespace)
         .withName(pod.getMetadata.getName)
 
-      newPod.isReady
+      newPod.isReady && newPod.getLog.contains(s"Created cluster of size ${conf.clusterSize.get}")
     }
   }
 
