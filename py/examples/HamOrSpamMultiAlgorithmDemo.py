@@ -60,7 +60,7 @@ dl = H2ODeepLearning(epochs=10,
 
 automl = H2OAutoML(convertUnknownCategoricalLevelsToNa=True,
                    maxRuntimeSecs=60*100, # 100 minutes
-                   maxModels=3,
+                   maxModels=10,
                    seed=1,
                    labelCol="label")
 

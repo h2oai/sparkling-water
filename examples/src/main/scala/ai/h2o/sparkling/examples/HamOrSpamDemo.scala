@@ -149,7 +149,7 @@ object HamOrSpamDemo {
       .setLabelCol("label")
       .setSeed(1)
       .setMaxRuntimeSecs(60 * 100)
-      .setMaxModels(3)
+      .setMaxModels(10)
       .setConvertUnknownCategoricalLevelsToNa(true)
   }
 
