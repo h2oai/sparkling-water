@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 abstract class H2OUnsupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H2OAlgorithm[P] {
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    Seq(getFoldCol(), getWeightCol())
+    super.getExcludedCols() ++ Seq(getFoldCol(), getWeightCol())
       .flatMap(Option(_)) // Remove nulls
   }
 

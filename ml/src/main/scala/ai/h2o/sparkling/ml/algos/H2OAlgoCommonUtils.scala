@@ -16,7 +16,6 @@
  */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
 import org.apache.spark.sql.Dataset
@@ -24,7 +23,7 @@ import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
-  private[sparkling] def getExcludedCols(): Seq[String]
+  private[sparkling] def getExcludedCols(): Seq[String] = Seq.empty
 
   private[sparkling] def getFeaturesCols(): Array[String]
 

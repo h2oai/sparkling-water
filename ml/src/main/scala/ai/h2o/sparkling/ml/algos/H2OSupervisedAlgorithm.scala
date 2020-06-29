@@ -67,7 +67,7 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
   }
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    Seq(getLabelCol(), getFoldCol(), getWeightCol(), getOffsetCol())
+    super.getExcludedCols() ++ Seq(getLabelCol(), getFoldCol(), getWeightCol(), getOffsetCol())
       .flatMap(Option(_)) // Remove nulls
   }
 }

@@ -18,27 +18,33 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OFrame
-import org.apache.spark.ml.linalg.DenseMatrix
+import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
 
-trait HasInitialWeights extends H2OAlgoParamsBase {
-  private val initialWeights = new NullableMatrixArrayParam(
-    this,
-    "initialWeights",
-    "A array of weight matrices to be used for initialization of the neural network. " +
-      "If this parameter is set, the parameter 'initialBiases' has to be set as well.")
+trait HasIgnoredCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
+  private val ignoredCols =
+    new NullableStringArrayParam(this, "ignoredCols", "Names of columns to ignore for training.")
 
-  setDefault(initialWeights -> null)
+  setDefault(ignoredCols -> null)
 
-  def getInitialWeights(): Array[DenseMatrix] = $(initialWeights)
+  def getIgnoredCols(): Array[String] = $(ignoredCols)
 
-  def setInitialWeights(value: Array[DenseMatrix]): this.type = set(initialWeights, value)
+  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
 
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
-      Map("initial_weights" -> convertMatrixToH2OFrameKeyArray(getInitialWeights()))
+    val newIgnoredCols = getIgnoredCols()
+    val existingMap = super.getH2OAlgorithmParams(trainingFrame)
+    val oldIgnoredCols = existingMap.getOrElse("ignored_columns", null).asInstanceOf[Array[String]]
+
+    if (oldIgnoredCols == null) {
+      existingMap + ("ignored_columns" -> newIgnoredCols)
+    } else if (newIgnoredCols == null) {
+      existingMap + ("ignored_columns" -> oldIgnoredCols)
+    } else {
+      existingMap + ("ignored_columns" -> (oldIgnoredCols ++ newIgnoredCols))
+    }
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("initialWeights" -> "initial_weights")
+    super.getSWtoH2OParamNameMap() + ("ignoredCols" -> "ignored_columns")
   }
 }

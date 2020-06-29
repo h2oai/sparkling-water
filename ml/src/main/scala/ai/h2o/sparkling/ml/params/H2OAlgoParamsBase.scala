@@ -17,14 +17,14 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.linalg.{DenseMatrix, DenseVector}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql.SparkSession
 
 trait H2OAlgoParamsBase extends Params {
-  private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = Map.empty
+  private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = Map.empty
 
   private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = Map.empty
 

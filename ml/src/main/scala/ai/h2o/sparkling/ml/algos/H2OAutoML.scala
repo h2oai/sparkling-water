@@ -153,6 +153,11 @@ class H2OAutoML(override val uid: String)
     leaderBoard.head().getString(0)
   }
 
+  override private[sparkling] def getExcludedCols(): Seq[String] = {
+    super.getExcludedCols() ++ Seq(getLabelCol(), getFoldCol(), getWeightCol())
+      .flatMap(Option(_)) // Remove nulls
+  }
+
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 

@@ -22,9 +22,4 @@ trait H2OAutoMLParams
   with H2OAutoMLBuildModelsParams
   with H2OAutoMLInputParams
   with H2OAutoMLStoppingCriteriaParams
-  with HasMonotoneConstraints {
-  override private[sparkling] def getExcludedCols(): Seq[String] = {
-    Seq(getLabelCol(), getFoldCol(), getWeightCol())
-      .flatMap(Option(_)) // Remove nulls
-  }
-}
+  with HasMonotoneConstraints

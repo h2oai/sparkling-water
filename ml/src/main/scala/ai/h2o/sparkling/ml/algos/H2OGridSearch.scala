@@ -69,7 +69,7 @@ class H2OGridSearch(override val uid: String)
       algo: H2OAlgorithm[_ <: Model.Parameters],
       train: H2OFrame,
       valid: Option[H2OFrame]): Map[String, Any] = {
-    algo.getH2OAlgorithmParams() ++
+    algo.getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId) ++
       valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
   }
@@ -238,7 +238,9 @@ class H2OGridSearch(override val uid: String)
   }
 
   private[sparkling] def getColumnsToCategorical(): Array[String] = getAlgo().getColumnsToCategorical()
-  private[sparkling] def getExcludedCols(): Seq[String] = getAlgo().getExcludedCols()
+  override private[sparkling] def getExcludedCols(): Seq[String] = {
+    super.getExcludedCols() ++ getAlgo().getExcludedCols()
+  }
   private[sparkling] def getFeaturesCols(): Array[String] = getAlgo().getFeaturesCols()
   private[sparkling] def getSplitRatio(): Double = getAlgo().getSplitRatio()
   private[sparkling] def setFeaturesCols(value: Array[String]): this.type = {
