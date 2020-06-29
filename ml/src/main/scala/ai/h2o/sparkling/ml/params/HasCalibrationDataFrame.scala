@@ -25,7 +25,7 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
     this,
     "calibrationDataFrame",
     "Calibration frame for Platt Scaling. " +
-    "To enable usage of the data frame, set the parameter calibrateModel to True.")
+      "To enable usage of the data frame, set the parameter calibrateModel to True.")
 
   setDefault(calibrationDataFrame -> null)
 
