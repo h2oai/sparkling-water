@@ -62,6 +62,7 @@ shadowJar {
   relocate 'scala.concurrent.java8', 'ai.h2o.scala.concurrent.java8'
   relocate 'com.amazonaws', 'ai.h2o.com.amazonaws'
   relocate 'org.apache.http', 'ai.h2o.org.apache.http'
+  relocate 'io.fabric8', 'ai.h2o.io.fabric8'
   from "$project.buildDir/reports/" include '**/*'
   exclude 'www/flow/packs/test-*/**'
 
