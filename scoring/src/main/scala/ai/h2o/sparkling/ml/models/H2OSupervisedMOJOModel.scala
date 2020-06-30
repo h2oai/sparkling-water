@@ -47,7 +47,7 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid)
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction,
       inputs: Array[String]): DataFrame = {
-    val relevantColumnNames = flatDataFrame.columns.intersect(inputs)
+    val relevantColumnNames = getRelevantColumnNames(flatDataFrame, inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)

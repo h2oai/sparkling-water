@@ -33,7 +33,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
   private[sparkling] def setFeaturesCols(value: Array[String]): this.type
 
-  protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
+  protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
 
     if (getFeaturesCols().isEmpty) {
@@ -63,18 +63,17 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF())
 
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
-    val internalFeatureCols = SchemaUtils.flattenStructsInDataFrame(dataset.select(featureColumns: _*)).columns
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
     if (getSplitRatio() < 1.0) {
       val frames = trainFrame.split(getSplitRatio())
       if (frames.length > 1) {
-        (frames(0), Some(frames(1)), internalFeatureCols)
+        (frames(0), Some(frames(1)))
       } else {
-        (frames(0), None, internalFeatureCols)
+        (frames(0), None)
       }
     } else {
-      (trainFrame, None, internalFeatureCols)
+      (trainFrame, None)
     }
   }
 

@@ -47,7 +47,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
 
     override private[sparkling] def getExcludedCols(): Seq[String] = Nil
 
-    def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame], Array[String]) = prepareDatasetForFitting
+    def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame]) = prepareDatasetForFitting
   }
 
   test("Columns sanitation: DAI type of columns names") {
@@ -57,9 +57,8 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     val utils = new DummyTestClass("43")
 
     // When: transform
-    val (_, testHf, internalFeatureCols) = utils.exposedTestMethod(dataset)
+    val (_, testHf) = utils.exposedTestMethod(dataset)
     testHf shouldBe None
-    internalFeatureCols shouldBe datasetSchema.fields.map(_.name)
   }
 
   test("Run algorithm with a constant column") {

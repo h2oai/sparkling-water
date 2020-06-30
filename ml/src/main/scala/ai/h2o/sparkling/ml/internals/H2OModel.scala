@@ -38,10 +38,9 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
 
   private[sparkling] def toMOJOModel(
       uid: String,
-      settings: H2OMOJOSettings,
-      originalFeatures: Array[String]): H2OMOJOModel = {
+      settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojo = downloadMojo()
-    H2OMOJOModel.createFromMojo(mojo, uid, settings, originalFeatures)
+    H2OMOJOModel.createFromMojo(mojo, uid, settings)
   }
 }
 

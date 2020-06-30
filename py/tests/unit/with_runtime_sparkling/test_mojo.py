@@ -15,12 +15,16 @@
 #
 
 import pytest
+import tempfile
+import uuid
+import unit_test_utils
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pyspark.sql.functions import *
-from pysparkling.ml import H2OGBM, H2OMOJOModel, H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel
+from pyspark.sql.functions import array, struct
+from pysparkling.ml import *
 from h2o.estimators import H2OGradientBoostingEstimator
+from pyspark.ml.feature import VectorAssembler
 
 
 @pytest.fixture(scope="module")
@@ -61,7 +65,7 @@ def getCurrentMetrics():
 
 @pytest.fixture(scope="module")
 def prostateDatasetWithDoubles(prostateDataset):
-    prostateDataset.select(
+    return prostateDataset.select(
         prostateDataset.CAPSULE.cast("string").alias("CAPSULE"),
         prostateDataset.AGE.cast("double").alias("AGE"),
         prostateDataset.RACE.cast("double").alias("RACE"),
@@ -71,16 +75,55 @@ def prostateDatasetWithDoubles(prostateDataset):
         prostateDataset.VOL,
         prostateDataset.GLEASON.cast("double").alias("GLEASON"))
 
-#def trainAndTestH2OPythonGbm(hc, dataset):
-#    h2oframe = hc.h2oFrame(dataset)
-#    features = ["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
-#    label = "CAPSULE"
-#    gbm = H2OGradientBoostingEstimator(nfolds=5, seed=42, keep_cross_validation_predictions = True)
-#    gbm.train(x=features, y=label, training_frame=h2oframe)
-#
-#
-#def compareH2OPythonGbmOnTwoDatasets(reference, tested):
-#
-#
-#
-#def testMojoTrainedWithH2OAPISupportsArrays(prostateDatasetWithDoubles):
+def trainAndTestH2OPythonGbm(hc, dataset):
+    h2oframe = hc.asH2OFrame(dataset)
+    label = "CAPSULE"
+    gbm = H2OGradientBoostingEstimator(seed=42)
+    gbm.train(y=label, training_frame=h2oframe)
+    with tempfile.TemporaryDirectory() as directoryName:
+        mojoPath = gbm.download_mojo(directoryName)
+        settings = H2OMOJOSettings(withDetailedPredictionCol=True)
+        model = H2OMOJOModel.createFromMojo(mojoPath, settings)
+        return model.transform(dataset).select(
+            "prediction",
+            "detailed_prediction.probabilities.0",
+            "detailed_prediction.probabilities.1")
+
+def compareH2OPythonGbmOnTwoDatasets(hc, reference, tested):
+    expected = trainAndTestH2OPythonGbm(hc, reference)
+    result = trainAndTestH2OPythonGbm(hc, tested)
+    unit_test_utils.assert_data_frames_are_identical(expected, result)
+
+def testMojoTrainedWithH2OAPISupportsArrays(hc, prostateDatasetWithDoubles):
+    arrayDataset = prostateDatasetWithDoubles.select(
+        prostateDatasetWithDoubles.CAPSULE,
+        array(
+            prostateDatasetWithDoubles.AGE,
+            prostateDatasetWithDoubles.RACE,
+            prostateDatasetWithDoubles.DPROS,
+            prostateDatasetWithDoubles.DCAPS,
+            prostateDatasetWithDoubles.PSA,
+            prostateDatasetWithDoubles.VOL,
+            prostateDatasetWithDoubles.GLEASON).alias("features"))
+    compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, arrayDataset)
+
+def testMojoTrainedWithH2OAPISupportsVectors(hc, prostateDatasetWithDoubles):
+    assembler = VectorAssembler(
+        inputCols=["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
+        outputCol="features")
+    vectorDataset = assembler.transform(prostateDatasetWithDoubles).select("CAPSULE", "features")
+    compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, vectorDataset)
+
+def testMojoTrainedWithH2OAPISupportsStructs(hc, prostateDatasetWithDoubles):
+    arrayDataset = prostateDatasetWithDoubles.select(
+        prostateDatasetWithDoubles.CAPSULE,
+        prostateDatasetWithDoubles.AGE,
+        struct(
+            prostateDatasetWithDoubles.RACE,
+            struct(
+                prostateDatasetWithDoubles.DPROS,
+                prostateDatasetWithDoubles.DCAPS,
+                prostateDatasetWithDoubles.PSA).alias("b"),
+            prostateDatasetWithDoubles.VOL).alias("a"),
+        prostateDatasetWithDoubles.GLEASON)
+    compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, arrayDataset)

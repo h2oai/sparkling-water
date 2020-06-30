@@ -66,7 +66,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
     val params = getH2OAlgorithmParams(train) ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey()) ++
@@ -79,8 +79,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
     deleteRegisteredH2OFrames()
     H2OModel(modelId).toMOJOModel(
       Identifiable.randomUID(parameters.algoName()),
-      H2OMOJOSettings.createFromModelParams(this),
-      internalFeatureCols)
+      H2OMOJOSettings.createFromModelParams(this))
   }
 
   private def convertModelIdToKey(): String = {

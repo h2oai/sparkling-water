@@ -45,7 +45,7 @@ object RowConverter {
             case BinaryType =>
               row.getAs[Array[Byte]](idxRow).zipWithIndex.foreach {
                 case (v, idx) =>
-                  put(name + idx, v.toString)
+                  put(name + "." + idx, v.toString)
               }
             case ByteType => put(name, row.getByte(idxRow).toString)
             case ShortType => put(name, row.getShort(idxRow).toString)
