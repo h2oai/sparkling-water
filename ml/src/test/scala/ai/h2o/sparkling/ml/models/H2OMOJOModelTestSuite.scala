@@ -133,10 +133,8 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
   }
 
   def compareGbmOnTwoDatasets(reference: DataFrame, tested: DataFrame) = {
-    val columnsForComparison = Seq(
-      $"prediction",
-      $"detailed_prediction.probabilities.0",
-      $"detailed_prediction.probabilities.1")
+    val columnsForComparison =
+      Seq($"prediction", $"detailed_prediction.probabilities.0", $"detailed_prediction.probabilities.1")
 
     val expectedModel = configureGBMForProstateDF().fit(reference)
     val expectedPredictionDF = expectedModel.transform(reference).select(columnsForComparison: _*)
@@ -159,15 +157,16 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     compareGbmOnTwoDatasets(prostateDataFrame, structuredDataFrame)
   }
 
-  def prostateDataFrameWithDoubles = prostateDataFrame.select(
-    'CAPSULE cast "string" as "CAPSULE",
-    'AGE cast "double" as "AGE",
-    'RACE cast "double" as "RACE",
-    'DPROS cast "double" as "DPROS",
-    'DCAPS cast "double" as "DCAPS",
-    'PSA,
-    'VOL,
-    'GLEASON cast "double" as "GLEASON")
+  def prostateDataFrameWithDoubles =
+    prostateDataFrame.select(
+      'CAPSULE cast "string" as "CAPSULE",
+      'AGE cast "double" as "AGE",
+      'RACE cast "double" as "RACE",
+      'DPROS cast "double" as "DPROS",
+      'DCAPS cast "double" as "DCAPS",
+      'PSA,
+      'VOL,
+      'GLEASON cast "double" as "GLEASON")
 
   test("DataFrame contains array") {
     val arrayDataFrame = prostateDataFrameWithDoubles.select(

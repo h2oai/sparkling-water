@@ -99,9 +99,7 @@ class H2OGridSearch(override val uid: String)
       .mkString("{", ",", "}")
   }
 
-  private def getGridModels(
-      gridId: String,
-      algoName: String): Array[H2OMOJOModel] = {
+  private def getGridModels(gridId: String, algoName: String): Array[H2OMOJOModel] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq(

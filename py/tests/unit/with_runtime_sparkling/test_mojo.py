@@ -16,7 +16,6 @@
 
 import pytest
 import tempfile
-import uuid
 import unit_test_utils
 
 from pyspark.mllib.linalg import *

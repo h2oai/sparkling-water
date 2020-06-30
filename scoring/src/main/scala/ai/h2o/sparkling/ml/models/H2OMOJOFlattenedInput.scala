@@ -52,7 +52,8 @@ trait H2OMOJOFlattenedInput {
     val result = ArrayBuffer[String]()
 
     def addIfPrefixExists(prefix: String): Unit = {
-      if (inputs.exists(i => i.startsWith(prefix + ".") && Try(i.substring(prefix.length + 1).toInt).isSuccess)) {
+      if (inputs.exists(
+            input => input.startsWith(prefix + ".") && Try(input.substring(prefix.length + 1).toInt).isSuccess)) {
         result.append(prefix)
       }
     }
