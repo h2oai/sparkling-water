@@ -89,6 +89,7 @@ class H2OAutoML(override val uid: String)
     amlKeyOption = Some(autoMLId)
 
     val algoName = getLeaderboard().select("model_id").head().getString(0)
+    deleteRegisteredH2OFrames()
     H2OModel(getLeaderModelId(autoMLId))
       .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this), internalFeatureCols)
   }

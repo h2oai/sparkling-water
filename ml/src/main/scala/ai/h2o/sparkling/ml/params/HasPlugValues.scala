@@ -65,6 +65,7 @@ trait HasPlugValues extends H2OAlgoParamsBase {
       if (stringFieldsIndices.nonEmpty) {
         frame.convertColumnsToCategorical(stringFieldsIndices)
       }
+      registerH2OFrameForDeletion(frame)
       frame.frameId
     }
   }

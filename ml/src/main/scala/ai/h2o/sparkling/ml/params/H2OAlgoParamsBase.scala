@@ -23,6 +23,8 @@ import org.apache.spark.ml.linalg.{DenseMatrix, DenseVector}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.mutable.ArrayBuffer
+
 trait H2OAlgoParamsBase extends Params {
   private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = Map.empty
 
@@ -109,7 +111,9 @@ trait H2OAlgoParamsBase extends Params {
     convertWithH2OContext(input) { (spark, hc) =>
       import spark.implicits._
       val df = spark.sparkContext.parallelize(input).toDF()
-      hc.asH2OFrame(df).frameId
+      val frame = hc.asH2OFrame(df)
+      registerH2OFrameForDeletion(frame)
+      frame.frameId
     }
   }
 
@@ -118,7 +122,9 @@ trait H2OAlgoParamsBase extends Params {
       import spark.implicits._
       vectors.map { vector =>
         val df = spark.sparkContext.parallelize(vector.values).toDF()
-        hc.asH2OFrame(df).frameId
+        val frame = hc.asH2OFrame(df)
+        registerH2OFrameForDeletion(frame)
+        frame.frameId
       }
     }
   }
@@ -129,8 +135,19 @@ trait H2OAlgoParamsBase extends Params {
       matrix.map { matrix =>
         val rows = matrix.rowIter.map(_.toArray).toArray
         val df = spark.sparkContext.parallelize(rows).toDF()
-        hc.asH2OFrame(df).frameId
+        val frame = hc.asH2OFrame(df)
+        registerH2OFrameForDeletion(frame)
+        frame.frameId
       }
     }
+  }
+
+  private val h2oFramesToBeDeleted = new ArrayBuffer[H2OFrame]()
+
+  protected sealed def registerH2OFrameForDeletion(frame: H2OFrame): Unit = h2oFramesToBeDeleted.append(frame)
+
+  protected sealed def deleteRegisteredH2OFrames(): Unit = {
+    h2oFramesToBeDeleted.foreach(_.delete())
+    h2oFramesToBeDeleted.clear()
   }
 }
