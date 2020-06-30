@@ -473,9 +473,9 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(
       expandedSchema === Vector(
-        StructField("f0", DoubleType),
-        StructField("f1", DoubleType),
-        StructField("f2", DoubleType)))
+        StructField("f.0", DoubleType),
+        StructField("f.1", DoubleType),
+        StructField("f.2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -500,9 +500,9 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(
       expandedSchema === Vector(
-        StructField("f0", DoubleType),
-        StructField("f1", DoubleType),
-        StructField("f2", DoubleType)))
+        StructField("f.0", DoubleType),
+        StructField("f.1", DoubleType),
+        StructField("f.2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -525,9 +525,9 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(
       expandedSchema === Vector(
-        StructField("f0", DoubleType),
-        StructField("f1", DoubleType),
-        StructField("f2", DoubleType)))
+        StructField("f.0", DoubleType),
+        StructField("f.1", DoubleType),
+        StructField("f.2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -548,7 +548,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     val (_, _, expandedSchema) = getSchemaInfo(df)
 
-    assert(expandedSchema === Vector(StructField("f0", DoubleType), StructField("f1", DoubleType)))
+    assert(expandedSchema === Vector(StructField("f.0", DoubleType), StructField("f.1", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -575,9 +575,9 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(
       expandedSchema === Vector(
-        StructField("f0", DoubleType),
-        StructField("f1", DoubleType),
-        StructField("f2", DoubleType)))
+        StructField("f.0", DoubleType),
+        StructField("f.1", DoubleType),
+        StructField("f.2", DoubleType)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
@@ -609,12 +609,12 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(
       expandedSchema === Array(
-        StructField("f10", DoubleType, nullable = true),
-        StructField("f11", DoubleType, nullable = true),
-        StructField("f12", DoubleType, nullable = true),
+        StructField("f1.0", DoubleType, nullable = true),
+        StructField("f1.1", DoubleType, nullable = true),
+        StructField("f1.2", DoubleType, nullable = true),
         StructField("idx", IntegerType, nullable = false),
-        StructField("f20", DoubleType, nullable = true),
-        StructField("f21", DoubleType, nullable = true)))
+        StructField("f2.0", DoubleType, nullable = true),
+        StructField("f2.1", DoubleType, nullable = true)))
 
     // Verify transformation into DataFrame
     val h2oFrame = hc.asH2OFrame(df)
