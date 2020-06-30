@@ -42,7 +42,7 @@ def testTrainingParams(gbmModel):
     assert params["seed"] == "42"
     assert params["distribution"] == "bernoulli"
     assert params["ntrees"] == "2"
-    assert len(params) == 45
+    assert len(params) == 46
 
 def testModelCategory(gbmModel):
     category = gbmModel.getModelCategory()
