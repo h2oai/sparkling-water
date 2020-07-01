@@ -99,8 +99,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
       try {
         val text = Iterator.continually(in.readLine("")).takeWhile(x => x != null).mkString("\n")
         command(text)
-      }
-      catch AbstractOrMissingHandler()
+      } catch AbstractOrMissingHandler()
     }
 
     if (exceptionOccurred()) {

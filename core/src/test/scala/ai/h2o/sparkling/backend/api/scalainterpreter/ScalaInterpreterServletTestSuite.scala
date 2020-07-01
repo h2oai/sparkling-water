@@ -66,7 +66,8 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
     testCode(
       """
         |spark
-        |.sparkContext""".stripMargin, CodeResults.Success)
+        |.sparkContext""".stripMargin,
+      CodeResults.Success)
   }
 
   test("ScalaCodeHandler.interpret() method, printing") {
