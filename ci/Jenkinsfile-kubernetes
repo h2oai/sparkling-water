@@ -446,6 +446,7 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
+/*
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -463,9 +464,12 @@ node("docker") {
     }
 
     parallel(getBuildAndPublishStages(props))
+*/
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test Scala, Spark ${sparkMajorVersion}") {
+            writeFile file: "properties", text: "docker_registry_id=524466471676\nversion=3.32.0.1-1-2.4\ncluster_endpoint=https://262856BD2642E3E3EAD302109D0428A6.sk1.us-east-2.eks.amazonaws.com\ncluster_name=SWKubernetes-04DW6J5t"
+            stash name: "properties", includes: "properties"
             unstash "properties"
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
