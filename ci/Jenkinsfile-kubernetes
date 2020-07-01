@@ -354,6 +354,7 @@ static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mo
              --conf spark.ext.h2o.external.k8s.expose.leader=${driverInK8s} \
              --conf spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
              --conf spark.executor.instances=2 \
+             --conf spark.ext.h2o.external.cluster.size=2 \
             """
 }
 
