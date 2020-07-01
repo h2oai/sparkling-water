@@ -2,17 +2,22 @@
 ## Provider Definition
 ##
 provider "aws" {
-  region = "${var.aws_region}"
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
+  region = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 data "aws_vpc" "main" {
-  id = "${var.aws_vpc_id}"
+  id = var.aws_vpc_id
+  filter {
+    name = "vpc-id"
+    values = [var.aws_vpc_id]
+  }
 }
 
 data "aws_subnet" "main" {
-  id = "${var.aws_subnet_id}"
+  id = var.aws_subnet_id
+  vpc_id = data.aws_vpc.main.id
 }
 
 resource "aws_key_pair" "key" {
@@ -28,7 +33,7 @@ resource "aws_s3_bucket" "deployment_bucket" {
 }
 
 resource "aws_s3_bucket_policy" "read_objects" {
-  bucket = "${aws_s3_bucket.deployment_bucket.id}"
+  bucket = aws_s3_bucket.deployment_bucket.id
 
   policy = <<POLICY
 {
@@ -50,21 +55,21 @@ POLICY
 }
 
 resource "aws_s3_bucket_object" "assembly_jar" {
-  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
+  bucket = aws_s3_bucket.deployment_bucket.bucket
   key = "assembly.jar"
   acl = "private"
-  source = "${var.sw_package_file}"
+  source = var.sw_package_file
 }
 
 resource "aws_s3_bucket_object" "benchmarks_jar" {
-  bucket = "${aws_s3_bucket.deployment_bucket.bucket}"
+  bucket = aws_s3_bucket.deployment_bucket.bucket
   key = "benchmarks.jar"
   acl = "private"
-  source = "${var.sw_benchmarks_file}"
+  source = var.sw_benchmarks_file
 }
 
 resource "aws_s3_bucket_object" "set_automatic_shutdown" {
-  bucket = "${aws_s3_bucket.deployment_bucket.id}"
+  bucket = aws_s3_bucket.deployment_bucket.id
   key = "set_automatic_shutdown.sh"
   acl = "private"
   content = <<EOF
@@ -82,7 +87,7 @@ EOF
 }
 
 resource "aws_s3_bucket_object" "run_benchmarks_script" {
-  bucket = "${aws_s3_bucket.deployment_bucket.id}"
+  bucket = aws_s3_bucket.deployment_bucket.id
   key    = "run_benchmarks.sh"
   acl = "private"
   content = <<EOF
@@ -135,7 +140,7 @@ EOF
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water-Benchmarks"
-  release_label = "${var.aws_emr_version}"
+  release_label = var.aws_emr_version
   log_uri = "s3://${aws_s3_bucket.deployment_bucket.bucket}/"
   applications = ["Spark", "Hadoop"]
   depends_on = [
@@ -146,20 +151,20 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   ]
 
   ec2_attributes {
-    subnet_id = "${data.aws_subnet.main.id}"
-    key_name = "${aws_key_pair.key.key_name}"
-    emr_managed_master_security_group = "${var.emr_managed_master_security_group_id}"
-    emr_managed_slave_security_group = "${var.emr_managed_slave_security_group_id}"
-    instance_profile = "${var.emr_ec2_instance_profile_arn}"
+    subnet_id = data.aws_subnet.main.id
+    key_name = aws_key_pair.key.key_name
+    emr_managed_master_security_group = var.emr_managed_master_security_group_id
+    emr_managed_slave_security_group = var.emr_managed_slave_security_group_id
+    instance_profile = var.emr_ec2_instance_profile_arn
   }
 
   master_instance_group {
-    instance_type = "${var.aws_instance_type}"
+    instance_type = var.aws_instance_type
   }
 
   core_instance_group {
-    instance_type = "${var.aws_instance_type}"
-    instance_count = "${var.aws_core_instance_count}"
+    instance_type = var.aws_instance_type
+    instance_count = var.aws_core_instance_count
   }
 
   tags = {
@@ -167,7 +172,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   }
 
   bootstrap_action {
-    path = "${format("s3://%s/set_automatic_shutdown.sh", aws_s3_bucket.deployment_bucket.bucket)}"
+    path = format("s3://%s/set_automatic_shutdown.sh", aws_s3_bucket.deployment_bucket.bucket)
     name = "Set automatic shutdown"
   }
 
@@ -176,8 +181,8 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     name = "ExecuteBenchmarks"
 
     hadoop_jar_step {
-      jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
-      args = ["${format("s3://%s/run_benchmarks.sh", aws_s3_bucket.deployment_bucket.bucket)}"]
+      jar  = format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)
+      args = [format("s3://%s/run_benchmarks.sh", aws_s3_bucket.deployment_bucket.bucket)]
     }
   }
 
@@ -209,5 +214,5 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     }
   ]
 EOF
-  service_role = "${var.emr_role_arn}"
+  service_role = var.emr_role_arn
 }
