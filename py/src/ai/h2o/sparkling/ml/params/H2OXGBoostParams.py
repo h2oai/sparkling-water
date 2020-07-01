@@ -239,6 +239,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "Backend",
         H2OTypeConverters.toEnumString("hex.tree.xgboost.XGBoostModel$XGBoostParameters$Backend"))
 
+    gainsliftBins = Param(
+        Params._dummy(),
+        "gainsliftBins",
+        "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -346,6 +352,9 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getBackend(self):
         return self.getOrDefault(self.backend)
+
+    def getGainsliftBins(self):
+        return self.getOrDefault(self.gainsliftBins)
 
     ##
     # Setters
@@ -457,3 +466,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def setBackend(self, value):
         return self._set(backend=value)
+
+    def setGainsliftBins(self, value):
+        return self._set(gainsliftBins=value)

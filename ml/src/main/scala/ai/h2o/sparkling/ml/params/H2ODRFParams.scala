@@ -32,6 +32,9 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
   //
   private val binomialDoubleTrees = booleanParam("binomialDoubleTrees")
   private val mtries = intParam("mtries")
+  private val gainsliftBins = intParam(
+    name = "gainsliftBins",
+    doc = "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.")
 
   //
   // Default values
@@ -40,8 +43,8 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
     binomialDoubleTrees -> false,
     mtries -> -1,
     maxDepth -> 20, // DRF overrides this default value from SharedTreeParams
-    minRows -> 1 // DRF overrides this default value from SharedTreeParams
-  )
+    minRows -> 1, // DRF overrides this default value from SharedTreeParams
+    gainsliftBins -> -1)
 
   //
   // Getters
@@ -50,6 +53,8 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
 
   def getMtries(): Double = $(mtries)
 
+  def getGainsliftBins(): Int = $(gainsliftBins)
+
   //
   // Setters
   //
@@ -57,8 +62,15 @@ trait H2ODRFParams extends H2OAlgoSharedTreeParams[DRFParameters] {
 
   def setMtries(value: Int): this.type = set(mtries, value)
 
+  def setGainsliftBins(value: Int): this.type = {
+    set(gainsliftBins, value)
+  }
+
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
-      Map("binomial_double_trees" -> getBinomialDoubleTrees(), "mtries" -> getMtries())
+      Map(
+        "binomial_double_trees" -> getBinomialDoubleTrees(),
+        "mtries" -> getMtries(),
+        "gainslift_bins" -> getGainsliftBins())
   }
 }

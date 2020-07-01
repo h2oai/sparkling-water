@@ -71,6 +71,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  stoppingRounds=0,
                  stoppingMetric="AUTO",
                  stoppingTolerance=0.001,
+                 gainsliftBins=-1,
                  withContributions=False):
         Initializer.load_sparkling_jar()
         super(H2OGBM, self).__init__()

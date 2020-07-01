@@ -36,6 +36,9 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
   private val colSampleRate = doubleParam("colSampleRate")
   private val maxAbsLeafnodePred = doubleParam("maxAbsLeafnodePred")
   private val predNoiseBandwidth = doubleParam("predNoiseBandwidth")
+  private val gainsliftBins = intParam(
+    name = "gainsliftBins",
+    doc = "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.")
 
   //
   // Default values
@@ -45,7 +48,8 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
     learnRateAnnealing -> parameters._learn_rate_annealing,
     colSampleRate -> parameters._col_sample_rate,
     maxAbsLeafnodePred -> parameters._max_abs_leafnode_pred,
-    predNoiseBandwidth -> parameters._pred_noise_bandwidth)
+    predNoiseBandwidth -> parameters._pred_noise_bandwidth,
+    gainsliftBins -> -1)
 
   //
   // Getters
@@ -60,6 +64,8 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
 
   def getPredNoiseBandwidth(): Double = $(predNoiseBandwidth)
 
+  def getGainsliftBins(): Int = $(gainsliftBins)
+
   //
   // Setters
   //
@@ -73,6 +79,10 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
 
   def setPredNoiseBandwidth(value: Double): this.type = set(predNoiseBandwidth, value)
 
+  def setGainsliftBins(value: Int): this.type = {
+    set(gainsliftBins, value)
+  }
+
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
       Map(
@@ -82,6 +92,7 @@ trait H2OGBMParams extends H2OAlgoSharedTreeParams[GBMParameters] with HasMonoto
         "max_abs_leafnode_pred" -> getMaxAbsLeafnodePred(),
         "pred_noise_bandwidth" -> getPredNoiseBandwidth(),
         "monotone_constraints" -> getMonotoneConstraints(),
-        "quantile_alpha" -> getQuantileAlpha())
+        "quantile_alpha" -> getQuantileAlpha(),
+        "gainslift_bins" -> getGainsliftBins())
   }
 }

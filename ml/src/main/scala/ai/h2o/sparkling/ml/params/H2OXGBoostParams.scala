@@ -71,6 +71,10 @@ trait H2OXGBoostParams
   private val skipDrop = floatParam("skipDrop")
   private val gpuId = intParam("gpuId")
   private val backend = stringParam("backend", "Backend")
+  private val gainsliftBins = intParam(
+    name = "gainsliftBins",
+    doc = "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.")
+
   //
   // Default values
   //
@@ -110,7 +114,8 @@ trait H2OXGBoostParams
     oneDrop -> false,
     skipDrop -> 0,
     gpuId -> 0, // which GPU to use
-    backend -> Backend.auto.name())
+    backend -> Backend.auto.name(),
+    gainsliftBins -> -1)
 
   //
   // Getters
@@ -184,6 +189,8 @@ trait H2OXGBoostParams
   def getGpuId(): Int = $(gpuId)
 
   def getBackend(): String = $(backend)
+
+  def getGainsliftBins(): Int = $(gainsliftBins)
 
   //
   // Setters
@@ -281,6 +288,10 @@ trait H2OXGBoostParams
     set(backend, validated)
   }
 
+  def setGainsliftBins(value: Int): this.type = {
+    set(gainsliftBins, value)
+  }
+
   override private[sparkling] def getH2OAlgorithmParams(): Map[String, Any] = {
     super.getH2OAlgorithmParams() ++
       Map(
@@ -323,6 +334,7 @@ trait H2OXGBoostParams
         "monotone_constraints" -> getMonotoneConstraints(),
         "stopping_rounds" -> getStoppingRounds(),
         "stopping_metric" -> getStoppingMetric(),
-        "stopping_tolerance" -> getStoppingTolerance())
+        "stopping_tolerance" -> getStoppingTolerance(),
+        "gainslift_bins" -> getGainsliftBins())
   }
 }

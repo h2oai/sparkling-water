@@ -38,6 +38,12 @@ class H2ODRFParams(H2OSharedTreeParams):
         "to sqrt{p} for classification and p/3 for regression (where p is the # of predictors",
         H2OTypeConverters.toInt())
 
+    gainsliftBins = Param(
+        Params._dummy(),
+        "gainsliftBins",
+        "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -47,6 +53,9 @@ class H2ODRFParams(H2OSharedTreeParams):
     def getMtries(self):
         return self.getOrDefault(self.mtries)
 
+    def getGainsliftBins(self):
+        return self.getOrDefault(self.gainsliftBins)
+
     ##
     # Setters
     ##
@@ -55,3 +64,6 @@ class H2ODRFParams(H2OSharedTreeParams):
 
     def setMtries(self, value):
         return self._set(mtries=value)
+
+    def setGainsliftBins(self, value):
+        return self._set(gainsliftBins=value)

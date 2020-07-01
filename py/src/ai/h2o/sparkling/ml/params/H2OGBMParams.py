@@ -58,6 +58,12 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
         "Bandwidth (sigma) of Gaussian multiplicative noise ~N(1,sigma) for tree node predictions",
         H2OTypeConverters.toFloat())
 
+    gainsliftBins = Param(
+        Params._dummy(),
+        "gainsliftBins",
+        "Gains/Lift table number of bins. 0 means disabled.. Default value -1 means automatic binning.",
+        H2OTypeConverters.toInt())
+
     ##
     # Getters
     ##
@@ -76,6 +82,9 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
     def getPredNoiseBandwidth(self):
         return self.getOrDefault(self.predNoiseBandwidth)
 
+    def getGainsliftBins(self):
+        return self.getOrDefault(self.gainsliftBins)
+
     ##
     # Setters
     ##
@@ -93,3 +102,6 @@ class H2OGBMParams(H2OSharedTreeParams, HasMonotoneConstraints, HasQuantileAlpha
 
     def setPredNoiseBandwidth(self, value):
         return self._set(predNoiseBandwidth=value)
+
+    def setGainsliftBins(self, value):
+        return self._set(gainsliftBins=value)
