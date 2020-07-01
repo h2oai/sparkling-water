@@ -144,9 +144,9 @@ trait H2OAlgoParamsBase extends Params {
 
   private val h2oFramesToBeDeleted = new ArrayBuffer[H2OFrame]()
 
-  protected sealed def registerH2OFrameForDeletion(frame: H2OFrame): Unit = h2oFramesToBeDeleted.append(frame)
+  private[sparkling] final def registerH2OFrameForDeletion(frame: H2OFrame): Unit = h2oFramesToBeDeleted.append(frame)
 
-  protected sealed def deleteRegisteredH2OFrames(): Unit = {
+  private[sparkling] final def deleteRegisteredH2OFrames(): Unit = {
     h2oFramesToBeDeleted.foreach(_.delete())
     h2oFramesToBeDeleted.clear()
   }
