@@ -410,34 +410,62 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
 }
 
 def testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version) {
-    sh "${scalaExternalBackendSubmitCmd(registryId, "local", version, "cluster", "auto", "true")} && echo \"OK\" || exit 1"
+    sh "${scalaExternalBackendSubmitCmd(registryId, "local", version, "client", "auto", "true")} && echo \"OK\" || exit 1"
 }
 
-static String pythonExternalBackendSubmitCmd(registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "python")} \
+static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, startMode, driverOutsideK8s) {
+    def prefix
+    if (startMode == "manual") {
+        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "python")
+    } else {
+        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "python", driverOutsideK8s)
+    }
+    return """$prefix \
               local:///opt/sparkling-water/tests/initTest.py
             """
 }
 
-def testPythonExternalBackendClusterMode(registryId, master, version) {
+
+def testPythonExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-python --ignore-not-found"
-    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
+    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual", "false")}"
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-def testPythonExternalBackendClientMode(registryId, master, version) {
+def testPythonExternalBackendManualClientMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client")}
+        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual", "false")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
+}
+
+def testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version) {
+    sh "${pythonExternalBackendSubmitCmd(registryId, "local", version, "client", "auto", "true")} && echo \"OK\" || exit 1"
+}
+
+def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
+    sh "kubectl delete pod driver-python --ignore-not-found"
+    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto", "false")}"
+    sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testPythonExternalBackendAutoClientMode(registryId, master, version) {
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto", "false")}
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 node("docker") {
@@ -477,10 +505,10 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             withTestEnv(commons, image) {
-                //testScalaInternalBackendClusterMode(registryId, master, version)
-                //testScalaInternalBackendClientMode(registryId, master, version)
-                //testScalaExternalBackendManualClusterMode(registryId, master, version)
-                //testScalaExternalBackendManualClientMode(registryId, master, version)
+                testScalaInternalBackendClusterMode(registryId, master, version)
+                testScalaInternalBackendClientMode(registryId, master, version)
+                testScalaExternalBackendManualClusterMode(registryId, master, version)
+                testScalaExternalBackendManualClientMode(registryId, master, version)
                 testScalaExternalBackendAutoClusterMode(registryId, master, version)
                 testScalaExternalBackendAutoClientMode(registryId, master, version)
                 testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
@@ -494,10 +522,13 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             withTestEnv(commons, image) {
-                testPythonInternalBackendClusterMode(registryId, master, version)
-                testPythonInternalBackendClientMode(registryId, master, version)
-                testPythonExternalBackendClusterMode(registryId, master, version)
-                testPythonExternalBackendClientMode(registryId, master, version)
+                //testPythonInternalBackendClusterMode(registryId, master, version)
+                //testPythonInternalBackendClientMode(registryId, master, version)
+                //testPythonExternalBackendManualClusterMode(registryId, master, version)
+                //testPythonExternalBackendManualClientMode(registryId, master, version)
+                testPythonExternalBackendAutoClusterMode(registryId, master, version)
+                testPythonExternalBackendAutoClientMode(registryId, master, version)
+                testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
             }
         }
 
