@@ -492,7 +492,6 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
 
-/*
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
@@ -510,12 +509,9 @@ node("docker") {
     }
 
     parallel(getBuildAndPublishStages(props))
-*/
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test Scala, Spark ${sparkMajorVersion}") {
-            writeFile file: "properties", text: "docker_registry_id=524466471676\nversion=3.32.0.1-1\ncluster_endpoint=https://262856BD2642E3E3EAD302109D0428A6.sk1.us-east-2.eks.amazonaws.com\ncluster_name=SWKubernetes-04DW6J5t"
-            stash name: "properties", includes: "properties"
             unstash "properties"
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
@@ -539,10 +535,10 @@ node("docker") {
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
             def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             withTestEnv(commons, image) {
-                //testPythonInternalBackendClusterMode(registryId, master, version)
-                //testPythonInternalBackendClientMode(registryId, master, version)
-                //testPythonExternalBackendManualClusterMode(registryId, master, version)
-                //testPythonExternalBackendManualClientMode(registryId, master, version)
+                testPythonInternalBackendClusterMode(registryId, master, version)
+                testPythonInternalBackendClientMode(registryId, master, version)
+                testPythonExternalBackendManualClusterMode(registryId, master, version)
+                testPythonExternalBackendManualClientMode(registryId, master, version)
                 testPythonExternalBackendAutoClusterMode(registryId, master, version)
                 testPythonExternalBackendAutoClientMode(registryId, master, version)
                 testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
