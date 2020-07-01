@@ -96,7 +96,10 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     initBeforeRunningCode(code)
     // Redirect output from console to our own stream
     scala.Console.withOut(consoleStream) {
-      try loop()
+      try {
+        val text = Iterator.continually(in.readLine("")).takeWhile(x => x != null).mkString("\n")
+        command(text)
+      }
       catch AbstractOrMissingHandler()
     }
 
@@ -205,37 +208,6 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
     import java.io.{BufferedReader, StringReader}
     val input = new BufferedReader(new StringReader(code))
     in = SimpleReader(input, responseWriter, interactive = false)
-  }
-
-  /** The main read-eval-print loop for the repl.  It calls
-    * command() for each line of input, and stops when
-    * command() returns false.
-    */
-  private def loop() {
-    def readOneLine() = {
-      responseWriter.flush()
-      in readLine ""
-    }
-
-    // return false if repl should exit
-    def processLine(line: String): Boolean = {
-      if (line eq null) false // assume null means EOF
-      else command(line)
-    }
-
-    def innerLoop() {
-      val shouldContinue = try {
-        processLine(readOneLine())
-      } catch {
-        case t: Throwable =>
-          throw t
-      }
-      if (shouldContinue) {
-        innerLoop()
-      }
-    }
-
-    innerLoop()
   }
 
   private[repl] def echo(msg: String) = {

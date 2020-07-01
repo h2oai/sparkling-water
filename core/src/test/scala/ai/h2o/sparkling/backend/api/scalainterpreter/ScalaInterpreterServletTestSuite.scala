@@ -62,6 +62,13 @@ class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContex
     getSessions().sessions.foreach(destroySession)
   }
 
+  test("Paste mode") {
+    testCode(
+      """
+        |spark
+        |.sparkContext""".stripMargin, CodeResults.Success)
+  }
+
   test("ScalaCodeHandler.interpret() method, printing") {
     val result = testCode("println(\"text\")", CodeResults.Success)
     assert(result.output.equals("text\n"), "Printed output should be equal to \"text\"")
