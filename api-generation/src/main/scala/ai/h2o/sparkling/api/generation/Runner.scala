@@ -56,11 +56,12 @@ object Runner {
       ExplicitField("monotone_constraints", "HasMonotoneConstraints", new util.HashMap[String, Double]())
     val calibrationDataFrame = ExplicitField("calibration_frame", "HasCalibrationDataFrame", null)
     val plugValues = ExplicitField("plug_values", "HasPlugValues", null)
+    val betaConstraints = ExplicitField("beta_constraints", "HasBetaConstraints", null)
     val userPoints = ExplicitField("user_points", "HasUserPoints", null)
     val randomCols = ExplicitField("random_columns", "HasRandomCols", null)
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
-    val glmFields = Seq(randomCols, ignoredCols, plugValues)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
 

@@ -141,3 +141,27 @@ def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
     glm.setRandomCols(["someColumn"])
     with pytest.raises(AnalysisException, match=r".*cannot resolve '`someColumn`' given input columns.*"):
         glm.fit(semiconductorDataset)
+
+
+def testBetaConstraintsAffectResult(spark, prostateDataset):
+    [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
+    featuresCols=["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
+
+    def createInitialGlmDefinition():
+        return H2OGLM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8)
+
+    referenceGlm = createInitialGlmDefinition()
+    referenceModel = referenceGlm.fit(traningDataset)
+    referenceResult = referenceModel.transform(testingDataset)
+
+    betaConstraints = map(lambda feature: (feature, -1000, 1000, 1, 0.2), featuresCols)
+    betaConstraintsFrame = spark.createDataFrame(
+        betaConstraints,
+        ['names', 'lower_bounds', 'upper_bounds', 'beta_given', 'rho'])
+
+    glm = createInitialGlmDefinition()
+    glm.setBetaConstraints(betaConstraintsFrame)
+    model = glm.fit(traningDataset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)
