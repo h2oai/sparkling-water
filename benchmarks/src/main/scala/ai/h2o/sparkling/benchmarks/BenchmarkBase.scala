@@ -101,8 +101,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   def loadRegularH2OFrame(): H2OFrame = {
     val uri = new URI(context.datasetDetails.url.get)
-    val frame = H2OFrame(uri)
-    frame
+    H2OFrame(uri)
   }
 
   def loadVirtualH2OFrame(): H2OFrame = {
