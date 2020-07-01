@@ -23,13 +23,13 @@ data "aws_iam_policy_document" "emr_assume_role_policy" {
 ##
 resource "aws_iam_role" "emr_role" {
   path = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.emr_assume_role_policy.json}"
+  assume_role_policy = data.aws_iam_policy_document.emr_assume_role_policy.json
 }
 
 ##
 ## Attach policy to the created role
 ##
 resource "aws_iam_role_policy_attachment" "emr_role_policy_attach" {
-  role = "${aws_iam_role.emr_role.name}"
-  policy_arn = "${data.aws_iam_policy.AmazonElasticMapReduceRole.arn}"
+  role = aws_iam_role.emr_role.name
+  policy_arn = data.aws_iam_policy.AmazonElasticMapReduceRole.arn
 }

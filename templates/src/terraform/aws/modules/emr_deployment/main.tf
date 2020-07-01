@@ -2,17 +2,17 @@
 ## Provider Definition
 ##
 provider "aws" {
-  region = "${var.aws_region}"
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
+  region = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 data "aws_vpc" "main" {
-  id = "${var.aws_vpc_id}"
+  id = var.aws_vpc_id
 }
 
 data "aws_subnet" "main" {
-  id = "${var.aws_subnet_id}"
+  id = var.aws_subnet_id
 }
 
 resource "aws_key_pair" "key" {
@@ -28,7 +28,7 @@ resource "aws_s3_bucket" "sw_bucket" {
 }
 
 resource "aws_s3_bucket_object" "install_pysparkling" {
-  bucket = "${aws_s3_bucket.sw_bucket.id}"
+  bucket = aws_s3_bucket.sw_bucket.id
   key = "install_sw.sh"
   acl = "private"
   content = <<EOF
@@ -101,14 +101,14 @@ EOF
 }
 
 data "aws_s3_bucket_object" "user_token" {
-  bucket = "${aws_s3_bucket.sw_bucket.bucket}"
+  bucket = aws_s3_bucket.sw_bucket.bucket
   key    = "user.token"
   depends_on = ["aws_emr_cluster.sparkling-water-cluster"]
 }
 
 resource "aws_emr_cluster" "sparkling-water-cluster" {
   name = "Sparkling-Water"
-  release_label = "${var.aws_emr_version}"
+  release_label = var.aws_emr_version
   log_uri = "s3://${aws_s3_bucket.sw_bucket.bucket}/"
   applications = [
     "Spark",
@@ -116,20 +116,20 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     "JupyterHub"]
 
   ec2_attributes {
-    subnet_id = "${data.aws_subnet.main.id}"
-    key_name = "${aws_key_pair.key.key_name}"
-    emr_managed_master_security_group = "${var.emr_managed_master_security_group_id}"
-    emr_managed_slave_security_group = "${var.emr_managed_slave_security_group_id}"
-    instance_profile = "${var.emr_ec2_instance_profile_arn}"
+    subnet_id = data.aws_subnet.main.id
+    key_name = aws_key_pair.key.key_name
+    emr_managed_master_security_group = var.emr_managed_master_security_group_id
+    emr_managed_slave_security_group = var.emr_managed_slave_security_group_id
+    instance_profile = var.emr_ec2_instance_profile_arn
   }
 
   master_instance_group {
-    instance_type = "${var.aws_instance_type}"
+    instance_type = var.aws_instance_type
   }
 
   core_instance_group {
-    instance_type = "${var.aws_instance_type}"
-    instance_count = "${var.aws_core_instance_count}"
+    instance_type = var.aws_instance_type
+    instance_count = var.aws_core_instance_count
   }
 
   tags = {
@@ -137,7 +137,7 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
   }
 
   bootstrap_action {
-    path = "${format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)}"
+    path = format("s3://%s/install_sw.sh", aws_s3_bucket.sw_bucket.bucket)
     name = "Custom action"
   }
 
@@ -146,8 +146,8 @@ resource "aws_emr_cluster" "sparkling-water-cluster" {
     name   = "Set up Jupyter and Spark Env"
 
     hadoop_jar_step {
-      jar  = "${format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)}"
-      args = ["${format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket)}", "${var.jupyter_name}"]
+      jar  = format("s3://%s.elasticmapreduce/libs/script-runner/script-runner.jar", var.aws_region)
+      args = [format("s3://%s/setup_jupyter.sh", aws_s3_bucket.sw_bucket.bucket), "${var.jupyter_name}"]
     }
   }
 
@@ -182,5 +182,5 @@ EOF
   provisioner "local-exec" {
     command = "sleep 60"
   }
-  service_role = "${var.emr_role_arn}"
+  service_role = var.emr_role_arn
 }

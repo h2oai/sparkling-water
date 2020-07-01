@@ -2,15 +2,20 @@
 ## Provider Definition
 ##
 provider "aws" {
-  region = "${var.aws_region}"
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
+  region = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 data "aws_vpc" "main" {
-  id = "${var.aws_vpc_id}"
+  id = var.aws_vpc_id
+  filter {
+    name = "vpc-id"
+    values = [var.aws_vpc_id]
+  }
 }
 
 data "aws_subnet" "main" {
-  id = "${var.aws_subnet_id}"
+  id = var.aws_subnet_id
+  vpc_id = data.aws_vpc.main.id
 }
