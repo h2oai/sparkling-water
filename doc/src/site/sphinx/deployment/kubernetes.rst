@@ -544,6 +544,7 @@ address from outside the Kubernetes cluster.
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=auto \
             --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+            --conf spark.ext.h2o.external.cluster.size=2 \
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
             local:///opt/sparkling-water/tests/initTest.jar
@@ -584,6 +585,7 @@ address from outside the Kubernetes cluster.
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=auto \
              --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.cluster.size=2 \
              --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
              --conf spark.executor.instances=3
@@ -618,6 +620,7 @@ address from outside the Kubernetes cluster.
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=auto \
              --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.cluster.size=2 \
              --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
              --conf spark.executor.instances=3 \
@@ -641,6 +644,7 @@ address from outside the Kubernetes cluster.
             --conf spark.ext.h2o.backend.cluster.mode=external \
             --conf spark.ext.h2o.external.start.mode=auto \
             --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+            --conf spark.ext.h2o.external.cluster.size=2 \
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
             local:///opt/sparkling-water/tests/initTest.py
@@ -681,6 +685,7 @@ address from outside the Kubernetes cluster.
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=auto \
              --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.cluster.size=2 \
              --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
              --conf spark.executor.instances=3 \
@@ -714,6 +719,7 @@ address from outside the Kubernetes cluster.
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=auto \
              --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.cluster.size=2 \
              --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-python:SUBST_SW_VERSION \
              --conf spark.executor.instances=3 \
@@ -750,6 +756,7 @@ address from outside the Kubernetes cluster.
                                      "spark.ext.h2o.external.start.mode"="auto",
                                      "spark.ext.h2o.external.auto.start.backend"="kubernetes",
                                      "spark.ext.h2o.external.memory"="2G",
+                                     "spark.ext.h2o.external.cluster.size"="2",
                                      "spark.ext.h2o.external.k8s.docker.image"="h2oai/sparkling-water-python:SUBST_SW_VERSION",
                                      "spark.kubernetes.file.upload.path"="file:///tmp")
                              ports = c(8880, 8881, 4040, 54321))

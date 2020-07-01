@@ -305,7 +305,7 @@ def stopExternalH2OBackend() {
     sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
 }
 
-def testRExternalBackend(registryId, master, version, sparkVersion) {
+def testRExternalBackendManual(registryId, master, version, sparkVersion) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
@@ -314,6 +314,23 @@ def testRExternalBackend(registryId, master, version, sparkVersion) {
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
+        Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+        """
+    sh 'sleep 60'
+    sh "kubectl logs driver-r | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
+    sh "kubectl logs driver-r | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
+    stopExternalH2OBackend()
+}
+
+def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
+    startExternalH2OBackend(registryId, version)
+    sh "kubectl delete pod driver-r --ignore-not-found"
+    sh """
+        export KUBERNETES_MASTER=$master
+        export REGISTRY_ID=$registryId
+        export SW_VERSION=$version
+        export SPARK_VERSION=$sparkVersion
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
@@ -542,7 +559,8 @@ node("docker") {
             withTestEnv(commons, image) {
                 // R sets deployment mode automatically
                 testRInternalBackend(registryId, master, version, sparkVersion)
-                testRExternalBackend(registryId, master, version, sparkVersion)
+                testRExternalBackendManual(registryId, master, version, sparkVersion)
+                testRExternalBackendAuto(registryId, master, version, sparkVersion)
             }
         }
     }
