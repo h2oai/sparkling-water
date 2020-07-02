@@ -37,7 +37,11 @@ trait K8sHeadlessService extends K8sServiceUtils with K8sUtils {
     addServiceMeta(service, conf)
     addServiceSpec(service, conf)
     service.done()
-    waitForServiceToBeReady(client, conf.externalK8sNamespace, conf.externalK8sH2OServiceName)
+    waitForServiceToBeReady(
+      client,
+      conf.externalK8sNamespace,
+      conf.externalK8sH2OServiceName,
+      conf.externalK8sServiceTimeout)
   }
 
   protected def deleteH2OHeadlessService(client: KubernetesClient, conf: H2OConf): Unit = {

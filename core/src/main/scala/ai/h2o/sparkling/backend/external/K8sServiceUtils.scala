@@ -17,18 +17,22 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.util.concurrent.TimeUnit
+
 import io.fabric8.kubernetes.client.KubernetesClient
 
 trait K8sServiceUtils {
 
-  protected def waitForServiceToBeReady(client: KubernetesClient, namespace: String, serviceName: String): Unit = {
-    while (!client
-             .services()
-             .inNamespace(namespace)
-             .withName(serviceName)
-             .isReady) {
-      Thread.sleep(100)
-    }
+  protected def waitForServiceToBeReady(
+      client: KubernetesClient,
+      namespace: String,
+      serviceName: String,
+      timeout: Int): Unit = {
+    client
+      .services()
+      .inNamespace(namespace)
+      .withName(serviceName)
+      .waitUntilReady(timeout, TimeUnit.SECONDS)
   }
 
   protected def deleteService(client: KubernetesClient, namespace: String, serviceName: String): Unit = {
@@ -37,12 +41,5 @@ trait K8sServiceUtils {
       .inNamespace(namespace)
       .withName(serviceName)
       .delete()
-    while (client
-             .services()
-             .inNamespace(namespace)
-             .withName(serviceName)
-             .get() != null) {
-      Thread.sleep(100)
-    }
   }
 }

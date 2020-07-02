@@ -17,10 +17,13 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.util.concurrent.TimeUnit
+
 import ai.h2o.sparkling.H2OConf
 import io.fabric8.kubernetes.api.model.apps.{DoneableStatefulSet, StatefulSetFluent, StatefulSetSpecFluent}
 import io.fabric8.kubernetes.api.model.{IntOrString, Pod, Quantity}
 import io.fabric8.kubernetes.client.KubernetesClient
+import org.apache.spark.h2o.backends.internal.InternalH2OBackend.isClusterOfExpectedSize
 
 import scala.collection.JavaConverters._
 
@@ -128,21 +131,31 @@ trait K8sH2OStatefulSet extends K8sUtils {
   }
 
   private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): String = {
-    while (!client
-             .apps()
-             .statefulSets()
-             .inNamespace(conf.externalK8sNamespace)
-             .withName(conf.externalK8sH2OStatefulsetName)
-             .isReady) {
-      Thread.sleep(100)
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .waitUntilReady(conf.externalK8sServiceTimeout, TimeUnit.SECONDS)
+
+    val start = System.currentTimeMillis()
+    val timeout = conf.cloudTimeout
+    while (System.currentTimeMillis() - start < timeout) {
+      if (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt
+          && listReadyPods(client, conf).length != 1) {
+        Thread.sleep(100)
+      } else {
+        return listReadyPods(client, conf).head.getMetadata.getName
+      }
     }
-    while (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt) {
-      Thread.sleep(100)
+
+    if (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt
+        && listReadyPods(client, conf).length != 1) {
+      throw new RuntimeException("Timeout during clouding of external H2O backend on K8s.")
+    } else {
+      listReadyPods(client, conf).head.getMetadata.getName
     }
-    while (listReadyPods(client, conf).length != 1) {
-      Thread.sleep(100)
-    }
-    listReadyPods(client, conf).head.getMetadata.getName
+
   }
 
   private def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): Array[Pod] = {

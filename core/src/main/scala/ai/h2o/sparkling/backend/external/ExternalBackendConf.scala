@@ -118,6 +118,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalK8sExposeLeader: Boolean =
     sparkConf.getBoolean(PROP_EXTERNAL_K8S_EXPOSE_LEADER._1, PROP_EXTERNAL_K8S_EXPOSE_LEADER._2)
 
+  def externalK8sServiceTimeout: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -242,6 +245,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setExternalK8sExposeLeader(expose: Boolean): H2OConf = {
     set(PROP_EXTERNAL_K8S_EXPOSE_LEADER._1, expose)
+  }
+
+  def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
   }
 
   def externalConfString: String =
@@ -377,4 +384,7 @@ object ExternalBackendConf {
     * in Kubernetes to be able to cloud up. If this option is set to true, that Spark can run outside the
     * Kubernetes. */
   val PROP_EXTERNAL_K8S_EXPOSE_LEADER: (String, Boolean) = ("spark.ext.h2o.external.k8s.expose.leader", false)
+
+  /** Timeout in seconds used as a limit for K8s service creation */
+  val PROP_EXTERNAL_K8S_SERVICE_TIMEOUT: (String, Int) = ("spark.ext.h2o.external.k8s.svc.timeout", 60 * 5)
 }

@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.H2OConf
 import io.fabric8.kubernetes.api.model.{DoneableService, IntOrString}
 import io.fabric8.kubernetes.client.KubernetesClient
+import java.util.concurrent.TimeUnit
 
 import scala.collection.JavaConverters._
 
@@ -49,8 +50,13 @@ trait K8sExposeLeaderService extends K8sServiceUtils {
     addServiceMeta(service, conf)
     addServiceSpec(service, leaderNodePodName)
     service.done()
-    waitForServiceToBeReady(client, conf.externalK8sNamespace, exposeLeaderServiceName(conf))
+    waitForServiceToBeReady(
+      client,
+      conf.externalK8sNamespace,
+      exposeLeaderServiceName(conf),
+      conf.externalK8sServiceTimeout)
 
+    val start = System.currentTimeMillis()
     while (client
              .services()
              .inNamespace(conf.externalK8sNamespace)
@@ -60,7 +66,12 @@ trait K8sExposeLeaderService extends K8sServiceUtils {
              .getLoadBalancer
              .getIngress
              .isEmpty) {
-      Thread.sleep(100)
+      if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) > conf.externalK8sServiceTimeout) {
+        throw new RuntimeException(
+          s"Timeout for creation of service '${exposeLeaderServiceName(conf)}' has been reached.")
+      } else {
+        Thread.sleep(100)
+      }
     }
   }
 

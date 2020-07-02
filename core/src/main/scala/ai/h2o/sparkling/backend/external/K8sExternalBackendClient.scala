@@ -36,7 +36,7 @@ trait K8sExternalBackendClient extends K8sHeadlessService with K8sExposeLeaderSe
     val client = new DefaultKubernetesClient
     stopExternalH2OOnKubernetes(conf)
     installH2OHeadlessService(client, conf)
-    val leaderPodName = installH2OStatefulSet(client, conf)
+    val leaderPodName = installH2OStatefulSet(client, conf, getH2OHeadlessServiceURL(conf))
     if (conf.externalK8sExposeLeader) {
       installExposeLeaderService(client, conf, leaderPodName)
       conf.setH2OCluster(getExposeLeaderServiceURL(client, conf))
