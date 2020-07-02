@@ -25,6 +25,7 @@ import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
 import _root_.hex.Model
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
@@ -116,7 +117,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
       ((randDouble * rangeSize) + minValue).asInstanceOf[Int]
     }
     val nextRandomNumberUdf = udf(getNextRandomNumber _)
-    var initialDS = SparkSession.active.range(0, numberOfRows, 1, numberOfPartitions).toDF("drop")
+    var initialDS = SparkSessionUtils.active.range(0, numberOfRows, 1, numberOfPartitions).toDF("drop")
     columns.foreach { col =>
       initialDS = initialDS.withColumn(col, nextRandomNumberUdf())
     }
