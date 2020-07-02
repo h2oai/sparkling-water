@@ -96,7 +96,7 @@ def startJavaGateway(integ_spark_conf, token):
         integ_spark_conf["spark.ext.h2o.testing.path.to.sw.jar"]]
     import sys
     proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-    time.sleep(60)
+    time.sleep(120)
     return proc
 
 
