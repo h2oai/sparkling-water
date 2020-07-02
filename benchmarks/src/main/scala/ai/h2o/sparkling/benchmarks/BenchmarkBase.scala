@@ -22,7 +22,6 @@ import java.net.URI
 
 import _root_.hex.Model
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
@@ -105,24 +104,7 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     H2OFrame(uri)
   }
 
-  def loadVirtualH2OFrame(): H2OFrame = {
-    val numberOfRows = context.datasetDetails.nRows.get
-    val numberOfPartitions = context.datasetDetails.nPartitions.getOrElse(200)
-    val minValue: Long = context.datasetDetails.minValue.getOrElse[Int](Int.MinValue)
-    val maxValue: Long = context.datasetDetails.maxValue.getOrElse[Int](Int.MaxValue)
-    val rangeSize = maxValue - minValue
-    val columns = generateVirtualColumns().toArray
-    def getNextRandomNumber: Int = {
-      val randDouble = scala.util.Random.nextDouble()
-      ((randDouble * rangeSize) + minValue).asInstanceOf[Int]
-    }
-    val nextRandomNumberUdf = udf(getNextRandomNumber _)
-    var initialDS = SparkSessionUtils.active.range(0, numberOfRows, 1, numberOfPartitions).toDF("drop")
-    columns.foreach { col =>
-      initialDS = initialDS.withColumn(col, nextRandomNumberUdf())
-    }
-    H2OContext.ensure().asH2OFrame(initialDS.drop("drop"))
-  }
+  def loadVirtualH2OFrame(): H2OFrame = H2OContext.ensure().asH2OFrame(loadVirtualDataFrame())
 
   def run(): Unit = {
     val input = initialize()
