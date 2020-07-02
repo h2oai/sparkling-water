@@ -99,10 +99,7 @@ class H2OGridSearch(override val uid: String)
       .mkString("{", ",", "}")
   }
 
-  private def getGridModels(
-      gridId: String,
-      algoName: String,
-      internalFeatureCols: Array[String]): Array[H2OMOJOModel] = {
+  private def getGridModels(gridId: String, algoName: String): Array[H2OMOJOModel] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq(
@@ -112,7 +109,7 @@ class H2OGridSearch(override val uid: String)
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
     grid.model_ids.map { modelId =>
-      H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings, internalFeatureCols)
+      H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings)
     }
   }
 
@@ -123,7 +120,7 @@ class H2OGridSearch(override val uid: String)
         s"Algorithm has to be specified. Available algorithms are " +
           s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    val (train, valid) = prepareDatasetForFitting(dataset)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
@@ -145,7 +142,7 @@ class H2OGridSearch(override val uid: String)
     }
     algo.deleteRegisteredH2OFrames()
     deleteRegisteredH2OFrames()
-    val unsortedGridModels = getGridModels(gridId, algoName, internalFeatureCols)
+    val unsortedGridModels = getGridModels(gridId, algoName)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
     }
