@@ -228,7 +228,7 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
     set(PROP_EXTERNAL_K8S_H2O_API_PORT._1, port.toString)
   }
 
-  def externalK8sNamespace(namespace: String): H2OConf = {
+  def setExternalK8sNamespace(namespace: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_NAMESPACE._1, namespace)
   }
 
