@@ -78,6 +78,7 @@ abstract class PipelinePredictionTestBase extends FunSuite with SharedH2OTestCon
     val gbm = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(42)
+      .setWithDetailedPredictionCol(true)
       .setFeaturesCols("tf_idf")
       .setLabelCol("label")
 

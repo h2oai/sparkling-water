@@ -121,6 +121,26 @@ object Runner {
     }
   }
 
+  private def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
+
+    val algorithms = Seq[(String, Seq[String])](
+      ("H2OXGBoost", Seq("distribution")),
+      ("H2OGBM", Seq("distribution")),
+      ("H2ODRF", Seq("distribution")),
+      ("H2OGLM", Seq("distribution, family")),
+      ("H2ODeepLearning", Seq("distribution")),
+      ("H2OAutoML", Seq.empty))
+
+    algorithms.map { case (parameterEntityName, parametersToCheck) =>
+        ProblemSpecificAlgorithmSubstitutionContext(
+          null,
+          parameterEntityName,
+          null,
+          "ai.h2o.sparkling.ml.algos",
+          parametersToCheck)
+    }
+  }
+
   private def autoMLParameterConfiguration: Seq[ParameterSubstitutionContext] = {
     import DefaultValueSource._
 
