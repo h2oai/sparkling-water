@@ -17,9 +17,12 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.util.concurrent.TimeUnit
+
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import io.fabric8.kubernetes.api.model.{IntOrString, Pod, Quantity}
+import io.fabric8.kubernetes.client.dsl.Waitable
 import io.fabric8.kubernetes.client.{DefaultKubernetesClient, KubernetesClient}
 
 import scala.collection.JavaConverters._
@@ -46,7 +49,7 @@ trait KubernetesUtils {
     } else {
       conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
     }
-    // It takes for example for Amazon to expose required port when we expose the node
+    // It takes time, for example for Amazon, to expose required port when we expose the node
     // via the LoadBalancer
     while (true) {
       try {
@@ -122,9 +125,12 @@ trait KubernetesUtils {
       .endPort()
       .endSpec()
       .done()
-    while (!serviceExist(client, conf, conf.externalK8sH2OServiceName)) {
-      Thread.sleep(100)
-    }
+
+    client
+      .services()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OServiceName)
+      .waitUntilReady(100, TimeUnit.SECONDS)
   }
 
   private def installH2OStateFulSet(client: KubernetesClient, conf: H2OConf): String = {
@@ -190,13 +196,17 @@ trait KubernetesUtils {
       .endTemplate()
       .endSpec()
       .done()
+    client
+      .apps()
+      .statefulSets()
+      .inNamespace(conf.externalK8sNamespace)
+      .withName(conf.externalK8sH2OStatefulsetName)
+      .waitUntilReady(100, TimeUnit.SECONDS)
+
     waitForClusterToBeReady(client, conf)
   }
 
   private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): String = {
-    while (!H2OStatefulSetExist(client, conf)) {
-      Thread.sleep(100)
-    }
     while (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt) {
       Thread.sleep(100)
     }
