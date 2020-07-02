@@ -142,7 +142,7 @@ trait K8sH2OStatefulSet extends K8sUtils {
     val timeout = conf.cloudTimeout
     while (System.currentTimeMillis() - start < timeout) {
       if (getPodsForStatefulSet(client, conf).length < conf.clusterSize.get.toInt
-          && listReadyPods(client, conf).length != 1) {
+          || listReadyPods(client, conf).length != 1) {
         Thread.sleep(100)
       } else {
         return listReadyPods(client, conf).head.getMetadata.getName
