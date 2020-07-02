@@ -362,7 +362,7 @@ object SchemaUtils {
         field.dataType match {
           case v if ExposeUtils.isAnyVectorUDT(v) =>
             (0 until elemMaxSizes(idx)).map { arrIdx =>
-              StructField(field.name + arrIdx.toString, DoubleType, nullable = true)
+              StructField(field.name + "." + arrIdx.toString, DoubleType, nullable = true)
             }
           case udt if ExposeUtils.isUDT(udt) =>
             throw new UnsupportedOperationException(s"User defined type is not supported: ${udt.getClass}")

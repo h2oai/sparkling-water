@@ -45,7 +45,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val (train, valid, internalFeatureCols) = prepareDatasetForFitting(dataset)
+    val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
     val params = getH2OAlgorithmParams() ++
       Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey()) ++
@@ -61,10 +61,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
         throw new IllegalArgumentException(s"H2O could not use any of the specified feature" +
           s" columns: '${getFeaturesCols().mkString(", ")}'. H2O ignores constant columns, are all the columns constants?")
     }
-    H2OModel(modelId).toMOJOModel(
-      Identifiable.randomUID(parameters.algoName()),
-      H2OMOJOSettings.createFromModelParams(this),
-      internalFeatureCols)
+    H2OModel(modelId)
+      .toMOJOModel(Identifiable.randomUID(parameters.algoName()), H2OMOJOSettings.createFromModelParams(this))
   }
 
   private def convertModelIdToKey(): String = {
