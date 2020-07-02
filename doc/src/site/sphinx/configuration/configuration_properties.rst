@@ -381,7 +381,7 @@ External backend configuration properties
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.k8s.expose.leader``          | ``false``      | ``setExternalK8sExposeLeader(Boolean)``         | Determines whether the leader node  |
 |                                                       |                |                                                 | is exposed outside the K8s cluster  |
-|                                                       |                |                                                 | or not. By default, the leader is    |
+|                                                       |                |                                                 | or not. By default, the leader is   |
 |                                                       |                |                                                 | not exposed outside the Kubernetes  |
 |                                                       |                |                                                 | cluster. This implies that in this  |
 |                                                       |                |                                                 | case, also the Spark needs to run   |
