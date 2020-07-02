@@ -16,6 +16,7 @@
 
 import pytest
 import tempfile
+import shutil
 import unit_test_utils
 
 from pyspark.mllib.linalg import *
@@ -79,7 +80,8 @@ def trainAndTestH2OPythonGbm(hc, dataset):
     label = "CAPSULE"
     gbm = H2OGradientBoostingEstimator(seed=42)
     gbm.train(y=label, training_frame=h2oframe)
-    with tempfile.TemporaryDirectory() as directoryName:
+    directoryName = tempfile.mkdtemp(prefix="")
+    try:
         mojoPath = gbm.download_mojo(directoryName)
         settings = H2OMOJOSettings(withDetailedPredictionCol=True)
         model = H2OMOJOModel.createFromMojo(mojoPath, settings)
@@ -87,6 +89,8 @@ def trainAndTestH2OPythonGbm(hc, dataset):
             "prediction",
             "detailed_prediction.probabilities.0",
             "detailed_prediction.probabilities.1")
+    finally:
+        shutil.rmtree(directoryName)
 
 def compareH2OPythonGbmOnTwoDatasets(hc, reference, tested):
     expected = trainAndTestH2OPythonGbm(hc, reference)
