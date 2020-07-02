@@ -84,7 +84,7 @@ def trainAndTestH2OPythonGbm(hc, dataset):
     try:
         mojoPath = gbm.download_mojo(directoryName)
         settings = H2OMOJOSettings(withDetailedPredictionCol=True)
-        model = H2OMOJOModel.createFromMojo(mojoPath, settings)
+        model = H2OMOJOModel.createFromMojo("file://" + mojoPath, settings)
         return model.transform(dataset).select(
             "prediction",
             "detailed_prediction.probabilities.0",
