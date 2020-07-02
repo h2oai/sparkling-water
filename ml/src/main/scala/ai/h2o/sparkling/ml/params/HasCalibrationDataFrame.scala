@@ -42,6 +42,7 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
         s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
           "Please create one as H2OContext.getOrCreate().")
       val frame = hc.asH2OFrame(dataFrame)
+      registerH2OFrameForDeletion(frame)
       frame.frameId
     }
   }
