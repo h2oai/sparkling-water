@@ -17,17 +17,20 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import water.fvec.Frame
+import ai.h2o.sparkling.H2OFrame
+import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 
 class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-  extends AlgorithmBenchmarkBase[Frame](context, algorithmBundle) {
+  extends AlgorithmBenchmarkBase[H2OFrame](context, algorithmBundle)
+  with EstimatorCommonUtils {
 
-  override protected def initialize(): Frame = loadDataToH2OFrame()
+  override protected def initialize(): H2OFrame = loadDataToH2OFrame()
 
-  override protected def body(trainingFrame: Frame): Unit = {
-    val h2oAlgorithm = algorithmBundle.h2oAlgorithm
-    h2oAlgorithm._parms._train = trainingFrame._key
-    h2oAlgorithm._parms._response_column = context.datasetDetails.labelCol
-    h2oAlgorithm.trainModel().get()
+  override protected def body(trainingFrame: H2OFrame): Unit = {
+    val (name, params) = algorithmBundle.h2oAlgorithm
+    val newParams = params ++ Map(
+      "training_frame" -> trainingFrame.frameId,
+      "response_column" -> context.datasetDetails.labelCol)
+    trainAndGetDestinationKey(s"/3/ModelBuilders/$name", newParams)
   }
 }

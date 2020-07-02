@@ -21,6 +21,7 @@ import java.io.{File, FileOutputStream, InputStreamReader}
 import java.lang.reflect.Modifier
 
 import ai.h2o.sparkling.H2OContext
+import ai.h2o.sparkling.backend.utils.RestApiUtils
 import com.google.common.reflect.ClassPath
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -29,7 +30,7 @@ import org.json4s.jackson.Serialization._
 
 import scala.collection.JavaConverters._
 
-object Runner {
+object Runner extends RestApiUtils {
   val defaultDatasetSpecificationsFile = "datasets.json"
   val defaultOutputDir = new File("benchmarks", "output")
 
@@ -152,12 +153,13 @@ object Runner {
     }
   }
 
-  private def executeBatch(batch: BenchmarkBatch, outputDir: File) = {
+  private def executeBatch(batch: BenchmarkBatch, outputDir: File): Unit = {
     println(s"Executing benchmark batch '${batch.name}' ...")
     batch.benchmarks.foreach { benchmark =>
       benchmark.run()
       benchmark.exportMeasurements(System.out)
-      new DKVCleaner().clean()
+      val endpoint = getClusterEndpoint(hc.getConf)
+      delete(endpoint, "/3/DKV", hc.getConf)
     }
     outputDir.mkdirs()
     val sparkMaster = spark.conf.get("spark.master")
@@ -179,5 +181,4 @@ object Runner {
       dataset: Option[String],
       algorithm: Option[String],
       outputDir: Option[String])
-
 }
