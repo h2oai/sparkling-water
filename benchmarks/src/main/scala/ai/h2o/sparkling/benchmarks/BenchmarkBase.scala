@@ -20,12 +20,12 @@ package ai.h2o.sparkling.benchmarks
 import java.io.{OutputStream, PrintWriter}
 import java.net.URI
 
+import _root_.hex.Model
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
-import _root_.hex.Model
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.storage.StorageLevel
