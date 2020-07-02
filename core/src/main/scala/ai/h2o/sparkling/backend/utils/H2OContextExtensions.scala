@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
-import ai.h2o.sparkling.backend.external.{ExternalBackendConf, KubernetesUtils}
+import ai.h2o.sparkling.backend.external.{ExternalBackendConf, K8sExternalBackendClient}
 import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
 import ai.h2o.sparkling.extensions.rest.api.schema.{VerifyVersionV3, VerifyWebOpenV3}
 import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
@@ -30,7 +30,7 @@ import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
 
-trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils with KubernetesUtils {
+trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils with K8sExternalBackendClient {
   _: H2OContext =>
 
   def downloadH2OLogs(destinationDir: String, logContainer: String): String = {
