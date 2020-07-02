@@ -28,11 +28,18 @@ trait K8sServiceUtils {
       namespace: String,
       serviceName: String,
       timeout: Int): Unit = {
-    client
-      .services()
-      .inNamespace(namespace)
-      .withName(serviceName)
-      .waitUntilReady(timeout, TimeUnit.SECONDS)
+    val start = System.currentTimeMillis()
+    while (client
+             .services()
+             .inNamespace(namespace)
+             .withName(serviceName)
+             .get() == null) {
+      if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) > timeout) {
+        throw new RuntimeException(s"Timeout to start service '$serviceName' exceeded!")
+      } else {
+        Thread.sleep(100)
+      }
+    }
   }
 
   protected def deleteService(client: KubernetesClient, namespace: String, serviceName: String): Unit = {
