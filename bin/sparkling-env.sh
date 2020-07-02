@@ -118,10 +118,23 @@ if [ -z "$TOPDIR" ]; then
   exit -1
 fi
 
-function checkJava(){
+function checkJava() {
 if [ -z $(which java) ]; then
     echo "Java is not installed. Please install Java first before continuing with Sparkling Water."
     exit -1
+fi
+
+version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+if [ "$SPARK_MAJOR_VERSION" == "2.1" ]; then
+   if [[ "$version" < "1.7" ]]; then
+      echo "Java 7 or higher is required to run Spark $SPARK_VERSION"
+      exit -1
+   fi
+else
+   if [[ "$version" < "1.8" ]]; then
+      echo "Java 8 or higher is required to run Spark $SPARK_VERSION"
+      exit -1
+   fi
 fi
 }
 
