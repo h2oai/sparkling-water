@@ -18,34 +18,46 @@
 package ai.h2o.sparkling.api.generation.scala
 
 import ai.h2o.sparkling.api.generation.common._
+import ai.h2o.sparkling.api.generation.python.AlgorithmTemplate.resolveParameters
 
 object ProblemSpecificAlgorithmTemplate
-  extends ((String, ProblemSpecificAlgorithmSubstitutionContext) => String)
+  extends ((String, ProblemSpecificAlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext]) => String)
   with ScalaEntityTemplate {
 
   def apply(
       problemType: String,
-      algorithmSubstitutionContext: ProblemSpecificAlgorithmSubstitutionContext): String = {
+      algorithmSubstitutionContext: ProblemSpecificAlgorithmSubstitutionContext,
+      parameterSubstitutionContexts: Seq[ParameterSubstitutionContext]): String = {
+    val parameterNames = parameterSubstitutionContexts.flatMap(resolveParameters).map(_.h2oName)
     val parentEntityName = algorithmSubstitutionContext.parentEntityName
     val parentNamespace = algorithmSubstitutionContext.parentNamespace
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
+    val problemTypeClass = "H2O" + entityName.substring(parentEntityName.length)
 
     val checks = algorithmSubstitutionContext.parametersToCheck.map {
-      parameter => s"${parameter.capitalize}To${problemType.capitalize}Check"
+      parameter => s"${parameter.capitalize}For${problemType.capitalize}Check"
     }
-    val parents = Seq(parentEntityName) ++ checks
+    val parents = Seq(parentEntityName, problemTypeClass) ++ checks
 
-    val imports = Seq(s"${parentNamespace}.${parentEntityName}") ++
-      checks.map(check => s"${parentNamespace}.${problemType}.$check")
+    val imports = Seq(
+      s"${parentNamespace}.${parentEntityName}",
+      "ai.h2o.sparkling.ml.utils.H2OParamsReadable",
+      "org.apache.spark.ml.util.Identifiable")
 
-    val parameters = "(override val uid: String)"
+    val classParameters = "(override val uid: String)"
 
     val entitySubstitutionContext =
-      EntitySubstitutionContext(namespace, entityName, parents, imports, parameters)
+      EntitySubstitutionContext(namespace, entityName, parents, imports, classParameters)
+
+    val overriddenDefaultValues = algorithmSubstitutionContext.overriddenDefaultValues
+    val defaultValues = overriddenDefaultValues
+      .filter((keyValuePair) => parameterNames.contains(keyValuePair._1))
+      .map(value => s"${value._1} -> ${stringify(value._2)}")
+    val defaultValueSection = if (defaultValues.isEmpty) "" else s"\n\n  set(${defaultValues.mkString(",\n")})"
 
     val algorithmClass = generateEntity(entitySubstitutionContext, "class") {
-      s"  def this() = this(Identifiable.randomUID(classOf[$entityName].getSimpleName))"
+      s"  def this() = this(Identifiable.randomUID(classOf[$entityName].getSimpleName))$defaultValueSection"
     }
 
     val algorithmObject = s"object $entityName extends H2OParamsReadable[$entityName]"

@@ -91,7 +91,7 @@ object ParametersTemplate
     parameters
       .map { parameter =>
         val constructorMethod = resolveParameterConstructorMethod(parameter.dataType, parameter.defaultValue)
-        s"""  private val ${parameter.swName} = ${constructorMethod}(
+        s"""  protected val ${parameter.swName} = ${constructorMethod}(
            |    name = "${parameter.swName}",
            |    doc = "${parameter.comment}")""".stripMargin
       }
@@ -109,16 +109,6 @@ object ParametersTemplate
         s"    ${parameter.swName} -> $defaultValue"
       }
       .mkString(",\n")
-  }
-
-  private def stringify(value: Any): String = value match {
-    case f: java.lang.Float => s"${f.toString.toLowerCase}f"
-    case d: java.lang.Double => d.toString.toLowerCase
-    case l: java.lang.Long => s"${l}L"
-    case a: Array[_] => s"Array(${a.map(stringify).mkString(", ")})"
-    case s: String => s""""$s""""
-    case v if v == null => null
-    case v => v.toString
   }
 
   private def generateGetters(parameters: Seq[Parameter]): String = {

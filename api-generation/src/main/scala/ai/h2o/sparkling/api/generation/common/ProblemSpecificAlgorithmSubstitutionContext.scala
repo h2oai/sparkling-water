@@ -22,5 +22,6 @@ case class ProblemSpecificAlgorithmSubstitutionContext(
     parentEntityName: String,
     namespace: String,
     parentNamespace: String,
-    parametersToCheck: Seq[String])
+    parametersToCheck: Seq[String],
+    overriddenDefaultValues: Map[String, Any] = Map.empty)
   extends SubstitutionContextBase

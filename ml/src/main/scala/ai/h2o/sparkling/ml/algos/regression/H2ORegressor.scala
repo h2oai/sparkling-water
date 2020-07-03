@@ -23,7 +23,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DoubleType
 
-trait H2OClassifier extends H2OAlgoCommonUtils {
+trait H2ORegressor extends H2OAlgoCommonUtils {
   def getLabelCol(): String
 
   override protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {

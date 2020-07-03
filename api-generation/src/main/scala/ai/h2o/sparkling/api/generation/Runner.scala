@@ -22,6 +22,7 @@ import java.util
 
 import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
+import ai.h2o.sparkling.api.generation.scala.ProblemSpecificAlgorithmTemplate
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
@@ -127,9 +128,8 @@ object Runner {
       ("H2OXGBoost", Seq("distribution")),
       ("H2OGBM", Seq("distribution")),
       ("H2ODRF", Seq("distribution")),
-      ("H2OGLM", Seq("distribution, family")),
-      ("H2ODeepLearning", Seq("distribution")),
-      ("H2OAutoML", Seq.empty))
+      ("H2OGLM", Seq("distribution", "family")),
+      ("H2ODeepLearning", Seq("distribution")))
 
     algorithms.map { case (parameterEntityName, parametersToCheck) =>
         ProblemSpecificAlgorithmSubstitutionContext(
@@ -242,6 +242,9 @@ object Runner {
 
   private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
 
+  private val problemSpecificAlgorithmTemplates =
+    Map("scala" -> scala.ProblemSpecificAlgorithmTemplate, "py" -> python.ProblemSpecificAlgorithmTemplate)
+
   private val parameterTemplates = Map("scala" -> scala.ParametersTemplate, "py" -> python.ParametersTemplate)
 
   def main(args: Array[String]): Unit = {
@@ -256,6 +259,29 @@ object Runner {
     for ((algorithmContext, parameterContext) <- algorithmConfiguration.zip(parametersConfiguration)) {
       val content = algorithmTemplates(languageExtension)(algorithmContext, Seq(parameterContext))
       writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
+    }
+
+    for ((algorithmContext, parameterContext) <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
+      val classificationAlgorithmContext = algorithmContext.copy(
+        entityName = algorithmContext.parentEntityName + "Classifier",
+        namespace = algorithmContext.parentNamespace + ".classification",
+        overriddenDefaultValues = Map("family" -> "binomial"))
+      val content = problemSpecificAlgorithmTemplates(languageExtension)(
+        "classification",
+        classificationAlgorithmContext,
+        Seq(parameterContext))
+      writeResultToFile(content, classificationAlgorithmContext, languageExtension, destinationDir)
+    }
+
+    for ((algorithmContext, parameterContext)  <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
+      val regressionAlgorithmContext = algorithmContext.copy(
+        entityName = algorithmContext.parentEntityName + "Regressor",
+        namespace = algorithmContext.parentNamespace + ".regression")
+      val content = problemSpecificAlgorithmTemplates(languageExtension)(
+        "regression",
+        regressionAlgorithmContext,
+        Seq(parameterContext))
+      writeResultToFile(content, regressionAlgorithmContext, languageExtension, destinationDir)
     }
 
     for (substitutionContext <- autoMLParameterConfiguration) {
