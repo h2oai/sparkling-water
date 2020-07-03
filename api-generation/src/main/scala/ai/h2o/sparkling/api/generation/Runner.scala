@@ -22,7 +22,6 @@ import java.util
 
 import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
-import ai.h2o.sparkling.api.generation.scala.ProblemSpecificAlgorithmTemplate
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas._
@@ -83,22 +82,22 @@ object Runner {
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields))
 
-    algorithmParameters.map {
-      case (entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) =>
-        ParameterSubstitutionContext(
-          namespace = "ai.h2o.sparkling.ml.params",
-          entityName,
-          h2oSchemaClass,
-          h2oParameterClass,
-          IgnoredParameters.all ++
-            (if (entityName == "H2OKMeansParams") Seq("response_column", "offset_column") else Seq.empty),
-          explicitFields,
-          explicitDefaultValues,
-          typeExceptions = TypeExceptions.all(),
-          defaultValueSource = DefaultValueSource.Field,
-          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
-          generateParamTag = true)
-    }
+
+    for((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
+      yield ParameterSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.params",
+        entityName,
+        h2oSchemaClass,
+        h2oParameterClass,
+        IgnoredParameters.all ++
+          (if (entityName == "H2OKMeansParams") Seq("response_column", "offset_column") else Seq.empty),
+        explicitFields,
+        explicitDefaultValues,
+        typeExceptions = TypeExceptions.all(),
+        defaultValueSource = DefaultValueSource.Field,
+        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+        generateParamTag = true)
+
   }
 
   private def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
@@ -111,15 +110,13 @@ object Runner {
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")))
 
-    algorithms.map {
-      case (entityName, h2oParametersClass: Class[_], algorithmType, extraParents) =>
-        AlgorithmSubstitutionContext(
-          namespace = "ai.h2o.sparkling.ml.algos",
-          entityName,
-          h2oParametersClass,
-          algorithmType,
-          extraParents)
-    }
+    for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
+      yield AlgorithmSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.algos",
+        entityName,
+        h2oParametersClass,
+        algorithmType,
+        extraParents)
   }
 
   private def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
@@ -131,15 +128,13 @@ object Runner {
       ("H2OGLM", Seq("distribution", "family")),
       ("H2ODeepLearning", Seq("distribution")))
 
-    algorithms.map {
-      case (parameterEntityName, parametersToCheck) =>
-        ProblemSpecificAlgorithmSubstitutionContext(
-          null,
-          parameterEntityName,
-          null,
-          "ai.h2o.sparkling.ml.algos",
-          parametersToCheck)
-    }
+    for ((parameterEntityName, parametersToCheck) <- algorithms)
+      yield ProblemSpecificAlgorithmSubstitutionContext(
+        null,
+        parameterEntityName,
+        null,
+        "ai.h2o.sparkling.ml.algos",
+        parametersToCheck)
   }
 
   private def autoMLParameterConfiguration: Seq[ParameterSubstitutionContext] = {
@@ -151,24 +146,22 @@ object Runner {
       ("H2OAutoMLStoppingCriteriaParams", classOf[AutoMLStoppingCriteriaV99], classOf[AutoMLStoppingCriteria], Getter),
       ("H2OAutoMLBuildModelsParams", classOf[AutoMLBuildModelsV99], classOf[AutoMLBuildModels], Field))
 
-    autoMLParameters.map {
-      case (entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], source: DefaultValueSource) =>
-        ParameterSubstitutionContext(
-          namespace = "ai.h2o.sparkling.ml.params",
-          entityName,
-          h2oSchemaClass,
-          h2oParameterClass,
-          AutoMLIgnoredParameters.all,
-          explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols) else Seq.empty,
-          explicitDefaultValues =
-            Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
-          defaultValueFieldPrefix = "",
-          typeExceptions = AutoMLTypeExceptions.all(),
-          defaultValueSource = source,
-          defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
-            Map("monotoneConstraints" -> new util.HashMap[String, Double](), "ignoredCols" -> ignoredCols.defaultValue),
-          generateParamTag = false)
-    }
+    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], source) <- autoMLParameters)
+      yield ParameterSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.params",
+        entityName,
+        h2oSchemaClass,
+        h2oParameterClass,
+        AutoMLIgnoredParameters.all,
+        explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols) else Seq.empty,
+        explicitDefaultValues =
+          Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
+        defaultValueFieldPrefix = "",
+        typeExceptions = AutoMLTypeExceptions.all(),
+        defaultValueSource = source,
+        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
+          Map("monotoneConstraints" -> new util.HashMap[String, Double](), "ignoredCols" -> ignoredCols.defaultValue),
+        generateParamTag = false)
   }
 
   private def autoMLAlgorithmContext: AlgorithmSubstitutionContext = {
@@ -196,25 +189,24 @@ object Runner {
         Seq("strategy")),
       ("H2OGridSearchCommonCriteriaParams", classOf[DummySearchCriteria], classOf[CartesianSearchCriteria], Seq.empty))
 
-    gridSearchParameters.map {
-      case (entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], extraIgnoredParameters) =>
-        ParameterSubstitutionContext(
-          namespace = "ai.h2o.sparkling.ml.params",
-          entityName,
-          h2oSchemaClass,
-          h2oParameterClass,
-          ignoredParameters = Seq("__meta") ++ extraIgnoredParameters,
-          explicitFields = Seq.empty,
-          explicitDefaultValues = Map.empty,
-          typeExceptions = Map.empty,
-          defaultValueSource = DefaultValueSource.Getter,
-          defaultValuesOfCommonParameters = Map(
-            "algo" -> null,
-            "hyperParameters" -> new util.HashMap[String, AnyRef](),
-            "selectBestModelBy" -> "AUTO",
-            "parallelism" -> 1),
-          generateParamTag = false)
-    }
+
+    for((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], extraIgnoredParameters) <- gridSearchParameters)
+      yield ParameterSubstitutionContext(
+        namespace = "ai.h2o.sparkling.ml.params",
+        entityName,
+        h2oSchemaClass,
+        h2oParameterClass,
+        ignoredParameters = Seq("__meta") ++ extraIgnoredParameters,
+        explicitFields = Seq.empty,
+        explicitDefaultValues = Map.empty,
+        typeExceptions = Map.empty,
+        defaultValueSource = DefaultValueSource.Getter,
+        defaultValuesOfCommonParameters = Map(
+          "algo" -> null,
+          "hyperParameters" -> new util.HashMap[String, AnyRef](),
+          "selectBestModelBy" -> "AUTO",
+          "parallelism" -> 1),
+        generateParamTag = false)
   }
 
   private def gridSearchAlgorithmContext: AlgorithmSubstitutionContext = {
