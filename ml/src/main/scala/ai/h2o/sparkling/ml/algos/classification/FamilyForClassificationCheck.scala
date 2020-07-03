@@ -24,7 +24,7 @@ import org.apache.spark.sql.Dataset
 trait FamilyForClassificationCheck extends H2OAlgoCommonUtils {
   def getFamily(): String
 
-  override def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
+  override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val family = getFamily()
     val problemType = ProblemType.familyToProblemType(family)
     if (problemType != ProblemType.Both && problemType != ProblemType.Classification) {

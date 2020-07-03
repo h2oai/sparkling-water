@@ -24,7 +24,7 @@ import org.apache.spark.sql.Dataset
 trait DistributionForClassificationCheck extends H2OAlgoCommonUtils {
   def getDistribution(): String
 
-  override def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
+  override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val distribution = getDistribution()
     val problemType = ProblemType.distributionToProblemType(distribution)
     if (problemType != ProblemType.Both && problemType != ProblemType.Classification) {

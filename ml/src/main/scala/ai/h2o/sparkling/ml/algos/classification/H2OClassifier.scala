@@ -26,7 +26,7 @@ import org.apache.spark.sql.types.StringType
 trait H2OClassifier extends H2OAlgoCommonUtils {
   def getLabelCol(): String
 
-  override protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
+  override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val labelColumnName = getLabelCol()
     val preparedDataset = dataset.withColumn(labelColumnName, col(labelColumnName).cast(StringType))
     super.prepareDatasetForFitting(preparedDataset)

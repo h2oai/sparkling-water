@@ -26,7 +26,7 @@ import org.apache.spark.sql.types.DoubleType
 trait H2ORegressor extends H2OAlgoCommonUtils {
   def getLabelCol(): String
 
-  override protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
+  override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame], Array[String]) = {
     val labelColumnName = getLabelCol()
     val preparedDataset = dataset.withColumn(labelColumnName, col(labelColumnName).cast(DoubleType))
     super.prepareDatasetForFitting(preparedDataset)

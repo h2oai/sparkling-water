@@ -33,7 +33,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
   private[sparkling] def setFeaturesCols(value: Array[String]): this.type
 
-  protected def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
+  private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
 
     if (getFeaturesCols().isEmpty) {

@@ -24,7 +24,7 @@ import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEnco
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, H2OParamsReadable}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import hex.Model
@@ -45,7 +45,7 @@ import scala.collection.JavaConverters._
   */
 class H2OGridSearch(override val uid: String)
   extends Estimator[H2OMOJOModel]
-  with H2OAlgoCommonUtils
+  with EstimatorCommonUtils
   with DefaultParamsWritable
   with H2OGridSearchParams
   with RestCommunication
@@ -120,7 +120,7 @@ class H2OGridSearch(override val uid: String)
         s"Algorithm has to be specified. Available algorithms are " +
           s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid) = algo.prepareDatasetForFitting(dataset)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
@@ -234,17 +234,6 @@ class H2OGridSearch(override val uid: String)
       case (key, _) =>
         !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
     }
-  }
-
-  private[sparkling] def getColumnsToCategorical(): Array[String] = getAlgo().getColumnsToCategorical()
-  override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ getAlgo().getExcludedCols()
-  }
-  private[sparkling] def getFeaturesCols(): Array[String] = getAlgo().getFeaturesCols()
-  private[sparkling] def getSplitRatio(): Double = getAlgo().getSplitRatio()
-  private[sparkling] def setFeaturesCols(value: Array[String]): this.type = {
-    getAlgo().setFeaturesCols(value)
-    this
   }
 }
 
