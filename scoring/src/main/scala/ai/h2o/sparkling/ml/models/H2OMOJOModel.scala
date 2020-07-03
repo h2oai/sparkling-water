@@ -22,11 +22,11 @@ import java.io.{File, InputStream}
 import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
 import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
-import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
-import ai.h2o.sparkling.ml.utils.Utils
+import ai.h2o.sparkling.ml.utils.{SchemaUtils, Utils}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
@@ -37,7 +37,7 @@ import org.apache.spark.sql.functions._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
+import scala.collection.JavaConverters._
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
@@ -87,6 +87,17 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     val columns = mojoBackend.m.getNames
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
+  }
+
+  def leafNodeAssignments(df: DataFrame): DataFrame = {
+    val spark = SparkSessionUtils.active
+    import spark.implicits._
+    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    df.map { row =>
+        val rowData = RowConverter.toH2ORowData(row)
+        mojoBackend.leafNodeAssignmentExtended(rowData)._paths
+      }
+      .toDF("leafNodeAssignments")
   }
 
   def setSpecificParams(mojoModel: MojoModel): H2OMOJOModel = this

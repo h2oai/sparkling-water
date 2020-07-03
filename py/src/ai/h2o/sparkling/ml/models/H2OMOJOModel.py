@@ -22,7 +22,8 @@ from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-
+from pyspark.sql import SparkSession
+from pyspark.sql.dataframe import DataFrame
 
 class H2OMOJOModel(H2OMOJOModelBase):
 
@@ -65,6 +66,8 @@ class H2OMOJOModel(H2OMOJOModelBase):
     def getModelCategory(self):
         return self._java_obj.getModelCategory()
 
+    def leafNodeAssignments(self, df):
+        return DataFrame(self._java_obj.leafNodeAssignments(df), SparkSession.builder.getOrCreate()._wrapped)
 
 class H2OSupervisedMOJOModel(H2OMOJOModel):
 

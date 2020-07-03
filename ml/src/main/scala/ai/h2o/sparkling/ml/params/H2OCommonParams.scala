@@ -75,6 +75,8 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
 
   def setWithContributions(enabled: Boolean): this.type = set(withContributions, enabled)
 
+  def setLeafNodeAssignmentsEnabled(enabled: Boolean): this.type = set(leafNodeAssignmentsEnabled, enabled)
+
   def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
 
   def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
