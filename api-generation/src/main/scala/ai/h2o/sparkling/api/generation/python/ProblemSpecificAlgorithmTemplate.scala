@@ -52,7 +52,8 @@ object ProblemSpecificAlgorithmTemplate
       }
     }
     val commonDefaultValues = commonSubstitutionContext.defaultValuesOfCommonParameters ++
-      overriddenDefaultValues.keySet.intersect(commonSubstitutionContext.defaultValuesOfCommonParameters.keySet)
+      overriddenDefaultValues.keySet
+        .intersect(commonSubstitutionContext.defaultValuesOfCommonParameters.keySet)
         .map(k => k -> overriddenDefaultValues(k))
     val explicitDefaultValues = commonSubstitutionContext.explicitDefaultValues ++ overriddenDefaultValues
 

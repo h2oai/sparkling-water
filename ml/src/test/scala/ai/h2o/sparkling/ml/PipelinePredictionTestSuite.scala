@@ -57,7 +57,9 @@ class PipelinePredictionTestSuite extends PipelinePredictionTestBase {
     //
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
-    trainedPipelineModel(spark).write.overwrite().save("/Users/marek/git2/sparkling-water/ml/src/test/resources/sms_pipeline.model2")
+    trainedPipelineModel(spark).write
+      .overwrite()
+      .save("/Users/marek/git2/sparkling-water/ml/src/test/resources/sms_pipeline.model2")
     predictions2.show(50, false)
 
     TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)

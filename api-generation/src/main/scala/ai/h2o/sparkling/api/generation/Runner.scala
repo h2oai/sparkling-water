@@ -131,7 +131,8 @@ object Runner {
       ("H2OGLM", Seq("distribution", "family")),
       ("H2ODeepLearning", Seq("distribution")))
 
-    algorithms.map { case (parameterEntityName, parametersToCheck) =>
+    algorithms.map {
+      case (parameterEntityName, parametersToCheck) =>
         ProblemSpecificAlgorithmSubstitutionContext(
           null,
           parameterEntityName,
@@ -273,7 +274,7 @@ object Runner {
       writeResultToFile(content, classificationAlgorithmContext, languageExtension, destinationDir)
     }
 
-    for ((algorithmContext, parameterContext)  <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
+    for ((algorithmContext, parameterContext) <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
       val regressionAlgorithmContext = algorithmContext.copy(
         entityName = algorithmContext.parentEntityName + "Regressor",
         namespace = algorithmContext.parentNamespace + ".regression")

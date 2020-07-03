@@ -35,8 +35,8 @@ object ProblemSpecificAlgorithmTemplate
     val namespace = algorithmSubstitutionContext.namespace
     val problemTypeClass = "H2O" + entityName.substring(parentEntityName.length)
 
-    val checks = algorithmSubstitutionContext.parametersToCheck.map {
-      parameter => s"${parameter.capitalize}For${problemType.capitalize}Check"
+    val checks = algorithmSubstitutionContext.parametersToCheck.map { parameter =>
+      s"${parameter.capitalize}For${problemType.capitalize}Check"
     }
     val parents = Seq(parentEntityName, problemTypeClass) ++ checks
 
