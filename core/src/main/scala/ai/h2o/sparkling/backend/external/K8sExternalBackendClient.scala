@@ -22,42 +22,28 @@ import ai.h2o.sparkling.backend.utils.RestApiUtils
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import org.apache.spark.expose.Logging
 
-trait K8sExternalBackendClient
-  extends K8sHeadlessService
-  with K8sExposeLeaderService
-  with K8sH2OStatefulSet
-  with Logging {
+trait K8sExternalBackendClient extends K8sHeadlessService with K8sH2OStatefulSet with Logging {
 
   def stopExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
     deleteH2OHeadlessService(client, conf)
     deleteH2OStatefulSet(client, conf)
-    if (conf.externalK8sExposeLeader) {
-      deleteExposeLeaderService(client, conf)
-    }
   }
 
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
     stopExternalH2OOnKubernetes(conf)
     installH2OHeadlessService(client, conf)
-    val leaderPodName = installH2OStatefulSet(client, conf, getH2OHeadlessServiceURL(conf))
-    if (conf.externalK8sExposeLeader) {
-      installExposeLeaderService(client, conf, leaderPodName)
-      conf.setH2OCluster(getExposeLeaderServiceURL(client, conf))
-    } else {
-      conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
-    }
-    // It takes time, for example for Amazon, to expose required port when we expose the node
-    // via the LoadBalancer
+    installH2OStatefulSet(client, conf, getH2OHeadlessServiceURL(conf))
+    conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
     while (true) {
       try {
         RestApiUtils.getClusterInfo(conf)
         return
       } catch {
         case _: Throwable =>
-          logInfo("Waiting for leader node to get exposed via Kubernetes service ...")
-          Thread.sleep(10000)
+          logInfo("Waiting for H2O cluster to get ready ...")
+          Thread.sleep(1000)
       }
     }
   }

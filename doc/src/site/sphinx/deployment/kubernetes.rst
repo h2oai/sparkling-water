@@ -514,15 +514,6 @@ In automatic mode, Sparkling Water starts external H2O on Kubernetes automatical
 driver node is configured to communicate with the Kubernetes cluster. Docker image for the external H2O backend
 is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
-By default, the external H2O backend does not expose the leader node outside the Kubernetes cluster. This means
-that in this mode, Spark can only communicate with the automatically started external H2O backend if
-it is running also inside Kubernetes. If you would like to use Spark outside the Kubernetes but the external
-H2O backend within Kubernetes, please add ``spark.ext.h2o.external.k8s.expose.leader=true`` to your Spark
-configuration. This ensures that the leader node is exposed via remotely accessible DNS name which Sparkling
-Water uses to connect to the cluster. When this option is enabled, it is also not necessary to run the Spark driver
-inside a Kubernetes pod as described in the documentation bellow as the external H2O backend leader has reachable
-address from outside the Kubernetes cluster.
-
 .. content-tabs::
 
     .. tab-container:: Scala

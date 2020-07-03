@@ -115,9 +115,6 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
 
-  def externalK8sExposeLeader: Boolean =
-    sparkConf.getBoolean(PROP_EXTERNAL_K8S_EXPOSE_LEADER._1, PROP_EXTERNAL_K8S_EXPOSE_LEADER._2)
-
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
 
@@ -241,10 +238,6 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setExternalK8sDomain(domain: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
-  }
-
-  def setExternalK8sExposeLeader(expose: Boolean): H2OConf = {
-    set(PROP_EXTERNAL_K8S_EXPOSE_LEADER._1, expose)
   }
 
   def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
@@ -378,12 +371,6 @@ object ExternalBackendConf {
 
   /** Domain of the Kubernetes Cluster */
   val PROP_EXTERNAL_K8S_DOMAIN: (String, String) = ("spark.ext.h2o.external.k8s.domain", s"cluster.local")
-
-  /** Determines whether the leader node is exposed outside the K8s cluster or not. By default the leader is not
-    * exposed outside the Kubernetes cluster. This implies that in this case, also the Spark needs to run
-    * in Kubernetes to be able to cloud up. If this option is set to true, that Spark can run outside the
-    * Kubernetes. */
-  val PROP_EXTERNAL_K8S_EXPOSE_LEADER: (String, Boolean) = ("spark.ext.h2o.external.k8s.expose.leader", false)
 
   /** Timeout in seconds used as a limit for K8s service creation */
   val PROP_EXTERNAL_K8S_SERVICE_TIMEOUT: (String, Int) = ("spark.ext.h2o.external.k8s.svc.timeout", 60 * 5)

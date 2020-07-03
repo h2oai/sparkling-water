@@ -442,10 +442,6 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
-def testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version) {
-    sh "${scalaExternalBackendSubmitCmd(registryId, "local", version, "client", "auto", "true")} && echo \"OK\" || exit 1"
-}
-
 static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, startMode, driverOutsideK8s) {
     def prefix
     if (startMode == "manual") {
@@ -478,10 +474,6 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
-}
-
-def testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version) {
-    sh "${pythonExternalBackendSubmitCmd(registryId, "local", version, "client", "auto", "true")} && echo \"OK\" || exit 1"
 }
 
 def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
@@ -548,7 +540,6 @@ node("docker") {
                 testScalaExternalBackendManualClientMode(registryId, master, version)
                 testScalaExternalBackendAutoClusterMode(registryId, master, version)
                 testScalaExternalBackendAutoClientMode(registryId, master, version)
-                testScalaExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
             }
         }
 
@@ -565,7 +556,6 @@ node("docker") {
                 testPythonExternalBackendManualClientMode(registryId, master, version)
                 testPythonExternalBackendAutoClusterMode(registryId, master, version)
                 testPythonExternalBackendAutoClientMode(registryId, master, version)
-                testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
             }
         }
 
