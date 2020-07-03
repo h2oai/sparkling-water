@@ -1,6 +1,37 @@
 Change Log
 ==========
 
+v3.30.0.6-1 (2020-07-03)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.6-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.6-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.6-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.6-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.6-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.6-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.6-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.6-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.6-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.6-1-3.0/index.html>`__
+
+-  Bug
+        
+   -  `SW-352 <https://0xdata.atlassian.net/browse/SW-352>`__ - Flow UI Scala Repl: use paste mode to interpret commands passed through Flow UI
+   -  `SW-1510 <https://0xdata.atlassian.net/browse/SW-1510>`__ - Fix misleading error message from incompatible Java version
+   -  `SW-2316 <https://0xdata.atlassian.net/browse/SW-2316>`__ - Intermittent failure of ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException at ScalaInterpreterServletTestSuite.scala:28
+   -  `SW-2343 <https://0xdata.atlassian.net/browse/SW-2343>`__ - Fix MOJO Model Predictions on Dataframes with ArrayType or Vector
+   -  `SW-2344 <https://0xdata.atlassian.net/browse/SW-2344>`__ - Fix mojo test -&gt; H2O added a new parameter and therefore number of parameters does not match now
+   -  `SW-2348 <https://0xdata.atlassian.net/browse/SW-2348>`__ - Fix Terraform issue with matching multiple VPCs
+                
+-  New Feature
+        
+   -  `SW-2303 <https://0xdata.atlassian.net/browse/SW-2303>`__ - Create Sparkling Py4j Getaway
+                
+-  Improvement
+        
+   -  `SW-2346 <https://0xdata.atlassian.net/browse/SW-2346>`__ - Upgrade H2O to 3.30.0.6
+                
+-  Engineering Story
+        
+   -  `SW-2341 <https://0xdata.atlassian.net/browse/SW-2341>`__ - Fix intermittent HamOrSpam failure on AutoML
+                
+                            
 v3.30.0.5-1 (2020-06-22)
 ------------------------
 Downloads:
