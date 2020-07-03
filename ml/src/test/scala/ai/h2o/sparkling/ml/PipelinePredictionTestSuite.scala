@@ -33,7 +33,7 @@ class PipelinePredictionTestSuite extends PipelinePredictionTestBase {
     //
     // Load exported pipeline
     //
-    val model_path = getClass.getResource("/sms_pipeline.model2")
+    val model_path = getClass.getResource("/sms_pipeline.model")
     val pipelineModel = PipelineModel.read.load(model_path.getFile)
 
     //
@@ -50,17 +50,12 @@ class PipelinePredictionTestSuite extends PipelinePredictionTestBase {
     // py/examples/pipelines/ham_or_spam_multi_algo.py
     //
     val predictions1 = pipelineModel.transform(inputDataStream)
-    predictions1.show(50, false)
 
     //
     // UNTIL NOW, RUNTIME WAS NOT AVAILABLE
     //
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(inputDataStream)
-    trainedPipelineModel(spark).write
-      .overwrite()
-      .save("/Users/marek/git2/sparkling-water/ml/src/test/resources/sms_pipeline.model2")
-    predictions2.show(50, false)
 
     TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
   }
