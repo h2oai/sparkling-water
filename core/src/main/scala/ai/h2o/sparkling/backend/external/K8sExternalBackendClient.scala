@@ -20,8 +20,13 @@ package ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
+import org.apache.spark.expose.Logging
 
-trait K8sExternalBackendClient extends K8sHeadlessService with K8sExposeLeaderService with K8sH2OStatefulSet {
+trait K8sExternalBackendClient
+  extends K8sHeadlessService
+  with K8sExposeLeaderService
+  with K8sH2OStatefulSet
+  with Logging {
 
   def stopExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val client = new DefaultKubernetesClient
@@ -50,7 +55,9 @@ trait K8sExternalBackendClient extends K8sHeadlessService with K8sExposeLeaderSe
         RestApiUtils.getClusterInfo(conf)
         return
       } catch {
-        case _: Throwable => Thread.sleep(1000)
+        case _: Throwable =>
+          logInfo("Waiting for leader node to get exposed via Kubernetes service...")
+          Thread.sleep(10000)
       }
     }
   }
