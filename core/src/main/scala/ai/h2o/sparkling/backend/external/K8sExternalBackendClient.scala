@@ -56,7 +56,7 @@ trait K8sExternalBackendClient
         return
       } catch {
         case _: Throwable =>
-          logInfo("Waiting for leader node to get exposed via Kubernetes service...")
+          logInfo("Waiting for leader node to get exposed via Kubernetes service ...")
           Thread.sleep(10000)
       }
     }

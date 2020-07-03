@@ -44,6 +44,7 @@ object InitTest {
     val model = estimator.fit(trainingDF)
 
     model.transform(testingDF).collect()
+    System.out.println("All work done!")
     hc.stop(true)
   }
 }
