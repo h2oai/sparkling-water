@@ -228,12 +228,12 @@ object ExternalH2OBackend extends SharedBackendUtils {
           conf.setClientCheckRetryTimeout(conf.backendHeartbeatInterval * 6)
         }
 
-        if (conf.clusterInfoFile.isEmpty) {
-          conf.setClusterInfoFile("notify_" + conf.cloudName.get)
-        }
-
         if (conf.cloudName.isEmpty) {
           conf.setCloudName(H2O_JOB_NAME.format(SparkSessionUtils.active.sparkContext.applicationId))
+        }
+
+        if (conf.clusterInfoFile.isEmpty) {
+          conf.setClusterInfoFile("notify_" + conf.cloudName.get)
         }
 
         if (conf.getOption("spark.yarn.principal").isDefined &&
