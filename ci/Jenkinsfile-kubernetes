@@ -578,7 +578,7 @@ node("docker") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
-                    commons.terraformDestroy()
+                    commons.terraformDestroy("-var aws_region=${awsRegion()}")
                 }
                 retryWithDelay(3, 600, {
                     commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")

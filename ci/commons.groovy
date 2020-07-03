@@ -88,10 +88,10 @@ def terraformApply(extraVars = "") {
         """
 }
 
-def terraformDestroy() {
+def terraformDestroy(extraVars = "") {
     sh """
         terraform init
-        terraform destroy -var aws_access_key=$AWS_ACCESS_KEY_ID -var aws_secret_key=$AWS_SECRET_ACCESS_KEY -auto-approve
+        terraform destroy -var aws_access_key=$AWS_ACCESS_KEY_ID -var aws_secret_key=$AWS_SECRET_ACCESS_KEY $extraVars -auto-approve
         """
 }
 
