@@ -327,14 +327,17 @@ def testRExternalBackendManual(registryId, master, version, sparkVersion) {
 }
 
 def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
-    startExternalH2OBackend(registryId, version)
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
-        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.k8s.namespace=h2o spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
@@ -372,6 +375,7 @@ static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mo
              --conf spark.ext.h2o.external.start.mode=auto \
              --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
              --conf spark.ext.h2o.external.memory=2G \
+             --conf spark.ext.h2o.external.k8s.namespace=h2o \
              --conf spark.ext.h2o.external.k8s.expose.leader=${driverInK8s} \
              --conf spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} \
              --conf spark.executor.instances=2 \
@@ -414,12 +418,20 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
 }
 
 def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
     sh "kubectl delete pod driver-scala --ignore-not-found"
     sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto", "false")}"
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testScalaExternalBackendAutoClientMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
@@ -473,12 +485,20 @@ def testPythonExternalBackendAutoClusterModeSparkOutsideK8s(registryId, version)
 }
 
 def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
     sh "kubectl delete pod driver-python --ignore-not-found"
     sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto", "false")}"
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testPythonExternalBackendAutoClientMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
