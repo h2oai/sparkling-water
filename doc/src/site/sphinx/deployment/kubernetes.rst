@@ -510,7 +510,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 Automatic Mode of External Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In automatic mode, Sparkling Water starts external H2O on Kubernetes automatically. The requirement is that the
+In the automatic mode, Sparkling Water starts external H2O on Kubernetes automatically. The requirement is that the
 driver node is configured to communicate with the Kubernetes cluster. Docker image for the external H2O backend
 is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
