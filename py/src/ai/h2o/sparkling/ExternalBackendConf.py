@@ -130,6 +130,9 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalK8sExposeLeader(self):
         return self._jconf.externalK8sExposeLeader()
 
+    def externalK8sServiceTimeout(self):
+        return self._jconf.externalK8sServiceTimeout()
+
     #
     # Setters
     #
@@ -264,4 +267,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalK8sExposeLeader(self, expose):
         self._jconf.setExternalK8sExposeLeader(expose)
+        return self
+
+    def setExternalK8sServiceTimeout(self, timeout):
+        self._jconf.setExternalK8sServiceTimeout(timeout)
         return self

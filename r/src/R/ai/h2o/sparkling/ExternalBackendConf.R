@@ -95,6 +95,8 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
     externalK8sDomain = function() { invoke(jconf, "externalK8sDomain") },
 
     externalK8sExposeLeader = function() { invoke(jconf, "externalK8sExposeLeader") },
+
+    externalK8sServiceTimeout = function() { invoke(jconf, "externalK8sServiceTimeout") },
 #
 # Setters
 #
@@ -165,6 +167,8 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalK8sDomain = function(domain) { invoke(jconf, "setExternalK8sDomain", domain); .self },
 
-    setExternalK8sExposeLeader = function(expose) { invoke(jconf, "setExternalK8sExposeLeader", expose); .self }
+    setExternalK8sExposeLeader = function(expose) { invoke(jconf, "setExternalK8sExposeLeader", expose); .self },
+
+    setExternalK8sServiceTimeout = function(timeout) { invoke(jconf, "setExternalK8sServiceTimeout", timeout); .self }
 
 ))

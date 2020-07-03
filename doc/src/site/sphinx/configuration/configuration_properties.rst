@@ -390,6 +390,9 @@ External backend configuration properties
 |                                                       |                |                                                 | that Spark can run outside the      |
 |                                                       |                |                                                 | Kubernetes.                         |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.svc.timeout``            | ``300 sec``    | ``setExternalK8sServiceTimeout(Int)``           | Timeout in seconds used as a limit  |
+|                                                       |                |                                                 | for K8S service creation.           |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
