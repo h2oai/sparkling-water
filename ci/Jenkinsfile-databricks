@@ -1,0 +1,223 @@
+#!/usr/bin/groovy
+@Library('test-shared-library') _
+import groovy.json.JsonSlurperClassic
+
+properties(
+        [
+                pipelineTriggers([cron('H 16 * * *')]),
+                buildDiscarder(logRotator(numToKeepStr: '10'))
+        ]
+)
+
+def readPropertiesFile(file) {
+    def properties = [:]
+    readFile(file).split("\n").each { line ->
+        if (!line.startsWith("#")) {
+            def splits = line.split("=")
+            if (splits.length == 1) {
+                properties[splits[0]] = ""
+            } else {
+                properties[splits[0]] = splits[1]
+            }
+        }
+    }
+    return properties
+}
+
+static String getSparklingVersion(props) {
+    return "${props['version'].replace("-SNAPSHOT", "")}"
+}
+
+def startCluster(dbcVersion, sparkMajorVersion) {
+    def jsonOutput = sh(script: """
+    databricks clusters create --json '{
+        "num_workers": 3,
+        "cluster_name": "SparklingWaterTest-${sparkMajorVersion}",
+        "spark_version": "${dbcVersion}",
+        "spark_conf": {},
+        "aws_attributes": {
+            "first_on_demand": 4,
+            "availability": "SPOT_WITH_FALLBACK",
+            "zone_id": "us-east-1d",
+            "instance_profile_arn": null,
+            "spot_bid_price_percent": 100,
+            "ebs_volume_type": "GENERAL_PURPOSE_SSD",
+            "ebs_volume_count": 3,
+            "ebs_volume_size": 100
+        },
+        "node_type_id": "m4.large",
+        "ssh_public_keys": [],
+        "custom_tags": {},
+        "spark_env_vars": {},
+        "autotermination_minutes": 120,
+        "init_scripts": []
+    }'
+""", returnStdout: true).trim()
+    def jsonSlurper = new JsonSlurperClassic()
+    def cfg = jsonSlurper.parseText(jsonOutput)
+    return cfg["cluster_id"]
+}
+
+def waitForCluster(clusterId) {
+    def ready = false
+    while(!ready) {
+        def json = sh(script: "databricks clusters get --cluster-id ${clusterId}", returnStdout: true).trim()
+        def jsonSlurper = new JsonSlurperClassic()
+        def cfg = jsonSlurper.parseText(json)
+        ready = cfg["state"] == "RUNNING"
+        Thread.sleep(10000)
+    }
+}
+
+def deleteCluster(clusterId) {
+    sh "databricks clusters delete --cluster-id ${clusterId}"
+}
+
+static def getDatabricksSparkVersions(props) {
+    def sparkVersions = props["supportedSparkVersions"].split(" ").toList()
+    def boundaryVersion = props["databricksTestSinceSpark"]
+    def list = new ArrayList<String>()
+    list.addAll(sparkVersions.subList(sparkVersions.indexOf(boundaryVersion), sparkVersions.size()))
+    return list
+}
+
+def waitForArtifactToAttach(clusterId, artifact, type) {
+    def ready = false
+    while(!ready) {
+        def rawJson = sh(script: "databricks libraries cluster-status --cluster-id ${clusterId}", returnStdout: true).trim()
+        def parsedJson = new JsonSlurperClassic().parseText(rawJson)
+        def status = parsedJson.library_statuses.find { it.library[type] == "dbfs:/${clusterId}/${artifact}" }.status
+        ready = status == "INSTALLED"
+        Thread.sleep(1000)
+    }
+}
+
+def installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact) {
+    // Scala
+    sh "databricks fs cp assembly/build/libs/${scalaArtifact} dbfs:/${clusterId}/${scalaArtifact}"
+    sh "databricks libraries install --cluster-id ${clusterId} --jar dbfs:/${clusterId}/${scalaArtifact}"
+    waitForArtifactToAttach(clusterId, scalaArtifact, "jar")
+    // Python
+    sh "databricks fs cp py/build/pkg/dist/${pythonArtifact} dbfs:/${clusterId}/${pythonArtifact}"
+    sh "databricks libraries install --cluster-id ${clusterId} --whl dbfs:/${clusterId}/${pythonArtifact}"
+    waitForArtifactToAttach(clusterId, pythonArtifact, "whl")
+    // R
+    sh "databricks fs cp r/build/${rArtifact} dbfs:/${clusterId}/${rArtifact}"
+    sh "databricks fs cp h2o-3/h2o-r/h2o_*.99999.tar.gz dbfs:/${clusterId}/h2o.tar.gz"
+}
+
+def test(workspaceDir, clusterId, language) {
+    def extension = language
+    if (language == "python") {
+        extension = "py"
+    }
+    sh "databricks workspace import --language ${language} ci/databricksTests/test.${extension} ${workspaceDir}/test.${extension}"
+    def rawJson = sh(script: """
+        databricks runs submit --json '
+            {
+              "name": "Test ${language}",
+              "existing_cluster_id": "${clusterId}",
+              "notebook_task": {
+                "notebook_path": "${workspaceDir}/test.${extension}"
+              }
+            }
+            '
+        """, returnStdout: true).trim()
+    def parsedJson = new JsonSlurperClassic().parseText(rawJson)
+    def runId = parsedJson.run_id
+    waitForJobToFinish(runId, language)
+}
+
+def waitForJobToFinish(jobId, language) {
+    def done = false
+    while(!done) {
+        def rawJson = sh(script: "databricks runs get --run-id ${jobId}", returnStdout: true).trim()
+        def parsedJson = new JsonSlurperClassic().parseText(rawJson)
+        def status = parsedJson.state.result_state
+        if (status == "FAILED") {
+            throw new RuntimeException("${language} tests failed!")
+        }
+        done = status == "SUCCESS"
+        Thread.sleep(1000)
+    }
+}
+
+def deleteDependencies(clusterId) {
+    sh "databricks fs rm -r dbfs:/${clusterId}"
+}
+
+String getH2OBranchMajorVersion() {
+    def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('version') }
+    return versionLine.split("=")[1]
+}
+
+String getH2OBranchMajorName() {
+    def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('codename') }
+    return versionLine.split("=")[1]
+}
+
+String getH2OBranchBuildVersion() {
+    return "1-SNAPSHOT"
+}
+
+def buildSparklingWater(props, sparkMajorVersion) {
+    retryWithDelay(3, 60, {
+        sh "git clone https://github.com/h2oai/h2o-3.git"
+    })
+    retryWithDelay(5, 1, {
+        sh """
+            cd h2o-3
+            git checkout ${props["testH2OBranch"]}
+            . /envs/h2o_env_python2.7/bin/activate
+            ./gradlew build --parallel -x check -Duser.name=ec2-user
+            ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+            ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+            cd ..
+            """
+    })
+    sh """
+        sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+        sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+        sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+        """
+    sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
+    dir("py/build/pkg") {
+        sh "python setup.py bdist_wheel"
+    }
+}
+
+node("docker") {
+    cleanWs()
+    checkout scm
+    def commons = load 'ci/commons.groovy'
+    def props = readPropertiesFile("gradle.properties")
+    def version = getSparklingVersion(props)
+
+    getDatabricksSparkVersions(props).each { sparkMajorVersion ->
+        stage("Test DBC - Spark " + sparkMajorVersion) {
+            commons.withSparklingWaterDockerImage {
+                commons.withDatabricksCredentials {
+                    def sparkSpecificProps = readPropertiesFile("gradle-spark${sparkMajorVersion}.properties")
+                    def dbcVersion = sparkSpecificProps["databricksVersion"]
+                    def scalaVersion = sparkSpecificProps["scalaBaseVersion"]
+                    sh "pip install databricks-cli"
+                    buildSparklingWater(props, sparkMajorVersion)
+                    String pythonArtifact = "h2o_pysparkling_${sparkMajorVersion}-${version.split("-")[0]}.post1-py2.py3-none-any.whl"
+                    String scalaArtifact = "sparkling-water-assembly_${scalaVersion}-${version}-${sparkMajorVersion}-all.jar"
+                    String rArtifact = "rsparkling_${version}-${sparkMajorVersion}.tar.gz"
+                    def clusterId = startCluster(dbcVersion, sparkMajorVersion)
+                    waitForCluster(clusterId)
+                    installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact)
+                    String workspaceDir = "/sw-tests-${clusterId}"
+                    sh "databricks workspace mkdirs ${workspaceDir}"
+                    test(workspaceDir, clusterId, "scala")
+                    test(workspaceDir, clusterId, "python")
+                    test(workspaceDir, clusterId, "r")
+                    sh "databricks workspace rm -r ${workspaceDir}"
+                    deleteDependencies(clusterId)
+                    deleteCluster(clusterId)
+                }
+            }
+        }
+    }
+}

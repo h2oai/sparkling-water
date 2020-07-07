@@ -160,6 +160,12 @@ def withJenkinsCredentials(groovy.lang.Closure code) {
     }
 }
 
+def withDatabricksCredentials(groovy.lang.Closure code) {
+    withCredentials([usernamePassword(credentialsId: 'SW_DATABRICKS', usernameVariable: 'DATABRICKS_HOST', passwordVariable: 'DATABRICKS_TOKEN')]) {
+        code()
+    }
+}
+
 def withDAICredentials(groovy.lang.Closure code) {
     withCredentials([string(credentialsId: 'DRIVERLESS_AI_LICENSE_KEY', variable: 'DRIVERLESS_AI_LICENSE_KEY')]) {
         code()

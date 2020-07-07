@@ -16,7 +16,9 @@ def withRequiredCredentials(commons, groovy.lang.Closure code) {
                                         commons.withPipyCredentials {
                                             commons.withDockerHubCredentials {
                                                 commons.withNexusCredentials {
-                                                    code()
+                                                    commons.withDatabricksCredentials {
+                                                        code()
+                                                    }
                                                 }
                                             }
                                         }
@@ -69,6 +71,8 @@ node("mr-0xc10") {
                             .replaceAll("SUBST_ANACONDA_PASSWORD", env.ANACONDA_PASSWORD)
                             .replaceAll("SUBST_DOCKERHUB_USERNAME", env.DOCKERHUB_USERNAME)
                             .replaceAll("SUBST_DOCKERHUB_PASSWORD", env.DOCKERHUB_PASSWORD)
+                            .replaceAll("SUBST_DATABRICKS_HOST", env.DATABRICKS_HOST)
+                            .replaceAll("SUBST_DATABRICKS_TOKEN", env.DATABRICKS_TOKEN)
 
                     def initSSLFile = "modules/jenkins/scripts/init-ssl.sh"
                     writeFile file: initSSLFile, text: readFile(initSSLFile)

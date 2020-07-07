@@ -95,8 +95,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                             withEnv(customEnv) {
                                 dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                                     buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
+                                    //buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
+                                    //buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
                                     sh """
                                         docker rmi spark-r:${sparkVersion}
                                         docker rmi spark-py:${sparkVersion}
