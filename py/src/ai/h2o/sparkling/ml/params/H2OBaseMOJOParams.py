@@ -69,6 +69,12 @@ class H2OBaseMOJOParams(Params):
         "Mojo Output is not stored in the array but in the properly named columns",
         H2OTypeConverters.toBoolean())
 
+    leafNodeAssignmentsEnabled = Param(
+        Params._dummy(),
+        "enableLeafNodeAssignments",
+        "Enables or disables computation of leaf node assignments.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -95,3 +101,6 @@ class H2OBaseMOJOParams(Params):
 
     def getNamedMojoOutputColumns(self):
         return self.getOrDefault(self.namedMojoOutputColumns)
+
+    def getLeafNodeAssignmentsEnabled(self):
+        return self.getOrDefault(self.leafNodeAssignmentsEnabled)
