@@ -71,7 +71,7 @@ class H2OBaseMOJOParams(Params):
 
     leafNodeAssignmentsEnabled = Param(
         Params._dummy(),
-        "enableLeafNodeAssignments",
+        "leafNodeAssignmentsEnabled",
         "Enables or disables computation of leaf node assignments.",
         H2OTypeConverters.toBoolean())
 

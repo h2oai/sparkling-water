@@ -65,7 +65,7 @@ trait H2OBaseMOJOParams extends Params with Logging {
       " in the array but in the properly named columns")
 
   protected final val leafNodeAssignmentsEnabled =
-    new BooleanParam(this, "enableLeafNodeAssignments", "Enables or disables computation of leaf node assignments.")
+    new BooleanParam(this, "leafNodeAssignmentsEnabled", "Enables or disables computation of leaf node assignments.")
 
   //
   //
