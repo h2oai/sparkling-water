@@ -173,14 +173,8 @@ object Runner {
   }
 
   private def problemSpecificAutoMLAlgorithmContext: ProblemSpecificAlgorithmSubstitutionContext = {
-    ProblemSpecificAlgorithmSubstitutionContext(
-      null,
-      "H2OAutoML",
-      null,
-      "ai.h2o.sparkling.ml.algos",
-      Seq.empty)
+    ProblemSpecificAlgorithmSubstitutionContext(null, "H2OAutoML", null, "ai.h2o.sparkling.ml.algos", Seq.empty)
   }
-
 
   private def gridSearchParameterConfiguration: Seq[ParameterSubstitutionContext] = {
     class DummySearchCriteria extends HyperSpaceSearchCriteriaV99[HyperSpaceSearchCriteria, DummySearchCriteria]
@@ -269,8 +263,7 @@ object Runner {
     for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
       val classificationAlgorithmContext = algorithmContext.copy(
         entityName = algorithmContext.parentEntityName + "Classifier",
-        namespace = algorithmContext.parentNamespace + ".classification",
-        overriddenDefaultValues = Map("family" -> "binomial"))
+        namespace = algorithmContext.parentNamespace + ".classification")
       val content = problemSpecificAlgorithmTemplates(languageExtension)(
         "classification",
         classificationAlgorithmContext,

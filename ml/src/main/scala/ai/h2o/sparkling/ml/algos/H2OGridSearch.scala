@@ -242,8 +242,16 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans = Value
 
+    def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
+      values.find { value =>
+        value.toString == algo.getClass.getSimpleName ||
+        value.toString + "Classifier" == algo.getClass.getSimpleName ||
+        value.toString + "Regressor" == algo.getClass.getSimpleName
+      }
+    }
+
     def checkIfSupported(algo: H2OAlgorithm[_ <: Model.Parameters]): Unit = {
-      val exists = values.exists(_.toString == algo.getClass.getSimpleName)
+      val exists = getEnumValue(algo).nonEmpty
       if (!exists) {
         throw new IllegalArgumentException(
           s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
@@ -252,7 +260,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
     }
 
     def toH2OAlgoName(algo: H2OAlgorithm[_ <: Model.Parameters]): String = {
-      val algoValue = values.find(_.toString == algo.getClass.getSimpleName).get
+      val algoValue = getEnumValue(algo).get
       algoValue match {
         case H2OGBM => "gbm"
         case H2OGLM => "glm"

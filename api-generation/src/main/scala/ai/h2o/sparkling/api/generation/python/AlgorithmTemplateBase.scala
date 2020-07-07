@@ -1,6 +1,7 @@
 package ai.h2o.sparkling.api.generation.python
 
 import ai.h2o.sparkling.api.generation.common._
+import ai.h2o.sparkling.api.generation.python.ProblemSpecificAlgorithmTemplate.{generateCommonDefaultValues, generateDefaultValues, generateDefaultValuesFromExplicitFields, generateEntity}
 
 trait AlgorithmTemplateBase extends PythonEntityTemplate {
 
@@ -27,5 +28,26 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
         s"                 ${parameter.swName}=$finalDefaultValue"
       }
       .mkString(",\n")
+  }
+
+  def generateAlgorithmClass(
+      entityName: String,
+      namespace: String,
+      parameters: Seq[Parameter],
+      entitySubstitutionContext: EntitySubstitutionContext,
+      commonSubstitutionContext: ParameterSubstitutionContext): String = {
+    generateEntity(entitySubstitutionContext) {
+      s"""    @keyword_only
+         |    def __init__(self,${generateDefaultValuesFromExplicitFields(commonSubstitutionContext.explicitFields)}
+         |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
+         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}):
+         |        Initializer.load_sparkling_jar()
+         |        super($entityName, self).__init__()
+         |        self._java_obj = self._new_java_obj("$namespace.$entityName", self.uid)
+         |        self._setDefaultValuesFromJava()
+         |        kwargs = Utils.getInputKwargs(self)
+         |        self._set(**kwargs)
+         |        self._transfer_params_to_java()""".stripMargin
+    }
   }
 }

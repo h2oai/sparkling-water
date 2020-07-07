@@ -30,6 +30,7 @@ object AlgorithmTemplate
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
     val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
+    val namespace = algorithmSubstitutionContext.namespace
     val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
     val algorithmType = algorithmSubstitutionContext.algorithmType
     val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
@@ -39,21 +40,8 @@ object AlgorithmTemplate
       Seq(s"ai.h2o.sparkling.ml.algos.$algorithmType.$algorithmType") ++
       algorithmSubstitutionContext.extraInheritedEntities.map(clazz => s"ai.h2o.sparkling.ml.algos.$clazz.$clazz")
 
-    val entitySubstitutionContext =
-      EntitySubstitutionContext(algorithmSubstitutionContext.namespace, entityName, parents, imports)
+    val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
-    generateEntity(entitySubstitutionContext) {
-      s"""    @keyword_only
-         |    def __init__(self,${generateDefaultValuesFromExplicitFields(commonSubstitutionContext.explicitFields)}
-         |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
-         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}):
-         |        Initializer.load_sparkling_jar()
-         |        super($entityName, self).__init__()
-         |        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.$entityName", self.uid)
-         |        self._setDefaultValuesFromJava()
-         |        kwargs = Utils.getInputKwargs(self)
-         |        self._set(**kwargs)
-         |        self._transfer_params_to_java()""".stripMargin
-    }
+    generateAlgorithmClass(entityName, namespace, parameters, entitySubstitutionContext, commonSubstitutionContext)
   }
 }

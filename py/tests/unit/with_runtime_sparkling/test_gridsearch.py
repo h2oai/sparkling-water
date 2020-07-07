@@ -18,9 +18,13 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF, H2OKMeans
+from pyspark.sql.functions import col
+from pysparkling.ml.algos import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF, H2OKMeans
+from pysparkling.ml.algos.classification import H2ODRFClassifier
+from pysparkling.ml.algos.regression import H2ODRFRegressor
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
+from tests import unit_test_utils
 
 
 def testParamsPassedByConstructor():
@@ -126,3 +130,51 @@ def testGetAlgoViaSetter():
     grid.getAlgo()
     grid.getAlgo()
     assert grid.getAlgo().getNtrees() == 100
+
+def createGridForProblemSpecificTesting(algorithm):
+    algorithm.setLabelCol("CAPSULE")
+    algorithm.setSplitRatio(0.8)
+    hyperParameters = {"seed": [1, 2], "ntrees": [3, 5, 10]}
+    return H2OGridSearch(hyperParameters=hyperParameters, seed=42, algo=algorithm)
+
+
+def testGridSearchWithDRFClassifierBehavesTheSameAsGridSearchWithGenericDRFOnStringLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    referenceGrid = createGridForProblemSpecificTesting(H2ODRF())
+    referenceModel = referenceGrid.fit(trainingDateset.withColumn("CAPSULE", col("CAPSULE").cast("string")))
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    grid = createGridForProblemSpecificTesting(H2ODRFClassifier())
+    model = grid.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testGridSearchWithDRFRegressorBehavesTheSameAsGridSearchWithGenericDRFOnNumericLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    referenceGrid = createGridForProblemSpecificTesting(H2ODRF())
+    referenceModel = referenceGrid.fit(trainingDateset)
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    grid = createGridForProblemSpecificTesting(H2ODRFRegressor())
+    model = grid.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testGridSearchWithDRFClassifierBehavesDiffenrentlyThanGridSearchWithDRFRegressor(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    regressor = createGridForProblemSpecificTesting(H2ODRFRegressor())
+    regressionModel = regressor.fit(trainingDateset)
+    regressionDataset = regressionModel.transform(testingDataset)
+
+    classifier = createGridForProblemSpecificTesting(H2ODRFClassifier())
+    classificationModel = classifier.fit(trainingDateset)
+    classificationDataset = classificationModel.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)

@@ -31,6 +31,7 @@ object ProblemSpecificAlgorithmTemplate
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
     val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
+    val namespace = algorithmSubstitutionContext.namespace
     val parentEntityName = algorithmSubstitutionContext.parentEntityName
     val parentNamespace = algorithmSubstitutionContext.parentNamespace
     val parents = Seq(parentEntityName)
@@ -41,34 +42,8 @@ object ProblemSpecificAlgorithmTemplate
       "ai.h2o.sparkling.ml.Utils.Utils",
       s"$parentNamespace.$parentEntityName.$parentEntityName")
 
-    val entitySubstitutionContext =
-      EntitySubstitutionContext(algorithmSubstitutionContext.namespace, entityName, parents, imports)
+    val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
-    val overriddenDefaultValues = algorithmSubstitutionContext.overriddenDefaultValues
-    val explicitFields = commonSubstitutionContext.explicitFields.map { explicitField =>
-      overriddenDefaultValues.get(explicitField.name) match {
-        case None => explicitField
-        case Some(value) => explicitField.copy(defaultValue = value)
-      }
-    }
-    val commonDefaultValues = commonSubstitutionContext.defaultValuesOfCommonParameters ++
-      overriddenDefaultValues.keySet
-        .intersect(commonSubstitutionContext.defaultValuesOfCommonParameters.keySet)
-        .map(k => k -> overriddenDefaultValues(k))
-    val explicitDefaultValues = commonSubstitutionContext.explicitDefaultValues ++ overriddenDefaultValues
-
-    generateEntity(entitySubstitutionContext) {
-      s"""    @keyword_only
-         |    def __init__(self,${generateDefaultValuesFromExplicitFields(explicitFields)}
-         |${generateCommonDefaultValues(commonDefaultValues)},
-         |${generateDefaultValues(parameters, explicitDefaultValues)}):
-         |        Initializer.load_sparkling_jar()
-         |        super($entityName, self).__init__()
-         |        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.algos.$entityName", self.uid)
-         |        self._setDefaultValuesFromJava()
-         |        kwargs = Utils.getInputKwargs(self)
-         |        self._set(**kwargs)
-         |        self._transfer_params_to_java()""".stripMargin
-    }
+    generateAlgorithmClass(entityName, namespace, parameters, entitySubstitutionContext, commonSubstitutionContext)
   }
 }

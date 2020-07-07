@@ -50,14 +50,8 @@ object ProblemSpecificAlgorithmTemplate
     val entitySubstitutionContext =
       EntitySubstitutionContext(namespace, entityName, parents, imports, classParameters)
 
-    val overriddenDefaultValues = algorithmSubstitutionContext.overriddenDefaultValues
-    val defaultValues = overriddenDefaultValues
-      .filter((keyValuePair) => parameterNames.contains(keyValuePair._1))
-      .map(value => s"${value._1} -> ${stringify(value._2)}")
-    val defaultValueSection = if (defaultValues.isEmpty) "" else s"\n\n  set(${defaultValues.mkString(",\n")})"
-
     val algorithmClass = generateEntity(entitySubstitutionContext, "class") {
-      s"  def this() = this(Identifiable.randomUID(classOf[$entityName].getSimpleName))$defaultValueSection"
+      s"  def this() = this(Identifiable.randomUID(classOf[$entityName].getSimpleName))"
     }
 
     val algorithmObject = s"object $entityName extends H2OParamsReadable[$entityName]"
