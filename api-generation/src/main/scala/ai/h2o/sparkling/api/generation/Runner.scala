@@ -47,7 +47,8 @@ object Runner {
     "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
     "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String])
+    "columnsToCategorical" -> Array.empty[String],
+    "leafNodeAssignmentsEnabled" -> false)
 
   val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null)
 
