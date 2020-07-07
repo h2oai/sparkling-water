@@ -22,12 +22,14 @@ ext {
 }
 
 task createExternalBackendDockerfile(type: Dockerfile) {
-  // Based on h2o-3/docker/public/Dockerfile-h2o-release
-  // After official H2O image is out, remove duplication as mentioned in https://0xdata.atlassian.net/browse/SW-2294
   destFile = outputFileExternalBackend
-  from "openjdk:11"
-  runCommand "mkdir -p /opt/h2oai/h2o-3/"
-  copyFile("h2o.jar", "/opt/h2oai/h2o-3/")
+  if (h2oMajorName == "bleeding_edge") {
+    from "openjdk:11"
+    runCommand "mkdir -p /opt/h2oai/h2o-3/"
+    copyFile("h2o.jar", "/opt/h2oai/h2o-3/")
+  } else {
+    from "h2oai/h2o-open-source-k8s:${h2oMajorVersion}.${h2oBuild}"
+  }
   copyFile("sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar", "/opt/h2oai/h2o-3/")
   defaultCommand(
     "java",
