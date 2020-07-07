@@ -28,7 +28,7 @@ def get_default_spark_conf(additional_conf=None):
         "spark.hadoop.yarn.timeline-service.enabled": "false",
         "spark.scheduler.minRegisteredResourcesRatio": "1",
         "spark.ext.h2o.repl.enabled": "false",  # disable repl in tests
-        "spark.ext.h2o.hadoop.memory": "2G",
+        "spark.ext.h2o.external.memory": "2G",
         "spark.ext.h2o.port.base": "63331",
         "spark.executor.memory": "2g",
         "spark.driver.memory": "2g",

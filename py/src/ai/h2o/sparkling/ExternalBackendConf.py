@@ -16,7 +16,7 @@
 #
 
 from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
-
+import warnings
 
 class ExternalBackendConf(SharedBackendConfUtils):
 
@@ -43,7 +43,11 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clusterInfoFile())
 
     def mapperXmx(self):
-        return self._jconf.mapperXmx()
+        warnings.warn("The method 'mapperXmx' is deprecated and will be removed in 3.34. Use 'externalMemory' instead!")
+        return self.externalMemory()
+
+    def externalMemory(self):
+        return self._jconf.externalMemory()
 
     def HDFSOutputDir(self):
         return self._get_option(self._jconf.HDFSOutputDir())
@@ -99,6 +103,33 @@ class ExternalBackendConf(SharedBackendConfUtils):
     def externalCommunicationCompression(self):
         return self._jconf.externalCommunicationCompression()
 
+    def externalAutoStartBackend(self):
+        return self._jconf.externalAutoStartBackend()
+
+    def externalK8sH2OServiceName(self):
+        return self._jconf.externalK8sH2OServiceName()
+
+    def externalK8sH2OStatefulsetName(self):
+        return self._jconf.externalK8sH2OStatefulsetName()
+
+    def externalK8sH2OLabel(self):
+        return self._jconf.externalK8sH2OLabel()
+
+    def externalK8sH2OApiPort(self):
+        return self._jconf.externalK8sH2OApiPort()
+
+    def externalK8sNamespace(self):
+        return self._jconf.externalK8sNamespace()
+
+    def externalK8sDockerImage(self):
+        return self._jconf.externalK8sDockerImage()
+
+    def externalK8sDomain(self):
+        return self._jconf.externalK8sDomain()
+
+    def externalK8sServiceTimeout(self):
+        return self._jconf.externalK8sServiceTimeout()
+
     #
     # Setters
     #
@@ -120,7 +151,11 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setMapperXmx(self, mem):
-        self._jconf.setMapperXmx(mem)
+        warnings.warn("The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
+        return self.setExternalMemory(mem)
+
+    def setExternalMemory(self, memory):
+        self._jconf.setExternalMemory(memory)
         return self
 
     def setHDFSOutputDir(self, dir):
@@ -193,4 +228,40 @@ class ExternalBackendConf(SharedBackendConfUtils):
 
     def setExternalCommunicationCompression(self, compression):
         self._jconf.setExternalCommunicationCompression(compression)
+        return self
+
+    def setExternalAutoStartBackend(self, backend):
+        self._jconf.setExternalAutoStartBackend(backend)
+        return self
+
+    def setExternalK8sH2OServiceName(self, serviceName):
+        self._jconf.setExternalK8sH2OServiceName(serviceName)
+        return self
+
+    def setExternalK8sH2OStatefulsetName(self, statefulsetName):
+        self._jconf.setExternalK8sH2OStatefulsetName(statefulsetName)
+        return self
+
+    def setExternalK8sH2OLabel(self, label):
+        self._jconf.setExternalK8sH2OLabel(label)
+        return self
+
+    def setExternalK8sH2OApiPort(self, port):
+        self._jconf.setExternalK8sH2OApiPort(port)
+        return self
+
+    def setExternalK8sNamespace(self, namespace):
+        self._jconf.setExternalK8sNamespace(namespace)
+        return self
+
+    def setExternalK8sDockerImage(self, name):
+        self._jconf.setExternalK8sDockerImage(name)
+        return self
+
+    def setExternalK8sDomain(self, domain):
+        self._jconf.setExternalK8sDomain(domain)
+        return self
+
+    def setExternalK8sServiceTimeout(self, timeout):
+        self._jconf.setExternalK8sServiceTimeout(timeout)
         return self

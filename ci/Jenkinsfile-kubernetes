@@ -8,6 +8,10 @@ properties(
         ]
 )
 
+static def awsRegion() {
+    return "us-east-2"
+}
+
 def readPropertiesFile(file) {
     def properties = [:]
     readFile(file).split("\n").each { line ->
@@ -66,8 +70,8 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         ]
                         unstash "properties"
                         def repoId = readPropertiesFile("properties")["docker_registry_id"]
-                        def repoUrl = "${repoId}.dkr.ecr.us-east-2.amazonaws.com"
-                        docker.withRegistry("https://${repoUrl}", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
+                        def repoUrl = "${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com"
+                        docker.withRegistry("https://${repoUrl}", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
                             withEnv(customEnv) {
                                 dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
                                     buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
@@ -113,7 +117,7 @@ def withTestEnv(commons, image, code) {
                 rm -rf awscliv2 && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                 unzip awscliv2.zip -d awscliv2
                 ./awscliv2/aws/install -i /usr/local/aws-cli -b /usr/local/bin
-                aws eks --region us-east-2 update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
+                aws eks --region ${awsRegion()} update-kubeconfig --name ${readPropertiesFile("properties")["cluster_name"]}
                 kubectl get svc
                 kubectl delete clusterrolebinding default --ignore-not-found
                 kubectl create clusterrolebinding default --clusterrole=edit --serviceaccount=default:default --namespace=default
@@ -122,7 +126,7 @@ def withTestEnv(commons, image, code) {
         }
     }
     def repoId = readPropertiesFile("properties")["docker_registry_id"]
-    docker.withRegistry("https://${repoId}.dkr.ecr.us-east-2.amazonaws.com", 'ecr:us-east-2:SW_FULL_AWS_CREDS') {
+    docker.withRegistry("https://${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
         commons.withDocker(image, dockerCode, "-u 0:0")
     }
 }
@@ -131,7 +135,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod driver-scala --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
-         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
          --conf spark.kubernetes.driver.pod.name=driver-scala \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --master $master \
@@ -148,7 +152,7 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod driver-python --ignore-not-found"
     sh """
         \$SPARK_HOME/bin/spark-submit \
-         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
+         --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
          --conf spark.kubernetes.driver.pod.name=driver-python \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --master $master \
@@ -193,7 +197,7 @@ EOF
 def testScalaInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
-    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
@@ -213,7 +217,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
 def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
-    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
@@ -273,7 +277,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: h2o-k8s
-          image: '${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version}'
+          image: '${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version}'
           resources:
             requests:
               memory: "2Gi"
@@ -305,7 +309,7 @@ def stopExternalH2OBackend() {
     sh "kubectl delete statefulsets h2o-stateful-set --ignore-not-found"
 }
 
-def testRExternalBackend(registryId, master, version, sparkVersion) {
+def testRExternalBackendManual(registryId, master, version, sparkVersion) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-r --ignore-not-found"
     sh """
@@ -313,7 +317,7 @@ def testRExternalBackend(registryId, master, version, sparkVersion) {
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
-        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.hadoop.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
     sh 'sleep 60'
@@ -322,9 +326,29 @@ def testRExternalBackend(registryId, master, version, sparkVersion) {
     stopExternalH2OBackend()
 }
 
-static String externalBackendSharedSubmitCmd(registryId, master, version, mode, language) {
+def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
+    sh "kubectl delete pod driver-r --ignore-not-found"
+    sh """
+        export KUBERNETES_MASTER=$master
+        export REGISTRY_ID=$registryId
+        export SW_VERSION=$version
+        export SPARK_VERSION=$sparkVersion
+        export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.k8s.namespace=h2o spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G"
+        Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
+        """
+    sh 'sleep 60'
+    sh "kubectl logs driver-r | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
+    sh "kubectl logs driver-r | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
+    stopExternalH2OBackend()
+}
+
+static String externalBackendManualSharedSubmitCmd(registryId, master, version, mode, language) {
     return """\$SPARK_HOME/bin/spark-submit \
-             --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
+             --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
              --conf spark.kubernetes.driver.pod.name=driver-${language} \
              --conf spark.scheduler.minRegisteredResourcesRatio=1 \
              --master $master \
@@ -332,66 +356,148 @@ static String externalBackendSharedSubmitCmd(registryId, master, version, mode, 
              --name test \
              --conf spark.ext.h2o.backend.cluster.mode=external \
              --conf spark.ext.h2o.external.start.mode=manual \
-             --conf spark.ext.h2o.hadoop.memory=2G \
+             --conf spark.ext.h2o.external.memory=2G \
              --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
              --conf spark.ext.h2o.cloud.name=root \
              --conf spark.executor.instances=2 \
             """
 }
 
-static String scalaExternalBackendSubmitCmd(registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "scala")} \
+static String externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, language) {
+    return """\$SPARK_HOME/bin/spark-submit \
+             --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:${language}-${version} \
+             --conf spark.kubernetes.driver.pod.name=driver-${language} \
+             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
+             --master $master \
+             --deploy-mode $mode \
+             --name test \
+             --conf spark.ext.h2o.backend.cluster.mode=external \
+             --conf spark.ext.h2o.external.start.mode=auto \
+             --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
+             --conf spark.ext.h2o.external.memory=2G \
+             --conf spark.ext.h2o.external.k8s.namespace=h2o \
+             --conf spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} \
+             --conf spark.executor.instances=2 \
+             --conf spark.ext.h2o.external.cluster.size=2 \
+            """
+}
+
+static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, startMode) {
+    def prefix
+    if (startMode == "manual") {
+        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "scala")
+    } else {
+        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
+    }
+    return """${prefix} \
               --class ai.h2o.sparkling.InitTest \
               local:///opt/sparkling-water/tests/initTest.jar
             """
 }
 
-def testScalaExternalBackendClusterMode(registryId, master, version) {
+def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-scala --ignore-not-found"
-    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
+    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
     sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-def testScalaExternalBackendClientMode(registryId, master, version) {
+def testScalaExternalBackendManualClientMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
-    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client")}
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-static String pythonExternalBackendSubmitCmd(registryId, master, version, mode) {
-    return """${externalBackendSharedSubmitCmd(registryId, master, version, mode, "python")} \
+def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
+    sh "kubectl delete pod driver-scala --ignore-not-found"
+    sh "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    sh "kubectl get pod driver-scala | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testScalaExternalBackendAutoClientMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, startMode) {
+    def prefix
+    if (startMode == "manual") {
+        prefix = externalBackendManualSharedSubmitCmd(registryId, master, version, mode, "python")
+    } else {
+        prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "python")
+    }
+    return """$prefix \
               local:///opt/sparkling-water/tests/initTest.py
             """
 }
 
-def testPythonExternalBackendClusterMode(registryId, master, version) {
+
+def testPythonExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod driver-python --ignore-not-found"
-    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster")}"
+    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
     sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
-def testPythonExternalBackendClientMode(registryId, master, version) {
+def testPythonExternalBackendManualClientMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
-    def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     sh """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client")}
+        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
+}
+
+def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
+    sh "kubectl delete pod driver-python --ignore-not-found"
+    sh "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    sh "kubectl get pod driver-python | grep -q Completed && echo \"OK\" || exit 1"
+}
+
+def testPythonExternalBackendAutoClientMode(registryId, master, version) {
+    sh """
+        kubectl delete namespace h2o --ignore-not-found
+        kubectl create namespace h2o
+        """
+    sh "kubectl delete pod sparkling-water-app --ignore-not-found"
+    installSparkHeadlessService()
+    def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+    sh """
+        kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
+        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        """
+    sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 node("docker") {
@@ -405,7 +511,7 @@ node("docker") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
-                    commons.terraformApply()
+                    commons.terraformApply("-var aws_region=${awsRegion()}")
                     def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name", "cluster_endpoint"])
                     def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n" + "version=$sparklingVersion" + "\n"
                     writeFile file: "properties", text: valuesAsString
@@ -425,12 +531,14 @@ node("docker") {
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
+            def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
             withTestEnv(commons, image) {
                 testScalaInternalBackendClusterMode(registryId, master, version)
                 testScalaInternalBackendClientMode(registryId, master, version)
-                testScalaExternalBackendClusterMode(registryId, master, version)
-                testScalaExternalBackendClientMode(registryId, master, version)
+                testScalaExternalBackendManualClusterMode(registryId, master, version)
+                testScalaExternalBackendManualClientMode(registryId, master, version)
+                testScalaExternalBackendAutoClusterMode(registryId, master, version)
+                testScalaExternalBackendAutoClientMode(registryId, master, version)
             }
         }
 
@@ -439,12 +547,14 @@ node("docker") {
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
+            def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
             withTestEnv(commons, image) {
                 testPythonInternalBackendClusterMode(registryId, master, version)
                 testPythonInternalBackendClientMode(registryId, master, version)
-                testPythonExternalBackendClusterMode(registryId, master, version)
-                testPythonExternalBackendClientMode(registryId, master, version)
+                testPythonExternalBackendManualClusterMode(registryId, master, version)
+                testPythonExternalBackendManualClientMode(registryId, master, version)
+                testPythonExternalBackendAutoClusterMode(registryId, master, version)
+                testPythonExternalBackendAutoClientMode(registryId, master, version)
             }
         }
 
@@ -453,12 +563,13 @@ node("docker") {
             def registryId = readPropertiesFile("properties")["docker_registry_id"]
             def version = readPropertiesFile("properties")["version"] + "-${sparkMajorVersion}"
             def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
-            def image = "${registryId}.dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
+            def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-${version}"
             def sparkVersion = getSparkVersion(sparkMajorVersion)
             withTestEnv(commons, image) {
                 // R sets deployment mode automatically
                 testRInternalBackend(registryId, master, version, sparkVersion)
-                testRExternalBackend(registryId, master, version, sparkVersion)
+                testRExternalBackendManual(registryId, master, version, sparkVersion)
+                testRExternalBackendAuto(registryId, master, version, sparkVersion)
             }
         }
     }
@@ -467,7 +578,7 @@ node("docker") {
         commons.withAWSCredentials {
             dir("kubernetes/src/terraform/aws") {
                 def code = {
-                    commons.terraformDestroy()
+                    commons.terraformDestroy("-var aws_region=${awsRegion()}")
                 }
                 retryWithDelay(3, 600, {
                     commons.withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint='' --network host")

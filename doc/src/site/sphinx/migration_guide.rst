@@ -25,11 +25,13 @@ From 3.32 to 3.34
   getters ``h2oClientLogDir`` and ``h2oNodeLogDir`` are replaced by ``logDir``. Also the spark options
   ``spark.ext.h2o.client.log.dir`` and ``spark.ext.h2o.node.log.dir`` are replaced by ``spark.ext.h2o.log.dir``.
 
-
 - On ``H2OConf``, the setters ``setClientExtraProperties`` and ``setNodeExtraProperties`` are replaced by
   ``setExtraProperties`` and getters ``clientExtraProperties`` and ``nodeExtraProperties`` are replaced by
   ``extraProperties``. Also the spark options
   ``spark.ext.h2o.client.extra`` and ``spark.ext.h2o.node.extra`` are replaced by ``spark.ext.h2o.extra.properties``.
+
+- On ``H2OConf``, the setter ``setMapperXmx`` is replaced by ``setExternalMemory`` and the getter ``mapperXmx``
+  is replaced by ``externalMemory``. Also the Spark option ``spark.ext.h2o.hadoop.memory`` is replaced by ``spark.ext.h2o.external.memory``.
 
 From 3.30 to 3.32
 -----------------

@@ -284,8 +284,8 @@ External backend configuration properties
 |                                                       |                |                                                 | sd the notification file for the    |
 |                                                       |                |                                                 | startup of external H2O cluster.    |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.hadoop.memory``                       | ``6G``         | ``setMapperXmx(String)``                        | Amount of memory assigned to each   |
-|                                                       |                |                                                 | H2O node on YARN/Hadoop.            |
+| ``spark.ext.h2o.external.memory``                     | ``6G``         | ``setExternalMemory(String)``                   | Amount of memory assigned to each   |
+|                                                       |                |                                                 | external H2O node.                  |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.hdfs.dir``                   | ``None``       | ``setHDFSOutputDir(String)``                    | Path to the directory on HDFS used  |
 |                                                       |                |                                                 | for storing temporary files.        |
@@ -329,9 +329,9 @@ External backend configuration properties
 |                                                       |                |                                                 | 50000-55000.                        |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | ``setExternalExtraMemoryPercent(Integer)``      | This option is a percentage of      |
-|                                                       |                |                                                 | ``spark.ext.h2o.hadoop.memory`` and |
-|                                                       |                |                                                 | specifies memory for internal JVM   |
-|                                                       |                |                                                 | use outside of Java heap.           |
+|                                                       |                |                                                 | ``spark.ext.h2o.external.memory``   |
+|                                                       |                |                                                 | and specifies memory for internal   |
+|                                                       |                |                                                 | JVM use outside of Java heap.       |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.backend.stop.timeout``       | ``10000ms``    | ``setExternalBackendStopTimeout(Integer)``      | Timeout for confirmation from       |
 |                                                       |                |                                                 | worker nodes when stopping the      |
@@ -354,6 +354,34 @@ External backend configuration properties
 |                                                       |                |                                                 | node. Possible values are ``NONE``, |
 |                                                       |                |                                                 | ``DEFLATE``, ``GZIP``, ``SNAPPY``.  |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.auto.start.backend``         | ``YARN``       | ``setExternalAutoStartBackend(String)``         | The backend on which the external   |
+|                                                       |                |                                                 | H2O backend will be started in auto |
+|                                                       |                |                                                 | start mode. Possible values are     |
+|                                                       |                |                                                 | ``YARN`` and ``KUBERNETES``.        |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.service.name``       | |h2oSer|       | ``setExternalK8sH2OServceName(String)``         | Name of H2O service required to     |
+|                                                       |                |                                                 | start H2O on K8s.                   |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.statefulset.name``   | |h2oSet|       | ``setExternalK8sH2OStatefulsetName(String)``    | Name of H2O stateful set required   |
+|                                                       |                |                                                 | to start H2O on K8s.                |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.label``              | ``h2o``        | ``setExternalK8sH2OLabel(String)``              | Label used to select node for       |
+|                                                       |                |                                                 | H2O cluster formation.              |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.api.port``           | ``8081``       | ``setExternalK8sH2OApiPort(String)``            | H2O Kubernetes API Port.            |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.namespace``              | ``default``    | ``setExternalK8sNamespace(String)``             | Kubernetes namespace where          |
+|                                                       |                |                                                 | external H2O is started.            |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.docker.image``           | |Image|        | ``setExternalK8sDockerImage(String)``           | Docker image name containing        |
+|                                                       |                |                                                 | Sparkling Water External H2O        |
+|                                                       |                |                                                 | backend.                            |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.domain``                 | |Domain|       | ``setExternalK8sDomain(String)``                | Domain of the Kubernetes cluster.   |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
+| ``spark.ext.h2o.external.k8s.svc.timeout``            | ``300 sec``    | ``setExternalK8sServiceTimeout(Int)``           | Timeout in seconds used as a limit  |
+|                                                       |                |                                                 | for K8S service creation.           |
++-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 
 .. _getter:
 
@@ -367,3 +395,7 @@ H2OConf getter can be derived from the corresponding setter. All getters are par
 .. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
 .. |yarnDir| replace:: YARN container dir
 .. |secureConnections| replace:: ``spark.ext.h2o.internal_secure_connections``
+.. |h2oSer| replace:: ``h2o-service``
+.. |h2oSet| replace:: ``h2o-statefulSet``
+.. |Image| replace:: ``h2oai/sparkling-water-external-backend:SUBST_SW_VERSION``
+.. |Domain| replace:: ``cluster.local``

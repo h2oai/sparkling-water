@@ -18,7 +18,8 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
-import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -47,7 +48,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def clusterInfoFile: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
 
-  def mapperXmx: String = sparkConf.get(PROP_EXTERNAL_H2O_MEMORY._1, PROP_EXTERNAL_H2O_MEMORY._2)
+  @DeprecatedMethod("externalMemory", "3.34")
+  def mapperXmx: String = externalMemory
+
+  def externalMemory: String = sparkConf.get(PROP_EXTERNAL_MEMORY._1, PROP_EXTERNAL_MEMORY._2)
 
   def HDFSOutputDir: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
 
@@ -90,6 +94,30 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def externalCommunicationCompression: String =
     sparkConf.get(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, PROP_EXTERNAL_COMMUNICATION_COMPRESSION._2)
 
+  def externalAutoStartBackend: String =
+    sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
+
+  def externalK8sH2OServiceName: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._2)
+
+  def externalK8sH2OStatefulsetName: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._2)
+
+  def externalK8sH2OLabel: String = sparkConf.get(PROP_EXTERNAL_K8S_H2O_LABEL._1, PROP_EXTERNAL_K8S_H2O_LABEL._2)
+
+  def externalK8sH2OApiPort: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_API_PORT._1, PROP_EXTERNAL_K8S_H2O_API_PORT._2)
+
+  def externalK8sNamespace: String = sparkConf.get(PROP_EXTERNAL_K8S_NAMESPACE._1, PROP_EXTERNAL_K8S_NAMESPACE._2)
+
+  def externalK8sDockerImage: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, PROP_EXTERNAL_K8S_DOCKER_IMAGE._2)
+
+  def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
+
+  def externalK8sServiceTimeout: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
+
   private[backend] def isBackendVersionCheckDisabled =
     sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
@@ -117,7 +145,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def setClusterInfoFile(path: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
 
-  def setMapperXmx(mem: String): H2OConf = set(PROP_EXTERNAL_H2O_MEMORY._1, mem)
+  @DeprecatedMethod("setExternalMemory", "3.34")
+  def setMapperXmx(mem: String): H2OConf = setExternalMemory(mem)
+
+  def setExternalMemory(memory: String): H2OConf = set(PROP_EXTERNAL_MEMORY._1, memory)
 
   def setHDFSOutputDir(dir: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1, dir)
 
@@ -172,6 +203,47 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
     set(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, compressionType)
   }
 
+  def setExternalAutoStartBackend(backend: String): H2OConf = {
+    if (!Array(YARN_BACKEND, KUBERNETES_BACKEND).contains(backend)) {
+      throw new IllegalArgumentException(
+        "Backend for auto start mode of external H2O backend can be either" +
+          s" $YARN_BACKEND or $KUBERNETES_BACKEND")
+    }
+    set(PROP_EXTERNAL_AUTO_START_BACKEND._1, backend)
+  }
+
+  def setExternalK8sH2OServiceName(serviceName: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, serviceName)
+  }
+
+  def setExternalK8sH2OStatefulsetName(statefulsetName: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, statefulsetName)
+  }
+
+  def setExternalK8sH2OLabel(label: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_LABEL._1, label)
+  }
+
+  def setExternalK8sH2OApiPort(port: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_API_PORT._1, port.toString)
+  }
+
+  def setExternalK8sNamespace(namespace: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_NAMESPACE._1, namespace)
+  }
+
+  def setExternalK8sDockerImage(name: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_DOCKER_IMAGE._1, name)
+  }
+
+  def setExternalK8sDomain(domain: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
+  }
+
+  def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
+  }
+
   def externalConfString: String =
     s"""Sparkling Water configuration:
        |  backend cluster mode : $backendClusterMode
@@ -187,6 +259,9 @@ object ExternalBackendConf {
 
   val EXTERNAL_BACKEND_AUTO_MODE: String = "auto"
   val EXTERNAL_BACKEND_MANUAL_MODE: String = "manual"
+
+  val YARN_BACKEND: String = "yarn"
+  val KUBERNETES_BACKEND: String = "kubernetes"
 
   val PROP_EXTERNAL_DRIVER_IF: (String, None.type) = ("spark.ext.h2o.external.driver.if", None)
 
@@ -209,7 +284,7 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_INFO_FILE: (String, None.type) = ("spark.ext.h2o.cluster.info.name", None)
 
   /** Number of memory assigned to each external h2o node when starting in auto mode */
-  val PROP_EXTERNAL_H2O_MEMORY: (String, String) = ("spark.ext.h2o.hadoop.memory", "6g")
+  val PROP_EXTERNAL_MEMORY: (String, String) = ("spark.ext.h2o.external.memory", "6G")
 
   /** HDFS dir for external h2o nodes when starting in auto mode */
   val PROP_EXTERNAL_CLUSTER_HDFS_DIR: (String, None.type) = ("spark.ext.h2o.external.hdfs.dir", None)
@@ -269,4 +344,34 @@ object ExternalBackendConf {
 
   /** ID of external H2O backend started on YARN application */
   val PROP_EXTERNAL_CLUSTER_YARN_APP_ID: (String, None.type) = ("spark.ext.h2o.external.yarn.app.id", None)
+
+  /** Backend determining where external H2O should be started */
+  val PROP_EXTERNAL_AUTO_START_BACKEND: (String, String) = ("spark.ext.h2o.external.auto.start.backend", YARN_BACKEND)
+
+  /** Name of H2O service required to start H2O on K8s */
+  val PROP_EXTERNAL_K8S_H2O_SERVICE_NAME: (String, String) =
+    ("spark.ext.h2o.external.k8s.h2o.service.name", "h2o-service")
+
+  /** Name of H2O stateful set required to start H2O on K8s */
+  val PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME: (String, String) =
+    ("spark.ext.h2o.external.k8s.h2o.statefulset.name", "h2o-statefulset")
+
+  /** Label used to select node for H2O cluster formation */
+  val PROP_EXTERNAL_K8S_H2O_LABEL: (String, String) = ("spark.ext.h2o.external.k8s.h2o.label", "app=h2o")
+
+  /** H2O Kubernetes API Port */
+  val PROP_EXTERNAL_K8S_H2O_API_PORT: (String, Int) = ("spark.ext.h2o.external.k8s.h2o.api.port", 8081)
+
+  /** Kubernetes namespace where external H2O is started */
+  val PROP_EXTERNAL_K8S_NAMESPACE: (String, String) = ("spark.ext.h2o.external.k8s.namespace", "default")
+
+  /** Docker image name containing Sparkling Water External H2O Backend */
+  val PROP_EXTERNAL_K8S_DOCKER_IMAGE: (String, String) =
+    ("spark.ext.h2o.external.k8s.docker.image", s"h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}")
+
+  /** Domain of the Kubernetes Cluster */
+  val PROP_EXTERNAL_K8S_DOMAIN: (String, String) = ("spark.ext.h2o.external.k8s.domain", s"cluster.local")
+
+  /** Timeout in seconds used as a limit for K8s service creation */
+  val PROP_EXTERNAL_K8S_SERVICE_TIMEOUT: (String, Int) = ("spark.ext.h2o.external.k8s.svc.timeout", 60 * 5)
 }

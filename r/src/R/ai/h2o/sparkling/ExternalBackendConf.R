@@ -35,7 +35,12 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     clusterInfoFile = function() { ConfUtils.getOption(invoke(jconf, "clusterInfoFile")) },
 
-    mapperXmx = function() { invoke(jconf, "mapperXmx") },
+    mapperXmx = function() {
+      warning("The method 'mapperXmx' is deprecated and will be removed in 3.34. Use 'externalMemory' instead!")
+      invoke(jconf, "externalMemory")
+    },
+
+    externalMemory = function() { invoke(jconf, "externalMemory") },
 
     HDFSOutputDir = function() { ConfUtils.getOption(invoke(jconf, "HDFSOutputDir")) },
 
@@ -73,6 +78,23 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     externalCommunicationCompression = function() { invoke(jconf, "externalCommunicationCompression") },
 
+    externalAutoStartBackend = function() { invoke(jconf, "externalAutoStartBackend") },
+
+    externalK8sH2OServiceName = function() { invoke(jconf, "externalK8sH2OServiceName") },
+
+    externalK8sH2OStatefulsetName = function() { invoke(jconf, "externalK8sH2OStatefulsetName") },
+
+    externalK8sH2OLabel = function() { invoke(jconf, "externalK8sH2OLabel") },
+
+    externalK8sH2OApiPort = function() { invoke(jconf, "externalK8sH2OApiPort") },
+
+    externalK8sNamespace = function() { invoke(jconf, "externalK8sNamespace") },
+
+    externalK8sDockerImage = function() { invoke(jconf, "externalK8sDockerImage") },
+
+    externalK8sDomain = function() { invoke(jconf, "externalK8sDomain") },
+
+    externalK8sServiceTimeout = function() { invoke(jconf, "externalK8sServiceTimeout") },
 #
 # Setters
 #
@@ -84,7 +106,12 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setClusterInfoFile = function(path) { invoke(jconf, "setClusterInfoFile", path); .self },
 
-    setMapperXmx = function(mem) { invoke(jconf, "setMapperXmx", mem); .self },
+    setMapperXmx = function(mem) {
+      warning("The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
+      invoke(jconf, "setExternalMemory", mem); .self
+    },
+
+    setExternalMemory = function(memory) { invoke(jconf, "setExternalMemory", memory); .self },
 
     setHDFSOutputDir = function(dir) { invoke(jconf, "setHDFSOutputDir", dir); .self },
 
@@ -120,5 +147,24 @@ ExternalBackendConf <- setRefClass("ExternalBackendConf", methods = list(
 
     setExternalExtraJars = function(paths) { invoke(jconf, "setExternalExtraJars", paths); .self },
 
-    setExternalCommunicationCompression = function(compression) { invoke(jconf, "setExternalCommunicationCompression", compression); .self }
+    setExternalCommunicationCompression = function(compression) { invoke(jconf, "setExternalCommunicationCompression", compression); .self },
+
+    setExternalAutoStartBackend = function(backend) { invoke(jconf, "setExternalAutoStartBackend", backend); .self },
+
+    setExternalK8sH2OServiceName = function(serviceName) { invoke(jconf, "setExternalK8sH2OServiceName", serviceName); .self },
+
+    setExternalK8sH2OStatefulsetName = function(statefulsetName) { invoke(jconf, "setExternalK8sH2OStatefulsetName", statefulsetName); .self },
+
+    setExternalK8sH2OLabel = function(label) { invoke(jconf, "setExternalK8sH2OLabel", label); .self },
+
+    setExternalK8sH2OApiPort = function(port) { invoke(jconf, "setExternalK8sH2OApiPort", port); .self },
+
+    setExternalK8sNamespace = function(namespace) { invoke(jconf, "setExternalK8sNamespace", namespace); .self },
+
+    setExternalK8sDockerImage = function(name) { invoke(jconf, "setExternalK8sDockerImage", name); .self },
+
+    setExternalK8sDomain = function(domain) { invoke(jconf, "setExternalK8sDomain", domain); .self },
+
+    setExternalK8sServiceTimeout = function(timeout) { invoke(jconf, "setExternalK8sServiceTimeout", timeout); .self }
+
 ))

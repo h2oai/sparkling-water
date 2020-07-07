@@ -108,7 +108,7 @@ resource "aws_s3_bucket_object" "run_benchmarks_script" {
       --conf "spark.dynamicAllocation.enabled=false" \
       --conf "spark.ext.h2o.backend.cluster.mode=$2" \
       --conf "spark.ext.h2o.external.cluster.size=${var.aws_core_instance_count}" \
-      --conf "spark.ext.h2o.hadoop.memory=$4" \
+      --conf "spark.ext.h2o.external.memory=$4" \
       --conf "spark.ext.h2o.external.start.mode=auto" \
       --conf "spark.ext.h2o.external.extra.jars=/home/hadoop/benchmarks.jar" \
       /home/hadoop/benchmarks.jar \

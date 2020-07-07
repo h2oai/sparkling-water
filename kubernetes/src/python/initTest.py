@@ -37,4 +37,5 @@ model = estimator.fit(trainingDF)
 
 # Run Predictions
 model.transform(testingDF).collect()
+hc.stop()
 spark.stop()

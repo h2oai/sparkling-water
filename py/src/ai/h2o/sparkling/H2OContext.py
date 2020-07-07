@@ -120,10 +120,10 @@ class H2OContext(object):
         field.setAccessible(True)
         return field
 
-    def stop(self):
+    def stop(self, stopSparkContext = False):
         h2o.connection().close()
         scalaStopMethod = getattr(self._jhc, "ai$h2o$sparkling$H2OContext$$stop")
-        scalaStopMethod(False, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
+        scalaStopMethod(stopSparkContext, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
 
     def downloadH2OLogs(self,  destination, container = "ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
