@@ -172,6 +172,16 @@ object Runner {
       Seq("H2OAutoMLExtras"))
   }
 
+  private def problemSpecificAutoMLAlgorithmContext: ProblemSpecificAlgorithmSubstitutionContext = {
+    ProblemSpecificAlgorithmSubstitutionContext(
+      null,
+      "H2OAutoML",
+      null,
+      "ai.h2o.sparkling.ml.algos",
+      Seq.empty)
+  }
+
+
   private def gridSearchParameterConfiguration: Seq[ParameterSubstitutionContext] = {
     class DummySearchCriteria extends HyperSpaceSearchCriteriaV99[HyperSpaceSearchCriteria, DummySearchCriteria]
 
@@ -252,7 +262,11 @@ object Runner {
       writeResultToFile(content, algorithmContext, languageExtension, destinationDir)
     }
 
-    for ((algorithmContext, parameterContext) <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
+    val parametersConfigurationSequences = parametersConfiguration.map(Seq(_))
+    val specificAlgorithmCombinations = problemSpecificAlgorithmConfiguration.zip(parametersConfigurationSequences) :+
+      (problemSpecificAutoMLAlgorithmContext, autoMLParameterConfiguration)
+
+    for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
       val classificationAlgorithmContext = algorithmContext.copy(
         entityName = algorithmContext.parentEntityName + "Classifier",
         namespace = algorithmContext.parentNamespace + ".classification",
@@ -260,18 +274,18 @@ object Runner {
       val content = problemSpecificAlgorithmTemplates(languageExtension)(
         "classification",
         classificationAlgorithmContext,
-        Seq(parameterContext))
+        parameterContexts)
       writeResultToFile(content, classificationAlgorithmContext, languageExtension, destinationDir)
     }
 
-    for ((algorithmContext, parameterContext) <- problemSpecificAlgorithmConfiguration.zip(parametersConfiguration)) {
+    for ((algorithmContext, parameterContexts) <- specificAlgorithmCombinations) {
       val regressionAlgorithmContext = algorithmContext.copy(
         entityName = algorithmContext.parentEntityName + "Regressor",
         namespace = algorithmContext.parentNamespace + ".regression")
       val content = problemSpecificAlgorithmTemplates(languageExtension)(
         "regression",
         regressionAlgorithmContext,
-        Seq(parameterContext))
+        parameterContexts)
       writeResultToFile(content, regressionAlgorithmContext, languageExtension, destinationDir)
     }
 
