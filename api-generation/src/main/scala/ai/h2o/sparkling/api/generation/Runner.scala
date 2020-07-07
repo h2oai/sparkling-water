@@ -82,8 +82,7 @@ object Runner {
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields))
 
-
-    for((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
+    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
       yield ParameterSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.params",
         entityName,
@@ -189,8 +188,7 @@ object Runner {
         Seq("strategy")),
       ("H2OGridSearchCommonCriteriaParams", classOf[DummySearchCriteria], classOf[CartesianSearchCriteria], Seq.empty))
 
-
-    for((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], extraIgnoredParameters) <- gridSearchParameters)
+    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], extraIgnoredParameters) <- gridSearchParameters)
       yield ParameterSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.params",
         entityName,
