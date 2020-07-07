@@ -43,6 +43,12 @@ The following sections describe how to train DRF model in Sparkling Water in bot
             val estimator = new H2ODRF().setLabelCol("CAPSULE")
             val model = estimator.fit(trainingDF)
 
+        By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
+        the problem in your code, you can use ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
+        or ``ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor`` instead.
+
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
         .. code:: scala
@@ -89,6 +95,11 @@ The following sections describe how to train DRF model in Sparkling Water in bot
             from pysparkling.ml import H2ODRF
             estimator = H2ODRF(labelCol = "CAPSULE")
             model = estimator.fit(trainingDF)
+
+        By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
+        the problem in your code, you can use ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
