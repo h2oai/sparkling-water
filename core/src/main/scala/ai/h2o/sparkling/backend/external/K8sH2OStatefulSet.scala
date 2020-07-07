@@ -17,29 +17,19 @@
 
 package ai.h2o.sparkling.backend.external
 
-import java.util.concurrent.TimeUnit
+import java.io.{ByteArrayInputStream, InputStream}
 
 import ai.h2o.sparkling.H2OConf
-import io.fabric8.kubernetes.api.model.apps.{DoneableStatefulSet, StatefulSetFluent, StatefulSetSpecFluent}
-import io.fabric8.kubernetes.api.model.{IntOrString, Pod, Quantity}
+import io.fabric8.kubernetes.api.model.Pod
 import io.fabric8.kubernetes.client.KubernetesClient
-import org.apache.spark.h2o.backends.internal.InternalH2OBackend.isClusterOfExpectedSize
 
 import scala.collection.JavaConverters._
 
 trait K8sH2OStatefulSet extends K8sUtils {
 
   protected def installH2OStatefulSet(client: KubernetesClient, conf: H2OConf, headlessServiceURL: String): String = {
-    val set = client
-      .apps()
-      .statefulSets()
-      .inNamespace(conf.externalK8sNamespace)
-      .createOrReplaceWithNew()
-      .withApiVersion("apps/v1")
-      .withKind("StatefulSet")
-    addMetadata(set, conf)
-    addSpec(set, conf, headlessServiceURL)
-    set.done()
+    val resource = client.load(spec(conf, headlessServiceURL)).get
+    client.resourceList(resource).createOrReplace()
     waitForClusterToBeReady(client, conf)
   }
 
@@ -50,84 +40,6 @@ trait K8sH2OStatefulSet extends K8sUtils {
       .inNamespace(conf.externalK8sNamespace)
       .withName(conf.externalK8sH2OStatefulsetName)
       .delete()
-    while (client
-             .apps()
-             .statefulSets()
-             .inNamespace(conf.externalK8sNamespace)
-             .withName(conf.externalK8sH2OStatefulsetName)
-             .get() != null) {
-      Thread.sleep(100)
-    }
-  }
-
-  private def addMetadata(set: DoneableStatefulSet, conf: H2OConf): DoneableStatefulSet = {
-    set
-      .withNewMetadata()
-      .withName(conf.externalK8sH2OStatefulsetName)
-      .endMetadata()
-  }
-
-  private def addSpec(set: DoneableStatefulSet, conf: H2OConf, headlessServiceURL: String): DoneableStatefulSet = {
-    val templateSpec = set
-      .withNewSpec()
-      .withServiceName(conf.externalK8sH2OServiceName)
-      .withReplicas(conf.clusterSize.get.toInt)
-      .withNewSelector()
-      .withMatchLabels(convertLabelToMap(conf.externalK8sH2OLabel))
-      .endSelector()
-      .withNewTemplate()
-      .withNewMetadata()
-      .withLabels(convertLabelToMap(conf.externalK8sH2OLabel))
-      .endMetadata()
-
-    addTemplateSpec(templateSpec, conf, headlessServiceURL)
-      .endTemplate()
-      .endSpec()
-  }
-
-  private type TemplateSpec = StatefulSetSpecFluent.TemplateNested[StatefulSetFluent.SpecNested[DoneableStatefulSet]]
-
-  private def addTemplateSpec(templateSpec: TemplateSpec, conf: H2OConf, headlessServiceURL: String): TemplateSpec = {
-    templateSpec
-      .withNewSpec()
-      .withTerminationGracePeriodSeconds(10.toLong)
-      .addNewContainer()
-      .withName(conf.externalK8sH2OServiceName)
-      .withImage(conf.externalK8sDockerImage)
-      .withNewResources()
-      .addToRequests("memory", Quantity.parse(conf.externalMemory))
-      .endResources()
-      .addNewPort()
-      .withContainerPort(54321)
-      .withProtocol("TCP")
-      .endPort()
-      .withNewReadinessProbe()
-      .withNewHttpGet()
-      .withPath("/kubernetes/isLeaderNode")
-      .withPort(new IntOrString(conf.externalK8sH2OApiPort))
-      .endHttpGet()
-      .withInitialDelaySeconds(5)
-      .withPeriodSeconds(5)
-      .withFailureThreshold(1)
-      .endReadinessProbe()
-      .addNewEnv()
-      .withName("H2O_KUBERNETES_SERVICE_DNS")
-      .withValue(headlessServiceURL)
-      .endEnv()
-      .addNewEnv()
-      .withName("H2O_NODE_LOOKUP_TIMEOUT")
-      .withValue("180")
-      .endEnv()
-      .addNewEnv()
-      .withName("H2O_NODE_EXPECTED_COUNT")
-      .withValue(conf.clusterSize.get)
-      .endEnv()
-      .addNewEnv()
-      .withName("H2O_KUBERNETES_API_PORT")
-      .withValue(conf.externalK8sH2OApiPort.toString)
-      .endEnv()
-      .endContainer()
-      .endSpec()
   }
 
   private def waitForClusterToBeReady(client: KubernetesClient, conf: H2OConf): String = {
@@ -136,7 +48,6 @@ trait K8sH2OStatefulSet extends K8sUtils {
       .statefulSets()
       .inNamespace(conf.externalK8sNamespace)
       .withName(conf.externalK8sH2OStatefulsetName)
-      .waitUntilReady(conf.externalK8sServiceTimeout, TimeUnit.SECONDS)
 
     val start = System.currentTimeMillis()
     val timeout = conf.cloudTimeout
@@ -155,7 +66,6 @@ trait K8sH2OStatefulSet extends K8sUtils {
     } else {
       listReadyPods(client, conf).head.getMetadata.getName
     }
-
   }
 
   private def getPodsForStatefulSet(client: KubernetesClient, conf: H2OConf): Array[Pod] = {
@@ -170,6 +80,11 @@ trait K8sH2OStatefulSet extends K8sUtils {
       .toArray
   }
 
+  private def convertLabelToMap(label: String): java.util.Map[String, String] = {
+    val split = label.split("=")
+    Map(split(0) -> split(1)).asJava
+  }
+
   private def listReadyPods(client: KubernetesClient, conf: H2OConf) = {
     getPodsForStatefulSet(client, conf).filter { pod =>
       val newPod = client
@@ -178,5 +93,53 @@ trait K8sH2OStatefulSet extends K8sUtils {
         .withName(pod.getMetadata.getName)
       newPod.isReady && newPod.getLog.contains(s"Created cluster of size ${conf.clusterSize.get}")
     }
+  }
+
+  private def spec(conf: H2OConf, headlessServiceURL: String): InputStream = {
+    val spec = s"""
+                  |apiVersion: apps/v1
+                  |kind: StatefulSet
+                  |metadata:
+                  |  name: ${conf.externalK8sH2OStatefulsetName}
+                  |  namespace: ${conf.externalK8sNamespace}
+                  |spec:
+                  |  serviceName: ${conf.externalK8sH2OServiceName}
+                  |  podManagementPolicy: "Parallel"
+                  |  replicas: 2
+                  |  selector:
+                  |    matchLabels:
+                  |      ${convertLabel(conf.externalK8sH2OLabel)}
+                  |  template:
+                  |    metadata:
+                  |      labels:
+                  |        ${convertLabel(conf.externalK8sH2OLabel)}
+                  |    spec:
+                  |      terminationGracePeriodSeconds: 10
+                  |      containers:
+                  |        - name: ${conf.externalK8sH2OServiceName}
+                  |          image: '${conf.externalK8sDockerImage}'
+                  |          resources:
+                  |            requests:
+                  |              memory: "${conf.externalMemory}"
+                  |          ports:
+                  |            - containerPort: 54321
+                  |              protocol: TCP
+                  |          readinessProbe:
+                  |            httpGet:
+                  |              path: /kubernetes/isLeaderNode
+                  |              port: ${conf.externalK8sH2OApiPort}
+                  |            initialDelaySeconds: 5
+                  |            periodSeconds: 5
+                  |            failureThreshold: 1
+                  |          env:
+                  |          - name: H2O_KUBERNETES_SERVICE_DNS
+                  |            value: $headlessServiceURL
+                  |          - name: H2O_NODE_LOOKUP_TIMEOUT
+                  |            value: '180'
+                  |          - name: H2O_NODE_EXPECTED_COUNT
+                  |            value: '${conf.clusterSize.get}'
+                  |          - name: H2O_KUBERNETES_API_PORT
+                  |            value: '${conf.externalK8sH2OApiPort}'""".stripMargin
+    new ByteArrayInputStream(spec.getBytes)
   }
 }

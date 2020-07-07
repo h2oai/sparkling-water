@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
-import ai.h2o.sparkling.backend.utils.RestApiUtils
 import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import org.apache.spark.expose.Logging
 
@@ -36,15 +35,5 @@ trait K8sExternalBackendClient extends K8sHeadlessService with K8sH2OStatefulSet
     installH2OHeadlessService(client, conf)
     installH2OStatefulSet(client, conf, getH2OHeadlessServiceURL(conf))
     conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
-    while (true) {
-      try {
-        RestApiUtils.getClusterInfo(conf)
-        return
-      } catch {
-        case _: Throwable =>
-          logInfo("Waiting for H2O cluster to get ready ...")
-          Thread.sleep(1000)
-      }
-    }
   }
 }

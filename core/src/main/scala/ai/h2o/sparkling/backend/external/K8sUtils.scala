@@ -17,11 +17,9 @@
 
 package ai.h2o.sparkling.backend.external
 
-import scala.collection.JavaConverters._
-
 trait K8sUtils {
-  protected def convertLabelToMap(label: String): java.util.Map[String, String] = {
-    val split = label.split("=")
-    Map(split(0) -> split(1)).asJava
+
+  protected def convertLabel(label: String): String = {
+    label.split("=").mkString(": ")
   }
 }
