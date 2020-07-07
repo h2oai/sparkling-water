@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed, DetailedWithAssignments}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
@@ -27,11 +27,20 @@ trait H2OMOJOPredictionMultinomial {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-        val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
-        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-        Detailed(pred.label, probabilities)
+      if (getLeafNodeAssignmentsEnabled()) {
+        udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
+          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+          DetailedWithAssignments(pred.label, probabilities, pred.leafNodeAssignments)
+        }
+      } else {
+        udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
+          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+          Detailed(pred.label, probabilities)
+        }
       }
     } else {
       udf[Base, Row, Double] { (r: Row, offset: Double) =>
@@ -56,7 +65,13 @@ trait H2OMOJOPredictionMultinomial {
     val fields = if (getWithDetailedPredictionCol()) {
       val probabilitiesField =
         StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
-      labelField :: probabilitiesField :: Nil
+      val baseFields = labelField :: probabilitiesField :: Nil
+      if (getLeafNodeAssignmentsEnabled()) {
+        val assignmentsField = StructField("assignments", ArrayType(StringType))
+        baseFields ++ (assignmentsField :: Nil)
+      } else {
+        baseFields
+      }
     } else {
       labelField :: Nil
     }
@@ -75,4 +90,5 @@ object H2OMOJOPredictionMultinomial {
 
   case class Detailed(label: String, probabilities: Map[String, Double])
 
+  case class DetailedWithAssignments(label: String, probabilities: Map[String, Double], assignments: Array[String])
 }

@@ -89,17 +89,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
 
-  def leafNodeAssignments(df: DataFrame): DataFrame = {
-    val spark = SparkSessionUtils.active
-    import spark.implicits._
-    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    df.map { row =>
-        val rowData = RowConverter.toH2ORowData(row)
-        mojoBackend.leafNodeAssignmentExtended(rowData)._paths
-      }
-      .toDF("leafNodeAssignments")
-  }
-
   def setSpecificParams(mojoModel: MojoModel): H2OMOJOModel = this
 
   override protected def outputColumnName: String = getDetailedPredictionCol()

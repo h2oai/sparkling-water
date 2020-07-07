@@ -305,5 +305,5 @@ Obtaining Leaf Node Assignments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To obtain the leaf node assignments, please first make sure to set ``leafNodeAssignmentsEnabled`` to true on your
-mojo settings object. The method ``leafNodeAssignmentsEnabled(DataFrame)`` on Sparkling Water MOJO model returns
-a data frame which contains decision paths for all the rows in the input dataframe.
+mojo settings object. The method ``getLeafNodeAssignments`` on Sparkling Water MOJO model returns
+a data frame which contains decision paths for all the rows from the dataset used for the scoring.
