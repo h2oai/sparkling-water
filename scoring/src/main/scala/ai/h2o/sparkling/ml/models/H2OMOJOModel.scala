@@ -35,7 +35,9 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
