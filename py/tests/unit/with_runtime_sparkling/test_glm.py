@@ -20,7 +20,10 @@ import pytest
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pysparkling.ml import H2OGLM
+from pyspark.sql.functions import col
+from pysparkling.ml.algos import H2OGLM
+from pysparkling.ml.algos.classification import H2OGLMClassifier
+from pysparkling.ml.algos.regression import H2OGLMRegressor
 from tests import unit_test_utils
 from py4j.protocol import Py4JJavaError
 from pyspark.sql.utils import AnalysisException
@@ -165,3 +168,52 @@ def testBetaConstraintsAffectResult(spark, prostateDataset):
     result = model.transform(testingDataset)
 
     unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)
+
+
+def setParamtersForProblemSpecificTests(glm):
+    glm.setLabelCol("CAPSULE")
+    glm.setSeed(1),
+    glm.setSplitRatio(0.8)
+    return glm
+
+
+def testH2OGLMClassifierBehavesTheSameAsGenericH2OGLMOnStringLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    glm = setParamtersForProblemSpecificTests(H2OGLM())
+    referenceModel = glm.fit(trainingDateset.withColumn("CAPSULE", col("CAPSULE").cast("string")))
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    classifier = setParamtersForProblemSpecificTests(H2OGLMClassifier())
+    model = classifier.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testH2OGLMRegressorBehavesTheSameAsGenericH2OGLMOnNumericLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    automl = setParamtersForProblemSpecificTests(H2OGLM())
+    referenceModel = automl.fit(trainingDateset)
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    classifier = setParamtersForProblemSpecificTests(H2OGLMRegressor())
+    model = classifier.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testH2OGLMClassifierBehavesDiffenrentlyThanH2OGLMRegressor(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    regressor = setParamtersForProblemSpecificTests(H2OGLMRegressor())
+    regressionModel = regressor.fit(trainingDateset)
+    regressionDataset = regressionModel.transform(testingDataset)
+
+    classifier = setParamtersForProblemSpecificTests(H2OGLMClassifier())
+    classificationModel = classifier.fit(trainingDateset)
+    classificationDataset = classificationModel.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)

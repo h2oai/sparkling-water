@@ -12,7 +12,7 @@ object ParameterSetters {
     def setNfolds(value: Int): algo.type = setParam[Int, IntParam]("nfolds", value)
 
     private def setParam[ValueType, ParamType <: Param[ValueType]](paramName: String, value: ValueType): algo.type = {
-      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith("$$" + paramName)).head
+      val field = algo.getClass.getDeclaredFields.find(_.getName().endsWith(paramName)).head
       field.setAccessible(true)
       val parameter = field.get(algo).asInstanceOf[ParamType]
       algo.set(parameter, value)

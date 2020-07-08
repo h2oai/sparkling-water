@@ -15,9 +15,17 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning, H2ODRF
-from ai.h2o.sparkling.ml.algos.classification import H2OAutoMLClassifier, H2OGLMClassifier, H2OGBMClassifier, H2OXGBoostClassifier, H2ODeepLearningClassifier, H2ODRFClassifier
-from ai.h2o.sparkling.ml.algos.regression import H2OAutoMLRegressor, H2OGLMRegressor, H2OGBMRegressor, H2OXGBoostRegressor, H2ODeepLearningRegressor, H2ODRFRegressor
-from ai.h2o.sparkling.ml.features import H2OTargetEncoder
-from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel, H2OUnsupervisedMOJOModel
-from ai.h2o.sparkling.ml.models import H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
+from ai.h2o.sparkling.ml.algos.classification import H2OAutoMLClassifier
+from ai.h2o.sparkling.ml.algos.classification import H2OGLMClassifier
+from ai.h2o.sparkling.ml.algos.classification import H2OGBMClassifier
+from ai.h2o.sparkling.ml.algos.classification import H2OXGBoostClassifier
+from ai.h2o.sparkling.ml.algos.classification import H2ODeepLearningClassifier
+from ai.h2o.sparkling.ml.algos.classification import H2ODRFClassifier
+
+__all__ = [
+    "H2OAutoMLClassifier",
+    "H2OGLMClassifier",
+    "H2OGBMClassifier",
+    "H2OXGBoostClassifier",
+    "H2ODeepLearningClassifier",
+    "H2ODRFClassifier"]

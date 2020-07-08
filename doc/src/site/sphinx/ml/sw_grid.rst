@@ -45,6 +45,13 @@ H2ODRF in both languages.
             import ai.h2o.sparkling.ml.algos.H2ODRF
             val algo = new H2ODRF().setLabelCol("CAPSULE")
 
+        By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
+        or ``ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor`` instead.
+
+
         Define a hyper space which will be traversed
 
         .. code:: scala
@@ -124,6 +131,11 @@ H2ODRF in both languages.
 
             from pysparkling.ml import H2ODRF
             algo = H2ODRF(labelCol = "CAPSULE")
+
+        By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
 
         Define a hyper space which will be traversed
 

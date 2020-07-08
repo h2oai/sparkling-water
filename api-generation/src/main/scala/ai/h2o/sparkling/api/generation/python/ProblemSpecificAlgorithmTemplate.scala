@@ -19,26 +19,28 @@ package ai.h2o.sparkling.api.generation.python
 
 import ai.h2o.sparkling.api.generation.common._
 
-object AlgorithmTemplate
-  extends ((AlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext]) => String)
+object ProblemSpecificAlgorithmTemplate
+  extends ((String, ProblemSpecificAlgorithmSubstitutionContext, Seq[ParameterSubstitutionContext]) => String)
   with AlgorithmTemplateBase
   with ParameterResolver {
 
   def apply(
-      algorithmSubstitutionContext: AlgorithmSubstitutionContext,
+      problemType: String,
+      algorithmSubstitutionContext: ProblemSpecificAlgorithmSubstitutionContext,
       parameterSubstitutionContexts: Seq[ParameterSubstitutionContext]): String = {
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
     val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
-    val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
-    val algorithmType = algorithmSubstitutionContext.algorithmType
-    val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
+    val parentEntityName = algorithmSubstitutionContext.parentEntityName
+    val parentNamespace = algorithmSubstitutionContext.parentNamespace
+    val parents = Seq(parentEntityName)
 
-    val imports = Seq("pyspark.keyword_only", "ai.h2o.sparkling.Initializer", "ai.h2o.sparkling.ml.Utils.Utils") ++
-      paramClasses.map(clazz => s"ai.h2o.sparkling.ml.params.$clazz.$clazz") ++
-      Seq(s"ai.h2o.sparkling.ml.algos.$algorithmType.$algorithmType") ++
-      algorithmSubstitutionContext.extraInheritedEntities.map(clazz => s"ai.h2o.sparkling.ml.algos.$clazz.$clazz")
+    val imports = Seq(
+      "pyspark.keyword_only",
+      "ai.h2o.sparkling.Initializer",
+      "ai.h2o.sparkling.ml.Utils.Utils",
+      s"$parentNamespace.$parentEntityName.$parentEntityName")
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 

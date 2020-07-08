@@ -43,6 +43,12 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setLabelCol("CAPSULE")
             automl.setIgnoredCols(Array("ID"))
 
+        By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OAutoMLClassifier``
+        or ``ai.h2o.sparkling.ml.algos.regression.H2OAutoMLRegressor`` instead.
+
         By default, AutoML goes through a huge space of H2O algorithms and their hyper-parameters which requires some time. If you wish to speed up
         the training phase, you can exclude some H2O algorithms and limit the number of trained models.
 
@@ -128,6 +134,11 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             from pysparkling.ml import H2OAutoML
             automl = H2OAutoML(labelCol="CAPSULE", ignoredCols=["ID"])
+
+        By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
+        the label column of the training dataset. If the label column is a string column, a classification model will be trained.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``H2OAutoMLClassifier`` or ``H2OAutoMLRegressor`` instead.
 
         By default, AutoML goes through a huge space of H2O algorithms and their hyper-parameters which requires some time. If you wish to speed up
         the training phase, you can exclude some H2O algorithms and limit the number of trained models.

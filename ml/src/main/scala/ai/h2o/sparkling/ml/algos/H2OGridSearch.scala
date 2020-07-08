@@ -24,7 +24,7 @@ import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEnco
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
-import ai.h2o.sparkling.ml.utils.H2OParamsReadable
+import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, H2OParamsReadable}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import hex.Model
@@ -45,7 +45,7 @@ import scala.collection.JavaConverters._
   */
 class H2OGridSearch(override val uid: String)
   extends Estimator[H2OMOJOModel]
-  with H2OAlgoCommonUtils
+  with EstimatorCommonUtils
   with DefaultParamsWritable
   with H2OGridSearchParams
   with RestCommunication
@@ -120,7 +120,7 @@ class H2OGridSearch(override val uid: String)
         s"Algorithm has to be specified. Available algorithms are " +
           s"${H2OGridSearch.SupportedAlgos.values.mkString(", ")}")
     }
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid) = algo.prepareDatasetForFitting(dataset)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
@@ -235,17 +235,6 @@ class H2OGridSearch(override val uid: String)
         !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
     }
   }
-
-  private[sparkling] def getColumnsToCategorical(): Array[String] = getAlgo().getColumnsToCategorical()
-  override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ getAlgo().getExcludedCols()
-  }
-  private[sparkling] def getFeaturesCols(): Array[String] = getAlgo().getFeaturesCols()
-  private[sparkling] def getSplitRatio(): Double = getAlgo().getSplitRatio()
-  private[sparkling] def setFeaturesCols(value: Array[String]): this.type = {
-    getAlgo().setFeaturesCols(value)
-    this
-  }
 }
 
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
@@ -253,8 +242,15 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
   object SupportedAlgos extends Enumeration {
     val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans = Value
 
+    def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
+      values.find { value =>
+        Array(value.toString, value.toString + "Classifier", value.toString + "Regressor")
+          .contains(algo.getClass.getSimpleName)
+      }
+    }
+
     def checkIfSupported(algo: H2OAlgorithm[_ <: Model.Parameters]): Unit = {
-      val exists = values.exists(_.toString == algo.getClass.getSimpleName)
+      val exists = getEnumValue(algo).nonEmpty
       if (!exists) {
         throw new IllegalArgumentException(
           s"Grid Search is not supported for the specified algorithm '${algo.getClass}'. Supported " +
@@ -263,7 +259,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
     }
 
     def toH2OAlgoName(algo: H2OAlgorithm[_ <: Model.Parameters]): String = {
-      val algoValue = values.find(_.toString == algo.getClass.getSimpleName).get
+      val algoValue = getEnumValue(algo).get
       algoValue match {
         case H2OGBM => "gbm"
         case H2OGLM => "glm"

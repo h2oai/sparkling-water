@@ -24,7 +24,9 @@ from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.sql.functions import col
 
-from pysparkling.ml import H2OAutoML
+from pysparkling.ml.algos import H2OAutoML
+from pysparkling.ml.algos.classification import H2OAutoMLClassifier
+from pysparkling.ml.algos.regression import H2OAutoMLRegressor
 
 from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
@@ -39,31 +41,72 @@ def testParamsPassedBySetters():
 
 
 @pytest.fixture(scope="module")
-def dataset(spark, prostateDatasetPath):
-    return spark \
-        .read.csv(prostateDatasetPath, header=True, inferSchema=True) \
-        .withColumn("CAPSULE", col("CAPSULE").cast("string"))
+def classificationDataset(prostateDataset):
+    return prostateDataset.withColumn("CAPSULE", col("CAPSULE").cast("string"))
 
 
-def getAlgorithmForGetLeaderboardTesting():
-    automl = H2OAutoML(labelCol="CAPSULE", ignoredCols=["ID"])
+def setParametersForTesting(automl):
+    automl.setLabelCol("CAPSULE")
+    automl.setIgnoredCols(["ID"])
     automl.setExcludeAlgos(["GLM"])
     automl.setMaxModels(5)
-    automl.setSortMetric("AUC")
+    automl.setSeed(42)
     return automl
 
 
-def testGetLeaderboardWithListAsArgument(hc, dataset):
-    automl = getAlgorithmForGetLeaderboardTesting()
-    automl.fit(dataset)
+def testGetLeaderboardWithListAsArgument(classificationDataset):
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(classificationDataset)
     extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
     assert automl.getLeaderboard(extraColumns).columns == automl.getLeaderboard().columns + extraColumns
 
 
-def testGetLeaderboardWithVariableArgumens(hc, dataset):
-    automl = getAlgorithmForGetLeaderboardTesting()
-    automl.fit(dataset)
+def testGetLeaderboardWithVariableArgumens(classificationDataset):
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(classificationDataset)
     extraColumns = ["training_time_ms", "predict_time_per_row_ms"]
     result = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms").columns
     expected = automl.getLeaderboard().columns + extraColumns
     assert result == expected
+
+
+def testH2OAutoMLClassifierBehavesTheSameAsGenericH2OAutoMLOnStringLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    automl = setParametersForTesting(H2OAutoML())
+    referenceModel = automl.fit(trainingDateset.withColumn("CAPSULE", col("CAPSULE").cast("string")))
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    classifier = setParametersForTesting(H2OAutoMLClassifier())
+    model = classifier.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testH2OAutoMLRegressorBehavesTheSameAsGenericH2OAutoMLOnNumericLabelColumn(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    automl = setParametersForTesting(H2OAutoML())
+    referenceModel = automl.fit(trainingDateset)
+    referenceDataset = referenceModel.transform(testingDataset)
+
+    classifier = setParametersForTesting(H2OAutoMLRegressor())
+    model = classifier.fit(trainingDateset)
+    result = model.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
+
+
+def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+
+    regressor = setParametersForTesting(H2OAutoMLRegressor())
+    regressionModel = regressor.fit(trainingDateset)
+    regressionDataset = regressionModel.transform(testingDataset)
+
+    classifier = setParametersForTesting(H2OAutoMLClassifier())
+    classificationModel = classifier.fit(trainingDateset)
+    classificationDataset = classificationModel.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
