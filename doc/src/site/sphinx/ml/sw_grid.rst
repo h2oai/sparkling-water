@@ -47,8 +47,8 @@ H2ODRF in both languages.
 
         By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor`` instead.
 
 
@@ -134,8 +134,8 @@ H2ODRF in both languages.
 
         By default, ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
 
         Define a hyper space which will be traversed
 

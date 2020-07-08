@@ -244,9 +244,8 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
-        value.toString == algo.getClass.getSimpleName ||
-        value.toString + "Classifier" == algo.getClass.getSimpleName ||
-        value.toString + "Regressor" == algo.getClass.getSimpleName
+        Array(value.toString, value.toString + "Classifier", value.toString + "Regressor")
+          .contains(algo.getClass.getSimpleName)
       }
     }
 

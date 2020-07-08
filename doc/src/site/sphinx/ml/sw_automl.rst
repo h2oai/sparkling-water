@@ -45,8 +45,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``ai.h2o.sparkling.ml.algos.classification.H2OAutoMLClassifier``
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OAutoMLClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OAutoMLRegressor`` instead.
 
         By default, AutoML goes through a huge space of H2O algorithms and their hyper-parameters which requires some time. If you wish to speed up
@@ -137,8 +137,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
         By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``H2OAutoMLClassifier`` or ``H2OAutoMLRegressor`` instead.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``H2OAutoMLClassifier`` or ``H2OAutoMLRegressor`` instead.
 
         By default, AutoML goes through a huge space of H2O algorithms and their hyper-parameters which requires some time. If you wish to speed up
         the training phase, you can exclude some H2O algorithms and limit the number of trained models.

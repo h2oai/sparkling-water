@@ -43,9 +43,9 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 
         By default, ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``ai.h2o.sparkling.ml.algos.classification.H2OXGBoost``
-        or ``ai.h2o.sparkling.ml.algos.regression.H2OXGBoost`` instead.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OXGBoostClassifier``
+        or ``ai.h2o.sparkling.ml.algos.regression.H2OXGBoostRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
@@ -96,8 +96,8 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 
         By default, ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you want to be more explicit about
-        the problem in your code, you can use ``H2OXGBoostClassifier`` or ``H2OXGBoostRegressor`` instead.
+        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        column data types, you can explicitly identify the problem by using ``H2OXGBoostClassifier`` or ``H2OXGBoostRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
