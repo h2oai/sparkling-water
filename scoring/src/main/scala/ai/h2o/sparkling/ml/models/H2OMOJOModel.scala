@@ -22,11 +22,11 @@ import java.io.{File, InputStream}
 import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
 import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
-import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
-import ai.h2o.sparkling.ml.utils.{SchemaUtils, Utils}
+import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
@@ -35,9 +35,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-import scala.collection.JavaConverters._
 class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
