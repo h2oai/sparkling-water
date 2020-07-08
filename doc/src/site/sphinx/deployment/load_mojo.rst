@@ -304,6 +304,8 @@ was used, this method returns the training metrics.
 Obtaining Leaf Node Assignments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain the leaf node assignments, please first make sure to set ``leafNodeAssignmentsEnabled`` to true on your
-mojo settings object. The method ``getLeafNodeAssignments`` on Sparkling Water MOJO model returns
-a data frame which contains decision paths for all the rows from the dataset used for the scoring.
+To obtain the leaf node assignments, please first make sure to set ``leafNodeAssignmentsEnabled`` and
+``withDetailedPredictionCol`` to true on your MOJO settings object. The leaf node assignments are now stored
+in the ``${detailedPredictionCol}.leafNodeAssignments`` column on the dataset obtained from the prediction.
+Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
+it is ``detailed_prediction``.
