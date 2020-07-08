@@ -55,7 +55,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(!predictions.columns.contains("detailed_prediction"))
   }
 
-  test("detailedPredictionCol content with contributions") {
+  test("detailedPredictionCol content with contributions and assignments") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
@@ -70,7 +70,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("label", "probabilities", "contributions")
+    val expectedCols = Seq("label", "probabilities", "contributions", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
     assert(probabilities.keys.toList.sorted == Seq("Iris-setosa", "Iris-versicolor").sorted)
@@ -102,12 +102,13 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(probabilities.keys.toList.sorted == Seq("Iris-setosa", "Iris-versicolor").sorted)
   }
 
-  test("transformSchema with detailed prediction col and contributions") {
+  test("transformSchema with detailed prediction col, contributions and assignments") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
+      .setLeafNodeAssignmentsEnabled(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -120,7 +121,8 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
     val contributionsField = StructField("contributions", contributionsType, nullable = true)
-    val leafNodeAssignmentField = StructField("leafNodeAssignment", ArrayType(StringType))
+    val leafNodeAssignmentField =
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
       StructType(labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: Nil),

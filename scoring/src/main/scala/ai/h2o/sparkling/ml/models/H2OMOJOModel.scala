@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.{File, InputStream}
 
-import _root_.hex.genmodel.algos.tree.SharedTreeMojoModel
+import _root_.hex.genmodel.algos.tree.{SharedTreeMojoModel, TreeBackedMojoModel}
 import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
@@ -299,6 +299,15 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     }
   }
 
+  private[sparkling] def canGenerateLeafNodeAssignments(model: GenModel): Boolean = {
+    model match {
+      case _: TreeBackedMojoModel => true
+      case _ =>
+        logWarning("Computing Leaf Node Assignments is only available on Tree based models!")
+        false
+    }
+  }
+
   override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(Utils.getMojoModel(mojo))
@@ -307,7 +316,9 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     if (canGenerateContributions(config.getModel)) {
       config.setEnableContributions(model.getWithDetailedPredictionCol())
     }
-    config.setEnableLeafAssignment(model.getLeafNodeAssignmentsEnabled())
+    if (canGenerateLeafNodeAssignments(config.getModel)) {
+      config.setEnableLeafAssignment(model.getLeafNodeAssignmentsEnabled())
+    }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)

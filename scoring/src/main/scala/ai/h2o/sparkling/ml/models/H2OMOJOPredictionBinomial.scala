@@ -145,7 +145,8 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
       }
 
       val assignmentFields = if (getLeafNodeAssignmentsEnabled()) {
-        val assignmentField = StructField("leafNodeAssignments", ArrayType(StringType))
+        val assignmentField =
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
         contributionsFields :+ assignmentField
       } else {
         contributionsFields

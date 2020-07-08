@@ -89,7 +89,8 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val probabilitiesField =
       StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
     val predictionColField = StructField("prediction", StringType, nullable = true)
-    val leafNodeAssignmentField = StructField("leafNodeAssignment", ArrayType(StringType))
+    val leafNodeAssignmentField =
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
     val detailedPredictionColField =
       StructField(
         "detailed_prediction",
