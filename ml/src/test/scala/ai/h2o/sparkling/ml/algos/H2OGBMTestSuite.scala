@@ -40,7 +40,7 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setSplitRatio(0.8)
       .setSeed(1)
       .setNtrees(2)
-      .setLeafNodeAssignmentsEnabled(true)
+      .setWithLeafNodeAssignments(true)
       .setWithDetailedPredictionCol(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setNfolds(5)

@@ -36,7 +36,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojo, this))) {
-        if (getWithContributions() && getLeafNodeAssignmentsEnabled()) {
+        if (getWithContributions() && getWithLeafNodeAssignments()) {
           udf[DetailedWithContributionsAndCalibrationAndAssignments, Row, Double] { (r: Row, offset: Double) =>
             val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
             val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
@@ -50,7 +50,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
               calibratedProbabilities,
               pred.leafNodeAssignments)
           }
-        } else if (getLeafNodeAssignmentsEnabled()) {
+        } else if (getWithLeafNodeAssignments()) {
           udf[DetailedWithCalibrationAndAssignments, Row, Double] { (r: Row, offset: Double) =>
             val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
             val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
@@ -80,7 +80,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
             DetailedWithCalibration(pred.label, probabilities, calibratedProbabilities)
           }
         }
-      } else if (getWithContributions() && getLeafNodeAssignmentsEnabled()) {
+      } else if (getWithContributions() && getWithLeafNodeAssignments()) {
         udf[DetailedWithContributionsAndAssignments, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
@@ -88,7 +88,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
           val contributions = convertContributionsToMap(model, pred.contributions)
           DetailedWithContributionsAndAssignments(pred.label, probabilities, contributions, pred.leafNodeAssignments)
         }
-      } else if (getLeafNodeAssignmentsEnabled()) {
+      } else if (getWithLeafNodeAssignments()) {
         udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
           val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
@@ -144,7 +144,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
         detailedPredictionFields
       }
 
-      val assignmentFields = if (getLeafNodeAssignmentsEnabled()) {
+      val assignmentFields = if (getWithLeafNodeAssignments()) {
         val assignmentField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
         contributionsFields :+ assignmentField

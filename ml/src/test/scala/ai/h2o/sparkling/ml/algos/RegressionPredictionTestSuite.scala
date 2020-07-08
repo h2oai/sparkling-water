@@ -56,7 +56,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
-      .setLeafNodeAssignmentsEnabled(true)
+      .setWithLeafNodeAssignments(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
@@ -101,7 +101,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
         .setWithDetailedPredictionCol(true)
         .setSeed(1)
         .setWithContributions(true)
-        .setLeafNodeAssignmentsEnabled(true)
+        .setWithLeafNodeAssignments(true)
         .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setLabelCol("AGE")
       val model = algo.fit(dataset)

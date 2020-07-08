@@ -26,7 +26,7 @@ trait H2OMOJOPredictionAnomaly {
   self: H2OMOJOModel =>
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      if (getLeafNodeAssignmentsEnabled()) {
+      if (getWithLeafNodeAssignments()) {
         udf[DetailedWithAssignments, Row] { r: Row =>
           val pred =
             H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
@@ -60,7 +60,7 @@ trait H2OMOJOPredictionAnomaly {
     val fields = if (getWithDetailedPredictionCol()) {
       val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
       val baseFields = scoreField :: normalizedScoreField :: Nil
-      if (getLeafNodeAssignmentsEnabled()) {
+      if (getWithLeafNodeAssignments()) {
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
         baseFields :+ assignmentsField

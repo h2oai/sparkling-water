@@ -92,5 +92,5 @@ class H2OCommonParams(H2OBaseMOJOParams):
     def setWithContributions(self, value):
         return self._set(withContributions=value)
 
-    def setLeafNodeAssignmentsEnabled(self, value):
-        return self._set(leafNodeAssignmentsEnabled=value)
+    def setWithLeafNodeAssignments(self, value):
+        return self._set(withLeafNodeAssignments=value)

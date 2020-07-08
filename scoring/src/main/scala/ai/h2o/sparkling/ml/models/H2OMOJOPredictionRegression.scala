@@ -73,7 +73,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       } else if (getWithContributions()) {
         val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
         valueField :: contributionsField :: Nil
-      } else if (getLeafNodeAssignmentsEnabled()) {
+      } else if (getWithLeafNodeAssignments()) {
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
         valueField :: assignmentsField :: Nil
@@ -92,7 +92,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   }
 
   private def supportsLeafNodeAssignments(): Boolean = {
-    getLeafNodeAssignmentsEnabled() && H2OMOJOCache.canGenerateLeafNodeAssignments(
+    getWithLeafNodeAssignments() && H2OMOJOCache.canGenerateLeafNodeAssignments(
       H2OMOJOCache.getMojoBackend(uid, getMojo, this).m)
   }
 

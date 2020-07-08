@@ -27,7 +27,7 @@ trait H2OMOJOPredictionMultinomial {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      if (getLeafNodeAssignmentsEnabled()) {
+      if (getWithLeafNodeAssignments()) {
         udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
           val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
@@ -66,7 +66,7 @@ trait H2OMOJOPredictionMultinomial {
       val probabilitiesField =
         StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       val baseFields = labelField :: probabilitiesField :: Nil
-      if (getLeafNodeAssignmentsEnabled()) {
+      if (getWithLeafNodeAssignments()) {
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
         baseFields ++ (assignmentsField :: Nil)

@@ -28,7 +28,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                              convertInvalidNumbersToNa = "logical",
                                              namedMojoOutputColumns = "logical",
                                              withContributions = "logical",
-                                             leafNodeAssignmentsEnabled = "logical"),
+                                             withLeafNodeAssignments = "logical"),
                                methods = list(
                                  initialize = function(predictionCol = "prediction",
                                                        detailedPredictionCol = "detailed_prediction",
@@ -37,7 +37,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        convertInvalidNumbersToNa = FALSE,
                                                        namedMojoOutputColumns = TRUE,
                                                        withContributions = FALSE,
-                                                       leafNodeAssignmentsEnabled = FALSE) {
+                                                       withLeafNodeAssignments = FALSE) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$withDetailedPredictionCol <- withDetailedPredictionCol
@@ -45,7 +45,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                    .self$convertInvalidNumbersToNa <- convertInvalidNumbersToNa
                                    .self$namedMojoOutputColumns <- namedMojoOutputColumns
                                    .self$withContributions <- withContributions
-                                   .self$leafNodeAssignmentsEnabled <- leafNodeAssignmentsEnabled
+                                   .self$withLeafNodeAssignments <- withLeafNodeAssignments
                                  },
                                  toJavaObject = function() {
                                    sc <- spark_connection_find()[[1]]
@@ -57,6 +57,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                               .self$convertInvalidNumbersToNa,
                                               .self$namedMojoOutputColumns,
                                               .self$withContributions,
-                                              .self$leafNodeAssignmentsEnabled)
+                                              .self$withLeafNodeAssignments)
                                  }
                                ))
