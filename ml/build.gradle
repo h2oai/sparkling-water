@@ -31,9 +31,7 @@ dependencies {
   compileOnly(project(":sparkling-water-macros"))
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
-  testImplementation("io.fabric8:kubernetes-client:4.10.2") {
-    exclude(group: "com.fasterxml.jackson.core")
-  }
+
   testImplementation(project(":sparkling-water-macros"))
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("ai.h2o:h2o-ext-target-encoder:${h2oVersion}")
