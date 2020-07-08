@@ -67,7 +67,7 @@ trait H2OMOJOPredictionMultinomial {
         StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
       val baseFields = labelField :: probabilitiesField :: Nil
       if (getLeafNodeAssignmentsEnabled()) {
-        val assignmentsField = StructField("assignments", ArrayType(StringType))
+        val assignmentsField = StructField("leafNodeAssignments", ArrayType(StringType))
         baseFields ++ (assignmentsField :: Nil)
       } else {
         baseFields
@@ -90,5 +90,8 @@ object H2OMOJOPredictionMultinomial {
 
   case class Detailed(label: String, probabilities: Map[String, Double])
 
-  case class DetailedWithAssignments(label: String, probabilities: Map[String, Double], assignments: Array[String])
+  case class DetailedWithAssignments(
+      label: String,
+      probabilities: Map[String, Double],
+      leafNodeAssignments: Array[String])
 }

@@ -70,13 +70,13 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
     val fields = if (getWithDetailedPredictionCol()) {
       if (getWithContributions() && getLeafNodeAssignmentsEnabled()) {
         val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-        val assignmentsField = StructField("assignments", ArrayType(StringType))
+        val assignmentsField = StructField("leafNodeAssignments", ArrayType(StringType))
         valueField :: contributionsField :: assignmentsField :: Nil
       } else if (getWithContributions()) {
         val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
         valueField :: contributionsField :: Nil
       } else if (getLeafNodeAssignmentsEnabled()) {
-        val assignmentsField = StructField("assignments", ArrayType(StringType))
+        val assignmentsField = StructField("leafNodeAssignments", ArrayType(StringType))
         valueField :: assignmentsField :: Nil
       } else {
         valueField :: Nil
@@ -99,10 +99,10 @@ object H2OMOJOPredictionRegression {
 
   case class WithContributions(value: Double, contributions: Map[String, Float])
 
-  case class WithAssignments(value: Double, assignments: Array[String])
+  case class WithAssignments(value: Double, leafNodeAssignments: Array[String])
 
   case class WithContributionsAndAssignments(
       value: Double,
       contributions: Map[String, Float],
-      assignments: Array[String])
+      leafNodeAssignments: Array[String])
 }

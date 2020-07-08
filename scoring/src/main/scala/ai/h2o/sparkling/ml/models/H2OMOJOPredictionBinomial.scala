@@ -189,7 +189,7 @@ object H2OMOJOPredictionBinomial {
       label: String,
       probabilities: Map[String, Double],
       contributions: Map[String, Float],
-      assignments: Array[String])
+      leafNodeAssignments: Array[String])
 
   case class DetailedWithCalibration(
       label: String,
@@ -200,7 +200,7 @@ object H2OMOJOPredictionBinomial {
       label: String,
       probabilities: Map[String, Double],
       calibratedProbabilities: Map[String, Double],
-      assignments: Array[String])
+      leafNodeAssignments: Array[String])
 
   case class DetailedWithContributionsAndCalibration(
       label: String,
@@ -213,6 +213,6 @@ object H2OMOJOPredictionBinomial {
       probabilities: Map[String, Double],
       contributions: Map[String, Float],
       calibratedProbabilities: Map[String, Double],
-      assignments: Array[String])
+      leafNodeAssignments: Array[String])
 
 }

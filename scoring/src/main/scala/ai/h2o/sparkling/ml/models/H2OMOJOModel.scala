@@ -267,6 +267,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
     model.set(model.withContributions -> settings.withContributions)
+    model.set(model.leafNodeAssignmentsEnabled -> settings.leafNodeAssignmentsEnabled)
     model
   }
 }
@@ -306,6 +307,7 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     if (canGenerateContributions(config.getModel)) {
       config.setEnableContributions(model.getWithDetailedPredictionCol())
     }
+    config.setEnableLeafAssignment(model.getLeafNodeAssignmentsEnabled())
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     new EasyPredictModelWrapper(config)

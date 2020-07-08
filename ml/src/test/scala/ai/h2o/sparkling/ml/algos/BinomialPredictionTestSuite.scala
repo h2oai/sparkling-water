@@ -61,6 +61,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
+      .setLeafNodeAssignmentsEnabled(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -76,6 +77,9 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Float](0)
     assert(contributions != null)
     assert(contributions.size == 5)
+    val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
+    assert(leafNodeAssignments != null)
+    assert(leafNodeAssignments.length == algo.getNtrees())
   }
 
   test("detailedPredictionCol content without contributions") {
@@ -116,9 +120,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
     val contributionsField = StructField("contributions", contributionsType, nullable = true)
+    val leafNodeAssignmentField = StructField("leafNodeAssignment", ArrayType(StringType))
     val detailedPredictionColField = StructField(
       "detailed_prediction",
-      StructType(labelField :: probabilitiesField :: contributionsField :: Nil),
+      StructType(labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: Nil),
       nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))

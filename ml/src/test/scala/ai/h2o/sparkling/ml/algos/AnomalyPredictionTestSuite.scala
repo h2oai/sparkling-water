@@ -42,7 +42,11 @@ class AnomalyPredictionTestSuite
   override protected def expectedDetailedPredictionCol: StructField = {
     val scoreField = StructField("score", DoubleType, nullable = false)
     val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
-    StructField("detailed_prediction", StructType(scoreField :: normalizedScoreField :: Nil), nullable = true)
+    val leafNodeAssignmentField = StructField("leafNodeAssignment", ArrayType(StringType))
+    StructField(
+      "detailed_prediction",
+      StructType(scoreField :: normalizedScoreField :: leafNodeAssignmentField :: Nil),
+      nullable = true)
   }
 
   override protected def expectedPredictionCol: StructField = {
