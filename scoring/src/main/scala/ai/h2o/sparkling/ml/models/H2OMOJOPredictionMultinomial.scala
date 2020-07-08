@@ -17,39 +17,32 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed, DetailedWithAssignments}
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
+import scala.collection.mutable
+
 trait H2OMOJOPredictionMultinomial {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      if (getWithLeafNodeAssignments()) {
-        udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
-          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-          DetailedWithAssignments(pred.label, probabilities, pred.leafNodeAssignments)
-        }
-      } else {
-        udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
-          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-          Detailed(pred.label, probabilities)
+    val schema = getMultinomialPredictionSchema()
+    val function = (r: Row, offset: Double) => {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred.label
+      if (getWithDetailedPredictionCol()) {
+        resultBuilder += model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        if (getWithLeafNodeAssignments()) {
+          resultBuilder += pred.leafNodeAssignments
         }
       }
-    } else {
-      udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictMultinomial(RowConverter.toH2ORowData(r), offset)
-        Base(pred.label)
-      }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
+    udf(function, schema)
   }
 
   private val predictionColType = StringType
@@ -59,7 +52,7 @@ trait H2OMOJOPredictionMultinomial {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
-  def getMultinomialDetailedPredictionColSchema(): Seq[StructField] = {
+  def getMultinomialPredictionSchema(): StructType = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
@@ -77,22 +70,10 @@ trait H2OMOJOPredictionMultinomial {
       labelField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
+    StructType(fields)
   }
 
   def extractMultinomialPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.label")
   }
-}
-
-object H2OMOJOPredictionMultinomial {
-
-  case class Base(label: String)
-
-  case class Detailed(label: String, probabilities: Map[String, Double])
-
-  case class DetailedWithAssignments(
-      label: String,
-      probabilities: Map[String, Double],
-      leafNodeAssignments: Array[String])
 }

@@ -17,30 +17,29 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed}
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
+import scala.collection.mutable
+
 trait H2OMOJOPredictionOrdinal {
   self: H2OMOJOModel =>
   def getOrdinalPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-        val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
-        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-        Detailed(pred.label, probabilities)
+    val schema = getOrdinalPredictionSchema()
+    val function = (r: Row, offset: Double) => {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred.label
+      if (getWithDetailedPredictionCol()) {
+        resultBuilder += model.getResponseDomainValues.zip(pred.classProbabilities).toMap
       }
-    } else {
-      udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictOrdinal(RowConverter.toH2ORowData(r), offset)
-        Base(pred.label)
-      }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
+    udf(function, schema)
   }
 
   private val predictionColType = StringType
@@ -50,7 +49,7 @@ trait H2OMOJOPredictionOrdinal {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
-  def getOrdinalDetailedPredictionColSchema(): Seq[StructField] = {
+  def getOrdinalPredictionSchema(): StructType = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
@@ -61,7 +60,7 @@ trait H2OMOJOPredictionOrdinal {
       labelField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
+    StructType(fields)
   }
 
   def extractOrdinalPredictionColContent(): Column = {
