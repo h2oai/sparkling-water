@@ -56,7 +56,6 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
-      .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
