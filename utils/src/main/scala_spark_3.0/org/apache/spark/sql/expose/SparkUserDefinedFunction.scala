@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.sql
+package org.apache.spark.sql.expose
 
-import org.apache.spark.sql.expose.SparkUserDefinedFunction
-import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.expressions
 import org.apache.spark.sql.types.DataType
 
-/**
-  * This objects contains functions from org.apache.spark.sql.functions which are not compatible across all Spark
-  * versions supported by Sparkling Water.
-  */
-object functions {
-  def udf(f: AnyRef, dataType: DataType): UserDefinedFunction = {
-    SparkUserDefinedFunction(f, dataType, inputEncoders = Nil)
+object SparkUserDefinedFunction {
+  def apply(
+    f: AnyRef,
+    dataType: DataType,
+    inputEncoders: Seq[Option[ExpressionEncoder[_]]] = Nil,
+    name: Option[String] = None,
+    nullable: Boolean = true,
+    deterministic: Boolean = true): expressions.SparkUserDefinedFunction = {
+      expressions.SparkUserDefinedFunction(f, dataType, inputEncoders, name, nullable, deterministic)
   }
 }
