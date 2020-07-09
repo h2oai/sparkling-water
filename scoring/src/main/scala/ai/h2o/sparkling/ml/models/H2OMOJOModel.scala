@@ -292,19 +292,30 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
 
   private def canGenerateContributions(model: GenModel): Boolean = {
     model match {
-      case _: PredictContributionsFactory =>
+      case m: PredictContributionsFactory =>
         val modelCategory = model.getModelCategory
-        modelCategory == ModelCategory.Regression || modelCategory == ModelCategory.Binomial
-      case _ => false
+        if (modelCategory != ModelCategory.Regression && modelCategory != ModelCategory.Binomial) {
+          throw new IllegalArgumentException(s"""
+              | Computing contributions on MOJO of type '${m.getModelCategory}' is only supported for regression
+              | and binomial model categories!
+              | The column 'contributions' will not be generated."
+              |""".stripMargin)
+        }
+        true
+      case unsupported =>
+        throw new IllegalArgumentException(s"""
+            | Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!
+            | The column 'contributions' will not be generated.")""".stripMargin)
     }
   }
 
-  private[sparkling] def canGenerateLeafNodeAssignments(model: GenModel): Boolean = {
+  private def canGenerateLeafNodeAssignments(model: GenModel): Boolean = {
     model match {
       case _: TreeBackedMojoModel => true
       case _ =>
-        logWarning("Computing Leaf Node Assignments is only available on Tree based models!")
-        false
+        throw new IllegalArgumentException("""
+            | Computing leaf node assignments is only available on tree based models!
+            | The column 'leafNodeAssignments' will not be generated""".stripMargin)
     }
   }
 
@@ -313,11 +324,13 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     config.setModel(Utils.getMojoModel(mojo))
     config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
-    if (canGenerateContributions(config.getModel)) {
-      config.setEnableContributions(model.getWithDetailedPredictionCol())
+    if (model.getWithContributions() && model.getWithDetailedPredictionCol() && canGenerateContributions(
+          config.getModel)) {
+      config.setEnableContributions(true)
     }
-    if (canGenerateLeafNodeAssignments(config.getModel)) {
-      config.setEnableLeafAssignment(model.getWithLeafNodeAssignments())
+    if (model.getWithLeafNodeAssignments() && model.getWithDetailedPredictionCol() && canGenerateLeafNodeAssignments(
+          config.getModel)) {
+      config.setEnableLeafAssignment(true)
     }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
