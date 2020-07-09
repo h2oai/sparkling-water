@@ -37,6 +37,7 @@ object ProblemType extends Enumeration {
       case Family.poisson => Regression
       case Family.gamma => Regression
       case Family.tweedie => Regression
+      case Family.negativebinomial => Regression
     }
   }
 
@@ -54,6 +55,8 @@ object ProblemType extends Enumeration {
       case DistributionFamily.quantile => Regression
       case DistributionFamily.huber => Regression
       case DistributionFamily.tweedie => Regression
+      case DistributionFamily.ordinal => Classification
+      case DistributionFamily.modified_huber => Classification
       case DistributionFamily.custom => Both
     }
   }
