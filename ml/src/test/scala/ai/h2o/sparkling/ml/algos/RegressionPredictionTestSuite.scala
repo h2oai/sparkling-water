@@ -56,6 +56,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
+      .setWithLeafNodeAssignments(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
@@ -63,11 +64,14 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("value", "contributions")
+    val expectedCols = Seq("value", "contributions", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Double](0)
     assert(contributions != null)
     assert(contributions.size == 8)
+    val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
+    assert(leafNodeAssignments != null)
+    assert(leafNodeAssignments.length == algo.getNtrees())
   }
 
   test("contributions on unsupported algorithm") {
@@ -97,6 +101,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
         .setWithDetailedPredictionCol(true)
         .setSeed(1)
         .setWithContributions(true)
+        .setWithLeafNodeAssignments(true)
         .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setLabelCol("AGE")
       val model = algo.fit(dataset)
@@ -106,8 +111,16 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       val predictionColField = StructField("prediction", DoubleType, nullable = true)
       val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
       val contributionsField = StructField("contributions", contributionsType, nullable = true)
+      val leafNodeAssignmentField = if (algo.isInstanceOf[H2OGBM]) {
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true) :: Nil
+      } else {
+        Nil
+      }
       val detailedPredictionColField =
-        StructField("detailed_prediction", StructType(valueField :: contributionsField :: Nil), nullable = true)
+        StructField(
+          "detailed_prediction",
+          StructType((valueField :: contributionsField :: Nil) ++ leafNodeAssignmentField),
+          nullable = true)
 
       val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
       val expectedSchemaByTransform = model.transform(dataset).schema

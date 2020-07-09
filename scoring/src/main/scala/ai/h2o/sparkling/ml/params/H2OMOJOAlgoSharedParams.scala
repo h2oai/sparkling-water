@@ -64,6 +64,9 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
     "Mojo Output is not stored" +
       " in the array but in the properly named columns")
 
+  protected final val withLeafNodeAssignments =
+    new BooleanParam(this, "withLeafNodeAssignments", "Enables or disables computation of leaf node assignments.")
+
   //
   //
   // Default values
@@ -76,7 +79,8 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
     featuresCols -> Array.empty[String],
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
-    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns)
+    namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
+    withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments)
 
   //
   // Getters
@@ -96,4 +100,6 @@ trait H2OMOJOAlgoSharedParams extends Params with Logging {
   def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
 
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
+
+  def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)
 }

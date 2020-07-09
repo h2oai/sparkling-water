@@ -20,8 +20,11 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
+@RunWith(classOf[JUnitRunner])
 class AnomalyPredictionTestSuite
   extends FunSuite
   with Matchers
@@ -42,7 +45,12 @@ class AnomalyPredictionTestSuite
   override protected def expectedDetailedPredictionCol: StructField = {
     val scoreField = StructField("score", DoubleType, nullable = false)
     val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
-    StructField("detailed_prediction", StructType(scoreField :: normalizedScoreField :: Nil), nullable = true)
+    val leafNodeAssignmentField =
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+    StructField(
+      "detailed_prediction",
+      StructType(scoreField :: normalizedScoreField :: leafNodeAssignmentField :: Nil),
+      nullable = true)
   }
 
   override protected def expectedPredictionCol: StructField = {

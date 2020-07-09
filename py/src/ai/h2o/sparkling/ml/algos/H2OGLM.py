@@ -74,6 +74,7 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  convertInvalidNumbersToNa=False,
                  namedMojoOutputColumns=True,
                  withContributions=False,
+                 withLeafNodeAssignments=False,
                  **DeprecatedParams):
         Initializer.load_sparkling_jar()
         super(H2OGLM, self).__init__()

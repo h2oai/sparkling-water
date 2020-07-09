@@ -16,7 +16,7 @@
  */
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionRegression.{Base, WithContributions}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionRegression.{Base, WithAssignments, WithContributions, WithContributionsAndAssignments}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
@@ -26,20 +26,32 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   self: H2OMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol() && getWithContributions()) {
-      udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-        val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
-        val contributions = convertContributionsToMap(model, pred.contributions)
-        WithContributions(pred.value, contributions)
+    if (getWithDetailedPredictionCol()) {
+      if (getWithContributions() && supportsLeafNodeAssignments()) {
+        udf[WithContributionsAndAssignments, Row, Double] { (r: Row, offset: Double) =>
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+          val contributions = convertContributionsToMap(model, pred.contributions)
+          WithContributionsAndAssignments(pred.value, contributions, pred.leafNodeAssignments)
+        }
+      } else if (getWithContributions()) {
+        udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+          val contributions = convertContributionsToMap(model, pred.contributions)
+          WithContributions(pred.value, contributions)
+        }
+      } else if (supportsLeafNodeAssignments()) {
+        udf[WithAssignments, Row, Double] { (r: Row, offset: Double) =>
+          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+          WithAssignments(pred.value, pred.leafNodeAssignments)
+        }
+      } else {
+        getBaseUdf()
       }
     } else {
-      udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictRegression(RowConverter.toH2ORowData(r), offset)
-        Base(pred.value)
-      }
+      getBaseUdf()
     }
   }
 
@@ -52,9 +64,22 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
 
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
     val valueField = StructField("value", DoubleType, nullable = false)
-    val fields = if (getWithDetailedPredictionCol() && getWithContributions()) {
-      val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-      valueField :: contributionsField :: Nil
+    val fields = if (getWithDetailedPredictionCol()) {
+      if (getWithContributions() && supportsLeafNodeAssignments()) {
+        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
+        val assignmentsField =
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+        valueField :: contributionsField :: assignmentsField :: Nil
+      } else if (getWithContributions()) {
+        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
+        valueField :: contributionsField :: Nil
+      } else if (getWithLeafNodeAssignments()) {
+        val assignmentsField =
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+        valueField :: assignmentsField :: Nil
+      } else {
+        valueField :: Nil
+      }
     } else {
       valueField :: Nil
     }
@@ -65,6 +90,20 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def extractRegressionPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.value")
   }
+
+  private def supportsLeafNodeAssignments(): Boolean = {
+    getWithLeafNodeAssignments() && H2OMOJOCache.canGenerateLeafNodeAssignments(
+      H2OMOJOCache.getMojoBackend(uid, getMojo, this).m)
+  }
+
+  private def getBaseUdf(): UserDefinedFunction = {
+    udf[Base, Row, Double] { (r: Row, offset: Double) =>
+      val pred = H2OMOJOCache
+        .getMojoBackend(uid, getMojo, this)
+        .predictRegression(RowConverter.toH2ORowData(r), offset)
+      Base(pred.value)
+    }
+  }
 }
 
 object H2OMOJOPredictionRegression {
@@ -73,4 +112,10 @@ object H2OMOJOPredictionRegression {
 
   case class WithContributions(value: Double, contributions: Map[String, Float])
 
+  case class WithAssignments(value: Double, leafNodeAssignments: Array[String])
+
+  case class WithContributionsAndAssignments(
+      value: Double,
+      contributions: Map[String, Float],
+      leafNodeAssignments: Array[String])
 }

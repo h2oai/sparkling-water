@@ -148,3 +148,6 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
 
     def setWithContributions(self, value):
         return self._set(withContributions=value)
+
+    def setWithLeafNodeAssignments(self, value):
+        return self._set(withLeafNodeAssignments=value)
