@@ -298,14 +298,12 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
           throw new IllegalArgumentException(s"""
               | Computing contributions on MOJO of type '${m.getModelCategory}' is only supported for regression
               | and binomial model categories!
-              | The column 'contributions' will not be generated."
               |""".stripMargin)
         }
         true
       case unsupported =>
-        throw new IllegalArgumentException(s"""
-            | Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!
-            | The column 'contributions' will not be generated.")""".stripMargin)
+        throw new IllegalArgumentException(
+          s"Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!")
     }
   }
 
@@ -313,9 +311,7 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     model match {
       case _: TreeBackedMojoModel => true
       case _ =>
-        throw new IllegalArgumentException("""
-            | Computing leaf node assignments is only available on tree based models!
-            | The column 'leafNodeAssignments' will not be generated""".stripMargin)
+        throw new IllegalArgumentException("Computing leaf node assignments is only available on tree based models!")
     }
   }
 
