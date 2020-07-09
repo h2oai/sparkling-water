@@ -18,7 +18,8 @@ package ai.h2o.sparkling.ml.models
 
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.col
+import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
@@ -39,6 +40,7 @@ trait H2OMOJOPredictionAnomaly {
           resultBuilder += pred.leafNodeAssignments
         }
       }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
   }

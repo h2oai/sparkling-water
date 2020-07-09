@@ -20,7 +20,6 @@ package ai.h2o.sparkling.ml.models
 import hex.ModelCategory
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.{StructField, StructType}
 
 trait H2OMOJOPrediction
@@ -52,7 +51,6 @@ trait H2OMOJOPrediction
   }
 
   def getPredictionUDF(): UserDefinedFunction = {
-    SQLConf.get.setConfString("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionUDF()
