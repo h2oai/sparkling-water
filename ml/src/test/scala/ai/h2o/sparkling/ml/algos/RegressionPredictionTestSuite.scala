@@ -91,8 +91,22 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     }
   }
 
+  test("leaf node assignments on unsupported algorithm") {
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(true)
+      .setWithContributions(true)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+
+    val model = algo.fit(dataset)
+    intercept[IllegalArgumentException] {
+      model.transform(dataset)
+    }
+  }
+
   test(s"transformSchema with detailed prediction col - GBM") {
-    import ai.h2o.sparkling.ml.ParameterSetters._
     val algo = new algos.H2OGBM()
       .setSplitRatio(0.8)
       .setWithDetailedPredictionCol(true)
