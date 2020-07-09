@@ -261,6 +261,8 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 - ``withContributions`` - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the
   detailed prediction column. Therefore, to compute Shapley values, both this option and ``withDetailedPredictionCol`` needs to be
   enabled. By default, it is disabled.
+- ``withLeafNodeAssignments`` - When enabled, a user can obtain the leaf node assignments after the model traininig
+  has finished. By default, it is disabled.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -298,3 +300,12 @@ If cross validation was used, ie, ``setNfolds`` was called and value was higher 
 metrics. If cross validation was not used, but validation frame was used, the method returns validation metrics. Validation
 frame is used if ``setSplitRatio`` was called with value lower than one. If neither cross validation or validation frame
 was used, this method returns the training metrics.
+
+Obtaining Leaf Node Assignments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To obtain the leaf node assignments, please first make sure to set ``withLeafNodeAssignments`` and
+``withDetailedPredictionCol`` to true on your MOJO settings object. The leaf node assignments are now stored
+in the ``${detailedPredictionCol}.leafNodeAssignments`` column on the dataset obtained from the prediction.
+Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
+it is ``detailed_prediction``.

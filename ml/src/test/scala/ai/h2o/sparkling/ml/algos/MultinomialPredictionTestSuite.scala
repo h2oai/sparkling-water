@@ -55,6 +55,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
+      .setWithLeafNodeAssignments(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -63,10 +64,13 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("label", "probabilities")
+    val expectedCols = Seq("label", "probabilities", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
     assert(probabilities.keys.toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
+    val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
+    assert(leafNodeAssignments != null)
+    assert(leafNodeAssignments.length == algo.getNtrees() * 3) // 3 is number of classes
   }
 
   test("transformSchema with detailed prediction col") {
@@ -74,6 +78,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
+      .setWithLeafNodeAssignments(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -84,8 +89,13 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val probabilitiesField =
       StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
     val predictionColField = StructField("prediction", StringType, nullable = true)
+    val leafNodeAssignmentField =
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
     val detailedPredictionColField =
-      StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = true)
+      StructField(
+        "detailed_prediction",
+        StructType(labelField :: probabilitiesField :: leafNodeAssignmentField :: Nil),
+        nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
