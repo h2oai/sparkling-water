@@ -85,10 +85,10 @@ trait H2OMOJOPrediction
   }
 
   override def getDetailedPredictionColSchema(): Seq[StructField] = {
-    Seq(StructField(getDetailedPredictionCol(), gePredictionSchema(), nullable = true))
+    Seq(StructField(getDetailedPredictionCol(), getPredictionSchema(), nullable = true))
   }
 
-  def gePredictionSchema(): StructType = {
+  def getPredictionSchema(): StructType = {
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionSchema()
@@ -101,5 +101,6 @@ trait H2OMOJOPrediction
       case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
+    }
   }
 }
