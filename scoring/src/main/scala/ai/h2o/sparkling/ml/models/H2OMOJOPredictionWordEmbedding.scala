@@ -23,7 +23,6 @@ import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
 
-
 trait H2OMOJOPredictionWordEmbedding {
   self: H2OMOJOModel =>
 
