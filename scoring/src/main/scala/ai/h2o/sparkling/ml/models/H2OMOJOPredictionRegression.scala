@@ -27,7 +27,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
     if (getWithDetailedPredictionCol()) {
-      if (getWithContributions() && supportsLeafNodeAssignments()) {
+      if (getWithContributions() && getWithLeafNodeAssignments()) {
         udf[WithContributionsAndAssignments, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
           val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
@@ -41,7 +41,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
           val contributions = convertContributionsToMap(model, pred.contributions)
           WithContributions(pred.value, contributions)
         }
-      } else if (supportsLeafNodeAssignments()) {
+      } else if (getWithLeafNodeAssignments()) {
         udf[WithAssignments, Row, Double] { (r: Row, offset: Double) =>
           val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
           val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
@@ -65,7 +65,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
     val valueField = StructField("value", DoubleType, nullable = false)
     val fields = if (getWithDetailedPredictionCol()) {
-      if (getWithContributions() && supportsLeafNodeAssignments()) {
+      if (getWithContributions() && getWithLeafNodeAssignments()) {
         val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
@@ -89,11 +89,6 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
 
   def extractRegressionPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.value")
-  }
-
-  private def supportsLeafNodeAssignments(): Boolean = {
-    getWithLeafNodeAssignments() && H2OMOJOCache.canGenerateLeafNodeAssignments(
-      H2OMOJOCache.getMojoBackend(uid, getMojo, this).m)
   }
 
   private def getBaseUdf(): UserDefinedFunction = {

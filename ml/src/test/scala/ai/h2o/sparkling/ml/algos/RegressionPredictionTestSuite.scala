@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
@@ -85,50 +86,57 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val model = algo.fit(dataset)
 
-    val predictions = model.transform(dataset)
-
-    val expectedCols = Seq("value", "contributions")
-    assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Double](0)
-    assert(contributions == null)
+    intercept[IllegalArgumentException] {
+      model.transform(dataset)
+    }
   }
 
-  for (algo <- Seq(new H2OGBM(), new H2OGLM())) {
-    test(s"transformSchema with detailed prediction col - ${algo.getClass.getSimpleName}") {
-      import ai.h2o.sparkling.ml.ParameterSetters._
-      algo
-        .setSplitRatio(0.8)
-        .setWithDetailedPredictionCol(true)
-        .setSeed(1)
-        .setWithContributions(true)
-        .setWithLeafNodeAssignments(true)
-        .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setLabelCol("AGE")
-      val model = algo.fit(dataset)
+  test("leaf node assignments on unsupported algorithm") {
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setWithDetailedPredictionCol(true)
+      .setWithLeafNodeAssignments(true)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
 
-      val datasetFields = dataset.schema.fields
-      val valueField = StructField("value", DoubleType, nullable = false)
-      val predictionColField = StructField("prediction", DoubleType, nullable = true)
-      val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
-      val contributionsField = StructField("contributions", contributionsType, nullable = true)
-      val leafNodeAssignmentField = if (algo.isInstanceOf[H2OGBM]) {
-        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true) :: Nil
-      } else {
-        Nil
-      }
-      val detailedPredictionColField =
-        StructField(
-          "detailed_prediction",
-          StructType((valueField :: contributionsField :: Nil) ++ leafNodeAssignmentField),
-          nullable = true)
-
-      val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-      val expectedSchemaByTransform = model.transform(dataset).schema
-      val schema = model.transformSchema(dataset.schema)
-
-      assert(schema == expectedSchema)
-      assert(schema == expectedSchemaByTransform)
+    val model = algo.fit(dataset)
+    intercept[IllegalArgumentException] {
+      model.transform(dataset)
     }
+  }
+
+  test(s"transformSchema with detailed prediction col - GBM") {
+    val algo = new algos.H2OGBM()
+      .setSplitRatio(0.8)
+      .setWithDetailedPredictionCol(true)
+      .setSeed(1)
+      .setWithContributions(true)
+      .setWithLeafNodeAssignments(true)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = algo.fit(dataset)
+
+    val datasetFields = dataset.schema.fields
+    val valueField = StructField("value", DoubleType, nullable = false)
+    val predictionColField = StructField("prediction", DoubleType, nullable = true)
+    val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
+    val contributionsField = StructField("contributions", contributionsType, nullable = true)
+    val leafNodeAssignmentField = StructField(
+      "leafNodeAssignments",
+      ArrayType(StringType, containsNull = true),
+      nullable = true) :: Nil
+    val detailedPredictionColField =
+      StructField(
+        "detailed_prediction",
+        StructType((valueField :: contributionsField :: Nil) ++ leafNodeAssignmentField),
+        nullable = true)
+
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
+    val schema = model.transformSchema(dataset.schema)
+    assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
   test("transformSchema without detailed prediction col") {
