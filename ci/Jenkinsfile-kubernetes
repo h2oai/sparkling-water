@@ -42,12 +42,26 @@ String getSparkVersion(sparkMajorVersion) {
 
 def buildAndPublishSparklingWaterImage(String type, String sparklingVersion, String repoUrl) {
     sh """
-        ./bin/build-kubernetes-images.sh $type
+        H2O_HOME=${env.WORKSPACE}/h2o-3 ./bin/build-kubernetes-images.sh $type
         docker tag sparkling-water-$type:${sparklingVersion} $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
         docker push $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
         docker rmi sparkling-water-$type:${sparklingVersion}
         docker rmi $repoUrl/sw_kubernetes_repo/sparkling-water:$type-${sparklingVersion}
         """
+}
+
+String getH2OBranchMajorVersion() {
+    def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('version') }
+    return versionLine.split("=")[1]
+}
+
+String getH2OBranchMajorName() {
+    def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('codename') }
+    return versionLine.split("=")[1]
+}
+
+String getH2OBranchBuildVersion() {
+    return "1-SNAPSHOT"
 }
 
 def getBuildAndPublishStage(props, sparkMajorVersion) {
@@ -64,7 +78,13 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def sparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                         def sparkVersion = getSparkVersion(sparkMajorVersion)
-                        sh "./gradlew dist -Pspark=$sparkMajorVersion"
+                        unstash "shared"
+                        sh """
+                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                            sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                            """
+                        sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
                         def customEnv = [
                                 "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
                         ]
@@ -506,6 +526,26 @@ node("docker") {
     def commons = load 'ci/commons.groovy'
     def props = readPropertiesFile("gradle.properties")
     def sparklingVersion = props['version'].replace("-SNAPSHOT", "")
+
+    stage("Build H2O") {
+        commons.withSparklingWaterDockerImage {
+            retryWithDelay(3, 60, {
+                sh "git clone https://github.com/h2oai/h2o-3.git"
+            })
+            retryWithDelay(5, 1, {
+                sh """
+                    cd h2o-3
+                    git checkout ${props["testH2OBranch"]}
+                    . /envs/h2o_env_python2.7/bin/activate
+                    ./gradlew build --parallel -x check -Duser.name=ec2-user
+                    ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+                    ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+                    cd ..
+                    """
+            })
+        }
+        stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+    }
 
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
