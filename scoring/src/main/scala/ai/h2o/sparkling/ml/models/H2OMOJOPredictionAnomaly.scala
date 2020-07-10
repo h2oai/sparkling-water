@@ -59,7 +59,7 @@ trait H2OMOJOPredictionAnomaly {
       val baseFields = scoreField :: normalizedScoreField :: Nil
       if (getWithLeafNodeAssignments()) {
         val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
         baseFields :+ assignmentsField
       } else {
         baseFields

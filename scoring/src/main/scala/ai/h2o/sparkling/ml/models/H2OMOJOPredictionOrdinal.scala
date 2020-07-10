@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
@@ -36,7 +37,7 @@ trait H2OMOJOPredictionOrdinal {
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
       if (getWithDetailedPredictionCol()) {
-        resultBuilder += model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        resultBuilder += Utils.arrayToRow(pred.classProbabilities)
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
@@ -54,8 +55,9 @@ trait H2OMOJOPredictionOrdinal {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField =
-        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
+      val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
       labelField :: probabilitiesField :: Nil
     } else {
       labelField :: Nil

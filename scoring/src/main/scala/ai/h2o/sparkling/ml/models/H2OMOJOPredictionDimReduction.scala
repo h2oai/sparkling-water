@@ -35,7 +35,7 @@ trait H2OMOJOPredictionDimReduction {
     udf(function, schema)
   }
 
-  private val predictionColType = ArrayType(DoubleType)
+  private val predictionColType = ArrayType(DoubleType, containsNull = false)
   private val predictionColNullable = true
 
   def getDimReductionPredictionColSchema(): Seq[StructField] = {

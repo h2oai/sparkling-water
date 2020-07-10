@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
@@ -36,7 +37,7 @@ trait H2OMOJOPredictionMultinomial {
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
       if (getWithDetailedPredictionCol()) {
-        resultBuilder += model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        resultBuilder += Utils.arrayToRow(pred.classProbabilities)
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
         }
@@ -57,12 +58,14 @@ trait H2OMOJOPredictionMultinomial {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
     val fields = if (getWithDetailedPredictionCol()) {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
       val probabilitiesField =
-        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+        StructField("probabilities", StructType(classFields), nullable = false)
       val baseFields = labelField :: probabilitiesField :: Nil
       if (getWithLeafNodeAssignments()) {
         val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
         baseFields ++ (assignmentsField :: Nil)
       } else {
         baseFields

@@ -56,7 +56,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithLeafNodeAssignments(true)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
 
@@ -66,8 +66,13 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
 
     val expectedCols = Seq("label", "probabilities", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
-    assert(probabilities.keys.toList.sorted == Seq("Iris-virginica", "Iris-setosa", "Iris-versicolor").sorted)
+    val probabilities = predictions.select("detailed_prediction.probabilities.*").limit(2).cache()
+    val virginicaProbabilities = probabilities.select("Iris-virginica").collect().map(_.getDouble(0))
+    assert(virginicaProbabilities(0) != virginicaProbabilities(1))
+    val setosaProbabilities = probabilities.select("Iris-setosa").collect().map(_.getDouble(0))
+    assert(setosaProbabilities(0) != setosaProbabilities(1))
+    val versicolorProbabilities = probabilities.select("Iris-versicolor").collect().map(_.getDouble(0))
+    assert(versicolorProbabilities(0) != versicolorProbabilities(1))
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
     assert(leafNodeAssignments != null)
     assert(leafNodeAssignments.length == algo.getNtrees() * 3) // 3 is number of classes
@@ -86,11 +91,12 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
 
     val datasetFields = dataset.schema.fields
     val labelField = StructField("label", StringType, nullable = true)
-    val probabilitiesField =
-      StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val classFields = Seq("Iris-setosa", "Iris-versicolor", "Iris-virginica")
+      .map(StructField(_, DoubleType, nullable = false))
+    val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val leafNodeAssignmentField =
-      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
     val detailedPredictionColField =
       StructField(
         "detailed_prediction",

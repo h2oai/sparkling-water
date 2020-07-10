@@ -21,16 +21,8 @@ import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.types._
 
 trait PredictionWithContributions {
-  protected def getContributionsSchema(): DataType = MapType(StringType, FloatType, valueContainsNull = false)
-
-  protected def convertContributionsToMap(
-      wrapper: EasyPredictModelWrapper,
-      contributions: Array[Float]): Map[String, Float] = {
-    if (contributions == null) {
-      null
-    } else {
-      val contributionNames = wrapper.getContributionNames()
-      contributionNames.zip(contributions).toMap
-    }
+  protected def getContributionsSchema(model: EasyPredictModelWrapper): DataType = {
+    val individualContributions = model.getContributionNames().map(StructField(_, FloatType, nullable = false))
+    StructType(individualContributions)
   }
 }

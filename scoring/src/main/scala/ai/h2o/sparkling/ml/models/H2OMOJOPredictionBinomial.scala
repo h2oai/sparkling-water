@@ -27,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 
 import scala.collection.mutable
 
-trait H2OMOJOPredictionBinomial {
+trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
   self: H2OMOJOModel =>
 
   private def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
@@ -79,8 +79,7 @@ trait H2OMOJOPredictionBinomial {
       val detailedPredictionFields = baseFields :+ probabilitiesField
 
       val contributionsFields = if (getWithContributions()) {
-        val individualContributions = model.getContributionNames().map(StructField(_, FloatType, nullable = false))
-        val contributionsField = StructField("contributions", StructType(individualContributions), nullable = false)
+        val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
         detailedPredictionFields :+ contributionsField
       } else {
         detailedPredictionFields

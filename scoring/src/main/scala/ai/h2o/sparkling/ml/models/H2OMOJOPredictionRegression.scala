@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
@@ -37,7 +38,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       resultBuilder += pred.value
       if (getWithDetailedPredictionCol()) {
         if (getWithContributions()) {
-          resultBuilder += convertContributionsToMap(model, pred.contributions)
+          resultBuilder += Utils.arrayToRow(pred.contributions)
         }
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
@@ -57,24 +58,25 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
 
   def getRegressionPredictionSchema(): StructType = {
     val valueField = StructField("value", DoubleType, nullable = false)
+    val baseSchema = valueField :: Nil
     val fields = if (getWithDetailedPredictionCol()) {
-      if (getWithContributions() && getWithLeafNodeAssignments()) {
-        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        valueField :: contributionsField :: assignmentsField :: Nil
-      } else if (getWithContributions()) {
-        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-        valueField :: contributionsField :: Nil
-      } else if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        valueField :: assignmentsField :: Nil
+      val withContributionsSchema = if (getWithContributions()) {
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
+        baseSchema :+ contributionsField
       } else {
-        valueField :: Nil
+        baseSchema
       }
+      val withAssignmentsSchema = if (getWithLeafNodeAssignments()) {
+        val assignmentsSchema = ArrayType(StringType, containsNull = false)
+        val assignmentsField = StructField("leafNodeAssignments", assignmentsSchema, nullable = false)
+        withContributionsSchema :+ assignmentsField
+      } else {
+        withContributionsSchema
+      }
+      withAssignmentsSchema
     } else {
-      valueField :: Nil
+      baseSchema
     }
 
     StructType(fields)
