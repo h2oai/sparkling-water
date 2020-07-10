@@ -26,12 +26,14 @@ cancelPreviousBuilds()
 
 def pipeline
 def sparkVersions
+def testH2OBranch
 node("docker") {
     cleanWs()
     checkout scm
     pipeline = load 'ci/sparklingWaterPipeline.groovy'
     def commons = load 'ci/commons.groovy'
     sparkVersions = commons.getSupportedSparkVersions()
+    testH2OBranch = commons.loadGradleProperties("gradle.properties")["testH2OBranch"]
 }
 
 
@@ -43,7 +45,7 @@ pipeline(params) { p ->
     runIntegTests = "${p.runIntegTests}"
     runPyIntegTests = "${p.runPyIntegTests}"
     buildAgainstH2OBranch = "true"
-    h2oBranch = "rel-zahradnik"
+    h2oBranch = testH2OBranch
     hadoopVersion = "2.7"
     driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
