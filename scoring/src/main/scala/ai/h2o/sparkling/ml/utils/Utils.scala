@@ -20,10 +20,16 @@ package ai.h2o.sparkling.ml.utils
 import java.io.File
 
 import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 
 object Utils {
   def getMojoModel(mojoFile: File): MojoModel = {
     val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
     ModelMojoReader.readFrom(reader)
   }
+
+  def arrayToRow(array: Array[Double]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
+
+  def arrayToRow(array: Array[Float]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
 }

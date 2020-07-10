@@ -43,7 +43,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
 
@@ -62,21 +62,27 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
 
     val model = algo.fit(dataset)
 
-    val predictions = model.transform(dataset)
+    val predictions = model.transform(dataset).limit(2).cache()
 
     val expectedCols = Seq("label", "probabilities", "contributions", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
-    assert(probabilities.keys.toList.sorted == Seq("Iris-setosa", "Iris-versicolor").sorted)
-    val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Float](0)
+
+    val probabilities = predictions.select("detailed_prediction.probabilities.*")
+    val setosaProbabilities = probabilities.select("Iris-setosa").collect().map(_.getDouble(0))
+    assert(setosaProbabilities(0) != setosaProbabilities(1))
+    val versicolorProbabilities = probabilities.select("Iris-versicolor").collect().map(_.getDouble(0))
+    assert(versicolorProbabilities(0) != versicolorProbabilities(1))
+
+    val contributions = predictions.select("detailed_prediction.contributions").head().getStruct(0)
     assert(contributions != null)
-    assert(contributions.size == 5)
+    assert(contributions.size == 3)
+
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
     assert(leafNodeAssignments != null)
     assert(leafNodeAssignments.length == algo.getNtrees())
@@ -88,7 +94,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(false)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
 
@@ -98,8 +104,11 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val expectedCols = Seq("label", "probabilities")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val probabilities = predictions.select("detailed_prediction.probabilities").head().getMap[String, Double](0)
-    assert(probabilities.keys.toList.sorted == Seq("Iris-setosa", "Iris-versicolor").sorted)
+    val probabilities = predictions.select("detailed_prediction.probabilities.*").limit(2).cache()
+    val setosaProbabilities = probabilities.select("Iris-setosa").collect().map(_.getDouble(0))
+    assert(setosaProbabilities(0) != setosaProbabilities(1))
+    val versicolorProbabilities = probabilities.select("Iris-versicolor").collect().map(_.getDouble(0))
+    assert(versicolorProbabilities(0) != versicolorProbabilities(1))
   }
 
   test("transformSchema with detailed prediction col, contributions and assignments") {
@@ -109,20 +118,22 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
     val model = algo.fit(dataset)
 
     val datasetFields = dataset.schema.fields
     val labelField = StructField("label", StringType, nullable = true)
-    val probabilitiesField =
-      StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val clazzFields = Seq("Iris-setosa", "Iris-versicolor").map(clazz => StructField(clazz, DoubleType, false))
+    val probabilitiesField = StructField("probabilities", StructType(clazzFields), nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = true)
-    val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
-    val contributionsField = StructField("contributions", contributionsType, nullable = true)
+    val individualContributions = Seq("sepal_len", "sepal_wid", "BiasTerm")
+      .map(StructField(_, FloatType, nullable = false))
+    val contributionsType = StructType(individualContributions)
+    val contributionsField = StructField("contributions", contributionsType, nullable = false)
     val leafNodeAssignmentField =
-      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
       StructType(labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: Nil),
@@ -149,8 +160,8 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val datasetFields = dataset.schema.fields
     val labelField = StructField("label", StringType, nullable = true)
-    val probabilitiesField =
-      StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val clazzFields = Seq("Iris-setosa", "Iris-versicolor").map(clazz => StructField(clazz, DoubleType, false))
+    val probabilitiesField = StructField("probabilities", StructType(clazzFields), nullable = false)
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val detailedPredictionColField =
       StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = true)

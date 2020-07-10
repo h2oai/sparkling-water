@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.Utils
 import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -26,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 
 import scala.collection.mutable
 
-trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
+trait H2OMOJOPredictionBinomial {
   self: H2OMOJOModel =>
 
   private def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
@@ -44,12 +45,12 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
       val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
       resultBuilder += pred.label
       if (getWithDetailedPredictionCol()) {
-        resultBuilder += model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        resultBuilder += Utils.arrayToRow(pred.classProbabilities)
         if (getWithContributions()) {
-          resultBuilder += convertContributionsToMap(model, pred.contributions)
+          resultBuilder += Utils.arrayToRow(pred.contributions)
         }
         if (supportsCalibratedProbabilities(model)) {
-          resultBuilder += model.getResponseDomainValues.zip(pred.calibratedClassProbabilities).toMap
+          resultBuilder += Utils.arrayToRow(pred.calibratedClassProbabilities)
         }
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
@@ -72,12 +73,14 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
     val baseFields = labelField :: Nil
 
     val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField =
-        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
+      val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
       val detailedPredictionFields = baseFields :+ probabilitiesField
 
       val contributionsFields = if (getWithContributions()) {
-        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
+        val individualContributions = model.getContributionNames().map(StructField(_, FloatType, nullable = false))
+        val contributionsField = StructField("contributions", StructType(individualContributions), nullable = false)
         detailedPredictionFields :+ contributionsField
       } else {
         detailedPredictionFields
@@ -85,17 +88,15 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
 
       val assignmentFields = if (getWithLeafNodeAssignments()) {
         val assignmentField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
         contributionsFields :+ assignmentField
       } else {
         contributionsFields
       }
 
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojo, this))) {
-        val calibratedProbabilitiesField = StructField(
-          "calibratedProbabilities",
-          MapType(StringType, DoubleType, valueContainsNull = false),
-          nullable = false)
+        val calibratedProbabilitiesField =
+          StructField("calibratedProbabilities", StructType(classFields), nullable = false)
         assignmentFields :+ calibratedProbabilitiesField
       } else {
         assignmentFields
