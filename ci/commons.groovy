@@ -228,4 +228,15 @@ def publishDockerImages(version, code) {
     }
 }
 
+def loadGradleProperties(file) {
+    def properties = [:]
+    readFile(file).split("\n").each { line ->
+        if (!line.startsWith("#")) {
+            def splits = line.split("=")
+            properties[splits[0]] = splits[1]
+        }
+    }
+    return properties
+}
+
 return this

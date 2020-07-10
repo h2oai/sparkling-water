@@ -10,12 +10,14 @@ properties(
 
 def pipeline
 def sparkVersions
+def testH2OBranch
 node("docker") {
     cleanWs()
     checkout scm
     pipeline = load 'ci/sparklingWaterPipeline.groovy'
     def commons = load 'ci/commons.groovy'
     sparkVersions = commons.getSupportedSparkVersions()
+    testH2OBranch = commons.loadGradleProperties("gradle.properties")["testH2OBranch"]
 }
 
 pipeline(params) { p ->
@@ -26,7 +28,7 @@ pipeline(params) { p ->
     runIntegTests = "true"
     runPyIntegTests = "true"
     buildAgainstH2OBranch = "true"
-    h2oBranch = "master"
+    h2oBranch = testH2OBranch
     hadoopVersion = "2.7"
     backendMode = "both"
     driverHadoopVersion = "hdp2.2"
