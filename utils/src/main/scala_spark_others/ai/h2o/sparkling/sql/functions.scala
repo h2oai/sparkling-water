@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.sql
 
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.types.DataType
 
 /**
