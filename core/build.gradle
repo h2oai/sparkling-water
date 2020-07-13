@@ -1,5 +1,3 @@
-import org.gradle.util.VersionNumber
-
 description = "Sparkling Water Core"
 
 apply from: "$rootDir/gradle/utils.gradle"
