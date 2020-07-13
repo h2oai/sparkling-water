@@ -186,6 +186,20 @@ def buildSparklingWater(props, sparkMajorVersion) {
     }
 }
 
+def prepareRTestFile(clusterId, rArtifact) {
+    def lines = readFile("ci/databricksTests/test.r").split("\n")
+    def text = lines.collect {
+        it.replaceAll("SUBST_H2O_PATH", "dbfs:/${clusterId}/h2o.tar.gz")
+                .replaceAll("SUBST_RSPARKLING_PATH", "dbfs:/${clusterId}/${rArtifact}")
+    }.join("\n")
+    writeFile file: "ci/databricksTests/test.r", text: text
+}
+
+def restartCluster(clusterId) {
+    sh "databricks clusters restart --cluster-id ${clusterId}"
+    waitForCluster(clusterId)
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -211,13 +225,10 @@ node("docker") {
                     String workspaceDir = "/sw-tests-${clusterId}"
                     sh "databricks workspace mkdirs ${workspaceDir}"
                     test(workspaceDir, clusterId, "scala")
+                    restartCluster(clusterId)
                     test(workspaceDir, clusterId, "python")
-                    def lines = readFile("ci/databricksTests/test.r").split("\n")
-                    def text = lines.collect {
-                        it.replaceAll("SUBST_H2O_PATH", "dbfs:/${clusterId}/h2o.tar.gz")
-                          .replaceAll("SUBST_RSPARKLING_PATH", "dbfs:/${clusterId}/${rArtifact}")
-                    }.join("\n")
-                    writeFile file: "ci/databricksTests/test.r", text: text
+                    restartCluster(clusterId)
+                    prepareRTestFile(clusterId, rArtifact)
                     test(workspaceDir, clusterId, "r")
                     sh "databricks workspace rm -r ${workspaceDir}"
                     deleteDependencies(clusterId)
