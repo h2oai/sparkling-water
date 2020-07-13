@@ -104,8 +104,8 @@ def installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact) {
     sh "databricks libraries install --cluster-id ${clusterId} --whl dbfs:/${clusterId}/${pythonArtifact}"
     waitForArtifactToAttach(clusterId, pythonArtifact, "whl")
     // R
-    sh "databricks fs cp r/build/${rArtifact} dbfs:/${clusterId}/${rArtifact}"
-    sh "databricks fs cp h2o-3/h2o-r/h2o_*.99999.tar.gz dbfs:/${clusterId}/h2o.tar.gz"
+    sh "databricks fs cp r/build/${rArtifact} dbfs:/FileStore/${clusterId}/${rArtifact}"
+    sh "databricks fs cp h2o-3/h2o-r/h2o_*.99999.tar.gz dbfs:/FileStore/${clusterId}/h2o.tar.gz"
 }
 
 def test(workspaceDir, clusterId, language) {
@@ -194,8 +194,8 @@ def buildSparklingWater(props, sparkMajorVersion) {
 def prepareRTestFile(clusterId, rArtifact) {
     def lines = readFile("ci/databricksTests/test.r").split("\n")
     def text = lines.collect {
-        it.replaceAll("SUBST_H2O_PATH", "dbfs:/${clusterId}/h2o.tar.gz")
-                .replaceAll("SUBST_RSPARKLING_PATH", "dbfs:/${clusterId}/${rArtifact}")
+        it.replaceAll("SUBST_H2O_PATH", "/FileStore/${clusterId}/h2o.tar.gz")
+                .replaceAll("SUBST_RSPARKLING_PATH", "/FileStore/${clusterId}/${rArtifact}")
     }.join("\n")
     writeFile file: "ci/databricksTests/test.r", text: text
 }
