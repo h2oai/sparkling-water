@@ -17,27 +17,23 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.{H2OContext, H2OFrame}
+import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.DataFrame
 
-trait HasBetaConstraints extends H2OAlgoParamsBase {
-  private val betaConstraints = new NullableDataFrameParam(
-    this,
-    "betaConstraints",
-    "Data frame of beta constraints enabling to set special conditions over the model coefficients.")
+trait HasUserX extends H2OAlgoParamsBase {
+  private val userX = new NullableDataFrameParam(this, "userX", "User-specified initial matrix X.")
 
-  setDefault(betaConstraints -> null)
+  setDefault(userX -> null)
 
-  def getBetaConstraints(): DataFrame = $(betaConstraints)
+  def getUserX(): DataFrame = $(userX)
 
-  def setBetaConstraints(value: DataFrame): this.type = set(betaConstraints, value)
+  def setUserX(value: DataFrame): this.type = set(userX, value)
 
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
-      Map("beta_constraints" -> convertDataFrameToH2OFrameKey(getBetaConstraints()))
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("user_x" -> convertDataFrameToH2OFrameKey(getUserX()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("betaConstraints" -> "beta_constraints")
+    super.getSWtoH2OParamNameMap() ++ Map("userX" -> "user_x")
   }
 }

@@ -33,22 +33,9 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
 
   def setCalibrationDataFrame(value: DataFrame): this.type = set(calibrationDataFrame, value)
 
-  private def getCalibrationFrame(): String = {
-    val dataFrame = getCalibrationDataFrame()
-    if (dataFrame == null) {
-      null
-    } else {
-      val hc = H2OContext.ensure(
-        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
-          "Please create one as H2OContext.getOrCreate().")
-      val frame = hc.asH2OFrame(dataFrame)
-      registerH2OFrameForDeletion(frame)
-      frame.frameId
-    }
-  }
-
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("calibration_frame" -> getCalibrationFrame())
+    super.getH2OAlgorithmParams(trainingFrame) ++
+      Map("calibration_frame" -> convertDataFrameToH2OFrameKey(getCalibrationDataFrame()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
