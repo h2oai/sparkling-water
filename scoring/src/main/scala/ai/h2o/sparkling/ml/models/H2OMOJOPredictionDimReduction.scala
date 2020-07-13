@@ -48,7 +48,7 @@ trait H2OMOJOPredictionDimReduction {
   }
 
   def extractDimReductionSimplePredictionColContent(): Column = {
-    col(s"${getDetailedPredictionCol()}.fields")
+    col(s"${getDetailedPredictionCol()}.dimensions")
   }
 }
 
