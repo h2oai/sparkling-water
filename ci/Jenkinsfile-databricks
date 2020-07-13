@@ -212,6 +212,12 @@ node("docker") {
                     sh "databricks workspace mkdirs ${workspaceDir}"
                     test(workspaceDir, clusterId, "scala")
                     test(workspaceDir, clusterId, "python")
+                    def lines = readFile("ci/databricksTests/test.r").split("\n")
+                    def text = lines.collect {
+                        it.replaceAll("SUBST_H2O_PATH", "dbfs:/${clusterId}/h2o.tar.gz")
+                          .replaceAll("SUBST_RSPARKLING_PATH", "dbfs:/${clusterId}/${rArtifact}")
+                    }.join("\n")
+                    writeFile file: "ci/databricksTests/test.r", text: text
                     test(workspaceDir, clusterId, "r")
                     sh "databricks workspace rm -r ${workspaceDir}"
                     deleteDependencies(clusterId)
