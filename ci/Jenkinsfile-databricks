@@ -1,6 +1,7 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
 import groovy.json.JsonSlurperClassic
+import java.nio.file.Files
 
 properties(
         [
@@ -161,11 +162,12 @@ String getH2OBranchBuildVersion() {
 }
 
 def buildSparklingWater(props, sparkMajorVersion) {
-    retryWithDelay(3, 60, {
-        sh "git clone https://github.com/h2oai/h2o-3.git"
-    })
-    retryWithDelay(5, 1, {
-        sh """
+    if (!Files.exists("h2o-3")) {
+        retryWithDelay(3, 60, {
+            sh "git clone https://github.com/h2oai/h2o-3.git"
+        })
+        retryWithDelay(5, 1, {
+            sh """
             cd h2o-3
             git checkout ${props["testH2OBranch"]}
             . /envs/h2o_env_python2.7/bin/activate
@@ -174,7 +176,9 @@ def buildSparklingWater(props, sparkMajorVersion) {
             ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
             cd ..
             """
-    })
+        })
+    }
+    sh "./gradlew clean"
     sh """
         sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
         sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
