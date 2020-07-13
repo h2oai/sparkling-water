@@ -95,7 +95,11 @@ object CraigslistJobTitlesApp {
     val titleDF = spark.createDataFrame(titleRDD, titleSchema)
     val prediction = model.transform(titleDF)
     val predictedCategory = prediction.select("prediction").head().getString(0)
-    val probabilities = prediction.select("detailed_prediction.probabilities").head().getMap[String, Double](0).toMap
+    val probabilitiesDF = prediction.select("detailed_prediction.probabilities.*")
+    val probabilityNames = probabilitiesDF.schema.fields.map(_.name)
+    val probabilityValues = probabilitiesDF.head().toSeq.map(_.asInstanceOf[Double])
+    val probabilities = probabilityNames.zip(probabilityValues).toMap
+
     (predictedCategory, probabilities)
   }
 
