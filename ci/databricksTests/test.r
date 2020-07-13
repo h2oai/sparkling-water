@@ -16,10 +16,10 @@
 #
 
 library(sparklyr)
-library(rsparkling)
 library(testthat)
 install.packages("SUBST_H2O_PATH", repos = NULL, type="source")
 install.packages("SUBST_RSPARKLING_PATH", repos = NULL, type="source")
+library(rsparkling)
 sc <- spark_connect(method = "databricks")
 hc <- H2OContext.getOrCreate()
 
