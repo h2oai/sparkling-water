@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package org.apache.spark.sql.expose
 
-import java.io.File
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.expressions
+import org.apache.spark.sql.types.DataType
 
-import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-
-object Utils {
-  def getMojoModel(mojoFile: File): MojoModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
-    ModelMojoReader.readFrom(reader)
+object SparkUserDefinedFunction {
+  def apply(
+      f: AnyRef,
+      dataType: DataType,
+      inputEncoders: Seq[Option[ExpressionEncoder[_]]] = Nil,
+      name: Option[String] = None,
+      nullable: Boolean = true,
+      deterministic: Boolean = true): expressions.SparkUserDefinedFunction = {
+    expressions.SparkUserDefinedFunction(f, dataType, inputEncoders, name, nullable, deterministic)
   }
-
-  def arrayToRow(array: Array[Double]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
-
-  def arrayToRow(array: Array[Float]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
 }

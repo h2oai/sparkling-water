@@ -15,21 +15,17 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package ai.h2o.sparkling.sql
 
-import java.io.File
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.types.DataType
 
-import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-
-object Utils {
-  def getMojoModel(mojoFile: File): MojoModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
-    ModelMojoReader.readFrom(reader)
+/**
+  * This objects contains functions from org.apache.spark.sql.functions which are not compatible across all Spark
+  * versions supported by Sparkling Water.
+  */
+object functions {
+  def udf(f: AnyRef, dataType: DataType): UserDefinedFunction = {
+    org.apache.spark.sql.functions.udf(f, dataType)
   }
-
-  def arrayToRow(array: Array[Double]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
-
-  def arrayToRow(array: Array[Float]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
 }

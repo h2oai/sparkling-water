@@ -3,6 +3,14 @@ description = "Utilities shared across Sparkling Water sub-modules. These utilit
 apply from: "$rootDir/gradle/sparkTest.gradle"
 apply from: "$rootDir/gradle/utils.gradle"
 
+sourceSets {
+  main {
+    scala {
+      srcDirs += getSparkSpecificSourceDir(sparkMajorVersion)
+    }
+  }
+}
+
 dependencies {
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")

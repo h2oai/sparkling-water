@@ -200,6 +200,10 @@ From 3.30 to 3.32
 | ``namedMojoOutputColumns``              | ``getNamedMojoOutputColumns``              | ``setNamedMojoOutputColumns``              |
 +-----------------------------------------+--------------------------------------------+--------------------------------------------+
 
+- Schema of detailed predictions produced by ``H2OMOJOModel`` and thus by all Sparkling Water algorithms has been changed a bit.
+  The ``MapType`` sub-columns ``probabilities``, ``calibratedProbabilities`` and ``contributions`` have been changed to ``StructType``
+  columns.
+
 From 3.28.1 to 3.30
 -------------------
 

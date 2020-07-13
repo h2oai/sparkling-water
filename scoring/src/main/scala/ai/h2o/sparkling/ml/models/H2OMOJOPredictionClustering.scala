@@ -16,29 +16,31 @@
  */
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionClustering.{Base, Detailed}
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.col
+import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
+
+import scala.collection.mutable
 
 trait H2OMOJOPredictionClustering {
   self: H2OMOJOModel =>
 
   def getClusteringPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
-        Detailed(pred.cluster, pred.distances)
+    val schema = getClusteringPredictionSchema()
+    val function = (r: Row) => {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val pred = model.predictClustering(RowConverter.toH2ORowData(r))
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred.cluster
+      if (getWithDetailedPredictionCol()) {
+        resultBuilder += pred.distances
       }
-    } else {
-      udf[Base, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
-        Base(pred.cluster)
-      }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
+    udf(function, schema)
   }
 
   private val predictionColType = IntegerType
@@ -48,7 +50,7 @@ trait H2OMOJOPredictionClustering {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
-  def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
+  def getClusteringPredictionSchema(): StructType = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
     val fields = if (getWithDetailedPredictionCol()) {
       val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
@@ -56,18 +58,10 @@ trait H2OMOJOPredictionClustering {
     } else {
       clusterField :: Nil
     }
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
+    StructType(fields)
   }
 
   def extractClusteringPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.cluster")
   }
-}
-
-object H2OMOJOPredictionClustering {
-
-  case class Base(cluster: Integer)
-
-  case class Detailed(cluster: Integer, distances: Array[Double])
-
 }

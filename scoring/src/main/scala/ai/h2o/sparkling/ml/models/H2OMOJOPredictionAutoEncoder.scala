@@ -16,30 +16,31 @@
  */
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionAutoEncoder.{Base, Detailed}
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.col
+import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
+
+import scala.collection.mutable
 
 trait H2OMOJOPredictionAutoEncoder {
   self: H2OMOJOModel =>
 
   def getAutoEncoderPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
-        Detailed(pred.original, pred.reconstructed)
+    val schema = getAutoEncoderPredictionSchema()
+    val function = (r: Row) => {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val pred = model.predictAutoEncoder(RowConverter.toH2ORowData(r))
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred.original
+      if (getWithDetailedPredictionCol()) {
+        resultBuilder += pred.reconstructed
       }
-    } else {
-      udf[Base, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAutoEncoder(RowConverter.toH2ORowData(r))
-        Base(pred.original)
-      }
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
-
+    udf(function, schema)
   }
 
   private val predictionColType = ArrayType(DoubleType, containsNull = false)
@@ -49,7 +50,7 @@ trait H2OMOJOPredictionAutoEncoder {
     Seq(StructField(getPredictionCol(), predictionColType, nullable = predictionColNullable))
   }
 
-  def getAutoEncoderDetailedPredictionColSchema(): Seq[StructField] = {
+  def getAutoEncoderPredictionSchema(): StructType = {
     val originalField = StructField("original", predictionColType, nullable = predictionColNullable)
     val fields = if (getWithDetailedPredictionCol()) {
       val reconstructedField = StructField("reconstructed", predictionColType, nullable = predictionColNullable)
@@ -58,18 +59,10 @@ trait H2OMOJOPredictionAutoEncoder {
       originalField :: Nil
     }
 
-    Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
+    StructType(fields)
   }
 
   def extractAutoEncoderPredictionColContent(): Column = {
     col(s"${getDetailedPredictionCol()}.original")
   }
-}
-
-object H2OMOJOPredictionAutoEncoder {
-
-  case class Base(original: Array[Double])
-
-  case class Detailed(original: Array[Double], reconstructed: Array[Double])
-
 }

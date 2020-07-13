@@ -67,7 +67,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val expectedCols = Seq("value", "contributions", "leafNodeAssignments")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-    val contributions = predictions.select("detailed_prediction.contributions").head().getMap[String, Double](0)
+    val contributions = predictions.select("detailed_prediction.contributions").head().getStruct(0)
     assert(contributions != null)
     assert(contributions.size == 8)
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
@@ -120,12 +120,14 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val datasetFields = dataset.schema.fields
     val valueField = StructField("value", DoubleType, nullable = false)
     val predictionColField = StructField("prediction", DoubleType, nullable = true)
-    val contributionsType = MapType(StringType, FloatType, valueContainsNull = false)
-    val contributionsField = StructField("contributions", contributionsType, nullable = true)
+    val individualContributions =
+      (algo.getFeaturesCols() :+ "BiasTerm").map(StructField(_, FloatType, nullable = false))
+    val contributionsType = StructType(individualContributions)
+    val contributionsField = StructField("contributions", contributionsType, nullable = false)
     val leafNodeAssignmentField = StructField(
       "leafNodeAssignments",
-      ArrayType(StringType, containsNull = true),
-      nullable = true) :: Nil
+      ArrayType(StringType, containsNull = false),
+      nullable = false) :: Nil
     val detailedPredictionColField =
       StructField(
         "detailed_prediction",

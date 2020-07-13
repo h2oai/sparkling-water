@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.models
 import hex.ModelCategory
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.{StructField, StructType}
 
 trait H2OMOJOPrediction
   extends H2OMOJOPredictionRegression
@@ -83,17 +83,21 @@ trait H2OMOJOPrediction
   }
 
   override def getDetailedPredictionColSchema(): Seq[StructField] = {
+    Seq(StructField(getDetailedPredictionCol(), getPredictionSchema(), nullable = true))
+  }
+
+  def getPredictionSchema(): StructType = {
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     predictWrapper.getModelCategory match {
-      case ModelCategory.Binomial => getBinomialDetailedPredictionColSchema()
-      case ModelCategory.Regression => getRegressionDetailedPredictionColSchema()
-      case ModelCategory.Multinomial => getMultinomialDetailedPredictionColSchema()
-      case ModelCategory.Clustering => getClusteringDetailedPredictionColSchema()
-      case ModelCategory.AutoEncoder => getAutoEncoderDetailedPredictionColSchema()
-      case ModelCategory.DimReduction => getDimReductionDetailedPredictionColSchema()
-      case ModelCategory.WordEmbedding => getWordEmbeddingDetailedPredictionColSchema()
-      case ModelCategory.AnomalyDetection => getAnomalyDetailedPredictionColSchema()
-      case ModelCategory.Ordinal => getOrdinalDetailedPredictionColSchema()
+      case ModelCategory.Binomial => getBinomialPredictionSchema()
+      case ModelCategory.Regression => getRegressionPredictionSchema()
+      case ModelCategory.Multinomial => getMultinomialPredictionSchema()
+      case ModelCategory.Clustering => getClusteringPredictionSchema()
+      case ModelCategory.AutoEncoder => getAutoEncoderPredictionSchema()
+      case ModelCategory.DimReduction => getDimReductionPredictionSchema()
+      case ModelCategory.WordEmbedding => getWordEmbeddingPredictionSchema()
+      case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()
+      case ModelCategory.Ordinal => getOrdinalPredictionSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }

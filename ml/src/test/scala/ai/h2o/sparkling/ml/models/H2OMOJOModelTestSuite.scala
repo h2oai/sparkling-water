@@ -226,11 +226,10 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val expectedNumberOfRecords = originalDF.count()
     records should have size expectedNumberOfRecords
     records.foreach { row =>
-      val m = row.getMap[String, Double](0)
-      assert(m.keys.toList.sorted == Seq("0", "1"))
-      m.values.foreach { value =>
-        value should (be >= 0.0 and be <= 1.0)
-      }
+      val probabilities = row.getStruct(0)
+      assert(probabilities.length == 2)
+      probabilities.getDouble(0) should (be >= 0.0 and be <= 1.0)
+      probabilities.getDouble(1) should (be >= 0.0 and be <= 1.0)
     }
   }
 
