@@ -230,6 +230,7 @@ node("docker") {
                     restartCluster(clusterId)
                     prepareRTestFile(clusterId, rArtifact)
                     test(workspaceDir, clusterId, "r")
+                    throw new RuntimeException("Don't stop")
                     sh "databricks workspace rm -r ${workspaceDir}"
                     deleteDependencies(clusterId)
                     deleteCluster(clusterId)
