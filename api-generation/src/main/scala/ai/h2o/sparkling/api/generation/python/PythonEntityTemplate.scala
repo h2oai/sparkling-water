@@ -71,7 +71,7 @@ trait PythonEntityTemplate {
     case b: Boolean => b.toString.capitalize
     case s: String => s""""$s""""
     case v if v == null => "None"
-    case v if v.getClass.isEnum => s""""$v""""
+    case v: Enum[_] => s""""$v""""
     case v => v.toString
   }
 }

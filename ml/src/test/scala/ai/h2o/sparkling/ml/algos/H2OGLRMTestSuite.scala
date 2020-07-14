@@ -65,7 +65,6 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
     val loadedPipeline = Pipeline.load("ml/build/glrm_pipeline")
     val model = loadedPipeline.fit(trainingDataset)
     val expected = roundResult(model.transform(testingDataset))
-    expected.show()
 
     model.write.overwrite().save("ml/build/glrm_pipeline_model")
     val loadedModel = PipelineModel.load("ml/build/glrm_pipeline_model")
