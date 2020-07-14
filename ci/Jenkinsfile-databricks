@@ -93,6 +93,10 @@ def waitForArtifactToAttach(clusterId, artifact, type) {
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.library_statuses.find { it.library[type] == "dbfs:/${clusterId}/${artifact}" }.status
         ready = status == "INSTALLED"
+        if (["SKIPPED", "FAILED", "UNINSTALL_ON_RESTART"].contains(status)) {
+            cleanEnvironment(clusterId)
+            throw new RuntimeException("Failed to attach library ${artifact}")
+        }
         Thread.sleep(1000)
     }
 }
