@@ -165,6 +165,10 @@ configure(subprojects) { project ->
       url "https://oss.sonatype.org/content/repositories/releases/"
     }
 
+    maven {
+      url 'https://repository.cloudera.com/content/repositories/releases/'
+    }
+
     // Snapshot repository of H2O builds
     maven {
       url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
