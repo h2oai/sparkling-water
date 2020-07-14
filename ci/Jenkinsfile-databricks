@@ -194,8 +194,8 @@ def buildSparklingWater(props, sparkMajorVersion) {
 def prepareRTestFile(clusterId, rArtifact) {
     def lines = readFile("ci/databricksTests/test.r").split("\n")
     def text = lines.collect {
-        it.replaceAll("SUBST_H2O_PATH", "/FileStore/${clusterId}/h2o.tar.gz")
-                .replaceAll("SUBST_RSPARKLING_PATH", "/FileStore/${clusterId}/${rArtifact}")
+        it.replaceAll("SUBST_H2O_PATH", "/dbfs/FileStore/${clusterId}/h2o.tar.gz")
+                .replaceAll("SUBST_RSPARKLING_PATH", "/dbfs/FileStore/${clusterId}/${rArtifact}")
     }.join("\n")
     writeFile file: "ci/databricksTests/test.r", text: text
 }
