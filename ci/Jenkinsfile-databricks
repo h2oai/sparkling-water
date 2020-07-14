@@ -67,6 +67,9 @@ def waitForCluster(clusterId) {
         def jsonSlurper = new JsonSlurperClassic()
         def cfg = jsonSlurper.parseText(json)
         ready = cfg["state"] == "RUNNING"
+        if (["ERROR", "UNKNOWN", "TERMINATED", "TERMINATING"].contains(cfg["state"])) {
+            throw new RuntimeException("Cluster failed to start!")
+        }
         Thread.sleep(10000)
     }
 }
