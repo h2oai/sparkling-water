@@ -170,10 +170,6 @@ configure(subprojects) { project ->
       url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
     }
 
-    maven {
-      url 'https://repository.cloudera.com/content/repositories/releases/'
-    }
-
     if (sparkVersion.endsWith("-SNAPSHOT")) {
       maven {
         url "https://repository.apache.org/content/repositories/snapshots/"
