@@ -220,7 +220,6 @@ def cleanEnvironment(clusterId) {
     sh "databricks workspace rm -r /sw-tests-${clusterId}"
     deleteDependencies(clusterId)
     deleteCluster(clusterId)
-    cleanWs()
 }
 
 node("docker") {
@@ -241,6 +240,7 @@ node("docker") {
         stage("Test DBC - Spark " + sparkMajorVersion) {
             commons.withSparklingWaterDockerImage {
                 commons.withDatabricksCredentials {
+                    sh "rm -rf h2o-3"
                     unstash "h2o"
                     def sparkSpecificProps = readPropertiesFile("gradle-spark${sparkMajorVersion}.properties")
                     def dbcVersion = sparkSpecificProps["databricksVersion"]
