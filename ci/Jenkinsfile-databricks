@@ -172,23 +172,25 @@ String getH2OBranchBuildVersion() {
     return "1-SNAPSHOT"
 }
 
+def buildH2O(props) {
+    retryWithDelay(3, 60, {
+        sh
+        sh "git clone https://github.com/h2oai/h2o-3.git"
+    })
+    retryWithDelay(5, 1, {
+        sh """
+        cd h2o-3
+        git checkout ${props["testH2OBranch"]}
+        . /envs/h2o_env_python2.7/bin/activate
+        ./gradlew build --parallel -x check -Duser.name=ec2-user
+        ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
+        ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
+        cd ..
+        """
+    })
+}
+
 def buildSparklingWater(props, sparkMajorVersion) {
-    if (!Files.exists(Paths.get("h2o-3"))) {
-        retryWithDelay(3, 60, {
-            sh "git clone https://github.com/h2oai/h2o-3.git"
-        })
-        retryWithDelay(5, 1, {
-            sh """
-            cd h2o-3
-            git checkout ${props["testH2OBranch"]}
-            . /envs/h2o_env_python2.7/bin/activate
-            ./gradlew build --parallel -x check -Duser.name=ec2-user
-            ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
-            ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
-            cd ..
-            """
-        })
-    }
     sh "./gradlew clean"
     sh """
         sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
@@ -219,6 +221,7 @@ def cleanEnvironment(clusterId) {
     sh "databricks workspace rm -r /sw-tests-${clusterId}"
     deleteDependencies(clusterId)
     deleteCluster(clusterId)
+    cleanWs()
 }
 
 node("docker") {
@@ -228,10 +231,16 @@ node("docker") {
     def props = readPropertiesFile("gradle.properties")
     def version = getSparklingVersion(props)
 
+    stage("Build H2O") {
+        buildH2O(props)
+        stash name: "h2o", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+    }
+    
     getDatabricksSparkVersions(props).each { sparkMajorVersion ->
         stage("Test DBC - Spark " + sparkMajorVersion) {
             commons.withSparklingWaterDockerImage {
                 commons.withDatabricksCredentials {
+                    unstash "h2o"
                     def sparkSpecificProps = readPropertiesFile("gradle-spark${sparkMajorVersion}.properties")
                     def dbcVersion = sparkSpecificProps["databricksVersion"]
                     def scalaVersion = sparkSpecificProps["scalaBaseVersion"]
