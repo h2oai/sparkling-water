@@ -41,7 +41,9 @@ dependencies {
     exclude(group: "commons-collections", module: "commons-collections")
   }
   api("ai.h2o:h2o-security:${h2oVersion}")
-  api("ai.h2o:h2o-hive:${h2oVersion}")
+  api("ai.h2o:h2o-hive:${h2oVersion}") {
+    transitive = false
+  }
   api("ai.h2o:h2o-algos:${h2oVersion}")
   api("ai.h2o:h2o-web:${h2oVersion}")
   api("ai.h2o:h2o-avro-parser:${h2oVersion}") {
