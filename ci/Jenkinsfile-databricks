@@ -131,16 +131,17 @@ def test(workspaceDir, clusterId, language) {
         """, returnStdout: true).trim()
     def parsedJson = new JsonSlurperClassic().parseText(rawJson)
     def runId = parsedJson.run_id
-    waitForJobToFinish(runId, language)
+    waitForJobToFinish(runId, language, clusterId)
 }
 
-def waitForJobToFinish(jobId, language) {
+def waitForJobToFinish(jobId, language, clusterId) {
     def done = false
     while(!done) {
         def rawJson = sh(script: "databricks runs get --run-id ${jobId}", returnStdout: true).trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.state.result_state
         if (status == "FAILED") {
+            cleanEnvironment(clusterId)
             throw new RuntimeException("${language} tests failed!")
         }
         done = status == "SUCCESS"
@@ -210,6 +211,12 @@ def restartCluster(clusterId) {
     waitForCluster(clusterId)
 }
 
+def cleanEnvironment(clusterId) {
+    sh "databricks workspace rm -r /sw-tests-${clusterId}"
+    deleteDependencies(clusterId)
+    deleteCluster(clusterId)
+}
+
 node("docker") {
     cleanWs()
     checkout scm
@@ -240,9 +247,7 @@ node("docker") {
                     restartCluster(clusterId)
                     prepareRTestFile(clusterId, rArtifact)
                     test(workspaceDir, clusterId, "r")
-                    sh "databricks workspace rm -r ${workspaceDir}"
-                    deleteDependencies(clusterId)
-                    deleteCluster(clusterId)
+                    cleanEnvironment(clusterId)
                 }
             }
         }
