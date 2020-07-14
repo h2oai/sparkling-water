@@ -129,7 +129,7 @@ def test(workspaceDir, clusterId, language) {
               "notebook_task": {
                 "notebook_path": "${workspaceDir}/test.${extension}"
               },
-              "timeout_seconds": 300,
+              "timeout_seconds": 300
             }
             '
         """, returnStdout: true).trim()
@@ -144,7 +144,7 @@ def waitForJobToFinish(jobId, language, clusterId) {
         def rawJson = sh(script: "databricks runs get --run-id ${jobId}", returnStdout: true).trim()
         def parsedJson = new JsonSlurperClassic().parseText(rawJson)
         def status = parsedJson.state.result_state
-        if (status == "FAILED") {
+        if (["FAILED", "TIMEDOUT", "CANCELLED"].contains(status)) {
             cleanEnvironment(clusterId)
             throw new RuntimeException("${language} tests failed!")
         }
