@@ -23,7 +23,7 @@ library(rsparkling)
 sc <- spark_connect(method = "databricks")
 hc <- H2OContext.getOrCreate()
 
-expect_equal(invoke(hc$jhc, "getH2ONodes"), 3)
+expect_equal(length(invoke(hc$jhc, "getH2ONodes")), 3)
 
 # Test conversions
 df <- as.data.frame(t(c(1, 2, 3, 4, "A")))
