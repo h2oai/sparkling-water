@@ -34,6 +34,6 @@ sdf2 <- hc$asSparkFrame(hf)
 
 expect_equal(sdf_nrow(sdf2), nrow(hf))
 expect_equal(sdf_ncol(sdf2), ncol(hf))
-expect_equal(all(colnames(sdf2)), colnames(hf))
+expect_true(all(colnames(sdf2)==colnames(hf)))
 
 spark_disconnect(sc)
