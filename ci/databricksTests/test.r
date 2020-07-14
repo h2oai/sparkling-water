@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+install.packages("sparklyr")
 library(sparklyr)
 library(testthat)
 install.packages("SUBST_H2O_PATH", repos = NULL, type="source")
