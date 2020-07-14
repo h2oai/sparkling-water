@@ -146,6 +146,7 @@ def waitForJobToFinish(jobId, language) {
 
 def deleteDependencies(clusterId) {
     sh "databricks fs rm -r dbfs:/${clusterId}"
+    sh "databricks fs rm -r dbfs:/FileStore/${clusterId}"
 }
 
 String getH2OBranchMajorVersion() {
