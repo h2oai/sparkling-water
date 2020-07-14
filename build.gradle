@@ -10,6 +10,9 @@ buildscript {
     mavenCentral()
     jcenter()
     gradlePluginPortal()
+    maven {
+      url 'https://repository.cloudera.com/content/repositories/releases/'
+    }
   }
 
   dependencies {
