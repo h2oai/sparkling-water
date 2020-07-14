@@ -231,8 +231,10 @@ node("docker") {
     def version = getSparklingVersion(props)
 
     stage("Build H2O") {
-        buildH2O(props)
-        stash name: "h2o", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+        commons.withSparklingWaterDockerImage {
+            buildH2O(props)
+            stash name: "h2o", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz"
+        }
     }
 
     getDatabricksSparkVersions(props).each { sparkMajorVersion ->
