@@ -10,9 +10,6 @@ buildscript {
     mavenCentral()
     jcenter()
     gradlePluginPortal()
-    maven {
-      url 'https://repository.cloudera.com/content/repositories/releases/'
-    }
   }
 
   dependencies {
@@ -171,6 +168,10 @@ configure(subprojects) { project ->
     // Snapshot repository of H2O builds
     maven {
       url "https://h2o-release.s3.amazonaws.com/h2o/master/$h2oBuild/maven/repo/"
+    }
+
+    maven {
+      url 'https://repository.cloudera.com/content/repositories/releases/'
     }
 
     if (sparkVersion.endsWith("-SNAPSHOT")) {
