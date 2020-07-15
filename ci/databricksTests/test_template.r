@@ -16,6 +16,7 @@
 #
 
 install.packages("sparklyr")
+install.packages("RCurl")
 library(sparklyr)
 library(testthat)
 install.packages("SUBST_H2O_PATH", repos = NULL, type="source")
