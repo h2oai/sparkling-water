@@ -19,6 +19,7 @@ import java.net.URI
 import org.apache.spark.h2o._
 import org.apache.spark.SparkFiles
 import org.apache.spark.sql.SparkSession
+import water.fvec._
 
 val spark = SparkSession.builder.appName("App name").getOrCreate()
 import spark.implicits._
@@ -31,7 +32,7 @@ if (actual != expected) {
 }
 spark.sparkContext.addFile(
   "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-val frame = H2OFrame(new URI("file://" + SparkFiles.get("prostate.csv")))
+val frame = new H2OFrame(new URI("file://" + SparkFiles.get("prostate.csv")))
 val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
 val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
