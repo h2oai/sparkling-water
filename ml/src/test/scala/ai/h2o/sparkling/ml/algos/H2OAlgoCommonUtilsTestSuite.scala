@@ -23,8 +23,11 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
+@RunWith(classOf[JUnitRunner])
 class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
