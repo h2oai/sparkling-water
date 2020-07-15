@@ -56,4 +56,6 @@ class AnomalyPredictionTestSuite
   override protected def expectedPredictionCol: StructField = {
     StructField("prediction", DoubleType, nullable = true)
   }
+
+  override protected def getWithLeafNodeAssignments: Boolean = true
 }
