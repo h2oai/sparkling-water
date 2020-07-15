@@ -203,7 +203,7 @@ def buildSparklingWater(props, sparkMajorVersion) {
 }
 
 def prepareRTestFile(clusterId, rArtifact) {
-    def lines = readFile("ci/databricksTests/test.r").split("\n")
+    def lines = readFile("ci/databricksTests/test_template.r").split("\n")
     def text = lines.collect {
         it.replaceAll("SUBST_H2O_PATH", "/dbfs/FileStore/${clusterId}/h2o.tar.gz")
                 .replaceAll("SUBST_RSPARKLING_PATH", "/dbfs/FileStore/${clusterId}/${rArtifact}")
