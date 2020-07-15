@@ -170,6 +170,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     icedDir = function() { ConfUtils.getOption(invoke(jconf, "icedDir")) },
 
+    resetApiTimeout = function() { invoke(jconf, "restApiTimeout") },
+
 #
 # Setters
 #
@@ -342,5 +344,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self },
 
-    setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self }
+    setIcedDir = function(dir) { invoke(jconf, "setIcedDir", dir); .self },
+
+    setRestApiTimeout = function(timeout) { invoke(jconf, "setRestApiTimeout", timeout); .self }
 ))

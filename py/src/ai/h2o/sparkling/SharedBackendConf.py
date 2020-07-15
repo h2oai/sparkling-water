@@ -212,6 +212,9 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def icedDir(self):
         return self._get_option(self._jconf.icedDir())
+
+    def restApiTimeout(self):
+        return self._jconf.restApiTimeout()
     #
     # Setters
     #
@@ -502,4 +505,8 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setIcedDir(self, dir):
         self._jconf.setIcedDir(dir)
+        return self
+
+    def setRestApiTimeout(self, timeout):
+        self._jconf.setRestApiTimeout(timeout)
         return self

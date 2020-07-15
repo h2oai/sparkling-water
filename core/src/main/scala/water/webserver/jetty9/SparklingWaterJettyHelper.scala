@@ -60,6 +60,8 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
     handler.addServletMapping(m)
     val ipPort = conf.h2oCluster.get
     holder.setInitParameter("proxyTo", s"${conf.getScheme()}://$ipPort${conf.contextPath.getOrElse("")}")
+    holder.setInitParameter("idleTimeout", s"${conf.restApiTimeout}")
+    holder.setInitParameter("timeout", s"${conf.restApiTimeout}")
     handler
   }
 

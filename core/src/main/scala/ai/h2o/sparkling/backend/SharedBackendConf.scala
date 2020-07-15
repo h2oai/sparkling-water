@@ -171,6 +171,8 @@ trait SharedBackendConf {
 
   def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
 
+  def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
+
   private[sparkling] def getClientLanguage: String = sparkConf.get(PROP_CLIENT_LANGUAGE._1, PROP_CLIENT_LANGUAGE._2)
 
   /** Setters */
@@ -354,6 +356,8 @@ trait SharedBackendConf {
 
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
+  def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
+
   private[backend] def getFileProperties: Seq[(String, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
@@ -528,6 +532,9 @@ object SharedBackendConf {
 
   /** Location of iced directory for H2O nodes */
   val PROP_ICED_DIR: (String, None.type) = ("spark.ext.h2o.iced.dir", None)
+
+  /** Timeout for Rest API requests */
+  val PROP_REST_API_TIMEOUT: (String, Int) = ("spark.ext.h2o.rest.api.timeout", 5 * 60 * 1000)
 
   /** Language of the connected client. */
   private[sparkling] val PROP_CLIENT_LANGUAGE: (String, String) = ("spark.ext.h2o.client.language", "scala")
