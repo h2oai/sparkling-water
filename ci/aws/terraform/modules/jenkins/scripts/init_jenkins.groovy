@@ -145,6 +145,15 @@ def dockerHub = new UsernamePasswordCredentialsImpl(
 )
 store.addCredentials(domain, dockerHub)
 
+def databricks = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'SW_DATABRICKS',
+        'Databricks credentials',
+        'SUBST_DATABRICKS_HOST',
+        'SUBST_DATABRICKS_TOKEN'
+)
+store.addCredentials(domain, databricks)
+
 def pipy = new UsernamePasswordCredentialsImpl(
         CredentialsScope.GLOBAL,
         'pypi-credentials',
@@ -352,6 +361,12 @@ createJob(
 createJob(
         "TESTS_KUBERNETES",
         "ci/Jenkinsfile-kubernetes",
+        "master rel-*",
+        true)
+
+createJob(
+        "TESTS_DATABRICKS",
+        "ci/Jenkinsfile-databricks",
         "master rel-*",
         true)
 

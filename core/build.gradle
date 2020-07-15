@@ -79,9 +79,16 @@ dependencies {
   api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
   api("ai.h2o:h2o-automl:${h2oVersion}")
 
-  api("io.fabric8:kubernetes-client:4.10.2") {
-    exclude(group: "com.fasterxml.jackson.core")
+  if (sparkMajorVersion >= "3.0") {
+    api("io.fabric8:kubernetes-client:4.9.2") {
+      exclude(group: "com.fasterxml.jackson.core")
+    }
+  } else {
+    api("io.fabric8:kubernetes-client:4.6.4") {
+      exclude(group: "com.fasterxml.jackson.core")
+    }
   }
+
   compileOnly(project(':sparkling-water-macros'))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
