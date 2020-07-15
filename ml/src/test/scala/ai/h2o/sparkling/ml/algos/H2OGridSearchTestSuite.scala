@@ -184,7 +184,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     model.transform(dataset).collect()
   }
 
-  private def  testGridSearch(
+  private def testGridSearch(
       algo: H2OAlgorithm[_ <: Model.Parameters],
       hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
     val stage = new H2OGridSearch()

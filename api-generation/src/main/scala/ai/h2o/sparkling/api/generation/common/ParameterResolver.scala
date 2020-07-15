@@ -28,7 +28,7 @@ trait ParameterResolver {
       for (field <- h2oSchemaClass.getFields
            if field.getAnnotation(classOf[API]) != null
            if !parameterSubstitutionContext.ignoredParameters.contains(field.getName)
-           if !parameterSubstitutionContext.explicitFields.map(_.name).contains(field.getName))
+           if !parameterSubstitutionContext.explicitFields.map(_.h2oName).contains(field.getName))
         yield Parameter(
           ParameterNameConverter.convertFromH2OToSW(field.getName),
           field.getName,

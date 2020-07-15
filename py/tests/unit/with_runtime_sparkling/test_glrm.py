@@ -110,3 +110,16 @@ def testUserYHasEffectOnTrainedModel(spark, arrestsDataset):
     result = model.transform(arrestsDataset)
 
     unit_test_utils.assert_data_frames_have_different_values(reference, result)
+
+def testLossByColHasEffectOnTrainedModel(arrestsDataset):
+    referenceAlgo = getPreconfiguredAlgorithm()
+    referenceModel = referenceAlgo.fit(arrestsDataset)
+    reference = referenceModel.transform(arrestsDataset)
+
+    algo = getPreconfiguredAlgorithm()
+    algo.setLossByCol(["absolute", "huber"])
+    algo.setLossByColNames(["Murder", "Rape"])
+    model = algo.fit(arrestsDataset)
+    result = model.transform(arrestsDataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(reference, result)
