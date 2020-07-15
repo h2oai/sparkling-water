@@ -36,6 +36,9 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 
 import scala.collection.JavaConverters._
 
@@ -146,11 +149,11 @@ class H2OGridSearch(override val uid: String)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
     }
-    gridModels = sortGridModels(unsortedGridModels)
+    gridModels = sortGridModels(unsortedGridModels, algoName)
     gridModels.head
   }
 
-  private def sortGridModels(gridModels: Array[H2OMOJOModel]): Array[H2OMOJOModel] = {
+  private def sortGridModels(gridModels: Array[H2OMOJOModel], algoName: String): Array[H2OMOJOModel] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       val category = H2OModelCategory.fromString(gridModels(0).getModelCategory())
       category match {
@@ -158,14 +161,13 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
+        case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
     }
 
-    val modelMetricPair = gridModels.map { model =>
-      (model, model.getCurrentMetrics().find(_._1 == metric.name()).get._2)
-    }
+    val modelMetricPair = gridModels.map(model => (model, getMetricValue(model, metric)))
 
     val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
@@ -175,6 +177,31 @@ class H2OGridSearch(override val uid: String)
     require(
       gridModels != null,
       "The fit method of the grid search must be called first to be able to obtain a list of models.")
+  }
+
+  private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = metric match {
+    case H2OMetric.GLRMMetric =>
+      val ast = parse(model.getModelDetails())
+
+      def getColumnName(value: JValue): String = {
+        val result = for {
+          JObject(obj) <- value
+          JField("name", JString(result)) <- obj
+        } yield result
+        result.head
+      }
+
+      val metricValueOption = for {
+        JObject(obj) <- ast
+        JField("model_summary", JObject(modelSummary)) <- obj
+        JField("columns", JArray(columns)) <- modelSummary
+        ("final_objective_value", index) <- columns.arr.map(getColumnName).zipWithIndex
+        JField("data", JArray(data)) <- modelSummary
+        JArray(List(JDouble(result))) <- data.arr(index)
+      } yield result
+      metricValueOption.head
+    case _ =>
+      model.getCurrentMetrics().find(_._1 == metric.name()).get._2
   }
 
   def getGridModelsParams(): DataFrame = {
@@ -240,7 +267,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM = Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -267,6 +294,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2OXGBoost => "xgboost"
         case H2ODRF => "drf"
         case H2OKMeans => "kmeans"
+        case H2OGLRM => "glrm"
       }
     }
   }
