@@ -138,6 +138,8 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     hiveToken = function() { ConfUtils.getOption(invoke(jconf, "hiveToken")) },
 
+    resetApiTimeout = function() { invoke(jconf, "restApiTimeout") },
+
 #
 # Setters
 #
@@ -283,5 +285,7 @@ SharedBackendConf <- setRefClass("SharedBackendConf", methods = list(
 
     setHiveJdbcUrlPattern = function(pattern) { invoke(jconf, "setHiveJdbcUrlPattern", pattern); .self },
 
-    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self }
+    setHiveToken = function(token) { invoke(jconf, "setHiveToken", token); .self },
+
+    setRestApiTimeout = function(timeout) { invoke(jconf, "setRestApiTimeout", timeout); .self }
 ))

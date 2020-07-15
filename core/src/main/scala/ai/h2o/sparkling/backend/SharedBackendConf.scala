@@ -157,6 +157,8 @@ trait SharedBackendConf {
 
   def hiveToken: Option[String] = sparkConf.getOption(PROP_HIVE_TOKEN._1)
 
+  def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
+
   /** Setters */
   /** Generic parameters */
   def setInternalClusterMode(): H2OConf = {
@@ -326,6 +328,8 @@ trait SharedBackendConf {
   def setHiveJdbcUrlPattern(pattern: String): H2OConf = set(PROP_HIVE_JDBC_URL_PATTERN._1, pattern)
 
   def setHiveToken(token: String): H2OConf = set(PROP_HIVE_TOKEN._1, token)
+
+  def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
 
   private[backend] def getFileProperties: Seq[(String, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
@@ -514,4 +518,6 @@ object SharedBackendConf {
   /** Authorization token to Hive */
   val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
 
+  /** Timeout for Rest API requests */
+  val PROP_REST_API_TIMEOUT: (String, Int) = ("spark.ext.h2o.rest.api.timeout", 5 * 60 * 1000)
 }

@@ -192,6 +192,9 @@ class SharedBackendConf(SharedBackendConfUtils):
     def hiveToken(self):
         return self._get_option(self._jconf.hiveToken())
 
+    def restApiTimeout(self):
+        return self._jconf.restApiTimeout()
+
     #
     # Setters
     #
@@ -470,4 +473,8 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def setHiveToken(self, token):
         self._jconf.setHiveToken(token)
+        return self
+
+    def setRestApiTimeout(self, timeout):
+        self._jconf.setRestApiTimeout(timeout)
         return self
