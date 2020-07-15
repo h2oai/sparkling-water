@@ -136,17 +136,6 @@ def nexus = new UsernamePasswordCredentialsImpl(
 )
 store.addCredentials(domain, nexus)
 
-<<<<<<< HEAD
-=======
-def dockerHub = new UsernamePasswordCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        'dockerhub',
-        'Docker Hub Credentials',
-        'SUBST_DOCKERHUB_USERNAME',
-        'SUBST_DOCKERHUB_PASSWORD'
-)
-store.addCredentials(domain, dockerHub)
-
 def databricks = new UsernamePasswordCredentialsImpl(
         CredentialsScope.GLOBAL,
         'SW_DATABRICKS',
@@ -156,7 +145,6 @@ def databricks = new UsernamePasswordCredentialsImpl(
 )
 store.addCredentials(domain, databricks)
 
->>>>>>> 3ffe742f1... [SW-2166] Automatic smoke tests on DBC (#2223)
 def pipy = new UsernamePasswordCredentialsImpl(
         CredentialsScope.GLOBAL,
         'pypi-credentials',
