@@ -255,12 +255,12 @@ node("docker") {
                     installDependencies(clusterId, scalaArtifact, pythonArtifact, rArtifact)
                     String workspaceDir = "/sw-tests-${clusterId}"
                     sh "databricks workspace mkdirs ${workspaceDir}"
-                    //test(workspaceDir, clusterId, "scala")
-                    //restartCluster(clusterId)
-                    //test(workspaceDir, clusterId, "python")
-                    //restartCluster(clusterId)
                     prepareRTestFile(clusterId, rArtifact)
                     test(workspaceDir, clusterId, "r")
+                    restartCluster(clusterId)
+                    test(workspaceDir, clusterId, "scala")
+                    restartCluster(clusterId)
+                    test(workspaceDir, clusterId, "python")
                     cleanEnvironment(clusterId)
                 }
             }
