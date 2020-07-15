@@ -136,6 +136,27 @@ def nexus = new UsernamePasswordCredentialsImpl(
 )
 store.addCredentials(domain, nexus)
 
+<<<<<<< HEAD
+=======
+def dockerHub = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'dockerhub',
+        'Docker Hub Credentials',
+        'SUBST_DOCKERHUB_USERNAME',
+        'SUBST_DOCKERHUB_PASSWORD'
+)
+store.addCredentials(domain, dockerHub)
+
+def databricks = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        'SW_DATABRICKS',
+        'Databricks credentials',
+        'SUBST_DATABRICKS_HOST',
+        'SUBST_DATABRICKS_TOKEN'
+)
+store.addCredentials(domain, databricks)
+
+>>>>>>> 3ffe742f1... [SW-2166] Automatic smoke tests on DBC (#2223)
 def pipy = new UsernamePasswordCredentialsImpl(
         CredentialsScope.GLOBAL,
         'pypi-credentials',
@@ -340,6 +361,21 @@ createJob(
         "rel-*",
         true)
 
+<<<<<<< HEAD
+=======
+createJob(
+        "TESTS_KUBERNETES",
+        "ci/Jenkinsfile-kubernetes",
+        "master rel-*",
+        true)
+
+createJob(
+        "TESTS_DATABRICKS",
+        "ci/Jenkinsfile-databricks",
+        "master rel-*",
+        true)
+
+>>>>>>> 3ffe742f1... [SW-2166] Automatic smoke tests on DBC (#2223)
 // Scan repositories
 for (f in Jenkins.instance.getAllItems(jenkins.branch.MultiBranchProject.class)) {
     f.computation.run()
