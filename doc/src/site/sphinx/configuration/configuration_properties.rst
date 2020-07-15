@@ -222,6 +222,9 @@ Configuration properties independent of selected backend
 | ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be         |
 |                                                    |                |                                                 | verified before using in H2O or not.   |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.session.timeout``                  | ``3*60*1000``  | ``setSessionTimeout(Boolean)``                  | Timeout in milliseconds for Rest API   |
+|                                                    |                |                                                 | requests.                              |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 
 --------------
 
