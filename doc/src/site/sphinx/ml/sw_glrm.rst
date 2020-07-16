@@ -36,6 +36,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
                 .option("inferSchema", "true")
 	            .csv(SparkFiles.get("iris_wheader.csv"))
                 .drop("class")
+            val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
         Train the model. You can configure all the available GLRM arguments using provided setters.
 
@@ -49,7 +50,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
                 .setGammaX(0.5)
                 .setGammaY(0.5)
                 .setTransform("standardize")
-            val model = estimator.fit(sparkDF)
+            val model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
@@ -61,9 +62,9 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
         .. code:: scala
 
-            model.transform(sparkDF).show(false)
+            model.transform(testingDF).show(false)
 
-        If you want to get the resulting X metric, set a custom name for a H2O Frame representing the matrix
+        If you want to get the resulting X matrix, set a custom name for a H2O Frame representing the matrix
         via ``setRepresentationName`` method and run the following:
 
         .. code:: scala
@@ -96,14 +97,15 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv")
             sparkDF = hc.asSparkFrame(frame).drop("class")
+            [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
         Train the model. You can configure all the available GLRM arguments using provided setters or constructor parameters.
 
         .. code:: python
 
             from pysparkling.ml import H2OGLRM
-            estimator = H2OGLRM(k=3, loss="quadratic", gammaX=0.5, gammaY=0.5, transform="standardize")
-            model = estimator.fit(sparkDF)
+            estimator = H2OGLRM(k=3, loss="quadratic", gammaX=0.5, gammaY=0.5, transform="standardize", representationName="myXFrame")
+            model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
@@ -115,13 +117,13 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
         .. code:: python
 
-            model.transform(sparkDF).show(truncate = False)
+            model.transform(testingDF).show(truncate = False)
 
-        If you want to get the resulting X metric, set a custom name for a H2O Frame representing the matrix
+        If you want to get the resulting X matrix, set a custom name for a H2O Frame representing the matrix
         via ``setRepresentationName`` method or the corresponding parameter and run the following:
 
         .. code:: python
 
             from h2o.frame import H2OFrame
-            xDataFrame = hc.asSparkFrame(H2OFrame("myXFrame"))
-            xDataFrame.show(false)
+            xDataFrame = hc.asSparkFrame(H2OFrame.get_frame("myXFrame", full_cols=-1, light=True))
+            xDataFrame.show(truncate=False)
