@@ -33,7 +33,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 	        import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv")
 	        val sparkDF = spark.read.option("header", "true")
-	            .option("inferSchema", "true")
+                .option("inferSchema", "true")
 	            .csv(SparkFiles.get("iris_wheader.csv"))
                 .drop("class")
 
@@ -43,11 +43,11 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
             import ai.h2o.sparkling.ml.algos.H2OGLRM
             val estimator = new H2OGLRM()
-              .setK(3) // Number of output dimensions
-              .setLoss("quadratic")
-              .setGammaX(0.5)
-              .setGammaY(0.5)
-              .setTransform("standardize")
+                .setK(3) // Number of output dimensions
+                .setLoss("quadratic")
+                .setGammaX(0.5)
+                .setGammaY(0.5)
+                .setTransform("standardize")
             val model = estimator.fit(sparkDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
