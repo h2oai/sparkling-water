@@ -21,6 +21,7 @@ from pyspark.mllib.linalg import *
 from pyspark.sql.functions import bround
 from pyspark.sql.types import *
 from pysparkling.ml import H2OGLRM
+from h2o.frame import H2OFrame
 from tests import unit_test_utils
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
@@ -111,6 +112,7 @@ def testUserYHasEffectOnTrainedModel(spark, arrestsDataset):
 
     unit_test_utils.assert_data_frames_have_different_values(reference, result)
 
+
 def testLossByColHasEffectOnTrainedModel(arrestsDataset):
     referenceAlgo = getPreconfiguredAlgorithm()
     referenceModel = referenceAlgo.fit(arrestsDataset)
@@ -123,3 +125,13 @@ def testLossByColHasEffectOnTrainedModel(arrestsDataset):
     result = model.transform(arrestsDataset)
 
     unit_test_utils.assert_data_frames_have_different_values(reference, result)
+
+
+def testRepresenrtationFrameIsAccessible(hc, arrestsDataset):
+    representationName="myFrame"
+    algo = getPreconfiguredAlgorithm().setRepresentationName(representationName)
+    algo.fit(arrestsDataset)
+    frame = H2OFrame.get_frame(representationName, full_cols=-1, light=True)
+    df = hc.asSparkFrame(frame)
+    assert (df.count() == arrestsDataset.count())
+    assert (len(df.columns) == algo.getK())
