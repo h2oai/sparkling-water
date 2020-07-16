@@ -16,10 +16,13 @@
  */
 package ai.h2o.sparkling.ml.utils
 
-import ai.h2o.sparkling.H2OContext
+import java.io.File
+
 import ai.h2o.sparkling.backend.H2OJob
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.{H2OConf, H2OContext}
 import hex.schemas.ModelBuilderSchema
+import org.apache.spark.expose
 
 trait EstimatorCommonUtils extends RestCommunication {
   protected def trainAndGetDestinationKey(
@@ -39,4 +42,13 @@ trait EstimatorCommonUtils extends RestCommunication {
     H2OJob(jobId).waitForFinish()
     modelBuilder.job.dest.name
   }
+
+  private[sparkling] def downloadBinaryModel(modelId: String, conf: H2OConf): File = {
+    val endpoint = RestApiUtils.getClusterEndpoint(conf)
+    val sparkTmpDir = expose.Utils.createTempDir(expose.Utils.getLocalDir(conf.sparkConf))
+    val target = new File(sparkTmpDir, s"$modelId.bin")
+    downloadBinaryURLContent(endpoint, s"/3/Models.fetch.bin/$modelId", conf, target)
+    target
+  }
+
 }

@@ -58,6 +58,12 @@ object SparkSessionUtils extends Logging {
     fs.open(qualifiedPath)
   }
 
+  def hdfsQualifiedPath(path: String): String = {
+    val hadoopPath = new Path(path)
+    val fs = hadoopPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
+    hadoopPath.makeQualified(fs.getUri, fs.getWorkingDirectory).toString
+  }
+
   def inputStreamToTempFile(inputStream: InputStream, filePrefix: String, fileSuffix: String): File = {
     val sparkSession = SparkSessionUtils.active
     val sparkTmpDir = expose.Utils.createTempDir(expose.Utils.getLocalDir(sparkSession.sparkContext.getConf))

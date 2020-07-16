@@ -15,12 +15,24 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OTreeBasedSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OUnsupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel import H2OMOJOPipelineModel
-from ai.h2o.sparkling.ml.models.H2OBinaryModel import H2OBinaryModel
+from ai.h2o.sparkling.Initializer import Initializer
+from pyspark.ml.param import *
+from pyspark.ml.util import _jvm
+
+
+class H2OBinaryModel:
+
+    def __init__(self, javaModel):
+        self._java_obj = javaModel
+        self.modelId = javaModel.modelId()
+
+    @staticmethod
+    def read(path):
+        # We need to make sure that Sparkling Water classes are available on the Spark
+        # driver and executor paths
+        Initializer.load_sparkling_jar()
+        javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OBinaryModel.read(path)
+        return H2OBinaryModel(javaModel)
+
+    def write(self, path):
+        self._java_obj.write(path)

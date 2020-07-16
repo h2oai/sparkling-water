@@ -22,7 +22,7 @@ import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
 import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, H2OParamsReadable}
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -57,6 +57,8 @@ class H2OGridSearch(override val uid: String)
   def this() = this(Identifiable.randomUID(classOf[H2OGridSearch].getSimpleName))
 
   private var gridModels: Array[H2OMOJOModel] = _
+
+  private var gridBinaryModels: Array[H2OBinaryModel] = _
 
   private def getSearchCriteria(): String = {
     val commonCriteria = getH2OGridSearchCommonCriteriaParams()
@@ -108,7 +110,7 @@ class H2OGridSearch(override val uid: String)
       .mkString("{", ",", "}")
   }
 
-  private def getGridModels(gridId: String, algoName: String): Array[H2OMOJOModel] = {
+  private def getGridModels(gridId: String, algoName: String): Array[(String, H2OMOJOModel)] = {
     val conf = H2OContext.ensure().getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val skippedFields = Seq(
@@ -118,7 +120,8 @@ class H2OGridSearch(override val uid: String)
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
     grid.model_ids.map { modelId =>
-      H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings)
+      val mojoModel = H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings)
+      (modelId.name, mojoModel)
     }
   }
 
@@ -155,13 +158,28 @@ class H2OGridSearch(override val uid: String)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
     }
-    gridModels = sortGridModels(unsortedGridModels)
+    val sortedGridModels = sortGridModels(unsortedGridModels)
+    gridModels = sortedGridModels.map(_._2)
+    gridBinaryModels = sortedGridModels.map {
+      case (modelId, _) =>
+        val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
+        H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId))
+    }
     gridModels.head
   }
 
-  private def sortGridModels(gridModels: Array[H2OMOJOModel]): Array[H2OMOJOModel] = {
+  def getBinaryModel(): H2OBinaryModel = {
+    if (gridBinaryModels.isEmpty) {
+      throw new IllegalArgumentException(
+        "Algorithm needs to be fit first in order to access" +
+          " binary model features")
+    }
+    gridBinaryModels.head
+  }
+
+  private def sortGridModels(gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
-      val category = H2OModelCategory.fromString(gridModels(0).getModelCategory())
+      val category = H2OModelCategory.fromString(gridModels(0)._2.getModelCategory())
       category match {
         case H2OModelCategory.Regression => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
@@ -173,7 +191,9 @@ class H2OGridSearch(override val uid: String)
       H2OMetric.valueOf(getSelectBestModelBy())
     }
 
-    val modelMetricPair = gridModels.map(model => (model, getMetricValue(model, metric)))
+    val modelMetricPair = gridModels.map { model =>
+      (model, getMetricValue(model._2, metric))
+    }
 
     val ordering = if (metric.higherTheBetter) Ordering.Double.reverse else Ordering.Double
     modelMetricPair.sortBy(_._2)(ordering).map(_._1)
