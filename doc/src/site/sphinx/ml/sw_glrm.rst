@@ -32,7 +32,10 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
 	        import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv")
-	        val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("iris_wheader.csv"))
+	        val sparkDF = spark.read.option("header", "true")
+	            .option("inferSchema", "true")
+	            .csv(SparkFiles.get("iris_wheader.csv"))
+                .drop("class")
 
         Train the model. You can configure all the available GLRM arguments using provided setters.
 
@@ -82,7 +85,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/iris/iris_wheader.csv")
-            sparkDF = hc.asSparkFrame(frame)
+            sparkDF = hc.asSparkFrame(frame).drop("class")
 
         Train the model. You can configure all the available GLRM arguments using provided setters or constructor parameters.
 
