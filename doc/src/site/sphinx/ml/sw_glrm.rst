@@ -45,6 +45,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
             val estimator = new H2OGLRM()
                 .setK(3) // Number of output dimensions
                 .setLoss("quadratic")
+                .setRepresentationName("myXFrame")
                 .setGammaX(0.5)
                 .setGammaY(0.5)
                 .setTransform("standardize")
@@ -61,6 +62,15 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
         .. code:: scala
 
             model.transform(sparkDF).show(false)
+
+        If you want to get the resulting X metric, set a custom name for a H2O Frame representing the matrix
+        via ``setRepresentationName`` method and run the following:
+
+        .. code:: scala
+
+            import ai.h2o.sparkling.H2OFrame
+            val xDataFrame = hc.asSparkFrame(H2OFrame("myXFrame"))
+            xDataFrame.show(false)
 
 
     .. tab-container:: Python
@@ -106,3 +116,12 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
         .. code:: python
 
             model.transform(sparkDF).show(truncate = False)
+
+        If you want to get the resulting X metric, set a custom name for a H2O Frame representing the matrix
+        via ``setRepresentationName`` method or the corresponding parameter and run the following:
+
+        .. code:: python
+
+            from h2o.frame import H2OFrame
+            xDataFrame = hc.asSparkFrame(H2OFrame("myXFrame"))
+            xDataFrame.show(false)
