@@ -80,7 +80,7 @@ The following sections describe how to train KMeans model in Sparkling Water in 
             sparkDF = hc.asSparkFrame(frame)
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
-        Train the model. You can configure all the available KMeans arguments using provided setters or constructor parameters, such as the label column.
+        Train the model. You can configure all the available KMeans arguments using provided setters or constructor parameters.
 
         .. code:: python
 
