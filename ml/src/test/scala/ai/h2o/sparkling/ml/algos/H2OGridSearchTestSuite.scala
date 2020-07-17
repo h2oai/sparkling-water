@@ -176,7 +176,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     model.transform(dataset).collect()
   }
 
-  test("H2O GridSearch throw exception on invalid hyper parameter") {
+  test("H2O GridSearch throws exception on invalid hyper parameter") {
     val grid = new H2OGridSearch()
       .setAlgo(
         new H2OGBM()
