@@ -176,6 +176,19 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     model.transform(dataset).collect()
   }
 
+  test("H2O GridSearch throw exception on invalid hyper parameter") {
+    val grid = new H2OGridSearch()
+      .setAlgo(
+        new H2OGBM()
+          .setFeaturesCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
+          .setLabelCol("CAPSULE"))
+      .setHyperParameters(Map("iDoNotExist" -> Array(10, 50).map(_.asInstanceOf[AnyRef])))
+    val thrown = intercept[IllegalArgumentException] {
+      grid.fit(dataset)
+    }
+    assert(thrown.getMessage == "Hyper parameter 'iDoNotExist' is not a valid parameter for algorithm 'H2OGBM'")
+  }
+
   private def testGridSearch(
       algo: H2OAlgorithm[_ <: Model.Parameters],
       hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {

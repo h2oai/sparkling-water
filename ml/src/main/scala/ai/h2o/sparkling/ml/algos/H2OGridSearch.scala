@@ -91,10 +91,16 @@ class H2OGridSearch(override val uid: String)
       checkedHyperParams.put(hyperParamName, values)
     }
 
+    val algoParamMap = getAlgo().getSWtoH2OParamNameMap()
     checkedHyperParams.asScala
       .map {
         case (key, value) =>
-          s"'${getAlgo().getSWtoH2OParamNameMap()(key)}': ${stringify(value)}"
+          if (!algoParamMap.contains(key)) {
+            throw new IllegalArgumentException(
+              s"Hyper parameter '$key' is not a valid parameter for algorithm '${getAlgo().getClass.getSimpleName}'")
+          } else {
+            s"'${algoParamMap(key)}': ${stringify(value)}"
+          }
       }
       .mkString("{", ",", "}")
   }
