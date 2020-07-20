@@ -41,6 +41,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 5. Begin using Sparkling Water by following `this demo <https://github.com/h2oai/sparkling-water/tree/master/examples#step-by-step-weather-data-example>`__, which imports airlines and weather data and runs predictions on delays.
 
+|NOTE_PASTE_MODE|
 
 Run on Hadoop
 -------------
@@ -84,9 +85,10 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
+|NOTE_PASTE_MODE|
 
-Run on a Standalone Cluster
----------------------------
+Run on a Standalone Spark Cluster
+---------------------------------
 
 This section describes how to launch H2O on a standalone Spark cluster.
 
@@ -122,9 +124,10 @@ This section describes how to launch H2O on a standalone Spark cluster.
     val h2oContext = H2OContext.getOrCreate()
     import h2oContext._ 
 
+|NOTE_PASTE_MODE|
 
-Kluster Mode
-------------
+External Backend
+----------------
 
 Sparkling Water Kluster mode supports a connection to external H2O clusters (standalone/hadoop).
 The H2O cluster needs to be started with a corresponding H2O, which can be downloaded as below.
@@ -171,6 +174,7 @@ The H2O cluster needs to be started with a corresponding H2O, which can be downl
 
 For more information, please follow the :ref:`backend`.
 
+|NOTE_PASTE_MODE|
 
 Use from Maven
 --------------
@@ -191,6 +195,7 @@ See the `h2o-droplets GitHub repository <https://github.com/h2oai/h2o-droplets>`
 
 See Maven Central for `artifact details <http://search.maven.org/#artifactdetails|ai.h2o|sparkling-water-package_SUBST_SCALA_BASE_VERSION|SUBST_SW_VERSION|jar>`__.
 
+|NOTE_PASTE_MODE|
 
 Sparkling Water as a Spark Package
 ----------------------------------
@@ -211,3 +216,7 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
    import ai.h2o.sparkling._
    val h2oContext = H2OContext.getOrCreate()
    import h2oContext._ 
+
+|NOTE_PASTE_MODE|
+
+.. |NOTE_PASTE_MODE| replace:: Please note that when copying core into the Scala Sparkling shell, make sure to use the ``:paste`` mode feature of the Scala REPL. Otherwise you might hit a compiler error.
