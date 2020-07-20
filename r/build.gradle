@@ -67,7 +67,7 @@ task test(type: Exec, dependsOn: distR) {
   environment['spark.ext.h2o.backend.cluster.mode'] = detectBackendClusterMode()
 
   workingDir "${project.buildDir}/src"
-  def testCmd = "library(sparklyr);library(devtools);devtools::test()"
+  def testCmd = "library(sparklyr);library(devtools);devtools::test(stop_on_failure = TRUE)"
   commandLine getOsSpecificCommandLine(["R", "-e", testCmd])
 }
 
