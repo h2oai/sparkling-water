@@ -32,12 +32,16 @@ trait H2OMOJOPredictionAnomaly {
     val function = (r: Row) => {
       val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
       val pred = model.predictAnomalyDetection(RowConverter.toH2ORowData(r))
+      pred.stageProbabilities
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.score
       if (getWithDetailedPredictionCol()) {
         resultBuilder += pred.normalizedScore
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
+        }
+        if (getWithStageProbabilities()) {
+          resultBuilder += pred.stageProbabilities
         }
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
@@ -57,13 +61,21 @@ trait H2OMOJOPredictionAnomaly {
     val fields = if (getWithDetailedPredictionCol()) {
       val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
       val baseFields = scoreField :: normalizedScoreField :: Nil
-      if (getWithLeafNodeAssignments()) {
+      val assignmentFields = if (getWithLeafNodeAssignments()) {
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
         baseFields :+ assignmentsField
       } else {
         baseFields
       }
+      val stageProbabilityFields = if (getWithStageProbabilities()) {
+        val stageProbabilitiesField =
+          StructField("stageProbabilities", ArrayType(StringType, containsNull = false), nullable = false)
+        assignmentFields :+ stageProbabilitiesField
+      } else {
+        assignmentFields
+      }
+      stageProbabilityFields
     } else {
       scoreField :: Nil
     }

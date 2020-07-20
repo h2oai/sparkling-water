@@ -61,11 +61,13 @@ trait H2OBaseMOJOParams extends Params with Logging {
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(
     this,
     "namedMojoOutputColumns",
-    "Mojo Output is not stored" +
-      " in the array but in the properly named columns")
+    "Mojo Output is not stored in the array but in the properly named columns")
 
   protected final val withLeafNodeAssignments =
     new BooleanParam(this, "withLeafNodeAssignments", "Enables or disables computation of leaf node assignments.")
+
+  protected final val withStageProbabilities =
+    new BooleanParam(this, "withStageProbabilities", "Enables or disables computation of stage probabilities.")
 
   //
   //
@@ -80,7 +82,8 @@ trait H2OBaseMOJOParams extends Params with Logging {
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
-    withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments)
+    withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
+    withStageProbabilities -> H2OMOJOSettings.default.withStageProbabilities)
 
   //
   // Getters
@@ -102,4 +105,6 @@ trait H2OBaseMOJOParams extends Params with Logging {
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
   def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)
+
+  def getWithStageProbabilities(): Boolean = $(withStageProbabilities)
 }

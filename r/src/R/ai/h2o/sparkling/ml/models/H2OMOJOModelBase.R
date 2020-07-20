@@ -47,6 +47,9 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   getWithLeafNodeAssignments = function() {
     invoke(.self$jmojo, "getWithLeafNodeAssignments")
   },
+  getWithStageProbabilities = function() {
+    invoke(.self$jmojo, "getWithStageProbabilities")
+  },
   transform = function(sparkFrame) {
     sparkFrame <- spark_dataframe(sparkFrame)
     outputFrame <- invoke(.self$jmojo, "transform", sparkFrame)
