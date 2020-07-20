@@ -44,7 +44,9 @@ class AutoEncoderPredictionTestSuite
   override protected def expectedDetailedPredictionCol: StructField = {
     val originalField = StructField("original", ArrayType(DoubleType, containsNull = false), nullable = true)
     val reconstructedField = StructField("reconstructed", ArrayType(DoubleType, containsNull = false), nullable = true)
-    StructField("detailed_prediction", StructType(originalField :: reconstructedField :: Nil), nullable = true)
+    val reconstructedErrorField = StructField("mse", DoubleType, nullable = false)
+    val detailedPredictionType = StructType(originalField :: reconstructedField :: reconstructedErrorField :: Nil)
+    StructField("detailed_prediction", detailedPredictionType, nullable = true)
   }
 
   override protected def expectedPredictionCol: StructField = {
