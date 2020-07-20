@@ -15,7 +15,20 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
-from ai.h2o.sparkling.ml.algos import H2ODRF, H2OGLRM
+from pyspark.ml.param import *
 
-__all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans", "H2ODRF", "H2OGLRM"]
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
+class HasLossByColNames(Params):
+    lossByColNames = Param(
+        Params._dummy(),
+        "lossByColNames",
+        "Column names for which loss function will be overridden by the 'lossByCol' parameter",
+        H2OTypeConverters.toNullableListString())
+
+    def getLossByColNames(self):
+        return self.getOrDefault(self.lossByColNames)
+
+    def setLossByColNames(self, value):
+        return self._set(lossByColNames=value)

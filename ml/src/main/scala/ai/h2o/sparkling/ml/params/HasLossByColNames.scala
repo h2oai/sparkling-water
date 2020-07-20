@@ -17,27 +17,35 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.{H2OContext, H2OFrame}
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.H2OFrame
 
-trait HasBetaConstraints extends H2OAlgoParamsBase {
-  private val betaConstraints = new NullableDataFrameParam(
+trait HasLossByColNames extends H2OAlgoParamsBase {
+  private val lossByColNames = new NullableStringArrayParam(
     this,
-    "betaConstraints",
-    "Data frame of beta constraints enabling to set special conditions over the model coefficients.")
+    "lossByColNames",
+    "Columns names for which loss function will be overridden by the 'lossByCol' parameter")
 
-  setDefault(betaConstraints -> null)
+  setDefault(lossByColNames -> null)
 
-  def getBetaConstraints(): DataFrame = $(betaConstraints)
+  def getLossByColNames(): Array[String] = $(lossByColNames)
 
-  def setBetaConstraints(value: DataFrame): this.type = set(betaConstraints, value)
+  def setLossByColNames(value: Array[String]): this.type = set(lossByColNames, value)
 
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
-      Map("beta_constraints" -> convertDataFrameToH2OFrameKey(getBetaConstraints()))
+    val names = getLossByColNames()
+    val indices = if (names == null) {
+      null
+    } else {
+      val frameColumns = trainingFrame.columnNames
+      val indices = names.map(frameColumns.indexOf)
+      indices
+    }
+
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("loss_by_col_idx" -> indices)
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("betaConstraints" -> "beta_constraints")
+    super.getSWtoH2OParamNameMap() ++ Map("lossByColNames" -> "loss_by_col_idx")
   }
+
 }

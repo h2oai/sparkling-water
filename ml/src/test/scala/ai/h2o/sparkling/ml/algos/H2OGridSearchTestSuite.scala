@@ -114,6 +114,14 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(kmeans, hyperParams)
   }
 
+  test("H2O Grid Search GLRM Pipeline") {
+    val glrm = new H2OGLRM()
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += "init" -> Array("Random", "PlusPlus").map(_.asInstanceOf[AnyRef])
+    hyperParams += "svdMethod" -> Array("GramSVD", "Power", "Randomized").map(_.asInstanceOf[AnyRef])
+    testGridSearch(glrm, hyperParams)
+  }
+
   private val parentParams = new Params {
     override def copy(extra: ParamMap): Params = throw new UnsupportedOperationException
 

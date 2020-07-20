@@ -15,7 +15,20 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
-from ai.h2o.sparkling.ml.algos import H2ODRF, H2OGLRM
+from pyspark.ml.param import *
 
-__all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans", "H2ODRF", "H2OGLRM"]
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
+class HasUserY(Params):
+    userY = Param(
+        Params._dummy(),
+        "userY",
+        "User-specified initial matrix Y.",
+        H2OTypeConverters.toNullableDataFrame())
+
+    def getUserY(self):
+        return self.getOrDefault(self.userY)
+
+    def setUserY(self, value):
+        return self._set(userY=value)

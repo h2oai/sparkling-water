@@ -22,7 +22,8 @@ object IgnoredParameters {
     "r2_stopping", // All
     "max_confusion_matrix_size", // Deep Learning
     "col_major", // Deep Learning
-    "max_hit_ratio_k") // GBM, DRF, Deep Learning
+    "max_hit_ratio_k", // GBM, DRF, Deep Learning
+    "loading_name") // GLRM
 
   val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 

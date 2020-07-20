@@ -21,7 +21,7 @@ import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.linalg.{DenseMatrix, DenseVector}
 import org.apache.spark.ml.param._
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -139,6 +139,19 @@ trait H2OAlgoParamsBase extends Params {
         registerH2OFrameForDeletion(frame)
         frame.frameId
       }
+    }
+  }
+
+  protected def convertDataFrameToH2OFrameKey(dataFrame: DataFrame): String = {
+    if (dataFrame == null) {
+      null
+    } else {
+      val hc = H2OContext.ensure(
+        s"H2OContext needs to be created in order to train the ${this.getClass.getSimpleName} model. " +
+          "Please create one as H2OContext.getOrCreate().")
+      val frame = hc.asH2OFrame(dataFrame)
+      registerH2OFrameForDeletion(frame)
+      frame.frameId
     }
   }
 

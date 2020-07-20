@@ -2,8 +2,9 @@ Train Sparkling Water Algorithms with Grid Search
 -------------------------------------------------
 
 Grid Search serves for finding optimal values for hyper parameters of a given H2O/SW algorithm. Grid Search in Sparkling Water
-is able to traverse hyper space for H2OGBM, H2OXGBoost, H2ODRF, H2OGLM, H2ODeepLearning. For more details about hyper parameters
-for a specific algorithm (see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html#supported-grid-search-hyperparameters>`__).
+is able to traverse hyper space for H2OGBM, H2OXGBoost, H2ODRF, H2OGLM, H2ODeepLearning, H2OKMeans, H2OGLRM.
+For more details about hyper parameters for a specific algorithm
+(see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html#supported-grid-search-hyperparameters>`__).
 
 
 Sparkling Water provides API in Scala and Python for Grid Search. The following sections describe how to Apply Grid Search on
