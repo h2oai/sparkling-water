@@ -51,7 +51,7 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
 
-  def waitBeforeCloudingMillis:  Int = sparkConf.getInt(PROP_WAIT_BEFORE_CLOUDING._1, PROP_WAIT_BEFORE_CLOUDING._2)
+  def waitBeforeCloudingMillis: Int = sparkConf.getInt(PROP_WAIT_BEFORE_CLOUDING._1, PROP_WAIT_BEFORE_CLOUDING._2)
 
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
