@@ -40,6 +40,9 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
   private val numExecutors = conf.numH2OWorkers
 
   def build(): Array[RpcEndpointRef] = {
+    if (conf.waitBeforeCloudingMillis > 0) {
+      Thread.sleep(conf.waitBeforeCloudingMillis)
+    }
     logDebug(s"Building SpreadRDD: numExecutors=$numExecutors, numExecutorHint=$numExecutorHint")
     build(conf.numRddRetries, conf.drddMulFactor, 0)
   }

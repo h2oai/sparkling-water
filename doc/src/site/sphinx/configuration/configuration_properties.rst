@@ -264,6 +264,10 @@ Internal backend configuration properties
 |                                                    |                |                                                 | settings and other HDFS-related        |
 |                                                    |                |                                                 | configurations.                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.wait.before.clouding``             | ``0``          | ``setWaitBeforeCloudingMillis(Int)``            | ow long we should wait before we start |
+|                                                    |                |                                                 | the clouding. The unit is              |
+|                                                    |                |                                                 | milliseconds.                          |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 
 --------------
 

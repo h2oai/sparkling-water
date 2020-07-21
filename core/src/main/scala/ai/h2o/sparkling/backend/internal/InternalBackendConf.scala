@@ -51,6 +51,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
 
+  def waitBeforeCloudingMillis:  Int = sparkConf.getInt(PROP_WAIT_BEFORE_CLOUDING._1, PROP_WAIT_BEFORE_CLOUDING._2)
+
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
 
@@ -77,6 +79,8 @@ trait InternalBackendConf extends SharedBackendConf {
     }
     set(PROP_HDFS_CONF._1, hdfsConfigTempFile.getAbsolutePath)
   }
+
+  def setWaitBeforeCloudingMillis(timeout: Int): H2OConf = set(PROP_WAIT_BEFORE_CLOUDING._1, timeout.toString)
 
   def internalConfString: String =
     s"""Sparkling Water configuration:
@@ -115,4 +119,7 @@ object InternalBackendConf {
 
   /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
   val PROP_HDFS_CONF: (String, None.type) = ("spark.ext.h2o.hdfs_conf", None)
+
+  /** How long we should wait before we start the clouding, unit is milliseconds */
+  val PROP_WAIT_BEFORE_CLOUDING: (String, Int) = ("spark.ext.h2o.wait.before.clouding", 0)
 }
