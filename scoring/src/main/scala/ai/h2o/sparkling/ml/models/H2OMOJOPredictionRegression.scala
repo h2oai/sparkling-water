@@ -36,7 +36,6 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
-      pred.stageProbabilities
       if (getWithDetailedPredictionCol()) {
         if (getWithContributions()) {
           resultBuilder += Utils.arrayToRow(pred.contributions)

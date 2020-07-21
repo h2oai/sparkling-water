@@ -39,8 +39,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        namedMojoOutputColumns = TRUE,
                                                        withContributions = FALSE,
                                                        withLeafNodeAssignments = FALSE,
-                                                       withStageProbabilities = FALSE
-) {
+                                                       withStageProbabilities = FALSE) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
                                    .self$withDetailedPredictionCol <- withDetailedPredictionCol
