@@ -44,6 +44,9 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   getNamedMojoOutputColumns = function() {
     invoke(.self$jmojo, "getNamedMojoOutputColumns")
   },
+  getWithLeafNodeAssignments = function() {
+    invoke(.self$jmojo, "getWithLeafNodeAssignments")
+  },
   transform = function(sparkFrame) {
     sparkFrame <- spark_dataframe(sparkFrame)
     outputFrame <- invoke(.self$jmojo, "transform", sparkFrame)
