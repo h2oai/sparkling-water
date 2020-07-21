@@ -88,7 +88,7 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     val thrown = intercept[IllegalArgumentException] {
       gbm.getBinaryModel()
     }
-    assert(thrown.getMessage == "Algorithm needs to be fit first in order to access binary model features")
+    assert(thrown.getMessage == "Algorithm needs to be fit first in order to access binary model features.")
   }
 
   test("Binary model is available in H2O after training Grid in SW") {
