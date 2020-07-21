@@ -148,7 +148,7 @@ def getNightlyStageDefinition(sparkMajorVersion, config) {
                             sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
                             echo "doRelease=true" >> gradle.properties
                             """
-                        sh "${getGradleCommand(config)} dist -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
+                        sh "${getGradleCommand(config)} dist -PmakeBooklet=true -Psigning.keyId=${SIGN_KEY} -Psigning.secretKeyRingFile=${RING_FILE_PATH} -Psigning.password="
                         publishNightly()(config)
                         publishNightlyDockerImages()(config)
                     }
