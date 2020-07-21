@@ -1,0 +1,37 @@
+description = "Sparkling Water Booklet"
+
+task cleanBooklet(type: Delete) {
+  delete getBuildDir()
+}
+
+def compileBooklet() {
+  exec {
+    workingDir buildDir
+    commandLine = ["pdflatex", "-halt-on-error", "SparklingWaterBooklet"]
+  }
+}
+
+def compileBookletBibliography() {
+  exec {
+    workingDir buildDir
+    commandLine = ["bibtex", "SparklingWaterBooklet"]
+  }
+}
+
+task buildBooklet {
+  doLast {
+    project.delete(buildDir)
+    copy {
+      from "src"
+      into buildDir
+    }
+    // Initial compile
+    compileBooklet()
+    // Generate Bibliography
+    compileBookletBibliography()
+    // Generate table of content and include bibliography
+    compileBooklet()
+    // Final compile
+    compileBooklet()
+  }
+}
