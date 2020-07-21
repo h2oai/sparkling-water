@@ -219,4 +219,4 @@ This section describes how to start Spark with Sparkling Water enabled via Spark
 
 |NOTE_PASTE_MODE|
 
-.. |NOTE_PASTE_MODE| replace:: Please note that when copying core into the Scala Sparkling shell, make sure to use the ``:paste`` mode feature of the Scala REPL. Otherwise you might hit a compiler error.
+.. |NOTE_PASTE_MODE| replace:: Please note that when copying code into the Scala Sparkling shell, make sure to use the ``:paste`` mode feature of the Scala REPL. Otherwise, you might hit a compiler error.
