@@ -47,9 +47,11 @@ class AnomalyPredictionTestSuite
     val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+    val stageProbabilitiesField =
+      StructField("stageProbabilities", ArrayType(DoubleType, containsNull = false), nullable = false)
     StructField(
       "detailed_prediction",
-      StructType(scoreField :: normalizedScoreField :: leafNodeAssignmentField :: Nil),
+      StructType(scoreField :: normalizedScoreField :: leafNodeAssignmentField :: stageProbabilitiesField :: Nil),
       nullable = true)
   }
 
@@ -58,4 +60,6 @@ class AnomalyPredictionTestSuite
   }
 
   override protected def getWithLeafNodeAssignments: Boolean = true
+
+  override protected def getWithStageProbabilities: Boolean = true
 }

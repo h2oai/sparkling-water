@@ -70,7 +70,7 @@ trait H2OMOJOPredictionAnomaly {
       }
       val stageProbabilityFields = if (getWithStageProbabilities()) {
         val stageProbabilitiesField =
-          StructField("stageProbabilities", ArrayType(StringType, containsNull = false), nullable = false)
+          StructField("stageProbabilities", ArrayType(DoubleType, containsNull = false), nullable = false)
         assignmentFields :+ stageProbabilitiesField
       } else {
         assignmentFields

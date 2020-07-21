@@ -100,7 +100,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
 
       val stageProbabilityFields = if (getWithStageProbabilities()) {
         val stageProbabilitiesField =
-          StructField("stageProbabilities", getStructuredStageProbabilitiesSchema(model), nullable = false)
+          StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
         assignmentFields :+ stageProbabilitiesField
       } else {
         assignmentFields

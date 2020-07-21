@@ -55,13 +55,14 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(!predictions.columns.contains("detailed_prediction"))
   }
 
-  test("detailedPredictionCol content with contributions and assignments") {
+  test("detailedPredictionCol content with contributions, assignments and stage probabilities") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
+      .setWithStageProbabilities(true)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -70,9 +71,8 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
 
     val predictions = model.transform(dataset).limit(2).cache()
 
-    val expectedCols = Seq("label", "probabilities", "contributions", "leafNodeAssignments")
+    val expectedCols = Seq("label", "probabilities", "contributions", "leafNodeAssignments", "stageProbabilities")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
-
     val probabilities = predictions.select("detailed_prediction.probabilities.*")
     val setosaProbabilities = probabilities.select("Iris-setosa").collect().map(_.getDouble(0))
     assert(setosaProbabilities(0) != setosaProbabilities(1))
@@ -86,6 +86,12 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
     assert(leafNodeAssignments != null)
     assert(leafNodeAssignments.length == algo.getNtrees())
+
+    val stageProbabilities = predictions.select("detailed_prediction.stageProbabilities").head().getStruct(0)
+    assert(stageProbabilities != null)
+    assert(stageProbabilities.size == 2)
+    assert(stageProbabilities.getList(0).size() == algo.getNtrees())
+    assert(stageProbabilities.getList(1).size() == algo.getNtrees())
   }
 
   test("detailedPredictionCol content without contributions") {
@@ -111,7 +117,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(versicolorProbabilities(0) != versicolorProbabilities(1))
   }
 
-  test("transformSchema with detailed prediction col, contributions and assignments") {
+  test("transformSchema with detailed prediction col, contributions, assignments and stage probabilities") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
@@ -134,6 +140,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val contributionsField = StructField("contributions", contributionsType, nullable = false)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+    val stageProbabilitiesType = StructType(Seq(
+      StructField("Iris-setosa", ArrayType(StringType, containsNull = false), nullable = false),
+      StructField("Iris-versicolor", ArrayType(StringType, containsNull = false), nullable = false)))
+    val stageProbabilitiesField = StructField("stageProbabilities", stageProbabilitiesType, nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
       StructType(labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: Nil),

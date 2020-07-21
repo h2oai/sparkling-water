@@ -34,6 +34,8 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
 
   protected def getWithLeafNodeAssignments: Boolean = false
 
+  protected def getWithStageProbabilities: Boolean = false
+
   private def loadMojo(settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojo =
       H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream(mojoName), mojoName, settings)
@@ -41,14 +43,15 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
   }
 
   test("transformSchema with detailed prediction col") {
-    val model =
-      loadMojo(H2OMOJOSettings(withDetailedPredictionCol = true, withLeafNodeAssignments = getWithLeafNodeAssignments))
+    val model = loadMojo(H2OMOJOSettings(
+      withDetailedPredictionCol = true,
+      withLeafNodeAssignments = getWithLeafNodeAssignments,
+      withStageProbabilities = getWithStageProbabilities))
 
     val datasetFields = dataset.schema.fields
     val expectedSchema = StructType(datasetFields ++ (expectedDetailedPredictionCol :: expectedPredictionCol :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
-
     schema shouldEqual expectedSchema
     schema shouldEqual expectedSchemaByTransform
   }

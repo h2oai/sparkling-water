@@ -94,3 +94,6 @@ class H2OCommonParams(H2OBaseMOJOParams):
 
     def setWithLeafNodeAssignments(self, value):
         return self._set(withLeafNodeAssignments=value)
+
+    def setWithStageProbabilities(self, value):
+        return self._set(withStageProbabilities=value)

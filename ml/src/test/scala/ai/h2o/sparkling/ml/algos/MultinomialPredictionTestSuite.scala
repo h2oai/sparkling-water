@@ -56,6 +56,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithLeafNodeAssignments(true)
+      .setWithStageProbabilities(true)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -64,7 +65,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("label", "probabilities", "leafNodeAssignments")
+    val expectedCols = Seq("label", "probabilities", "leafNodeAssignments", "stageProbabilities")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val probabilities = predictions.select("detailed_prediction.probabilities.*").limit(2).cache()
     val virginicaProbabilities = probabilities.select("Iris-virginica").collect().map(_.getDouble(0))
@@ -76,6 +77,12 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
     assert(leafNodeAssignments != null)
     assert(leafNodeAssignments.length == algo.getNtrees() * 3) // 3 is number of classes
+    val stageProbabilities = predictions.select("detailed_prediction.stageProbabilities").head().getStruct(0)
+    assert(stageProbabilities != null)
+    assert(stageProbabilities.size == 3)
+    assert(stageProbabilities.getList(0).size() == algo.getNtrees())
+    assert(stageProbabilities.getList(1).size() == algo.getNtrees())
+    assert(stageProbabilities.getList(2).size() == algo.getNtrees())
   }
 
   test("transformSchema with detailed prediction col") {
@@ -84,6 +91,7 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
       .setSeed(1)
       .setWithDetailedPredictionCol(true)
       .setWithLeafNodeAssignments(true)
+      .setWithStageProbabilities(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -97,10 +105,15 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val predictionColField = StructField("prediction", StringType, nullable = true)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+    val stageProbabilitiesType = StructType(Seq(
+      StructField("Iris-setosa", ArrayType(DoubleType, containsNull = false), nullable = false),
+      StructField("Iris-versicolor", ArrayType(DoubleType, containsNull = false), nullable = false),
+      StructField("Iris-virginica", ArrayType(DoubleType, containsNull = false), nullable = false)))
+    val stageProbabilitiesField = StructField("stageProbabilities", stageProbabilitiesType, nullable = false)
     val detailedPredictionColField =
       StructField(
         "detailed_prediction",
-        StructType(labelField :: probabilitiesField :: leafNodeAssignmentField :: Nil),
+        StructType(labelField :: probabilitiesField :: leafNodeAssignmentField :: stageProbabilitiesField :: Nil),
         nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))

@@ -43,8 +43,7 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
         }
         if (getWithStageProbabilities()) {
           val stageProbabilities = pred.stageProbabilities
-          val numberOfTrees = stageProbabilities.size / model.getResponseDomainValues.size
-          val stageProbabilitiesByTree = stageProbabilities.grouped(numberOfTrees).toArray
+          val stageProbabilitiesByTree = stageProbabilities.grouped(model.getResponseDomainValues.size).toArray
           val stageProbabilitiesByClass = stageProbabilitiesByTree.transpose
           Utils.arrayToRow(stageProbabilitiesByClass)
           resultBuilder += Utils.arrayToRow(stageProbabilitiesByClass)
