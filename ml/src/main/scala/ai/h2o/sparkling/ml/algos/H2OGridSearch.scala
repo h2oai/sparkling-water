@@ -170,9 +170,7 @@ class H2OGridSearch(override val uid: String)
 
   def getBinaryModel(): H2OBinaryModel = {
     if (gridBinaryModels.isEmpty) {
-      throw new IllegalArgumentException(
-        "Algorithm needs to be fit first in order to access" +
-          " binary model features")
+      throw new IllegalArgumentException("Algorithm needs to be fit first in order to access binary model features.")
     }
     gridBinaryModels.head
   }
