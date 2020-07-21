@@ -136,6 +136,10 @@ def distTaskDependencies = [
   ":sparkling-water-kubernetes:buildDockerfiles"
 ]
 
+if (makeBooklet.toBoolean()) {
+  distTaskDependencies = distTaskDependencies + [":sparkling-water-booklet:buildBooklet"]
+}
+
 def copyAndSubstituteGradleProperties() {
   def content = file("$rootDir/gradle.properties").getText('UTF-8')
     .replaceAll("version=.*", "version=${version}")
@@ -172,6 +176,9 @@ task copyFilesForZipDistribution {
 
     copyRecursive("kubernetes/build/", "$zipDir/kubernetes")
     copyRecursive("bin/", "$zipDir/bin")
+    if (makeBooklet.toBoolean()) {
+      copySingle("booklet/build", "SparklingWaterBooklet.pdf", "$zipDir/booklet")
+    }
     copyRecursive("doc/build/site/", "$zipDir/doc/build/site")
     copyRecursive("docker/", "$zipDir/docker")
   }
@@ -200,6 +207,9 @@ task dist(dependsOn: zipDistribution) {
     copySingle("py/build/dist/", "h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$distDir/py")
     copyRecursive("r/build/repo/", "$distDir/R")
     copyRecursive("core/build/docs/scaladoc/", "$distDir/scaladoc")
+    if (makeBooklet.toBoolean()) {
+      copySingle("booklet/build", "SparklingWaterBooklet.pdf", "$distDir/booklet")
+    }
     copyRecursive("doc/build/site/", "$distDir/doc")
     copyRecursive("templates/build/", "$distDir/templates")
     copyRecursive("build/repo", "${distDir}/maven/repo")
