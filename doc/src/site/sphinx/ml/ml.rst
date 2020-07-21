@@ -26,3 +26,4 @@ Machine Learning
    :maxdepth: 2
 
    shap_values
+   binary_model

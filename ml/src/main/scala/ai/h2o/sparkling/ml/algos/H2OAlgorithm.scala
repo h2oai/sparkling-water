@@ -16,12 +16,11 @@
  */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import ai.h2o.sparkling.ml.internals.H2OModel
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OCommonParams
+import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
@@ -77,6 +76,8 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
         .getOrElse(Map())
     val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
     deleteRegisteredH2OFrames()
+    val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
+    binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
     H2OModel(modelId)
       .toMOJOModel(Identifiable.randomUID(parameters.algoName()), H2OMOJOSettings.createFromModelParams(this))
   }

@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
-import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
@@ -90,7 +90,10 @@ class H2OAutoML(override val uid: String)
 
     val algoName = getLeaderboard().select("model_id").head().getString(0)
     deleteRegisteredH2OFrames()
-    H2OModel(getLeaderModelId(autoMLId))
+    val leaderModelId = getLeaderModelId(autoMLId)
+    val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
+    binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
+    H2OModel(leaderModelId)
       .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this))
   }
 

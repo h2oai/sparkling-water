@@ -16,12 +16,22 @@
  */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.models.H2OBinaryModel
+import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
-import ai.h2o.sparkling.ml.utils.{EstimatorCommonUtils, SchemaUtils}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
+
+  protected var binaryModel: Option[H2OBinaryModel] = None
+
+  def getBinaryModel(): H2OBinaryModel = {
+    if (binaryModel.isEmpty) {
+      throw new IllegalArgumentException("Algorithm needs to be fit first in order to access binary model features.")
+    }
+    binaryModel.get
+  }
 
   private[sparkling] def getExcludedCols(): Seq[String] = Seq.empty
 

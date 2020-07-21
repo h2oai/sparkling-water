@@ -50,7 +50,10 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
          |        self._set(**kwargs)
-         |        self._transfer_params_to_java()""".stripMargin
+         |        self._transfer_params_to_java()
+         |
+         |    def getBinaryModel(self):
+         |        return H2OBinaryModel(self._java_obj.getBinaryModel())""".stripMargin
     }
   }
 }

@@ -15,12 +15,20 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OTreeBasedSupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OUnsupervisedMOJOModel
-from ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel import H2OMOJOPipelineModel
-from ai.h2o.sparkling.ml.models.H2OBinaryModel import H2OBinaryModel
+H2OBinaryModel.read <- function(path) {
+  sc <- spark_connection_find()[[1]]
+  jmodel <- invoke_static(sc, "ai.h2o.sparkling.ml.models.H2OBinaryModel", "read", path)
+  H2OBinaryModel(jmodel)
+}
+
+#' @export H2OBinaryModel
+H2OBinaryModel <- setRefClass("H2OBinaryModel", fields = list(
+  jmodel = "ANY", modelId = "character"), methods = list(
+  initialize = function(jmodel) {
+    .self$jmodel <- jmodel
+    .self$modelId <- invoke(.self$jmodel, "modelId")
+  },
+  write = function(path) {
+    invoke(.self$jmodel, "write", path)
+  }
+))

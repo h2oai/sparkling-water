@@ -35,7 +35,11 @@ object AlgorithmTemplate
     val algorithmType = algorithmSubstitutionContext.algorithmType
     val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
 
-    val imports = Seq("pyspark.keyword_only", "ai.h2o.sparkling.Initializer", "ai.h2o.sparkling.ml.Utils.Utils") ++
+    val imports = Seq(
+      "ai.h2o.sparkling.ml.models.H2OBinaryModel",
+      "pyspark.keyword_only",
+      "ai.h2o.sparkling.Initializer",
+      "ai.h2o.sparkling.ml.Utils.Utils") ++
       paramClasses.map(clazz => s"ai.h2o.sparkling.ml.params.$clazz.$clazz") ++
       Seq(s"ai.h2o.sparkling.ml.algos.$algorithmType.$algorithmType") ++
       algorithmSubstitutionContext.extraInheritedEntities.map(clazz => s"ai.h2o.sparkling.ml.algos.$clazz.$clazz")
