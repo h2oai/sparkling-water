@@ -66,9 +66,6 @@ class H2OMOJOModel(H2OMOJOModelBase):
     def getModelCategory(self):
         return self._java_obj.getModelCategory()
 
-    def leafNodeAssignments(self, df):
-        return DataFrame(self._java_obj.leafNodeAssignments(df), SparkSession.builder.getOrCreate()._wrapped)
-
 class H2OSupervisedMOJOModel(H2OMOJOModel):
 
     def getOffsetCol(self):

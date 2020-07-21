@@ -59,10 +59,6 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
   },
   getModelCategory = function() {
     invoke(.self$jmojo, "getModelCategory")
-  },
-  leafNodeAssignments = function(df) {
-    sparkFrame <- invoke(.self$jmojo, "leafNodeAssignments", df)
-    sdf_register(sparkFrame)
   }
 ))
 
