@@ -140,9 +140,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val contributionsField = StructField("contributions", contributionsType, nullable = false)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
-    val stageProbabilitiesType = StructType(Seq(
-      StructField("Iris-setosa", ArrayType(StringType, containsNull = false), nullable = false),
-      StructField("Iris-versicolor", ArrayType(StringType, containsNull = false), nullable = false)))
+    val stageProbabilitiesType = StructType(
+      Seq(
+        StructField("Iris-setosa", ArrayType(StringType, containsNull = false), nullable = false),
+        StructField("Iris-versicolor", ArrayType(StringType, containsNull = false), nullable = false)))
     val stageProbabilitiesField = StructField("stageProbabilities", stageProbabilitiesType, nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",

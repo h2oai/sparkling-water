@@ -129,14 +129,10 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       (algo.getFeaturesCols() :+ "BiasTerm").map(StructField(_, FloatType, nullable = false))
     val contributionsType = StructType(individualContributions)
     val contributionsField = StructField("contributions", contributionsType, nullable = false)
-    val leafNodeAssignmentField = StructField(
-      "leafNodeAssignments",
-      ArrayType(StringType, containsNull = false),
-      nullable = false)
-    val stageProbabilitiesField = StructField(
-      "stageProbabilities",
-      ArrayType(DoubleType, containsNull = false),
-      nullable = false)
+    val leafNodeAssignmentField =
+      StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+    val stageProbabilitiesField =
+      StructField("stageProbabilities", ArrayType(DoubleType, containsNull = false), nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
       StructType(valueField :: contributionsField :: leafNodeAssignmentField :: stageProbabilitiesField :: Nil),

@@ -319,8 +319,9 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
   private def canGenerateStageProbabilities(model: GenModel): Boolean = {
     model match {
       case _: SharedTreeMojoModel => true
-      case _ => throw new IllegalArgumentException(
-        "Computing stage probabilities is only available on tree based models except XGBoost!")
+      case _ =>
+        throw new IllegalArgumentException(
+          "Computing stage probabilities is only available on tree based models except XGBoost!")
     }
   }
 
