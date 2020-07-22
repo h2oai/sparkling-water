@@ -55,7 +55,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
         }
-        if (getWithStageProbabilities()) {
+        if (getWithStageResults()) {
           val p0Array = pred.stageProbabilities
           val p1Array = p0Array.map(1 - _)
           resultBuilder += new GenericRow(Array[Any](p0Array, p1Array))
@@ -98,7 +98,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
         contributionsFields
       }
 
-      val stageProbabilityFields = if (getWithStageProbabilities()) {
+      val stageProbabilityFields = if (getWithStageResults()) {
         val stageProbabilitiesField =
           StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
         assignmentFields :+ stageProbabilitiesField

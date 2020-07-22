@@ -56,5 +56,5 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
     def getWithLeafNodeAssignments(self):
         return self._java_obj.getWithLeafNodeAssignments()()
 
-    def getWithStageProbabilities(self):
-        return self._java_obj.getWithStageProbabilities()
+    def getWithStageResults(self):
+        return self._java_obj.getWithStageResults()

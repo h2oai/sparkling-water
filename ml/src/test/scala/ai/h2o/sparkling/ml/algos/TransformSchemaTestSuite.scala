@@ -34,7 +34,7 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
 
   protected def getWithLeafNodeAssignments: Boolean = false
 
-  protected def getWithStageProbabilities: Boolean = false
+  protected def getWithStageResults: Boolean = false
 
   private def loadMojo(settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojo =
@@ -47,7 +47,7 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
       H2OMOJOSettings(
         withDetailedPredictionCol = true,
         withLeafNodeAssignments = getWithLeafNodeAssignments,
-        withStageProbabilities = getWithStageProbabilities))
+        withStageResults = getWithStageResults))
 
     val datasetFields = dataset.schema.fields
     val expectedSchema = StructType(datasetFields ++ (expectedDetailedPredictionCol :: expectedPredictionCol :: Nil))

@@ -268,7 +268,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.withDetailedPredictionCol -> settings.withDetailedPredictionCol)
     model.set(model.withContributions -> settings.withContributions)
     model.set(model.withLeafNodeAssignments -> settings.withLeafNodeAssignments)
-    model.set(model.withStageProbabilities -> settings.withStageProbabilities)
+    model.set(model.withStageResults -> settings.withStageResults)
     model
   }
 }
@@ -316,12 +316,12 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     }
   }
 
-  private def canGenerateStageProbabilities(model: GenModel): Boolean = {
+  private def canGenerateStageResults(model: GenModel): Boolean = {
     model match {
       case _: SharedTreeMojoModel => true
       case _ =>
         throw new IllegalArgumentException(
-          "Computing stage probabilities is only available on tree based models except XGBoost!")
+          "Computing stage results is only available on tree based models except XGBoost!")
     }
   }
 
@@ -338,8 +338,8 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
           config.getModel)) {
       config.setEnableLeafAssignment(true)
     }
-    if (model.getWithStageProbabilities() && model.getWithDetailedPredictionCol() && canGenerateStageProbabilities(
-          config.getModel)) {
+    if (model.getWithStageResults() && model
+          .getWithDetailedPredictionCol() && canGenerateStageResults(config.getModel)) {
       config.setEnableStagedProbabilities(true)
     }
     // always let H2O produce full output, filter later if required

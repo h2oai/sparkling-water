@@ -62,7 +62,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
-      .setWithStageProbabilities(true)
+      .setWithStageResults(true)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -124,6 +124,7 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
+      .setWithStageResults(true)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
@@ -142,12 +143,13 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
     val stageProbabilitiesType = StructType(
       Seq(
-        StructField("Iris-setosa", ArrayType(StringType, containsNull = false), nullable = false),
-        StructField("Iris-versicolor", ArrayType(StringType, containsNull = false), nullable = false)))
+        StructField("Iris-setosa", ArrayType(DoubleType, containsNull = false), nullable = false),
+        StructField("Iris-versicolor", ArrayType(DoubleType, containsNull = false), nullable = false)))
     val stageProbabilitiesField = StructField("stageProbabilities", stageProbabilitiesType, nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
-      StructType(labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: Nil),
+      StructType(
+        labelField :: probabilitiesField :: contributionsField :: leafNodeAssignmentField :: stageProbabilitiesField :: Nil),
       nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))

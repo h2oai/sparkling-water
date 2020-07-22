@@ -41,7 +41,7 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
         }
-        if (getWithStageProbabilities()) {
+        if (getWithStageResults()) {
           val stageProbabilities = pred.stageProbabilities
           val stageProbabilitiesByTree = stageProbabilities.grouped(model.getResponseDomainValues.size).toArray
           val stageProbabilitiesByClass = stageProbabilitiesByTree.transpose
@@ -77,7 +77,7 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
       } else {
         baseFields
       }
-      val stageProbabilityFields = if (getWithStageProbabilities()) {
+      val stageProbabilityFields = if (getWithStageResults()) {
         val stageProbabilitiesField =
           StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
         assignmentFields :+ stageProbabilitiesField

@@ -66,8 +66,8 @@ trait H2OBaseMOJOParams extends Params with Logging {
   protected final val withLeafNodeAssignments =
     new BooleanParam(this, "withLeafNodeAssignments", "Enables or disables computation of leaf node assignments.")
 
-  protected final val withStageProbabilities =
-    new BooleanParam(this, "withStageProbabilities", "Enables or disables computation of stage probabilities.")
+  protected final val withStageResults =
+    new BooleanParam(this, "withStageResults", "Enables or disables computation of stage results.")
 
   //
   //
@@ -83,7 +83,7 @@ trait H2OBaseMOJOParams extends Params with Logging {
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
-    withStageProbabilities -> H2OMOJOSettings.default.withStageProbabilities)
+    withStageResults -> H2OMOJOSettings.default.withStageResults)
 
   //
   // Getters
@@ -106,5 +106,5 @@ trait H2OBaseMOJOParams extends Params with Logging {
 
   def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)
 
-  def getWithStageProbabilities(): Boolean = $(withStageProbabilities)
+  def getWithStageResults(): Boolean = $(withStageResults)
 }

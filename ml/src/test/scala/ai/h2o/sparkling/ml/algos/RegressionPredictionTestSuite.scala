@@ -58,7 +58,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
-      .setWithStageProbabilities(true)
+      .setWithStageResults(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
 
@@ -66,7 +66,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
 
     val predictions = model.transform(dataset)
 
-    val expectedCols = Seq("value", "contributions", "leafNodeAssignments", "stageProbabilities")
+    val expectedCols = Seq("value", "contributions", "leafNodeAssignments", "stageResults")
     assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
     val contributions = predictions.select("detailed_prediction.contributions").head().getStruct(0)
     assert(contributions != null)
@@ -74,9 +74,9 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
     assert(leafNodeAssignments != null)
     assert(leafNodeAssignments.length == algo.getNtrees())
-    val stageProbabilities = predictions.select("detailed_prediction.stageProbabilities").head().getList(0)
-    assert(stageProbabilities != null)
-    assert(stageProbabilities.size() == algo.getNtrees())
+    val stageResults = predictions.select("detailed_prediction.stageResults").head().getList(0)
+    assert(stageResults != null)
+    assert(stageResults.size() == algo.getNtrees())
   }
 
   test("contributions on unsupported algorithm") {
@@ -117,7 +117,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSeed(1)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
-      .setWithStageProbabilities(true)
+      .setWithStageResults(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
     val model = algo.fit(dataset)
@@ -131,11 +131,11 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     val contributionsField = StructField("contributions", contributionsType, nullable = false)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
-    val stageProbabilitiesField =
-      StructField("stageProbabilities", ArrayType(DoubleType, containsNull = false), nullable = false)
+    val stageResultsField =
+      StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
     val detailedPredictionColField = StructField(
       "detailed_prediction",
-      StructType(valueField :: contributionsField :: leafNodeAssignmentField :: stageProbabilitiesField :: Nil),
+      StructType(valueField :: contributionsField :: leafNodeAssignmentField :: stageResultsField :: Nil),
       nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
