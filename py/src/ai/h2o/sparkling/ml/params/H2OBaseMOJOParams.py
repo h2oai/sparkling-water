@@ -81,6 +81,12 @@ class H2OBaseMOJOParams(Params):
         "Enables or disables computation of stage results.",
         H2OTypeConverters.toBoolean())
 
+    withReconstructedData = Param(
+        Params._dummy(),
+        "withReconstructedData",
+        "Enables or disables computation of reconstructed data for dimension reduction problems.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -113,3 +119,6 @@ class H2OBaseMOJOParams(Params):
 
     def getWithStageResults(self):
         return self.getOrDefault(self.withStageResults)
+
+    def getWithReconstructedData(self):
+        return self.getOrDefault(self.withReconstructedData)

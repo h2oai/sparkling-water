@@ -97,3 +97,6 @@ class H2OCommonParams(H2OBaseMOJOParams):
 
     def setWithStageResults(self, value):
         return self._set(withStageResults=value)
+
+    def setWithReconstructedData(self, value):
+        return self._set(withReconstructedData=value)

@@ -23,6 +23,8 @@ import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StructField, StructType}
 import org.apache.spark.sql.{Column, Row}
 
+import scala.collection.mutable
+
 trait H2OMOJOPredictionDimReduction {
   self: H2OMOJOModel =>
   def getDimReductionPredictionUDF(): UserDefinedFunction = {
@@ -30,6 +32,11 @@ trait H2OMOJOPredictionDimReduction {
     val function = (r: Row) => {
       val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
       val pred = model.predictDimReduction(RowConverter.toH2ORowData(r))
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred.dimensions
+      if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
+        resultBuilder += pred.reconstructed
+      }
       new GenericRowWithSchema(Array(pred.dimensions), schema)
     }
     udf(function, schema)
@@ -43,7 +50,13 @@ trait H2OMOJOPredictionDimReduction {
   }
 
   def getDimReductionPredictionSchema(): StructType = {
-    val fields = StructField("dimensions", predictionColType, nullable = predictionColNullable) :: Nil
+    val base = StructField("dimensions", predictionColType, nullable = predictionColNullable) :: Nil
+    val fields = if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
+      val reconstructedColumns = getFeaturesCols().map(StructField(_, DoubleType, nullable = false))
+      base :+ StructField("reconstructed", StructType(reconstructedColumns), nullable = false)
+    } else {
+      base
+    }
     StructType(fields)
   }
 

@@ -31,7 +31,8 @@ class H2OMOJOSettings(JavaWrapper):
                  namedMojoOutputColumns=True,
                  withContributions=False,
                  withLeafNodeAssignments=False,
-                 withStageResults=False):
+                 withStageResults=False,
+                 withReconstructedData=False):
         self._java_obj = None
 
         assert_is_type(predictionCol, str)
@@ -43,6 +44,7 @@ class H2OMOJOSettings(JavaWrapper):
         assert_is_type(withContributions, bool)
         assert_is_type(withLeafNodeAssignments, bool)
         assert_is_type(withStageResults, bool)
+        assert_is_type(withReconstructedData, bool)
         self.predictionCol = predictionCol
         self.detailedPredictionCol = detailedPredictionCol
         self.withDetailedPredictionCol = withDetailedPredictionCol
@@ -52,6 +54,7 @@ class H2OMOJOSettings(JavaWrapper):
         self.withContributions = withContributions
         self.withLeafNodeAssignments = withLeafNodeAssignments
         self.withStageResults = withStageResults
+        self.withReconstructedData = withReconstructedData
 
     def toJavaObject(self):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.models.H2OMOJOSettings",
@@ -63,7 +66,8 @@ class H2OMOJOSettings(JavaWrapper):
                                             self.namedMojoOutputColumns,
                                             self.withContributions,
                                             self.withLeafNodeAssignments,
-                                            self.withStageResults)
+                                            self.withStageResults,
+                                            self.withReconstructedData)
         return self._java_obj
 
     @staticmethod

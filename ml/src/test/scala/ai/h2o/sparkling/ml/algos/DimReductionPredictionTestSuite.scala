@@ -59,7 +59,9 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
   test("detailedPredictionCol content") {
     import spark.implicits._
-    val algo = getPreconfiguredAlgorithm().setWithDetailedPredictionCol(true)
+    val algo = getPreconfiguredAlgorithm()
+      .setWithDetailedPredictionCol(true)
+      .setWithReconstructedData(true)
 
     val model = algo.fit(dataset)
     val transformed = model.transform(dataset).cache()
@@ -77,11 +79,16 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
     val expected = roundResult(transformed.select("prediction"), 3)
     val result = roundResult(transformed.select($"detailed_prediction.dimensions" as "prediction"), 3)
+    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head()
+
     TestUtils.assertDataFramesAreIdentical(expected, result)
+    assert(reconstructedRow.size == model.getFeaturesCols().length)
   }
 
-  test("transformSchema with detailed prediction col") {
-    val algo = getPreconfiguredAlgorithm().setWithDetailedPredictionCol(true)
+  test("transformSchema with detailed prediction col and reconstructed data") {
+    val algo = getPreconfiguredAlgorithm()
+      .setWithDetailedPredictionCol(true)
+      .setWithReconstructedData(true)
 
     val model = algo.fit(dataset)
 
@@ -89,8 +96,10 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
     val predictionColField = StructField("prediction", ArrayType(DoubleType, containsNull = false), nullable = true)
 
     val dimensionsField = StructField("dimensions", ArrayType(DoubleType, containsNull = false), nullable = true)
+    val reconstructedFields = algo.getFeaturesCols().map(StructField(_, DoubleType, nullable = false))
+    val reconstructedField = StructField("reconstructed", StructType(reconstructedFields), nullable = true)
     val detailedPredictionColField =
-      StructField("detailed_prediction", StructType(dimensionsField :: Nil), nullable = true)
+      StructField("detailed_prediction", StructType(dimensionsField :: reconstructedField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
