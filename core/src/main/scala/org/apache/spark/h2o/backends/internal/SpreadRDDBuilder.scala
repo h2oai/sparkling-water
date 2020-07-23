@@ -71,7 +71,7 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
     val currentWorkers = endpoints.length
     // Number of Spark executors after distributed operation
     val nSparkExecAfter = numOfSparkExecutors
-    val timeout = conf.waitBeforeCloudingMillis
+    val timeout = conf.internalBackendCloudingTimeout
     val startTime = System.currentTimeMillis()
     // Decide about visible state
     if ((currentWorkers < expectedWorkers || nSparkExecAfter != nSparkExecBefore) && nretries <= 0 && timeoutExpired(
