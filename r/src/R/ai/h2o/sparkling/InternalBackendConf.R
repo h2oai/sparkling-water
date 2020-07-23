@@ -40,7 +40,7 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     hdfsConf = function() { ConfUtils.getOption(invoke(jconf, "hdfsConf")) },
 
-    waitBeforeCloudingMillis = function() { invoke(jconf, "waitBeforeCloudingMillis") },
+    internalBackendCloudingTimeout = function() { invoke(jconf, "internalBackendCloudingTimeout") },
 
 #
 # Setters
@@ -62,5 +62,5 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     setHdfsConf = function(hdfsConf) { invoke(jconf, "setHdfsConf", hdfsConf); .self },
 
-    setWaitBeforeCloudingMillis = function(timeout) { invoke(jconf, "setWaitBeforeCloudingMillis", timeout); .self }
+    setInternalBackendCloudingTimeout = function(timeout) { invoke(jconf, "setInternalBackendCloudingTimeout", timeout); .self }
 ))

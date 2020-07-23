@@ -264,9 +264,15 @@ Internal backend configuration properties
 |                                                    |                |                                                 | settings and other HDFS-related        |
 |                                                    |                |                                                 | configurations.                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.wait.before.clouding``             | ``0``          | ``setWaitBeforeCloudingMillis(Int)``            | How long we should wait before we      |
-|                                                    |                |                                                 | start the clouding. The unit is        |
-|                                                    |                |                                                 | milliseconds.                          |
+| ``spark.ext.h2o.internal.clouding.timeout``        | ``0``          | ``setInternalBackendCloudingTimeout(Int)``      | Specifies how long the clouding should |
+|                                                    |                |                                                 | last. This option has precedence over  |
+|                                                    |                |                                                 | other options influencing the          |
+|                                                    |                |                                                 | clouding. That means that as long as   |
+|                                                    |                |                                                 | timeout hasn't expired, we keep        |
+|                                                    |                |                                                 | trying discover new executors.         |
+|                                                    |                |                                                 | This option might be useful in         |
+|                                                    |                |                                                 | environments where Spark executors     |
+|                                                    |                |                                                 | join the cloud with some delays.       |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 
 --------------

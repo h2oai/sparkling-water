@@ -46,8 +46,8 @@ class InternalBackendConf(SharedBackendConfUtils):
     def hdfsConf(self):
         return self._get_option(self._jconf.hdfsConf())
 
-    def waitBeforeCloudingMillis(self):
-        return self._jconf.waitBeforeCloudingMillis()
+    def internalBackendCloudingTimeout(self):
+        return self._jconf.internalBackendCloudingTimeout()
 
     #
     # Setters
@@ -82,6 +82,6 @@ class InternalBackendConf(SharedBackendConfUtils):
         self._jconf.setHdfsConf(hdfsConf)
         return self
 
-    def setWaitBeforeCloudingMillis(self, timeout):
-        self._jconf.setWaitBeforeCloudingMillis(timeout)
+    def setInternalBackendCloudingTimeout(self, timeout):
+        self._jconf.setInternalBackendCloudingTimeout(timeout)
         return self
