@@ -318,9 +318,9 @@ Obtaining Stage Probabilities
 To obtain the stage results, please first make sure to set ``withStageResults`` and
 ``withDetailedPredictionCol`` to true on your MOJO settings object. The stage results for regression and anomaly detection problems
 are stored in the ``${detailedPredictionCol}.stageResults`` on the dataset obtained from the prediction. The stage results for classification
-(binomial, multinomial) problems are stored under ``${detailedPredictionCol}.stageResults`` Please replace ``${detailedPredictionCol}``
+(binomial, multinomial) problems are stored under ``${detailedPredictionCol}.stageProbabilities`` Please replace ``${detailedPredictionCol}``
 with the actual value of your detailed prediction col. By default, it is ``detailed_prediction``.
 
 The stage results are an array of values, where a value at the position *t* is the prediction/probability combined from contributions of trees *T1, T2, ..., Tt*.
-For *t* equal to a number of model trees, the value is the same as final prediction/probability. The stage results (probabilities) for classification problem are
+For *t* equal to a number of model trees, the value is the same as final prediction/probability. The stage results (probabilities) for classification problem
 are represented by a list of columns, where one column contains stage probabilities for a given prediction class.
