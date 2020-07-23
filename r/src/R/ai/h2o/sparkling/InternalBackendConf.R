@@ -40,6 +40,8 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
 
     hdfsConf = function() { ConfUtils.getOption(invoke(jconf, "hdfsConf")) },
 
+    spreadRddRetriesTimeout = function() { invoke(jconf, "spreadRddRetriesTimeout") },
+
 #
 # Setters
 #
@@ -58,5 +60,7 @@ InternalBackendConf <- setRefClass("InternalBackendConf", methods = list(
         invoke(jconf, "setIcedDir", dir); .self
     },
 
-    setHdfsConf = function(hdfsConf) { invoke(jconf, "setHdfsConf", hdfsConf); .self }
+    setHdfsConf = function(hdfsConf) { invoke(jconf, "setHdfsConf", hdfsConf); .self },
+
+    setSpreadRddRetriesTimeout = function(timeout) { invoke(jconf, "setSpreadRddRetriesTimeout", timeout); .self }
 ))
