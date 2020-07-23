@@ -46,8 +46,8 @@ class InternalBackendConf(SharedBackendConfUtils):
     def hdfsConf(self):
         return self._get_option(self._jconf.hdfsConf())
 
-    def internalBackendCloudingTimeout(self):
-        return self._jconf.internalBackendCloudingTimeout()
+    def spreadRddRetriesTimeout(self):
+        return self._jconf.spreadRddRetriesTimeout()
 
     #
     # Setters
@@ -82,6 +82,6 @@ class InternalBackendConf(SharedBackendConfUtils):
         self._jconf.setHdfsConf(hdfsConf)
         return self
 
-    def setInternalBackendCloudingTimeout(self, timeout):
-        self._jconf.setInternalBackendCloudingTimeout(timeout)
+    def setSpreadRddRetriesTimeout(self, timeout):
+        self._jconf.setSpreadRddRetriesTimeout(timeout)
         return self
