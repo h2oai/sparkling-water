@@ -326,3 +326,12 @@ with the actual value of your detailed prediction col. By default, it is ``detai
 The stage results are an array of values, where a value at the position *t* is the prediction/probability combined from contributions of trees *T1, T2, ..., Tt*.
 For *t* equal to a number of model trees, the value is the same as final prediction/probability. The stage results (probabilities) for classification problem
 are represented by a list of columns, where one column contains stage probabilities for a given prediction class.
+
+Obtaining Reconstructed Data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To obtain reconstructed data for dimension reductions models, please first make sure to set ``withReconstructedData`` and
+``withDetailedPredictionCol`` to true on your MOJO settings object. Reconstructed columns will be located under the
+``${detailedPredictionCol}.reconstructed`` column on the dataset obtained from the prediction.
+Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
+it is ``detailed_prediction``.
