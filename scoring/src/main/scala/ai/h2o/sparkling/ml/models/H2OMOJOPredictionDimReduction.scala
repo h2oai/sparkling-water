@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
@@ -35,9 +36,9 @@ trait H2OMOJOPredictionDimReduction {
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.dimensions
       if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
-        resultBuilder += pred.reconstructed
+        resultBuilder += Utils.arrayToRow(pred.reconstructed)
       }
-      new GenericRowWithSchema(Array(pred.dimensions), schema)
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
   }
@@ -53,7 +54,7 @@ trait H2OMOJOPredictionDimReduction {
     val base = StructField("dimensions", predictionColType, nullable = predictionColNullable) :: Nil
     val fields = if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
       val reconstructedColumns = getFeaturesCols().map(StructField(_, DoubleType, nullable = false))
-      base :+ StructField("reconstructed", StructType(reconstructedColumns), nullable = false)
+      base :+ StructField("reconstructed", StructType(reconstructedColumns), nullable = true)
     } else {
       base
     }

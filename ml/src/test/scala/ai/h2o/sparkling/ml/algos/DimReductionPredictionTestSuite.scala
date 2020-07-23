@@ -65,9 +65,8 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
     val model = algo.fit(dataset)
     val transformed = model.transform(dataset).cache()
-    transformed.show(false)
 
-    val expectedCols = Seq("dimensions")
+    val expectedCols = Seq("dimensions", "reconstructed")
     assert(transformed.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
 
     def roundResult(dataFrame: DataFrame, precision: Int): DataFrame = {
@@ -79,10 +78,35 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
     val expected = roundResult(transformed.select("prediction"), 3)
     val result = roundResult(transformed.select($"detailed_prediction.dimensions" as "prediction"), 3)
-    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head()
+    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head().getStruct(0)
+    val reconstructedColumns = transformed.select("detailed_prediction.reconstructed.*").schema.fieldNames
 
     TestUtils.assertDataFramesAreIdentical(expected, result)
     assert(reconstructedRow.size == model.getFeaturesCols().length)
+    assert(reconstructedColumns.toSeq == model.getFeaturesCols().toSeq)
+  }
+
+  test("reconstructed data on categorical columns") {
+    import spark.implicits._
+    val dataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+      .withColumn("CAPSULE", 'CAPSULE.cast("string"))
+      .withColumn("RACE", 'RACE.cast("string"))
+
+    val algo = getPreconfiguredAlgorithm()
+      .setWithDetailedPredictionCol(true)
+      .setWithReconstructedData(true)
+
+    val model = algo.fit(dataset)
+    val transformed = model.transform(dataset)
+
+    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head().getStruct(0)
+    val reconstructedColumns = transformed.select("detailed_prediction.reconstructed.*").schema.fieldNames
+
+    assert(reconstructedRow.size == model.getFeaturesCols().length)
+    assert(reconstructedColumns.toSeq == model.getFeaturesCols().toSeq)
   }
 
   test("transformSchema with detailed prediction col and reconstructed data") {
