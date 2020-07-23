@@ -265,6 +265,8 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
   it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
+- ``withReconstructedData`` - When enabled, a user can obtain reconstructed data from detailed predictions of dimension reduction models.
+  This option is only supported by the GLRM algorithm and is disabled by default.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
