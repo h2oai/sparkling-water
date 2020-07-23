@@ -51,7 +51,8 @@ trait InternalBackendConf extends SharedBackendConf {
 
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
 
-  def spreadRddRetriesTimeout: Int = sparkConf.getInt(PROP_SPREADRDD_RETRIES_TIMEOUT._1, PROP_SPREADRDD_RETRIES_TIMEOUT._2)
+  def spreadRddRetriesTimeout: Int =
+    sparkConf.getInt(PROP_SPREADRDD_RETRIES_TIMEOUT._1, PROP_SPREADRDD_RETRIES_TIMEOUT._2)
 
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
@@ -120,6 +121,6 @@ object InternalBackendConf {
   /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
   val PROP_HDFS_CONF: (String, None.type) = ("spark.ext.h2o.hdfs_conf", None)
 
-  /** Timeout for the clouding, unit is milliseconds */
+  /** Timeout for the spark executor discovery, unit is milliseconds */
   val PROP_SPREADRDD_RETRIES_TIMEOUT: (String, Int) = ("spark.ext.h2o.spreadrdd.retries.timeout", 0)
 }
