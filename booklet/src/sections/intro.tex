@@ -122,6 +122,7 @@
     For more details, please refer to the H2O documentation at {\url{http://docs.h2o.ai}}.
 
     \subsection{Supported Spark Execution Environments}
+
     Sparkling Water can run on top of Spark in the following ways:
     \begin{itemize}
         \item as a local cluster (where the master node is \texttt{local} or \texttt{local[*]})
@@ -129,6 +130,18 @@
         \url{http://spark.apache.org/docs/latest/spark-standalone.html}}
         \item in a YARN environment\footnote{Refer to the Spark YARN documentation \url{http://spark.apache.org/docs/latest/running-on-yarn.html}}
     \end{itemize}
+
+    \subsection{Sparkling Water Clients}
+
+    Sparkling Water provides clients for R, Scala and Python languages.
+
+    \begin{itemize}
+        \item R -> RSparkling
+        \item Python -> PySparkling
+        \item Scala/Java -> Sparkling Water
+    \end{itemize}
+
+    Whenever we show any code in this booklet, we will try to show variant in all three supported languages when possible.
 
     \subsection{Sparkling Water Requirements}
 
