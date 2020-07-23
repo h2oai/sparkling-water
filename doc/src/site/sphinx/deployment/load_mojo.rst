@@ -261,8 +261,10 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 - ``withContributions`` - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the
   detailed prediction column. Therefore, to compute Shapley values, both this option and ``withDetailedPredictionCol`` needs to be
   enabled. By default, it is disabled.
-- ``withLeafNodeAssignments`` - When enabled, a user can obtain the leaf node assignments after the model traininig
+- ``withLeafNodeAssignments`` - When enabled, a user can obtain the leaf node assignments after the model training
   has finished. By default, it is disabled.
+- ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
+  it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,3 +311,16 @@ To obtain the leaf node assignments, please first make sure to set ``withLeafNod
 in the ``${detailedPredictionCol}.leafNodeAssignments`` column on the dataset obtained from the prediction.
 Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
 it is ``detailed_prediction``.
+
+Obtaining Stage Probabilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To obtain the stage results, please first make sure to set ``withStageResults`` and
+``withDetailedPredictionCol`` to true on your MOJO settings object. The stage results for regression and anomaly detection problems
+are stored in the ``${detailedPredictionCol}.stageResults`` on the dataset obtained from the prediction. The stage results for classification
+(binomial, multinomial) problems are stored under ``${detailedPredictionCol}.stageProbabilities`` Please replace ``${detailedPredictionCol}``
+with the actual value of your detailed prediction col. By default, it is ``detailed_prediction``.
+
+The stage results are an array of values, where a value at the position *t* is the prediction/probability combined from contributions of trees *T1, T2, ..., Tt*.
+For *t* equal to a number of model trees, the value is the same as final prediction/probability. The stage results (probabilities) for classification problem
+are represented by a list of columns, where one column contains stage probabilities for a given prediction class.

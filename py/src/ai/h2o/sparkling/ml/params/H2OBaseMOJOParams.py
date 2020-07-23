@@ -75,6 +75,12 @@ class H2OBaseMOJOParams(Params):
         "Enables or disables computation of leaf node assignments.",
         H2OTypeConverters.toBoolean())
 
+    withStageResults = Param(
+        Params._dummy(),
+        "withStageResults",
+        "Enables or disables computation of stage results.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -104,3 +110,6 @@ class H2OBaseMOJOParams(Params):
 
     def getWithLeafNodeAssignments(self):
         return self.getOrDefault(self.withLeafNodeAssignments)
+
+    def getWithStageResults(self):
+        return self.getOrDefault(self.withStageResults)

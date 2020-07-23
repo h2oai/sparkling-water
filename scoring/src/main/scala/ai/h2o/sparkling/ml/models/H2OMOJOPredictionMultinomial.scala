@@ -27,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 
 import scala.collection.mutable
 
-trait H2OMOJOPredictionMultinomial {
+trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     val schema = getMultinomialPredictionSchema()
@@ -40,6 +40,13 @@ trait H2OMOJOPredictionMultinomial {
         resultBuilder += Utils.arrayToRow(pred.classProbabilities)
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
+        }
+        if (getWithStageResults()) {
+          val stageProbabilities = pred.stageProbabilities
+          val stageProbabilitiesByTree = stageProbabilities.grouped(model.getResponseDomainValues.size).toArray
+          val stageProbabilitiesByClass = stageProbabilitiesByTree.transpose
+          Utils.arrayToRow(stageProbabilitiesByClass)
+          resultBuilder += Utils.arrayToRow(stageProbabilitiesByClass)
         }
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
@@ -63,13 +70,21 @@ trait H2OMOJOPredictionMultinomial {
       val probabilitiesField =
         StructField("probabilities", StructType(classFields), nullable = false)
       val baseFields = labelField :: probabilitiesField :: Nil
-      if (getWithLeafNodeAssignments()) {
+      val assignmentFields = if (getWithLeafNodeAssignments()) {
         val assignmentsField =
           StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
-        baseFields ++ (assignmentsField :: Nil)
+        baseFields :+ assignmentsField
       } else {
         baseFields
       }
+      val stageProbabilityFields = if (getWithStageResults()) {
+        val stageProbabilitiesField =
+          StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
+        assignmentFields :+ stageProbabilitiesField
+      } else {
+        assignmentFields
+      }
+      stageProbabilityFields
     } else {
       labelField :: Nil
     }

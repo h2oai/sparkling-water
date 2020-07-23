@@ -43,6 +43,9 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
         }
+        if (getWithStageResults()) {
+          resultBuilder += pred.stageProbabilities
+        }
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
@@ -74,7 +77,14 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       } else {
         withContributionsSchema
       }
-      withAssignmentsSchema
+      val withStageResultsSchema = if (getWithStageResults()) {
+        val stageResultsField =
+          StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
+        withAssignmentsSchema :+ stageResultsField
+      } else {
+        withAssignmentsSchema
+      }
+      withStageResultsSchema
     } else {
       baseSchema
     }

@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package ai.h2o.sparkling.ml.models
 
-import java.io.File
-
-import hex.genmodel.{ModelMojoReader, MojoModel, MojoReaderBackendFactory}
+import ai.h2o.sparkling.ml.utils.Utils
+import hex.genmodel.easy.EasyPredictModelWrapper
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.types._
 
-object Utils {
-  def getMojoModel(mojoFile: File): MojoModel = {
-    val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
-    ModelMojoReader.readFrom(reader)
+trait PredictionWithStageProbabilities {
+  protected def getStageProbabilitiesSchema(model: EasyPredictModelWrapper): DataType = {
+    val valueType = ArrayType(DoubleType, containsNull = false)
+    val stageProbabilityFields = model.getResponseDomainValues.map(StructField(_, valueType, nullable = false))
+    StructType(stageProbabilityFields)
   }
-
-  def arrayToRow[T](array: Array[T]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))
 }

@@ -18,7 +18,7 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.utils.Utils
 import hex.genmodel.easy.EasyPredictModelWrapper
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.catalyst.expressions.{GenericRow, GenericRowWithSchema}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
 import ai.h2o.sparkling.sql.functions.udf
@@ -27,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 
 import scala.collection.mutable
 
-trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
+trait H2OMOJOPredictionBinomial extends PredictionWithContributions with PredictionWithStageProbabilities {
   self: H2OMOJOModel =>
 
   private def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
@@ -54,6 +54,11 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
         }
         if (getWithLeafNodeAssignments()) {
           resultBuilder += pred.leafNodeAssignments
+        }
+        if (getWithStageResults()) {
+          val p0Array = pred.stageProbabilities
+          val p1Array = p0Array.map(1 - _)
+          resultBuilder += new GenericRow(Array[Any](p0Array, p1Array))
         }
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
@@ -93,12 +98,20 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions {
         contributionsFields
       }
 
+      val stageProbabilityFields = if (getWithStageResults()) {
+        val stageProbabilitiesField =
+          StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
+        assignmentFields :+ stageProbabilitiesField
+      } else {
+        assignmentFields
+      }
+
       if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojo, this))) {
         val calibratedProbabilitiesField =
           StructField("calibratedProbabilities", StructType(classFields), nullable = false)
-        assignmentFields :+ calibratedProbabilitiesField
+        stageProbabilityFields :+ calibratedProbabilitiesField
       } else {
-        assignmentFields
+        stageProbabilityFields
       }
     } else {
       baseFields
