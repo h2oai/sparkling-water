@@ -290,6 +290,17 @@ Internal backend configuration properties
 |                                                    |                |                                                 | settings and other HDFS-related        |
 |                                                    |                |                                                 | configurations.                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
+| ``spark.ext.h2o.spreadrdd.retries.timeout``        | ``0``          | ``setSpreadRddRetriesTimeout(Int)``             | Specifies how long the discovering of  |
+|                                                    |                |                                                 | Spark executors should last. This      |
+|                                                    |                |                                                 | option has precedence over other       |
+|                                                    |                |                                                 | options influencing the discovery      |
+|                                                    |                |                                                 | mechanism.That means that as long as   |
+|                                                    |                |                                                 | the timeout hasn't expired, we keep    |
+|                                                    |                |                                                 | trying to discover new executors. This |
+|                                                    |                |                                                 | option might be useful in environments |
+|                                                    |                |                                                 | where Spark executors might join       |
+|                                                    |                |                                                 | the cloud with some delays.            |
++----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | **H2O nodes parameters**                           |                |                                                 |                                        |
 +----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
 | ``spark.ext.h2o.node.iced.dir``                    | ``None``       | ``setNodeIcedDir(String)``                      | Location of iced directory for H2O     |
