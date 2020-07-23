@@ -71,9 +71,12 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
     val currentWorkers = endpoints.length
     // Number of Spark executors after distributed operation
     val nSparkExecAfter = numOfSparkExecutors
-
+    val timeout = conf.spreadRddRetriesTimeout
+    val startTime = System.currentTimeMillis()
     // Decide about visible state
-    if ((currentWorkers < expectedWorkers || nSparkExecAfter != nSparkExecBefore) && nretries == 0) {
+    if ((currentWorkers < expectedWorkers || nSparkExecAfter != nSparkExecBefore) && nretries <= 0 && timeoutExpired(
+          startTime,
+          timeout)) {
       // We tried many times, but we were not able to get right number of executors
       throw new IllegalArgumentException(s"""Cannot execute H2O on all Spark executors:
            | Expected number of H2O workers is $numExecutorHint
@@ -86,7 +89,7 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
       logInfo(
         s"Detected $nSparkExecBefore before, and $nSparkExecAfter Spark executors after, backend#isReady=${isBackendReady()}! Retrying again...")
       build(nretries - 1, 2 * mfactor, 0)
-    } else if ((numTriesSame == conf.subseqTries)
+    } else if ((numTriesSame >= conf.subseqTries && timeoutExpired(startTime, timeout))
                || (numExecutors.isEmpty && currentWorkers == expectedWorkers)
                || (numExecutors.isDefined && numExecutors.get == currentWorkers)) {
       logInfo(s"Detected $currentWorkers spark executors for $expectedWorkers H2O workers!")
@@ -96,6 +99,10 @@ private[spark] class SpreadRDDBuilder(@transient private val hc: H2OContext, num
         s"Detected $currentWorkers spark executors for $expectedWorkers H2O workers, backend#isReady=${isBackendReady()}! Retrying again...")
       build(nretries - 1, mfactor, numTriesSame + 1)
     }
+  }
+
+  private def timeoutExpired(startTime: Long, timeout: Int): Boolean = {
+    System.currentTimeMillis() - startTime > timeout
   }
 
   /**
