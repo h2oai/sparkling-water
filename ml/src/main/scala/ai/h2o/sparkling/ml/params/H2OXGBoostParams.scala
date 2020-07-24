@@ -16,6 +16,7 @@
  */
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsHelper.getValidatedEnumValue
 import hex.schemas.XGBoostV3.XGBoostParametersV3
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -56,8 +57,6 @@ trait H2OXGBoostParams
   private val nthread = intParam("nthread")
   private val maxBins = intParam("maxBins")
   private val maxLeaves = intParam("maxLeaves")
-  private val minSumHessianInLeaf = floatParam("minSumHessianInLeaf")
-  private val minDataInLeaf = floatParam("minDataInLeaf")
   private val treeMethod = stringParam("treeMethod", "Tree Method")
   private val growPolicy = stringParam("growPolicy", "Grow Policy")
   private val booster = stringParam("booster", "Booster")
@@ -100,8 +99,6 @@ trait H2OXGBoostParams
     nthread -> -1,
     maxBins -> 256,
     maxLeaves -> 0,
-    minSumHessianInLeaf -> 100,
-    minDataInLeaf -> 0,
     treeMethod -> TreeMethod.auto.name(),
     growPolicy -> GrowPolicy.depthwise.name(),
     booster -> Booster.gbtree.name(),
@@ -160,9 +157,11 @@ trait H2OXGBoostParams
 
   def getMaxLeaves(): Int = $(maxLeaves)
 
-  def getMinSumHessianInLeaf(): Float = $(minSumHessianInLeaf)
+  @DeprecatedMethod(version = "3.32")
+  def getMinSumHessianInLeaf(): Float = 100
 
-  def getMinDataInLeaf(): Float = $(minDataInLeaf)
+  @DeprecatedMethod(version = "3.32")
+  def getMinDataInLeaf(): Float = 0
 
   def getTreeMethod(): String = $(treeMethod)
 
@@ -237,9 +236,11 @@ trait H2OXGBoostParams
 
   def setMaxLeaves(value: Int): this.type = set(maxLeaves, value)
 
-  def setMinSumHessianInLeaf(value: Float): this.type = set(minSumHessianInLeaf, value)
+  @DeprecatedMethod(version = "3.32")
+  def setMinSumHessianInLeaf(value: Float): this.type = this
 
-  def setMinDataInLeaf(value: Float): this.type = set(minDataInLeaf, value)
+  @DeprecatedMethod(version = "3.32")
+  def setMinDataInLeaf(value: Float): this.type = this
 
   def setTreeMethod(value: String): this.type = {
     val validated = getValidatedEnumValue[TreeMethod](value)
@@ -316,8 +317,6 @@ trait H2OXGBoostParams
         "nthread" -> getNthread(),
         "max_bins" -> getMaxBins(),
         "max_leaves" -> getMaxLeaves(),
-        "min_sum_hessian_in_leaf" -> getMinSumHessianInLeaf(),
-        "min_data_in_leaf" -> getMinDataInLeaf(),
         "tree_method" -> getTreeMethod(),
         "grow_policy" -> getGrowPolicy(),
         "booster" -> getBooster(),

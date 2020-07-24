@@ -48,8 +48,6 @@ class H2OXGBoost(H2OXGBoostParams, H2OTreeBasedSupervisedAlgoBase):
                  nthread=-1,
                  maxBins=256,
                  maxLeaves=0,
-                 minSumHessianInLeaf=100.0,
-                 minDataInLeaf=0.0,
                  treeMethod="auto",
                  growPolicy="depthwise",
                  booster="gbtree",
