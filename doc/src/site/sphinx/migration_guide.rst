@@ -33,8 +33,8 @@ From 3.32 to 3.34
 - On ``H2OConf``, the setter ``setMapperXmx`` is replaced by ``setExternalMemory`` and the getter ``mapperXmx``
   is replaced by ``externalMemory``. Also the Spark option ``spark.ext.h2o.hadoop.memory`` is replaced by ``spark.ext.h2o.external.memory``.
 
-From 3.30 to 3.32
------------------
+From 3.30.1 to 3.32
+-------------------
 
 - We have created two new classes - ``ai.h2o.sparkling.H2OContext`` and ``ai.h2o.sparkling.H2OConf``. The behaviour of the
   context and configuration is the same as in the original ``org.apache.spark.h2o`` package expect that in this case we
@@ -204,12 +204,9 @@ From 3.30 to 3.32
   The ``MapType`` sub-columns ``probabilities``, ``calibratedProbabilities`` and ``contributions`` have been changed to ``StructType``
   columns.
 
+- On H2OXGBoost, the options ``minSumHessianInLeaf`` and ``minDataInLeaf`` have been removed as well as the corresponding
+  getters and setters. The methods are removed without replacement as these parameters weren't valid XGBoost parameters.
 
-From 3.30 to 3.30.1
--------------------
-
-On H2OXGBoost, the options ``minSumHessianInLeaf`` and ``minDataInLeaf`` have been removed as well as the corresponding
-getters and setters. The methods are removed without replacement as these parameters weren't valid XGBoost parameters.
 
 From 3.28.1 to 3.30
 -------------------
