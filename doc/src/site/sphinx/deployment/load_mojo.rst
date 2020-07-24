@@ -265,7 +265,7 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
   it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
-- ``withReconstructedData`` - When enabled, a user can obtain reconstructed data from detailed predictions of dimension reduction models.
+- ``withReconstructedData`` - When enabled, a user can obtain reconstructed data for dimensional reduction models.
   This option is only supported by the GLRM algorithm and is disabled by default.
 
 Methods available on MOJO Model
@@ -330,7 +330,7 @@ are represented by a list of columns, where one column contains stage probabilit
 Obtaining Reconstructed Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain reconstructed data for dimension reductions models, please first make sure to set ``withReconstructedData`` and
+To obtain reconstructed data for dimensional reduction models, please first make sure to set ``withReconstructedData`` and
 ``withDetailedPredictionCol`` to true on your MOJO settings object. Reconstructed columns will be located under the
 ``${detailedPredictionCol}.reconstructed`` column on the dataset obtained from the prediction.
 Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
