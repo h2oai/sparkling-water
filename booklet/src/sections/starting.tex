@@ -1,16 +1,16 @@
 \section{Starting Sparkling Water}
 
 This section focuses on how Sparkling Water can be started in both backends and all language clients.
-You can submit Sparkling Water code as a Spark batch job or you can explore its functionality in an interactive shell.
+You can submit a Sparkling Water code as a Spark batch job or you can explore its functionality in an interactive shell.
 
 Before you start, please make sure that you have downloaded Sparkling Water from \url{https://www.h2o.ai/download/} for
 your desired Spark version.
 
 \subsection{Setting up the Environment}
 
-In case of Scala, all dependencies are already provided inside the Sparkling Water artifacts.
+In the case of Scala, all dependencies are already provided inside the Sparkling Water artifacts.
 
-In case of Python, please make sure that you have the following Python packages installed:
+In the case of Python, please make sure that you have the following Python packages installed:
 \begin{itemize}
     \item requests
     \item tabulate
@@ -19,7 +19,7 @@ In case of Python, please make sure that you have the following Python packages 
 \end{itemize}.
 Also please make sure that your Python environment is set-up to run regular Spark applications.
 
-In case of R, please make sure that SparklyR and H2O libraries are installed. The H2O version needs to match the version
+In the case of R, please make sure that SparklyR and H2O libraries are installed. The H2O version needs to match the version
 used in Sparkling Water. For example, when using RSparkling 3.30.0.7, make sure that you have H2O of version 3.30.0.7 installed.
 
 \subsection{Starting Interactive Shell with Sparkling Water}
@@ -36,15 +36,15 @@ To start interactive Python shell, run:
 ./bin/pysparkling
 \end{lstlisting}
 
-To use RSparkling in a interactive environment, we suggest to use RStudio.
+To use RSparkling in an interactive environment, we suggest using RStudio.
 
 \subsection{Starting Sparkling Water in Internal Backend}
 
-In the internal backend, H2O cluster is created automatically during the call of \texttt{H2OContext.getOrCreate}. Since
+In the internal backend, the H2O cluster is created automatically during the call of \texttt{H2OContext.getOrCreate}. Since
 it is not technically possible to get the number of executors in Spark, Sparkling Water tries to discover all executors
 during the initiation of \texttt{H2OContext} and starts H2O instance inside each of discovered executors. This solution
 is the easiest to deploy; however when Spark or YARN kills the executor, the whole H2O cluster goes down since H2O
-does not support high availability. Also there are cases where Sparkling Water is not able to discover all Spark
+does not support high availability. Also, there are cases where Sparkling Water is not able to discover all Spark
 executors and will start just on the subset of executors. The shape of the cluster can not be changed later.
 Internal backend is the default backend for Sparkling Water. It can be changed via spark configuration property
 \texttt{spark.ext.h2o.backend.cluster.mode} to \textbf{external} or \textbf{internal}. Another way how to change the
@@ -52,7 +52,7 @@ type of backend is by calling \texttt{setExternalClusterMode()} or \texttt{setIn
 on \texttt{H2OConf} class instance. \texttt{H2OConf} is a simple wrapper around \texttt{SparkConf} and inherits all
 properties in spark configuration.
 
-\texttt{H2OContext} can be explicitly started in internal backend mode as showed in the following sections
+\texttt{H2OContext} can be started as:
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
@@ -101,8 +101,8 @@ gives us more stability because we are no longer affected by Spark executors bei
 lead (as in the previous mode) to h2o cluster being killed as well.
 
 There are two deployment strategies of the external cluster: manual and automatic. In manual mode, we need to start
-the H2O cluster, and in automatic mode, the cluster is started for us automatically based on our configuration.
-In hadoop environments, the creation of the cluster is performed by a simple process called H2O driver.
+the H2O cluster, and in the automatic mode, the cluster is started for us automatically based on our configuration.
+In Hadoop environments, the creation of the cluster is performed by a simple process called H2O driver.
 When the cluster is fully formed, the H2O driver terminates. In both modes, we have to store a path of H2O driver jar
 to the environment variable H2O\_DRIVER\_JAR.
 
@@ -115,7 +115,7 @@ H2O_DRIVER_JAR=$(./bin/get-h2o-driver.sh some_hadoop_distribution)
 In the automatic mode, the H2O cluster is started automatically. The cluster can be started automatically only in YARN
 environment at the moment. We recommend this approach, as it is easier to deploy external clusters in this mode,
 and it is also more suitable for production environments. When the H2O cluster is started on YARN, it is started
-as a map reduce job, and it always uses the flatfile approach for nodes to cloud up.
+as a map-reduce job, and it always uses the flat-file approach for nodes to cloud up.
 
 First, get H2O driver, for example, for cdh 5.8, as:
 
@@ -167,10 +167,10 @@ hc <- H2OContext.getOrCreate(conf)
 In case we stored the path of the driver H2O jar to environmental variable H2O\_DRIVER\_JAR, we do not need
 to call \texttt{setH2ODriverPath} as Sparkling Water will read the path from the environmental variable.
 
-When specifying the queue, we recommend that this queue has YARN preemption off in order to have stable a H2O cluster.
+When specifying the queue, we recommend that this queue has YARN preemption off to have a stable H2O cluster.
 
-In case of Scala, it can also happen that we might need to explicitly set the client's IP or network. To see how this
-can be configured, please \ref{subsection:specify_ip}.
+In the case of Scala, it can also happen that we might need to explicitly set the client's IP or network. To see how this
+can be configured, please see the section \ref{subsection:specify_ip}.
 
 \subsubsection{Manual Mode of External Backend on Hadoop}
 
@@ -234,7 +234,7 @@ hc <- H2OContext.getOrCreate(conf)
 \end{itemize}
 
 
-The \texttt{representant\_ip} and \texttt{representant\_port} should be IP and Port of the leader node of the started
+The \texttt{representant\_ip} and \texttt{representant\_port} should be IP and port of the leader node of the started
 H2O cluster from the previous step.
 
 \subsubsection{Manual Mode of External Backend without Hadoop (standalone)}
@@ -264,8 +264,8 @@ java -cp "$H2O_JAR:$SW_EXTENSIONS_ASSEMBLY" water.H2OApp -allow_clients -name te
 \end{lstlisting}
 
 
-where the flatfile content are lines in the format of ip:port of the nodes where H2O is supposed to run. To
-read more about flatfile and its format, please
+where the flat-file content are lines in the format of ip:port of the nodes where H2O is supposed to run. To
+read more about flat-file and its format, please
 see \url{https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/howto/H2O-DevCmdLine.md#flatfile}.
 
 
@@ -304,16 +304,16 @@ hc <- H2OContext.getOrCreate(conf)
     \end{lstlisting}
 \end{itemize}
 
-The \texttt{representant\_ip} and \texttt{representant\_port} should be IP and Port of the leader node of the started
+The \texttt{representant\_ip} and \texttt{representant\_port} should be IP and port of the leader node of the started
 H2O cluster from the previous step.
 
 \subsection{Specifying the Client Network in Scala}
-\label{specify_ip}
+\label{subsection:specify_ip}
 
 It is possible that Spark driver, in which we are running H2O client which is connecting to the external H2O cluster, is
 connected to multiple networks. This can happen only in Scala as Python and R clients are not using the H2O client.
 
-In this case, it can happen that external H2O cluster decides to use addresses from network A while Spark decides to use
+In this case, external H2O cluster may decide to use addresses from network A while Spark decides to use
 addresses for its executors and driver from network B. When we start \textbf{H2OContext}, the H2O
 client running inside of the Spark Driver can get the same IP address as the Spark driver, and, thus, the rest
 of the H2O cluster can't see it. This shouldn't happen in environments where the nodes are connected to only one
@@ -323,7 +323,7 @@ Let's assume we have two H2O nodes on addresses 192.168.0.1 and 192.168.0.2. Let
 is available on 172.16.1.1, and the only executor is available on 172.16.1.2. The node with the Spark driver
 is also connected to the 192.168.0.x network with address 192.168.0.3.
 
-In this case there is a chance that the H2O client will use the address from 172.16.x.x network instead
+In this case, there is a chance that the H2O client will use the address from 172.16.x.x network instead
 of the 192.168.0.x one, which can lead to the problem that the H2O cluster and H2O client can't see each other.
 
 We can force the client to use the correct network or address using the calling \textbf{setClientNetworkMask("192.168.0.0/24")}
