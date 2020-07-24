@@ -204,6 +204,13 @@ From 3.30 to 3.32
   The ``MapType`` sub-columns ``probabilities``, ``calibratedProbabilities`` and ``contributions`` have been changed to ``StructType``
   columns.
 
+
+From 3.30 to 3.30.1
+-------------------
+
+On H2OXGBoost, the options ``minSumHessianInLeaf`` and ``minDataInLeaf`` have been removed as well as the corresponding
+getters and setters. The methods are removed without replacement as these parameters weren't valid XGBoost parameters.
+
 From 3.28.1 to 3.30
 -------------------
 
