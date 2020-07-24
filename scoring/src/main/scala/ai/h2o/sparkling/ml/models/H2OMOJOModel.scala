@@ -34,6 +34,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
+import _root_.hex.genmodel.algos.glrm.GlrmMojoModel
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -269,6 +270,7 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
     model.set(model.withContributions -> settings.withContributions)
     model.set(model.withLeafNodeAssignments -> settings.withLeafNodeAssignments)
     model.set(model.withStageResults -> settings.withStageResults)
+    model.set(model.withReconstructedData -> settings.withReconstructedData)
     model
   }
 }
@@ -325,6 +327,14 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     }
   }
 
+  private def canGenerateReconstructedData(model: GenModel): Boolean = {
+    model match {
+      case _: GlrmMojoModel => true
+      case _ =>
+        throw new IllegalArgumentException("Computing reconstructed data is only available on GLRM models!")
+    }
+  }
+
   override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(Utils.getMojoModel(mojo))
@@ -341,6 +351,10 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     if (model.getWithStageResults() && model
           .getWithDetailedPredictionCol() && canGenerateStageResults(config.getModel)) {
       config.setEnableStagedProbabilities(true)
+    }
+    if (model.getWithDetailedPredictionCol() && model.getWithReconstructedData() && canGenerateReconstructedData(
+          config.getModel)) {
+      config.setEnableGLRMReconstrut(true)
     }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)

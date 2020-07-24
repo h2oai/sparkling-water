@@ -50,7 +50,8 @@ object Runner {
     "splitRatio" -> 1.0,
     "columnsToCategorical" -> Array.empty[String],
     "withLeafNodeAssignments" -> false,
-    "withStageResults" -> false)
+    "withStageResults" -> false,
+    "withReconstructedData" -> false)
 
   val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null)
 
