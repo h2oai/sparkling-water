@@ -210,7 +210,7 @@ From 3.30.1 to 3.32
 From 3.30 to 3.30.1
 -------------------
 
-No breaking changes so far :)
+No breaking changes.
 
 From 3.28.1 to 3.30
 -------------------
