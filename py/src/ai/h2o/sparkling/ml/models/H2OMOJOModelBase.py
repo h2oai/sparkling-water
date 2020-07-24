@@ -54,4 +54,4 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
         return self._java_obj.getWithContributions()
 
     def getWithLeafNodeAssignments(self):
-        return self._java_obj.getWithLeafNodeAssignments()()
+        return self._java_obj.getWithLeafNodeAssignments()
