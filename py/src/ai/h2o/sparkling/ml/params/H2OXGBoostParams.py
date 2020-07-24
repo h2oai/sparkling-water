@@ -15,14 +15,13 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
-
 from ai.h2o.sparkling.ml.params.H2OAlgoSupervisedParams import H2OAlgoSupervisedParams
 from ai.h2o.sparkling.ml.params.H2OTreeBasedSupervisedMOJOParams import H2OTreeBasedSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from ai.h2o.sparkling.ml.params.HasMonotoneConstraints import HasMonotoneConstraints
 from ai.h2o.sparkling.ml.params.HasStoppingCriteria import HasStoppingCriteria
-from ai.h2o.sparkling.ml.Utils import Utils
+from pyspark.ml.param import *
+import warnings
 
 class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams, HasMonotoneConstraints,
                        HasStoppingCriteria):
@@ -148,18 +147,6 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         "maxLeaves",
         "max leaves",
         H2OTypeConverters.toInt())
-
-    minSumHessianInLeaf = Param(
-        Params._dummy(),
-        "minSumHessianInLeaf",
-        "min sum hessian in leaf",
-        H2OTypeConverters.toFloat())
-
-    minDataInLeaf = Param(
-        Params._dummy(),
-        "minDataInLeaf",
-        "min data in leaf",
-        H2OTypeConverters.toFloat())
 
     treeMethod = Param(
         Params._dummy(),
@@ -309,10 +296,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self.getOrDefault(self.maxLeaves)
 
     def getMinSumHessianInLeaf(self):
-        return self.getOrDefault(self.minSumHessianInLeaf)
+        warnings.warn("The method 'getMinSumHessianInLeaf' is deprecated without replacement and will be removed in 3.32.")
+        return 100.0
 
     def getMinDataInLeaf(self):
-        return self.getOrDefault(self.minDataInLeaf)
+        warnings.warn("The method 'getMinDataInLeaf' is deprecated without replacement and will be removed in 3.32.")
+        return 0.0
 
     def getTreeMethod(self):
         return self.getOrDefault(self.treeMethod)
@@ -423,10 +412,12 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
         return self._set(maxLeaves=value)
 
     def setMinSumHessianInLeaf(self, value):
-        return self._set(minSumHessianInLeaf=value)
+        warnings.warn("The method 'setMinSumHessianInLeaf' is deprecated without replacement and will be removed in 3.32.")
+        return self
 
     def setMinDataInLeaf(self, value):
-        return self._set(minDataInLeaf=value)
+        warnings.warn("The method 'setMinDataInLeaf' is deprecated without replacement and will be removed in 3.32.")
+        return self
 
     def setTreeMethod(self, value):
         return self._set(treeMethod=value)
