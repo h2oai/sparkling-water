@@ -1,6 +1,45 @@
 Change Log
 ==========
 
+v3.30.0.7-1 (2020-07-24)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.7-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.7-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.7-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.0.7-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.7-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.0.7-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.7-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.7-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.7-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.0.7-1-3.0/index.html>`__
+
+-  Bug
+        
+   -  `SW-2356 <https://0xdata.atlassian.net/browse/SW-2356>`__ - Fix timeout on long running Rest API commands through Proxy
+   -  `SW-2357 <https://0xdata.atlassian.net/browse/SW-2357>`__ - Some tests in ml package are not being run
+   -  `SW-2360 <https://0xdata.atlassian.net/browse/SW-2360>`__ - R tests do not fail in gradle when there is failed test
+   -  `SW-2371 <https://0xdata.atlassian.net/browse/SW-2371>`__ - Missing getWithLeafNodeAssignments() Methods on MOJOModelBase In Python &amp; R
+   -  `SW-2377 <https://0xdata.atlassian.net/browse/SW-2377>`__ - Double Usage of Parenthesis in H2OMOJOBase.py
+   -  `SW-2379 <https://0xdata.atlassian.net/browse/SW-2379>`__ - Store the scalaBaseVersion into resulting gradle.properties file
+                
+-  New Feature
+        
+   -  `SW-2358 <https://0xdata.atlassian.net/browse/SW-2358>`__ - Update H2O to 3.30.0.7
+                
+-  Improvement
+        
+   -  `SW-2166 <https://0xdata.atlassian.net/browse/SW-2166>`__ - DBC Smoke tests
+   -  `SW-2349 <https://0xdata.atlassian.net/browse/SW-2349>`__ - Enable leaf node assignment for H2OMOJOModel
+   -  `SW-2362 <https://0xdata.atlassian.net/browse/SW-2362>`__ - Documentation should mention how to run examples with Spark/Sparkling Shell
+   -  `SW-2369 <https://0xdata.atlassian.net/browse/SW-2369>`__ - Copy Sparkling Water booklet from H2O-3 repo to Sparkling Water
+   -  `SW-2372 <https://0xdata.atlassian.net/browse/SW-2372>`__ - Expose option used for waiting before the clouding starts in internal backend
+                
+-  Engineering Story
+        
+   -  `SW-2355 <https://0xdata.atlassian.net/browse/SW-2355>`__ - Fix build after hive changes on the H2O side
+                
+-  Docs
+        
+   -  `SW-2354 <https://0xdata.atlassian.net/browse/SW-2354>`__ - Flip Sparkling Water site when released
+                
+    
 v3.30.0.6-1 (2020-07-03)
 ------------------------
 Downloads:
