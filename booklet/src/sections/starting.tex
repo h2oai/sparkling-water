@@ -330,3 +330,39 @@ We can force the client to use the correct network or address using the calling 
 on \textbf{H2OConf} object. Instead of \textbf{setClientNetworkMask}, we can also use more strict variant and specify
 the IP address directly using \textbf{setClientIp("192.168.0.3")}. This IP address needs to be accessible from the
 Spark driver and needs to be located in the same network as the rest of the H2O worker nodes.
+
+\subsection{Memory Management}
+
+In case of internal backend, H2O resides in the same executor JVM as Spark and the memory provided for H2O is configured
+via Spark.
+Executor memory (i.e., memory available for H2O in internal backend) can be configured via the Spark configuration
+property \texttt{spark.executor.memory}. For example, as:
+
+\begin{lstlisting}[style=bash]
+./bin/sparkling-shell --conf spark.executor.memory=5g
+\end{lstlisting}
+
+or configure the property in:
+
+\begin{lstlisting}[style=bash]
+$SPARK_HOME/conf/spark-defaults.conf
+\end{lstlisting}
+
+Driver memory (i.e., memory available for H2O client running inside the Spark driver) can be configured via the Spark
+configuration property \texttt{spark.driver.memory}. For example, as:
+
+\begin{lstlisting}[style=bash]
+./bin/sparkling-shell --conf spark.driver.memory=5g
+\end{lstlisting}
+
+or configure the property in:
+
+\begin{lstlisting}[style=bash]
+$SPARK_HOME/conf/spark-defaults.conf
+\end{lstlisting}
+
+In the external backend, only the H2O client (Scala only) is running in the Spark driver and is affected by Spark
+memory configuration. Memory has to be configured explicitly for the H2O nodes in the external backend via the
+\texttt{spark.ext.h2o.external.memory} option or \texttt{setExternalMemory} setter on \texttt{H2OConf}.
+
+For YARN-specific configuration, refer to the Spark documentation \url{https://spark.apache.org/docs/latest/running-on-yarn.html}.
