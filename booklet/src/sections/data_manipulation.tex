@@ -14,7 +14,7 @@
 
     H2OFrame can be created by converting Spark entities into it. \textbf{H2OContext} provides the
     \textbf{asH2OFrame} method which accepts Spark Dataset, DataFrame and RDD[T] as an input parameter.
-    In case of RDD, the type \texttt{T} has to satisfy the upper bound expressed by the type \texttt{Product}.
+    In the case of RDD, the type \texttt{T} has to satisfy the upper bound expressed by the type \texttt{Product}.
     The conversion will create a new \texttt{H2OFrame}, transfer data from the specified RDD, and save it to the
     H2O K/V data store.
 
@@ -191,8 +191,8 @@ h2oContext$asSparkFrame(h2oFrame)
     \end{table}
 
     \subsection{Using Spark Data Sources with H2OFrame}
-    Spark SQL provides configurable data source for SQL tables. Sparkling Water enables \texttt{H2OFrame}s to be
-    used as data source to load/save data from/to Spark DataFrame. This API is supported only in Scala and
+    Spark SQL provides a configurable data source for SQL tables. Sparkling Water enables \texttt{H2OFrame}s to be
+    used as a data source to load/save data from/to Spark DataFrame. This API is supported only in Scala and
     Python APIs
 
     \subsubsection{Reading from \texttt{H2OFrame}}
@@ -219,7 +219,7 @@ spark.read.format("h2o").option("key", frameKey).load()
         \end{lstlisting}
     \end{itemize}
 
-    If you specify the key as option and inside the load method, the option
+    If you specify the key as the option and inside the load method, the option
     has the precedence.
 
     \subsubsection{Saving to \texttt{H2OFrame}}
@@ -246,7 +246,7 @@ df.write.format("h2o").option("key", "new_key").save()
         \end{lstlisting}
     \end{itemize}
 
-    If you specify the key as option and inside the save method, the option
+    If you specify the key as the option and inside the save method, the option
     has the precedence.
 
     \subsubsection{Specifying Saving Mode}
@@ -256,7 +256,7 @@ df.write.format("h2o").option("key", "new_key").save()
 
     \begin{itemize}
         \item If \textbf{append} mode is used, an existing \texttt{H2OFrame} with the same key is deleted, and a new one created with the same key. The new frame contains the union of all rows from the original \texttt{H2OFrame} and the appended \texttt{DataFrame}.
-        \item If \textbf{overwrite} mode is used, an existing \texttt{H2OFrame} with the same key is deleted, and new one with the new rows is created with the same key.
+        \item If \textbf{overwrite} mode is used, an existing \texttt{H2OFrame} with the same key is deleted, and a new one with the new rows is created with the same key.
         \item If \textbf{error} mode is used, and a \texttt{H2OFrame} with the specified key already exists, an exception is thrown.
         \item If \textbf{ignore} mode is used, and a \texttt{H2OFrame} with the specified key already exists, no data are changed.
     \end{itemize}
