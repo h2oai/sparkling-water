@@ -3,8 +3,8 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
-From 3.30 to 3.32
------------------
+From 3.30.1 to 3.32
+-------------------
 
 - In PySparkling, the ``H2OConf`` no longer accepts any arguments. To create new ``H2OConf``, please just call ``conf = H2OConf()``.
   Also the ``H2OContext.getOrCreate`` method no longer accepts the spark argument. You can start H2OContext as
@@ -159,11 +159,13 @@ From 3.30 to 3.32
 | ``namedMojoOutputColumns``              | ``getNamedMojoOutputColumns``              | ``setNamedMojoOutputColumns``              |
 +-----------------------------------------+--------------------------------------------+--------------------------------------------+
 
+- On H2OXGBoost, the options ``minSumHessianInLeaf`` and ``minDataInLeaf`` have been removed as well as the corresponding
+  getters and setters. The methods are removed without replacement as these parameters weren't valid XGBoost parameters.
+
 From 3.30 to 3.30.1
 -------------------
 
-On H2OXGBoost, the options ``minSumHessianInLeaf`` and ``minDataInLeaf`` have been removed as well as the corresponding
-getters and setters. The methods are removed without replacement as these parameters weren't valid XGBoost parameters.
+No breaking changes.
 
 From 3.28.1 to 3.30
 -------------------
