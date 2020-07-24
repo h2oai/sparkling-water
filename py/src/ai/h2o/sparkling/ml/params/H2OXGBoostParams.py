@@ -297,11 +297,11 @@ class H2OXGBoostParams(H2OAlgoSupervisedParams, H2OTreeBasedSupervisedMOJOParams
 
     def getMinSumHessianInLeaf(self):
         warnings.warn("The method 'getMinSumHessianInLeaf' is deprecated without replacement and will be removed in 3.32.")
-        return 100
+        return 100.0
 
     def getMinDataInLeaf(self):
         warnings.warn("The method 'getMinDataInLeaf' is deprecated without replacement and will be removed in 3.32.")
-        return 0
+        return 0.0
 
     def getTreeMethod(self):
         return self.getOrDefault(self.treeMethod)
