@@ -284,7 +284,7 @@ External backend configuration properties
 +=======================================================+================+=================================================+=====================================+
 | ``spark.ext.h2o.cloud.representative``                | ``None``       | ``setH2OCluster(String)``                       | ip:port of a H2O cluster leader     |
 |                                                       |                |                                                 | node to identify external           |
-|                                                       |                |                                                 |  H2O cluster.                       |
+|                                                       |                |                                                 | H2O cluster.                        |
 +-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
 | ``spark.ext.h2o.external.cluster.size``               | ``None``       | ``setClusterSize(Integer)``                     | Number of H2O nodes to start when   |
 |                                                       |                |                                                 | ``auto`` mode of the external       |
