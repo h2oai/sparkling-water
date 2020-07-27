@@ -5,16 +5,6 @@
 This is a structure of a simple example project to start coding with Sparkling Water. The source code is available at
 \url{https://github.com/h2oai/h2o-droplets/tree/master/sparkling-water-droplet}
 
-\textbf{Dependencies}
-
-This droplet uses Sparkling Water 2.2, which integrates:
-\begin{itemize}
-\item Spark 2.2
-\item H2O 3.14.0.7 Weierstrass
-\end{itemize}
-
-For more details see \texttt{build.gradle}.
-
 \textbf{Project structure}
 
 % Lots of code to draw a basic file structure, examples exist to jazz this up
@@ -69,30 +59,6 @@ For running a simple application:
 ./gradlew run
 \end{lstlisting}
 
-\textbf{Starting with IDEA}
-
-There are two ways to open this project in IntelliJ IDEA
-
-Using Gradle build file directly:
-
-\quad Open the project's \texttt{build.gradle} in IDEA via File $\rightarrow$ Open
-
-or using Gradle generated project files:
-
-\begin{enumerate}
-\item Generate Idea configuration files via  {\lstinline[style=Bash]|./gradlew idea|} 
-\item Open project in Idea via File $\rightarrow$ Open
-\end{enumerate}
-
-Note: To clean up Idea project files please launch {\lstinline[style=Bash]|./gradlew cleanIdea|} 
-
-\textbf{Starting with Eclipse}
-
-\begin{enumerate}
-\item Generate Eclipse project files via {\lstinline[style=Bash]|./gradlew eclipse|} 
-\item Open project in Eclipse via File $\rightarrow$ Import $\rightarrow$ Existing Projects into Workspace
-\end{enumerate}
-
 \textbf{Running tests}
 
 To run tests, please, run:
@@ -106,7 +72,7 @@ To run tests, please, run:
 To check codestyle:
 
 \begin{lstlisting}[style=Bash]
-./gradlew scalaStyle
+./gradlew spotlessCheck
 \end{lstlisting}
 
 \textbf{Creating and Running Spark Application}
