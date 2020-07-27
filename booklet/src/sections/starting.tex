@@ -294,7 +294,6 @@ hc = H2OContext.getOrCreate(conf)
 library(sparklyr)
 library(rsparkling)
 spark_connect(master = "local", version = "3.0.0")
-from pysparkling import *
 conf <- H2OConf()
     $setExternalClusterMode()
     $useManualClusterStart()
