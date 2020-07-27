@@ -1,5 +1,8 @@
 \section{Deployment}
-Since Sparkling Water is designed as a regular Spark application, its deployment cycle is strictly driven by Spark deployment strategies (refer to Spark documentation\footnote{Spark deployment guide \url{http://spark.apache.org/docs/latest/cluster-overview.html}}). Spark applications are deployed by the \texttt{spark-submit}~\footnote{Submitting Spark applications \url{http://spark.apache.org/docs/latest/submitting-applications.html}} script that handles all deployment scenarios:
+Since Sparkling Water is designed as a regular Spark application, its deployment cycle is strictly driven by Spark
+deployment strategies (refer to Spark documentation\footnote{Spark deployment guide \url{http://spark.apache.org/docs/latest/cluster-overview.html}}).
+Spark applications are deployed by the \texttt{spark-submit}~\footnote{Submitting Spark applications \url{http://spark.apache.org/docs/latest/submitting-applications.html}}
+script that handles all deployment scenarios:
 
 \begin{lstlisting}[style=Bash]
 ./bin/spark-submit \
@@ -11,7 +14,7 @@ Since Sparkling Water is designed as a regular Spark application, its deployment
 \end{lstlisting}
 
 \begin{itemize}
-	\item \texttt{--class}: Name of main class with \texttt{main} method to be executed. For example, the \texttt{water.SparklingWaterDriver} application launches H2O services.
+	\item \texttt{--class}: Name of main class with \texttt{main} method to be executed. For example, the \texttt{ai.h2o.sparkling.SparklingWaterDriver} application launches H2O services.
 	\item \texttt{--master}: Location of Spark cluster
 	\item \texttt{--conf}: Specifies any configuration property using the format \texttt{key=value}
 	\item \texttt{application-jar}: Jar file with all classes and dependencies required for application execution
@@ -20,47 +23,46 @@ Since Sparkling Water is designed as a regular Spark application, its deployment
 
 \subsection{Referencing Sparkling Water}
 
-\subsubsection{Using Fatjar}
-The Sparkling Water archive provided at \url{http://h2o.ai/download} contains a Fatjar with all classes required for Sparkling Water run.
+\subsubsection{Using Assembly Jar}
+The Sparkling Water archive provided at \url{http://h2o.ai/download} contains an assembly jar with all classes required for Sparkling Water run.
 
-An application submission with Sparkling Water Fatjar is using the \texttt{--jars} option which references included fatjar.
+An application submission with Sparkling Water assembly jar is using the \texttt{--jars} option which references included jar
 
 \pagebreak
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-submit \
-  --jars assembly/build/libs/sparkling-water-assembly-2.2.2-all.jar \
-  --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp \
-  /dev/null
+  --jars /sparkling-water-distribution/jars/sparkling-water-assembly_2.12-3.30.1.1-1-3.0-all.jar \
+  --class ai.h2o.sparkling.SparklingWaterDriver
+\end{lstlisting}
+
+\subsubsection{Using PySparkling Zip}
+An application submission for PySparkling is using the \texttt{--py-files} option which references the PySparkling
+zip package
+
+\begin{lstlisting}[style=Bash]
+$SPARK_HOME/bin/spark-submit \
+  --py-files /sparkling-water-distribution/py/build/dist/h2o_pysparkling_3.0-3.30.1.1-1-3.0.zip \
+  app.py
 \end{lstlisting}
 
 \subsubsection{Using the Spark Package}
 
-Sparkling Water is also published as a Spark package. The benefit of using the package is that you can use it directly from your Spark distribution without need to download Sparkling Water.
-
-For example, if you have Spark version 2.2.0 and would like to use Sparkling Water version 2.2.2 and launch example \texttt{CraigslistJobTitlesStreamingApp}, then you can use the following command:
+Sparkling Water is also published as a Spark package. The benefit of using the package is that you can use it directly
+from your Spark distribution without need to download Sparkling Water.
 
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-submit \
-  --packages ai.h2o:sparkling-water-core_2.11:2.2.2,ai.h2o:sparkling-water-examples_2.11:2.2.2,no.priv.garshol.duke:duke:1.2 \
-  --class org.apache.spark.examples.h2o.CraigslistJobTitlesStreamingApp \
-  /dev/null
+  --packages ai.h2o:sparkling-water-package_2.12:3.30.0.7-1-3.0 \
+  --class ai.h2o.sparkling.SparklingWaterDriver
 \end{lstlisting}
-
-Note: The duke library has to be explicitly added when using Sparkling Water via the \texttt{--packages} option. The library
-contains a pom file, which the Spark dependency resolver can't properly resolve, and therefore this library will be missing if not explicitly
-specified. This is only required in Sparkling Water 2.2.2 and older, 2.1.16 and older, and 2.0.17 and older. In newer Sparkling Water
-versions, the only dependency that needs to be put into \texttt{--packages} is \texttt{sparkling-water-package\_2.11:\{version\}}.
-This package contains all the required dependencies.
-
 
 The Spark option \texttt{--packages} points to coordinate of published Sparkling Water package in Maven repository.
 
-\newpage
 The similar command works for spark-shell:
 
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-shell \
- --packages ai.h2o:sparkling-water-core_2.11:2.2.2,ai.h2o:sparkling-water-examples_2.11:2.2.2,no.priv.garshol.duke:duke:1.2
+ --packages ai.h2o:sparkling-water-package_2.12:3.30.0.7-1-3.0
 \end{lstlisting}
 
 Note: When you are using Spark packages, you do not need to download Sparkling Water distribution. Spark installation is sufficient.
@@ -74,7 +76,8 @@ Sparkling Water supports deployments to the following Spark cluster types:
 \end{itemize}
 
 \subsubsection{Local cluster}
-The local cluster is identified by the following master URLs - \texttt{local}, \texttt{local[K]}, or \texttt{local[*]}. In this case, the cluster is composed of a single JVM and is created during application submission.
+The local cluster is identified by the following master URLs - \texttt{local}, \texttt{local[K]}, or \texttt{local[*]}. In this
+case, the cluster is composed of a single JVM and is created during application submission.
 
 For example, the following command will run the ChicagoCrimeApp application inside a single JVM with a heap size of 5g:
 \begin{lstlisting}[style=Bash]
@@ -82,31 +85,35 @@ $SPARK_HOME/bin/spark-submit \
   --conf spark.executor.memory=5g \
   --conf spark.driver.memory=5g \
   --master local[*] \
-  --packages ai.h2o:sparkling-water-examples_2.11:2.2.2,no.priv.garshol.duke:duke:1.2 \
-  --class org.apache.spark.examples.h2o.ChicagoCrimeApp \
-  /dev/null
+  --packages ai.h2o:sparkling-water-package_2.12:3.30.0.7-1-3.0 \
+  --class ai.h2o.sparkling.SparklingWaterDriver
 \end{lstlisting}
 
 \subsubsection{On a Standalone Cluster}
-For AWS deployments or local private clusters, the standalone cluster deployment\footnote{Refer to Spark documentation~\url{http://spark.apache.org/docs/latest/spark-standalone.html}} is typical. Additionally, a Spark standalone cluster is also provided by Hadoop distributions like CDH or HDP. The cluster is identified by the URL \texttt{spark://IP:PORT}.
+For AWS deployments or local private clusters, the standalone cluster
+deployment\footnote{Refer to Spark documentation~\url{http://spark.apache.org/docs/latest/spark-standalone.html}} is
+typical. Additionally, a Spark standalone cluster is also provided by Hadoop distributions like CDH or HDP. The cluster is
+identified by the URL \texttt{spark://IP:PORT}.
 
-The following command deploys the \texttt{ChicagoCrimeApp} on a standalone cluster where the master node is exposed on IP \texttt{machine-foo.bar.com} and port \texttt{7077}:
+The following command deploys the \texttt{SparklingWaterDriver} on a standalone cluster where the master node
+is exposed on IP \texttt{machine-foo.bar.com} and port \texttt{7077}:
 
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-submit \ 
   --conf spark.executor.memory=5g \
   --conf spark.driver.memory=5g \
   --master spark://machine-foo.bar.com:7077 \
-  --packages ai.h2o:sparkling-water-examples_2.11:2.2.2,no.priv.garshol.duke:duke:1.2 \
-  --class org.apache.spark.examples.h2o.ChicagoCrimeApp \
-  /dev/null
+  --packages ai.h2o:sparkling-water-package_2.12:3.30.0.7-1-3.0 \
+  --class ai.h2o.sparkling.SparklingWaterDriver
 \end{lstlisting}
 
-In this case, the standalone Spark cluster must be configured to provide the requested 5g of memory per executor node. 
+In this case, the standalone Spark cluster must be configured to provide the requested 5g of memory per executor node.
 
 \subsubsection{On a YARN Cluster}
-Because it provides effective resource management and control, most production environments use YARN for cluster deployment.\footnote{See Spark documentation~\url{http://spark.apache.org/docs/latest/running-on-yarn.html}} 
-In this case, the environment must contain the shell variable~\texttt{HADOOP\_CONF\_DIR} or \texttt{YARN\_CONF\_DIR} which point to Hadoop configuration directory (e.g., \texttt{/etc/hadoop/conf}).
+Because it provides effective resource management and control, most production environments use YARN for cluster
+deployment.\footnote{See Spark documentation~\url{http://spark.apache.org/docs/latest/running-on-yarn.html}}
+In this case, the environment must contain the shell variable~\texttt{HADOOP\_CONF\_DIR} or \texttt{YARN\_CONF\_DIR} which
+points to Hadoop configuration directory (e.g., \texttt{/etc/hadoop/conf}).
 
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-submit \ 
@@ -115,21 +122,19 @@ $SPARK_HOME/bin/spark-submit \
   --num-executors 5 \
   --master yarn \
   --deploy-mode client
-  --packages ai.h2o:sparkling-water-examples_2.11:2.2.2,no.priv.garshol.duke:duke:1.2 \
-  --class org.apache.spark.examples.h2o.ChicagoCrimeApp \
-  /dev/null
+  --packages ai.h2o:sparkling-water-package_2.12:3.30.0.7-1-3.0 \
+  --class ai.h2o.sparkling.SparklingWaterDriver
 \end{lstlisting}
 
-The command in the example above creates a YARN job and requests for 5 nodes, each with 5G of memory. Master is set to \texttt{yarn}, and together with the deploy mode \texttt{client} option forces the driver to run in the client process.
+The command in the example above creates a YARN job and requests for 5 nodes, each with 5G of memory. Master
+is set to \texttt{yarn}, and together with the deploy mode \texttt{client} option forces the driver to run in the client process.
 
 \subsection{DataBricks Cloud}
 This section describes how to use Sparkling Water and PySparkling with DataBricks.
 The first part describes how to create a cluster for Sparkling Water/PySparkling and then discusses how to use Sparkling Water and PySparkling in Databricks.
 
 
-DataBricks cloud is Integrated with Sparkling Water and Pysparkling. Currently, only internal Sparkling Water backend may
-be used.
-
+DataBricks cloud is Integrated with Sparkling Water and Pysparkling. Only internal Sparkling Water backend may be used.
 
 \subsubsection{Creating a Cluster}
 
@@ -142,8 +147,7 @@ be used.
 \textbf{Steps}:
 \begin{enumerate}
 \item In Databricks, click \textbf{Create Cluster} in the Clusters dashboard.
-\item Select your Databricks Runtime Version. (Note that in our demos, we are using `3.0 (includes Apache Spark 2.2.0, Scala 2.11)`.)
-\item Select at least 3 workers.
+\item Select your Databricks Runtime Version.
 \item Select 0 on-demand workers. On demand workers are currently not supported with Sparkling Water.
 \item In the SSH tab, upload your public key.  You can create a public key by running the below command in a terminal session:
 \begin{lstlisting}[style=Bash]
@@ -160,7 +164,6 @@ This will allow you to use the Flow UI.
 
 \end{enumerate}
 
-
 \subsubsection{Running Sparkling Water}
 
 \textbf{Requirements}:
@@ -172,19 +175,18 @@ This will allow you to use the Flow UI.
 \begin{enumerate}
 \item Create a new library containing the Sparkling Water jar.
 \item Download the selected Sparkling Water version from \url{https://www.h2o.ai/download/}.
-\item The jar file is located in the sparkling water zip file at the following location: `assembly/build/libs/sparkling-water-assembly\_*-all.jar`
+\item The jar file is located in the sparkling water zip file at the following location: `jars/sparkling-water-assembly\_*-all.jar`
 \item Attach the Sparkling Water library to the cluster.
 \item Create a new Scala notebook.
 \item Create an H2O cluster inside the Spark cluster:
 \begin{lstlisting}[style=Scala]
 import org.apache.spark.h2o._
-val h2oConf = new H2OConf(spark).set("spark.ui.enabled", "false")
-val h2oContext = H2OContext.getOrCreate(spark, h2oConf)
+val conf = new H2OConf(spark)
+val h2oContext = H2OContext.getOrCreate(conf)
 \end{lstlisting}
 You can access Flow by going to localhost:54321.
 \end{enumerate}
 
-\newpage
 \subsubsection{Running PySparkling}
 
 \textbf{Requirements}:
@@ -207,26 +209,28 @@ You can access Flow by going to localhost:54321.
 \item Create an H2O cluster inside the Spark cluster:
 \begin{lstlisting}[style=Python]
 from pysparkling import *
-h2oConf = H2OConf(spark).set("spark.ui.enabled", "false")
-hc = H2OContext.getOrCreate(spark, h2oConf)
+conf = H2OConf(spark)
+hc = H2OContext.getOrCreate(conf)
 \end{lstlisting}
 
 \end{enumerate}
 
+\subsubsection{Running RSparkling}
 
-To prevent a progress bar error, run the following cell at the beginning of the python notebook:
+\textbf{Steps}:
+\begin{enumerate}
+  \item Create a new R notebook
+  \item Create an H2O cluster inside the Spark cluster:
+  \begin{lstlisting}[style=R]
+install.packages("sparklyr")
+# Install H2O
+install.packages("h2o", type = "source", repos = "http://h2o-release.s3.amazonaws.com/h2o/rel-zahradnik/7/R")
+# Install RSparkling
+install.packages("rsparkling", type = "source", repos = "http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.0.7-1-2.4/R")
+# Connect to Spark
+sc <- spark_connect(method = "databricks")
+# Create H2OContext
+hc <- H2OContext.getOrCreate()
+  \end{lstlisting}
 
-\begin{lstlisting}[style=Python]
-# Patch to workaround progress bar error (this cell must be run before using h2o)
-import sys
-
-def isatty(self):
-return False
-
-type(sys.stdout).isatty = isatty
-type(sys.stdout).encoding = "UTF-8"
-\end{lstlisting}
-
-Note: This is only required in Sparkling Water 2.2.2 and older, 2.1.16 and older, and 2.0.17 and older. This is
-fixed in newer Sparkling Water versions.
-
+\end{enumerate}
