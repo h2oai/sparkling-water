@@ -3,12 +3,12 @@
 Supported Platforms
 -------------------
 
-Sparkling Water can run on top of Spark in the various ways; however starting Sparkling Water requires different configurations on different environments:
+Sparkling Water can run on top of Spark in various ways; however, starting Sparkling Water requires different configurations on different environments:
 
 Local
 ~~~~~
 
-In this case Sparkling Water runs as a local cluster (Spark master
+In this case, Sparkling Water runs as a local cluster (Spark master
 variable points to one of the values ``local``, ``local[*]`` or additional local modes available at
 `Spark Master URLs <https://spark.apache.org/docs/latest/submitting-applications.html#master-urls>`__).
 

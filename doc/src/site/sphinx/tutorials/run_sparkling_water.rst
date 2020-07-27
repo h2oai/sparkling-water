@@ -19,7 +19,7 @@ The semantic of the call depends on the configured Sparkling Water backend. For 
 
 In internal backend mode, the call will:
 
-1. Collect the number and host names of the executors (worker nodes) in the Spark cluster
+1. Collect the number and hostnames of the executors (worker nodes) in the Spark cluster
 2. Launch H2O services on each detected executor
 3. Create a cloud for H2O services based on the list of executors
 4. Verify the H2O cloud status

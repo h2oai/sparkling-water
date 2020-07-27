@@ -2,7 +2,7 @@ Train XGBoost Model in Sparkling Water
 --------------------------------------
 
 Sparkling Water provides API for H2O XGBoost in Scala and Python.
-The following sections describe how to train XGBoost model in Sparkling Water in both languages.
+The following sections describe how to train the XGBoost model in Sparkling Water in both languages.
 
 .. content-tabs::
 
@@ -41,7 +41,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
             val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
             val model = estimator.fit(trainingDF)
 
-        By default, ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
         If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OXGBoostClassifier``
@@ -94,9 +94,9 @@ The following sections describe how to train XGBoost model in Sparkling Water in
             estimator = H2OXGBoost(labelCol = "CAPSULE")
             model = estimator.fit(trainingDF)
 
-        By default, ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OXGBoost`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2OXGBoostClassifier`` or ``H2OXGBoostRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
@@ -115,7 +115,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 XGBoost Memory Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additionally memory
+H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additional memory
 available on the system.
 
 When running on YARN, please make sure to set the ``memoryOverhead`` so XGBoost has enough memory. On Spark, the following

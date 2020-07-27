@@ -15,7 +15,7 @@ Exchanging the Data
 
 The way that data is transferred between Spark and H2O differs based on the used Sparkling Water backend. (Refer to :ref:`backend` for more information about the Internal and External backends.)
 
-In the Internal Sparkling Water Backend, Spark and H2O share the same JVM, as is depicted on the following figure. 
+In the Internal Sparkling Water Backend, Spark and H2O share the same JVM, as is depicted in the following figure.
 
 |Data Sharing|
 
@@ -39,7 +39,7 @@ If your dataset is represented as JSON, XML or parquet, the requirements may dif
 When Using Sparkling Water Internal Backend:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In internal backend mode H2O-3 shares the JVM with Spark executors. In this case, you will want to
+In the internal backend mode, H2O-3 shares the JVM with Spark executors. In this case, you will want to
 allocate enough memory to run Spark transformations on your DataFrame (which means allocating a
 minimum memory of your dataset and memory for those transformations), plus allocate an additional 4 x the
 size of your dataset.

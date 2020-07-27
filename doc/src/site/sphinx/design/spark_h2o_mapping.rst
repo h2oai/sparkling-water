@@ -4,7 +4,7 @@ Spark - H2O Frame Mapping
 Type Mapping between H2O H2OFrame Types and Spark DataFrame Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For all primitive Scala types or Spark SQL (see ``org.apache.spark.sql.types``) types that can be part of Spark RDD/DataFrame, we provide mapping into H2O vector types (numeric, categorical, string, time, UUID - see ``water.fvec.Vec``):
+For all primitive Scala types or Spark SQL (see ``org.apache.spark.sql.types``) types that can be part of Spark RDD/DataFrame, we provide the mapping into H2O vector types (numeric, categorical, string, time, UUID - see ``water.fvec.Vec``):
 
 +----------------------+-----------------+------------+
 | Scala type           | SQL type        | H2O type   |
@@ -36,7 +36,7 @@ Type Mapping Between H2O H2OFrame Types and RDD[T] Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-As type ``T``, we support following types:
+As type ``T``, we support the following types:
 
 +--------------------------------------------------+
 | T                                                |

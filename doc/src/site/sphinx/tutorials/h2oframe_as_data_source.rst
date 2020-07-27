@@ -1,7 +1,7 @@
 H2O Frame as Spark's Data Source
 --------------------------------
 
-H2O Frame can be used directly as Spark data source.
+H2O Frame can be used directly as a Spark data source.
 
 Reading Spark Data Frame from H2O Frame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,7 +111,7 @@ There are four save modes available when saving data using the Data Source API: 
 
 - If ``append`` is used, an existing H2OFrame with the same key is deleted, and a new one containing the union of all rows from the original H2O Frame and from the appended Data Frame is created with the same key.
 
-- If ``overwrite`` is used, an existing H2OFrame with the same key is deleted, and new one with the new rows is created with the same key.
+- If ``overwrite`` is used, an existing H2OFrame with the same key is deleted, and a new one with the new rows is created with the same key.
 
 - If ``error`` is used and an H2OFrame with the specified key already exists, then an exception is thrown.
 

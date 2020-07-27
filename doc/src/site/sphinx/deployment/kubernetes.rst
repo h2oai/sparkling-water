@@ -10,7 +10,7 @@ Before we start, please check the following:
 
 2. Ensure that we have a working Kubernetes Cluster and ``kubectl`` installed
 
-3. Ensure we have ``SPARK_HOME`` set up to home of our Spark distribution of version SUBST_SPARK_VERSION
+3. Ensure we have ``SPARK_HOME`` set up to the home of our Spark distribution of version SUBST_SPARK_VERSION
 
 4. Run ``kubectl cluster-info`` to obtain Kubernetes master URL.
 

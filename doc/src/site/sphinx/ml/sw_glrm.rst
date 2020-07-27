@@ -64,7 +64,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
             model.transform(testingDF).show(false)
 
-        If you want to get the resulting X matrix, set a custom name for a H2O Frame representing the matrix
+        If you want to get the resulting X matrix, set a custom name for an H2O Frame representing the matrix
         via ``setRepresentationName`` method and run the following:
 
         .. code:: scala
@@ -119,7 +119,7 @@ The following sections describe how to train and apply GLRM in Sparkling Water i
 
             model.transform(testingDF).show(truncate = False)
 
-        If you want to get the resulting X matrix, set a custom name for a H2O Frame representing the matrix
+        If you want to get the resulting X matrix, set a custom name for an H2O Frame representing the matrix
         via ``setRepresentationName`` method or the corresponding parameter and run the following:
 
         .. code:: python

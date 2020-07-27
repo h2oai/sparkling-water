@@ -1,7 +1,7 @@
 Provided Primitives
 -------------------
 
-The Sparkling Water provides following primitives, which are the basic
+The Sparkling Water provides the following primitives, which are the basic
 classes used by Spark components:
 
 +-------------------+--------------------------------------+--------------------------------------+
