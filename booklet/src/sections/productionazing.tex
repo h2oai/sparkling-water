@@ -1,0 +1,403 @@
+\section{Productionizing MOJOs from H2O-3}
+
+\subsection{Loading the H2O-3 MOJOs}
+
+When training algorithm using Sparkling Water API, Sparkling Water always produces \texttt{H2OMOJOModel}. It is however also possible
+to import existing MOJO into Sparkling Water ecosystem from H2O-3. After importing the H2O-3 MOJO the API is unified for the
+loaded MOJO and the one created in Sparkling Water, for example, using \texttt{H2OXGBoost}.
+
+H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as local file, S3 or HDFS and the
+semantics of the import is the same as in the Spark API.
+
+When creating a MOJO specified by a relative path and HDFS is enabled, the method attempts to load
+the MOJO from the HDFS home directory of the current user. In case we are not running on HDFS-enabled system, we create
+the mojo from a current working directory.
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+val model = H2OMOJOModel.createFromMojo("prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import *
+model = H2OMOJOModel.createFromMojo("prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+sc <- spark_connect(master = "local")
+model <- H2OMOJOModel.createFromMojo("prostate_mojo.zip")
+    \end{lstlisting}
+\end{itemize}
+
+
+Absolute local path can also be used. To create a MOJO model from a locally available MOJO, call:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+val model = H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import *
+model = H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+sc <- spark_connect(master = "local")
+model <- H2OMOJOModel.createFromMojo("/Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+\end{itemize}
+
+
+Absolute paths on Hadoop can also be used. To create a MOJO model from a MOJO stored on HDFS, call:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+val model = H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import *
+model = H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+sc <- spark_connect(master = "local")
+model <- H2OMOJOModel.createFromMojo("/user/peter/prostate_mojo.zip")
+    \end{lstlisting}
+\end{itemize}
+
+
+The call loads the mojo file from the following location\\ \texttt{hdfs://{server}:{port}/user/peter/prostate\_mojo.zip},
+where \texttt{server} and \texttt{port} are automatically filled in by Spark.
+
+
+We can also manually specify the type of data source we need to use, in that case, we need to provide the schema:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+// HDFS
+val modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
+// Local file
+val modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import *
+# HDFS
+modelHDFS = H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
+# Local file
+modelLocal = H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+sc <- spark_connect(master = "local")
+# HDFS
+modelHDFS <- H2OMOJOModel.createFromMojo("hdfs:///user/peter/prostate_mojo.zip")
+# Local file
+modelLocal <- H2OMOJOModel.createFromMojo("file:///Users/peter/prostate_mojo.zip")
+    \end{lstlisting}
+\end{itemize}
+
+
+The loaded model is an immutable instance, so it's not possible to change the configuration of the model during its existence.
+On the other hand, the model can be configured during its creation via \texttt{H2OMOJOSettings}:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+val settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = true, convertInvalidNumbersToNa = true)
+val model = H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import *
+settings = H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = True, convertInvalidNumbersToNa = True)
+model = H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+sc <- spark_connect(master = "local")
+settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, convertInvalidNumbersToNa = TRUE)
+model <- H2OMOJOModel.createFromMojo("prostate_mojo.zip", settings)
+    \end{lstlisting}
+\end{itemize}
+
+To score the dataset using the loaded mojo, call:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+model.transform(dataset)
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+model.transform(dataset)
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+model$transform(dataset)
+    \end{lstlisting}
+\end{itemize}
+
+
+In Scala, the \texttt{createFromMojo} method returns a mojo model instance casted as a base class \texttt{H2OMOJOModel}. This class holds
+only properties that are shared accross all MOJO model types from the following type hierarchy:
+
+\begin{itemize}
+    \item \texttt{H2OMOJOModel}
+    \item \texttt{H2OUnsupervisedMOJOModel}
+    \item \texttt{H2OSupervisedMOJOModel}
+    \item \texttt{H2OTreeBasedSupervisedMOJOModel}
+\end{itemize}
+
+If a Scala user wants to get a property specific for a given MOJO model type, they must utilize casting or
+call the \texttt{createFromMojo} method on the specific MOJO model type.
+
+\begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models._
+val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
+println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
+\end{lstlisting}
+
+\subsection{Exporting the loaded MOJO model using Sparkling Water}
+
+To export the MOJO model, call \texttt{model.write.save(path)}. In case of Hadoop enabled system, the command by default
+uses HDFS.
+
+\subsection{Importing the previously exported MOJO model from Sparkling Water}
+
+To import the Sparkling Water MOJO model, call\\ \texttt{H2OMOJOModel.read.load(path)}. In case of Hadoop enabled system, the command by default
+uses HDFS.
+
+\subsection{Accessing additional prediction details}
+
+After computing predictions, the \texttt{prediction} column contains in case of classification problem the predicted label
+and in case regression problem the predicted number. If we need to access more details for each prediction, set
+\texttt{withDetailedPredictionCol} to true on \texttt{H2OMOJOSettings} before running the predictions. This will ensure that
+additional column will be created during predictions, by default named \texttt{detailed\_prediction} which contains, for example,
+predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
+
+\subsection{Customizing the MOJO Settings}
+
+We can configure the output and format of predictions via the \texttt{H2OMOJOSettings}. The available options are:
+
+\begin{itemize}
+    \item \texttt{predictionCol} - Specifies the name of the generated prediction column. Default value is \texttt{prediction}.
+    \item \texttt{detailedPredictionCol} - Specifies the name of the generated detailed prediction column. The detailed prediction column, if enabled, contains additional details, such as probabilities, shapley values etc. The default value is \texttt{detailed\_prediction}.
+    \item \texttt{withDetailedPredictionCol} - Enables or disables the generation of the detailed prediction column. By default, it is disabled.
+    \item \texttt{convertUnknownCategoricalLevelsToNa} - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
+    \item \texttt{convertInvalidNumbersToNa} - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
+    \item \texttt{withContributions} - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the detailed prediction column. Therefore, to compute Shapley values, both this option and \texttt{withDetailedPredictionCol} needs to be enabled. By default, it is disabled.
+    \item \texttt{withLeafNodeAssignments} - When enabled, a user can obtain the leaf node assignments after the model training has finished. By default, it is disabled.
+\end{itemize}
+
+\subsection{Methods available on MOJO Model}
+
+\subsubsection{Obtaining Domain Values}
+
+To obtain domain values of the trained model, we can run \texttt{getDomainValues()} on the model. This call
+returns a mapping from a column name to its domain in a form of array.
+
+\subsubsection{Obtaining Model Category}
+
+The method \texttt{getModelCategory} can be used to get the model category (such as \texttt{binomial}, \texttt{multinomial} etc).
+
+\subsubsection{Obtaining Training Params}
+
+The method \texttt{getTrainingParams} can be used to get map containing all training parameters used in the H2O. It is a map
+from parameter name to the value. The parameters name use the H2O's naming structure.
+
+
+\subsubsection{Obtaining Metrics}
+
+There are several methods to obtain metrics from the MOJO model. All return a map from metric name to its double value.
+
+\begin{itemize}
+    \item \texttt{getTrainingMetrics} - obtain training metrics
+    \item \texttt{getValidationMetrics} - obtain validation metrics
+    \item \texttt{getCrossValidationMetrics} - obtain cross validation metrics
+\end{itemize}
+
+
+We also have method \texttt{getCurrentMetrics} which gets one of the metrics above based on the following algorithm:
+
+If cross validation was used, ie, \texttt{setNfolds} was called and value was higher than zero, this method returns cross validation
+metrics. If cross validation was not used, but validation frame was used, the method returns validation metrics. Validation
+frame is used if \texttt{setSplitRatio} was called with value lower than one. If neither cross validation or validation frame
+was used, this method returns the training metrics.
+
+\subsubsection{Obtaining Leaf Node Assignments}
+
+To obtain the leaf node assignments, please first make sure to set\\ \texttt{withLeafNodeAssignments} and
+\texttt{withDetailedPredictionCol} to true on your MOJO settings object. The leaf node assignments are now stored
+in the \texttt{\${detailedPredictionCol}.leafNodeAssignments} column on the dataset obtained from the prediction.
+Please replace\\ \texttt{\${detailedPredictionCol}} with the actual value of your detailed prediction col. By default,
+it is \texttt{detailed\_prediction}.
+
+\section{Productionizing MOJOs from Driverless AI}
+
+MOJO scoring pipeline artifacts, created in Driverless AI, can be used in Spark to carry out predictions in parallel
+using the Sparkling Water API. This section shows how to load and run predictions on the MOJO scoring pipeline in
+Sparkling Water.
+
+Note: Sparkling Water is backward compatible with MOJO versions produced by different Driverless AI versions.
+
+One advantage of scoring the MOJO artifacts is that \texttt{H2OContext} does not have to be created if we only want to
+run predictions on MOJOs using Spark. This is because the scoring is independent of the H2O run-time. It is also
+important to mention that the format of prediction on MOJOs from Driverless AI differs from predictions on H2O-3 MOJOs.
+The format of Driverless AI prediction is explained bellow.
+
+\subsection{Requirements}
+
+In order to use the MOJO scoring pipeline, Driverless AI license has to be passed to Spark.
+This can be achieved via \texttt{--jars} argument of the Spark launcher scripts.
+
+Note: In Local Spark mode, please use \texttt{--driver-class-path} to specify the path to the license file.
+
+We also need Sparkling Water distribution which can be obtained from \url{https://www.h2o.ai/download/}.
+After we downloaded the Sparkling Water distribution, extract it, and go to the extracted directory.
+
+\subsection{Loading and Score the MOJO}
+
+First, start the environment for the desired language with Driverless AI license. There are two variants. We can use
+Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark directly
+and add the dependencies manually.
+
+In case of Scala, run:
+\begin{lstlisting}[style=Bash]
+./bin/spark-shell --jars license.sig,jars/sparkling-water-assembly_2.12-3.30.1.1-1-3.0-all.jar
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}[style=Bash]
+./bin/sparkling-shell --jars license.sig
+\end{lstlisting}
+
+In case of Python, run:
+
+\begin{lstlisting}[style=Bash]
+./bin/pyspark --jars license.sig --py-files py/build/dist/h2o_pysparkling_3.0-3.30.1.1-1-3.0.zip
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}[style=Bash]
+./bin/pysparkling --jars license.sig
+\end{lstlisting}
+
+In case of R, run in R console or RStudio:
+
+\begin{lstlisting}[style=R]
+library(sparklyr)
+library(rsparkling)
+config <- spark_config()
+config$sparklyr.jars.default <- "license.sig"
+spark_connect(master = "local", version = "3.0.0", config = config)
+\end{lstlisting}
+
+
+At this point, we should have Spark interactive terminal where we can carry out predictions.
+For productionalizing the scoring process, we can use the same configuration,
+except instead of using Spark shell, we would submit the application using \texttt{./bin/spark-submit}.
+
+Now Load the MOJO as:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel
+val settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = true)
+val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import H2OMOJOPipelineModel
+settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = True)
+mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+library(rsparkling)
+settings <- H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = TRUE)
+mojo <- H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
+    \end{lstlisting}
+\end{itemize}
+
+In the examples above \texttt{settings} is an optional argument. If it's not specified, the default values are used.
+
+Prepare the dataset to score on:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+val dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+dataFrame <- spark_read_csv(sc, name = "table_name", path = "file:///path/to/the/data.csv", header = TRUE)
+    \end{lstlisting}
+\end{itemize}
+
+And finally, score the mojo on the loaded dataset:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+val predictions = mojo.transform(dataFrame)
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+predictions = mojo.transform(dataFrame)
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+predictions <- mojo$$transform(dataFrame)
+    \end{lstlisting}
+\end{itemize}
+
+We can select the predictions as:
+
+\begin{itemize}
+    \item \textbf{Scala} \begin{lstlisting}[style=Scala]
+predictions.select("prediction")
+    \end{lstlisting}
+    \item \textbf{Python} \begin{lstlisting}[style=Python]
+predictions.select("prediction")
+    \end{lstlisting}
+    \item \textbf{R} \begin{lstlisting}[style=R]
+predictions <- select(dataFrame, "prediction")
+    \end{lstlisting}
+\end{itemize}
+
+
+The output data frame contains all the original columns plus the prediction column which is by default named
+\texttt{prediction}. The prediction column contains all the prediction detail. Its name can be
+modified via the \texttt{H2OMOJOSettings} object.
+
+\subsection{Predictions Format}
+
+When the option \texttt{namedMojoOutputColumns} is enabled on\\ \texttt{H2OMOJOSettings}, the \texttt{predictionCol} contains sub-columns with
+names corresponding to the columns Driverless AI identified as output columns. For example, if Driverless API MOJO
+pipeline contains one output column \texttt{AGE} ( for example regression problem), the prediction column contains another sub-column
+named \texttt{AGE}. If The MOJO pipeline contains multiple output columns, such as \texttt{VALID.0} and \texttt{VALID.1} (for example classification problems),
+the prediction column contains two sub-columns with the aforementined names.
+
+If this option is disabled, the \texttt{predictionCol} contains the array of predictions without
+the column names. For example, if Driverless API MOJO pipeline contains one output column \texttt{AGE} ( for example regression problem),
+the prediction column contains array of size 1 with the predicted value.
+If The MOJO pipeline contains multiple output columns, such as \texttt{VALID.0} and \texttt{VALID.1} (for example classification problems),
+the prediction column contains array of size 2 containing predicted probabilities for each class.
+
+By default, this option is enabled.
+
+\subsection{Customizing the MOJO Settings}
+
+We can configure the output and format of predictions via the H2OMOJOSettings. The available options are
+
+\begin{itemize}
+    \item \texttt{predictionCol} - Specifies the name of the generated prediction column. The default value is \texttt{prediction}.
+    \item \texttt{convertUnknownCategoricalLevelsToNa} - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
+    \item \texttt{convertInvalidNumbersToNa} - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
+    \item \texttt{namedMojoOutputColumns} - Enables or disables named output columns. By default, it is enabled.
+\end{itemize}
+
+
+\subsection{Troubleshooting}
+
+If you see the following exception during loading the MOJO pipeline:\\
+java.io.IOException: MOJO doesn't contain \texttt{resource mojo/pipeline.pb}, then it means you are adding
+incompatible mojo-runtime.jar on your classpath. It is not required and also not suggested
+to put the JAR on the classpath as Sparkling Water already bundles the correct dependencies.
