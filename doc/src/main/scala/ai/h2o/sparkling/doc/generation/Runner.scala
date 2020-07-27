@@ -18,7 +18,10 @@
 package ai.h2o.sparkling.doc.generation
 
 import java.io.{File, PrintWriter}
+
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
+
+import scala.collection.mutable.ArrayBuffer
 
 object Runner {
   private def writeResultToFile(content: String, fileName: String, destinationDir: String) = {
@@ -32,7 +35,39 @@ object Runner {
 
   def main(args: Array[String]): Unit = {
     val destinationDir = args(0)
-    writeResultToFile(ParametersTocTreeTemplate(), "parameters", destinationDir)
-    writeResultToFile(ParametersTemplate(), "test", destinationDir)
+    val algorithms = getParamClasses("ai.h2o.sparkling.ml.algos")
+    writeResultToFile(ParametersTocTreeTemplate(algorithms), "parameters", destinationDir)
+    for (algorithm <- algorithms) {
+      writeResultToFile(ParametersTemplate(algorithm), s"parameters_${algorithm.getSimpleName}", destinationDir)
+    }
+  }
+
+  private def getParamClasses(packageName: String): Seq[Class[_]] = {
+    val classLoader = Thread.currentThread.getContextClassLoader
+    val path = packageName.replace('.', '/')
+    val resources = classLoader.getResources(path)
+    val directories = new ArrayBuffer[File]()
+    while (resources.hasMoreElements) {
+      val resource = resources.nextElement
+      directories.append(new File(resource.getFile()))
+    }
+    val classes = new ArrayBuffer[Class[_]]
+    for (directory <- directories) {
+      classes.append(findClasses(directory, packageName): _*)
+    }
+    val paramsClass = Class.forName("org.apache.spark.ml.param.Param")
+    classes.filter(paramsClass.isAssignableFrom(_))
+  }
+
+  private def findClasses(directory: File, packageName: String): Seq[Class[_]] = {
+    val classes = new ArrayBuffer[Class[_]]
+    if (!directory.exists) return classes
+    val files = directory.listFiles
+    for (file <- files) {
+      if (file.getName.endsWith(".class")) {
+        classes.append(Class.forName(packageName + '.' + file.getName.substring(0, file.getName.length - 6)))
+      }
+    }
+    classes
   }
 }

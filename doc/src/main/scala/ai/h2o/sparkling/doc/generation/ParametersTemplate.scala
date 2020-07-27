@@ -17,14 +17,27 @@
 
 package ai.h2o.sparkling.doc.generation
 
+import org.apache.spark.ml.param.Params
 import scala.util.{Failure, Success, Try}
 
 object ParametersTemplate {
   def apply(entity: Class[_]): String = {
-    s"""Test
-       |----
+    val entities = getListOfAffectedEntities(entity)
+    val caption = entities.map(_._1).mkString("Parameters of ", ", ", "")
+    val dashes = caption.toCharArray.map(_ => '-').mkString
+    val classes = entities.map(c => s"* ``$c``").mkString("\n")
+    val tableContent = getParametersTableContent(entity)
+    s"""$caption
+       |$dashes
        |
-       |test
+       |**Classes:**
+       |$classes
+       |
+       |.. csv-table:: a title
+       |   :header: "Parameter", "Description"
+       |   :widths: 20, 80
+       |
+       |$tableContent
      """.stripMargin
   }
 
@@ -47,5 +60,14 @@ object ParametersTemplate {
     }
 
     withRegressor
+  }
+
+  private def getParametersTableContent(entity: Class[_]): String = {
+    val instance = entity.newInstance().asInstanceOf[Params]
+    instance.params
+      .map { param =>
+        s"""   "${param.name}", "${param.doc}""""
+      }
+      .mkString("\n")
   }
 }

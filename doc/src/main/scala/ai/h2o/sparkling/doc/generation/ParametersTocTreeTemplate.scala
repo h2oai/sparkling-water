@@ -17,8 +17,11 @@
 
 package ai.h2o.sparkling.doc.generation
 
+import org.apache.spark.ml.param.Params
+
 object ParametersTocTreeTemplate {
-  def apply(): String = {
+  def apply(algorithms: Seq[Class[_]]): String = {
+    val algorithmItems = algorithms.map(algorithm => s"   parameters_${algorithm.getSimpleName}").mkString("\n")
     s"""Parameters
        |==========
        |
@@ -27,7 +30,7 @@ object ParametersTocTreeTemplate {
        |.. toctree::
        |   :maxdepth: 2
        |
-       |   test
+       |   $algorithmItems
     """.stripMargin
   }
 }

@@ -8,6 +8,7 @@ import org.gradle.util.VersionNumber
 dependencies {
   implementation("org.scala-lang:scala-library:${scalaVersion}")
   implementation(project(':sparkling-water-utils'))
+  implementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 }
 
 task cleanDoc(type: Delete) {
