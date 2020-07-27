@@ -190,34 +190,3 @@ The following sections describe how to train an AutoML model in Sparkling Water 
 
             leaderboard = automl.getLeaderboard("ALL")
             leaderboard.show(truncate = False)
-
-
-Enabling XGBoost Models when Running Sparkling Water in a Distributed Environment (YARN)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The multi-node XGBoost algorithm is considered as an experimental feature of AutoML. Thus the XGBoost algorithm is disabled for AutoML by default when running
-Sparkling Water in a distributed environment (e.g. on YARN). When Sparkling Water is run in the ``local`` mode, XGBoost is enabled.
-
-.. content-tabs::
-
-    .. tab-container:: Scala
-        :title: Scala
-
-        To enable the algorithm on YARN, ``sparkling-shell`` has to be executed with the extra driver option as:
-
-        .. code:: shell
-
-            ./bin/sparkling-shell --conf spark.driver.extraJavaOptions=-Dsys.ai.h2o.automl.xgboost.multinode.enabled=true
-
-
-    .. tab-container:: Python
-        :title: Python
-
-        To enable the algorithm on YARN, ``pysparkling`` has to be executed with the extra driver option as:
-
-        .. code:: shell
-
-            ./bin/pysparkling --conf spark.driver.extraJavaOptions=-Dsys.ai.h2o.automl.xgboost.multinode.enabled=true
-
-
-The statement above also holds for executing Sparkling Water with the external backend and connecting Sparkling Water to an existing H2O cluster.
-Other configuration steps are not necessary for enabling XGBoost in AutoML.
