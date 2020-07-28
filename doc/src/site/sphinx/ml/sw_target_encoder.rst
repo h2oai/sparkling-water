@@ -32,55 +32,6 @@ An example of converting a categorical feature to continues with Target Encoder 
 Target Encoding can help to improve accuracy of machine learning algorithms when columns with high
 cardinality are used as features during a training phase.
 
-Parameters
-----------
-labelCol
-    A name of label column
-
-inputCols
-    Names of columns that will be transformed into Target Encoding
-
-outputCols
-    Names of columns representing the result of target encoding. If the parameter is not specified by the user, the output
-    column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.
-
-holdoutStrategy
-    A strategy deciding what records will be excluded when calculating the target average on the training dataset.
-
-    Options:
-
-      None
-        All rows are considered for the calculation
-
-      LeaveOneOut
-        All rows except the row the calculation is made for
-
-      KFold
-        Only out-of-fold data is considered (The option requires ``foldCol`` to be set.)
-
-foldCol
-    A name of a column determining folds when ``KFold`` holdoutStrategy is applied.
-
-blendedAvgEnabled
-    If set, the target average becomes a weighted average of the posterior average for a given categorical level
-    and the prior average of the target. The weight is determined by the size of the given group that the row belongs to.
-    By default, the blended average is **disabled**.
-
-blendedAvgInflectionPoint
-    A parameter of the blended average. The bigger number is set, the groups relatively bigger to the overall dataset size
-    will consider the prior average as a component in the weighted average. The default value is **10**.
-
-blendedAvgSmoothing
-    A parameter of the blended average. It controls the rate of a transition between a posterior average and a prior average.
-    The default value is **20**.
-
-noise
-    Amount of random noise added to output values of a training dataset to prevent over-fitting of an algorithm consuming
-    encoded features. The default value is **0.01**. Noise addition can be disabled by setting the parameter to **0.0**.
-
-noiseSeed
-    A seed of the generator producing the random noise.
-
 Using Target Encoder
 --------------------
 Sparkling Water exposes API for target encoder in Scala and Python. Before we start using Target Encoder, we need to run

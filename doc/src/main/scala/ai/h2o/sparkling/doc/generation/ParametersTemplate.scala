@@ -30,7 +30,9 @@ object ParametersTemplate {
     val classesCaption = if (entities.length > 1) "Affected Classes" else "Affected Class"
     val classesCaptionUnderLine = classesCaption.replaceAll(".", "#")
     val content = getParametersContent(entity)
-    s"""$caption
+    s""".. _parameters_${entity.getSimpleName}:
+       |
+       |$caption
        |$dashes
        |
        |$classesCaption

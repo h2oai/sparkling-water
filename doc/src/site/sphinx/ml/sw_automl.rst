@@ -2,7 +2,7 @@ Train AutoML Model in Sparkling Water
 -------------------------------------
 
 Sparkling Water provides API in Scala and Python for H2O AutoML.
-The following sections describe how to train an AutoML model in Sparkling Water in both languages.
+The following sections describe how to train an AutoML model in Sparkling Water in both languages. See also :ref:`parameters_H2OAutoML`.
 
 .. content-tabs::
 

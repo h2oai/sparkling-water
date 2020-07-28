@@ -38,9 +38,16 @@ object Runner {
   def main(args: Array[String]): Unit = {
     val destinationDir = args(0)
     val algorithms = getParamClasses("ai.h2o.sparkling.ml.algos")
-    writeResultToFile(ParametersTocTreeTemplate(algorithms), "parameters", destinationDir)
+    val featureTransformers = getParamClasses("ai.h2o.sparkling.ml.features")
+    writeResultToFile(ParametersTocTreeTemplate(algorithms, featureTransformers), "parameters", destinationDir)
     for (algorithm <- algorithms) {
       writeResultToFile(ParametersTemplate(algorithm), s"parameters_${algorithm.getSimpleName}", destinationDir)
+    }
+    for (featureTransformer <- featureTransformers) {
+      writeResultToFile(
+        ParametersTemplate(featureTransformer),
+        s"parameters_${featureTransformer.getSimpleName}",
+        destinationDir)
     }
   }
 

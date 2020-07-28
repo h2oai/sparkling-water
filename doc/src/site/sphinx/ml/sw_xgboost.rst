@@ -1,8 +1,8 @@
 Train XGBoost Model in Sparkling Water
 --------------------------------------
 
-Sparkling Water provides API for H2O XGBoost in Scala and Python.
-The following sections describe how to train the XGBoost model in Sparkling Water in both languages.
+Sparkling Water provides API for H2O XGBoost in Scala and Python. The following sections describe how to train
+theXGBoost model in Sparkling Water in both languages. See also :ref:`parameters_H2OXGBoost`.
 
 .. content-tabs::
 

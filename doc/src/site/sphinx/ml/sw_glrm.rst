@@ -5,7 +5,7 @@ Sparkling Water provides API for H2O GLRM in Scala and Python. This algorithm he
 of your dataset. For more details about the algorithm, see
 `H2O-3 documentation <https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/data-science/glrm.html>`__
 
-The following sections describe how to train and apply GLRM in Sparkling Water in both languages.
+The following sections describe how to train and apply GLRM in Sparkling Water in both languages. See also :ref:`parameters_H2OGLRM`.
 
 .. content-tabs::
 

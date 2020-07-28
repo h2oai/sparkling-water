@@ -23,40 +23,44 @@ trait H2OTargetEncoderMOJOParams extends Params {
   //
   // List of Parameters
   //
-  protected final val foldCol = new NullableStringParam(this, "foldCol", "Fold column name")
-  protected final val labelCol = new Param[String](this, "labelCol", "Label column name")
-  protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed")
+  protected final val foldCol = new NullableStringParam(
+    this,
+    "foldCol",
+    "A name of a column determining folds when ``KFold`` holdoutStrategy is applied.")
+  protected final val labelCol = new Param[String](this, "labelCol", "Label column name.")
+  protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed.")
   protected final val outputCols =
-    new StringArrayParam(this, "outputCols", "Names of columns representing the result of target encoding")
+    new StringArrayParam(
+      this, "outputCols",
+      "Names of columns representing the result of target encoding. If the parameter is not specified by user, the output " +
+      "column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.")
   protected final val holdoutStrategy = new Param[String](
     this,
     "holdoutStrategy",
-    """A strategy deciding what records will be excluded when calculating the target average on the training dataset.
-      |Options:
-      | None        - All rows are considered for the calculation
-      | LeaveOneOut - All rows except the row the calculation is made for
-      | KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.)
-    """.stripMargin)
+    """A strategy deciding what records will be excluded when calculating the target average on the training dataset. Options:
+      | ``None``        - All rows are considered for the calculation
+      | ``LeaveOneOut`` - All rows except the row the calculation is made for
+      | ``KFold``       - Only out-of-fold data is considered (The option requires foldCol to be set.)""".stripMargin)
   protected final val blendedAvgEnabled = new BooleanParam(
     this,
     "blendedAvgEnabled",
-    """If set, the target average becomes a weighted average of the posterior average for a given categorical level and the prior average of the target.
-      |The weight is determined by the size of the given group that the row belongs to. By default, the blended average is disabled.""".stripMargin)
+    "If set, the target average becomes a weighted average of the posterior average for a given categorical level" +
+      " and the prior average of the target. The weight is determined by the size of the given group that the row belongs to. ")
   protected final val blendedAvgInflectionPoint = new DoubleParam(
     this,
     "blendedAvgInflectionPoint",
-    """A parameter of the blended average. The bigger number is set, the groups relatively bigger to the overall data set size will consider
-      | the global target value as a component in the weighted average. The default value is 10.""".stripMargin)
+    "A parameter of the blended average. The bigger number is set, the groups relatively bigger to the overall " +
+      "data set size will consider the global target value as a component in the weighted average.")
   protected final val blendedAvgSmoothing = new DoubleParam(
     this,
     "blendedAvgSmoothing",
-    "A parameter of blended average. Controls the rate of transition between a group target value and a global target value. The default value is 20.")
+    "A parameter of blended average. Controls the rate of transition between a group target value and a global target value.")
   protected final val noise = new DoubleParam(
     this,
     "noise",
-    """Amount of random noise added to output values of training dataset.
-      |The default value is 0.01. Noise addition can be disabled by setting the parameter to 0.0""".stripMargin)
-  protected final val noiseSeed = new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise")
+    "Amount of random noise added to output values of training dataset. " +
+      "Noise addition can be disabled by setting the parameter to 0.0")
+  protected final val noiseSeed = new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise.")
 
   //
   // Default values
