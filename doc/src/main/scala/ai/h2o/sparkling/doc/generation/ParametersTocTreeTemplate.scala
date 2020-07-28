@@ -30,7 +30,7 @@ object ParametersTocTreeTemplate {
        |.. toctree::
        |   :maxdepth: 2
        |
-       |   $algorithmItems
+       |$algorithmItems
     """.stripMargin
   }
 }

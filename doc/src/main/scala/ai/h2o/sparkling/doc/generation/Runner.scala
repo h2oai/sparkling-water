@@ -18,6 +18,8 @@
 package ai.h2o.sparkling.doc.generation
 
 import java.io.{File, PrintWriter}
+import java.net.URLDecoder
+import java.util.jar.JarFile
 
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 
@@ -42,32 +44,34 @@ object Runner {
     }
   }
 
-  private def getParamClasses(packageName: String): Seq[Class[_]] = {
+  private def getParamClasses(packageName: String): Array[Class[_]] = {
     val classLoader = Thread.currentThread.getContextClassLoader
     val path = packageName.replace('.', '/')
-    val resources = classLoader.getResources(path)
-    val directories = new ArrayBuffer[File]()
-    while (resources.hasMoreElements) {
-      val resource = resources.nextElement
-      directories.append(new File(resource.getFile()))
-    }
+    val packageUrl = classLoader.getResource(path)
     val classes = new ArrayBuffer[Class[_]]
-    for (directory <- directories) {
-      classes.append(findClasses(directory, packageName): _*)
-    }
-    val paramsClass = Class.forName("org.apache.spark.ml.param.Param")
-    classes.filter(paramsClass.isAssignableFrom(_))
-  }
-
-  private def findClasses(directory: File, packageName: String): Seq[Class[_]] = {
-    val classes = new ArrayBuffer[Class[_]]
-    if (!directory.exists) return classes
-    val files = directory.listFiles
-    for (file <- files) {
-      if (file.getName.endsWith(".class")) {
-        classes.append(Class.forName(packageName + '.' + file.getName.substring(0, file.getName.length - 6)))
+    if (packageUrl.getProtocol().equals("jar")) {
+      val decodedUrl = URLDecoder.decode(packageUrl.getFile(), "UTF-8")
+      val jarFileName = decodedUrl.substring(5, decodedUrl.indexOf("!"))
+      val jarFile = new JarFile(jarFileName)
+      val entries = jarFile.entries()
+      while (entries.hasMoreElements) {
+        val entryName = entries.nextElement().getName
+        if (entryName.startsWith(path) && entryName.endsWith(".class")) {
+          val name = entryName.substring(path.length + 1, entryName.length - 6)
+          if (!name.contains('/')) {
+            classes.append(Class.forName(packageName + '.' + name))
+          }
+        }
+      }
+    } else {
+      val directory = new File(packageUrl.toURI)
+      val files = directory.listFiles
+      for (file <- files) {
+        if (file.getName.endsWith(".class")) {
+          classes.append(Class.forName(packageName + '.' + file.getName.substring(0, file.getName.length - 6)))
+        }
       }
     }
-    classes
+    classes.filter(_.getConstructors().size == 2).toArray
   }
 }

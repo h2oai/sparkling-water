@@ -19,25 +19,32 @@ package ai.h2o.sparkling.doc.generation
 
 import org.apache.spark.ml.param.Params
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 object ParametersTemplate {
   def apply(entity: Class[_]): String = {
     val entities = getListOfAffectedEntities(entity)
-    val caption = entities.map(_._1).mkString("Parameters of ", ", ", "")
+    val caption = s"Parameters of ${entity.getSimpleName}"
     val dashes = caption.toCharArray.map(_ => '-').mkString
-    val classes = entities.map(c => s"* ``$c``").mkString("\n")
-    val tableContent = getParametersTableContent(entity)
+    val classes = entities.map(c => s"- ``${c._2}``").mkString("\n")
+    val classesCaption = if (entities.length > 1) "Affected Classes" else "Affected Class"
+    val classesCaptionUnderLine = classesCaption.replaceAll(".", "#")
+    val content = getParametersContent(entity)
     s"""$caption
        |$dashes
        |
-       |**Classes:**
+       |$classesCaption
+       |$classesCaptionUnderLine
+       |
        |$classes
        |
-       |.. csv-table:: a title
-       |   :header: "Parameter", "Description"
-       |   :widths: 20, 80
+       |Parameters
+       |##########
        |
-       |$tableContent
+       |- *Each parameter has also a corresponding getter and setter method.*
+       |  *(E.g.:* ``label`` *->* ``getLabel()`` *,* ``setLabel(...)`` *)*
+       |
+       |$content
      """.stripMargin
   }
 
@@ -45,7 +52,7 @@ object ParametersTemplate {
     val baseSimpleName = entity.getSimpleName
     val baseCanonicalName = entity.getCanonicalName
     val base = (baseSimpleName, baseCanonicalName) :: Nil
-    val namespaceWithDot = baseCanonicalName.substring(baseCanonicalName.length - baseSimpleName.length)
+    val namespaceWithDot = baseCanonicalName.substring(0, baseCanonicalName.length - baseSimpleName.length)
 
     val fullClassifierName = s"${namespaceWithDot}classification.${baseSimpleName}Classifier"
     val withClassifier = Try(Class.forName(fullClassifierName)) match {
@@ -62,12 +69,55 @@ object ParametersTemplate {
     withRegressor
   }
 
-  private def getParametersTableContent(entity: Class[_]): String = {
+  private def getParametersContent(entity: Class[_]): String = {
     val instance = entity.newInstance().asInstanceOf[Params]
     instance.params
       .map { param =>
-        s"""   "${param.name}", "${param.doc}""""
+        val defaultValue = instance.getDefault(param).get
+
+        s"""${param.name}
+           |  ${param.doc.replace("\n ", "\n\n  - ")}
+           |
+           |  ${generateDefaultValue(defaultValue)}
+           |""".stripMargin
       }
       .mkString("\n")
+  }
+
+  private def generateDefaultValue(value: Any): String = {
+    val pythonValue = stringifyAsPython(value)
+    val scalaValue = stringifyAsScala(value)
+    if (pythonValue == scalaValue) {
+      s"*Default value:* ``$pythonValue``"
+    } else {
+      s"*Scala default value:* ``$scalaValue`` *; Python default value:* ``$pythonValue``"
+    }
+  }
+
+  private def stringifyAsPython(value: Any): String = value match {
+    case a: Array[_] => s"[${a.map(stringifyAsPython).mkString(", ")}]"
+    case m: java.util.Map[_, _] =>
+      m.asScala
+        .map(entry => s"${stringifyAsPython(entry._1)} -> ${stringifyAsPython(entry._2)}")
+        .mkString("{", ", ", "}")
+    case b: Boolean => b.toString.capitalize
+    case s: String => s""""$s""""
+    case v if v == null => "None"
+    case v: Enum[_] => s""""$v""""
+    case v => v.toString
+  }
+
+  protected def stringifyAsScala(value: Any): String = value match {
+    case f: java.lang.Float => s"${f.toString.toLowerCase}f"
+    case d: java.lang.Double => d.toString.toLowerCase
+    case l: java.lang.Long => s"${l}L"
+    case m: java.util.Map[_, _] =>
+      m.asScala
+        .map(entry => s"${stringifyAsScala(entry._1)} -> ${stringifyAsScala(entry._2)}")
+        .mkString("Map(", ", ", ")")
+    case a: Array[_] => s"Array(${a.map(stringifyAsScala).mkString(", ")})"
+    case s: String => s""""$s""""
+    case v if v == null => null
+    case v => v.toString
   }
 }
