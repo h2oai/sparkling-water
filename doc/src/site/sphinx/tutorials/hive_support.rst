@@ -50,9 +50,9 @@ Import Data from Hive via JDBC connection
 -----------------------------------------
 This feature reads data from Hive via a standard JDBC connection.
 
-Obtain the Hive JDBC Client Jar
+Obtain the Hive JDBC Client JAR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To be able to connect to Hive, Sparkling Water will need Hive JDBC Client Jar on the class-path. The jar can be obtained
+To be able to connect to Hive, Sparkling Water will need Hive JDBC Client JAR on the class-path. The jar can be obtained
 from in the following ways.
 
 - For Hortonworks, Hive JDBC client jars can be found at
@@ -78,7 +78,7 @@ To import data from non-Kerberized Hive, run:
     .. tab-container:: Scala
         :title: Scala
 
-        First, start Sparkling Shell with the  Hive JDBC client Jar on the class-path
+        First, start Sparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -100,7 +100,7 @@ To import data from non-Kerberized Hive, run:
     .. tab-container:: Python
         :title: Python
 
-        First, start PySparkling Shell with the  Hive JDBC client Jar on the class-path
+        First, start PySparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -123,7 +123,7 @@ To import data from non-Kerberized Hive, run:
         :title: R
 
         Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
-        Spark context with the Hive JDBC client Jar on the class-path.
+        Spark context with the Hive JDBC client JAR on the class-path.
 
         .. code:: R
 
@@ -157,7 +157,7 @@ Authenticate your user against Kerberos.
 
     kinit <your_user_name>
 
-Put Hive JDBC client Jar on the Hadoop class-path.
+Put Hive JDBC client JAR on the Hadoop class-path.
 
 .. code:: bash
 
@@ -186,7 +186,7 @@ Hadoop cluster as:
     .. tab-container:: Scala
         :title: Scala
 
-        First, start Sparkling Shell with the  Hive JDBC client Jar on the class-path
+        First, start Sparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -219,7 +219,7 @@ Hadoop cluster as:
     .. tab-container:: Python
         :title: Python
 
-        First, start PySparkling Shell with the  Hive JDBC client Jar on the class-path
+        First, start PySparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -250,7 +250,7 @@ Hadoop cluster as:
         :title: R
 
         Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
-        Spark context with the Hive JDBC client Jar on the class-path.
+        Spark context with the Hive JDBC client JAR on the class-path.
 
         .. code:: R
 

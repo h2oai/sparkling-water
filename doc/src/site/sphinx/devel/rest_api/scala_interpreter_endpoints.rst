@@ -11,8 +11,8 @@ Example usage of Scala Interpreters using the REST API
 
 Here, you can find some basic calls to access Scala interpreter behind REST API using curl.
 
-Init interpreter and obtain asession ID
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Init interpreter and obtain a session ID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: bash
 

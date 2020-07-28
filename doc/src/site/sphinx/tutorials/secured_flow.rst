@@ -34,7 +34,7 @@ In order to use https correctly, the following two options need to be specified:
             import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
 
-        You can also start a Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        You can also start the Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
 
         .. code:: scala
 

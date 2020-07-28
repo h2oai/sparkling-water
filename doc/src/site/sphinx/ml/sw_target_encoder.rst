@@ -29,7 +29,7 @@ An example of converting a categorical feature to continues with Target Encoder 
   Mountain View   1       0.714    
  =============== ======= =========
 
-Target Encoding can help to improve the accuracy of machine learning algorithms when columns with high
+Target Encoding can help to improve accuracy of machine learning algorithms when columns with high
 cardinality are used as features during a training phase.
 
 Parameters
