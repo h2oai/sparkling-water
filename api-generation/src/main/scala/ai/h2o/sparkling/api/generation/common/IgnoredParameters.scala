@@ -23,7 +23,16 @@ object IgnoredParameters {
     "max_confusion_matrix_size", // Deep Learning
     "col_major", // Deep Learning
     "max_hit_ratio_k", // GBM, DRF, Deep Learning
-    "loading_name") // GLRM
+    "loading_name", // GLRM
+    "prior", // GAM
+    "nlambdas", // GAM
+    "non_negative", // GAM
+    "gradient_lambdas", // GAM
+    "remove_collinear_columns", // GAM
+    "gradient_epsilon", // GAM
+    "early_stopping", // GAM
+    "beta_constraints", // GAM
+    "lambda_min_ratio") // GAM
 
   val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 
