@@ -6,7 +6,7 @@ H2O resides in the same executor JVM as Spark. The memory provided for H2O is co
 Generic Configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
--  Configure the Executor memory (i.e., memory available for H2O) via the Spark configuration property ``spark.executor.memory`` .
+-  Configure the Executor memory (i.e., memory available for H2O) via the Spark configuration property ``spark.executor.memory``.
 
    For example, ``bin/sparkling-shell --conf spark.executor.memory=5g``, or configure the property in ``$SPARK_HOME/conf/spark-defaults.conf``
 

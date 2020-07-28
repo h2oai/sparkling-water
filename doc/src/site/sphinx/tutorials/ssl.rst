@@ -4,7 +4,7 @@ Enabling SSL
 Both Spark and H2O support basic node authentication and data encryption. In H2O's case, we encrypt all the data
 sent between server nodes and between client and server nodes.
 
-Currently only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
+Currently, only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
 
 To enable security for Spark methods, please review their `Spark Security documentation <http://spark.apache.org/docs/latest/security.html>`__.
 
@@ -21,7 +21,7 @@ To automatically generate and apply the security configuration. please set ``spa
 
     bin/sparkling-shell --conf "spark.ext.h2o.internal_secure_connections=true"
 
-This can be also achieved in programmatic way on the ``H2OConf``:
+This can be also achieved using a programmatic way on the ``H2OConf``:
 
 .. content-tabs::
 
@@ -66,7 +66,7 @@ To use manually generated security files, please pass the following configuratio
 
     bin/sparkling-shell --conf "spark.ext.h2o.internal_security_conf=ssl.properties"
 
-This can be also achieved in programmatic way on the ``H2OConf``:
+This can be also achieved using a programmatic way on the ``H2OConf``:
 
 .. content-tabs::
 

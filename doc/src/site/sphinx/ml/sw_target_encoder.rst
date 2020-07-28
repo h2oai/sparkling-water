@@ -30,7 +30,7 @@ An example of converting a categorical feature to continues with Target Encoder 
  =============== ======= =========
 
 Target Encoding can help to improve accuracy of machine learning algorithms when columns with high
-cardinality are used as features during training phase.
+cardinality are used as features during a training phase.
 
 Parameters
 ----------
@@ -38,10 +38,10 @@ labelCol
     A name of label column
 
 inputCols
-    Names of columns that will be transformed to Target Encoding
+    Names of columns that will be transformed into Target Encoding
 
 outputCols
-    Names of columns representing the result of target encoding. If the parameter is not specified by user, the output
+    Names of columns representing the result of target encoding. If the parameter is not specified by the user, the output
     column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.
 
 holdoutStrategy
@@ -158,7 +158,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
               .setInputCols(Array("RACE", "DPROS", "DCAPS"))
               .setLabelCol("CAPSULE")
 
-        Also create an instance of an algorithm consuming encoded columns and define pipeline:
+        Also, create an instance of an algorithm consuming encoded columns and define pipeline:
 
         .. code:: scala
 
@@ -202,7 +202,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
               .setInputCols(["RACE", "DPROS", "DCAPS"])\
               .setLabelCol("CAPSULE")
 
-        Also create an instance of an algorithm consuming encoded columns and define pipeline:
+        Also, create an instance of an algorithm consuming encoded columns and define pipeline:
 
         .. code:: python
 
@@ -239,9 +239,9 @@ Standalone Target Encoder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Target Encoder's parameters like ``noise`` and ``holdoutStrategy`` are relevant only for a training dataset.
 Thus the ``transform`` method of ``H2OTargetEncoderModel`` has to treat training and other data sets differently and
-eventually ignore the mentioned parameters.
+eventually, ignore the mentioned parameters.
 
-When Target Encoder is inside ML pipeline, the differentiation is done automatically. But if a user decides to train
+When Target Encoder is inside a ML pipeline, the differentiation is done automatically. But if a user decides to train
 an algorithm without ML pipeline, the 'transformTrainingDataset' method should be on the model of Target Encoder to get
 appropriate results.
 

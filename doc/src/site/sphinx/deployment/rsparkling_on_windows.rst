@@ -11,7 +11,7 @@ as well.
 Prepare R Environment
 ~~~~~~~~~~~~~~~~~~~~~
 
-Please follow the :ref:`rsparkling` Documentation in order to properly set up R packages and environment.
+Please follow the :ref:`rsparkling` Documentation to properly set up R packages and environment.
 
 Test the Functionality
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -61,7 +61,7 @@ Troubleshooting
 
     Download winutils.exe binary from https://github.com/steveloughran/winutils repository.
 
-    **NOTE**: You need to select correct Hadoop version which is compatible with your Spark distribution.
+    **NOTE**: You need to select the correct Hadoop version which is compatible with your Spark distribution.
     Hadoop version is often encoded in spark download name, for example, ``spark-SUBST_SPARK_VERSION-bin-hadoop2.7.tgz``.
 
 -  Error from running ``copy_to``
@@ -84,9 +84,9 @@ Troubleshooting
     It will change the permissions of the ``/tmp/hive`` directory so that all three users (Owner, Group, and Public)
     can Read, Write, and Execute.
 
-    In order to change the permissions, go to the command prompt and write: ``\path\to\winutils\Winutils.exe chmod 777 \tmp\hive``
+    To change the permissions, go to the command prompt and write: ``\path\to\winutils\Winutils.exe chmod 777 \tmp\hive``
 
-    You can also create a file ``hive-site.xml`` in ``%HADOOP_HOME%\conf`` and modify location of default Hive scratch dir
+    You can also create a file ``hive-site.xml`` in ``%HADOOP_HOME%\conf`` and modify the location of default Hive scratch dir
     (which is ``/tmp/hive``):
 
     .. code:: xml

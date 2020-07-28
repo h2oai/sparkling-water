@@ -3,7 +3,7 @@ Hive Support in Sparkling Water
 
 Spark supports reading data natively from Hive and H2O supports that in a Hadoop environment as well.
 In Sparkling Water you can decide which tool you want to use for this task. This tutorial explains what is needed
-to use H2O to read data from Hive in Sparkling Water environment.
+to use H2O to read data from Hive in the Sparkling Water environment.
 
 Import Data from Hive via Hive Metastore
 ----------------------------------------
@@ -11,7 +11,7 @@ Import Data from Hive via Hive Metastore
 - Make sure ``$SPARK_HOME/conf`` contains the hive-site.xml with your Hive configuration.
 - In YARN client mode or any local mode, please copy the required connector jars for your Metastore to ``$SPARK_HOME/jars``.
   You can find these jars in ``$HIVE_HOME/lib directory``. For example, if you are using MySQL as a Metastore for Hive,
-  copy MySQL metastore jdbc connector. This is not required in YARN cluster mode.
+  copy MySQL metastore JDBC connector. This is not required in the YARN cluster mode.
 
 This is all preparation we need to do. The following code shows how to import the table.
 
@@ -44,15 +44,15 @@ This is all preparation we need to do. The following code shows how to import th
 
             airlines_frame <- h2o.import_hive_table("default", "airlines")
 
-This call reads airlines table from default database.
+This call reads the airlines table from the default database.
 
 Import Data from Hive via JDBC connection
 -----------------------------------------
 This feature reads data from Hive via a standard JDBC connection.
 
-Obtain the Hive JDBC Client Jar
+Obtain the Hive JDBC Client JAR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To be able to connect to Hive, Sparkling Water will need Hive JDBC Client Jar on the class path. The jar can be obtained
+To be able to connect to Hive, Sparkling Water will need Hive JDBC Client JAR on the class-path. The jar can be obtained
 from in the following ways.
 
 - For Hortonworks, Hive JDBC client jars can be found at
@@ -68,7 +68,7 @@ from in the following ways.
 Import Data from a non-Kerberized Hive
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sparkling Water can import data from non-Kerberized hive. This also applies for the case when
+Sparkling Water can import data from the non-Kerberized hive. This also applies for the case when
 your Hadoop cluster is Kerberized but Hive is not.
 
 To import data from non-Kerberized Hive, run:
@@ -78,7 +78,7 @@ To import data from non-Kerberized Hive, run:
     .. tab-container:: Scala
         :title: Scala
 
-        First, start Sparkling Shell with the  Hive JDBC client jar on the class path
+        First, start Sparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -100,7 +100,7 @@ To import data from non-Kerberized Hive, run:
     .. tab-container:: Python
         :title: Python
 
-        First, start PySparkling Shell with the  Hive JDBC client jar on the class path
+        First, start PySparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -124,7 +124,7 @@ To import data from non-Kerberized Hive, run:
         :title: R
 
         Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
-        Spark context with the Hive JDBC client jar on the class path.
+        Spark context with the Hive JDBC client JAR on the class-path.
 
         .. code:: R
 
@@ -159,7 +159,7 @@ Authenticate your user against Kerberos.
 
     kinit <your_user_name>
 
-Put Hive JDBC client jar on the hadoop class path.
+Put Hive JDBC client JAR on the Hadoop class-path.
 
 .. code:: bash
 
@@ -180,15 +180,15 @@ Get the delegation token generated with arguments:
 
     hadoop jar $SW_ASSEMBLY water.hive.GenerateHiveToken -hiveHost <your_hive_host> -hivePrincipal <your_hive_principal> -tokenFile hive.token
 
-With the token generated, we can run Sparkling Water with Hive support for kerberized
-hadoop cluster as:
+With the token generated, we can run Sparkling Water with Hive support for the Kerberized
+Hadoop cluster as:
 
 .. content-tabs::
 
     .. tab-container:: Scala
         :title: Scala
 
-        First, start Sparkling Shell with the  Hive JDBC client jar on the class path
+        First, start Sparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -221,7 +221,7 @@ hadoop cluster as:
     .. tab-container:: Python
         :title: Python
 
-        First, start PySparkling Shell with the  Hive JDBC client jar on the class path
+        First, start PySparkling Shell with the  Hive JDBC client JAR on the class-path
 
         .. code:: bash
 
@@ -253,7 +253,7 @@ hadoop cluster as:
         :title: R
 
         Run your R environment and install required libraries according to :ref:`rsparkling` tutorial and then create
-        Spark context with the Hive JDBC client jar on the class path.
+        Spark context with the Hive JDBC client JAR on the class-path.
 
         .. code:: R
 

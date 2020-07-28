@@ -4,7 +4,7 @@ Train DRF Model in Sparkling Water
 ----------------------------------
 
 Sparkling Water provides API for H2O DRF in Scala and Python.
-The following sections describe how to train DRF model in Sparkling Water in both languages.
+The following sections describe how to train the DRF model in Sparkling Water in both languages.
 
 .. content-tabs::
 

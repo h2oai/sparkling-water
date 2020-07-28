@@ -2,7 +2,7 @@ Train XGBoost Model in Sparkling Water
 --------------------------------------
 
 Sparkling Water provides API for H2O XGBoost in Scala and Python.
-The following sections describe how to train XGBoost model in Sparkling Water in both languages.
+The following sections describe how to train the XGBoost model in Sparkling Water in both languages.
 
 .. content-tabs::
 
@@ -102,7 +102,7 @@ The following sections describe how to train XGBoost model in Sparkling Water in
 XGBoost Memory Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additionally memory
+H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additional memory
 available on the system.
 
 When running on YARN, please make sure to set the ``memoryOverhead`` so XGBoost has enough memory. On Spark, the following

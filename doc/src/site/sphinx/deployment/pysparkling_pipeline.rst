@@ -63,5 +63,5 @@ And we can run the predictions on the model as:
     model.transform(df_for_predictions)
 
 If we don't initialize the PySparkling using the ``Initializer``, we would get ``class not found`` exception during loading
-the model as Spark would not now about the required classes. But as we can see, we do not need to initialize ``H2OContext``
+the model as Spark would not know about the required classes. But as we can see, we do not need to initialize ``H2OContext``
 for scoring tasks.

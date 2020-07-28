@@ -5,19 +5,19 @@ Sparkling Water is designed to be executed as a regular Spark application. It pr
 
 Sparkling Water provides transparent integration for the H2O engine and its machine learning algorithms into the Spark platform, enabling:
 
-- Use of H2O algorithms in Spark workflow.
+- Use of H2O algorithms in Spark workflows.
 - Transformation between H2O and Spark data structures.
 - Use of Spark RDDs as input for H2O algorithms.
 - Transparent execution of Sparkling Water applications on top of Spark.
 
-Sparkling Water supports two type of backends: internal and external.
+Sparkling Water supports two types of backends: internal and external.
 
 In the internal backend, Sparkling Water is launched inside a Spark executor, which is created after application submission. At this point, H2O starts services, including distributed KV store and memory manager, and orchestrates them into a cloud. The topology of the created cloud matches the topology of the underlying Spark cluster exactly. The following figure represents the Internal Sparkling Water cluster.
 
 .. figure:: ../images/internal_backend.png
    :alt: Internal Sparkling Water Cluster Topology
 
-In external backend, the H2O cluster is started separately, and we connect to it from the Spark driver. The following figure represents the External Sparkling Water cluster.
+In the external backend, the H2O cluster is started separately, and we connect to it from the Spark driver. The following figure represents the External Sparkling Water cluster.
 
 
 .. figure:: ../images/external_backend.png

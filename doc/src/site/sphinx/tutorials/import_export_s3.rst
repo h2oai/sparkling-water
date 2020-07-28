@@ -7,12 +7,12 @@ required.
 Specify the AWS Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to enable support for S3A/S3N, we need to start Sparkling Water with the following extra dependencies:
+To enable support for S3A/S3N, we need to start Sparkling Water with the following extra dependencies:
 
 - ``org.apache.hadoop:hadoop-aws:2.7.3``
 - ``spark.jars.packages com.amazonaws:aws-java-sdk:1.7.4``
 
-For production environments, we advice to download these jars and add them on your Spark path manually by copying them to
+For production environments, we advise to download these jars and add them on your Spark path manually by copying them to
 ``$SPARK_HOME/jars`` directory.
 
 Additionally, we can also use the ``--packages`` option when starting Sparkling Water as:

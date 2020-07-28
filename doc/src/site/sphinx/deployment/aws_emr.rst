@@ -12,12 +12,12 @@ To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
    - **H2O Cluster of VM**: All the VPC, subnets, and network security groups are created for you.
    - **H2O Cluster of VM - Bring your own VPC**: All the networks security groups, subnets, and internet gateways are created by the user.
    
-   Click **Continue** after reviewing to open the Launch on EC2 page.
+   Click **Continue** after reviewing to open the Launch on the EC2 page.
 
   .. figure:: ../images/aws_h2oai.png
       :alt: H2O Artificial Intelligence 
 
-3. The Launch on EC2 page provides information about launch options. On the Manual Launch tab:
+3. The Launch on the EC2 page provides information about launch options. On the Manual Launch tab:
 
    - Select the offering that you prefer.
    - Select the region to launch.
@@ -54,7 +54,7 @@ To use Sparkling Water with an EMR cluster, you can use a premade H2O template.
   .. figure:: ../images/aws_options.png
      :alt: Options page
 
-7. Review the Stack configuration. Click **Create** to create the Stack, or click **Previous** to return to another page and edit any information.
+7. Review the Stack configuration. Click **Create** to create the Stack or click **Previous** to return to another page and edit any information.
 
 After your EMR cluster is created, you can ssh into your head node. In the head node, you will find an H2O folder with Sparkling Water inside. To start any H2O jobs with Sparkling Water, follow the instructions located on the download page (https://www.h2o.ai/download/).
 

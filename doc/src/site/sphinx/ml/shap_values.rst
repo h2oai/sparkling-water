@@ -7,7 +7,7 @@ get contributions from raw mojo. The following two sections describe how to achi
 Train model pipeline & get contributions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Obtaining SHAP values is possible only from H2OGBM, H2OXGBoost and H2ODRF pipeline wrappers and for
+Obtaining SHAP values is possible only from H2OGBM, H2OXGBoost, and H2ODRF pipeline wrappers and for
 regression or binomial problems.
 
 To get SHAP values(=contributions) from H2OXGBoost model, please do:
@@ -122,7 +122,7 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
 Get Contributions from Raw MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Obtaining SHAP values is possible only from MOJO's generated for GBM, XGBoost and DRF and for
+Obtaining SHAP values is possible only from MOJO's generated for GBM, XGBoost, and DRF and for
 regression or binomial problems. If you don't need to train the model and just need to load existing mojo,
 there is no need to start ``H2OContext``.
 
@@ -143,7 +143,7 @@ there is no need to start ``H2OContext``.
 
             val testingDF = spark.read.option("header", "true").option("inferSchema", "true").csv("/path/to/testing/dataset.csv")
 
-        Load the existing MOJO and enable generation of contributions via the settings object.
+        Load the existing MOJO and enable the generation of contributions via the settings object.
 
         .. code:: scala
 
@@ -182,7 +182,7 @@ there is no need to start ``H2OContext``.
 
             testingDF = spark.read.csv("/path/to/testing/dataset.csv", header=True, inferSchema=True)
 
-        Load the existing MOJO and enable generation of contributions via the settings object.
+        Load the existing MOJO and enable the generation of contributions via the settings object.
 
         .. code:: python
 

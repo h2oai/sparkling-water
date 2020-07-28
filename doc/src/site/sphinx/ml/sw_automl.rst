@@ -31,8 +31,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Create a H2OAutoML instance and configure it according your use case via provided setters. If feature columns are not specified explicitly,
-        all columns excluding label, fold, weight and ignored columns are considered as features.
+        Create an H2OAutoML instance and configure it according to your use case via provided setters. If feature columns are not specified explicitly,
+        all columns excluding label, fold, weight, and ignored columns are considered as features.
 
         .. code:: scala
 
@@ -85,7 +85,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             val leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(false)
 
-        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+        Extra columns don't have to be specified explicitly. You can specify the addition of all possible extra columns as:
 
         .. code:: scala
 
@@ -119,8 +119,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
-        Create a H2OAutoML instance and configure it according your use case via provided setters or named constructor parameters.
-        If feature columns are not specified explicitly, all columns excluding label, fold, weight and ignored columns are considered as features.
+        Create an H2OAutoML instance and configure it according to your use case via provided setters or named constructor parameters.
+        If feature columns are not specified explicitly, all columns excluding label, fold, weight, and ignored columns are considered as features.
 
         .. code:: python
 
@@ -171,7 +171,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(truncate = False)
 
-        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+        Extra columns don't have to be specified explicitly. You can specify the addition of all possible extra columns as:
 
         .. code:: scala
 

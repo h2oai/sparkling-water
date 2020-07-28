@@ -16,7 +16,7 @@ shells are available in the `bin` directory of the extracted distribution.
         export SPARK_HOME="/path/to/spark/installation"
         export MASTER="local[*]"
 
-   In this example, the description ``local[*]`` causes creation of a single node local cluster.
+   In this example, the description ``local[*]`` causes the creation of a single-node local cluster.
 
 3. And run the example:
 

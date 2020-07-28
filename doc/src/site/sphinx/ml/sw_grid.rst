@@ -1,10 +1,9 @@
 Train Sparkling Water Algorithms with Grid Search
 -------------------------------------------------
 
-Grid Search serves for finding optimal values for hyper parameters of a given H2O/SW algorithm. Grid Search in Sparkling Water
+Grid Search serves for finding optimal values for hyper-parameters of a given H2O/SW algorithm. Grid Search in Sparkling Water
 is able to traverse hyper space for H2OGBM, H2OXGBoost, H2ODRF, H2OGLM, H2ODeepLearning. For more details about hyper parameters
 for a specific algorithm (see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html#supported-grid-search-hyperparameters>`__).
-
 
 Sparkling Water provides API in Scala and Python for Grid Search. The following sections describe how to Apply Grid Search on
 H2ODRF in both languages.
@@ -38,14 +37,14 @@ H2ODRF in both languages.
             val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Define the algorithm, which will be a subject of hyper parameter tuning
+        Define the algorithm, which will be a subject of hyper-parameter tuning
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2ODRF
             val algo = new H2ODRF().setLabelCol("CAPSULE")
 
-        Define a hyper space which will be traversed
+        Define a hyper-space which will be traversed
 
         .. code:: scala
 
@@ -54,13 +53,13 @@ H2ODRF in both languages.
             hyperSpace += "ntrees" -> Array(1, 10, 30).map(_.asInstanceOf[AnyRef])
             hyperSpace += "mtries" -> Array(-1, 5, 10).map(_.asInstanceOf[AnyRef])
 
-        Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
+        Pass the algorithm and hyper-space to the grid search and set properties defining the way how the hyper-space will be traversed.
 
         Sparkling Water supports two strategies for traversing hyperspace:
 
-        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper parameter values and
+        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper-parameter values and
           finishes after the whole space is traversed.
-        - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
+        - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper-space and
           can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
           For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html>`_
@@ -125,19 +124,19 @@ H2ODRF in both languages.
             from pysparkling.ml import H2ODRF
             algo = H2ODRF(labelCol = "CAPSULE")
 
-        Define a hyper space which will be traversed
+        Define a hyper-space which will be traversed
 
         .. code:: python
 
             hyperSpace = {"ntrees": [1, 10, 30], "mtries": [-1, 5, 10]}
 
-        Pass the algorithm and hyper space to the grid search and set properties defining tha way how the hyper space will be traversed.
+        Pass the algorithm and hyper-space to the grid search and set properties defining the way how the hyper-space will be traversed.
 
         Sparkling Water supports two strategies for traversing hyperspace:
 
-        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper parameter values and
+        - **Cartesian** - (Default) This strategy tries out every possible combination of hyper-parameter values and
           finishes after the whole space is traversed.
-        - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper space and
+        - **RandomDiscrete** - In each iteration, the strategy randomly selects the combination of values from the hyper-space and
           can be terminated before the whole space is traversed. The termination depends on various criteria
           (consider parameters: ``maxRuntimeSecs``, ``maxModels``, ``stoppingRounds``, ``stoppingTolerance``, ``stoppingMetric``).
           For details see `H2O-3 documentation <https://docs.h2o.ai/h2o/latest-stable/h2o-docs/grid-search.html>`_
