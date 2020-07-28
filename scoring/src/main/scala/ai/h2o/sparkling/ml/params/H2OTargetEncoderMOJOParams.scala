@@ -31,9 +31,10 @@ trait H2OTargetEncoderMOJOParams extends Params {
   protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed.")
   protected final val outputCols =
     new StringArrayParam(
-      this, "outputCols",
+      this,
+      "outputCols",
       "Names of columns representing the result of target encoding. If the parameter is not specified by user, the output " +
-      "column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.")
+        "column names will be automatically derived from ``inputCols`` by appending the suffix `_te`.")
   protected final val holdoutStrategy = new Param[String](
     this,
     "holdoutStrategy",
@@ -60,7 +61,8 @@ trait H2OTargetEncoderMOJOParams extends Params {
     "noise",
     "Amount of random noise added to output values of training dataset. " +
       "Noise addition can be disabled by setting the parameter to 0.0")
-  protected final val noiseSeed = new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise.")
+  protected final val noiseSeed =
+    new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise.")
 
   //
   // Default values
