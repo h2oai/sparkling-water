@@ -1,7 +1,7 @@
 Target Encoding in Sparkling Water
 ==================================
 Target Encoding in Sparkling Water is a mechanism of converting categorical features to continues features based on
-the mean calculated from values of the label (target) column.
+the mean calculated from values of the label (target) column. See also :ref:`parameters_H2OTargetEncoder`.
 
 An example of converting a categorical feature to continues with Target Encoder (`Town_te` is a produced column):
 
