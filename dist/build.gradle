@@ -146,6 +146,7 @@ def copyAndSubstituteGradleProperties() {
 
   def sparkSpecificContent = file("$rootDir/gradle-spark${spark}.properties").getText('UTF-8')
     .replaceAll("scalaBaseVersion=.*", "scalaBaseVersion=${scalaBaseVersion}")
+    .replaceAll("sparkVersion=.*", "sparkVersion=${sparkVersion}")
 
   def gradlePropsFile = file("$zipDir/gradle.properties")
   gradlePropsFile.createNewFile()
