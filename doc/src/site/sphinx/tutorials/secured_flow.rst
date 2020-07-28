@@ -1,13 +1,13 @@
 Using SSL to secure H2O Flow
 ============================
 
-Sparkling Water supports security of H2O Flow user interface. There are two ways how to secure the Flow.
+Sparkling Water supports the security of the H2O Flow user interface. There are two ways how to secure the Flow.
 
 - Provide the existing Java key store and password.
 - Let Sparkling Water automatically create the necessary files. This solution has several limitations
-  which are described bellow.
+  which are described below.
 
-Using existing Java keystore
+Using existing Java Keystore
 ----------------------------
 
 In order to use https correctly, the following two options need to be specified:
@@ -34,7 +34,7 @@ In order to use https correctly, the following two options need to be specified:
             import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
 
-        You can also start Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
+        You can also start the Sparkling shell without the configuration and specify it using the setters on ``H2OConf`` as:
 
         .. code:: scala
 

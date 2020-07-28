@@ -32,4 +32,4 @@ Building Against Custom H2O
 ---------------------------
 
 Note: If you would like to build against custom H2O Python package, specify ``H2O_HOME`` environment variable. The variable
-should point to the root directory of H2O-3 repository. This is mainly used for integration testing with H2O-3.
+should point to the root directory of the H2O-3 repository. This is mainly used for integration testing with H2O-3.

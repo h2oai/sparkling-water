@@ -12,7 +12,7 @@ This section describes how to quickly get started with Sparkling Water on your p
 
 
     - Choose Spark release: SUBST_SPARK_VERSION
-    - Choose package type: Pre-built for Hadoop 2.7 and later
+    - Choose a package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER.
 
@@ -53,7 +53,7 @@ This section describes how to launch Sparkling Water on Hadoop using YARN.
 .. code:: bash
 
     - Choose Spark release: SUBST_SPARK_VERSION
-    - Choose package type: Pre-built for Hadoop 2.7 and later
+    - Choose a package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark.
 
@@ -97,7 +97,7 @@ This section describes how to launch H2O on a standalone Spark cluster.
 .. code:: bash
 
     - Choose Spark release: SUBST_SPARK_VERSION
-    - Choose package type: Pre-built for Hadoop 2.7 and later
+    - Choose a package type: Pre-built for Hadoop 2.7 and later
 
 2. Point SPARK_HOME to the existing installation of Spark and export variable MASTER.
 
@@ -129,7 +129,7 @@ This section describes how to launch H2O on a standalone Spark cluster.
 External Backend
 ----------------
 
-Sparkling Water Kluster mode supports a connection to external H2O clusters (standalone/hadoop).
+Sparkling Water Kluster mode supports a connection to external H2O clusters (standalone/Hadoop).
 The H2O cluster needs to be started with a corresponding H2O, which can be downloaded as below.
 
 1. Download and unpack the Sparkling Water distribution.
@@ -179,7 +179,7 @@ For more information, please follow the :ref:`backend`.
 Use from Maven
 --------------
 
-This section provides a gradle-style specification for Maven artifacts.
+This section provides a Gradle-style specification for Maven artifacts.
 
 See the `h2o-droplets GitHub repository <https://github.com/h2oai/h2o-droplets>`__ for a working example.
 

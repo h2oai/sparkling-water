@@ -15,7 +15,7 @@ The format of Driverless AI prediction is explained bellow.
 Requirements
 ~~~~~~~~~~~~
 
-In order to use the MOJO scoring pipeline, Driverless AI license has to be passed to Spark.
+To use the MOJO scoring pipeline, a Driverless AI license has to be passed to Spark.
 This can be achieved via ``--jars`` argument of the Spark launcher scripts.
 
 **Note**: In Local Spark mode, please use ``--driver-class-path`` to specify the path to the license file.
@@ -26,7 +26,7 @@ After we downloaded the Sparkling Water distribution, extract it, and go to the 
 Loading and Score the MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, start the environment for the desired language with Driverless AI license. There are two variants. We can use
+First, start the environment for the desired language with a Driverless AI license. There are two variants. We can use
 Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark directly
 and add the dependencies manually.
 
@@ -56,7 +56,7 @@ and add the dependencies manually.
             ./bin/pysparkling --jars license.sig
 
 
-At this point, we should have Spark interactive terminal where we can carry out predictions.
+At this point, we should have a Spark interactive terminal where we can carry out predictions.
 For productionalizing the scoring process, we can use the same configuration,
 except instead of using Spark shell, we would submit the application using ``./bin/spark-submit``.
 
@@ -149,13 +149,13 @@ When the option ``namedMojoOutputColumns`` is enabled on ``H2OMOJOSettings``, th
 names corresponding to the columns Driverless AI identified as output columns. For example, if Driverless API MOJO
 pipeline contains one output column `AGE` ( for example regression problem), the prediction column contains another sub-column
 named `AGE`. If The MOJO pipeline contains multiple output columns, such as `VALID.0` and `VALID.1` (for example classification problems),
-the prediction column contains two sub-columns with the aforementined names.
+the prediction column contains two sub-columns with the aforementioned names.
 
 If this option is disabled, the ``predictionCol`` contains the array of predictions without
-the column names. For example, if Driverless API MOJO pipeline contains one output column `AGE` ( for example regression problem),
-the prediction column contains array of size 1 with the predicted value.
+the column names. For example, if the Driverless API MOJO pipeline contains one output column `AGE` ( for example regression problem),
+the prediction column contains an array of size 1 with the predicted value.
 If The MOJO pipeline contains multiple output columns, such as `VALID.0` and `VALID.1` (for example classification problems),
-the prediction column contains array of size 2 containing predicted probabilities for each class.
+the prediction column contains an array of size 2 containing predicted probabilities for each class.
 
 By default, this option is enabled.
 

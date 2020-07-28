@@ -5,7 +5,7 @@ To invoke tests for examples from IntelliJ Idea, the following JVM option is req
 
 - ``-Dspark.testing=true``
 
-To invoke unit tests from gradle, run:
+To invoke unit tests from Gradle, run:
 
 .. code:: shell
 

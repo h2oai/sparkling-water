@@ -13,16 +13,16 @@ Spark, using R.
 
 This package implements basic functionality (creating an H2OContext, showing the H2O Flow
 interface, and converting between Spark DataFrames and H2O Frames). The main purpose of
-this package is to provide a connector between sparklyr and H2O's machine learning algorithms.
+this package is to provide a connector between Sparklyr and H2O's machine learning algorithms.
 
 The **rsparkling** package uses **sparklyr** for Spark job deployment and initialization
-of Sparkling Water. After that, user can use the regular **h2o** R package for modeling. In the
-following sections we show how to install each of these packages.
+of Sparkling Water. After that, the user can use the regular **h2o** R package for modeling. In the
+following sections, we show how to install each of these packages.
 
 Installation of SparklyR & Spark
 --------------------------------
 
-Install sparklyr
+Install Sparklyr
 ~~~~~~~~~~~~~~~~
 We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/index.html>`__.
 
@@ -30,7 +30,7 @@ We recommend the latest stable version of `sparklyr <http://spark.rstudio.com/in
 
    install.packages("sparklyr")
 
-Install Spark via sparklyr
+Install Spark via Sparklyr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 **RSparkling SUBST_SW_VERSION** is built for SUBST_SPARK_MAJOR_VERSION.
 
@@ -85,7 +85,7 @@ that the latest released version might not be available in CRAN. In that case, p
 Install H2O from S3
 ~~~~~~~~~~~~~~~~~~~
 
-H2O can be also installed from hosted R repository in H2O's S3 buckets.
+H2O can be also installed from the hosted R repository in H2O's S3 buckets.
 
 At present, you can install the **h2o** R package using a repository URL comprised
 of the H2O version name and number. Example: `http://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/R`
@@ -149,7 +149,7 @@ Using RSparkling
 
 Specify H2OConf
 ~~~~~~~~~~~~~~~
-``H2OConf`` contains all setting needed the start and run of H2O-3 cluster.
+``H2OConf`` contains all settings needed the start and run the H2O-3 cluster.
 
 .. code:: r
 
@@ -189,7 +189,7 @@ We can also view the H2O Flow web UI:
 
 H2O with Spark DataFrames
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-As an example, let's copy the mtcars dataset to to Spark so we can access it from H2O Sparkling Water:
+As an example, let's copy the mtcars dataset to Spark so we can access it from H2O Sparkling Water:
 
 .. code:: r
 
@@ -268,7 +268,7 @@ Look at the Spark log from R:
 Disconnect from Spark
 ~~~~~~~~~~~~~~~~~~~~~
 Now we disconnect from Spark, this will result in the H2OContext being stopped as well
-since it's owned by the spark shell process used by our Spark connection:
+since it's owned by the Spark shell process used by our Spark connection:
 
 .. code:: r
 
@@ -363,8 +363,8 @@ Predictions
 
 To generate predictions on a test set, you do the following.
 This will return an H2OFrame with a single (or multiple) columns of predicted values.
-If regression, it will be a single colum, if binary classification it will be 3 columns
-and in multi-class prediction it will be C+1 columns (where C is the number of classes).
+If regression, it will be a single column, if binary classification it will be 3 columns
+and in multi-class prediction, it will be C+1 columns (where C is the number of classes).
 
 .. code:: r
 
@@ -414,7 +414,7 @@ If you are new to H2O for machine learning, we recommend you start with:
 - `Intro to H2O Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/intro-to-h2o.R>`__
 - `H2O Grid Search & Model Selection Tutorial <https://github.com/h2oai/h2o-tutorials/blob/master/h2o-open-tour-2016/chicago/grid-search-model-selection.R>`__
 
-There is also number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__, `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available, and the `Machine Learning with R and
+There is also a number of other H2O R `tutorials <https://github.com/h2oai/h2o-tutorials>`__, `demos <https://github.com/h2oai/h2o-3/tree/master/h2o-r/demos>`__ available, and the `Machine Learning with R and
 H2O Booklet (pdf) <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/booklets/RBooklet.pdf>`__.
 
 

@@ -15,7 +15,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
 2.  Create Databricks Azure Environment
 
-    In order to connect to Databricks from Azure, please make sure you have created user inside Azure Active Directory and using that user for the Databricks Login.
+    In order to connect to Databricks from Azure, please make sure you have created the user inside Azure Active Directory and using that user for the Databricks Login.
 
 3.  Create the cluster
 
@@ -26,7 +26,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     .. figure:: ../images/databricks_cluster_creation.png
         :alt: Configured cluster ready to be started
 
-4.  Create R notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
+4.  Create a R notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
 
     .. code:: R
 
@@ -53,5 +53,5 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
         :alt: Running H2O Context
 
 7. Flow is accessible via the URL printed out after H2OContext is started. Internally we use
-   open port 9009. If you have environment where different port is open on your Azure Databricks
+   open port 9009. If you have an environment where a different port is open on your Azure Databricks
    cluster, you can configure it via ``spark.ext.h2o.client.web.port``.

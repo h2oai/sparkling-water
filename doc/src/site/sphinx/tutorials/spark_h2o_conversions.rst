@@ -49,9 +49,9 @@ Example
 Converting an RDD[T] into an H2OFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``H2OContext`` provides conversion method from the specified ``RDD[A]`` to ``H2OFrame``. As with conversion
+The ``H2OContext`` provides a conversion method from the specified ``RDD[A]`` to ``H2OFrame``. As with conversion
 in the opposite direction, the type ``A`` has to satisfy the upper bound expressed by the type ``Product``. The conversion
-creates a new ``H2OFrame``, transfers data from the specified RDD, and saves it to DKV store on the H2O backend.
+creates a new ``H2OFrame``, transfers data from the specified RDD, and saves it to the DKV store on the H2O backend.
 
 .. code:: scala
 
@@ -75,7 +75,7 @@ Converting a DataFrame into an H2OFrame
 
 The ``H2OContext`` provides conversion method from the specified ``DataFrame`` to ``H2OFrame``.
 The conversion creates a new ``H2OFrame``, transfers data from the specified ``DataFrame``, and saves it
-to DKV store on the H2O backend.
+to the DKV store on the H2O backend.
 
 .. code:: scala
 

@@ -7,7 +7,7 @@ models trained for example in H2O-3.
 Train Model in Sparkling Water and Obtain Binary model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We first train a model using Sparkling Water Api from which we can extract the binary model class.
+We first train a model using Sparkling Water API from which we can extract the binary model class.
 The binary model class contains methods used to work with binary models.
 
 .. content-tabs::
@@ -60,7 +60,7 @@ The binary model class contains methods used to work with binary models.
             estimator = H2OXGBoost(labelCol = "CAPSULE")
             mojoModel = estimator.fit(sparkDF)
 
-To obtain binary model once the model training has finished, run:
+To obtain the binary model once the model training has finished, run:
 
 .. content-tabs::
 

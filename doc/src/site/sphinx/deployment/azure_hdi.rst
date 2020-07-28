@@ -53,7 +53,7 @@ Follow the steps below to create a new H2O Artificial Intelligence for Azure HDI
 
 7. On the **Summary** tab, click **Create** to begin the cluster creation. Note that the cluster creation process can take up to 30 minutes.
 
-8. Watch the **Notifications** tab for the progress of deployment. If the deployment fails, delete created resources and repeat the points above.
+8. Watch the **Notifications** tab for the progress of the deployment. If the deployment fails, delete created resources and repeat the points above.
 
    .. figure:: ../images/azure_failed_deployment.png
       :alt: Azure Failed Deployment
@@ -80,6 +80,6 @@ You are now ready to start building your H2O Models.
 Troubleshooting Tips
 ''''''''''''''''''''
 
-- If H2O Flow link does not work and only shows the H2O documentation after the H2O cluster creation, clean your browser cache and try again.
-- Make sure that the cluster has enough resources to allocate to your Spark application. Do not allocate more than 75% of the worker’s RAM to the spark application, otherwise it can fail.
+- If the H2O Flow link does not work and only shows the H2O documentation after the H2O cluster creation, clean your browser cache and try again.
+- Make sure that the cluster has enough resources to allocate to your Spark application. Do not allocate more than 75% of the worker’s RAM to the spark application, otherwise, it can fail.
 - For more information about the cluster available resources, go to **http://<ClusterName>.azurehdinsight.net**.

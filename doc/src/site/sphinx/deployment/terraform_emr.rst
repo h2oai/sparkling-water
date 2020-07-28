@@ -75,9 +75,9 @@ You will be asked to provide mandatory variables. Please see
 `Terraform documentation <https://www.terraform.io/intro/index.html>`__ for more information how to set up
 variables.
 
-To access the Jupyter Notebook, please go to the url returned by ``jupyter_notebook_url`` Terraform output.
+To access the Jupyter Notebook, please go to the URL returned by ``jupyter_notebook_url`` Terraform output.
 You need to approve the security exception (self-signed certificate) in your browser. The only way how to access the
-notebook is using the link above (with token). Password login is not enabled.
+notebook is by using the link above (with the token). Password login is not enabled.
 
 If you would like to connect to the master machine via SSH, make sure you have filled ``aws_ssh_public_key`` argument
 and please run:
@@ -86,8 +86,8 @@ and please run:
 
     ssh -i path/to/private.key hadoop@public_master_dns
 
-where ``private.key`` is the private key for the public key we specified as an input and ``public_master_dns``
-is public DNS name of the master node. This dns name is printed as output after ``terraform apply`` finishes.
+where ``private.key`` is the private key for the public key we specified as input and ``public_master_dns``
+is public DNS name of the master node. This DNS name is printed as output after ``terraform apply`` finishes.
 
 
 

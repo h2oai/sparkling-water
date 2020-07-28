@@ -33,8 +33,8 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Create a H2OAutoML instance and configure it according your use case via provided setters. If feature columns are not specified explicitly,
-        all columns excluding label, fold, weight and ignored columns are considered as features.
+        Create an H2OAutoML instance and configure it according to your use case via provided setters. If feature columns are not specified explicitly,
+        all columns excluding label, fold, weight, and ignored columns are considered as features.
 
         .. code:: scala
 
@@ -43,9 +43,9 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             automl.setLabelCol("CAPSULE")
             automl.setIgnoredCols(Array("ID"))
 
-        By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OAutoMLClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OAutoMLRegressor`` instead.
 
@@ -93,7 +93,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             val leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(false)
 
-        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+        Extra columns don't have to be specified explicitly. You can specify the addition of all possible extra columns as:
 
         .. code:: scala
 
@@ -127,15 +127,15 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
-        Create a H2OAutoML instance and configure it according your use case via provided setters or named constructor parameters.
-        If feature columns are not specified explicitly, all columns excluding label, fold, weight and ignored columns are considered as features.
+        Create an H2OAutoML instance and configure it according to your use case via provided setters or named constructor parameters.
+        If feature columns are not specified explicitly, all columns excluding label, fold, weight, and ignored columns are considered as features.
 
         .. code:: python
 
             from pysparkling.ml import H2OAutoML
             automl = H2OAutoML(labelCol="CAPSULE", ignoredCols=["ID"])
 
-        By default, ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OAutoML`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
         If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
         column data types, you can explicitly identify the problem by using ``H2OAutoMLClassifier`` or ``H2OAutoMLRegressor`` instead.
@@ -184,7 +184,7 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(truncate = False)
 
-        Extra columns don't have to be specified explicitly. You can specify addition of all possible extra columns as:
+        Extra columns don't have to be specified explicitly. You can specify the addition of all possible extra columns as:
 
         .. code:: scala
 

@@ -15,7 +15,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
 2.  Create Databricks Azure Environment
 
-    In order to connect to Databricks from Azure, please make sure you have created user inside Azure Active Directory and using that user for the Databricks Login.
+    In order to connect to Databricks from Azure, please make sure you have created the user inside Azure Active Directory and using that user for the Databricks Login.
 
 3.  Add PySparkling dependency
 
@@ -26,7 +26,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     .. figure:: ../images/databricks_pysparkling_pipy.png
         :alt: Uploading PySparkling Library
 
-    You can configure each cluster manually and select which libraries should be attached or you can configure the library to be attached to all future clusters. It is advised to restart the cluster in case you attached the library to already running cluster to ensure the clean environment.
+    You can configure each cluster manually and select which libraries should be attached or you can configure the library to be attached to all future clusters. It is advised to restart the cluster in case you attached the library to the already running cluster to ensure the clean environment.
 
 4.  Create the cluster
 
@@ -37,7 +37,7 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
     .. figure:: ../images/databricks_cluster_creation.png
         :alt: Example of configured cluster ready to be started
 
-5.  Create Python notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
+5.  Create a Python notebook and attach it to the created cluster. To start ``H2OContext``, the init part of the notebook should be:
 
     .. code:: python
 
@@ -50,6 +50,6 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
         :alt: Running H2O Context
 
 7. Flow is accessible via the URL printed out after H2OContext is started. Internally we use
-   open port 9009. If you have environment where different port is open on your Azure Databricks
+   open port 9009. If you have an environment where a different port is open on your Azure Databricks
    cluster, you can configure it via ``spark.ext.h2o.client.web.port`` or corresponding setter
    on ``H2OConf``.

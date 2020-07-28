@@ -82,7 +82,7 @@ also stdout and stderr for each node in the cluster.
 Change Sparkling Water Logging Level
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To change log level for H2O running inside the Sparkling Water,
+To change the log level for H2O running inside the Sparkling Water,
 you can use the option ``spark.ext.h2o.log.level`` or set it as:
 
 .. content-tabs::
