@@ -102,6 +102,7 @@ The following sections describe how to train the KMeans model in Sparkling Water
 
 H2O KMeans Parameters
 ~~~~~~~~~~~~~~~~~~~~~
+See also :ref:`parameters_H2OKmeans`.
 
 - **maxIterations**
     Maximum number of KMeans iterations to find the centroids.

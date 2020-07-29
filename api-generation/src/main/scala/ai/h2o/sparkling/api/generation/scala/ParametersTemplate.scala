@@ -91,11 +91,27 @@ object ParametersTemplate
     parameters
       .map { parameter =>
         val constructorMethod = resolveParameterConstructorMethod(parameter.dataType, parameter.defaultValue)
+        val comment = if (parameter.comment.endsWith(".")) parameter.comment else parameter.comment + "."
         s"""  protected val ${parameter.swName} = ${constructorMethod}(
            |    name = "${parameter.swName}",
-           |    doc = "${parameter.comment}")""".stripMargin
+           |    doc = \"\"\"$comment${generatePossibleValues(parameter)}\"\"\")""".stripMargin
       }
       .mkString("\n\n")
+  }
+
+  private def generatePossibleValues(parameter: Parameter): String = {
+    val enumTypeOption = if (parameter.dataType.isEnum) {
+      Some(parameter.dataType)
+    } else if (parameter.dataType.isArray && parameter.dataType.getComponentType.isEnum) {
+      Some(parameter.dataType.getComponentType)
+    } else {
+      None
+    }
+    enumTypeOption match {
+      case Some(enumType) =>
+        enumType.getEnumConstants().map(c => s"""``"${c}"``""").mkString(" Possible values are ", ", ", ".")
+      case None => ""
+    }
   }
 
   private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, Any]): String = {

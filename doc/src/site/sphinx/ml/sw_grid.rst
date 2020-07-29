@@ -8,7 +8,7 @@ For more details about hyper-parameters for a specific algorithm
 
 
 Sparkling Water provides API in Scala and Python for Grid Search. The following sections describe how to Apply Grid Search on
-H2ODRF in both languages.
+H2ODRF in both languages. See also :ref:`parameters_H2OGridSearch`.
 
 .. content-tabs::
 

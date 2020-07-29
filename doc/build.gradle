@@ -1,7 +1,16 @@
 description = "Sparkling Water Documentation"
 
+apply from: "$rootDir/gradle/utils.gradle"
+
 import static groovy.io.FileType.FILES
 import org.gradle.util.VersionNumber
+
+dependencies {
+  implementation("org.scala-lang:scala-library:${scalaVersion}")
+  implementation(project(':sparkling-water-utils'))
+  implementation(project(':sparkling-water-ml'))
+  implementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+}
 
 task cleanDoc(type: Delete) {
   delete getBuildDir()
@@ -52,6 +61,19 @@ task deleteDocTrees(type: Delete) {
   delete "${buildDir}/site/.doctrees"
 }
 
+task cleanGeneratedDoc(type: Delete) {
+  delete "${projectDir}/src/site/sphinx/parameters"
+}
+
+task generateAlgorithmParameters(type: JavaExec, dependsOn: [cleanGeneratedDoc, build]) {
+  group = "Execution"
+  classpath = sourceSets.main.runtimeClasspath
+  main = "ai.h2o.sparkling.doc.generation.Runner"
+  args = ["${projectDir}/src/site/sphinx/parameters"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
 sphinx {
   environments = ["PYTHONWARNINGS" : ""]
   if (VersionNumber.parse(sparkVersion) >= VersionNumber.parse(kubernetesSupportSinceSpark)) {
@@ -95,8 +117,10 @@ artifacts {
   publishArchives sourcesDocJar
 }
 
+cleanDoc.dependsOn cleanGeneratedDoc
 publish.dependsOn site
 createVersionFile.dependsOn cleanDoc
+sphinx.dependsOn generateAlgorithmParameters
 sphinx.dependsOn createVersionFile
 clean.dependsOn cleanDoc
 substitute.dependsOn sphinx
