@@ -17,6 +17,7 @@
 
 import re
 
+
 class VersionComponents(object):
 
     @staticmethod

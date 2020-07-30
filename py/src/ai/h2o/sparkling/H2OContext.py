@@ -29,8 +29,8 @@ from pyspark.sql.types import StringType, BooleanType, IntegerType, LongType, Fl
 
 
 class H2OContext(object):
-
     __isConnected = False
+
     def __init__(self):
         """
          This constructor is used just to initialize the environment. It does not start H2OContext.
@@ -54,7 +54,6 @@ class H2OContext(object):
         if conf.contextPath() is not None:
             url = "{}/{}".format(url, conf.contextPath())
         return h2o.connect(url=url, **kwargs)
-
 
     @staticmethod
     def getOrCreate(conf=None):
@@ -120,12 +119,12 @@ class H2OContext(object):
         field.setAccessible(True)
         return field
 
-    def stop(self, stopSparkContext = False):
+    def stop(self, stopSparkContext=False):
         h2o.connection().close()
         scalaStopMethod = getattr(self._jhc, "ai$h2o$sparkling$H2OContext$$stop")
-        scalaStopMethod(stopSparkContext, False, False) # stopSpark = False, stopJVM = False, inShutdownHook = False
+        scalaStopMethod(stopSparkContext, False, False)  # stopSpark = False, stopJVM = False, inShutdownHook = False
 
-    def downloadH2OLogs(self,  destination, container = "ZIP"):
+    def downloadH2OLogs(self, destination, container="ZIP"):
         assert_is_type(container, Enum("ZIP", "LOG"))
         return self._jhc.downloadH2OLogs(destination, container)
 
@@ -152,7 +151,7 @@ class H2OContext(object):
     def getH2OLogLevel(self):
         return self._jhc.getH2OLogLevel()
 
-    def importHiveTable(self, database = "default", table = None, partitions = None, allowMultiFormat = False):
+    def importHiveTable(self, database="default", table=None, partitions=None, allowMultiFormat=False):
         return h2o.import_hive_table(database, table, partitions, allowMultiFormat)
 
     def asSparkFrame(self, h2oFrame, copyMetadata=True):

@@ -61,15 +61,15 @@ def dataset(spark, insuranceDatasetPath):
 
 @pytest.fixture(scope="module")
 def gbmModelWithOffset(dataset):
-    gbm=H2OGBM(distribution="tweedie",
-               ntrees=600,
-               maxDepth=1,
-               minRows=1,
-               learnRate=0.1,
-               minSplitImprovement=0,
-               featuresCols=["District","Group","Age"],
-               labelCol="Claims",
-               offsetCol="Offset")
+    gbm = H2OGBM(distribution="tweedie",
+                 ntrees=600,
+                 maxDepth=1,
+                 minRows=1,
+                 learnRate=0.1,
+                 minSplitImprovement=0,
+                 featuresCols=["District", "Group", "Age"],
+                 labelCol="Claims",
+                 offsetCol="Offset")
     return gbm.fit(dataset)
 
 
@@ -78,6 +78,7 @@ def savedGbmModel(gbmModelWithOffset):
     path = "file://" + os.path.abspath("build/gbm_model_with_offset")
     gbmModelWithOffset.write().overwrite().save(path)
     return path + "/mojo_model"
+
 
 def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset, dataset):
     predictionCol = col("prediction")
@@ -101,7 +102,7 @@ def testMOJOModelReturnsExpectedResultWhenOffsetColumnsIsSet(gbmModelWithOffset,
 
 def testMOJOModelReturnsDifferentResultWithZeroOffset(gbmModelWithOffset, dataset):
     predictionCol = col("prediction")
-    predictionsDF = gbmModelWithOffset.transform(dataset.withColumn("Offset",lit(0.0)))
+    predictionsDF = gbmModelWithOffset.transform(dataset.withColumn("Offset", lit(0.0)))
     detailsDF = predictionsDF.select(min(predictionCol).alias("min"),
                                      max(predictionCol).alias("max"),
                                      mean(predictionCol).alias("mean"))
@@ -114,7 +115,7 @@ def testMOJOModelReturnsDifferentResultWithZeroOffset(gbmModelWithOffset, datase
 
 
 def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, dataset):
-    [trainingDataset, testingDataset] =  dataset.randomSplit([0.8, 0.2], 1)
+    [trainingDataset, testingDataset] = dataset.randomSplit([0.8, 0.2], 1)
     trainingFrame = hc.asH2OFrame(trainingDataset)
     testingFrame = hc.asH2OFrame(testingDataset)
     gbm = H2OGradientBoostingEstimator(distribution="tweedie",
@@ -123,7 +124,7 @@ def testMOJOModelReturnsSameResultAsBinaryModelWhenOffsetColumnsIsSet(hc, datase
                                        min_rows=1,
                                        learn_rate=0.1,
                                        min_split_improvement=0)
-    gbm.train(x=["District","Group","Age"], y="Claims", training_frame=trainingFrame, offset_column="Offset")
+    gbm.train(x=["District", "Group", "Age"], y="Claims", training_frame=trainingFrame, offset_column="Offset")
 
     mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
     mojoModel = H2OMOJOModel.createFromMojo("file://" + mojoFile)

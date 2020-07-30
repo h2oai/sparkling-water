@@ -22,7 +22,6 @@ from pyspark.ml.param import *
 
 
 class H2OCommonParams(H2OBaseMOJOParams):
-
     ##
     # Param definitions
     ##

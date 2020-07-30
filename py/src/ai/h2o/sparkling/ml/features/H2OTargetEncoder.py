@@ -15,14 +15,13 @@
 # limitations under the License.
 #
 
-from pyspark import keyword_only
-from pyspark.ml.wrapper import JavaEstimator
-
 from ai.h2o.sparkling import Initializer
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
 from ai.h2o.sparkling.ml.Utils import Utils
 from ai.h2o.sparkling.ml.models import H2OTargetEncoderModel
 from ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams import H2OTargetEncoderMOJOParams
+from pyspark import keyword_only
+from pyspark.ml.wrapper import JavaEstimator
 
 
 class H2OTargetEncoder(H2OTargetEncoderMOJOParams, H2OStageBase, JavaEstimator):

@@ -16,9 +16,9 @@
 #
 
 from py4j.java_gateway import JavaObject
+from pyspark.ml.linalg import DenseVector, DenseMatrix
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
-from pyspark.ml.linalg import DenseVector, DenseMatrix
 from pyspark.sql import DataFrame
 
 

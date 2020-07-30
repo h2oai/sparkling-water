@@ -50,6 +50,7 @@ def testLoadAndTrainMojo(prostateDataset):
 
 def testInitialBiasAndWeightsAffectsTheResult(prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
+
     def createInitialDeepLearningDefinition():
         return H2ODeepLearning(
             seed=42,

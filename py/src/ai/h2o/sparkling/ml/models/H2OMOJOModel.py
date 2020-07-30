@@ -15,15 +15,13 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
-from pyspark.ml.util import _jvm
-
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from pyspark.sql import SparkSession
-from pyspark.sql.dataframe import DataFrame
+from pyspark.ml.param import *
+from pyspark.ml.util import _jvm
+
 
 class H2OMOJOModel(H2OMOJOModelBase):
 
@@ -65,6 +63,7 @@ class H2OMOJOModel(H2OMOJOModelBase):
 
     def getModelCategory(self):
         return self._java_obj.getModelCategory()
+
 
 class H2OSupervisedMOJOModel(H2OMOJOModel):
 

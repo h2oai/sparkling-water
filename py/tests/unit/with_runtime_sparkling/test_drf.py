@@ -71,5 +71,3 @@ def testCalibrationDataFrameCauseGenerationOfCalibratedProbabilities(prostateDat
         "detailed_prediction.calibratedProbabilities.1")
 
     unit_test_utils.assert_data_frames_have_different_values(probabilities, calibrated)
-
-

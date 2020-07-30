@@ -26,7 +26,8 @@ from tests import unit_test_utils
 
 
 def testLoadAndTrainMojo(hc, spark, prostateDataset):
-    referenceMojo = H2OMOJOModel.createFromMojo("file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
+    referenceMojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
     frame = hc.asH2OFrame(prostateDataset)
     frame["CAPSULE"] = frame["CAPSULE"].asfactor()
     gbm = H2OGradientBoostingEstimator(distribution="bernoulli", ntrees=2, seed=42)

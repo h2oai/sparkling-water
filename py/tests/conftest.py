@@ -21,9 +21,11 @@ def pytest_addoption(parser):
     parser.addoption("--dist", action="store", default="")
     parser.addoption("--spark_conf", action="store", default="")
 
+
 @pytest.fixture(scope="session")
 def dist(request):
     return request.config.getoption("--dist")
+
 
 @pytest.fixture(scope="session")
 def spark_conf(request):
