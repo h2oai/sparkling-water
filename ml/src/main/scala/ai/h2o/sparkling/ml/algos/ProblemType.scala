@@ -27,7 +27,7 @@ object ProblemType extends Enumeration {
   def familyToProblemType(family: String): ProblemType = {
     val enumValue = Family.valueOf(family)
     enumValue match {
-      //case Family.AUTO => Both
+      case Family.AUTO => Both
       case Family.gaussian => Regression
       case Family.binomial => Classification
       case Family.fractionalbinomial => Regression
