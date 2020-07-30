@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
 import ai.h2o.sparkling.macros.DeprecatedMethod
 
 import scala.collection.JavaConverters._
@@ -358,7 +359,7 @@ trait SharedBackendConf {
 
   def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
 
-  private[backend] def getFileProperties: Seq[(String, _)] =
+  private[backend] def getFileProperties: Seq[(String, _, _, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
 
@@ -367,174 +368,310 @@ object SharedBackendConf {
   val BACKEND_MODE_INTERNAL: String = "internal"
   val BACKEND_MODE_EXTERNAL: String = "external"
 
-  /**
-    * This option can be set either to "internal" or "external"
-    * When set to "external" H2O Context is created by connecting to existing H2O cluster, otherwise it creates
-    * H2O cluster living in Spark - that means that each Spark executor will have one h2o instance running in it.
-    * The internal is not recommended for big clusters and clusters where Spark executors are not stable.
-    */
-  val PROP_BACKEND_CLUSTER_MODE: (String, String) = ("spark.ext.h2o.backend.cluster.mode", BACKEND_MODE_INTERNAL)
+  val PROP_BACKEND_CLUSTER_MODE: StringOption = (
+    "spark.ext.h2o.backend.cluster.mode",
+    BACKEND_MODE_INTERNAL,
+    """``setInternalClusterMode()``
+      |``setExternalClusterMode()``""".stripMargin,
+    """This option can be set either to ``internal`` or ``external``. When set to ``external``, ``H2O Context`` is
+      |created by connecting to existing H2O cluster, otherwise H2O cluster located inside Spark is created. That
+      |means that each Spark executor will have one H2O instance running in it. The ``internal`` mode is not
+      |recommended for big clusters and clusters where Spark executors are not stable.""".stripMargin)
 
-  /** Configuration property - name of H2O cloud */
-  val PROP_CLOUD_NAME: (String, None.type) = ("spark.ext.h2o.cloud.name", None)
+  val PROP_CLOUD_NAME: OptionOption = (
+    "spark.ext.h2o.cloud.name",
+    None,
+    "``setCloudName(String)``",
+    "Name of H2O cluster. If this option is not set, the name is automatically generated")
 
-  /** Limit for number of threads used by H2O, default -1 means unlimited */
-  val PROP_NTHREADS: (String, Int) = ("spark.ext.h2o.nthreads", -1)
+  val PROP_NTHREADS: IntOption = (
+    "spark.ext.h2o.nthreads",
+    -1,
+    "``setNthreads(Integer)``",
+    """Limit for number of threads used by H2O, default ``-1`` means: Use value of ``spark.executor.cores`` in
+      |case this property is set. Otherwise use H2O's default
+      |value ``Runtime.getRuntime().availableProcessors()``""".stripMargin)
 
-  /** Enable/Disable Sparkling-Water REPL **/
-  val PROP_REPL_ENABLED: (String, Boolean) = ("spark.ext.h2o.repl.enabled", true)
+  val PROP_REPL_ENABLED: BooleanOption = (
+    "spark.ext.h2o.repl.enabled",
+    true,
+    """``setReplEnabled()``
+      |``setReplDisabled()``""".stripMargin,
+    "Decides whether H2O REPL is initiated or not.")
 
-  /** Number of executors started at the start of h2o services, by default 1 */
-  val PROP_SCALA_INT_DEFAULT_NUM: (String, Int) = ("spark.ext.scala.int.default.num", 1)
+  val PROP_SCALA_INT_DEFAULT_NUM: IntOption = (
+    "spark.ext.scala.int.default.num",
+    1,
+    "``setDefaultNumReplSessions(Integer)``",
+    "Number of parallel REPL sessions started at the start of Sparkling Water.")
 
-  /** Enable/Disable listener which kills H2O when there is a change in underlying cluster's topology **/
-  val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED: (String, Boolean) =
-    ("spark.ext.h2o.topology.change.listener.enabled", true)
+  val PROP_CLUSTER_TOPOLOGY_LISTENER_ENABLED: BooleanOption = (
+    "spark.ext.h2o.topology.change.listener.enabled",
+    true,
+    """``setClusterTopologyListenerEnabled()``
+      |``setClusterTopologyListenerDisabled()``""".stripMargin,
+    """Decides whether listener which kills H2O cluster on the change of the underlying cluster's topology is
+      |enabled or not. This configuration has effect only in non-local mode.""".stripMargin)
 
-  /** Enable/Disable check for Spark version. */
-  val PROP_SPARK_VERSION_CHECK_ENABLED: (String, Boolean) = ("spark.ext.h2o.spark.version.check.enabled", true)
+  val PROP_SPARK_VERSION_CHECK_ENABLED: BooleanOption = (
+    "spark.ext.h2o.spark.version.check.enabled",
+    true,
+    """``setSparkVersionCheckEnabled()``
+      |``setSparkVersionCheckDisabled()``""".stripMargin,
+    "Enables check if run-time Spark version matches build time Spark version.")
 
-  /** Enable/Disable exit on unsupported Spark parameters. */
-  val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM: (String, Boolean) = ("spark.ext.h2o.fail.on.unsupported.spark.param", true)
+  val PROP_FAIL_ON_UNSUPPORTED_SPARK_PARAM: BooleanOption = (
+    "spark.ext.h2o.fail.on.unsupported.spark.param",
+    true,
+    """``setFailOnUnsupportedSparkParamEnabled()``
+      |``setFailOnUnsupportedSparkParamDisabled()``""".stripMargin,
+    "If unsupported Spark parameter is detected, then application is forced to shutdown.")
 
-  /** Path to Java KeyStore file. */
-  val PROP_JKS: (String, None.type) = ("spark.ext.h2o.jks", None)
+  val PROP_JKS: OptionOption = ("spark.ext.h2o.jks", None, "``setJks(String)``", "Path to Java KeyStore file.")
 
-  /** Password for Java KeyStore file. */
-  val PROP_JKS_PASS: (String, None.type) = ("spark.ext.h2o.jks.pass", None)
+  val PROP_JKS_PASS: OptionOption =
+    ("spark.ext.h2o.jks.pass", None, "``setJksPass(String)``", "Password for Java KeyStore file.")
 
-  /** Alias for certificate in keystore to secure Flow */
-  val PROP_JKS_ALIAS: (String, None.type) = ("spark.ext.h2o.jks.alias", None)
+  val PROP_JKS_ALIAS: OptionOption =
+    ("spark.ext.h2o.jks.alias", None, "``setJksAlias(String)``", "Alias to certificate in keystore to secure H2O Flow.")
 
-  /** Enable hash login. */
-  val PROP_HASH_LOGIN: (String, Boolean) = ("spark.ext.h2o.hash.login", false)
+  val PROP_HASH_LOGIN: BooleanOption = (
+    "spark.ext.h2o.hash.login",
+    false,
+    """``setHashLoginEnabled()``
+      |``setHashLoginDisabled()``""".stripMargin,
+    "Enable hash login.")
 
-  /** Enable LDAP login. */
-  val PROP_LDAP_LOGIN: (String, Boolean) = ("spark.ext.h2o.ldap.login", false)
+  val PROP_LDAP_LOGIN: BooleanOption = (
+    "spark.ext.h2o.ldap.login",
+    false,
+    """``setLdapLoginEnabled()``
+      |``setLdapLoginDisabled()``""".stripMargin,
+    "Enable LDAP login.")
 
-  /** Enable Kerberos login. */
-  val PROP_KERBEROS_LOGIN: (String, Boolean) = ("spark.ext.h2o.kerberos.login", false)
+  val PROP_KERBEROS_LOGIN: BooleanOption = (
+    "spark.ext.h2o.kerberos.login",
+    false,
+    """``setKerberosLoginEnabled()``
+      |``setKerberosLoginDisabled()``""".stripMargin,
+    "Enable Kerberos login.")
 
-  /** Login configuration file. */
-  val PROP_LOGIN_CONF: (String, None.type) = ("spark.ext.h2o.login.conf", None)
+  val PROP_LOGIN_CONF: OptionOption =
+    ("spark.ext.h2o.login.conf", None, "``setLoginConf(String)``", "Login configuration file.")
 
-  /** User name for cluster and the client authentication. */
-  val PROP_USER_NAME: (String, None.type) = ("spark.ext.h2o.user.name", None)
+  val PROP_USER_NAME: OptionOption = (
+    "spark.ext.h2o.user.name",
+    None,
+    "``setUserName(String)``",
+    "Username used for the backend H2O cluster and to authenticate the client against the backend.")
 
-  /** Password for the client authentication. */
-  val PROP_PASSWORD: (String, None.type) = ("spark.ext.h2o.password", None)
+  val PROP_PASSWORD: OptionOption = (
+    "spark.ext.h2o.password",
+    None,
+    "``setPassword(String)``",
+    "Password used to authenticate the client against the backend.")
 
-  /** Path to Java KeyStore file used for the internal SSL communication. */
-  val PROP_SSL_CONF: (String, None.type) = ("spark.ext.h2o.internal_security_conf", None)
+  val PROP_SSL_CONF: OptionOption = (
+    "spark.ext.h2o.internal_security_conf",
+    None,
+    "``setSslConf(String)``",
+    "Path to a file containing H2O or Sparkling Water internal security configuration.")
 
-  /** Automatically generate key store for H2O Flow SSL */
-  val PROP_AUTO_SSL_FLOW: (String, Boolean) = ("spark.ext.h2o.auto.flow.ssl", false)
+  val PROP_AUTO_SSL_FLOW: BooleanOption = (
+    "spark.ext.h2o.auto.flow.ssl",
+    false,
+    """``setAutoFlowSslEnabled()``
+      |``setAutoFlowSslDisabled()``""".stripMargin,
+    "Automatically generate the required key store and password to secure H2O flow by SSL.")
 
-  /** H2O internal log level for launched remote nodes. */
-  val PROP_LOG_LEVEL: (String, String) = ("spark.ext.h2o.log.level", "INFO")
+  val PROP_LOG_LEVEL: StringOption = ("spark.ext.h2o.log.level", "INFO", "``setLogLevel(String)``", "H2O log level.")
 
-  /** Location of H2O log directory. */
-  val PROP_LOG_DIR: (String, None.type) = ("spark.ext.h2o.log.dir", None)
+  val PROP_LOG_DIR: OptionOption = (
+    "spark.ext.h2o.log.dir",
+    None,
+    "``setLogDir(String)``",
+    "Location of H2O logs. When not specified, it uses ``{user.dir}/h2ologs/{SparkAppId}`` or YARN container dir")
 
-  /** Interval used to ping and check the H2O backend status. */
-  val PROP_BACKEND_HEARTBEAT_INTERVAL: (String, Int) = ("spark.ext.h2o.backend.heartbeat.interval", 10000)
+  val PROP_BACKEND_HEARTBEAT_INTERVAL: IntOption = (
+    "spark.ext.h2o.backend.heartbeat.interval",
+    10000,
+    "``setBackendHeartbeatInterval(Integer)``",
+    "Interval (in msec) for getting heartbeat from the H2O backend.")
 
-  /** Configuration property - timeout for cloud up. */
-  val PROP_CLOUD_TIMEOUT: (String, Int) = ("spark.ext.h2o.cloud.timeout", 60 * 1000)
+  val PROP_CLOUD_TIMEOUT: IntOption = (
+    "spark.ext.h2o.cloud.timeout",
+    60 * 1000,
+    "``setCloudTimeout(Integer)``",
+    "Timeout (in msec) for cluster formation.")
 
-  /** Subnet selector for H2O nodes running inside executors - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_NODE_NETWORK_MASK: (String, None.type) = ("spark.ext.h2o.node.network.mask", None)
+  val PROP_NODE_NETWORK_MASK: OptionOption = (
+    "spark.ext.h2o.node.network.mask",
+    None,
+    "``setNodeNetworkMask(String)``",
+    """Subnet selector for H2O running inside park executors. This disables using IP reported by Spark but tries to
+      |find IP based on the specified mask.""".stripMargin)
 
-  /** Set how often in seconds stack traces are taken on each h2o node. -1 represents that the stack traces are not collected. */
-  val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL: (String, Int) = ("spark.ext.h2o.stacktrace.collector.interval", -1)
+  val PROP_NODE_STACK_TRACE_COLLECTOR_INTERVAL: IntOption = (
+    "spark.ext.h2o.stacktrace.collector.interval",
+    -1,
+    "``setStacktraceCollectorInterval(Integer)``",
+    """Interval specifying how often stack traces are taken on each H2O node. -1 means
+      |that no stack traces will be taken""".stripMargin)
 
-  /** H2O's URL context path */
-  val PROP_CONTEXT_PATH: (String, None.type) = ("spark.ext.h2o.context.path", None)
+  val PROP_CONTEXT_PATH: OptionOption =
+    ("spark.ext.h2o.context.path", None, "``setContextPath(String)``", "Context path to expose H2O web server.")
 
-  /** Decide whether Scala cells are running synchronously or asynchronously */
-  val PROP_FLOW_SCALA_CELL_ASYNC: (String, Boolean) = ("spark.ext.h2o.flow.scala.cell.async", false)
+  val PROP_FLOW_SCALA_CELL_ASYNC: BooleanOption = (
+    "spark.ext.h2o.flow.scala.cell.async",
+    false,
+    """``setFlowScalaCellAsyncEnabled()``
+      |``setFlowScalaCellAsyncDisabled()``""".stripMargin,
+    "Decide whether the Scala cells in H2O Flow will run synchronously or Asynchronously. Default is synchronously.")
 
-  /** Number of max parallel Scala cell jobs. */
-  val PROP_FLOW_SCALA_CELL_MAX_PARALLEL: (String, Int) = ("spark.ext.h2o.flow.scala.cell.max.parallel", -1)
+  val PROP_FLOW_SCALA_CELL_MAX_PARALLEL: IntOption = (
+    "spark.ext.h2o.flow.scala.cell.max.parallel",
+    -1,
+    "``setMaxParallelScalaCellJobs(Integer)``",
+    "Number of max parallel Scala cell jobs. The value -1 means not limited.")
 
-  /** Offset between the API(=web) port and the internal communication port; api_port + port_offset = h2o_port */
-  val PROP_INTERNAL_PORT_OFFSET: (String, Int) = ("spark.ext.h2o.internal.port.offset", 1)
+  val PROP_INTERNAL_PORT_OFFSET: IntOption = (
+    "spark.ext.h2o.internal.port.offset",
+    1,
+    "``setInternalPortOffset(Integer)``",
+    """Offset between the API(=web) port and the internal communication port on the client
+      |node; ``api_port + port_offset = h2o_port``""".stripMargin)
 
-  /** Configuration property - base port used for individual H2O nodes configuration. */
-  val PROP_BASE_PORT: (String, Int) = ("spark.ext.h2o.base.port", 54321)
+  val PROP_BASE_PORT: IntOption =
+    ("spark.ext.h2o.base.port", 54321, "``setBasePort(Integer)``", "Base port used for individual H2O nodes")
 
-  /**
-    * If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds,
-    * it's evicted from executor's cache.
-    */
-  val PROP_MOJO_DESTROY_TIMEOUT: (String, Int) = ("spark.ext.h2o.mojo.destroy.timeout", 10 * 60 * 1000)
+  val PROP_MOJO_DESTROY_TIMEOUT: IntOption = (
+    "spark.ext.h2o.mojo.destroy.timeout",
+    10 * 60 * 1000,
+    "``setMojoDestroyTimeout(Integer)``",
+    """If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds, it's
+      |evicted from executor's cache. Default timeout value is 10 minutes.""".stripMargin)
 
-  /** Extra properties passed to H2O nodes during startup. */
-  val PROP_EXTRA_PROPERTIES: (String, None.type) = ("spark.ext.h2o.extra.properties", None)
+  val PROP_EXTRA_PROPERTIES: OptionOption = (
+    "spark.ext.h2o.extra.properties",
+    None,
+    "``setExtraProperties(String)``",
+    """A string containing extra parameters passed to H2O nodes during startup. This parameter should be
+      |configured only if H2O parameters do not have any corresponding parameters in Sparkling Water.""".stripMargin)
 
-  /** Path to flow dir. */
-  val PROP_FLOW_DIR: (String, None.type) = ("spark.ext.h2o.flow.dir", None)
+  val PROP_FLOW_DIR: OptionOption =
+    ("spark.ext.h2o.flow.dir", None, "``setFlowDir(String)``", "Directory where flows from H2O Flow are saved.")
 
-  /** Extra http headers for Flow UI */
-  val PROP_FLOW_EXTRA_HTTP_HEADERS: (String, None.type) = ("spark.ext.h2o.flow.extra.http.headers", None)
+  val PROP_FLOW_EXTRA_HTTP_HEADERS: OptionOption = (
+    "spark.ext.h2o.flow.extra.http.headers",
+    None,
+    """``setFlowExtraHttpHeaders(Map[String,String])``
+    |``setFlowExtraHttpHeaders(String)``""".stripMargin,
+    """Extra HTTP headers that will be used in communication between the front-end and back-end part of Flow UI. The
+      |headers should be delimited by a new line. Don't forget to escape special characters when passing
+      |the parameter from a command line.""".stripMargin)
 
-  /** Secure internal connections by automatically generated credentials */
-  val PROP_INTERNAL_SECURE_CONNECTIONS: (String, Boolean) = ("spark.ext.h2o.internal_secure_connections", false)
+  val PROP_INTERNAL_SECURE_CONNECTIONS: BooleanOption = (
+    "spark.ext.h2o.internal_secure_connections",
+    false,
+    """``setInternalSecureConnectionsEnabled()``
+      |``setInternalSecureConnectionsDisabled()``""".stripMargin,
+    """Enables secure communications among H2O nodes. The security is based on
+      |automatically generated keystore and truststore. This is equivalent for
+      |``-internal_secure_conections`` option in `H2O Hadoop deployments
+      |<https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst#hadoop>`_.""".stripMargin)
 
-  /** If the property set to true, insecure communication among H2O nodes is allowed for the XGBoost algorithm. */
-  val PROP_ALLOW_INSECURE_XGBOOST: (String, Boolean) = ("spark.ext.h2o.allow_insecure_xgboost", false)
+  val PROP_ALLOW_INSECURE_XGBOOST: BooleanOption = (
+    "spark.ext.h2o.allow_insecure_xgboost",
+    false,
+    """``setInsecureXGBoostAllowed()``
+      |``setInsecureXGBoostDenied()``""".stripMargin,
+    """If the property set to true, insecure communication among H2O nodes is
+      |allowed for the XGBoost algorithm even if the property ``spark.ext.h2o.internal_secure_connections``
+      |is set to ``true``""".stripMargin)
 
-  /** IP of H2O client node */
-  val PROP_CLIENT_IP: (String, None.type) = ("spark.ext.h2o.client.ip", None)
+  val PROP_CLIENT_IP: OptionOption =
+    ("spark.ext.h2o.client.ip", None, "``setClientIp(String)``", "IP of H2O client node. ")
 
-  /** Exact client port to access web UI.
-    * The value `-1` means automatic search for free port starting at `spark.ext.h2o.port.base`. */
-  val PROP_CLIENT_WEB_PORT: (String, Int) = ("spark.ext.h2o.client.web.port", -1)
+  val PROP_CLIENT_WEB_PORT: IntOption = (
+    "spark.ext.h2o.client.web.port",
+    -1,
+    "``setClientWebPort(Integer)``",
+    """Exact client port to access web UI. The value ``-1`` means automatic
+      |search for a free port starting at ``spark.ext.h2o.base.port``.""".stripMargin)
 
-  /** Print detailed messages to client stdout */
-  val PROP_CLIENT_VERBOSE: (String, Boolean) = ("spark.ext.h2o.client.verbose", false)
+  val PROP_CLIENT_VERBOSE: BooleanOption = (
+    "spark.ext.h2o.client.verbose",
+    false,
+    """``setClientVerboseEnabled()``
+      |``setClientVerboseDisabled()``""".stripMargin,
+    """The client outputs verbose log output directly into console. Enabling the
+      |flag increases the client log level to ``INFO``.""".stripMargin)
 
-  /** Subnet selector for H2O client - if the mask is specified then Spark network setup is not discussed. */
-  val PROP_CLIENT_NETWORK_MASK: (String, None.type) = ("spark.ext.h2o.client.network.mask", None)
+  val PROP_CLIENT_NETWORK_MASK: OptionOption = (
+    "spark.ext.h2o.client.network.mask",
+    None,
+    "``setClientNetworkMask(String)``",
+    """Subnet selector for H2O client, this disables using IP reported by Spark
+      |but tries to find IP based on the specified mask.""".stripMargin)
 
-  /**
-    * Allows to override the base URL address of Flow UI, including the scheme, which is showed
-    * to the user.
-    */
-  val PROP_CLIENT_FLOW_BASEURL_OVERRIDE: (String, None.type) = ("spark.ext.h2o.client.flow.baseurl.override", None)
+  val PROP_CLIENT_FLOW_BASEURL_OVERRIDE: OptionOption = (
+    "spark.ext.h2o.client.flow.baseurl.override",
+    None,
+    "``setClientFlowBaseurlOverride(String)``",
+    """Allows to override the base URL address of Flow UI, including the
+      |scheme, which is showed to the user.""".stripMargin)
 
-  /** Timeout in milliseconds specifying how often the H2O backend checks whether the Sparkling Water
-    * client is connected
-    */
-  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: (String, Int) =
-    ("spark.ext.h2o.cluster.client.retry.timeout", PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6)
+  val PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT: IntOption = (
+    "spark.ext.h2o.cluster.client.retry.timeout",
+    PROP_BACKEND_HEARTBEAT_INTERVAL._2 * 6,
+    "``setClientCheckRetryTimeout(Integer)``",
+    """Timeout in milliseconds specifying how often we check whether the
+      |the client is still connected.""".stripMargin)
 
-  /** Whether certificates should be verified before using in H2O or not. */
-  val PROP_VERIFY_SSL_CERTIFICATES: (String, Boolean) = ("spark.ext.h2o.verify_ssl_certificates", true)
+  val PROP_VERIFY_SSL_CERTIFICATES: BooleanOption = (
+    "spark.ext.h2o.verify_ssl_certificates",
+    true,
+    "``setVerifySslCertificates(Boolean)``",
+    "Whether certificates should be verified before using in H2O or not.")
 
-  /**
-    * If enabled, H2O instances will create JDBC connections to a Kerberized Hive so that all clients can read data
-    * from HiveServer2. Don't forget to put a jar with Hive driver on spark classpath if the internal backend is used.
-    */
-  val PROP_KERBERIZED_HIVE_ENABLED: (String, Boolean) = ("spark.ext.h2o.kerberized.hive.enabled", false)
+  val PROP_KERBERIZED_HIVE_ENABLED: BooleanOption = (
+    "spark.ext.h2o.kerberized.hive.enabled",
+    false,
+    """``setKerberizedHiveEnabled()``
+      |``setKerberizedHiveDisabled()``""".stripMargin,
+    """If enabled, H2O instances will create  JDBC connections to a Kerberized Hive
+      |so that all clients can read data from HiveServer2. Don't forget to put
+      |a jar with Hive driver on Spark classpath if the internal backend is used.""".stripMargin)
 
-  /** The full address of HiveServer2, for example hostname:10000 */
-  val PROP_HIVE_HOST: (String, None.type) = ("spark.ext.h2o.hive.host", None)
+  val PROP_HIVE_HOST: OptionOption = (
+    "spark.ext.h2o.hive.host",
+    None,
+    "``setHiveHost(String)``",
+    "The full address of HiveServer2, for example hostname:10000.")
 
-  /** Hiveserver2 Kerberos principal, for example hive/hostname@DOMAIN.COM */
-  val PROP_HIVE_PRINCIPAL: (String, None.type) = ("spark.ext.h2o.hive.principal", None)
+  val PROP_HIVE_PRINCIPAL: OptionOption = (
+    "spark.ext.h2o.hive.principal",
+    None,
+    "``setHivePrincipal(String)``",
+    "Hiveserver2 Kerberos principal, for example hive/hostname@DOMAIN.COM")
 
-  /** Can be used to further customize the way the driver constructs the Hive JDBC URL */
-  val PROP_HIVE_JDBC_URL_PATTERN: (String, None.type) = ("spark.ext.h2o.hive.jdbc_url_pattern", None)
+  val PROP_HIVE_JDBC_URL_PATTERN: OptionOption = (
+    "spark.ext.h2o.hive.jdbc_url_pattern",
+    None,
+    "``setHiveJdbcUrlPattern(String)``",
+    "A pattern of JDBC URL used for connecting to Hiveserver2. Example: ``jdbc:hive2://{{host}}/;{{auth}}``")
 
-  /** Authorization token to Hive */
-  val PROP_HIVE_TOKEN: (String, None.type) = ("spark.ext.h2o.hive.token", None)
+  val PROP_HIVE_TOKEN: OptionOption =
+    ("spark.ext.h2o.hive.token", None, "``setHiveToken(String)``", "An authorization token to Hive.")
 
-  /** Location of iced directory for H2O nodes */
-  val PROP_ICED_DIR: (String, None.type) = ("spark.ext.h2o.iced.dir", None)
+  val PROP_ICED_DIR: OptionOption =
+    ("spark.ext.h2o.iced.dir", None, "``setIcedDir(String)``", "Location of iced directory for H2O nodes.")
 
-  /** Timeout for Rest API requests */
-  val PROP_REST_API_TIMEOUT: (String, Int) = ("spark.ext.h2o.rest.api.timeout", 5 * 60 * 1000)
+  val PROP_REST_API_TIMEOUT: IntOption = (
+    "spark.ext.h2o.rest.api.timeout",
+    5 * 60 * 1000,
+    "``setSessionTimeout(Boolean)``",
+    "Timeout in milliseconds for Rest API requests.")
 
   /** Language of the connected client. */
   private[sparkling] val PROP_CLIENT_LANGUAGE: (String, String) = ("spark.ext.h2o.client.language", "scala")

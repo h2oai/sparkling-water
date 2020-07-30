@@ -162,4 +162,11 @@ object H2OConf extends Logging {
     sparkConf.set("spark.repl.class.outputDir", H2OInterpreter.classOutputDirectory.getAbsolutePath)
     sparkConf
   }
+
+  private[sparkling] type Doc = String
+  private[sparkling] type Setter = String
+  private[sparkling] type StringOption = (String, String, Setter, Doc)
+  private[sparkling] type IntOption = (String, Int, Setter, Doc)
+  private[sparkling] type OptionOption = (String, None.type, Setter, Doc)
+  private[sparkling] type BooleanOption = (String, Boolean, Setter, Doc)
 }

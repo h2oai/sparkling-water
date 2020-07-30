@@ -8,407 +8,271 @@ The following configuration properties can be passed to Spark to configure Spark
 Configuration properties independent of selected backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| Property name                                      | Default value  | H2OConf setter (* getter_)                      | Description                            |
-+====================================================+================+=================================================+========================================+
-| ``spark.ext.h2o.backend.cluster.mode``             | ``internal``   | ``setInternalClusterMode()``                    | This option can be set either to       |
-|                                                    |                |                                                 | ``internal`` or ``external``. When set |
-|                                                    |                | ``setExternalClusterMode()``                    | to ``external``, ``H2O Context`` is    |
-|                                                    |                |                                                 | created by connecting to existing H2O  |
-|                                                    |                |                                                 | cluster, otherwise H2O cluster located |
-|                                                    |                |                                                 | inside Spark is created. That means    |
-|                                                    |                |                                                 | that each Spark executor will have one |
-|                                                    |                |                                                 | H2O instance running in it. The        |
-|                                                    |                |                                                 | ``internal`` mode is not recommended   |
-|                                                    |                |                                                 | for big clusters and clusters where    |
-|                                                    |                |                                                 | Spark executors are not stable.        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.cloud.name``                       | Generated      | ``setCloudName(String)``                        | Name of H2O cluster.                   |
-|                                                    | unique name    |                                                 |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.nthreads``                         | ``-1``         | ``setNthreads(Integer)``                        | Limit for number of threads used by    |
-|                                                    |                |                                                 | H2O, default ``-1`` means:             |
-|                                                    |                |                                                 | Use value of ``spark.executor.cores``  |
-|                                                    |                |                                                 | in case this property is set.          |
-|                                                    |                |                                                 | Otherwise use H2O's default value      |
-|                                                    |                |                                                 | |H2ONThreadsDefault|.                  |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.repl.enabled``                     | ``true``       | ``setReplEnabled()``                            | Decides whether H2O REPL is initiated  |
-|                                                    |                |                                                 | or not.                                |
-|                                                    |                | ``setReplDisabled()``                           |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.scala.int.default.num``                | ``1``          | ``setDefaultNumReplSessions(Integer)``          | Number of parallel REPL sessions       |
-|                                                    |                |                                                 | started at the start of Sparkling      |
-|                                                    |                |                                                 | Water                                  |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.topology.change.listener.enabled`` | ``true``       | ``setClusterTopologyListenerEnabled()``         | Decides whether listener which kills   |
-|                                                    |                |                                                 | H2O cluster on the change of the       |
-|                                                    |                | ``setClusterTopologyListenerDisabled()``        | underlying cluster's topology is       |
-|                                                    |                |                                                 | enabled or not. This configuration     |
-|                                                    |                |                                                 | has effect only in non-local mode.     |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.spark.version.check.enabled``      | ``true``       | ``setSparkVersionCheckEnabled()``               | Enables check if run-time Spark        |
-|                                                    |                |                                                 | version matches build time Spark       |
-|                                                    |                | ``setSparkVersionCheckDisabled()``              | version.                               |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.fail.on.unsupported.spark.param``  | ``true``       | ``setFailOnUnsupportedSparkParamEnabled()``     | If unsupported Spark parameter is      |
-|                                                    |                |                                                 | detected, then application is forced   |
-|                                                    |                | ``setFailOnUnsupportedSparkParamDisabled()``    | to shutdown.                           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.jks``                              | ``None``       | ``setJks(String)``                              | Path to Java KeyStore file.            |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.jks.pass``                         | ``None``       | ``setJksPass(String)``                          | Password for Java KeyStore file.       |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.jks.alias``                        | ``None``       | ``setJksAlias(String)``                         | Alias to certificate in keystore to    |
-|                                                    |                |                                                 | secure H2O Flow.                       |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hash.login``                       | ``false``      | ``setHashLoginEnabled()``                       | Enable hash login.                     |
-|                                                    |                |                                                 |                                        |
-|                                                    |                | ``setHashLoginDisabled()``                      |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.ldap.login``                       | ``false``      | ``setLdapLoginEnabled()``                       | Enable LDAP login.                     |
-|                                                    |                |                                                 |                                        |
-|                                                    |                | ``setLdapLoginDisabled()``                      |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.kerberos.login``                   | ``false``      | ``setKerberosLoginEnabled()``                   | Enable Kerberos login.                 |
-|                                                    |                |                                                 |                                        |
-|                                                    |                | ``setKerberosLoginDisabled()``                  |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.login.conf``                       | ``None``       | ``setLoginConf(String)``                        | Login configuration file.              |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.user.name``                        | ``None``       | ``setUserName(String)``                         | Username used for the backend H2O      |
-|                                                    |                |                                                 | cluster and to authenticate the        |
-|                                                    |                |                                                 | client against the backend.            |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.password``                         | ``None``       | ``setPassword(String)``                         | Password used to authenticate the      |
-|                                                    |                |                                                 | client against the backend.            |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.internal_security_conf``           | ``None``       | ``setSslConf(String)``                          | Path to a file containing H2O or       |
-|                                                    |                |                                                 | Sparkling Water internal security      |
-|                                                    |                |                                                 | configuration.                         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.auto.flow.ssl``                    | ``false``      | ``setAutoFlowSslEnabled()``                     | Automatically generate the required    |
-|                                                    |                |                                                 | key store and password to secure H2O   |
-|                                                    |                | ``setAutoFlowSslDisabled()``                    | flow by SSL.                           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.log.level``                        | ``INFO``       | ``setLogLevel(String)``                         | H2O log level.                         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.log.dir``                          | |h2oLogDir|    | ``setLogDir(String)``                           | Location of H2O logs.                  |
-|                                                    | or |yarnDir|   |                                                 |                                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.backend.heartbeat.interval``       | ``10000ms``    | ``setBackendHeartbeatInterval(Integer)``        | Interval for getting heartbeat from    |
-|                                                    |                |                                                 | the H2O backend.                       |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.cloud.timeout``                    | ``60*1000``    | ``setCloudTimeout(Integer)``                    | Timeout (in msec) for cluster          |
-|                                                    |                |                                                 | formation.                             |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.node.network.mask``                | ``None``       | ``setNodeNetworkMask(String)``                  | Subnet selector for H2O running inside |
-|                                                    |                |                                                 | Spark executors. This disables using   |
-|                                                    |                |                                                 | IP reported by Spark but tries to find |
-|                                                    |                |                                                 | IP based on the specified mask.        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.stacktrace.collector.interval``    | ``-1``         | ``setStacktraceCollectorInterval(Integer)``     | Interval specifying how often stack    |
-|                                                    |                |                                                 | traces are taken on each H2O node.     |
-|                                                    |                |                                                 | -1 means that no stack traces will be  |
-|                                                    |                |                                                 | taken.                                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.context.path``                     | ``None``       | ``setContextPath(String)``                      | Context path to expose H2O web server. |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.flow.scala.cell.async``            | ``false``      | ``setFlowScalaCellAsyncEnabled()``              | Decide whether the Scala cells in      |
-|                                                    |                |                                                 | H2O Flow will run synchronously or     |
-|                                                    |                | ``setFlowScalaCellAsyncDisabled()``             | Asynchronously. Default is             |
-|                                                    |                |                                                 | synchronously.                         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.flow.scala.cell.max.parallel``     | ``-1``         | ``setMaxParallelScalaCellJobs(Integer)``        | Number of max parallel Scala cell      |
-|                                                    |                |                                                 | jobs The value -1 means                |
-|                                                    |                |                                                 | not limited.                           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.internal.port.offset``             | ``1``          | ``setInternalPortOffset(Integer)``              | Offset between the API(=web) port and  |
-|                                                    |                |                                                 | the internal communication port on the |
-|                                                    |                |                                                 | client node;                           |
-|                                                    |                |                                                 | ``api_port + port_offset = h2o_port``  |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.base.port``                        | ``54321``      | ``setBasePort(Integer)``                        | Base port used for individual H2O      |
-|                                                    |                |                                                 | nodes.                                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.mojo.destroy.timeout``             | ``600000``     | ``setMojoDestroyTimeout(Integer)``              | If a scoring MOJO instance is not used |
-|                                                    |                |                                                 | within a Spark executor JVM for        |
-|                                                    |                |                                                 | a given timeout in milliseconds, it's  |
-|                                                    |                |                                                 | evicted from executor's cache. Default |
-|                                                    |                |                                                 | timeout value is 10 minutes.           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.extra.properties``                 | ``None``       | ``setExtraProperties(String)``                  | A string containing extra parameters   |
-|                                                    |                |                                                 | passed to H2O nodes during startup.    |
-|                                                    |                |                                                 | This parameter should be configured    |
-|                                                    |                |                                                 | only if H2O parameters do not have any |
-|                                                    |                |                                                 | corresponding parameters in Sparkling  |
-|                                                    |                |                                                 | Water.                                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.flow.extra.http.headers``          | ``None``       | ``setFlowExtraHttpHeaders(Map[String,String])`` | Extra HTTP headers that will be used   |
-|                                                    |                |                                                 | in communication between the front-end |
-|                                                    |                | ``setFlowExtraHttpHeaders(String)``             | and back-end part of Flow UI.          |
-|                                                    |                |                                                 | The headers should be delimited by     |
-|                                                    |                |                                                 | a new line. Don't forget to escape     |
-|                                                    |                |                                                 | special characters when passing        |
-|                                                    |                |                                                 | the parameter from a command line.     |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.internal_secure_connections``      | ``false``      | ``setInternalSecureConnectionsEnabled()``       | Enables secure communications among    |
-|                                                    |                |                                                 | H2O nodes. The security is based on    |
-|                                                    |                | ``setInternalSecureConnectionsDisabled()``      | automatically generated keystore       |
-|                                                    |                |                                                 | and truststore. This is equivalent for |
-|                                                    |                |                                                 | ``-internal_secure_conections`` option |
-|                                                    |                |                                                 | in `H2O Hadoop deployments             |
-|                                                    |                |                                                 | <https://github.com/h2oai/h2o-3/blob/  |
-|                                                    |                |                                                 | master/h2o-docs/src/product/           |
-|                                                    |                |                                                 | security.rst#hadoop>`_.                |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.allow_insecure_xgboost``           | ``false``      | ``setInsecureXGBoostAllowed()``                 | If the property set to true, insecure  |
-|                                                    |                |                                                 | communication among H2O nodes is       |
-|                                                    |                | ``setInsecureXGBoostDenied()``                  | allowed for the XGBoost algorithm even |
-|                                                    |                |                                                 | if the property |secureConnections| is |
-|                                                    |                |                                                 | set to ``true``.                       |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.kerberized.hive.enabled``          | ``false``      | ``setKerberizedHiveEnabled()``                  | If enabled, H2O instances will create  |
-|                                                    |                |                                                 | JDBC connections to a Kerberized Hive  |
-|                                                    |                | ``setKerberizedHiveDisabled()``                 | so that all clients can read data      |
-|                                                    |                |                                                 | from HiveServer2. Don't forget to put  |
-|                                                    |                |                                                 | a jar with Hive driver on Spark        |
-|                                                    |                |                                                 | classpath if the internal backend is   |
-|                                                    |                |                                                 | used.                                  |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.host``                        | ``None``       | ``setHiveHost(String)``                         | The full address of HiveServer2,       |
-|                                                    |                |                                                 | for example hostname:10000             |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.principal``                   | ``None``       | ``setHivePrincipal(String)``                    | Hiveserver2 Kerberos principal,        |
-|                                                    |                |                                                 | for example hive/hostname@DOMAIN.COM   |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.jdbc_url_pattern``            | ``None``       | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for         |
-|                                                    |                |                                                 | connecting to Hiveserver2. Example:    |
-|                                                    |                |                                                 | ``jdbc:hive2://{{host}}/;{{auth}}``    |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hive.token``                       | ``None``       | ``setHiveToken(String)``                        | An authorization token to Hive         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.iced.dir``                         | ``None``       | ``setIcedDir(String)``                          | Location of iced directory for H2O     |
-|                                                    |                |                                                 | nodes.                                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.flow.dir``                         | ``None``       | ``setFlowDir(String)``                          | Directory where flows from H2O Flow    |
-|                                                    |                |                                                 | are saved.                             |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.ip``                        | ``None``       | ``setClientIp(String)``                         | IP of H2O client node.                 |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.web.port``                  | ``-1``         | ``setClientWebPort(Integer)``                   | Exact client port to access web UI.    |
-|                                                    |                |                                                 | The value ``-1`` means automatic       |
-|                                                    |                |                                                 | search for a free port starting at     |
-|                                                    |                |                                                 | ``spark.ext.h2o.base.port``.           |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.verbose``                   | ``false``      | ``setClientVerboseEnabled()``                   | The client outputs verbose log output  |
-|                                                    |                |                                                 | directly into console. Enabling the    |
-|                                                    |                | ``setClientVerboseDisabled()``                  | flag increases the client log level to |
-|                                                    |                |                                                 | ``INFO``.                              |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.network.mask``              | ``None``       | ``setClientNetworkMask(String)``                | Subnet selector for H2O client, this   |
-|                                                    |                |                                                 | disables using IP reported by Spark    |
-|                                                    |                |                                                 | but tries to find IP based on the      |
-|                                                    |                |                                                 | specified mask.                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.client.flow.baseurl.override``     | ``None``       | ``setClientFlowBaseurlOverride(String)``        | Allows to override the base URL        |
-|                                                    |                |                                                 | address of Flow UI, including the      |
-|                                                    |                |                                                 | scheme, which is showed to the user.   |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.cluster.client.retry.timeout``     | ``60000``      | ``setClientCheckRetryTimeout(Integer)``         | Timeout in milliseconds specifying     |
-|                                                    |                |                                                 | how often we check whether the         |
-|                                                    |                |                                                 | the client is still connected.         |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.verify_ssl_certificates``          | ``True``       | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be         |
-|                                                    |                |                                                 | verified before using in H2O or not.   |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.rest.api.timeout``                 | ``3*60*1000``  | ``setSessionTimeout(Boolean)``                  | Timeout in milliseconds for Rest API   |
-|                                                    |                |                                                 | requests.                              |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| Property name                                      | Default value | H2OConf setter (* getter_)                      | Description                                                                                                    |
++====================================================+===============+=================================================+================================================================================================================+
+| ``spark.ext.h2o.backend.cluster.mode``             | internal      | ``setInternalClusterMode()``                    | This option can be set either to ``internal`` or ``external``. When set to ``external``, ``H2O Context`` is    |
+|                                                    |               |                                                 | created by connecting to existing H2O cluster, otherwise H2O cluster located inside Spark is created. That     |
+|                                                    |               | ``setExternalClusterMode()``                    | means that each Spark executor will have one H2O instance running in it. The ``internal`` mode is not          |
+|                                                    |               |                                                 | recommended for big clusters and clusters where Spark executors are not stable.                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cloud.name``                       | None          | ``setCloudName(String)``                        | Name of H2O cluster. If this option is not set, the name is automatically generated                            |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.nthreads``                         | -1            | ``setNthreads(Integer)``                        | Limit for number of threads used by H2O, default ``-1`` means: Use value of ``spark.executor.cores`` in        |
+|                                                    |               |                                                 | case this property is set. Otherwise use H2O's default                                                         |
+|                                                    |               |                                                 | value ``Runtime.getRuntime().availableProcessors()``                                                           |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.repl.enabled``                     | true          | ``setReplEnabled()``                            | Decides whether H2O REPL is initiated or not.                                                                  |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setReplDisabled()``                           |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.scala.int.default.num``                | 1             | ``setDefaultNumReplSessions(Integer)``          | Number of parallel REPL sessions started at the start of Sparkling Water.                                      |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.topology.change.listener.enabled`` | true          | ``setClusterTopologyListenerEnabled()``         | Decides whether listener which kills H2O cluster on the change of the underlying cluster's topology is         |
+|                                                    |               |                                                 | enabled or not. This configuration has effect only in non-local mode.                                          |
+|                                                    |               | ``setClusterTopologyListenerDisabled()``        |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.spark.version.check.enabled``      | true          | ``setSparkVersionCheckEnabled()``               | Enables check if run-time Spark version matches build time Spark version.                                      |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setSparkVersionCheckDisabled()``              |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.fail.on.unsupported.spark.param``  | true          | ``setFailOnUnsupportedSparkParamEnabled()``     | If unsupported Spark parameter is detected, then application is forced to shutdown.                            |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setFailOnUnsupportedSparkParamDisabled()``    |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.jks.pass``                         | None          | ``setJksPass(String)``                          | Password for Java KeyStore file.                                                                               |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.jks.alias``                        | None          | ``setJksAlias(String)``                         | Alias to certificate in keystore to secure H2O Flow.                                                           |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hash.login``                       | false         | ``setHashLoginEnabled()``                       | Enable hash login.                                                                                             |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setHashLoginDisabled()``                      |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.ldap.login``                       | false         | ``setLdapLoginEnabled()``                       | Enable LDAP login.                                                                                             |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setLdapLoginDisabled()``                      |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.kerberos.login``                   | false         | ``setKerberosLoginEnabled()``                   | Enable Kerberos login.                                                                                         |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setKerberosLoginDisabled()``                  |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.login.conf``                       | None          | ``setLoginConf(String)``                        | Login configuration file.                                                                                      |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.user.name``                        | None          | ``setUserName(String)``                         | Username used for the backend H2O cluster and to authenticate the client against the backend.                  |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.password``                         | None          | ``setPassword(String)``                         | Password used to authenticate the client against the backend.                                                  |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.internal_security_conf``           | None          | ``setSslConf(String)``                          | Path to a file containing H2O or Sparkling Water internal security configuration.                              |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.auto.flow.ssl``                    | false         | ``setAutoFlowSslEnabled()``                     | Automatically generate the required key store and password to secure H2O flow by SSL.                          |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setAutoFlowSslDisabled()``                    |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.log.level``                        | INFO          | ``setLogLevel(String)``                         | H2O log level.                                                                                                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.log.dir``                          | None          | ``setLogDir(String)``                           | Location of H2O logs. When not specified, it uses ``{user.dir}/h2ologs/{SparkAppId}`` or YARN container dir    |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.backend.heartbeat.interval``       | 10000         | ``setBackendHeartbeatInterval(Integer)``        | Interval (in msec) for getting heartbeat from the H2O backend.                                                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cloud.timeout``                    | 60000         | ``setCloudTimeout(Integer)``                    | Timeout (in msec) for cluster formation.                                                                       |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.node.network.mask``                | None          | ``setNodeNetworkMask(String)``                  | Subnet selector for H2O running inside park executors. This disables using IP reported by Spark but tries to   |
+|                                                    |               |                                                 | find IP based on the specified mask.                                                                           |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.stacktrace.collector.interval``    | -1            | ``setStacktraceCollectorInterval(Integer)``     | Interval specifying how often stack traces are taken on each H2O node. -1 means                                |
+|                                                    |               |                                                 | that no stack traces will be taken                                                                             |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.context.path``                     | None          | ``setContextPath(String)``                      | Context path to expose H2O web server.                                                                         |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.flow.scala.cell.async``            | false         | ``setFlowScalaCellAsyncEnabled()``              | Decide whether the Scala cells in H2O Flow will run synchronously or Asynchronously. Default is synchronously. |
+|                                                    |               |                                                 |                                                                                                                |
+|                                                    |               | ``setFlowScalaCellAsyncDisabled()``             |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.flow.scala.cell.max.parallel``     | -1            | ``setMaxParallelScalaCellJobs(Integer)``        | Number of max parallel Scala cell jobs. The value -1 means not limited.                                        |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.internal.port.offset``             | 1             | ``setInternalPortOffset(Integer)``              | Offset between the API(=web) port and the internal communication port on the client                            |
+|                                                    |               |                                                 | node; ``api_port + port_offset = h2o_port``                                                                    |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.base.port``                        | 54321         | ``setBasePort(Integer)``                        | Base port used for individual H2O nodes                                                                        |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.mojo.destroy.timeout``             | 600000        | ``setMojoDestroyTimeout(Integer)``              | If a scoring MOJO instance is not used within a Spark executor JVM for a given timeout in milliseconds, it's   |
+|                                                    |               |                                                 | evicted from executor's cache. Default timeout value is 10 minutes.                                            |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.extra.properties``                 | None          | ``setExtraProperties(String)``                  | A string containing extra parameters passed to H2O nodes during startup. This parameter should be              |
+|                                                    |               |                                                 | configured only if H2O parameters do not have any corresponding parameters in Sparkling Water.                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.flow.dir``                         | None          | ``setFlowDir(String)``                          | Directory where flows from H2O Flow are saved.                                                                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.flow.extra.http.headers``          | None          | ``setFlowExtraHttpHeaders(Map[String,String])`` | Extra HTTP headers that will be used in communication between the front-end and back-end part of Flow UI. The  |
+|                                                    |               |                                                 | headers should be delimited by a new line. Don't forget to escape special characters when passing              |
+|                                                    |               | ``setFlowExtraHttpHeaders(String)``             | the parameter from a command line.                                                                             |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.internal_secure_connections``      | false         | ``setInternalSecureConnectionsEnabled()``       | Enables secure communications among H2O nodes. The security is based on                                        |
+|                                                    |               |                                                 | automatically generated keystore and truststore. This is equivalent for                                        |
+|                                                    |               | ``setInternalSecureConnectionsDisabled()``      | ``-internal_secure_conections`` option in `H2O Hadoop deployments                                              |
+|                                                    |               |                                                 | <https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst#hadoop>`_.                       |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.allow_insecure_xgboost``           | false         | ``setInsecureXGBoostAllowed()``                 | If the property set to true, insecure communication among H2O nodes is                                         |
+|                                                    |               |                                                 | allowed for the XGBoost algorithm even if the property ``spark.ext.h2o.internal_secure_connections``           |
+|                                                    |               | ``setInsecureXGBoostDenied()``                  | is set to ``true``                                                                                             |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.client.ip``                        | None          | ``setClientIp(String)``                         | IP of H2O client node.                                                                                         |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.client.web.port``                  | -1            | ``setClientWebPort(Integer)``                   | Exact client port to access web UI. The value ``-1`` means automatic                                           |
+|                                                    |               |                                                 | search for a free port starting at ``spark.ext.h2o.base.port``.                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.client.verbose``                   | false         | ``setClientVerboseEnabled()``                   | The client outputs verbose log output directly into console. Enabling the                                      |
+|                                                    |               |                                                 | flag increases the client log level to ``INFO``.                                                               |
+|                                                    |               | ``setClientVerboseDisabled()``                  |                                                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.client.network.mask``              | None          | ``setClientNetworkMask(String)``                | Subnet selector for H2O client, this disables using IP reported by Spark                                       |
+|                                                    |               |                                                 | but tries to find IP based on the specified mask.                                                              |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.client.flow.baseurl.override``     | None          | ``setClientFlowBaseurlOverride(String)``        | Allows to override the base URL address of Flow UI, including the                                              |
+|                                                    |               |                                                 | scheme, which is showed to the user.                                                                           |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cluster.client.retry.timeout``     | 60000         | ``setClientCheckRetryTimeout(Integer)``         | Timeout in milliseconds specifying how often we check whether the                                              |
+|                                                    |               |                                                 | the client is still connected.                                                                                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.verify_ssl_certificates``          | true          | ``setVerifySslCertificates(Boolean)``           | Whether certificates should be verified before using in H2O or not.                                            |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.kerberized.hive.enabled``          | false         | ``setKerberizedHiveEnabled()``                  | If enabled, H2O instances will create  JDBC connections to a Kerberized Hive                                   |
+|                                                    |               |                                                 | so that all clients can read data from HiveServer2. Don't forget to put                                        |
+|                                                    |               | ``setKerberizedHiveDisabled()``                 | a jar with Hive driver on Spark classpath if the internal backend is used.                                     |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hive.host``                        | None          | ``setHiveHost(String)``                         | The full address of HiveServer2, for example hostname:10000.                                                   |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hive.principal``                   | None          | ``setHivePrincipal(String)``                    | Hiveserver2 Kerberos principal, for example hive/hostname@DOMAIN.COM                                           |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hive.jdbc_url_pattern``            | None          | ``setHiveJdbcUrlPattern(String)``               | A pattern of JDBC URL used for connecting to Hiveserver2. Example: ``jdbc:hive2://{{host}}/;{{auth}}``         |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hive.token``                       | None          | ``setHiveToken(String)``                        | An authorization token to Hive.                                                                                |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.iced.dir``                         | None          | ``setIcedDir(String)``                          | Location of iced directory for H2O nodes.                                                                      |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.rest.api.timeout``                 | 300000        | ``setSessionTimeout(Boolean)``                  | Timeout in milliseconds for Rest API requests.                                                                 |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.jks``                              | None          | ``setJks(String)``                              | Path to Java KeyStore file.                                                                                    |
++----------------------------------------------------+---------------+-------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 
 --------------
 
 Internal backend configuration properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| Property name                                      | Default value  | H2OConf setter (* getter_)                      | Description                            |
-+====================================================+================+=================================================+========================================+
-| ``spark.ext.h2o.cluster.size``                     | ``None``       | ``setNumH2OWorkers(Integer)``                   | Expected number of workers of H2O      |
-|                                                    |                |                                                 | cluster. Value None means automatic    |
-|                                                    |                |                                                 | detection of cluster size. This number |
-|                                                    |                |                                                 | must be equal to number of Spark       |
-|                                                    |                |                                                 | executors.                             |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.dummy.rdd.mul.factor``             | ``10``         | ``setDrddMulFactor(Integer)``                   | Multiplication factor for dummy RDD    |
-|                                                    |                |                                                 | generation. Size of dummy RDD is       |
-|                                                    |                |                                                 | ``spark.ext.h2o.cluster.size`` \*      |
-|                                                    |                |                                                 | ``spark.ext.h2o.dummy.rdd.mul.factor`` |
-|                                                    |                |                                                 | .                                      |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.spreadrdd.retries``                | ``10``         | ``setNumRddRetries(Integer)``                   | Number of retries for creation of an   |
-|                                                    |                |                                                 | RDD spread across all existing Spark   |
-|                                                    |                |                                                 | executors.                             |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.default.cluster.size``             | ``20``         | ``setDefaultCloudSize(Integer)``                | Starting size of cluster in case that  |
-|                                                    |                |                                                 | size is not explicitly configured.     |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.subseq.tries``                     | ``5``          | ``setSubseqTries(Integer)``                     | Subsequent successful tries to figure  |
-|                                                    |                |                                                 | out size of Spark cluster, which are   |
-|                                                    |                |                                                 | producing the same number of nodes.    |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.hdfs_conf``                        | |hadoopConfig| | ``setHdfsConf(String)``                         | Either a string with the Path to a file|
-|                                                    |                |                                                 | with Hadoop HDFS configuration or the  |
-|                                                    |                |                                                 | org.apache.hadoop.conf.Configuration   |
-|                                                    |                |                                                 | object. Useful for HDFS credentials    |
-|                                                    |                |                                                 | settings and other HDFS-related        |
-|                                                    |                |                                                 | configurations.                        |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
-| ``spark.ext.h2o.spreadrdd.retries.timeout``        | ``0``          | ``setSpreadRddRetriesTimeout(Int)``             | Specifies how long the discovering of  |
-|                                                    |                |                                                 | Spark executors should last. This      |
-|                                                    |                |                                                 | option has precedence over other       |
-|                                                    |                |                                                 | options influencing the discovery      |
-|                                                    |                |                                                 | mechanism.That means that as long as   |
-|                                                    |                |                                                 | the timeout hasn't expired, we keep    |
-|                                                    |                |                                                 | trying to discover new executors. This |
-|                                                    |                |                                                 | option might be useful in environments |
-|                                                    |                |                                                 | where Spark executors might join       |
-|                                                    |                |                                                 | the cloud with some delays.            |
-+----------------------------------------------------+----------------+-------------------------------------------------+----------------------------------------+
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| Property name                               | Default value | H2OConf setter (* getter_)          | Description                                                                         |
++=============================================+===============+=====================================+=====================================================================================+
+| ``spark.ext.h2o.cluster.size``              | None          | ``setNumH2OWorkers(Integer)``       | Expected number of workers of H2O cluster. Value None means automatic               |
+|                                             |               |                                     | detection of cluster size. This number must be equal to number of Spark executors   |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.dummy.rdd.mul.factor``      | 10            | ``setDrddMulFactor(Integer)``       | Multiplication factor for dummy RDD  generation. Size of dummy RDD is               |
+|                                             |               |                                     | ``spark.ext.h2o.cluster.size`` \* ``spark.ext.h2o.dummy.rdd.mul.factor``.           |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.spreadrdd.retries``         | 10            | ``setNumRddRetries(Integer)``       | Number of retries for creation of an RDD spread across all existing Spark executors |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.default.cluster.size``      | 20            | ``setDefaultCloudSize(Integer)``    | Starting size of cluster in case that size is not explicitly configured.            |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.subseq.tries``              | 5             | ``setSubseqTries(Integer)``         | Subsequent successful tries to figure out size of Spark cluster, which are          |
+|                                             |               |                                     | producing the same number of nodes.                                                 |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.spreadrdd.retries.timeout`` | 0             | ``setSpreadRddRetriesTimeout(Int)`` | Specifies how long the discovering of Spark executors should last. This             |
+|                                             |               |                                     | option has precedence over other options influencing the discovery                  |
+|                                             |               |                                     | mechanism. That means that as long as the timeout hasn't expired, we keep           |
+|                                             |               |                                     | trying to discover new executors. This option might be useful in environments       |
+|                                             |               |                                     | where Spark executors might join the cloud with some delays.                        |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.hdfs_conf``                 | None          | ``setHdfsConf(String)``             | Either a string with the Path to a file with Hadoop HDFS configuration or the       |
+|                                             |               |                                     | org.apache.hadoop.conf.Configuration object. Useful for HDFS credentials            |
+|                                             |               |                                     | settings and other HDFS-related configurations. Default value None means            |
+|                                             |               |                                     | use `sc.hadoopConfig``.                                                             |
++---------------------------------------------+---------------+-------------------------------------+-------------------------------------------------------------------------------------+
+
+--------------
 
 External backend configuration properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| Property name                                         | Default value  | H2OConf setter (* getter_)                      | Description                         |
-+=======================================================+================+=================================================+=====================================+
-| ``spark.ext.h2o.cloud.representative``                | ``None``       | ``setH2OCluster(String)``                       | ip:port of a H2O cluster leader     |
-|                                                       |                |                                                 | node to identify external           |
-|                                                       |                |                                                 | H2O cluster.                        |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.cluster.size``               | ``None``       | ``setClusterSize(Integer)``                     | Number of H2O nodes to start when   |
-|                                                       |                |                                                 | ``auto`` mode of the external       |
-|                                                       |                |                                                 | backend is set.                     |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.cluster.start.timeout``               | ``120s``       | ``setClusterStartTimeout(Integer)``             | Timeout in seconds for starting     |
-|                                                       |                |                                                 | H2O external cluster.               |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.cluster.info.name``                   | ``None``       | ``setClusterInfoFile(Integer)``                 | Full path to a file which is used   |
-|                                                       |                |                                                 | sd the notification file for the    |
-|                                                       |                |                                                 | startup of external H2O cluster.    |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.memory``                     | ``6G``         | ``setExternalMemory(String)``                   | Amount of memory assigned to each   |
-|                                                       |                |                                                 | external H2O node.                  |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.hdfs.dir``                   | ``None``       | ``setHDFSOutputDir(String)``                    | Path to the directory on HDFS used  |
-|                                                       |                |                                                 | for storing temporary files.        |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.start.mode``                 | ``manual``     | ``useAutoClusterStart()``                       | If this option is set to ``auto``   |
-|                                                       |                |                                                 | then H2O external cluster is        |
-|                                                       |                | ``useManualClusterStart()``                     | automatically started using the     |
-|                                                       |                |                                                 | provided H2O driver JAR on YARN,    |
-|                                                       |                |                                                 | otherwise it is expected that the   |
-|                                                       |                |                                                 | cluster is started by the user      |
-|                                                       |                |                                                 | manually.                           |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.h2o.driver``                 | ``None``       | ``setH2ODriverPath(String)``                    | Path to H2O driver used during      |
-|                                                       |                |                                                 | ``auto`` start mode.                |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.yarn.queue``                 | ``None``       | ``setYARNQueue(String)``                        | Yarn queue on which external H2O    |
-|                                                       |                |                                                 | cluster is started.                 |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.kill.on.unhealthy``          | ``true``       | ``setKillOnUnhealthyClusterEnabled()``          | If true, the client will try to     |
-|                                                       |                |                                                 | kill the cluster and then itself in |
-|                                                       |                | ``setKillOnUnhealthyClusterDisabled()``         | case some nodes in the cluster      |
-|                                                       |                |                                                 | report unhealthy status.            |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.kerberos.principal``         | ``None``       | ``setKerberosPrincipal(String)``                | Kerberos Principal.                 |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.kerberos.keytab``            | ``None``       | ``setKerberosKeytab(String)``                   | Kerberos Keytab.                    |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.run.as.user``                | ``None``       | ``setRunAsUser(String)``                        | Impersonated Hadoop user.           |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.driver.if``                  | ``None``       | ``setExternalH2ODriverIf(String)``              | Ip address or network of            |
-|                                                       |                |                                                 | mapper->driver callback interface.  |
-|                                                       |                |                                                 | Default value means automatic       |
-|                                                       |                |                                                 | detection.                          |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.driver.port``                | ``None``       | ``setExternalH2ODriverPort(Integer)``           | Port of mapper->driver callback     |
-|                                                       |                |                                                 | interface. Default value means      |
-|                                                       |                |                                                 | automatic detection.                |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.driver.port.range``          | ``None``       | ``setExternalH2ODriverPortRange(String)``       | Range portX-portY of mapper->driver |
-|                                                       |                |                                                 | callback interface; eg:             |
-|                                                       |                |                                                 | 50000-55000.                        |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.extra.memory.percent``       | ``10``         | ``setExternalExtraMemoryPercent(Integer)``      | This option is a percentage of      |
-|                                                       |                |                                                 | ``spark.ext.h2o.external.memory``   |
-|                                                       |                |                                                 | and specifies memory for internal   |
-|                                                       |                |                                                 | JVM use outside of Java heap.       |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.backend.stop.timeout``       | ``10000ms``    | ``setExternalBackendStopTimeout(Integer)``      | Timeout for confirmation from       |
-|                                                       |                |                                                 | worker nodes when stopping the      |
-|                                                       |                |                                                 | external backend. It is also        |
-|                                                       |                |                                                 | possible to pass ``-1`` to ensure   |
-|                                                       |                |                                                 | the indefinite timeout. The unit is |
-|                                                       |                |                                                 | milliseconds.                       |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.hadoop.executable``          | ``hadoop``     | ``setExternalHadoopExecutable(String)``         | Name or path to path to a hadoop    |
-|                                                       |                |                                                 | executable binary which is used     |
-|                                                       |                |                                                 | to start external H2O backend on    |
-|                                                       |                |                                                 | YARN.                               |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.extra.jars``                 | ``None``       | ``setExternalExtraJars(String)``                | Comma-separated paths to jars that  |
-|                                                       |                |                                                 | will be placed onto classpath of    |
-|                                                       |                | ``setExternalExtraJars(String[])``              | each H2O node.                      |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.communication.compression``  | ``SNAPPY``     | ``setExternalCommunicationCompression(String)`` | The type of compression used for    |
-|                                                       |                |                                                 | data transfer between Spark and H2O |
-|                                                       |                |                                                 | node. Possible values are ``NONE``, |
-|                                                       |                |                                                 | ``DEFLATE``, ``GZIP``, ``SNAPPY``.  |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.auto.start.backend``         | ``YARN``       | ``setExternalAutoStartBackend(String)``         | The backend on which the external   |
-|                                                       |                |                                                 | H2O backend will be started in auto |
-|                                                       |                |                                                 | start mode. Possible values are     |
-|                                                       |                |                                                 | ``YARN`` and ``KUBERNETES``.        |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.h2o.service.name``       | |h2oSer|       | ``setExternalK8sH2OServceName(String)``         | Name of H2O service required to     |
-|                                                       |                |                                                 | start H2O on K8s.                   |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.h2o.statefulset.name``   | |h2oSet|       | ``setExternalK8sH2OStatefulsetName(String)``    | Name of H2O stateful set required   |
-|                                                       |                |                                                 | to start H2O on K8s.                |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.h2o.label``              | ``h2o``        | ``setExternalK8sH2OLabel(String)``              | Label used to select node for       |
-|                                                       |                |                                                 | H2O cluster formation.              |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.h2o.api.port``           | ``8081``       | ``setExternalK8sH2OApiPort(String)``            | H2O Kubernetes API Port.            |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.namespace``              | ``default``    | ``setExternalK8sNamespace(String)``             | Kubernetes namespace where          |
-|                                                       |                |                                                 | external H2O is started.            |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.docker.image``           | |Image|        | ``setExternalK8sDockerImage(String)``           | Docker image name containing        |
-|                                                       |                |                                                 | Sparkling Water External H2O        |
-|                                                       |                |                                                 | backend.                            |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.domain``                 | |Domain|       | ``setExternalK8sDomain(String)``                | Domain of the Kubernetes cluster.   |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
-| ``spark.ext.h2o.external.k8s.svc.timeout``            | ``300 sec``    | ``setExternalK8sServiceTimeout(Int)``           | Timeout in seconds used as a limit  |
-|                                                       |                |                                                 | for K8S service creation.           |
-+-------------------------------------------------------+----------------+-------------------------------------------------+-------------------------------------+
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| Property name                                        | Default value                                         | H2OConf setter (* getter_)                      | Description                                                                                          |
++======================================================+=======================================================+=================================================+======================================================================================================+
+| ``spark.ext.h2o.external.driver.if``                 | None                                                  | ``setExternalH2ODriverIf(String)``              | Ip address or network of mapper->driver callback interface. Default value means automatic detection. |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.driver.port``               | None                                                  | ``setExternalH2ODriverPort(Integer)``           | Port of mapper->driver callback interface. Default value means automatic detection.                  |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.driver.port.range``         | None                                                  | ``setExternalH2ODriverPortRange(String)``       | Range portX-portY of mapper->driver callback interface; eg: 50000-55000.                             |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.extra.memory.percent``      | 10                                                    | ``setExternalExtraMemoryPercent(Integer)``      | This option is a percentage of ``spark.ext.h2o.external.memory`` and specifies memory                |
+|                                                      |                                                       |                                                 | for internal JVM use outside of Java heap.                                                           |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cloud.representative``               | None                                                  | ``setH2OCluster(String)``                       | ip:port of a H2O cluster leader node to identify external H2O cluster.                               |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.cluster.size``              | None                                                  | ``setClusterSize(Integer)``                     | Number of H2O nodes to start when ``auto`` mode of the external backend is set.                      |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cluster.start.timeout``              | 120                                                   | ``setClusterStartTimeout(Integer)``             | Timeout in seconds for starting H2O external cluster                                                 |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.cluster.info.name``                  | None                                                  | ``setClusterInfoFile(Integer)``                 | Full path to a file which is used as the notification file for the startup of external H2O cluster.  |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.memory``                    | 6G                                                    | ``setExternalMemory(String)``                   | Amount of memory assigned to each external H2O node                                                  |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.hdfs.dir``                  | None                                                  | ``setHDFSOutputDir(String)``                    | Path to the directory on HDFS used for storing temporary files.                                      |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.start.mode``                | manual                                                | ``useAutoClusterStart()``                       | If this option is set to ``auto`` then H2O external cluster is automatically started using the       |
+|                                                      |                                                       |                                                 | provided H2O driver JAR on YARN, otherwise it is expected that the cluster is started by the user    |
+|                                                      |                                                       | ``useManualClusterStart()``                     | manually                                                                                             |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.h2o.driver``                | None                                                  | ``setH2ODriverPath(String)``                    |  Path to H2O driver used during ``auto`` start mode.                                                 |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.yarn.queue``                | None                                                  | ``setYARNQueue(String)``                        | Yarn queue on which external H2O cluster is started.                                                 |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.kill.on.unhealthy``         | true                                                  | ``setKillOnUnhealthyClusterEnabled()``          | If true, the client will try to kill the cluster and then itself in                                  |
+|                                                      |                                                       |                                                 | case some nodes in the cluster report unhealthy status.                                              |
+|                                                      |                                                       | ``setKillOnUnhealthyClusterDisabled()``         |                                                                                                      |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.kerberos.principal``        | None                                                  | ``setKerberosPrincipal(String)``                | Kerberos Principal                                                                                   |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.kerberos.keytab``           | None                                                  | ``setKerberosKeytab(String)``                   | Kerberos Keytab                                                                                      |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.run.as.user``               | None                                                  | ``setRunAsUser(String)``                        | Impersonated Hadoop user                                                                             |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.backend.stop.timeout``      | 10000                                                 | ``setExternalBackendStopTimeout(Integer)``      | Timeout for confirmation from worker nodes when stopping the  external backend. It is also           |
+|                                                      |                                                       |                                                 | possible to pass ``-1`` to ensure the indefinite timeout. The unit is milliseconds.                  |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.hadoop.executable``         | hadoop                                                | ``setExternalHadoopExecutable(String)``         | Name or path to path to a hadoop  executable binary which is used                                    |
+|                                                      |                                                       |                                                 | to start external H2O backend on YARN.                                                               |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.extra.jars``                | None                                                  | ``setExternalExtraJars(String)``                | Comma-separated paths to jars that will be placed onto classpath of each H2O node.                   |
+|                                                      |                                                       |                                                 |                                                                                                      |
+|                                                      |                                                       | ``setExternalExtraJars(String[])``              |                                                                                                      |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.communication.compression`` | SNAPPY                                                | ``setExternalCommunicationCompression(String)`` | The type of compression used for data transfer between Spark and H2O node.                           |
+|                                                      |                                                       |                                                 | Possible values are ``NONE``, ``DEFLATE``, ``GZIP``, ``SNAPPY``.                                     |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.auto.start.backend``        | yarn                                                  | ``setExternalAutoStartBackend(String)``         | The backend on which the external H2O backend will be started in auto start mode.                    |
+|                                                      |                                                       |                                                 | Possible values are ``YARN`` and ``KUBERNETES``.                                                     |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.service.name``      | h2o-service                                           | ``setExternalK8sH2OServceName(String)``         | Name of H2O service required to start H2O on K8s.                                                    |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.statefulset.name``  | h2o-statefulset                                       | ``setExternalK8sH2OStatefulsetName(String)``    | Name of H2O stateful set required to start H2O on K8s.                                               |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.label``             | app=h2o                                               | ``setExternalK8sH2OLabel(String)``              | Label used to select node for H2O cluster formation.                                                 |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.h2o.api.port``          | 8081                                                  | ``setExternalK8sH2OApiPort(String)``            | Kubernetes API port.                                                                                 |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.namespace``             | default                                               | ``setExternalK8sNamespace(String)``             | Kubernetes namespace where external H2O is started.                                                  |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.docker.image``          | h2oai/sparkling-water-external-backend:3.32.0.1-1-3.0 | ``setExternalK8sDockerImage(String)``           | Docker image containing Sparkling Water external H2O backend.                                        |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.domain``                | cluster.local                                         | ``setExternalK8sDomain(String)``                | Domain of the Kubernetes cluster.                                                                    |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| ``spark.ext.h2o.external.k8s.svc.timeout``           | 300                                                   | ``setExternalK8sServiceTimeout(Int)``           | Timeout in seconds used as a limit for K8s service creation.                                         |
++------------------------------------------------------+-------------------------------------------------------+-------------------------------------------------+------------------------------------------------------------------------------------------------------+
+
+--------------
 
 .. _getter:
 
 H2OConf getter can be derived from the corresponding setter. All getters are parameter-less. If the type of the property is Boolean, the getter is prefixed with
 ``is`` (E.g. ``setReplEnabled()`` -> ``isReplEnabled()``). Property getters of other types do not have any prefix and start with lowercase
 (E.g. ``setUserName(String)`` -> ``userName`` for Scala, ``userName()`` for Python).
-
-
-.. |H2ONThreadsDefault| replace:: ``Runtime.getRuntime().availableProcessors()``
-.. |hadoopConfig| replace:: ``sc.hadoopConfig``
-.. |h2oLogDir| replace:: ``{user.dir}/h2ologs/{SparkAppId}``
-.. |yarnDir| replace:: YARN container dir
-.. |secureConnections| replace:: ``spark.ext.h2o.internal_secure_connections``
-.. |h2oSer| replace:: ``h2o-service``
-.. |h2oSet| replace:: ``h2o-statefulSet``
-.. |Image| replace:: ``h2oai/sparkling-water-external-backend:SUBST_SW_VERSION``
-.. |Domain| replace:: ``cluster.local``
+     

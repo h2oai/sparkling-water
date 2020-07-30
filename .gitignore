@@ -87,3 +87,4 @@ jenkins/docker/regular-tests/Dockerfile
 ml/src-gen
 py/src-gen
 doc/src/site/sphinx/parameters
+doc/src/site/sphinx/configuration/configuration_properties.rst
