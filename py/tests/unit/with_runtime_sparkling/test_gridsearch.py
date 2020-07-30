@@ -84,7 +84,8 @@ def testGetGridModelsParams(prostateDataset):
     params = grid.getGridModelsParams()
     assert params.count() == 3
     assert params.columns == ['MOJO Model ID', 'seed']
-    params.collect() # try materializing
+    params.collect()  # try materializing
+
 
 def testGetGridModelsNoParams(prostateDataset):
     grid = H2OGridSearch(algo=H2OGBM(labelCol="AGE", splitRatio=0.8), strategy="RandomDiscrete", maxModels=3,
@@ -94,7 +95,8 @@ def testGetGridModelsNoParams(prostateDataset):
     params = grid.getGridModelsParams()
     assert params.count() == 1
     assert params.columns == ['MOJO Model ID']
-    params.collect() # try materializing
+    params.collect()  # try materializing
+
 
 def testGetGridModelsMetrics(prostateDataset):
     grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(labelCol="AGE", splitRatio=0.8),
@@ -104,7 +106,8 @@ def testGetGridModelsMetrics(prostateDataset):
     metrics = grid.getGridModelsMetrics()
     assert metrics.count() == 3
     assert metrics.columns == ['MOJO Model ID', 'MSE', 'MeanResidualDeviance', 'R2', 'RMSE']
-    metrics.collect() # try materializing
+    metrics.collect()  # try materializing
+
 
 def testGetGridModels(prostateDataset):
     grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(splitRatio=0.8, labelCol="AGE"),
@@ -114,6 +117,7 @@ def testGetGridModels(prostateDataset):
     models = grid.getGridModels()
     assert len(models) == 3
 
+
 def testGetAlgoViaConstructor():
     # SW-2276, 3rd call of getAlgo failed
     grid = H2OGridSearch(hyperParameters={"seed": [1, 2, 3]}, algo=H2OGBM(labelCol="AGE", ntrees=100, splitRatio=0.8),
@@ -121,6 +125,7 @@ def testGetAlgoViaConstructor():
     grid.getAlgo()
     grid.getAlgo()
     assert grid.getAlgo().getNtrees() == 100
+
 
 def testGetAlgoViaSetter():
     # SW-2276, 3rd call of getAlgo failed
@@ -130,6 +135,7 @@ def testGetAlgoViaSetter():
     grid.getAlgo()
     grid.getAlgo()
     assert grid.getAlgo().getNtrees() == 100
+
 
 def createGridForProblemSpecificTesting(algorithm):
     algorithm.setLabelCol("CAPSULE")

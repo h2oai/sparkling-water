@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 import warnings
+from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
+
 
 class SharedBackendConf(SharedBackendConfUtils):
 
@@ -130,7 +131,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._jconf.basePort()
 
     def nodeExtraProperties(self):
-        warnings.warn("The method 'nodeExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+        warnings.warn(
+            "The method 'nodeExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
         return self.extraProperties()
 
     def extraProperties(self):
@@ -156,7 +158,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self.icedDir()
 
     def h2oClientLogLevel(self):
-        warnings.warn("The method 'h2oClientLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
+        warnings.warn(
+            "The method 'h2oClientLogLevel' is deprecated and will be removed in 3.34. Use 'logLevel' instead!")
         return self._jconf.logLevel()
 
     def h2oClientLogDir(self):
@@ -180,7 +183,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self._get_option(self._jconf.clientFlowBaseurlOverride())
 
     def clientExtraProperties(self):
-        warnings.warn("The method 'clientExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
+        warnings.warn(
+            "The method 'clientExtraProperties' is deprecated and will be removed in 3.34. Use 'extraProperties' instead!")
         return self.extraProperties()
 
     def runsInExternalClusterMode(self):
@@ -215,6 +219,7 @@ class SharedBackendConf(SharedBackendConfUtils):
 
     def restApiTimeout(self):
         return self._jconf.restApiTimeout()
+
     #
     # Setters
     #
@@ -332,7 +337,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeLogLevel(self, level):
-        warnings.warn("The method 'setH2ONodeLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+        warnings.warn(
+            "The method 'setH2ONodeLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
         return self.setLogLevel(level)
 
     def setLogLevel(self, level):
@@ -340,7 +346,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setH2ONodeLogDir(self, dir):
-        warnings.warn("The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+        warnings.warn(
+            "The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
         return self.setLogDir(dir)
 
     def setLogDir(self, dir):
@@ -384,7 +391,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeBasePort(self, port):
-        warnings.warn("The method 'setNodeBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+        warnings.warn(
+            "The method 'setNodeBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
         return self.setBasePort(port)
 
     def setBasePort(self, port):
@@ -396,7 +404,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeExtraProperties(self, extraProperties):
-        warnings.warn("The method 'setNodeExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+        warnings.warn(
+            "The method 'setNodeExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
         return self.setExtraProperties(extraProperties)
 
     def setExtraProperties(self, extraProperties):
@@ -432,19 +441,23 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setClientIcedDir(self, dir):
-        warnings.warn("The method 'setClientIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        warnings.warn(
+            "The method 'setClientIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
         return self.setIcedDir(dir)
 
     def setH2OClientLogLevel(self, level):
-        warnings.warn("The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
+        warnings.warn(
+            "The method 'setH2OClientLogLevel' is deprecated and will be removed in 3.34. Use 'setLogLevel' instead!")
         return self.setLogLevel(level)
 
     def setH2OClientLogDir(self, dir):
-        warnings.warn("The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
+        warnings.warn(
+            "The method 'setH2ONodeLogDir' is deprecated and will be removed in 3.34. Use 'setLogDir' instead!")
         return self.setLogDir(dir)
 
     def setClientBasePort(self, basePort):
-        warnings.warn("The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
+        warnings.warn(
+            "The method 'setClientBasePort' is deprecated and will be removed in 3.34. Use 'setBasePort' instead!")
         return self.setBasePort(basePort)
 
     def setClientWebPort(self, port):
@@ -472,7 +485,8 @@ class SharedBackendConf(SharedBackendConfUtils):
         return self
 
     def setClientExtraProperties(self, extraProperties):
-        warnings.warn("The method 'setClientExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
+        warnings.warn(
+            "The method 'setClientExtraProperties' is deprecated and will be removed in 3.34. Use 'setExtraProperties' instead!")
         return self.setExtraProperties(extraProperties)
 
     def setVerifySslCertificates(self, verify):

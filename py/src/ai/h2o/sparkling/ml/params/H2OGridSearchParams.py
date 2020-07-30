@@ -15,10 +15,11 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from ai.h2o.sparkling.ml.params.H2OGridSearchRandomDiscreteCriteriaParams import H2OGridSearchRandomDiscreteCriteriaParams
 from ai.h2o.sparkling.ml.params.H2OGridSearchCartesianCriteriaParams import H2OGridSearchCartesianCriteriaParams
 from ai.h2o.sparkling.ml.params.H2OGridSearchCommonCriteriaParams import H2OGridSearchCommonCriteriaParams
+from ai.h2o.sparkling.ml.params.H2OGridSearchRandomDiscreteCriteriaParams import \
+    H2OGridSearchRandomDiscreteCriteriaParams
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
 
 
@@ -26,7 +27,6 @@ class H2OGridSearchParams(
     H2OGridSearchRandomDiscreteCriteriaParams,
     H2OGridSearchCartesianCriteriaParams,
     H2OGridSearchCommonCriteriaParams):
-
     ##
     # Param definitions
     ##

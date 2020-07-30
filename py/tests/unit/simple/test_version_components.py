@@ -44,6 +44,7 @@ def testVersionComponentsCanBeParsedFromNightlyVersion():
     assert components.nightlyVersion == "14"
     assert components.sparkMajorMinorVersion == "2.3"
 
+
 def testParseSparkVersion():
     version = "2.4.1"
 
@@ -55,6 +56,7 @@ def testParseSparkVersion():
     assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
     assert components.suffix is None
+
 
 def testParseSparkVersionWithBuildNumber():
     version = "2.4.1.dev0"
@@ -68,6 +70,7 @@ def testParseSparkVersionWithBuildNumber():
     assert components.sparkPatchVersion == "1"
     assert components.suffix == ".dev0"
 
+
 def testParseSparkVersionWithHadoopSuffix():
     version = "2.4.1+hadoop2.6"
 
@@ -79,6 +82,7 @@ def testParseSparkVersionWithHadoopSuffix():
     assert components.sparkMinorVersion == "4"
     assert components.sparkPatchVersion == "1"
     assert components.suffix == "+hadoop2.6"
+
 
 def testParseSparkVersionWithComplexSuffix():
     version = "2.4.1.a.b.c"

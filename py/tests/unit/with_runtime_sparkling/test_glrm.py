@@ -99,10 +99,10 @@ def testUserYHasEffectOnTrainedModel(spark, arrestsDataset):
     referenceModel = referenceAlgo.fit(arrestsDataset)
     reference = referenceModel.transform(arrestsDataset)
 
-    userYData = [(5.412,  65.24,  -7.54, -0.032),
-                 (2.212,  92.24, -17.54, 23.268),
-                 (0.312, 123.24,  14.46,  9.768),
-                 (1.012,  19.24, -15.54, -1.732)]
+    userYData = [(5.412, 65.24, -7.54, -0.032),
+                 (2.212, 92.24, -17.54, 23.268),
+                 (0.312, 123.24, 14.46, 9.768),
+                 (1.012, 19.24, -15.54, -1.732)]
     userYDataFrame = spark.createDataFrame(userYData, ['a', 'b', 'c', 'd'])
     algo = getPreconfiguredAlgorithm()
     algo.setUserY(userYDataFrame)
@@ -128,7 +128,7 @@ def testLossByColHasEffectOnTrainedModel(arrestsDataset):
 
 
 def testRepresenrtationFrameIsAccessible(hc, arrestsDataset):
-    representationName="myFrame"
+    representationName = "myFrame"
     algo = getPreconfiguredAlgorithm().setRepresentationName(representationName)
     algo.fit(arrestsDataset)
     frame = H2OFrame.get_frame(representationName, full_cols=-1, light=True)

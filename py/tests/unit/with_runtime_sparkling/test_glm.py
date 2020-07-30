@@ -70,13 +70,13 @@ def testPropagationOfPredictionCol(prostateDataset):
 
 
 def testPlugValuesAffectResult(spark, carsDatasetPath):
-    carsDataset=spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
-    carsDataset=carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
+    carsDataset = spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
+    carsDataset = carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
     [traningDataset, testingDataset] = carsDataset.randomSplit([0.9, 0.1], 1)
 
     def createInitialGlmDefinition():
-        featuresCols=["economy","displacement", "power", "weight", "acceleration", "year", "economy_20mpg"]
-        return H2OGLM(featuresCols=featuresCols, labelCol="cylinders", seed=1,splitRatio=0.8)
+        featuresCols = ["economy", "displacement", "power", "weight", "acceleration", "year", "economy_20mpg"]
+        return H2OGLM(featuresCols=featuresCols, labelCol="cylinders", seed=1, splitRatio=0.8)
 
     referenceGlm = createInitialGlmDefinition()
     referenceModel = referenceGlm.fit(traningDataset)
@@ -118,6 +118,7 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
 
     glm.fit(df)
 
+
 def createInitialGlmDefinitionForRandomCols():
     return H2OGLM(featuresCols=["x1", "x3", "x5", "x6"],
                   labelCol="y",
@@ -126,6 +127,7 @@ def createInitialGlmDefinitionForRandomCols():
                   randomLink=["identity"],
                   HGLM=True,
                   calcLike=True)
+
 
 def testRandomColsArePropagatedToInternals(semiconductorDataset):
     semiconductorDataset = semiconductorDataset.withColumn("Device", semiconductorDataset.Device.cast("string"))
@@ -148,7 +150,7 @@ def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
 
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
-    featuresCols=["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
+    featuresCols = ["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
 
     def createInitialGlmDefinition():
         return H2OGLM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8)

@@ -26,6 +26,7 @@ from pyspark.sql.types import *
 
 from tests import unit_test_utils
 
+
 def testDatasetConversion(spark, hc):
     df = spark.range(100)
     h2oFrame = hc.asH2OFrame(df)

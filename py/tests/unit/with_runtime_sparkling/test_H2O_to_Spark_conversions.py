@@ -30,6 +30,7 @@ def testH2OFrameToDataframe(hc):
     assert len(df.columns) == frame.ncol, "Number of columns should match"
     assert df.columns == frame.names, "Column names should match"
 
+
 def testH2OFrameToDataframeWithSecondConversion(hc):
     frame = h2o.upload_file("../examples/smalldata/prostate/prostate.csv")
     df1 = hc.asSparkFrame(frame)

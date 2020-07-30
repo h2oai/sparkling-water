@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 import warnings
+from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
+
 
 class InternalBackendConf(SharedBackendConfUtils):
 
@@ -74,7 +75,8 @@ class InternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setNodeIcedDir(self, dir):
-        warnings.warn("The method 'setNodeIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
+        warnings.warn(
+            "The method 'setNodeIcedDir' is deprecated and will be removed in 3.34. Use 'setIcedDir' instead!")
         self._jconf.setIcedDir(dir)
         return self
 

@@ -32,6 +32,7 @@ def testParamsPassedByConstructor():
 def testParamsPassedBySetters():
     assertParamsViaSetters("H2OXGBoost")
 
+
 def testFitXgboostWithoutError(prostateDataset):
     xgboost = H2OXGBoost(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
 

@@ -32,6 +32,7 @@ def gbmModel(prostateDataset):
     gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule")
     return gbm.fit(prostateDataset)
 
+
 def testDomainColumns(gbmModel):
     domainValues = gbmModel.getDomainValues()
     assert domainValues["DPROS"] is None
@@ -43,6 +44,7 @@ def testDomainColumns(gbmModel):
     assert domainValues["RACE"] is None
     assert domainValues["ID"] is None
 
+
 def testTrainingParams(gbmModel):
     params = gbmModel.getTrainingParams()
     assert params["seed"] == "42"
@@ -50,18 +52,22 @@ def testTrainingParams(gbmModel):
     assert params["ntrees"] == "2"
     assert len(params) == 44
 
+
 def testModelCategory(gbmModel):
     category = gbmModel.getModelCategory()
     assert category == "Binomial"
+
 
 def testTrainingMetrics(gbmModel):
     metrics = gbmModel.getTrainingMetrics()
     assert metrics is not None
     assert len(metrics) is 6
 
+
 def getCurrentMetrics():
     metrics = gbmModel.getCurrentMetrics()
     assert metrics == gbmModel.getTrainingMetrics()
+
 
 @pytest.fixture(scope="module")
 def prostateDatasetWithDoubles(prostateDataset):
@@ -74,6 +80,7 @@ def prostateDatasetWithDoubles(prostateDataset):
         prostateDataset.PSA,
         prostateDataset.VOL,
         prostateDataset.GLEASON.cast("double").alias("GLEASON"))
+
 
 def trainAndTestH2OPythonGbm(hc, dataset):
     h2oframe = hc.asH2OFrame(dataset)
@@ -92,10 +99,12 @@ def trainAndTestH2OPythonGbm(hc, dataset):
     finally:
         shutil.rmtree(directoryName)
 
+
 def compareH2OPythonGbmOnTwoDatasets(hc, reference, tested):
     expected = trainAndTestH2OPythonGbm(hc, reference)
     result = trainAndTestH2OPythonGbm(hc, tested)
     unit_test_utils.assert_data_frames_are_identical(expected, result)
+
 
 def testMojoTrainedWithH2OAPISupportsArrays(hc, prostateDatasetWithDoubles):
     arrayDataset = prostateDatasetWithDoubles.select(
@@ -110,12 +119,14 @@ def testMojoTrainedWithH2OAPISupportsArrays(hc, prostateDatasetWithDoubles):
             prostateDatasetWithDoubles.GLEASON).alias("features"))
     compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, arrayDataset)
 
+
 def testMojoTrainedWithH2OAPISupportsVectors(hc, prostateDatasetWithDoubles):
     assembler = VectorAssembler(
         inputCols=["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
         outputCol="features")
     vectorDataset = assembler.transform(prostateDatasetWithDoubles).select("CAPSULE", "features")
     compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, vectorDataset)
+
 
 def testMojoTrainedWithH2OAPISupportsStructs(hc, prostateDatasetWithDoubles):
     arrayDataset = prostateDatasetWithDoubles.select(

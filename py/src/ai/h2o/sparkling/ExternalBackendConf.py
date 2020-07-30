@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
 import warnings
+from ai.h2o.sparkling.SharedBackendConfUtils import SharedBackendConfUtils
+
 
 class ExternalBackendConf(SharedBackendConfUtils):
 
@@ -151,7 +152,8 @@ class ExternalBackendConf(SharedBackendConfUtils):
         return self
 
     def setMapperXmx(self, mem):
-        warnings.warn("The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
+        warnings.warn(
+            "The method 'setMapperXmx' is deprecated and will be removed in 3.34. Use 'setExternalMemory' instead!")
         return self.setExternalMemory(mem)
 
     def setExternalMemory(self, memory):
