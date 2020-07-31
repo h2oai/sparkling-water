@@ -20,6 +20,7 @@ package ai.h2o.sparkling.backend.internal
 import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.H2OConf.{IntOption, OptionOption}
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
@@ -95,32 +96,60 @@ trait InternalBackendConf extends SharedBackendConf {
        |  nthreads             : $nthreads
        |  drddMulFactor        : $drddMulFactor""".stripMargin
 
-  private[backend] override def getFileProperties: Seq[(String, _)] = super.getFileProperties :+ PROP_HDFS_CONF
+  private[backend] override def getFileProperties: Seq[(String, _, _, _)] = super.getFileProperties :+ PROP_HDFS_CONF
 }
 
 object InternalBackendConf {
 
-  /** Configuration property - expected number of workers of H2O cloud.
-    * Value None means automatic detection of cluster size.
-    */
-  val PROP_CLUSTER_SIZE: (String, None.type) = ("spark.ext.h2o.cluster.size", None)
+  val PROP_CLUSTER_SIZE: OptionOption = (
+    "spark.ext.h2o.cluster.size",
+    None,
+    "setNumH2OWorkers(Integer)",
+    """Expected number of workers of H2O cluster. Value None means automatic
+      |detection of cluster size. This number must be equal to number of Spark executors""".stripMargin)
 
-  /** Configuration property - multiplication factor for dummy RDD generation.
-    * Size of dummy RDD is PROP_CLUSTER_SIZE*PROP_DUMMY_RDD_MUL_FACTOR */
-  val PROP_DUMMY_RDD_MUL_FACTOR: (String, Int) = ("spark.ext.h2o.dummy.rdd.mul.factor", 10)
+  val PROP_DUMMY_RDD_MUL_FACTOR: IntOption = (
+    "spark.ext.h2o.dummy.rdd.mul.factor",
+    10,
+    "setDrddMulFactor(Integer)",
+    """Multiplication factor for dummy RDD  generation. Size of dummy RDD is
+      |``spark.ext.h2o.cluster.size`` \* ``spark.ext.h2o.dummy.rdd.mul.factor``.""".stripMargin)
 
-  /** Configuration property - number of retries to create an RDD spread over all executors */
-  val PROP_SPREADRDD_RETRIES: (String, Int) = ("spark.ext.h2o.spreadrdd.retries", 10)
+  val PROP_SPREADRDD_RETRIES: IntOption = (
+    "spark.ext.h2o.spreadrdd.retries",
+    10,
+    "setNumRddRetries(Integer)",
+    "Number of retries for creation of an RDD spread across all existing Spark executors")
 
-  /** Starting size of cluster in case that size is not explicitly passed */
-  val PROP_DEFAULT_CLUSTER_SIZE: (String, Int) = ("spark.ext.h2o.default.cluster.size", 20)
+  val PROP_DEFAULT_CLUSTER_SIZE: IntOption = (
+    "spark.ext.h2o.default.cluster.size",
+    20,
+    "setDefaultCloudSize(Integer)",
+    "Starting size of cluster in case that size is not explicitly configured.")
 
-  /** Subsequent successful tries to figure out size of Spark cluster which are producing same number of nodes. */
-  val PROP_SUBSEQ_TRIES: (String, Int) = ("spark.ext.h2o.subseq.tries", 5)
+  val PROP_SUBSEQ_TRIES: IntOption = (
+    "spark.ext.h2o.subseq.tries",
+    5,
+    "setSubseqTries(Integer)",
+    """Subsequent successful tries to figure out size of Spark cluster, which are
+      |producing the same number of nodes.""".stripMargin)
 
-  /** Path to whole Hadoop configuration serialized into XML readable by org.hadoop.Configuration class */
-  val PROP_HDFS_CONF: (String, None.type) = ("spark.ext.h2o.hdfs_conf", None)
+  val PROP_HDFS_CONF: OptionOption = (
+    "spark.ext.h2o.hdfs_conf",
+    None,
+    "setHdfsConf(String)",
+    """Either a string with the Path to a file with Hadoop HDFS configuration or the
+      |org.apache.hadoop.conf.Configuration object. Useful for HDFS credentials
+      |settings and other HDFS-related configurations. Default value None means
+      |use `sc.hadoopConfig``.""".stripMargin)
 
-  /** Timeout for the spark executor discovery, unit is milliseconds */
-  val PROP_SPREADRDD_RETRIES_TIMEOUT: (String, Int) = ("spark.ext.h2o.spreadrdd.retries.timeout", 0)
+  val PROP_SPREADRDD_RETRIES_TIMEOUT: IntOption = (
+    "spark.ext.h2o.spreadrdd.retries.timeout",
+    0,
+    "setSpreadRddRetriesTimeout(Int)",
+    """Specifies how long the discovering of Spark executors should last. This
+      |option has precedence over other options influencing the discovery
+      |mechanism. That means that as long as the timeout hasn't expired, we keep
+      |trying to discover new executors. This option might be useful in environments
+      |where Spark executors might join the cloud with some delays.""".stripMargin)
 }
