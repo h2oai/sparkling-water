@@ -104,40 +104,40 @@ object InternalBackendConf {
   val PROP_CLUSTER_SIZE: OptionOption = (
     "spark.ext.h2o.cluster.size",
     None,
-    "``setNumH2OWorkers(Integer)``",
+    "setNumH2OWorkers(Integer)",
     """Expected number of workers of H2O cluster. Value None means automatic
       |detection of cluster size. This number must be equal to number of Spark executors""".stripMargin)
 
   val PROP_DUMMY_RDD_MUL_FACTOR: IntOption = (
     "spark.ext.h2o.dummy.rdd.mul.factor",
     10,
-    "``setDrddMulFactor(Integer)``",
+    "setDrddMulFactor(Integer)",
     """Multiplication factor for dummy RDD  generation. Size of dummy RDD is
       |``spark.ext.h2o.cluster.size`` \* ``spark.ext.h2o.dummy.rdd.mul.factor``.""".stripMargin)
 
   val PROP_SPREADRDD_RETRIES: IntOption = (
     "spark.ext.h2o.spreadrdd.retries",
     10,
-    "``setNumRddRetries(Integer)``",
+    "setNumRddRetries(Integer)",
     "Number of retries for creation of an RDD spread across all existing Spark executors")
 
   val PROP_DEFAULT_CLUSTER_SIZE: IntOption = (
     "spark.ext.h2o.default.cluster.size",
     20,
-    "``setDefaultCloudSize(Integer)``",
+    "setDefaultCloudSize(Integer)",
     "Starting size of cluster in case that size is not explicitly configured.")
 
   val PROP_SUBSEQ_TRIES: IntOption = (
     "spark.ext.h2o.subseq.tries",
     5,
-    "``setSubseqTries(Integer)``",
+    "setSubseqTries(Integer)",
     """Subsequent successful tries to figure out size of Spark cluster, which are
       |producing the same number of nodes.""".stripMargin)
 
   val PROP_HDFS_CONF: OptionOption = (
     "spark.ext.h2o.hdfs_conf",
     None,
-    "``setHdfsConf(String)``",
+    "setHdfsConf(String)",
     """Either a string with the Path to a file with Hadoop HDFS configuration or the
       |org.apache.hadoop.conf.Configuration object. Useful for HDFS credentials
       |settings and other HDFS-related configurations. Default value None means
@@ -146,7 +146,7 @@ object InternalBackendConf {
   val PROP_SPREADRDD_RETRIES_TIMEOUT: IntOption = (
     "spark.ext.h2o.spreadrdd.retries.timeout",
     0,
-    "``setSpreadRddRetriesTimeout(Int)``",
+    "setSpreadRddRetriesTimeout(Int)",
     """Specifies how long the discovering of Spark executors should last. This
       |option has precedence over other options influencing the discovery
       |mechanism. That means that as long as the timeout hasn't expired, we keep

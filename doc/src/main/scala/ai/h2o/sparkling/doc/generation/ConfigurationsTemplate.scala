@@ -107,12 +107,12 @@ object ConfigurationsTemplate {
     val setterMaxLength = options.map(_.setters.split("\n").map(_.length).max).max
     val descriptionMaxLength = options.map(_.doc.split("\n").map(_.length).max).max
 
-    val maxNameLength = (if (headerName.length > nameMaxLength) headerName.length else nameMaxLength)
-    val maxValueLength = (if (headerValue.length > valueMaxLength) headerValue.length else valueMaxLength)
-    val maxSetterLength = (if (headerSetter.length > setterMaxLength) headerSetter.length else setterMaxLength)
+    val maxNameLength = if (headerName.length > nameMaxLength) headerName.length else nameMaxLength
+    val maxValueLength = if (headerValue.length > valueMaxLength) headerValue.length else valueMaxLength
+    val maxSetterLength = if (headerSetter.length > setterMaxLength) headerSetter.length else setterMaxLength
     val maxDocLength =
-      (if (headerDescription.length > descriptionMaxLength) headerDescription.length
-       else descriptionMaxLength)
+      if (headerDescription.length > descriptionMaxLength) headerDescription.length
+      else descriptionMaxLength
     LineSizes(maxNameLength, maxValueLength, maxSetterLength, maxDocLength)
   }
 
@@ -128,7 +128,7 @@ object ConfigurationsTemplate {
       .append(repeat(sizes.valueLength - headerValue.length, " "))
       .append(" | ")
       .append(headerSetter)
-      .append(repeat(sizes.setterLength - headerSetter.length, " "))
+      .append(repeat(sizes.setterLength - headerSetter.length + 4, " "))
       .append(" | ")
       .append(headerDescription)
       .append(repeat(sizes.docLength - headerDescription.length, " "))
@@ -165,7 +165,9 @@ object ConfigurationsTemplate {
       .append(value)
       .append(repeat(sizes.valueLength - value.length, " "))
       .append(" | ")
+      .append("``")
       .append(setterLines.head)
+      .append("``")
       .append(repeat(sizes.setterLength - setterLines.head.length, " "))
       .append(" | ")
       .append(docLines.head)
@@ -174,7 +176,15 @@ object ConfigurationsTemplate {
 
     // Additional Rows
     (1 until maxBoxRows).foreach { rowNum =>
-      val nextSetterLine = if (rowNum >= setterLinesLen) "" else setterLines(rowNum)
+      val nextSetterLine =
+        if (rowNum >= setterLinesLen) ""
+        else {
+          if (setterLines(rowNum) == "") {
+            ""
+          } else {
+            s"``${setterLines(rowNum)}``"
+          }
+        }
       val nextDocLine = if (rowNum >= docLinesLen) "" else docLines(rowNum)
       builder
         .append("\n")
@@ -185,7 +195,7 @@ object ConfigurationsTemplate {
         .append(repeat(sizes.valueLength, " "))
         .append(" | ")
         .append(nextSetterLine)
-        .append(repeat(sizes.setterLength - nextSetterLine.length, " "))
+        .append(repeat(sizes.setterLength - nextSetterLine.length + 4, " "))
         .append(" | ")
         .append(nextDocLine)
         .append(repeat(sizes.docLength - nextDocLine.length, " "))
@@ -204,7 +214,7 @@ object ConfigurationsTemplate {
       .append("+")
       .append(repeat(sizes.valueLength + 2, ch))
       .append("+")
-      .append(repeat(sizes.setterLength + 2, ch))
+      .append(repeat(sizes.setterLength + 2 + 4, ch))
       .append("+")
       .append(repeat(sizes.docLength + 2, ch))
       .append("+")

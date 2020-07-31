@@ -267,69 +267,69 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_DRIVER_IF: OptionOption = (
     "spark.ext.h2o.external.driver.if",
     None,
-    "``setExternalH2ODriverIf(String)``",
+    "setExternalH2ODriverIf(String)",
     "Ip address or network of mapper->driver callback interface. Default value means automatic detection.")
 
   val PROP_EXTERNAL_DRIVER_PORT: OptionOption = (
     "spark.ext.h2o.external.driver.port",
     None,
-    "``setExternalH2ODriverPort(Integer)``",
+    "setExternalH2ODriverPort(Integer)",
     "Port of mapper->driver callback interface. Default value means automatic detection.")
 
   val PROP_EXTERNAL_DRIVER_PORT_RANGE: OptionOption = (
     "spark.ext.h2o.external.driver.port.range",
     None,
-    "``setExternalH2ODriverPortRange(String)``",
+    "setExternalH2ODriverPortRange(String)",
     "Range portX-portY of mapper->driver callback interface; eg: 50000-55000.")
 
   val PROP_EXTERNAL_EXTRA_MEMORY_PERCENT: IntOption = (
     "spark.ext.h2o.external.extra.memory.percent",
     10,
-    "``setExternalExtraMemoryPercent(Integer)``",
+    "setExternalExtraMemoryPercent(Integer)",
     """This option is a percentage of ``spark.ext.h2o.external.memory`` and specifies memory
      |for internal JVM use outside of Java heap.""".stripMargin)
 
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE: OptionOption = (
     "spark.ext.h2o.cloud.representative",
     None,
-    "``setH2OCluster(String)``",
+    "setH2OCluster(String)",
     "ip:port of a H2O cluster leader node to identify external H2O cluster.")
 
   val PROP_EXTERNAL_CLUSTER_SIZE: OptionOption = (
     "spark.ext.h2o.external.cluster.size",
     None,
-    "``setClusterSize(Integer)``",
+    "setClusterSize(Integer)",
     "Number of H2O nodes to start when ``auto`` mode of the external backend is set.")
 
   val PROP_EXTERNAL_CLUSTER_START_TIMEOUT: IntOption = (
     "spark.ext.h2o.cluster.start.timeout",
     120,
-    "``setClusterStartTimeout(Integer)``",
+    "setClusterStartTimeout(Integer)",
     "Timeout in seconds for starting H2O external cluster")
 
   val PROP_EXTERNAL_CLUSTER_INFO_FILE: OptionOption = (
     "spark.ext.h2o.cluster.info.name",
     None,
-    "``setClusterInfoFile(Integer)``",
+    "setClusterInfoFile(Integer)",
     "Full path to a file which is used as the notification file for the startup of external H2O cluster. ")
 
   val PROP_EXTERNAL_MEMORY: StringOption = (
     "spark.ext.h2o.external.memory",
     "6G",
-    "``setExternalMemory(String)``",
+    "setExternalMemory(String)",
     "Amount of memory assigned to each external H2O node")
 
   val PROP_EXTERNAL_CLUSTER_HDFS_DIR: OptionOption = (
     "spark.ext.h2o.external.hdfs.dir",
     None,
-    "``setHDFSOutputDir(String)``",
+    "setHDFSOutputDir(String)",
     "Path to the directory on HDFS used for storing temporary files.")
 
   val PROP_EXTERNAL_CLUSTER_START_MODE: StringOption = (
     "spark.ext.h2o.external.start.mode",
     EXTERNAL_BACKEND_MANUAL_MODE,
-    """``useAutoClusterStart()``
-      |``useManualClusterStart()``""".stripMargin,
+    """useAutoClusterStart()
+      |useManualClusterStart()""".stripMargin,
     """If this option is set to ``auto`` then H2O external cluster is automatically started using the
     |provided H2O driver JAR on YARN, otherwise it is expected that the cluster is started by the user
     |manually""".stripMargin)
@@ -337,110 +337,110 @@ object ExternalBackendConf {
   val PROP_EXTERNAL_CLUSTER_DRIVER_PATH: OptionOption = (
     "spark.ext.h2o.external.h2o.driver",
     None,
-    "``setH2ODriverPath(String)``",
+    "setH2ODriverPath(String)",
     " Path to H2O driver used during ``auto`` start mode.")
 
   val PROP_EXTERNAL_CLUSTER_YARN_QUEUE: OptionOption = (
     "spark.ext.h2o.external.yarn.queue",
     None,
-    "``setYARNQueue(String)``",
+    "setYARNQueue(String)",
     "Yarn queue on which external H2O cluster is started.")
 
   val PROP_EXTERNAL_CLUSTER_KILL_ON_UNHEALTHY: BooleanOption = (
     "spark.ext.h2o.external.kill.on.unhealthy",
     true,
-    """``setKillOnUnhealthyClusterEnabled()``
-      |``setKillOnUnhealthyClusterDisabled()``""".stripMargin,
+    """setKillOnUnhealthyClusterEnabled()
+      |setKillOnUnhealthyClusterDisabled()""".stripMargin,
     """If true, the client will try to kill the cluster and then itself in
       |case some nodes in the cluster report unhealthy status.""".stripMargin)
 
   val PROP_EXTERNAL_KERBEROS_PRINCIPAL: OptionOption =
-    ("spark.ext.h2o.external.kerberos.principal", None, "``setKerberosPrincipal(String)``", "Kerberos Principal")
+    ("spark.ext.h2o.external.kerberos.principal", None, "setKerberosPrincipal(String)", "Kerberos Principal")
 
   val PROP_EXTERNAL_KERBEROS_KEYTAB: OptionOption =
-    ("spark.ext.h2o.external.kerberos.keytab", None, "``setKerberosKeytab(String)``", "Kerberos Keytab")
+    ("spark.ext.h2o.external.kerberos.keytab", None, "setKerberosKeytab(String)", "Kerberos Keytab")
 
   val PROP_EXTERNAL_RUN_AS_USER: OptionOption =
-    ("spark.ext.h2o.external.run.as.user", None, "``setRunAsUser(String)``", "Impersonated Hadoop user")
+    ("spark.ext.h2o.external.run.as.user", None, "setRunAsUser(String)", "Impersonated Hadoop user")
 
   val PROP_EXTERNAL_BACKEND_STOP_TIMEOUT: IntOption = (
     "spark.ext.h2o.external.backend.stop.timeout",
     10000,
-    "``setExternalBackendStopTimeout(Integer)``",
+    "setExternalBackendStopTimeout(Integer)",
     """Timeout for confirmation from worker nodes when stopping the  external backend. It is also
      |possible to pass ``-1`` to ensure the indefinite timeout. The unit is milliseconds.""".stripMargin)
 
   val PROP_EXTERNAL_HADOOP_EXECUTABLE: StringOption = (
     "spark.ext.h2o.external.hadoop.executable",
     "hadoop",
-    "``setExternalHadoopExecutable(String)``",
+    "setExternalHadoopExecutable(String)",
     """Name or path to path to a hadoop  executable binary which is used
       |to start external H2O backend on YARN.""".stripMargin)
 
   val PROP_EXTERNAL_EXTRA_JARS: OptionOption = (
     "spark.ext.h2o.external.extra.jars",
     None,
-    """``setExternalExtraJars(String)``
-      |``setExternalExtraJars(String[])``""".stripMargin,
+    """setExternalExtraJars(String)
+      |setExternalExtraJars(String[])""".stripMargin,
     "Comma-separated paths to jars that will be placed onto classpath of each H2O node.")
 
   val PROP_EXTERNAL_COMMUNICATION_COMPRESSION: StringOption = (
     "spark.ext.h2o.external.communication.compression",
     Compression.defaultCompression,
-    "``setExternalCommunicationCompression(String)``",
+    "setExternalCommunicationCompression(String)",
     """The type of compression used for data transfer between Spark and H2O node.
     |Possible values are ``NONE``, ``DEFLATE``, ``GZIP``, ``SNAPPY``.""".stripMargin)
 
   val PROP_EXTERNAL_AUTO_START_BACKEND: StringOption = (
     "spark.ext.h2o.external.auto.start.backend",
     YARN_BACKEND,
-    "``setExternalAutoStartBackend(String)``",
+    "setExternalAutoStartBackend(String)",
     """The backend on which the external H2O backend will be started in auto start mode.
       |Possible values are ``YARN`` and ``KUBERNETES``.""".stripMargin)
 
   val PROP_EXTERNAL_K8S_H2O_SERVICE_NAME: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.service.name",
     "h2o-service",
-    "``setExternalK8sH2OServceName(String)``",
+    "setExternalK8sH2OServceName(String)",
     "Name of H2O service required to start H2O on K8s.")
 
   val PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.statefulset.name",
     "h2o-statefulset",
-    "``setExternalK8sH2OStatefulsetName(String)``",
+    "setExternalK8sH2OStatefulsetName(String)",
     "Name of H2O stateful set required to start H2O on K8s.")
 
   val PROP_EXTERNAL_K8S_H2O_LABEL: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.label",
     "app=h2o",
-    "``setExternalK8sH2OLabel(String)``",
+    "setExternalK8sH2OLabel(String)",
     "Label used to select node for H2O cluster formation.")
 
   val PROP_EXTERNAL_K8S_H2O_API_PORT: IntOption =
-    ("spark.ext.h2o.external.k8s.h2o.api.port", 8081, "``setExternalK8sH2OApiPort(String)``", "Kubernetes API port.")
+    ("spark.ext.h2o.external.k8s.h2o.api.port", 8081, "setExternalK8sH2OApiPort(String)", "Kubernetes API port.")
 
   val PROP_EXTERNAL_K8S_NAMESPACE: StringOption = (
     "spark.ext.h2o.external.k8s.namespace",
     "default",
-    "``setExternalK8sNamespace(String)``",
+    "setExternalK8sNamespace(String)",
     "Kubernetes namespace where external H2O is started.")
 
   val PROP_EXTERNAL_K8S_DOCKER_IMAGE: StringOption = (
     "spark.ext.h2o.external.k8s.docker.image",
     s"h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}",
-    "``setExternalK8sDockerImage(String)``",
+    "setExternalK8sDockerImage(String)",
     "Docker image containing Sparkling Water external H2O backend.")
 
   val PROP_EXTERNAL_K8S_DOMAIN: StringOption = (
     "spark.ext.h2o.external.k8s.domain",
     s"cluster.local",
-    "``setExternalK8sDomain(String)``",
+    "setExternalK8sDomain(String)",
     "Domain of the Kubernetes cluster.")
 
   val PROP_EXTERNAL_K8S_SERVICE_TIMEOUT: IntOption = (
     "spark.ext.h2o.external.k8s.svc.timeout",
     60 * 5,
-    "``setExternalK8sServiceTimeout(Int)``",
+    "setExternalK8sServiceTimeout(Int)",
     "Timeout in seconds used as a limit for K8s service creation.")
 
   private[sparkling] val PROP_EXTERNAL_DISABLE_VERSION_CHECK: (String, Boolean) =
