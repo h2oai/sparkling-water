@@ -20,6 +20,7 @@ package ai.h2o.sparkling.doc.generation
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.backend.external.ExternalBackendConf
 import ai.h2o.sparkling.backend.internal.InternalBackendConf
+import scala.reflect.runtime.universe._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,9 +32,9 @@ object ConfigurationsTemplate {
   private val headerDescription = "Description"
 
   def apply(): String = {
-    val sharedConfOptions = getOptions(classOf[SharedBackendConf])
-    val internalConfOptions = getOptions(classOf[InternalBackendConf])
-    val externalConfOptions = getOptions(classOf[ExternalBackendConf])
+    val sharedConfOptions = getOptions[SharedBackendConf.type](SharedBackendConf)
+    val internalConfOptions = getOptions[InternalBackendConf.type](InternalBackendConf)
+    val externalConfOptions = getOptions[ExternalBackendConf.type](ExternalBackendConf)
 
     s""".. _sw_config_properties:
        |
@@ -70,12 +71,20 @@ object ConfigurationsTemplate {
 
   case class Option(name: String, value: String, setters: String, doc: String)
 
-  private def getOptions(entity: Class[_]): Array[Option] = {
-    val methods = entity.getDeclaredMethods.filter(m => m.getReturnType == classOf[(_, _, _, _)])
-    methods.map { method =>
-      val optionTuple = method.invoke(null).asInstanceOf[(String, Any, String, String)]
-      Option(optionTuple._1, optionTuple._2.toString, optionTuple._3, optionTuple._4)
-    }.reverse
+  private def getOptions[T](t: Object)(implicit tag: TypeTag[T]): Array[Option] = {
+    val ru = scala.reflect.runtime.universe
+    val rm = ru.runtimeMirror(getClass.getClassLoader)
+    val instanceMirror = rm.reflect(t)
+    val typ = ru.typeOf[T]
+    val members = typ.members.filter(_.isPublic).filter(_.name.toString.startsWith("PROP_"))
+    val reflectedMembers = members.map(_.asTerm).map(instanceMirror.reflectField)
+    reflectedMembers
+      .map { member =>
+        val optionTuple = member.get.asInstanceOf[(String, Any, String, String)]
+        Option(optionTuple._1, optionTuple._2.toString, optionTuple._3, optionTuple._4)
+      }
+      .toArray
+      .reverse
   }
 
   case class LineSizes(nameLength: Int, valueLength: Int, setterLength: Int, docLength: Int)
