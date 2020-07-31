@@ -556,7 +556,7 @@ object SharedBackendConf {
       |configured only if H2O parameters do not have any corresponding parameters in Sparkling Water.""".stripMargin)
 
   val PROP_FLOW_DIR: OptionOption =
-    ("spark.ext.h2o.flow.dir", None, "``setFlowDir(String)``", "Directory where flows from H2O Flow are saved.")
+    ("spark.ext.h2o.flow.dir", None, "setFlowDir(String)", "Directory where flows from H2O Flow are saved.")
 
   val PROP_FLOW_EXTRA_HTTP_HEADERS: OptionOption = (
     "spark.ext.h2o.flow.extra.http.headers",
