@@ -50,7 +50,7 @@ class AppStatusListener(conf: SparkConf, store: ElementTrackingStore, live: Bool
   private class SparklingWaterInfo(
       h2oClusterInfo: H2OClusterInfo,
       h2oBuildInfo: H2OBuildInfo,
-      swProperties: Array[(String, String)])
+      swProperties: Array[(String, String, String)])
     extends LiveEntity {
     override protected def doUpdate(): Any = {
       new SparklingWaterStartedInfo(h2oClusterInfo, h2oBuildInfo, swProperties)

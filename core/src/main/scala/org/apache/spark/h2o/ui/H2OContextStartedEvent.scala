@@ -25,5 +25,5 @@ import org.apache.spark.scheduler.SparkListenerEvent
 case class H2OContextStartedEvent(
     h2oClusterInfo: H2OClusterInfo,
     h2oBuildInfo: H2OBuildInfo,
-    swProperties: Array[(String, String)])
+    swProperties: Array[(String, String, String)])
   extends SparkListenerEvent

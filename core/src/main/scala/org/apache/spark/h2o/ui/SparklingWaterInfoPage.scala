@@ -43,7 +43,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
 
   private def flowUrl(): String = s"http://${provider.localIpPort}"
 
-  private def swProperties(): Seq[(String, String)] = provider.sparklingWaterProperties
+  private def swProperties(): Seq[(String, String, String)] = provider.sparklingWaterProperties
 
   private def swInfo(): Seq[(String, String)] = {
     val cloudInfo = provider.H2OClusterInfo
@@ -59,7 +59,8 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     val content = if (provider.isSparklingWaterStarted) {
 
       val swInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, swInfo(), fixedWidth = true)
-      val swPropertiesTable = UIUtils.listingTable(propertyHeader, h2oRow, swProperties(), fixedWidth = true)
+      val swPropertiesTable =
+        UIUtils.listingTable(Seq("Name", "Value", "Documentation"), propertiesRow, swProperties(), fixedWidth = true)
       val h2oInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
       val memoryInfo = UIUtils.listingTable(propertyHeader, h2oRow, provider.memoryInfo.map {
         case (n, m) => (n, "Free: " + m)
@@ -108,6 +109,16 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
   }
 
   private def propertyHeader = Seq("Name", "Value")
+
+  private def propertiesRow(kv: (String, String, String)) = <tr>
+    <td>
+      {kv._1}
+    </td> <td>
+      {kv._2}
+    </td> <td>
+      {kv._3}
+    </td>
+  </tr>
 
   private def h2oRow(kv: (String, String)) = <tr>
     <td>
