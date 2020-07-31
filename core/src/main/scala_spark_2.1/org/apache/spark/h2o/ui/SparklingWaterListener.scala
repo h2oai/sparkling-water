@@ -39,7 +39,7 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
   var uiReady = false
   var h2oClusterInfo: Option[H2OClusterInfo] = None
   var h2oBuildInfo: Option[H2OBuildInfo] = None
-  var swProperties: Option[Array[(String, String)]] = None
+  var swProperties: Option[Array[(String, String, String)]] = None
   var cloudHealthy = true
   var lastTimeHeadFromH2O: Long = 0
   var memoryInfo = Array.empty[(String, String)]
@@ -63,7 +63,7 @@ class SparklingWaterListener(conf: SparkConf) extends SparkListener with Logging
 
   override def localIpPort: String = h2oClusterInfo.get.localClientIpPort
 
-  override def sparklingWaterProperties: Seq[(String, String)] = swProperties.get
+  override def sparklingWaterProperties: Seq[(String, String, String)] = swProperties.get
 
   override def H2OClusterInfo: H2OClusterInfo = h2oClusterInfo.get
 

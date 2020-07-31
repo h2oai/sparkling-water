@@ -21,7 +21,7 @@ trait SparklingWaterInfoProvider {
 
   def localIpPort: String
 
-  def sparklingWaterProperties: Seq[(String, String)]
+  def sparklingWaterProperties: Seq[(String, String, String)]
 
   def H2OClusterInfo: H2OClusterInfo
 

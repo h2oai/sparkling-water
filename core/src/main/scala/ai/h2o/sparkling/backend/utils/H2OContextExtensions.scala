@@ -23,12 +23,15 @@ import java.util.Date
 
 import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiCommunicationException, RestApiException}
 import ai.h2o.sparkling.backend.external.{ExternalBackendConf, K8sExternalBackendClient}
-import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc}
+import ai.h2o.sparkling.backend.internal.InternalBackendConf
+import ai.h2o.sparkling.backend.{BuildInfo, H2OJob, NodeDesc, SharedBackendConf}
 import ai.h2o.sparkling.extensions.rest.api.schema.{VerifyVersionV3, VerifyWebOpenV3}
 import ai.h2o.sparkling.{H2OConf, H2OContext, H2OFrame}
 import org.apache.spark.SparkContext
 import water.api.ImportHiveTableHandler.HiveTableImporter
 import water.api.schemas3.{CloudLockV3, JobV3}
+
+import scala.reflect.runtime.universe._
 
 trait H2OContextExtensions extends RestCommunication with RestApiUtils with ShellUtils with K8sExternalBackendClient {
   _: H2OContext =>
@@ -130,6 +133,26 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
              |H2OContext has not been created.""".stripMargin,
           cause)
     }
+  }
+
+  protected def collectPropertiesDoc(): Map[String, String] = {
+    val sharedConfOptions = collectPropertiesDoc[SharedBackendConf.type](SharedBackendConf)
+    val internalConfOptions = collectPropertiesDoc[InternalBackendConf.type](InternalBackendConf)
+    val externalConfOptions = collectPropertiesDoc[ExternalBackendConf.type](ExternalBackendConf)
+    sharedConfOptions ++ internalConfOptions ++ externalConfOptions
+  }
+
+  private def collectPropertiesDoc[T](t: Object)(implicit tag: TypeTag[T]): Map[String, String] = {
+    val ru = scala.reflect.runtime.universe
+    val rm = ru.runtimeMirror(getClass.getClassLoader)
+    val instanceMirror = rm.reflect(t)
+    val typ = ru.typeOf[T]
+    val members = typ.members.filter(_.isPublic).filter(_.name.toString.startsWith("PROP_"))
+    val reflectedMembers = members.map(_.asTerm).map(instanceMirror.reflectField)
+    reflectedMembers.map { member =>
+      val optionTuple = member.get.asInstanceOf[(String, Any, String, String)]
+      optionTuple._1 -> optionTuple._4
+    }.toMap
   }
 
   private def stopExternalH2OCluster(conf: H2OConf): Unit = {

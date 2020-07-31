@@ -141,7 +141,7 @@ object InternalBackendConf {
     """Either a string with the Path to a file with Hadoop HDFS configuration or the
       |org.apache.hadoop.conf.Configuration object. Useful for HDFS credentials
       |settings and other HDFS-related configurations. Default value None means
-      |use `sc.hadoopConfig``.""".stripMargin)
+      |use `sc.hadoopConfig`.""".stripMargin)
 
   val PROP_SPREADRDD_RETRIES_TIMEOUT: IntOption = (
     "spark.ext.h2o.spreadrdd.retries.timeout",
