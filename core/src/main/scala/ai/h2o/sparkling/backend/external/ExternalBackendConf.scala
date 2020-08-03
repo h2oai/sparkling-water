@@ -443,8 +443,13 @@ object ExternalBackendConf {
     "setExternalK8sServiceTimeout(Int)",
     "Timeout in seconds used as a limit for K8s service creation.")
 
-  private[sparkling] val PROP_EXTERNAL_DISABLE_VERSION_CHECK: (String, Boolean) =
-    ("spark.ext.h2o.external.disable.version.check", false)
+  val PROP_EXTERNAL_DISABLE_VERSION_CHECK: BooleanOption =
+    (
+      "spark.ext.h2o.external.disable.version.check",
+      false,
+      """setExternalVersionCheckEnabled()
+        |setExternalVersionCheckDisabled()""".stripMargin,
+      "Whether we check the version of the external H2O backend or not.")
 
   private[sparkling] val PROP_EXTERNAL_CLUSTER_YARN_APP_ID: (String, None.type) =
     ("spark.ext.h2o.external.yarn.app.id", None)
