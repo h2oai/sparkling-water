@@ -86,6 +86,8 @@ def testPlugValuesAffectResult(spark, carsDatasetPath):
         "economy": 1.1,
         "displacement": 2.2,
         "power": 3.3,
+        "weight": 4.4,
+        "acceleration": 5.5,
         "year": 2000,
         "economy_20mpg": "0"}
     gam = createInitialGamDefinition()
@@ -98,11 +100,11 @@ def testPlugValuesAffectResult(spark, carsDatasetPath):
 
 
 def testInteractionColumnNamesArePassedWithoutException(spark):
-    data = [(0.0, "a", 2.0),
-            (float("nan"), "b", 8.0),
-            (0.0, "a", 4.0),
-            (1.0, "b", 1.0)]
-    df = spark.createDataFrame(data, ["x", "y", "z"])
+    data = [(0.0, "a", 2.0, 5),
+            (float("nan"), "b", 8.0 , 4),
+            (0.0, "a", 4.0, 3),
+            (1.0, "b", 1.0, 2)]
+    df = spark.createDataFrame(data, ["x", "y", "z", "g"])
 
     plugValues = {"x": 0, "x_y.a": 1, "x_y.b": 2, "y": "b"}
     gam = H2OGAM(
@@ -112,6 +114,7 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
         standardize=False,
         family="gaussian",
         missingValuesHandling="PlugValues",
+        gamCols=["g"],
         plugValues=plugValues)
 
     gam.fit(df)
