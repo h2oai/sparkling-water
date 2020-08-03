@@ -27,9 +27,10 @@ object ConfigurationTemplate {
       .filter(m => Modifier.isPublic(m.getModifiers))
       .filter(m => !Modifier.isStatic(m.getModifiers))
 
-    val getters = baseMethods.filter(!_.getName.startsWith("set"))
+    val getters = baseMethods.filter(m => !m.getName.startsWith("set") && !m.getName.startsWith("use"))
 
-    val setters = baseMethods.filter(_.getName.startsWith("set"))
+    val setters = baseMethods.filter(m => m.getName.startsWith("set") || m.getName.startsWith("use"))
+      .filterNot(m => m.getParameterCount != 1)
 
     s"""#
        |# Licensed to the Apache Software Foundation (ASF) under one or more
@@ -82,10 +83,17 @@ object ConfigurationTemplate {
   }
 
   private def generateSetter(m: Method): String = {
-    s"""    def ${m.getName}(self, value):
-       |        self._jconf.${m.getName}(value)
-       |        return self
-       |""".stripMargin
+    if (m.getParameterCount == 0) {
+      s"""    def ${m.getName}(self):
+         |        self._jconf.${m.getName}()
+         |        return self
+         |""".stripMargin
+    } else {
+      s"""    def ${m.getName}(self, value):
+         |        self._jconf.${m.getName}(value)
+         |        return self
+         |""".stripMargin
+    }
   }
 
   private def getReturnLine(m: Method): String = {

@@ -29,4 +29,11 @@ trait SharedBackendConfExtensions {
 
   private[backend] def getFileProperties: Seq[(String, _, _, _)] =
     Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
+
+  protected def setBackendClusterMode(backendClusterMode: String) = {
+    set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
+  }
+
+  private[sparkling] def getClientLanguage: String = sparkConf.get(PROP_CLIENT_LANGUAGE._1, PROP_CLIENT_LANGUAGE._2)
+
 }

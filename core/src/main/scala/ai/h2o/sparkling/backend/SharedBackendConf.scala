@@ -174,8 +174,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
 
-  private[sparkling] def getClientLanguage: String = sparkConf.get(PROP_CLIENT_LANGUAGE._1, PROP_CLIENT_LANGUAGE._2)
-
   /** Setters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
@@ -331,10 +329,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setClientNetworkMask(mask: String): H2OConf = set(PROP_CLIENT_NETWORK_MASK._1, mask)
 
   def setClientFlowBaseurlOverride(baseUrl: String): H2OConf = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
-
-  private[this] def setBackendClusterMode(backendClusterMode: String) = {
-    set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
-  }
 
   def setClientCheckRetryTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 

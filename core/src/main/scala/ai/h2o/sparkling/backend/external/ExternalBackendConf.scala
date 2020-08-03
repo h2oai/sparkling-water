@@ -119,9 +119,6 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
 
-  private[backend] def isBackendVersionCheckDisabled =
-    sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
-
   /** Setters */
   /**
     * Sets node and port representing H2O Cluster to which should H2O connect when started in external mode.
