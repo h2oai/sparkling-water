@@ -2,7 +2,7 @@ Train GAM Model in Sparkling Water
 ----------------------------------
 
 Sparkling Water provides API for H2O GAM in Scala and Python.
-The following sections describe how to train GAM model in Sparkling Water in both languages.
+The following sections describe how to train the GAM model in Sparkling Water in both languages.
 
 .. content-tabs::
 
@@ -41,9 +41,9 @@ The following sections describe how to train GAM model in Sparkling Water in bot
             val estimator = new H2OGAM().setLabelCol("CAPSULE")
             val model = estimator.fit(trainingDF)
 
-        By default, ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OGAMClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2OGAMRegressor`` instead.
 
@@ -94,9 +94,9 @@ The following sections describe how to train GAM model in Sparkling Water in bot
             estimator = H2OGAM(labelCol = "CAPSULE")
             model = estimator.fit(trainingDF)
 
-        By default, ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
+        If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
         column data types, you can explicitly identify the problem by using ``H2OGAMClassifier`` or ``H2OGAMRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
