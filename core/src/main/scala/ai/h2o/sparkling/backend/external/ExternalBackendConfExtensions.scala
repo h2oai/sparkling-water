@@ -15,18 +15,25 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.backend
+package ai.h2o.sparkling.backend.external
 
 import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.backend.SharedBackendConf
+import org.apache.spark.expose.Logging
 
 /**
-  * Shared configuration independent on used backend
+  * External backend configuration
   */
-trait SharedBackendConfUtils {
+trait ExternalBackendConfExtensions extends SharedBackendConf with Logging {
   self: H2OConf =>
 
-  import SharedBackendConf._
-
-  private[backend] def getFileProperties: Seq[(String, _, _, _)] =
-    Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
+  def externalConfString: String =
+    s"""Sparkling Water configuration:
+       |  backend cluster mode : $backendClusterMode
+       |  cluster start mode   : $clusterStartMode
+       |  cloudName            : ${cloudName.getOrElse("Not set yet")}
+       |  cloud representative : ${h2oCluster.getOrElse("Not set, using cloud name only")}
+       |  base port            : $basePort
+       |  log level            : $logLevel
+       |  nthreads             : $nthreads""".stripMargin
 }

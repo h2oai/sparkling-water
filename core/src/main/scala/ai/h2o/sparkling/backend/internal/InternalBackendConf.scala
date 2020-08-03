@@ -31,7 +31,7 @@ import org.apache.spark.expose.Utils
 /**
   * Internal backend configuration
   */
-trait InternalBackendConf extends SharedBackendConf with InternalBackendConfUtils {
+trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExtensions {
   self: H2OConf =>
 
   import InternalBackendConf._

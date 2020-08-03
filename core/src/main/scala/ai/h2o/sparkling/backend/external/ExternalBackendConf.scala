@@ -29,7 +29,7 @@ import scala.collection.JavaConverters._
 /**
   * External backend configuration
   */
-trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBackendConfUtils {
+trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBackendConfExtensions {
   self: H2OConf =>
 
   import ExternalBackendConf._

@@ -21,9 +21,9 @@ import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 
 /**
- * Internal backend configuration
- */
-trait InternalBackendConfUtils extends SharedBackendConf {
+  * Internal backend configuration
+  */
+trait InternalBackendConfExtensions extends SharedBackendConf {
   self: H2OConf =>
 
   import InternalBackendConf._
@@ -33,7 +33,7 @@ trait InternalBackendConfUtils extends SharedBackendConf {
        |  backend cluster mode : $backendClusterMode
        |  workers              : $numH2OWorkers
        |  cloudName            : ${cloudName.getOrElse(
-      "Not set yet, it will be set automatically before starting H2OContext.")}
+         "Not set yet, it will be set automatically before starting H2OContext.")}
        |  base port            : $basePort
        |  cloudTimeout         : $cloudTimeout
        |  log level            : $logLevel

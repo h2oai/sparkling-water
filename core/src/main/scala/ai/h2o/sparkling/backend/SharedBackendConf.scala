@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 /**
   * Shared configuration independent on used backend
   */
-trait SharedBackendConf extends SharedBackendConfUtils {
+trait SharedBackendConf extends SharedBackendConfExtensions {
   self: H2OConf =>
 
   import SharedBackendConf._
