@@ -134,7 +134,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
       cloudV3.cloud_uptime_millis)
     val propertiesDoc = collectPropertiesDoc()
     val swPropertiesInfo =
-      conf.getAll.filter(_._1.startsWith("spark.ext.h2o")).map(p => (p._1, p._2, propertiesDoc(p._1)))
+      conf.getAll.filter(_._1.startsWith("spark.ext.h2o")).map(p => (p._1, p._2, propertiesDoc.getOrElse(p._1, "")))
 
     val swHeartBeatEvent = getSparklingWaterHeartbeatEvent()
     Utils.postToListenerBus(swHeartBeatEvent)
