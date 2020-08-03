@@ -70,9 +70,11 @@ object Runner {
     val userX = ExplicitField("user_x", "HasUserX", null)
     val userY = ExplicitField("user_y", "HasUserY", null)
     val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
+    val gamCols = ExplicitField("gam_columns", "HasGamCols", null)
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
+    val gamFields = Seq(ignoredCols, plugValues, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)
@@ -94,7 +96,7 @@ object Runner {
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(calibrationDataFrame, ignoredCols)),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
-      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], Seq(ignoredCols, plugValues)),
+      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields),
       ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], Seq(userX, userY, lossByColNames)),
@@ -128,6 +130,7 @@ object Runner {
       ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
       ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
       ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
       ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty),

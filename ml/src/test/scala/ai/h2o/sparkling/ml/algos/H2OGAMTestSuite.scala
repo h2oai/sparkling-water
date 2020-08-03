@@ -40,7 +40,8 @@ class H2OGAMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val algo = new H2OGAM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setFeaturesCols("CAPSULE", "RACE",  "VOL", "GLEASON")
+      .setGamCols(Array("DPROS", "DCAPS", "PSA"))
       .setLabelCol("AGE")
 
     val pipeline = new Pipeline().setStages(Array(algo))
