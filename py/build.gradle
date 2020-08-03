@@ -54,6 +54,8 @@ dependencies {
   sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
   apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
   apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
+  apiGeneration project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  apiGeneration "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
 
 //
@@ -366,6 +368,15 @@ task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wate
   errorOutput = System.err
 }
 
+task generateConf(type: JavaExec, dependsOn: generateApi) {
+  group = "Execution"
+  classpath = files(* (configurations.apiGeneration.files as List))
+  main = "ai.h2o.sparkling.api.generation.python.ConfigurationRunner"
+  args = ["$projectDir/src-gen/ai/h2o/sparkling"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
 //
 // Setup execution graph
 //
@@ -373,7 +384,7 @@ clean.dependsOn cleanPython
 clean.dependsOn cleanGeneratedApi
 createVersionFile.dependsOn clean
 distPython.dependsOn createVersionFile
-distPython.dependsOn generateApi
+distPython.dependsOn generateConf
 
 build.dependsOn distPython
 test.dependsOn testPython

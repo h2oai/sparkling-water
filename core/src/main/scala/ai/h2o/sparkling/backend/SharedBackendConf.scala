@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 /**
   * Shared configuration independent on used backend
   */
-trait SharedBackendConf {
+trait SharedBackendConf extends SharedBackendConfUtils {
   self: H2OConf =>
 
   import SharedBackendConf._
@@ -358,9 +358,6 @@ trait SharedBackendConf {
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
   def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
-
-  private[backend] def getFileProperties: Seq[(String, _, _, _)] =
-    Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
 
 object SharedBackendConf {

@@ -15,24 +15,27 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.doc.generation
+package ai.h2o.sparkling.backend.external
 
-import java.io.{File, PrintWriter}
+import ai.h2o.sparkling.H2OConf
+import ai.h2o.sparkling.backend.SharedBackendConf
+import org.apache.spark.expose.Logging
 
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
+/**
+  * External backend configuration
+  */
+trait ExternalBackendConfUtils extends SharedBackendConf with Logging {
+  self: H2OConf =>
 
-object ConfigurationRunner {
-  private def writeResultToFile(content: String, fileName: String, destinationDir: String) = {
-    val destinationDirFile = new File(destinationDir)
-    destinationDirFile.mkdirs()
-    val destinationFile = new File(destinationDirFile, s"$fileName.rst")
-    withResource(new PrintWriter(destinationFile)) { outputStream =>
-      outputStream.print(content)
-    }
-  }
-
-  def main(args: Array[String]): Unit = {
-    val destinationDir = args(0)
-    writeResultToFile(ConfigurationsTemplate(), s"configuration_properties", destinationDir)
-  }
+  def externalConfString: String =
+    s"""Sparkling Water configuration:
+       |  backend cluster mode : $backendClusterMode
+       |  cluster start mode   : $clusterStartMode
+       |  cloudName            : ${cloudName.getOrElse("Not set yet")}
+       |  cloud representative : ${h2oCluster.getOrElse("Not set, using cloud name only")}
+       |  base port            : $basePort
+       |  log level            : $logLevel
+       |  nthreads             : $nthreads""".stripMargin
 }
+
+

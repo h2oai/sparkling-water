@@ -31,7 +31,7 @@ import org.apache.spark.expose.Utils
 /**
   * Internal backend configuration
   */
-trait InternalBackendConf extends SharedBackendConf {
+trait InternalBackendConf extends SharedBackendConf with InternalBackendConfUtils {
   self: H2OConf =>
 
   import InternalBackendConf._
@@ -83,20 +83,6 @@ trait InternalBackendConf extends SharedBackendConf {
   }
 
   def setSpreadRddRetriesTimeout(timeout: Int): H2OConf = set(PROP_SPREADRDD_RETRIES_TIMEOUT._1, timeout.toString)
-
-  def internalConfString: String =
-    s"""Sparkling Water configuration:
-       |  backend cluster mode : $backendClusterMode
-       |  workers              : $numH2OWorkers
-       |  cloudName            : ${cloudName.getOrElse(
-         "Not set yet, it will be set automatically before starting H2OContext.")}
-       |  base port            : $basePort
-       |  cloudTimeout         : $cloudTimeout
-       |  log level            : $logLevel
-       |  nthreads             : $nthreads
-       |  drddMulFactor        : $drddMulFactor""".stripMargin
-
-  private[backend] override def getFileProperties: Seq[(String, _, _, _)] = super.getFileProperties :+ PROP_HDFS_CONF
 }
 
 object InternalBackendConf {

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.doc.generation
+package ai.h2o.sparkling.api.generation.python
 
 import java.io.{File, PrintWriter}
 
@@ -25,7 +25,7 @@ object ConfigurationRunner {
   private def writeResultToFile(content: String, fileName: String, destinationDir: String) = {
     val destinationDirFile = new File(destinationDir)
     destinationDirFile.mkdirs()
-    val destinationFile = new File(destinationDirFile, s"$fileName.rst")
+    val destinationFile = new File(destinationDirFile, s"$fileName.py")
     withResource(new PrintWriter(destinationFile)) { outputStream =>
       outputStream.print(content)
     }
@@ -33,6 +33,12 @@ object ConfigurationRunner {
 
   def main(args: Array[String]): Unit = {
     val destinationDir = args(0)
-    writeResultToFile(ConfigurationsTemplate(), s"configuration_properties", destinationDir)
+    val classes = Array(
+      "ai.h2o.sparkling.backend.SharedBackendConf",
+      "ai.h2o.sparkling.backend.external.ExternalBackendConf",
+      "ai.h2o.sparkling.backend.internal.InternalBackendConf")
+    classes.foreach { clazz =>
+      writeResultToFile(ConfigurationTemplate(Class.forName(clazz)), clazz.split("\\.").last, destinationDir)
+    }
   }
 }
