@@ -40,6 +40,11 @@ trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
   }
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ getGamCols()
+    val gamCols = getGamCols()
+    if (gamCols != null) {
+      super.getExcludedCols() ++ gamCols
+    } else {
+      super.getExcludedCols()
+    }
   }
 }

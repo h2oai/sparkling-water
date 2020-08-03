@@ -37,8 +37,9 @@ def testParamsPassedBySetters():
 
 
 def testPipelineSerialization(prostateDataset):
-    algo = H2OGAM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
-                  labelCol="AGE",
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  gamCols=["PSA", "AGE"],
+                  labelCol="CAPSULE",
                   seed=1,
                   splitRatio=0.8)
 
@@ -55,8 +56,9 @@ def testPipelineSerialization(prostateDataset):
 
 def testPropagationOfPredictionCol(prostateDataset):
     predictionCol = "my_prediction_col_name"
-    algo = H2OGAM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
-                  labelCol="AGE",
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  gamCols=["PSA", "AGE"],
+                  labelCol="CAPSULE",
                   seed=1,
                   splitRatio=0.8,
                   predictionCol=predictionCol)
@@ -71,23 +73,22 @@ def testPlugValuesAffectResult(spark, carsDatasetPath):
     carsDataset=carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
     [traningDataset, testingDataset] = carsDataset.randomSplit([0.9, 0.1], 1)
 
-    def createInitialGlmDefinition():
-        featuresCols=["economy","displacement", "power", "weight", "acceleration", "year", "economy_20mpg"]
-        return H2OGAM(featuresCols=featuresCols, labelCol="cylinders", seed=1,splitRatio=0.8)
+    def createInitialGamDefinition():
+        gamCols=["weight", "acceleration"]
+        featuresCols=["economy","displacement", "power", "year", "economy_20mpg"]
+        return H2OGAM(featuresCols=featuresCols, gamCols=gamCols, labelCol="cylinders", seed=1,splitRatio=0.8)
 
-    referenceGlm = createInitialGlmDefinition()
-    referenceModel = referenceGlm.fit(traningDataset)
+    referenceGam = createInitialGamDefinition()
+    referenceModel = referenceGam.fit(traningDataset)
     referenceResult = referenceModel.transform(testingDataset)
 
     plugValues = {
         "economy": 1.1,
         "displacement": 2.2,
         "power": 3.3,
-        "weight": 4.4,
-        "acceleration": 5.5,
         "year": 2000,
         "economy_20mpg": "0"}
-    gam = createInitialGlmDefinition()
+    gam = createInitialGamDefinition()
     gam.setMissingValuesHandling("PlugValues")
     gam.setPlugValues(plugValues)
     model = gam.fit(traningDataset)
@@ -117,12 +118,12 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
 
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
-    featuresCols=["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
+    featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"]
 
-    def createInitialGlmDefinition():
-        return H2OGAM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8)
+    def createInitialGamDefinition():
+        return H2OGAM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8, gamCols=["PSA", "AGE"])
 
-    referenceGlm = createInitialGlmDefinition()
+    referenceGlm = createInitialGamDefinition()
     referenceModel = referenceGlm.fit(traningDataset)
     referenceResult = referenceModel.transform(testingDataset)
 
@@ -131,7 +132,7 @@ def testBetaConstraintsAffectResult(spark, prostateDataset):
         betaConstraints,
         ['names', 'lower_bounds', 'upper_bounds', 'beta_given', 'rho'])
 
-    gam = createInitialGlmDefinition()
+    gam = createInitialGamDefinition()
     gam.setBetaConstraints(betaConstraintsFrame)
     model = gam.fit(traningDataset)
     result = model.transform(testingDataset)

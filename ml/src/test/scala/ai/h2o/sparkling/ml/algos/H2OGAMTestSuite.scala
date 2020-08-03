@@ -36,20 +36,15 @@ class H2OGAMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-    .withColumn("AGE", 'AGE.cast("string"))
 
   test("Test H2OGAM Pipeline") {
 
     val algo = new H2OGAM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setFeaturesCols("CAPSULE", "RACE",  "VOL", "GLEASON")
-      .setGamCols(Array("DPROS", "DCAPS", "PSA"))
-      .setNumKnots(Array(5, 6, 7))
-      .setScale(Array(1.0, 1.0, 1.0))
-      .setStandardize(true)
-      .setFamily("binomial")
-      .setLabelCol("AGE")
+      .setFeaturesCols("DPROS", "DCAPS", "RACE", "GLEASON")
+      .setGamCols(Array("PSA", "AGE"))
+      .setLabelCol("CAPSULE")
 
     val pipeline = new Pipeline().setStages(Array(algo))
     pipeline.write.overwrite().save("ml/build/gam_pipeline")
