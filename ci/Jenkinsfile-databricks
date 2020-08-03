@@ -129,7 +129,7 @@ def test(workspaceDir, clusterId, language) {
               "notebook_task": {
                 "notebook_path": "${workspaceDir}/test.${extension}"
               },
-              "timeout_seconds": 300
+              "timeout_seconds": 600
             }
             '
         """, returnStdout: true).trim()
