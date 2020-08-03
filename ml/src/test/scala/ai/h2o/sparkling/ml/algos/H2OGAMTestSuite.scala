@@ -30,10 +30,13 @@ class H2OGAMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
+  import spark.implicits._
+
   private lazy val dataset = spark.read
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+    .withColumn("AGE", 'AGE.cast("string"))
 
   test("Test H2OGAM Pipeline") {
 
@@ -42,6 +45,10 @@ class H2OGAMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setSeed(1)
       .setFeaturesCols("CAPSULE", "RACE",  "VOL", "GLEASON")
       .setGamCols(Array("DPROS", "DCAPS", "PSA"))
+      .setNumKnots(Array(5, 6, 7))
+      .setScale(Array(1.0, 1.0, 1.0))
+      .setStandardize(true)
+      .setFamily("binomial")
       .setLabelCol("AGE")
 
     val pipeline = new Pipeline().setStages(Array(algo))
