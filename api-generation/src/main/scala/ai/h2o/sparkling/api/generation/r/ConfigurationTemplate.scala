@@ -43,7 +43,7 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
        |
        |if (!exists("ConfUtils.getOption", mode = "function")) source(file.path("R", "ConfUtils.R"))
        |
-       |#' @export ExternalBackendConf
+       |#' @export ${entity.getSimpleName}
        |${entity.getSimpleName} <- setRefClass("${entity.getSimpleName}", methods = list(
        |
        |    #
