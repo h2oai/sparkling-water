@@ -86,7 +86,7 @@ def testPlugValuesAffectResult(spark, carsDatasetPath):
         "economy": 1.1,
         "displacement": 2.2,
         "power": 3.3,
-        "weight": 4.4,
+        "weight_0_0": 4.4,
         "acceleration": 5.5,
         "year": 2000,
         "economy_20mpg": "0"}
@@ -106,7 +106,7 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
             (1.0, "b", 1.0, 2)]
     df = spark.createDataFrame(data, ["x", "y", "z", "g"])
 
-    plugValues = {"x": 0, "x_y.a": 1, "x_y.b": 2, "y": "b"}
+    plugValues = {"x": 0, "x_y.a": 1, "x_y.b": 2, "y": "b", "g_0_0": 2}
     gam = H2OGAM(
         labelCol="z",
         seed=42,
@@ -126,8 +126,8 @@ def testBetaConstraintsAffectResult(spark, prostateDataset):
     def createInitialGamDefinition():
         return H2OGAM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8, gamCols=["PSA", "AGE"])
 
-    referenceGlm = createInitialGamDefinition()
-    referenceModel = referenceGlm.fit(traningDataset)
+    referenceGam = createInitialGamDefinition()
+    referenceModel = referenceGam.fit(traningDataset)
     referenceResult = referenceModel.transform(testingDataset)
 
     betaConstraints = map(lambda feature: (feature, -1000, 1000, 1, 0.2), featuresCols)
@@ -145,7 +145,9 @@ def testBetaConstraintsAffectResult(spark, prostateDataset):
 
 def setParamtersForProblemSpecificTests(gam):
     gam.setLabelCol("CAPSULE")
-    gam.setSeed(1),
+    gam.setSeed(1)
+    gam.setFeaturesCols(["DPROS", "DCAPS", "RACE", "GLEASON"])
+    gam.setGamCols(["PSA", "AGE"])
     gam.setSplitRatio(0.8)
     return gam
 
