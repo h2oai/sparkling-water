@@ -19,7 +19,7 @@ from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.sql.functions import col
-from pysparkling.ml.algos import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2ODRF, H2OKMeans
+from pysparkling.ml.algos import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2OGAM, H2ODRF, H2OKMeans
 from pysparkling.ml.algos.classification import H2ODRFClassifier
 from pysparkling.ml.algos.regression import H2ODRFRegressor
 
@@ -58,6 +58,10 @@ def testPipelineSerializationGBM(prostateDataset):
 
 def testPipelineSerializationGLM(prostateDataset):
     gridSearchTester(H2OGLM().setLabelCol("AGE"), prostateDataset)
+
+
+def testPipelineSerializationGAM(prostateDataset):
+    gridSearchTester(H2OGAM().setLabelCol("AGE").setGamCols(["PSA"]), prostateDataset)
 
 
 def testPipelineSerializationDeepLearning(prostateDataset):

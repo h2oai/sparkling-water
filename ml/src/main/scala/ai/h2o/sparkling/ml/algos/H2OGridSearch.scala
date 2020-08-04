@@ -308,7 +308,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
+    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -330,6 +330,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
       val algoValue = getEnumValue(algo).get
       algoValue match {
         case H2OGBM => "gbm"
+        case H2OGAM => "gam"
         case H2OGLM => "glm"
         case H2ODeepLearning => "deeplearning"
         case H2OXGBoost => "xgboost"
