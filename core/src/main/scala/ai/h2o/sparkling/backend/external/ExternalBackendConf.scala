@@ -29,7 +29,7 @@ import scala.collection.JavaConverters._
 /**
   * External backend configuration
   */
-trait ExternalBackendConf extends SharedBackendConf with Logging {
+trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBackendConfExtensions {
   self: H2OConf =>
 
   import ExternalBackendConf._
@@ -118,9 +118,6 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
 
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
-
-  private[backend] def isBackendVersionCheckDisabled =
-    sparkConf.getBoolean(PROP_EXTERNAL_DISABLE_VERSION_CHECK._1, PROP_EXTERNAL_DISABLE_VERSION_CHECK._2)
 
   /** Setters */
   /**
@@ -244,16 +241,6 @@ trait ExternalBackendConf extends SharedBackendConf with Logging {
   def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
   }
-
-  def externalConfString: String =
-    s"""Sparkling Water configuration:
-       |  backend cluster mode : $backendClusterMode
-       |  cluster start mode   : $clusterStartMode
-       |  cloudName            : ${cloudName.getOrElse("Not set yet")}
-       |  cloud representative : ${h2oCluster.getOrElse("Not set, using cloud name only")}
-       |  base port            : $basePort
-       |  log level            : $logLevel
-       |  nthreads             : $nthreads""".stripMargin
 }
 
 object ExternalBackendConf {

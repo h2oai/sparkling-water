@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 /**
   * Shared configuration independent on used backend
   */
-trait SharedBackendConf {
+trait SharedBackendConf extends SharedBackendConfExtensions {
   self: H2OConf =>
 
   import SharedBackendConf._
@@ -173,8 +173,6 @@ trait SharedBackendConf {
   def icedDir: Option[String] = sparkConf.getOption(PROP_ICED_DIR._1)
 
   def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
-
-  private[sparkling] def getClientLanguage: String = sparkConf.get(PROP_CLIENT_LANGUAGE._1, PROP_CLIENT_LANGUAGE._2)
 
   /** Setters */
   def setInternalClusterMode(): H2OConf = {
@@ -332,10 +330,6 @@ trait SharedBackendConf {
 
   def setClientFlowBaseurlOverride(baseUrl: String): H2OConf = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
 
-  private[this] def setBackendClusterMode(backendClusterMode: String) = {
-    set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
-  }
-
   def setClientCheckRetryTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 
   @DeprecatedMethod("setExtraProperties", "3.34")
@@ -358,9 +352,6 @@ trait SharedBackendConf {
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
   def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
-
-  private[backend] def getFileProperties: Seq[(String, _, _, _)] =
-    Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
 }
 
 object SharedBackendConf {

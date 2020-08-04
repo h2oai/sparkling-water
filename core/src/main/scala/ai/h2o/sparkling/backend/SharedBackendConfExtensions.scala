@@ -15,24 +15,25 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.doc.generation
+package ai.h2o.sparkling.backend
 
-import java.io.{File, PrintWriter}
+import ai.h2o.sparkling.H2OConf
 
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
+/**
+  * Shared configuration independent on used backend
+  */
+trait SharedBackendConfExtensions {
+  self: H2OConf =>
 
-object ConfigurationRunner {
-  private def writeResultToFile(content: String, fileName: String, destinationDir: String) = {
-    val destinationDirFile = new File(destinationDir)
-    destinationDirFile.mkdirs()
-    val destinationFile = new File(destinationDirFile, s"$fileName.rst")
-    withResource(new PrintWriter(destinationFile)) { outputStream =>
-      outputStream.print(content)
-    }
+  import SharedBackendConf._
+
+  private[backend] def getFileProperties: Seq[(String, _, _, _)] =
+    Seq(PROP_JKS, PROP_LOGIN_CONF, PROP_SSL_CONF)
+
+  protected def setBackendClusterMode(backendClusterMode: String) = {
+    set(PROP_BACKEND_CLUSTER_MODE._1, backendClusterMode)
   }
 
-  def main(args: Array[String]): Unit = {
-    val destinationDir = args(0)
-    writeResultToFile(ConfigurationsTemplate(), s"configuration_properties", destinationDir)
-  }
+  private[sparkling] def getClientLanguage: String = sparkConf.get(PROP_CLIENT_LANGUAGE._1, PROP_CLIENT_LANGUAGE._2)
+
 }
