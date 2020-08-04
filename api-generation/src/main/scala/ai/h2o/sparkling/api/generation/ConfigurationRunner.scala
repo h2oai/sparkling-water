@@ -6,7 +6,7 @@ import ai.h2o.sparkling.utils.ScalaUtils.withResource
 
 object ConfigurationRunner {
 
-  val templatesByLanguage = Map("py" -> python.ConfigurationTemplate)
+  val templatesByLanguage = Map("py" -> python.ConfigurationTemplate, "R" -> r.ConfigurationTemplate)
   def main(args: Array[String]): Unit = {
     val destinationDir = args(0)
     val language = args(1)
