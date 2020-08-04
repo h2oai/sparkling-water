@@ -371,8 +371,8 @@ task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-wate
 task generateConf(type: JavaExec, dependsOn: generateApi) {
   group = "Execution"
   classpath = files(* (configurations.apiGeneration.files as List))
-  main = "ai.h2o.sparkling.api.generation.python.ConfigurationRunner"
-  args = ["$projectDir/src-gen/ai/h2o/sparkling"]
+  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
+  args = ["$projectDir/src-gen/ai/h2o/sparkling", "py"]
   standardOutput = System.out
   errorOutput = System.err
 }

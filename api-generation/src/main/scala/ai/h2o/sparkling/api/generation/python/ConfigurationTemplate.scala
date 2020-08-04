@@ -17,32 +17,12 @@
 
 package ai.h2o.sparkling.api.generation.python
 
-import java.lang.reflect.{Method, Modifier}
-
-import scala.collection.mutable.ArrayBuffer
+import java.lang.reflect.Method
 
 object ConfigurationTemplate {
 
-  private val specialSetters = ArrayBuffer("useAutoClusterStart", "useManualClusterStart")
-  def apply(entity: Class[_]): String = {
-    val baseMethods = entity
-      .getDeclaredMethods()
-      .filter(m => Modifier.isPublic(m.getModifiers))
-      .filter(m => !Modifier.isStatic(m.getModifiers))
+  def apply(getters: Array[Method], setters: Array[Method], entity: Class[_]): String = {
 
-    val getters = baseMethods.filter(m => !m.getName.startsWith("set") && !specialSetters.contains(m.getName))
-
-    val setters = baseMethods
-      .filter(m => m.getName.startsWith("set") || specialSetters.contains(m.getName))
-      .foldLeft(ArrayBuffer[Method]()) {
-        case (acc, method) =>
-          if (!acc.exists(_.getName == method.getName)) {
-            acc += method
-          } else {
-            acc
-          }
-      }
-      .toArray
     s"""#
        |# Licensed to the Apache Software Foundation (ASF) under one or more
        |# contributor license agreements.  See the NOTICE file distributed with
@@ -113,5 +93,4 @@ object ConfigurationTemplate {
       case _ => s"return self._jconf.${m.getName}()"
     }
   }
-
 }
