@@ -86,7 +86,7 @@ private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numR
 
 private[backend] object Writer {
 
-  type SparkJob = (TaskContext, Iterator[Row]) => (Int, Long)
+  type SparkJob[T] = (TaskContext, Iterator[Row]) => T
   type UploadPlan = Map[Int, NodeDesc]
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
@@ -94,14 +94,60 @@ private[backend] object Writer {
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
 
+    val currentLocationsJob: SparkJob[(Int, String)] = getPartitionLocations(nonEmptyPartitions)
+    val currentLocations = SparkSessionUtils.active.sparkContext.runJob(rdd, currentLocationsJob, nonEmptyPartitions)
+
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
-    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
+    val operation: SparkJob[(Int, Long)] = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
     val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, nonEmptyPartitions)
     val res = new Array[Long](nonEmptyPartitions.size)
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
     H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)
     H2OFrame(metadata.frameId)
+  }
+
+  private def resolveLocalityPermutation(currentLocations: Seq[(Int, String)], uploadPlan: UploadPlan): Array[Int] = {
+    val sourceLocations = currentLocations.sortBy(_._1).toArray
+    val destinationLocations = uploadPlan.mapValues(_.hostname).toArray.sortBy(_._1)
+    var pairToSwapOption = getPairToSwap(sourceLocations, destinationLocations, 0)
+    while (pairToSwapOption.isDefined) {
+      val pairToSwap = pairToSwapOption.get
+      val temp = sourceLocations(pairToSwap._1)
+      sourceLocations(pairToSwap._1) = sourceLocations(pairToSwap._2)
+      sourceLocations(pairToSwap._2) = temp
+      pairToSwapOption = getPairToSwap(sourceLocations, destinationLocations, pairToSwap._1)
+    }
+
+    sourceLocations.map(_._1)
+  }
+
+  private def getPairToSwap(
+      sourceLocations: Array[(Int, String)],
+      destinationLocations: Array[(Int, String)],
+      startAtIndex: Int): Option[(Int, Int)] = {
+    var destinationIndex = startAtIndex
+    var result: Option[(Int, Int)] = None
+    while (result.isEmpty && destinationIndex < destinationLocations.length) {
+      if (sourceLocations(destinationIndex)._2 == destinationLocations(destinationIndex)._2) {
+        destinationIndex += 1
+      }
+      var sourceIndex = startAtIndex + 1
+      while (result.isEmpty && sourceIndex < sourceLocations.length) {
+        if (destinationLocations(destinationIndex)._2 == sourceLocations(sourceIndex)._2) {
+          result = Some((destinationIndex, sourceIndex))
+        }
+        sourceIndex += 1
+      }
+      destinationIndex += 1
+    }
+    result
+  }
+
+  private def getPartitionLocations(partitions: Seq[Int])(context: TaskContext, it: Iterator[Row]): (Int, String) = {
+    val chunkIdx = partitions.indexOf(context.partitionId())
+    val address = java.net.InetAddress.getLocalHost().getHostAddress
+    (chunkIdx, address)
   }
 
   private def perDataFramePartition(
