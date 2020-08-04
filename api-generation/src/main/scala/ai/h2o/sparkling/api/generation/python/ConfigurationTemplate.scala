@@ -19,7 +19,7 @@ package ai.h2o.sparkling.api.generation.python
 
 import java.lang.reflect.Method
 
-object ConfigurationTemplate {
+object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) => String) {
 
   def apply(getters: Array[Method], setters: Array[Method], entity: Class[_]): String = {
 
