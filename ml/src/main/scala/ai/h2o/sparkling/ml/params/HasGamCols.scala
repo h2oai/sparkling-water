@@ -21,9 +21,7 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
 
 trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
-  protected val gamCols = nullableStringArrayParam(
-    name = "gamCols",
-    doc = "Predictor column names for gam.")
+  protected val gamCols = nullableStringArrayParam(name = "gamCols", doc = "Predictor column names for gam.")
 
   setDefault(gamCols -> null)
 
