@@ -4,10 +4,15 @@ description = "RSparkling - Sparkling-Water R Package"
 
 configurations {
   sparklingWaterAssemblyJar
+  apiGeneration
 }
 
 dependencies {
   sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
+  apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
+  apiGeneration project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  apiGeneration "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
 }
 
 ext {
@@ -28,6 +33,11 @@ def copyRSetup() {
 
   copy {
     from fileTree("src/R").include("**/*.R").files
+    into file("${project.buildDir}/src/R")
+  }
+
+  copy {
+    from fileTree("src-gen/R").include("**/*.R").files
     into file("${project.buildDir}/src/R")
   }
 
@@ -98,6 +108,19 @@ task createCranRepo(type: Exec, dependsOn: prepareRepoDir) {
   commandLine getOsSpecificCommandLine(["R", "-e", "tools::write_PACKAGES()"])
 }
 
+task cleanGeneratedApi(type: Delete) {
+  delete "$projectDir/src-gen"
+}
+
+task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
+  group = "Execution"
+  classpath = files(* (configurations.apiGeneration.files as List))
+  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
+  args = ["$projectDir/src-gen/R/ai/h2o/sparkling", "R"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
 clean.dependsOn cleanR
 
 check.dependsOn test
@@ -106,4 +129,5 @@ test.dependsOn checkSparkVersionTask
 
 build.dependsOn createCranRepo
 
+distR.dependsOn generateConf
 build.dependsOn distR
