@@ -218,6 +218,7 @@ configure(subprojects) { project ->
   spotless {
     format 'misc', {
       target '**/*.sh', '**/*.gitignore', '**/*.properties', '**/*.R', '**/*.tf', '**/*.xml', "**/*.groovy"
+      targetExclude 'src-gen/**/*.R', 'build/src/R/**/*.R'
       trimTrailingWhitespace()
       endWithNewline()
     }
