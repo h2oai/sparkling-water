@@ -108,7 +108,7 @@ object ConfigurationTemplate {
   }
 
   private def getReturnLine(m: Method): String = {
-    m.getReturnType.getClass match {
+    m.getReturnType match {
       case clz if clz.getName == "scala.Option" => s"return self._get_option(self._jconf.${m.getName}())"
       case _ => s"return self._jconf.${m.getName}()"
     }
