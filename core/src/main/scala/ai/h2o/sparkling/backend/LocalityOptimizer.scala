@@ -23,7 +23,7 @@ import org.apache.spark.expose.Logging
 import org.apache.spark.sql.Row
 
 private[backend] object LocalityOptimizer extends Logging {
-  private type UploadPlan = Map[Int, NodeDesc]
+  type UploadPlan = Map[Int, NodeDesc]
 
   def reshufflePartitions(nonEmptyPartitions: Seq[Int], uploadPlan: UploadPlan, rdd: H2OAwareRDD[Row]): Seq[Int] = {
     require(nonEmptyPartitions.size == uploadPlan.size)
@@ -47,7 +47,7 @@ private[backend] object LocalityOptimizer extends Logging {
       val temp = sourceLocations(pairToSwap._1)
       sourceLocations(pairToSwap._1) = sourceLocations(pairToSwap._2)
       sourceLocations(pairToSwap._2) = temp
-      pairToSwapOption = getPairToSwap(sourceLocations, destinationLocations, pairToSwap._1)
+      pairToSwapOption = getPairToSwap(sourceLocations, destinationLocations, pairToSwap._1 + 1)
     }
 
     sourceLocations.map(_._1)
@@ -57,18 +57,20 @@ private[backend] object LocalityOptimizer extends Logging {
       sourceLocations: Array[(Int, String)],
       destinationLocations: Array[String],
       startAtIndex: Int): Option[(Int, Int)] = {
+    var startAtIndexVar = startAtIndex
     var destinationIndex = startAtIndex
     var result: Option[(Int, Int)] = None
     while (result.isEmpty && destinationIndex < destinationLocations.length) {
       if (sourceLocations(destinationIndex)._2 == destinationLocations(destinationIndex)) {
-        destinationIndex += 1
-      }
-      var sourceIndex = startAtIndex + 1
-      while (result.isEmpty && sourceIndex < sourceLocations.length) {
-        if (destinationLocations(destinationIndex) == sourceLocations(sourceIndex)._2) {
-          result = Some((destinationIndex, sourceIndex))
+        startAtIndexVar += 1
+      } else {
+        var sourceIndex = startAtIndexVar
+        while (result.isEmpty && sourceIndex < sourceLocations.length) {
+          if (destinationLocations(destinationIndex) == sourceLocations(sourceIndex)._2) {
+            result = Some((destinationIndex, sourceIndex))
+          }
+          sourceIndex += 1
         }
-        sourceIndex += 1
       }
       destinationIndex += 1
     }
