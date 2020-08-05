@@ -1,5 +1,8 @@
 #!/usr/bin/groovy
 @Library('test-shared-library') _
+import groovy.json.JsonSlurperClassic
+import java.util.Date
+import java.text.SimpleDateFormat
 
 // Job parameters
 properties(
@@ -106,46 +109,65 @@ String getPatchVersion(params) {
     return "${split[1]}".toString()
 }
 
+def getJIRAsForReleaseNotes(versionNoSparkSuffix) {
+    def hideInReleaseNotesField = "customfield_12621"
+    def rawJson = "https://0xdata.atlassian.net/rest/api/2/search?jql=fixVersion=${versionNoSparkSuffix}".toURL().text
+    def jsonSlurper = new JsonSlurperClassic()
+    def json = jsonSlurper.parseText(rawJson)
+    def filtered = json.issues.findAll { issue ->
+        issue.fields[hideInReleaseNotesField] == null
+    }
+    def issueMap = [:]
+    filtered.each { issue ->
+        def issueType = issue.fields["issuetype"].name
+        if (!issueMap.containsKey(issueType)) {
+            issueMap.put(issueType, [])
+        }
+        def summary = issue.fields["summary"]
+        def key = issue.key
+        issueMap.get(issueType).add(new groovy.lang.Tuple2(key, summary))
+    }
+    return issueMap
+}
+
+def releasedJIRAsToString(versionNoSparkSuffix) {
+    def issueMap = getJIRAsForReleaseNotes(versionNoSparkSuffix)
+    issueMap.keySet().collect { issueType ->
+        def header = "\n-  ${issueType}\n"
+        def issues = issueMap.get(issueType)
+        def issueLines = issues.collect { issue ->
+            def key = issue.get(0)
+            def summary = issue.get(1)
+            "   -  `${key} <https://0xdata.atlassian.net/browse/${key}>`__ - ${summary}"
+        }
+        ([header] + issueLines).join("\n")
+    }.join("\n") + "\n\n"
+}
+
+def currentDate() {
+    def date = new Date()
+    def sdf = new SimpleDateFormat("yyyy-MM-dd")
+    return sdf.format(date)
+}
+
 def prepareReleaseNotes(sparkMajorVersions, commons) {
     def versionNoSparkSuffix = getVersionNoSuffix()
     def path = getS3Path()
     def links = sparkMajorVersions.collect { majorVersion ->
         "   - for Spark ${majorVersion}: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-${majorVersion}/${path}${versionNoSparkSuffix}-${majorVersion}/index.html>`__"
     }
+    def versionLine = "v${versionNoSparkSuffix} (${currentDate()})"
+    def underscores = "-".multiply(versionLine.length())
+    def newReleaseNotes =
+            [versionLine, underscores, "Downloads:\n", links.join("\n"), releasedJIRAsToString(versionNoSparkSuffix)].join("\n")
     commons.withGitPushCredentials {
         dir("doc/") {
-            writeFile file: "release_notes", text: links.join("\n")
-            sh "echo >> release_notes"
+            writeFile file: "release_notes", text: newReleaseNotes
             sh """
-            # Get ID of this release
-            jira_version_id=\$(curl --silent "https://0xdata.atlassian.net/rest/api/2/project/SW/versions" | tr '}' '\\n' | grep "\\"name\\":\\"${
-                versionNoSparkSuffix
-            }\\"" | cut -d'"' -f8)
-            # Get the JIRA page (currently, there is no endpoint for release notes)
-            release_notes_page="https://0xdata.atlassian.net/secure/ReleaseNote.jspa?projectId=12000&version=\${jira_version_id}"
-        
-            # Obtain the release notes and process them so they look like we expect
-            curl --silent "\$release_notes_page" | sed '/<body>/,/<a name="editarea"><\\/a>/!d;//D' | sed 's/<ul>//' | sed 's/<\\/ul>//' | sed 's/ *<h2>/-  /' | sed 's/<\\/h2>//'  | sed 's/<\\/li>//' | sed "s/ *<li>\\[<a href='https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\([0-9]*\\)'>SW-[0-9]*<\\/a>\\]/\\   -  \\`SW-\\1 <https:\\/\\/0xdata.atlassian.net\\/browse\\/SW-\\1>\\`__/" | sed '\$ d' | sed '1d' >> release_notes
-
-            release_date=\$(date +%Y-%m-%d)
-            rel_prefix=\$(echo "v${versionNoSparkSuffix} (\$release_date)")
-            underscores=\$(head -c \${#rel_prefix} < /dev/zero | tr '\\0' '-')
-            downloads_header="Downloads:\n"
-        
-            # Insert release info
-            sed -i "4i \$rel_prefix" CHANGELOG.rst
-        
-            # Insert the underscores
-            sed -i "5i \$underscores" CHANGELOG.rst
-        
-            # Insert the downloads header
-            sed -i "6i \$downloads_header" CHANGELOG.rst
-            
             # Insert the release notes
-            sed -i "6r release_notes" CHANGELOG.rst
-        
+            sed -i "3r release_notes" CHANGELOG.rst
             rm -rf release_notes
-            
+
             git add CHANGELOG.rst
             git config remote.origin.url "https://${GITHUB_TOKEN}@github.com/h2oai/sparkling-water.git"
             git commit -m "Release notes for ${versionNoSparkSuffix}"
@@ -157,10 +179,10 @@ def prepareReleaseNotes(sparkMajorVersions, commons) {
             git fetch --no-tags
             git checkout master
             git pull
-            git checkout -b "master-changelog-${versionNoSparkSuffix}"
+            git checkout -b "master-changelog-${versionNoSparkSuffix}-\${LAST_COMMIT}"
             git cherry-pick -n \$LAST_COMMIT
             git commit -m "Update ChangeLog"
-            git push --set-upstream origin master-changelog-${versionNoSparkSuffix}
+            git push --set-upstream origin master-changelog-${versionNoSparkSuffix}-\${LAST_COMMIT}
 
             wget https://github.com/github/hub/releases/download/v2.5.1/hub-linux-amd64-2.5.1.tgz
             tar -xvf hub-linux-amd64-2.5.1.tgz
