@@ -99,7 +99,7 @@ object InternalBackendConf {
     10,
     "setDrddMulFactor(Integer)",
     """Multiplication factor for dummy RDD  generation. Size of dummy RDD is
-      |``spark.ext.h2o.cluster.size`` \* ``spark.ext.h2o.dummy.rdd.mul.factor``.""".stripMargin)
+      |``spark.ext.h2o.cluster.size`` multiplied by this option.""".stripMargin)
 
   val PROP_SPREADRDD_RETRIES: IntOption = (
     "spark.ext.h2o.spreadrdd.retries",
@@ -125,7 +125,7 @@ object InternalBackendConf {
     None,
     "setHdfsConf(String)",
     """Either a string with the Path to a file with Hadoop HDFS configuration or the
-      |org.apache.hadoop.conf.Configuration object. Useful for HDFS credentials
+      |hadoop.conf.Configuration object in the org.apache package. Useful for HDFS credentials
       |settings and other HDFS-related configurations. Default value None means
       |use `sc.hadoopConfig`.""".stripMargin)
 
