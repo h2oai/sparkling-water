@@ -19,7 +19,7 @@ package ai.h2o.sparkling.backend
 
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
-import org.scalatestplus.junit.JUnitRunner
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class LocalityOptimizerTestSuite extends FunSuite with Matchers {
