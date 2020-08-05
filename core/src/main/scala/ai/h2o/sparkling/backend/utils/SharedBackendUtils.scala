@@ -76,13 +76,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       """)
     }
 
-    if (conf.getInt("spark.sql.autoBroadcastJoinThreshold", 0) != -1) {
-      logWarning("""To avoid non-deterministic behavior of Spark broadcast-based joins,
-          |we recommend to set `spark.sql.autoBroadcastJoinThreshold` property of SparkSession to -1.
-          |E.g. spark.conf.set("spark.sql.autoBroadcastJoinThreshold", -1)
-          |We also recommend to avoid using broadcast hints in your Spark SQL code.""".stripMargin)
-    }
-
     if (conf.contextPath.isDefined) {
       if (!conf.contextPath.get.startsWith("/")) {
         logWarning("Context path does not start with mandatory \"/\", appending it.")
