@@ -25,10 +25,7 @@ import org.apache.spark.sql.Row
 private[backend] object LocalityOptimizer extends Logging {
   private type UploadPlan = Map[Int, NodeDesc]
 
-  def reshufflePartitions(
-      nonEmptyPartitions: Seq[Int],
-      uploadPlan: UploadPlan,
-      rdd: H2OAwareRDD[Row]): Seq[Int] = {
+  def reshufflePartitions(nonEmptyPartitions: Seq[Int], uploadPlan: UploadPlan, rdd: H2OAwareRDD[Row]): Seq[Int] = {
     require(nonEmptyPartitions.size == uploadPlan.size)
     type SparkJob = (TaskContext, Iterator[Row]) => (Int, String)
     val currentLocationsJob: SparkJob = getPartitionLocations(nonEmptyPartitions)

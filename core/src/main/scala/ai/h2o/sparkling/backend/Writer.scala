@@ -87,7 +87,7 @@ private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numR
 
 private[backend] object Writer extends Logging {
 
-  type SparkJob= (TaskContext, Iterator[Row]) => (Int, Long)
+  type SparkJob = (TaskContext, Iterator[Row]) => (Int, Long)
   type UploadPlan = Map[Int, NodeDesc]
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
