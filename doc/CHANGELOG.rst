@@ -1,7 +1,76 @@
 Change Log
 ==========
 
-v3.30.0.7-1 (2020-07-24)
+v3.32.0.1-1 (2020-08-05)
+------------------------
+Downloads:
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/jh-SW-1366/3.32.0.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/jh-SW-1366/3.32.0.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/jh-SW-1366/3.32.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/jh-SW-1366/3.32.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/jh-SW-1366/3.32.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/jh-SW-1366/3.32.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/jh-SW-1366/3.32.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/jh-SW-1366/3.32.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/jh-SW-1366/3.32.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/jh-SW-1366/3.32.0.1-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2400 <https://0xdata.atlassian.net/browse/SW-2400>`__ - The asH2OFrame Method Should Consider Data Locality when Uploading Partitions to H2O-3 nodes
+   -  `SW-2397 <https://0xdata.atlassian.net/browse/SW-2397>`__ - Automatically generate R configuration from Scala code
+   -  `SW-2395 <https://0xdata.atlassian.net/browse/SW-2395>`__ - Automatically generate the configuration table in documentation
+   -  `SW-2374 <https://0xdata.atlassian.net/browse/SW-2374>`__ - Update booklet to the state so it is valid on our master branch
+   -  `SW-2345 <https://0xdata.atlassian.net/browse/SW-2345>`__ - Delete H2OFrames Produced by Algorithm Parameters
+   -  `SW-2286 <https://0xdata.atlassian.net/browse/SW-2286>`__ - Create explicit check for extensions jar in external backend
+   -  `SW-2285 <https://0xdata.atlassian.net/browse/SW-2285>`__ - Convert MapTypes under detailed_prediction to StructTypes
+   -  `SW-2273 <https://0xdata.atlassian.net/browse/SW-2273>`__ - Remove docker subproject as we will have docker images on docker hub
+   -  `SW-2269 <https://0xdata.atlassian.net/browse/SW-2269>`__ - Remove deprecated setHiveSupportEnabled
+   -  `SW-2259 <https://0xdata.atlassian.net/browse/SW-2259>`__ - Replace old H2OFrame api mentions in docs
+   -  `SW-2255 <https://0xdata.atlassian.net/browse/SW-2255>`__ - Deprecate H2OConf and H2OContext in package org.apache.spark
+   -  `SW-2254 <https://0xdata.atlassian.net/browse/SW-2254>`__ - Smoke tests on Kubernetes in internal backend
+   -  `SW-2253 <https://0xdata.atlassian.net/browse/SW-2253>`__ - Update Kubernetes documentation with regards to network policies
+
+-  New Feature
+
+   -  `SW-2386 <https://0xdata.atlassian.net/browse/SW-2386>`__ - Add H2O GAM to Algo API
+   -  `SW-2365 <https://0xdata.atlassian.net/browse/SW-2365>`__ - Expose Reconstructed Columns on DimReduction Predictions
+   -  `SW-2364 <https://0xdata.atlassian.net/browse/SW-2364>`__ - Expose Reconstruction Mean Squared Error on AutoEncoder Prediction
+   -  `SW-2363 <https://0xdata.atlassian.net/browse/SW-2363>`__ - Expose Stage Results/Probabilities on MOJO Detailed Prediction
+   -  `SW-2339 <https://0xdata.atlassian.net/browse/SW-2339>`__ - Expose beta_constraints on GLM
+   -  `SW-2338 <https://0xdata.atlassian.net/browse/SW-2338>`__ - Expose calibration_frame on GBM, DRF, XGBoost
+   -  `SW-2335 <https://0xdata.atlassian.net/browse/SW-2335>`__ - Expose 'random_columns' on GLM
+   -  `SW-2332 <https://0xdata.atlassian.net/browse/SW-2332>`__ - Expose interaction_pairs on GLM
+   -  `SW-2322 <https://0xdata.atlassian.net/browse/SW-2322>`__ - Expose plug_values on GLM
+   -  `SW-2318 <https://0xdata.atlassian.net/browse/SW-2318>`__ - Expose rand_link and rand_family on GLM
+   -  `SW-2311 <https://0xdata.atlassian.net/browse/SW-2311>`__ - Expose InitialWeights and InitialBiases on H2ODeepLearning
+   -  `SW-2294 <https://0xdata.atlassian.net/browse/SW-2294>`__ - Base non-nightly external-backend k8s image on h2o image
+   -  `SW-2292 <https://0xdata.atlassian.net/browse/SW-2292>`__ - Kubernetes tests in External backend, cluster & client mode
+   -  `SW-2274 <https://0xdata.atlassian.net/browse/SW-2274>`__ - Expose methods available on the binary model in SW
+   -  `SW-2265 <https://0xdata.atlassian.net/browse/SW-2265>`__ - Support Kmeans in Grid search
+   -  `SW-2261 <https://0xdata.atlassian.net/browse/SW-2261>`__ - Start External H2O within Kubernetes tests ( so far without SW connected)
+   -  `SW-2260 <https://0xdata.atlassian.net/browse/SW-2260>`__ - Add support to create ai.h2o.sparkling.H2OFrame from online resource
+   -  `SW-2257 <https://0xdata.atlassian.net/browse/SW-2257>`__ - Expose  XBoost Parameter colsample_bynode in Sparkling Water
+
+-  Bug
+
+   -  `SW-2361 <https://0xdata.atlassian.net/browse/SW-2361>`__ - Throw explicit exception in case hyper parameter does not exist
+   -  `SW-2313 <https://0xdata.atlassian.net/browse/SW-2313>`__ - Generate Default Value of modelId as null, not as "null"
+   -  `SW-2304 <https://0xdata.atlassian.net/browse/SW-2304>`__ - Avoid putting scala-lib to shadowJar
+   -  `SW-2280 <https://0xdata.atlassian.net/browse/SW-2280>`__ - Fix Reading of Spark DataFrames in SW Tutorials
+   -  `SW-2278 <https://0xdata.atlassian.net/browse/SW-2278>`__ -  Benchmarks are failing on master
+
+-  Engineering Story
+
+   -  `SW-2353 <https://0xdata.atlassian.net/browse/SW-2353>`__ - Expose H2OBinaryModel in Sparkling Water ( without methods so far)
+   -  `SW-2342 <https://0xdata.atlassian.net/browse/SW-2342>`__ - Fix intermittent error during stopping kubernetes tests
+   -  `SW-2295 <https://0xdata.atlassian.net/browse/SW-2295>`__ - Generate H2OGridSearch and H2OAutoML Python Class
+   -  `SW-2291 <https://0xdata.atlassian.net/browse/SW-2291>`__ - Generate Python Algorithm Classes
+   -  `SW-2288 <https://0xdata.atlassian.net/browse/SW-2288>`__ - Replace usage of deprecated setH2ONodeLogLevel in python tests
+   -  `SW-2287 <https://0xdata.atlassian.net/browse/SW-2287>`__ - Generate Python Parameter Classes
+   -  `SW-2279 <https://0xdata.atlassian.net/browse/SW-2279>`__ - Test raw gateway connection in PySparkling
+   -  `SW-2275 <https://0xdata.atlassian.net/browse/SW-2275>`__ - Ensure pytest cache is generated into build directory
+   -  `SW-2272 <https://0xdata.atlassian.net/browse/SW-2272>`__ - Add test for setH2ONodeLogLevel
+   -  `SW-2266 <https://0xdata.atlassian.net/browse/SW-2266>`__ - Replace usage of deprecated properties
+   -  `SW-2263 <https://0xdata.atlassian.net/browse/SW-2263>`__ - Add kubernetes smoke tests in internal backend in client mode
+   -  `SW-2262 <https://0xdata.atlassian.net/browse/SW-2262>`__ - Remove usage of deprecated method from ConfigurationPropertiesTestSuite
+   -  `SW-2258 <https://0xdata.atlassian.net/browse/SW-2258>`__ - Generate GridSearch Scala Parameters from H2O-3 code
+   -  `SW-2256 <https://0xdata.atlassian.net/browse/SW-2256>`__ - Put generated code into gitignorev3.30.0.7-1 (2020-07-24)
 ------------------------
 Downloads:
    - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.7-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.0.7-1-2.1/index.html>`__
