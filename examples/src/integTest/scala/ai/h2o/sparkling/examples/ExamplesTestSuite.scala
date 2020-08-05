@@ -20,7 +20,7 @@ import ai.h2o.sparkling.SharedH2OTestContext
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ExamplesTestSuite extends FunSuite with SharedH2OTestContext {

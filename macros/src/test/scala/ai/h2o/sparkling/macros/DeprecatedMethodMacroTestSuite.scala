@@ -20,7 +20,7 @@ package ai.h2o.sparkling.macros
 import org.apache.spark.expose.Logging
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class DeprecatedMethodMacroTestSuite extends FunSuite with Logging {

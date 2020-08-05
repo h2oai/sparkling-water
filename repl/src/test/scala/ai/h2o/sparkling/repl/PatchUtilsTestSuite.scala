@@ -18,7 +18,7 @@ package ai.h2o.sparkling.repl
 
 import org.junit.runner.RunWith
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.util.matching.Regex
 

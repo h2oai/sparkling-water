@@ -24,7 +24,7 @@ import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import water.api.schemas3.CloudV3
 @RunWith(classOf[JUnitRunner])
 class H2OContextSSLTestSuite extends FunSuite with SharedH2OTestContext {

@@ -21,7 +21,7 @@ import ai.h2o.sparkling.backend.utils.SupportedTypes._
 import org.apache.spark.unsafe.types.UTF8String
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.reflect.runtime.universe._
 

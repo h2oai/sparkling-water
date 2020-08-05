@@ -23,7 +23,7 @@ import hex.Model
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import ai.h2o.sparkling.ml.ParameterSetters._
 

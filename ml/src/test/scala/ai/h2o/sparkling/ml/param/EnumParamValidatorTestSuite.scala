@@ -21,7 +21,7 @@ import ai.h2o.automl.Algo
 import ai.h2o.sparkling.ml.params.EnumParamValidator._
 import hex.genmodel.utils.DistributionFamily
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])

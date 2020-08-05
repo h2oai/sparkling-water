@@ -25,7 +25,7 @@ import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.mutable

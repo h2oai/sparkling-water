@@ -20,7 +20,7 @@ package ai.h2o.sparkling
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Test using H2O Frame as Spark SQL data source

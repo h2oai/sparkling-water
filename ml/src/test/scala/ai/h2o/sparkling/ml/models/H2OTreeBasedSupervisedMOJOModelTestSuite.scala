@@ -23,7 +23,7 @@ import hex.Model
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import ai.h2o.sparkling.ml.ParameterSetters._
 
 @RunWith(classOf[JUnitRunner])

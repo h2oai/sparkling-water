@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml
 import ai.h2o.sparkling.TestUtils
 import org.apache.spark.ml.PipelineModel
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class PipelinePredictionTestSuite extends PipelinePredictionTestBase {

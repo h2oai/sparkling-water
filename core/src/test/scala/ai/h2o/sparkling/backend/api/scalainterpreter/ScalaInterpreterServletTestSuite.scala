@@ -22,7 +22,7 @@ import ai.h2o.sparkling.repl.CodeResults
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ScalaInterpreterServletTestSuite extends FunSuite with SharedH2OTestContext with ScalaInterpreterRestApi {

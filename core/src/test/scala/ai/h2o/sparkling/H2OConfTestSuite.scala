@@ -20,7 +20,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * Test passing parameters via SparkConf.
