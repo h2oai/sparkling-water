@@ -69,16 +69,6 @@ Frequently Asked Questions
 
     The YARN time service is not compatible with libraries provided by Spark. Please disable time service by setting ``spark.hadoop.yarn.timeline-service.enabled=false``. For more details, please visit  https://issues.apache.org/jira/browse/SPARK-15343.
 
--  Getting non-deterministic H2O Frames after the Spark Data Frame to H2O Frame conversion.
-
-    This is caused by what we think is a bug in Apache Spark. On specific kinds of data combined with a higher number of partitions, we can see non-determinism in BroadCastHashJoins. This leads to jumbled rows and columns in the output H2O frame. We recommend disabling broadcast based joins, which seem to be non-deterministic as:
-
-    .. code:: scala
-
-        sqlContext.sql("SET spark.sql.autoBroadcastJoinThreshold=-1")
-
-    The issue can be tracked as `PUBDEV-3808 <https://0xdata.atlassian.net/browse/PUBDEV-3808>`__. On the Spark side, the following issue is related to the problem: `Spark-17806 <https://issues.apache.org/jira/browse/SPARK-17806>`__.
-
 - How can I configure the Hive metastore location?
 
     Spark SQL context (in fact Hive) requires the use of metastore, which stores metadata about Hive tables. In order to ensure this works correctly, the ``${SPARK_HOME}/conf/hive-site.xml`` needs to contain the following configuration. We provide two examples, how to use MySQL and Derby as the metastore.
