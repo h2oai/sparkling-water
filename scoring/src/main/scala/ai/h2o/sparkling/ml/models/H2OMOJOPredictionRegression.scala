@@ -36,16 +36,14 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
-      if (getWithDetailedPredictionCol()) {
-        if (getWithContributions()) {
-          resultBuilder += Utils.arrayToRow(pred.contributions)
-        }
-        if (getWithLeafNodeAssignments()) {
-          resultBuilder += pred.leafNodeAssignments
-        }
-        if (getWithStageResults()) {
-          resultBuilder += pred.stageProbabilities
-        }
+      if (getWithContributions()) {
+        resultBuilder += Utils.arrayToRow(pred.contributions)
+      }
+      if (getWithLeafNodeAssignments()) {
+        resultBuilder += pred.leafNodeAssignments
+      }
+      if (getWithStageResults()) {
+        resultBuilder += pred.stageProbabilities
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
@@ -62,31 +60,26 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def getRegressionPredictionSchema(): StructType = {
     val valueField = StructField("value", DoubleType, nullable = false)
     val baseSchema = valueField :: Nil
-    val fields = if (getWithDetailedPredictionCol()) {
-      val withContributionsSchema = if (getWithContributions()) {
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-        val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
-        baseSchema :+ contributionsField
-      } else {
-        baseSchema
-      }
-      val withAssignmentsSchema = if (getWithLeafNodeAssignments()) {
-        val assignmentsSchema = ArrayType(StringType, containsNull = false)
-        val assignmentsField = StructField("leafNodeAssignments", assignmentsSchema, nullable = false)
-        withContributionsSchema :+ assignmentsField
-      } else {
-        withContributionsSchema
-      }
-      val withStageResultsSchema = if (getWithStageResults()) {
-        val stageResultsField =
-          StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
-        withAssignmentsSchema :+ stageResultsField
-      } else {
-        withAssignmentsSchema
-      }
-      withStageResultsSchema
+    val withContributionsSchema = if (getWithContributions()) {
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
+      baseSchema :+ contributionsField
     } else {
       baseSchema
+    }
+    val withAssignmentsSchema = if (getWithLeafNodeAssignments()) {
+      val assignmentsSchema = ArrayType(StringType, containsNull = false)
+      val assignmentsField = StructField("leafNodeAssignments", assignmentsSchema, nullable = false)
+      withContributionsSchema :+ assignmentsField
+    } else {
+      withContributionsSchema
+    }
+    val fields = if (getWithStageResults()) {
+      val stageResultsField =
+        StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
+      withAssignmentsSchema :+ stageResultsField
+    } else {
+      withAssignmentsSchema
     }
 
     StructType(fields)

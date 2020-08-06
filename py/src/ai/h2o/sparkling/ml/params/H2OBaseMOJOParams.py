@@ -17,6 +17,7 @@
 
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
+import warnings
 
 
 class H2OBaseMOJOParams(Params):
@@ -31,12 +32,6 @@ class H2OBaseMOJOParams(Params):
         "detailedPredictionCol",
         "Column containing additional prediction details, its content depends on the model type.",
         H2OTypeConverters.toString())
-
-    withDetailedPredictionCol = Param(
-        Params._dummy(),
-        "withDetailedPredictionCol",
-        "Enables or disables generating additional prediction column, but with more details",
-        H2OTypeConverters.toBoolean())
 
     withContributions = Param(
         Params._dummy(),
@@ -96,7 +91,9 @@ class H2OBaseMOJOParams(Params):
         return self.getOrDefault(self.detailedPredictionCol)
 
     def getWithDetailedPredictionCol(self):
-        return self.getOrDefault(self.withDetailedPredictionCol)
+        warnings.warn("The method will be removed without a replacement in the version 3.34."
+                      "Detailed prediction columns is always enabled.", DeprecationWarning)
+        return True
 
     def getWithContributions(self):
         return self.getOrDefault(self.withContributions)

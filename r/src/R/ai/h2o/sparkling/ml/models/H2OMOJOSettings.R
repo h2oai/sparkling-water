@@ -34,7 +34,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                methods = list(
                                  initialize = function(predictionCol = "prediction",
                                                        detailedPredictionCol = "detailed_prediction",
-                                                       withDetailedPredictionCol = FALSE,
+                                                       withDetailedPredictionCol = TRUE,
                                                        convertUnknownCategoricalLevelsToNa = FALSE,
                                                        convertInvalidNumbersToNa = FALSE,
                                                        namedMojoOutputColumns = TRUE,
@@ -44,7 +44,6 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                                        withReconstructedData = FALSE) {
                                    .self$predictionCol <- predictionCol
                                    .self$detailedPredictionCol <- detailedPredictionCol
-                                   .self$withDetailedPredictionCol <- withDetailedPredictionCol
                                    .self$convertUnknownCategoricalLevelsToNa <- convertUnknownCategoricalLevelsToNa
                                    .self$convertInvalidNumbersToNa <- convertInvalidNumbersToNa
                                    .self$namedMojoOutputColumns <- namedMojoOutputColumns
@@ -58,7 +57,7 @@ H2OMOJOSettings <- setRefClass("H2OMOJOSettings",
                                    invoke_new(sc, "ai.h2o.sparkling.ml.models.H2OMOJOSettings",
                                               .self$predictionCol,
                                               .self$detailedPredictionCol,
-                                              .self$withDetailedPredictionCol,
+                                              TRUE,
                                               .self$convertUnknownCategoricalLevelsToNa,
                                               .self$convertInvalidNumbersToNa,
                                               .self$namedMojoOutputColumns,

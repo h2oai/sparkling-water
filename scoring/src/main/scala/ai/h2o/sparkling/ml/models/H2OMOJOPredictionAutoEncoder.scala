@@ -35,10 +35,8 @@ trait H2OMOJOPredictionAutoEncoder {
       val pred = model.predictAutoEncoder(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.original
-      if (getWithDetailedPredictionCol()) {
-        resultBuilder += pred.reconstructed
-        resultBuilder += pred.mse
-      }
+      resultBuilder += pred.reconstructed
+      resultBuilder += pred.mse
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
@@ -53,13 +51,9 @@ trait H2OMOJOPredictionAutoEncoder {
 
   def getAutoEncoderPredictionSchema(): StructType = {
     val originalField = StructField("original", predictionColType, nullable = predictionColNullable)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val reconstructedField = StructField("reconstructed", predictionColType, nullable = predictionColNullable)
-      val reconstructionErrorField = StructField("mse", DoubleType, nullable = false)
-      originalField :: reconstructedField :: reconstructionErrorField :: Nil
-    } else {
-      originalField :: Nil
-    }
+    val reconstructedField = StructField("reconstructed", predictionColType, nullable = predictionColNullable)
+    val reconstructionErrorField = StructField("mse", DoubleType, nullable = false)
+    val fields = originalField :: reconstructedField :: reconstructionErrorField :: Nil
 
     StructType(fields)
   }

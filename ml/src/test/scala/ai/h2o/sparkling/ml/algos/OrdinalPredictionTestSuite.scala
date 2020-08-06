@@ -47,18 +47,8 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     assert(df.select(path).columns.sameElements(expectedColumns))
   }
 
-  test("Correct content with details disabled") {
+  test("Correct content of ordinal predictions") {
     val algorithm = createAlgorithm()
-    val model = algorithm.fit(dataset)
-
-    val predictions = model.transform(dataset)
-
-    assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
-    assertExistenceOfColumns(predictions, "*", dataset.columns ++ Seq("prediction"))
-  }
-
-  test("Correct content with details enabled") {
-    val algorithm = createAlgorithm().setWithDetailedPredictionCol(true)
     val model = algorithm.fit(dataset)
 
     val predictions = model.transform(dataset)
@@ -74,24 +64,8 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     assert(probabilities(0).getDouble(3) != probabilities(1).getDouble(3))
   }
 
-  test("transformSchema without details returns expected result") {
+  test("transformSchema returns expected result") {
     val algorithm = createAlgorithm()
-    val model = algorithm.fit(dataset)
-
-    val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = true)
-
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
-
-    assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
-  }
-
-  test("transformSchema with details returns expected result") {
-    val algorithm = createAlgorithm().setWithDetailedPredictionCol(true)
     val model = algorithm.fit(dataset)
 
     val datasetFields = dataset.schema.fields

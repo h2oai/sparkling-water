@@ -35,7 +35,7 @@ trait H2OMOJOPredictionDimReduction {
       val pred = model.predictDimReduction(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.dimensions
-      if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
+      if (getWithReconstructedData()) {
         resultBuilder += Utils.arrayToRow(pred.reconstructed)
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
@@ -52,7 +52,7 @@ trait H2OMOJOPredictionDimReduction {
 
   def getDimReductionPredictionSchema(): StructType = {
     val base = StructField("dimensions", predictionColType, nullable = predictionColNullable) :: Nil
-    val fields = if (getWithDetailedPredictionCol() && getWithReconstructedData()) {
+    val fields = if (getWithReconstructedData()) {
       val reconstructedColumns = getFeaturesCols().map(StructField(_, DoubleType, nullable = false))
       base :+ StructField("reconstructed", StructType(reconstructedColumns), nullable = true)
     } else {

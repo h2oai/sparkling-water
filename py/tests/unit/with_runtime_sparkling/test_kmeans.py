@@ -74,8 +74,7 @@ def testFullResultInPredictionDetailsCol(dataset):
     algo = H2OKMeans(splitRatio=0.8,
                      seed=1,
                      k=3,
-                     featuresCols=["sepal_len", "sepal_wid", "petal_len", "petal_wid"],
-                     withDetailedPredictionCol=True)
+                     featuresCols=["sepal_len", "sepal_wid", "petal_len", "petal_wid"])
 
     model = algo.fit(dataset)
     transformed = model.transform(dataset)

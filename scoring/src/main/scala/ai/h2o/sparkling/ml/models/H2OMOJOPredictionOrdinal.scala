@@ -36,9 +36,7 @@ trait H2OMOJOPredictionOrdinal {
       val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
-      if (getWithDetailedPredictionCol()) {
-        resultBuilder += Utils.arrayToRow(pred.classProbabilities)
-      }
+      resultBuilder += Utils.arrayToRow(pred.classProbabilities)
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
@@ -54,14 +52,10 @@ trait H2OMOJOPredictionOrdinal {
   def getOrdinalPredictionSchema(): StructType = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
-    val fields = if (getWithDetailedPredictionCol()) {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-      val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
-      val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
-      labelField :: probabilitiesField :: Nil
-    } else {
-      labelField :: Nil
-    }
+    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
+    val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
+    val fields = labelField :: probabilitiesField :: Nil
 
     StructType(fields)
   }

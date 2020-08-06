@@ -34,14 +34,12 @@ trait H2OMOJOPredictionAnomaly {
       val pred = model.predictAnomalyDetection(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.score
-      if (getWithDetailedPredictionCol()) {
-        resultBuilder += pred.normalizedScore
-        if (getWithLeafNodeAssignments()) {
-          resultBuilder += pred.leafNodeAssignments
-        }
-        if (getWithStageResults()) {
-          resultBuilder += pred.stageProbabilities
-        }
+      resultBuilder += pred.normalizedScore
+      if (getWithLeafNodeAssignments()) {
+        resultBuilder += pred.leafNodeAssignments
+      }
+      if (getWithStageResults()) {
+        resultBuilder += pred.stageProbabilities
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
@@ -57,28 +55,24 @@ trait H2OMOJOPredictionAnomaly {
 
   def getAnomalyPredictionSchema(): StructType = {
     val scoreField = StructField("score", predictionColType, nullable = false)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
-      val baseFields = scoreField :: normalizedScoreField :: Nil
-      val assignmentFields = if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
-        baseFields :+ assignmentsField
-      } else {
-        baseFields
-      }
-      val stageResultFields = if (getWithStageResults()) {
-        val stageResultsField =
-          StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
-        assignmentFields :+ stageResultsField
-      } else {
-        assignmentFields
-      }
-      stageResultFields
+    val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
+    val baseFields = scoreField :: normalizedScoreField :: Nil
+    val assignmentFields = if (getWithLeafNodeAssignments()) {
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+      baseFields :+ assignmentsField
     } else {
-      scoreField :: Nil
+      baseFields
     }
-    StructType(fields)
+    val stageResultFields = if (getWithStageResults()) {
+      val stageResultsField =
+        StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
+      assignmentFields :+ stageResultsField
+    } else {
+      assignmentFields
+    }
+    stageResultFields
+    StructType(stageResultFields)
   }
 
   def extractAnomalyPredictionColContent(): Column = {

@@ -73,7 +73,6 @@ object CraigslistJobTitlesApp {
       .setDistribution("AUTO")
       .setColumnsToCategorical("category")
       .setLabelCol("category")
-      .setWithDetailedPredictionCol(true)
 
     val pipeline = new Pipeline().setStages(Array(tokenizer, stopWordsRemover, word2Vec, gbm))
     pipeline.fit(train)
