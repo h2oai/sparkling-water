@@ -47,7 +47,6 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setConvertUnknownCategoricalLevelsToNa(true)
       .setTransform("standardize")
 
-
     val pipeline = new Pipeline().setStages(Array(algo))
     pipeline.write.overwrite().save("ml/build/pca_pipeline")
     val loadedPipeline = Pipeline.load("ml/build/pca_pipeline")

@@ -18,7 +18,9 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.mllib.linalg import *
+from pyspark.sql import Row
 from pyspark.sql.types import *
+from pysparkling.ml import H2OPCA
 
 from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
@@ -32,27 +34,37 @@ def testParamsPassedBySetters():
     assertParamsViaSetters("H2OPCA")
 
 
-
-
 def getPreconfiguredAlgorithm():
-    return H2OPCA(k=4,
+    return H2OPCA(k=2,
                   maxIterations=500,
                   pcaMethod="GramSVD",
                   seed=42,
+                  convertUnknownCategoricalLevelsToNa=True,
                   transform="standardize")
 
-def testPipelineSerialization(arrestsDataset):
-    [traningDataset, testingDataset] = arrestsDataset.randomSplit([0.9, 0.1], 42)
+
+def testPipelineSerialization(birdsDataset):
+    [traningDataset, testingDataset] = birdsDataset.randomSplit([0.9, 0.1], 42)
     algo = getPreconfiguredAlgorithm()
 
     pipeline = Pipeline(stages=[algo])
-    pipeline.write().overwrite().save("file://" + os.path.abspath("build/glrm_pipeline"))
-    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/glrm_pipeline"))
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/pca_pipeline"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/pca_pipeline"))
     model = loadedPipeline.fit(traningDataset)
     expected = model.transform(testingDataset)
 
-    model.write().overwrite().save("file://" + os.path.abspath("build/glrm_pipeline_model"))
-    loadedModel = PipelineModel.load("file://" + os.path.abspath("build/glrm_pipeline_model"))
+    model.write().overwrite().save("file://" + os.path.abspath("build/pca_pipeline_model"))
+    loadedModel = PipelineModel.load("file://" + os.path.abspath("build/pca_pipeline_model"))
     result = loadedModel.transform(testingDataset)
 
     unit_test_utils.assert_data_frames_are_identical(expected, result)
+
+
+def testPCAResult(birdsDataset):
+    [traningDataset, testingDataset] = birdsDataset.randomSplit([0.9, 0.1], 42)
+    algo = getPreconfiguredAlgorithm()
+    model = algo.fit(traningDataset)
+    predictions = model.transform(testingDataset)
+    expected = [Row(prediction=[0.03214994417825859, -1.2484351733088]),
+                Row(prediction=[0.06256066339344996, -0.0021765345617701724])]
+    assert predictions.select("prediction").take(2) == expected

@@ -175,7 +175,9 @@ class H2OGridSearch(override val uid: String)
     gridBinaryModels.head
   }
 
-  private def sortGridModels(algoName: String, gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
+  private def sortGridModels(
+      algoName: String,
+      gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       val category = H2OModelCategory.fromString(gridModels(0)._2.getModelCategory())
       category match {
@@ -184,7 +186,7 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
         case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
-        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.GLRMMetric// TODO
+        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.GLRMMetric // TODO
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
