@@ -330,7 +330,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         4. Inside the shell, run:
 
-        .. code:: python
+        .. code:: scala
 
             import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
@@ -583,7 +583,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
         4. Inside the shell, run:
 
-        .. code:: python
+        .. code:: scala
 
             import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
