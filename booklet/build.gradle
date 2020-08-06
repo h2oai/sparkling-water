@@ -1,30 +1,52 @@
 description = "Sparkling Water Booklet"
 
+dependencies {
+  implementation("org.scala-lang:scala-library:${scalaVersion}")
+  implementation(project(':sparkling-water-utils'))
+  implementation(project(':sparkling-water-core'))
+  implementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
+}
+
 task cleanBooklet(type: Delete) {
-  delete getBuildDir()
+  delete "${getBuildDir()}/src"
 }
 
 def compileBooklet() {
   exec {
-    workingDir buildDir
+    workingDir "$buildDir/src"
     commandLine = ["pdflatex", "-halt-on-error", "SparklingWaterBooklet"]
   }
 }
 
 def compileBookletBibliography() {
   exec {
-    workingDir buildDir
+    workingDir "$buildDir/src"
     commandLine = ["bibtex", "SparklingWaterBooklet"]
   }
 }
 
-task buildBooklet {
-  doLast {
-    project.delete(buildDir)
-    copy {
-      from "src"
-      into buildDir
-    }
+task cleanGeneratedConfiguration(type: Delete) {
+  delete "${projectDir}/src/sections/configuration.tex"
+}
+
+task copySources(type: Copy, dependsOn: cleanBooklet) {
+  from("$projectDir/src") {
+    exclude "main/**"
+  }
+  into "$buildDir/src"
+}
+
+task generateConfiguration(type: JavaExec, dependsOn: [copySources, build]) {
+  group = "Execution"
+  classpath = sourceSets.main.runtimeClasspath
+  main = "ai.h2o.sparkling.booklet.generation.ConfigurationRunner"
+  args = ["${buildDir}/src/sections"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
+task buildBooklet(dependsOn: generateConfiguration) {
+  doFirst {
     // Initial compile
     compileBooklet()
     // Generate Bibliography

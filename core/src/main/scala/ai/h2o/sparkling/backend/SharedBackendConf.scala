@@ -381,7 +381,8 @@ object SharedBackendConf {
     "setNthreads(Integer)",
     """Limit for number of threads used by H2O, default ``-1`` means: Use value of ``spark.executor.cores`` in
       |case this property is set. Otherwise use H2O's default
-      |value ``Runtime.getRuntime().availableProcessors()``""".stripMargin)
+      |value Runtime.getRuntime()
+      |.availableProcessors()""".stripMargin)
 
   val PROP_REPL_ENABLED: BooleanOption = (
     "spark.ext.h2o.repl.enabled",
@@ -481,7 +482,7 @@ object SharedBackendConf {
     "spark.ext.h2o.log.dir",
     None,
     "setLogDir(String)",
-    "Location of H2O logs. When not specified, it uses ``{user.dir}/h2ologs/{SparkAppId}`` or YARN container dir")
+    "Location of H2O logs. When not specified, it uses {user.dir}/h2ologs/{AppId} or YARN container dir")
 
   val PROP_BACKEND_HEARTBEAT_INTERVAL: IntOption = (
     "spark.ext.h2o.backend.heartbeat.interval",
@@ -565,8 +566,8 @@ object SharedBackendConf {
       |setInternalSecureConnectionsDisabled()""".stripMargin,
     """Enables secure communications among H2O nodes. The security is based on
       |automatically generated keystore and truststore. This is equivalent for
-      |``-internal_secure_conections`` option in `H2O Hadoop deployments
-      |<https://github.com/h2oai/h2o-3/blob/master/h2o-docs/src/product/security.rst#hadoop>`_.""".stripMargin)
+      |``-internal_secure_conections`` option in H2O Hadoop. More information
+      |is available in the H2O documentation.""".stripMargin)
 
   val PROP_ALLOW_INSECURE_XGBOOST: BooleanOption = (
     "spark.ext.h2o.allow_insecure_xgboost",
@@ -574,8 +575,7 @@ object SharedBackendConf {
     """setInsecureXGBoostAllowed()
       |setInsecureXGBoostDenied()""".stripMargin,
     """If the property set to true, insecure communication among H2O nodes is
-      |allowed for the XGBoost algorithm even if the property ``spark.ext.h2o.internal_secure_connections``
-      |is set to ``true``""".stripMargin)
+      |allowed for the XGBoost algorithm even if the other security options are enabled""".stripMargin)
 
   val PROP_CLIENT_IP: OptionOption =
     ("spark.ext.h2o.client.ip", None, "setClientIp(String)", "IP of H2O client node. ")

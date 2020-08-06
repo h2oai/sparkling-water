@@ -273,7 +273,7 @@ object ExternalBackendConf {
     "spark.ext.h2o.external.extra.memory.percent",
     10,
     "setExternalExtraMemoryPercent(Integer)",
-    """This option is a percentage of ``spark.ext.h2o.external.memory`` and specifies memory
+    """This option is a percentage of external memory option and specifies memory
      |for internal JVM use outside of Java heap.""".stripMargin)
 
   val PROP_EXTERNAL_CLUSTER_REPRESENTATIVE: OptionOption = (
@@ -414,9 +414,9 @@ object ExternalBackendConf {
 
   val PROP_EXTERNAL_K8S_DOCKER_IMAGE: StringOption = (
     "spark.ext.h2o.external.k8s.docker.image",
-    s"h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}",
+    s"""See doc""",
     "setExternalK8sDockerImage(String)",
-    "Docker image containing Sparkling Water external H2O backend.")
+    s"Docker image containing Sparkling Water external H2O backend. Default value is h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}")
 
   val PROP_EXTERNAL_K8S_DOMAIN: StringOption = (
     "spark.ext.h2o.external.k8s.domain",
