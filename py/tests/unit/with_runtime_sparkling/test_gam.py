@@ -68,27 +68,6 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
-def testInteractionColumnNamesArePassedWithoutException(spark):
-    data = [(0.0, "a", 2.0, 5),
-            (float("nan"), "b", 8.0 , 4),
-            (0.0, "a", 4.0, 3),
-            (1.0, "b", 1.0, 2)]
-    df = spark.createDataFrame(data, ["x", "y", "z", "g"])
-
-    plugValues = {"x": 0, "x_y.a": 1, "x_y.b": 2, "y": "b", "g_0_0": 2}
-    gam = H2OGAM(
-        labelCol="z",
-        seed=42,
-        ignoreConstCols=False,
-        standardize=False,
-        family="gaussian",
-        missingValuesHandling="PlugValues",
-        gamCols=["g"],
-        plugValues=plugValues)
-
-    gam.fit(df)
-
-
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
     featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"]
