@@ -59,7 +59,6 @@ def testCalibrationDataFrameCauseGenerationOfCalibratedProbabilities(prostateDat
                   labelCol="CAPSULE",
                   seed=1,
                   splitRatio=0.8,
-                  withDetailedPredictionCol=True,
                   calibrateModel=True,
                   calibrationDataFrame=calibrationDataset)
     model = algo.fit(trainingDataset)

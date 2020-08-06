@@ -177,10 +177,10 @@ def testGridSearchWithDRFClassifierBehavesDiffenrentlyThanGridSearchWithDRFRegre
 
     regressor = createGridForProblemSpecificTesting(H2ODRFRegressor())
     regressionModel = regressor.fit(trainingDateset)
-    regressionDataset = regressionModel.transform(testingDataset)
+    regressionDataset = regressionModel.transform(testingDataset).drop("detailed_prediction")
 
     classifier = createGridForProblemSpecificTesting(H2ODRFClassifier())
     classificationModel = classifier.fit(trainingDateset)
-    classificationDataset = classificationModel.transform(testingDataset)
+    classificationDataset = classificationModel.transform(testingDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
