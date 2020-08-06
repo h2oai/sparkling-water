@@ -60,7 +60,7 @@ Dynamic allocation must be disabled in Spark.
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node
+        1. Create Headless service so Spark executors can reach the driver node
 
         .. code:: bash
 
@@ -95,7 +95,7 @@ Dynamic allocation must be disabled in Spark.
 
         4. Inside the shell, run:
 
-        .. code:: python
+        .. code:: scala
 
             import ai.h2o.sparkling._
             val hc = H2OContext.getOrCreate()
