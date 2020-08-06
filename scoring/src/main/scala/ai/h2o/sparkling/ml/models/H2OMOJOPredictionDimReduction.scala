@@ -65,9 +65,3 @@ trait H2OMOJOPredictionDimReduction {
     col(s"${getDetailedPredictionCol()}.dimensions")
   }
 }
-
-object H2OMOJOPredictionDimReduction {
-
-  case class Base(dimensions: Array[Double])
-
-}

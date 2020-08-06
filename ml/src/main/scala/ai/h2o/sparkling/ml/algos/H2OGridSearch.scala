@@ -158,7 +158,7 @@ class H2OGridSearch(override val uid: String)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
     }
-    val sortedGridModels = sortGridModels(unsortedGridModels)
+    val sortedGridModels = sortGridModels(algoName, unsortedGridModels)
     gridModels = sortedGridModels.map(_._2)
     gridBinaryModels = sortedGridModels.map {
       case (modelId, _) =>
@@ -175,7 +175,7 @@ class H2OGridSearch(override val uid: String)
     gridBinaryModels.head
   }
 
-  private def sortGridModels(gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
+  private def sortGridModels(algoName: String, gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       val category = H2OModelCategory.fromString(gridModels(0)._2.getModelCategory())
       category match {
@@ -183,7 +183,8 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
-        case H2OModelCategory.DimReduction => H2OMetric.GLRMMetric
+        case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
+        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.GLRMMetric// TODO
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -290,7 +291,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -318,6 +319,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2ODRF => "drf"
         case H2OKMeans => "kmeans"
         case H2OGLRM => "glrm"
+        case H2OPCA => "pca"
       }
     }
   }
