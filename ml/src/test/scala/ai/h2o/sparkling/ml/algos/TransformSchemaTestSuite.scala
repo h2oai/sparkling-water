@@ -44,9 +44,7 @@ trait TransformSchemaTestSuite extends FunSuite with Matchers {
 
   test("transformSchema with detailed prediction col") {
     val model = loadMojo(
-      H2OMOJOSettings(
-        withLeafNodeAssignments = getWithLeafNodeAssignments,
-        withStageResults = getWithStageResults))
+      H2OMOJOSettings(withLeafNodeAssignments = getWithLeafNodeAssignments, withStageResults = getWithStageResults))
 
     val datasetFields = dataset.schema.fields
     val expectedSchema = StructType(datasetFields ++ (expectedDetailedPredictionCol :: expectedPredictionCol :: Nil))

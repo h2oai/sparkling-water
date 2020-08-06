@@ -52,7 +52,7 @@ trait H2OMOJOPredictionClustering {
   def getClusteringPredictionSchema(): StructType = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
     val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
-    val fields= clusterField :: distancesField :: Nil
+    val fields = clusterField :: distancesField :: Nil
     StructType(fields)
   }
 
