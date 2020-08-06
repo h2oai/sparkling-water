@@ -52,7 +52,6 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val expectedCols = Seq("prediction")
     val predictions = model.transform(dataset)
     assert(predictions.select("prediction").schema.fields.map(_.name).sameElements(expectedCols))
-    assert(!predictions.columns.contains("detailed_prediction"))
   }
 
   test("detailedPredictionCol content with contributions, assignments and stage probabilities") {
