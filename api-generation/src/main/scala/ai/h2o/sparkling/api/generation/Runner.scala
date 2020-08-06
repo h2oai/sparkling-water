@@ -74,7 +74,7 @@ object Runner {
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
-    val gamFields = Seq(ignoredCols, plugValues, betaConstraints, gamCols)
+    val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)

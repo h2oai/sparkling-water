@@ -68,37 +68,6 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
-def testPlugValuesAffectResult(spark, carsDatasetPath):
-    carsDataset=spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
-    carsDataset=carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))
-    [traningDataset, testingDataset] = carsDataset.randomSplit([0.9, 0.1], 1)
-
-    def createInitialGamDefinition():
-        gamCols=["weight", "acceleration"]
-        featuresCols=["economy","displacement", "power", "year", "economy_20mpg"]
-        return H2OGAM(featuresCols=featuresCols, gamCols=gamCols, labelCol="cylinders", seed=1,splitRatio=0.8)
-
-    referenceGam = createInitialGamDefinition()
-    referenceModel = referenceGam.fit(traningDataset)
-    referenceResult = referenceModel.transform(testingDataset)
-
-    plugValues = {
-        "economy": 1.1,
-        "displacement": 2.2,
-        "power": 3.3,
-        "weight_0_0": 4.4,
-        "acceleration": 5.5,
-        "year": 2000,
-        "economy_20mpg": "0"}
-    gam = createInitialGamDefinition()
-    gam.setMissingValuesHandling("PlugValues")
-    gam.setPlugValues(plugValues)
-    model = gam.fit(traningDataset)
-    result = model.transform(testingDataset)
-
-    unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)
-
-
 def testInteractionColumnNamesArePassedWithoutException(spark):
     data = [(0.0, "a", 2.0, 5),
             (float("nan"), "b", 8.0 , 4),
@@ -118,6 +87,7 @@ def testInteractionColumnNamesArePassedWithoutException(spark):
         plugValues=plugValues)
 
     gam.fit(df)
+
 
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
