@@ -142,7 +142,7 @@ Dynamic allocation must be disabled in Spark.
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node:
+        1. Create Headless service so Spark executors can reach the driver node:
 
         .. code:: bash
 
@@ -290,7 +290,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node
+        1. Create Headless service so Spark executors can reach the driver node
 
         .. code:: bash
 
@@ -387,7 +387,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node:
+        1. Create Headless service so Spark executors can reach the driver node:
 
         .. code:: bash
 
@@ -542,7 +542,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node
+        1. Create Headless service so Spark executors can reach the driver node
 
         .. code:: bash
 
@@ -642,7 +642,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
         **To start an interactive shell in a client mode:**
 
-        1. Create Headless so Spark executors can reach the driver node:
+        1. Create Headless service so Spark executors can reach the driver node:
 
         .. code:: bash
 
