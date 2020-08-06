@@ -1,6 +1,7 @@
 \section{Deployment}
 Since Sparkling Water is designed as a regular Spark application, its deployment cycle is strictly driven by Spark
 deployment strategies (refer to Spark documentation\footnote{Spark deployment guide \url{http://spark.apache.org/docs/latest/cluster-overview.html}}).
+Deployment on top of Kubernetes is described in the next section.
 Spark applications are deployed by the \texttt{spark-submit}~\footnote{Submitting Spark applications \url{http://spark.apache.org/docs/latest/submitting-applications.html}}
 script that handles all deployment scenarios:
 
@@ -180,7 +181,7 @@ This will allow you to use the Flow UI.
 \item Create a new Scala notebook.
 \item Create an H2O cluster inside the Spark cluster:
 \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val conf = new H2OConf(spark)
 val h2oContext = H2OContext.getOrCreate(conf)
 \end{lstlisting}

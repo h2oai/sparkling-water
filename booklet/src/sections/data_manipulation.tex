@@ -55,8 +55,8 @@ h2oContext$asH2OFrame(sparkDf, "frameName")
 
     \begin{itemize}
         \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import water.fvec.H2OFrame
-val frame = new H2OFrame("train.hex")
+import ai.h2o.sparkling.H2OFrame
+val frame = H2OFrame("train.hex")
         \end{lstlisting}
         \item \textbf{Python} \begin{lstlisting}[style=Python]
 import h2o
@@ -78,17 +78,11 @@ val frame = h2o.getFrame("train.hex")
     \begin{itemize}
         \item load a cluster local file (a file located on each node of the cluster):
         \begin{lstlisting}[style=Scala]
-val h2oFrame = new H2OFrame(new File("/data/iris.csv"))
+val h2oFrame = H2OFrame(new File("/data/iris.csv"))
         \end{lstlisting}
         \item load file from HDFS/S3/S3N/S3A:
         \begin{lstlisting}[style=Scala]
-val h2oFrame = new H2OFrame(URI.create("hdfs://data/iris.csv"))
-        \end{lstlisting}
-        \item loading multiple files from HDFS/S3/S3N/S3A:
-        \begin{lstlisting}[style=Scala]
-val h2oFrame = new H2OFrame(
-    URI.create("hdfs://data/iris/01.csv"),
-    URI.create("hdfs://data/iris/02.csv"))
+val h2oFrame = H2OFrame(URI.create("hdfs://data/iris.csv"))
         \end{lstlisting}
     \end{itemize}
 

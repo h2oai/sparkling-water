@@ -56,7 +56,7 @@ properties in spark configuration.
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val conf = new H2OConf().setInternalClusterMode()
 val h2oContext = H2OContext.getOrCreate(conf)
     \end{lstlisting}
@@ -79,7 +79,7 @@ on the \texttt{SparkConf}, the following call is sufficient
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val h2oContext = H2OContext.getOrCreate()
     \end{lstlisting}
     \item \textbf{Python} \begin{lstlisting}[style=Python]
@@ -128,7 +128,7 @@ To start an H2O cluster and connect to it, run:
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val conf = new H2OConf()
     .setExternalClusterMode()
     .useAutoClusterStart()
@@ -169,9 +169,6 @@ to call \texttt{setH2ODriverPath} as Sparkling Water will read the path from the
 
 When specifying the queue, we recommend that this queue has YARN preemption off to have a stable H2O cluster.
 
-In the case of Scala, it can also happen that we might need to explicitly set the client's IP or network. To see how this
-can be configured, please see the section \ref{subsection:specify_ip}.
-
 \subsubsection{Manual Mode of External Backend on Hadoop}
 
 In the manual mode, we need to start the H2O cluster before connecting to it manually. At this section, we
@@ -203,7 +200,7 @@ To connect to this external cluster, run the following commands:
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val conf = new H2OConf()
     .setExternalClusterMode()
     .useManualClusterStart()
@@ -273,7 +270,7 @@ To connect to this external cluster, run the following commands:
 
 \begin{itemize}
     \item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 val conf = new H2OConf()
     .setExternalClusterMode()
     .useManualClusterStart()
@@ -303,32 +300,8 @@ hc <- H2OContext.getOrCreate(conf)
     \end{lstlisting}
 \end{itemize}
 
-The \texttt{representant\_ip} and \texttt{representant\_port} should be IP and port of the leader node of the started
+The \texttt{representant\_ip} and \texttt{representant\_port} need to be IP and port of the leader node of the started
 H2O cluster from the previous step.
-
-\subsection{Specifying the Client Network in Scala}
-\label{subsection:specify_ip}
-
-It is possible that Spark driver, in which we are running H2O client which is connecting to the external H2O cluster, is
-connected to multiple networks. This can happen only in Scala as Python and R clients are not using the H2O client.
-
-In this case, external H2O cluster may decide to use addresses from network A while Spark decides to use
-addresses for its executors and driver from network B. When we start \textbf{H2OContext}, the H2O
-client running inside of the Spark Driver can get the same IP address as the Spark driver, and, thus, the rest
-of the H2O cluster can't see it. This shouldn't happen in environments where the nodes are connected to only one
-network; however we provide a configuration for how to deal with this case as well.
-
-Let's assume we have two H2O nodes on addresses 192.168.0.1 and 192.168.0.2. Let's also assume that the Spark driver
-is available on 172.16.1.1, and the only executor is available on 172.16.1.2. The node with the Spark driver
-is also connected to the 192.168.0.x network with address 192.168.0.3.
-
-In this case, there is a chance that the H2O client will use the address from 172.16.x.x network instead
-of the 192.168.0.x one, which can lead to the problem that the H2O cluster and H2O client can't see each other.
-
-We can force the client to use the correct network or address using the calling \textbf{setClientNetworkMask("192.168.0.0/24")}
-on \textbf{H2OConf} object. Instead of \textbf{setClientNetworkMask}, we can also use more strict variant and specify
-the IP address directly using \textbf{setClientIp("192.168.0.3")}. This IP address needs to be accessible from the
-Spark driver and needs to be located in the same network as the rest of the H2O worker nodes.
 
 \subsection{Memory Management}
 

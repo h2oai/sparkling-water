@@ -30,7 +30,7 @@ First, create Spark Session and H2OContext:
 
 \begin{lstlisting}[style=Scala]
 import org.apache.spark.SparkConf
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 import org.apache.spark.sql.SparkSession
 val conf = new SparkConf().setAppName("Sparkling Water: Join of Airlines with Weather Data")
 val spark = SparkSession.builder().config(conf).getOrCreate()

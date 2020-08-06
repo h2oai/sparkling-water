@@ -18,14 +18,32 @@
 		\item GridSearch
 		\item KMeans
 		\item GLM
+		\item GLRM
 	\end{itemize}
 
+	In the exposed algorithms above, it is up on the users to decide whether they want to run classification or
+	regression problem using the given algorithm. H2O decides whether it will run classification or regression based
+	on the type of the label column. If it is categorical, classification will be performed, otherwise regression.
+
+	If you do not want to be worried about this, we also expose specific regressors and classifiers to make this more
+	explicit. For example, if you decide to use H2OAutoMLRegressor, you can be sure that the algorithm will do regression
+	and you do not need to worry about the type of the label column. These wrappers automatically convert the label
+	column to required type for the given problem. The following wrappers exist:
+
+	\begin{itemize}
+		\item \texttt{H2OAutoMLClassifer} and \texttt{H2OAutoMLRegressor}
+		\item \texttt{H2ODeepLearningClassifier} and \texttt{H2ODeepLearningRegressor}
+		\item \texttt{H2ODRFClassifier} and \texttt{H2ODRFRegressor}
+		\item \texttt{H2OGBMClassifier} and \texttt{H2OGBMRegressor}
+		\item \texttt{H2OGLMClassifier} and \texttt{H2OGLMRegressor}
+		\item \texttt{H2OXGBoostClassifier} and \texttt{H2OOXGBoostRegressor}
+	\end{itemize}
 
 	First, let's create H2OContext:
 
 	\begin{itemize}
 		\item \textbf{Scala} \begin{lstlisting}[style=Scala]
-import org.apache.spark.h2o._
+import ai.h2o.sparkling._
 import java.net.URI
 val hc = H2OContext.getOrCreate()
 		\end{lstlisting}
@@ -64,6 +82,38 @@ val model = estimator.fit(trainingDF)
 		\item \textbf{Python} \begin{lstlisting}[style=Python]
 from pysparkling.ml import H2OGBM
 estimator = H2OGBM(labelCol = "CAPSULE")
+model = estimator.fit(trainingDF)
+		\end{lstlisting}
+	\end{itemize}
+
+	Instead of calling the generic wrapper, we can do regression explicitly as:
+
+	\begin{itemize}
+		\item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.algos.H2OGBMRegressor
+val estimator = new H2OGBMRegressor()
+	.setLabelCol("CAPSULE")
+val model = estimator.fit(trainingDF)
+		\end{lstlisting}
+		\item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import H2OGBMRegressor
+estimator = H2OGBMRegressor(labelCol = "CAPSULE")
+model = estimator.fit(trainingDF)
+		\end{lstlisting}
+	\end{itemize}
+
+	or classification explicitly as:
+
+	\begin{itemize}
+		\item \textbf{Scala} \begin{lstlisting}[style=Scala]
+import ai.h2o.sparkling.ml.algos.H2OGBMClassifier
+val estimator = new H2OGBMClassifier()
+	.setLabelCol("CAPSULE")
+val model = estimator.fit(trainingDF)
+		\end{lstlisting}
+		\item \textbf{Python} \begin{lstlisting}[style=Python]
+from pysparkling.ml import H2OGBMClassifier
+estimator = H2OGBMClassifier(labelCol = "CAPSULE")
 model = estimator.fit(trainingDF)
 		\end{lstlisting}
 	\end{itemize}
