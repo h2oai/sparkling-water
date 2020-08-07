@@ -36,7 +36,8 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.json4s._
+import org.json4s.JsonAST.JValue
+import org.json4s.{JString, _}
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
@@ -186,7 +187,7 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
         case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
-        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.GLRMMetric // TODO
+        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.PCAMetric
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -207,6 +208,20 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = metric match {
+    case H2OMetric.PCAMetric =>
+      val ast = parse(model.getModelDetails())
+      val dataWithHeader = for {
+        JObject(obj) <- ast
+        JField("model_summary", JObject(modelSummary)) <- obj
+        JField("data", JArray(dataCol)) <- modelSummary
+        JArray(rows) <- dataCol
+      } yield rows
+      val variancesColIdx = dataWithHeader.head.indexOf(JString("Proportion of Variance"))
+      val data = dataWithHeader.tail.map(list => list(variancesColIdx))
+      val doubles = for {
+        JDouble(result) <- data
+      } yield result
+      doubles.sum
     case H2OMetric.GLRMMetric =>
       val ast = parse(model.getModelDetails())
       val metricValueOption = for {
