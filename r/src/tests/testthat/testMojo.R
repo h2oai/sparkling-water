@@ -52,7 +52,7 @@ test_that("test MOJO predictions", {
   mojo <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   sdf <- mojo$transform(dataset)
   data <- dplyr::collect(mojo$transform(sdf))
-  expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "prediction"))
+  expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "prediction", "detailed_prediction"))
 })
 
 test_that("test getDomainValues", {
