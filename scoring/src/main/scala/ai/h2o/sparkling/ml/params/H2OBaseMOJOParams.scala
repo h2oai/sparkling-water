@@ -36,6 +36,11 @@ trait H2OBaseMOJOParams extends Params with Logging {
     "detailedPredictionCol",
     "Column containing additional prediction details, its content depends on the model type.")
 
+  protected final val withDetailedPredictionCol = new BooleanParam(
+    this,
+    "withDetailedPredictionCol",
+    "Enables or disables generating additional prediction column, but with more details")
+
   protected final val withContributions = new BooleanParam(
     this,
     "withContributions",

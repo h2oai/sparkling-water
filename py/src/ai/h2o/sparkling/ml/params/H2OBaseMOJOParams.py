@@ -33,6 +33,12 @@ class H2OBaseMOJOParams(Params):
         "Column containing additional prediction details, its content depends on the model type.",
         H2OTypeConverters.toString())
 
+    withDetailedPredictionCol = Param(
+        Params._dummy(),
+        "withDetailedPredictionCol",
+        "Enables or disables generating additional prediction column, but with more details",
+        H2OTypeConverters.toBoolean())
+
     withContributions = Param(
         Params._dummy(),
         "withContributions",
