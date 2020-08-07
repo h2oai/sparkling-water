@@ -98,6 +98,20 @@ class H2OFrame private (
     H2OFrame(rapidsFrameV3.key.name)
   }
 
+  def renameCol(originalColName: String, newColName: String): H2OFrame = {
+    if (!columnNames.contains(originalColName)) {
+      throw new IllegalArgumentException(s"Column '$originalColName' does not exist in the frame $frameId")
+    }
+    val endpoint = getClusterEndpoint(conf)
+    val originalColIdx = columnNames.indexOf(originalColName)
+    val params = Map(
+      "ast" -> MessageFormat
+        .format(s"( assign {0} (colnames= {0} {1} {2}))", frameId, originalColIdx.toString, s""""$newColName""""))
+    update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+    columnNames.update(originalColIdx, newColName)
+    this
+  }
+
   def subframe(columns: Array[String]): H2OFrame = {
     val nonExistentColumns = columns.diff(columnNames)
     if (nonExistentColumns.nonEmpty) {
