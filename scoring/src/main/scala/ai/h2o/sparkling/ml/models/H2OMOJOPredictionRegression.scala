@@ -26,29 +26,25 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   self: H2OMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      if (getWithContributions() && getWithLeafNodeAssignments()) {
-        udf[WithContributionsAndAssignments, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
-          val contributions = convertContributionsToMap(model, pred.contributions)
-          WithContributionsAndAssignments(pred.value, contributions, pred.leafNodeAssignments)
-        }
-      } else if (getWithContributions()) {
-        udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
-          val contributions = convertContributionsToMap(model, pred.contributions)
-          WithContributions(pred.value, contributions)
-        }
-      } else if (getWithLeafNodeAssignments()) {
-        udf[WithAssignments, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
-          WithAssignments(pred.value, pred.leafNodeAssignments)
-        }
-      } else {
-        getBaseUdf()
+    if (getWithContributions() && getWithLeafNodeAssignments()) {
+      udf[WithContributionsAndAssignments, Row, Double] { (r: Row, offset: Double) =>
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+        val contributions = convertContributionsToMap(model, pred.contributions)
+        WithContributionsAndAssignments(pred.value, contributions, pred.leafNodeAssignments)
+      }
+    } else if (getWithContributions()) {
+      udf[WithContributions, Row, Double] { (r: Row, offset: Double) =>
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+        val contributions = convertContributionsToMap(model, pred.contributions)
+        WithContributions(pred.value, contributions)
+      }
+    } else if (getWithLeafNodeAssignments()) {
+      udf[WithAssignments, Row, Double] { (r: Row, offset: Double) =>
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
+        WithAssignments(pred.value, pred.leafNodeAssignments)
       }
     } else {
       getBaseUdf()
@@ -64,22 +60,18 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
 
   def getRegressionDetailedPredictionColSchema(): Seq[StructField] = {
     val valueField = StructField("value", DoubleType, nullable = false)
-    val fields = if (getWithDetailedPredictionCol()) {
-      if (getWithContributions() && getWithLeafNodeAssignments()) {
-        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        valueField :: contributionsField :: assignmentsField :: Nil
-      } else if (getWithContributions()) {
-        val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
-        valueField :: contributionsField :: Nil
-      } else if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        valueField :: assignmentsField :: Nil
-      } else {
-        valueField :: Nil
-      }
+    val fields = if (getWithContributions() && getWithLeafNodeAssignments()) {
+      val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      valueField :: contributionsField :: assignmentsField :: Nil
+    } else if (getWithContributions()) {
+      val contributionsField = StructField("contributions", getContributionsSchema(), nullable = true)
+      valueField :: contributionsField :: Nil
+    } else if (getWithLeafNodeAssignments()) {
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      valueField :: assignmentsField :: Nil
     } else {
       valueField :: Nil
     }

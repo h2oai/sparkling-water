@@ -19,6 +19,8 @@ from pyspark.ml.param import *
 from pyspark.ml.util import JavaMLWritable, JavaMLReadable
 from pyspark.ml.wrapper import JavaModel
 
+import warnings
+
 
 class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
 
@@ -36,7 +38,9 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
         return self._java_obj.getDetailedPredictionCol()
 
     def getWithDetailedPredictionCol(self):
-        return self._java_obj.getWithDetailedPredictionCol()
+        warnings.warn("The method will be removed without a replacement in the version 3.34."
+                      "Detailed prediction columns is always enabled.", DeprecationWarning)
+        return True
 
     def getFeaturesCols(self):
         return list(self._java_obj.getFeaturesCols())

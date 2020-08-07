@@ -47,14 +47,12 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val expectedCols = Seq("prediction")
     val predictions = model.transform(dataset)
     assert(predictions.select("prediction").schema.fields.map(_.name).sameElements(expectedCols))
-    assert(!predictions.columns.contains("detailed_prediction"))
   }
 
   test("detailedPredictionCol content") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithLeafNodeAssignments(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
@@ -73,11 +71,10 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     assert(leafNodeAssignments.length == algo.getNtrees() * 3) // 3 is number of classes
   }
 
-  test("transformSchema with detailed prediction col") {
+  test("transformSchema") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithLeafNodeAssignments(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
@@ -100,26 +97,6 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
-  }
-
-  test("transformSchema without detailed prediction col") {
-    val algo = new H2OGBM()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
-    val model = algo.fit(dataset)
-
-    val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = true)
-
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
-
     assert(schema == expectedSchema)
     assert(schema == expectedSchemaByTransform)
   }

@@ -169,9 +169,8 @@ uses HDFS.
 \subsection{Accessing additional prediction details}
 
 After computing predictions, the \texttt{prediction} column contains in case of classification problem the predicted label
-and in case regression problem the predicted number. If we need to access more details for each prediction, set
-\texttt{withDetailedPredictionCol} to true on \texttt{H2OMOJOSettings} before running the predictions. This will ensure that
-additional column will be created during predictions, by default named \texttt{detailed\_prediction} which contains, for example,
+and in case regression problem the predicted number. If we need to access more details for each prediction, , see the content
+of a detailed prediction column. By default, the column is named named \texttt{detailed\_prediction} . It could contain, for example,
 predicted probabilities for each predicted label in case of classification problem, shapley values and other information.
 
 \subsection{Customizing the MOJO Settings}
@@ -181,10 +180,9 @@ We can configure the output and format of predictions via the \texttt{H2OMOJOSet
 \begin{itemize}
     \item \texttt{predictionCol} - Specifies the name of the generated prediction column. Default value is \texttt{prediction}.
     \item \texttt{detailedPredictionCol} - Specifies the name of the generated detailed prediction column. The detailed prediction column, if enabled, contains additional details, such as probabilities, shapley values etc. The default value is \texttt{detailed\_prediction}.
-    \item \texttt{withDetailedPredictionCol} - Enables or disables the generation of the detailed prediction column. By default, it is disabled.
     \item \texttt{convertUnknownCategoricalLevelsToNa} - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
     \item \texttt{convertInvalidNumbersToNa} - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
-    \item \texttt{withContributions} - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the detailed prediction column. Therefore, to compute Shapley values, both this option and \texttt{withDetailedPredictionCol} needs to be enabled. By default, it is disabled.
+    \item \texttt{withContributions} - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the detailed prediction column.
     \item \texttt{withLeafNodeAssignments} - When enabled, a user can obtain the leaf node assignments after the model training has finished. By default, it is disabled.
 \end{itemize}
 
@@ -225,8 +223,8 @@ was used, this method returns the training metrics.
 
 \subsubsection{Obtaining Leaf Node Assignments}
 
-To obtain the leaf node assignments, please first make sure to set\\ \texttt{withLeafNodeAssignments} and
-\texttt{withDetailedPredictionCol} to true on your MOJO settings object. The leaf node assignments are now stored
+To obtain the leaf node assignments, please first make sure to set\\ \texttt{withLeafNodeAssignments}
+on your MOJO settings object. The leaf node assignments are now stored
 in the \texttt{\${detailedPredictionCol}.leafNodeAssignments} column on the dataset obtained from the prediction.
 Please replace\\ \texttt{\${detailedPredictionCol}} with the actual value of your detailed prediction col. By default,
 it is \texttt{detailed\_prediction}.

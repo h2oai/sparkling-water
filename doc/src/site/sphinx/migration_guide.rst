@@ -165,7 +165,7 @@ From 3.30.1 to 3.32
 From 3.30 to 3.30.1
 -------------------
 
-No breaking changes.
+- The detailed prediction columns is always enabled for all types of MOJO predictions.
 
 From 3.28.1 to 3.30
 -------------------

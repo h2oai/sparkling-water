@@ -52,7 +52,7 @@ test_that("test MOJO predictions", {
   mojo <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   sdf <- mojo$transform(dataset)
   data <- dplyr::collect(mojo$transform(sdf))
-  expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "prediction"))
+  expect_equal(colnames(data), c("ID", "CAPSULE", "AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON", "detailed_prediction", "prediction"))
 })
 
 test_that("test getDomainValues", {
@@ -98,7 +98,7 @@ test_that("test current metrics", {
 
 test_that("test MOJO predictions on unseen categoricals", {
   path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
-  settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE)
+  settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, withDetailedPredictionCol = FALSE)
   mojo <- H2OMOJOModel.createFromMojo(path, settings)
 
   df <- as.data.frame(t(c(5.1, 3.5, 1.4, 0.2, "Missing_categorical")))

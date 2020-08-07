@@ -193,7 +193,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .cache()
     val gbm = configureGBMForProstateDF()
 
-    val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
+    val model = gbm.fit(trainingDF)
     val predictionDF = model.transform(testingDF)
 
     assertGBMPredictions(testingDF, predictionDF)
@@ -207,7 +207,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
       .cache()
     val gbm = configureGBMForProstateDF()
 
-    val model = gbm.setWithDetailedPredictionCol(true).fit(trainingDF)
+    val model = gbm.fit(trainingDF)
     val predictionDF = model.transform(testingDF)
 
     assertGBMPredictions(testingDF, predictionDF)
@@ -217,7 +217,6 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     new H2OGBM()
       .setSeed(42)
       .setDistribution("bernoulli")
-      .setWithDetailedPredictionCol(true)
       .setLabelCol("CAPSULE")
   }
 

@@ -19,6 +19,7 @@ import warnings
 
 from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
+import warnings
 
 from ai.h2o.sparkling.ml.params.H2OMOJOAlgoSharedParams import H2OMOJOAlgoSharedParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
@@ -132,7 +133,9 @@ class H2OCommonParams(H2OMOJOAlgoSharedParams):
         return self._set(detailedPredictionCol=value)
 
     def setWithDetailedPredictionCol(self, value):
-        return self._set(withDetailedPredictionCol=value)
+        warnings.warn("The method will be removed without a replacement in the version 3.34."
+                      "Detailed prediction columns is enabled by default.", DeprecationWarning)
+        return self
 
     def setFeaturesCols(self, value):
         return self._set(featuresCols=value)

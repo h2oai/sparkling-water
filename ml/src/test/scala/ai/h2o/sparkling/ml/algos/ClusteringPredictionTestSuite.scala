@@ -47,7 +47,6 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
     // the 'cluster' from clustering prediction is directly in predictionCol
     assert(transformed.select("prediction").head() == Row(0))
     assert(transformed.select("prediction").distinct().count() == 3)
-    assert(!transformed.columns.contains("detailed_prediction"))
   }
 
   test("detailedPredictionCol content") {
@@ -55,7 +54,6 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setSplitRatio(0.8)
       .setSeed(1)
       .setK(3)
-      .setWithDetailedPredictionCol(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
 
     val model = algo.fit(dataset)
@@ -68,12 +66,11 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
     assert(transformed.select("detailed_prediction.distances").head().getAs[Seq[Double]](0).length == 3)
   }
 
-  test("transformSchema with detailed prediction col") {
+  test("transformSchema") {
     val algo = new H2OKMeans()
       .setSplitRatio(0.8)
       .setSeed(1)
       .setK(3)
-      .setWithDetailedPredictionCol(true)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
 
     val model = algo.fit(dataset)
@@ -87,26 +84,6 @@ class ClusteringPredictionTestSuite extends FunSuite with Matchers with SharedH2
       StructField("detailed_prediction", StructType(clusterField :: distancesField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
-
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
-  }
-
-  test("transformSchema without detailed prediction col") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-
-    val model = algo.fit(dataset)
-
-    val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", IntegerType, nullable = true)
-
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 

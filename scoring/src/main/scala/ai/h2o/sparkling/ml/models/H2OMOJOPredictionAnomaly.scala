@@ -25,25 +25,17 @@ import org.apache.spark.sql.{Column, Row}
 trait H2OMOJOPredictionAnomaly {
   self: H2OMOJOModel =>
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      if (getWithLeafNodeAssignments()) {
-        udf[DetailedWithAssignments, Row] { r: Row =>
-          val pred =
-            H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
-          DetailedWithAssignments(pred.score, pred.normalizedScore, pred.leafNodeAssignments)
-        }
-      } else {
-        udf[Detailed, Row] { r: Row =>
-          val pred =
-            H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
-          Detailed(pred.score, pred.normalizedScore)
-        }
-      }
-    } else {
-      udf[Base, Row] { r: Row =>
+    if (getWithLeafNodeAssignments()) {
+      udf[DetailedWithAssignments, Row] { r: Row =>
         val pred =
           H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
-        Base(pred.score)
+        DetailedWithAssignments(pred.score, pred.normalizedScore, pred.leafNodeAssignments)
+      }
+    } else {
+      udf[Detailed, Row] { r: Row =>
+        val pred =
+          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictAnomalyDetection(RowConverter.toH2ORowData(r))
+        Detailed(pred.score, pred.normalizedScore)
       }
     }
   }
@@ -57,18 +49,14 @@ trait H2OMOJOPredictionAnomaly {
 
   def getAnomalyDetailedPredictionColSchema(): Seq[StructField] = {
     val scoreField = StructField("score", predictionColType, nullable = false)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
-      val baseFields = scoreField :: normalizedScoreField :: Nil
-      if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        baseFields :+ assignmentsField
-      } else {
-        baseFields
-      }
+    val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
+    val baseFields = scoreField :: normalizedScoreField :: Nil
+    val fields = if (getWithLeafNodeAssignments()) {
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      baseFields :+ assignmentsField
     } else {
-      scoreField :: Nil
+      baseFields
     }
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
@@ -79,9 +67,6 @@ trait H2OMOJOPredictionAnomaly {
 }
 
 object H2OMOJOPredictionAnomaly {
-
-  case class Base(score: Double)
-
   case class Detailed(score: Double, normalizedScore: Double)
 
   case class DetailedWithAssignments(score: Double, normalizedScore: Double, leafNodeAssignments: Array[String])

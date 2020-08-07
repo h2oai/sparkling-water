@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -103,7 +104,8 @@ trait H2OCommonParams extends H2OMOJOAlgoSharedParams {
 
   def setDetailedPredictionCol(columnName: String): this.type = set(detailedPredictionCol, columnName)
 
-  def setWithDetailedPredictionCol(enabled: Boolean): this.type = set(withDetailedPredictionCol, enabled)
+  @DeprecatedMethod(version = "3.34")
+  def setWithDetailedPredictionCol(enabled: Boolean): this.type = this
 
   def setWithContributions(enabled: Boolean): this.type = set(withContributions, enabled)
 

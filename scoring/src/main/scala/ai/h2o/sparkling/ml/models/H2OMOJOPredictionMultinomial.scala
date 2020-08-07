@@ -26,28 +26,19 @@ import org.apache.spark.sql.{Column, Row}
 trait H2OMOJOPredictionMultinomial {
   self: H2OMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      if (getWithLeafNodeAssignments()) {
-        udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
-          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-          DetailedWithAssignments(pred.label, probabilities, pred.leafNodeAssignments)
-        }
-      } else {
-        udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-          val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-          val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
-          val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-          Detailed(pred.label, probabilities)
-        }
+    if (getWithLeafNodeAssignments()) {
+      udf[DetailedWithAssignments, Row, Double] { (r: Row, offset: Double) =>
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
+        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        DetailedWithAssignments(pred.label, probabilities, pred.leafNodeAssignments)
       }
     } else {
-      udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictMultinomial(RowConverter.toH2ORowData(r), offset)
-        Base(pred.label)
+      udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
+        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+        val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
+        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+        Detailed(pred.label, probabilities)
       }
     }
   }
@@ -61,20 +52,15 @@ trait H2OMOJOPredictionMultinomial {
 
   def getMultinomialDetailedPredictionColSchema(): Seq[StructField] = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
-
-    val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField =
-        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
-      val baseFields = labelField :: probabilitiesField :: Nil
-      if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
-        baseFields ++ (assignmentsField :: Nil)
-      } else {
-        baseFields
-      }
+    val probabilitiesField =
+      StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val baseFields = labelField :: probabilitiesField :: Nil
+    val fields = if (getWithLeafNodeAssignments()) {
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = true), nullable = true)
+      baseFields ++ (assignmentsField :: Nil)
     } else {
-      labelField :: Nil
+      baseFields
     }
 
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
@@ -86,9 +72,6 @@ trait H2OMOJOPredictionMultinomial {
 }
 
 object H2OMOJOPredictionMultinomial {
-
-  case class Base(label: String)
-
   case class Detailed(label: String, probabilities: Map[String, Double])
 
   case class DetailedWithAssignments(

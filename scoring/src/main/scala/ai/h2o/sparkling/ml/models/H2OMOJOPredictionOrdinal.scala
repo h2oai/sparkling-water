@@ -26,20 +26,11 @@ import org.apache.spark.sql.{Column, Row}
 trait H2OMOJOPredictionOrdinal {
   self: H2OMOJOModel =>
   def getOrdinalPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
-        val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-        val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
-        val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
-        Detailed(pred.label, probabilities)
-      }
-    } else {
-      udf[Base, Row, Double] { (r: Row, offset: Double) =>
-        val pred = H2OMOJOCache
-          .getMojoBackend(uid, getMojo, this)
-          .predictOrdinal(RowConverter.toH2ORowData(r), offset)
-        Base(pred.label)
-      }
+    udf[Detailed, Row, Double] { (r: Row, offset: Double) =>
+      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val pred = model.predictOrdinal(RowConverter.toH2ORowData(r), offset)
+      val probabilities = model.getResponseDomainValues.zip(pred.classProbabilities).toMap
+      Detailed(pred.label, probabilities)
     }
   }
 
@@ -52,14 +43,9 @@ trait H2OMOJOPredictionOrdinal {
 
   def getOrdinalDetailedPredictionColSchema(): Seq[StructField] = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
-
-    val fields = if (getWithDetailedPredictionCol()) {
-      val probabilitiesField =
-        StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
-      labelField :: probabilitiesField :: Nil
-    } else {
-      labelField :: Nil
-    }
+    val probabilitiesField =
+      StructField("probabilities", MapType(StringType, DoubleType, valueContainsNull = false), nullable = true)
+    val fields = labelField :: probabilitiesField :: Nil
 
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }

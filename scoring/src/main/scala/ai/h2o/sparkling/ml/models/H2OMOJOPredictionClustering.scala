@@ -26,18 +26,10 @@ trait H2OMOJOPredictionClustering {
   self: H2OMOJOModel =>
 
   def getClusteringPredictionUDF(): UserDefinedFunction = {
-    if (getWithDetailedPredictionCol()) {
-      udf[Detailed, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
-        Detailed(pred.cluster, pred.distances)
-      }
-    } else {
-      udf[Base, Row] { r: Row =>
-        val pred =
-          H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
-        Base(pred.cluster)
-      }
+    udf[Detailed, Row] { r: Row =>
+      val pred =
+        H2OMOJOCache.getMojoBackend(uid, getMojo, this).predictClustering(RowConverter.toH2ORowData(r))
+      Detailed(pred.cluster, pred.distances)
     }
   }
 
@@ -50,12 +42,8 @@ trait H2OMOJOPredictionClustering {
 
   def getClusteringDetailedPredictionColSchema(): Seq[StructField] = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
-      clusterField :: distancesField :: Nil
-    } else {
-      clusterField :: Nil
-    }
+    val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
+    val fields = clusterField :: distancesField :: Nil
     Seq(StructField(getDetailedPredictionCol(), StructType(fields), nullable = true))
   }
 
@@ -66,8 +54,5 @@ trait H2OMOJOPredictionClustering {
 
 object H2OMOJOPredictionClustering {
 
-  case class Base(cluster: Integer)
-
   case class Detailed(cluster: Integer, distances: Array[Double])
-
 }
