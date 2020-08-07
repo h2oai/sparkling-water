@@ -98,7 +98,7 @@ test_that("test current metrics", {
 
 test_that("test MOJO predictions on unseen categoricals", {
   path <- paste0("file://", normalizePath("../../../../../ml/src/test/resources/deep_learning_airlines_categoricals.zip"))
-  settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, withDetailedPredoctionCol = FALSE)
+  settings <- H2OMOJOSettings(convertUnknownCategoricalLevelsToNa = TRUE, withDetailedPredictionCol = FALSE)
   mojo <- H2OMOJOModel.createFromMojo(path, settings)
 
   df <- as.data.frame(t(c(5.1, 3.5, 1.4, 0.2, "Missing_categorical")))
