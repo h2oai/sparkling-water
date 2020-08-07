@@ -33,6 +33,11 @@ From 3.32 to 3.34
 - On ``H2OConf``, the setter ``setMapperXmx`` is replaced by ``setExternalMemory`` and the getter ``mapperXmx``
   is replaced by ``externalMemory``. Also the Spark option ``spark.ext.h2o.hadoop.memory`` is replaced by ``spark.ext.h2o.external.memory``.
 
+- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
+  MOJO models were removed without replacement.
+
+- The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without replacement.
+
 From 3.30.1 to 3.32
 -------------------
 
@@ -210,7 +215,7 @@ From 3.30.1 to 3.32
 From 3.30 to 3.30.1
 -------------------
 
-No breaking changes.
+- The detailed prediction columns is always enabled for all types of MOJO predictions.
 
 From 3.28.1 to 3.30
 -------------------

@@ -242,9 +242,8 @@ Accessing additional prediction details
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 After computing predictions, the ``prediction`` column contains in case of classification problem the predicted label
-and in case regression problem the predicted number. If we need to access more details for each prediction, set
-``withDetailedPredictionCol`` to true on ``H2OMOJOSettings`` before running the predictions. This will ensure that
-an additional column will be created during predictions, by default named ``detailed_prediction`` which contains, for example,
+and in case regression problem the predicted number. If we need to access more details for each prediction, see the content
+of a detailed prediction column. By default, the column is named named ``detailed_prediction``. It could contain, for example,
 predicted probabilities for each predicted label in case of classification problem, Shapley values, and other information.
 
 Customizing the MOJO Settings
@@ -255,12 +254,10 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
 - ``predictionCol`` - Specifies the name of the generated prediction column. The default value is `prediction`.
 - ``detailedPredictionCol`` - Specifies the name of the generated detailed prediction column. The detailed prediction column,
   if enabled, contains additional details, such as probabilities, Shapley values etc. The default value is `detailed_prediction`.
-- ``withDetailedPredictionCol`` - Enables or disables the generation of the detailed prediction column. By default, it is disabled.
 - ``convertUnknownCategoricalLevelsToNa`` - Enables or disables conversion of unseen categoricals to NAs. By default, it is disabled.
 - ``convertInvalidNumbersToNa`` - Enables or disables conversion of invalid numbers to NAs. By default, it is disabled.
 - ``withContributions`` - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the
-  detailed prediction column. Therefore, to compute Shapley values, both this option and ``withDetailedPredictionCol`` needs to be
-  enabled. By default, it is disabled.
+  detailed prediction column.
 - ``withLeafNodeAssignments`` - When enabled, a user can obtain the leaf node assignments after the model training
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
@@ -308,8 +305,8 @@ was used, this method returns the training metrics.
 Obtaining Leaf Node Assignments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain the leaf node assignments, please first make sure to set ``withLeafNodeAssignments`` and
-``withDetailedPredictionCol`` to true on your MOJO settings object. The leaf node assignments are now stored
+To obtain the leaf node assignments, please first make sure to set ``withLeafNodeAssignments``
+to true on your MOJO settings object. The leaf node assignments are now stored
 in the ``${detailedPredictionCol}.leafNodeAssignments`` column on the dataset obtained from the prediction.
 Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
 it is ``detailed_prediction``.
@@ -317,10 +314,10 @@ it is ``detailed_prediction``.
 Obtaining Stage Probabilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain the stage results, please first make sure to set ``withStageResults`` and
-``withDetailedPredictionCol`` to true on your MOJO settings object. The stage results for regression and anomaly detection problems
-are stored in the ``${detailedPredictionCol}.stageResults`` on the dataset obtained from the prediction. The stage results for classification
-(binomial, multinomial) problems are stored under ``${detailedPredictionCol}.stageProbabilities`` Please replace ``${detailedPredictionCol}``
+To obtain the stage results, please first make sure to set ``withStageResults`` to true on your MOJO settings object.
+The stage results for regression and anomaly detection problems are stored in the ``${detailedPredictionCol}.stageResults``
+on the dataset obtained from the prediction. The stage results for classification (binomial, multinomial) problems
+are stored under ``${detailedPredictionCol}.stageProbabilities`` Please replace ``${detailedPredictionCol}``
 with the actual value of your detailed prediction col. By default, it is ``detailed_prediction``.
 
 The stage results are an array of values, where a value at the position *t* is the prediction/probability combined from contributions of trees *T1, T2, ..., Tt*.
@@ -330,8 +327,8 @@ are represented by a list of columns, where one column contains stage probabilit
 Obtaining Reconstructed Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To obtain reconstructed data for dimensional reduction models, please first make sure to set ``withReconstructedData`` and
-``withDetailedPredictionCol`` to true on your MOJO settings object. Reconstructed columns will be located under the
+To obtain reconstructed data for dimensional reduction models, please first make sure to set ``withReconstructedData``
+to true on your MOJO settings object. Reconstructed columns will be located under the
 ``${detailedPredictionCol}.reconstructed`` column on the dataset obtained from the prediction.
 Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
 it is ``detailed_prediction``.

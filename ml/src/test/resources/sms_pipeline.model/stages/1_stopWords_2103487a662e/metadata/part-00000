@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.feature.StopWordsRemover","timestamp":1593635985574,"sparkVersion":"2.1.3","uid":"stopWords_2103487a662e","paramMap":{"inputCol":"words","outputCol":"filtered","caseSensitive":false,"stopWords":["the","a","","in","on","at","as","not","for"]}}

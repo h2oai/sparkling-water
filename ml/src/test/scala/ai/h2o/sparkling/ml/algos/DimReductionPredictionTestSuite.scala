@@ -54,14 +54,11 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
     // the 'dimensions' from the dimension reduction prediction are directly in predictionCol
     assert(transformed.select("prediction").head().getList[Double](0).size() == 3)
-    assert(!transformed.columns.contains("detailed_prediction"))
   }
 
   test("detailedPredictionCol content") {
     import spark.implicits._
-    val algo = getPreconfiguredAlgorithm()
-      .setWithDetailedPredictionCol(true)
-      .setWithReconstructedData(true)
+    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
 
     val model = algo.fit(dataset)
     val transformed = model.transform(dataset).cache()
@@ -95,9 +92,7 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
       .withColumn("CAPSULE", 'CAPSULE.cast("string"))
       .withColumn("RACE", 'RACE.cast("string"))
 
-    val algo = getPreconfiguredAlgorithm()
-      .setWithDetailedPredictionCol(true)
-      .setWithReconstructedData(true)
+    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
 
     val model = algo.fit(dataset)
     val transformed = model.transform(dataset)
@@ -109,10 +104,8 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
     assert(reconstructedColumns.toSeq == model.getFeaturesCols().toSeq)
   }
 
-  test("transformSchema with detailed prediction col and reconstructed data") {
-    val algo = getPreconfiguredAlgorithm()
-      .setWithDetailedPredictionCol(true)
-      .setWithReconstructedData(true)
+  test("transformSchema") {
+    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
 
     val model = algo.fit(dataset)
 
@@ -126,21 +119,6 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
       StructField("detailed_prediction", StructType(dimensionsField :: reconstructedField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
-
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
-  }
-
-  test("transformSchema without detailed prediction col") {
-    val algo = getPreconfiguredAlgorithm()
-    val model = algo.fit(dataset)
-
-    val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", ArrayType(DoubleType, containsNull = false), nullable = true)
-
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 

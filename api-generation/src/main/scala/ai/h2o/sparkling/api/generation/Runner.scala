@@ -42,7 +42,7 @@ object Runner {
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
-    "withDetailedPredictionCol" -> false,
+    "withDetailedPredictionCol" -> true,
     "convertUnknownCategoricalLevelsToNa" -> false,
     "convertInvalidNumbersToNa" -> false,
     "namedMojoOutputColumns" -> true,

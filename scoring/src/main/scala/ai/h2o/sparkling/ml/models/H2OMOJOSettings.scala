@@ -22,7 +22,7 @@ import ai.h2o.sparkling.ml.params.H2OBaseMOJOParams
 case class H2OMOJOSettings(
     predictionCol: String = "prediction",
     detailedPredictionCol: String = "detailed_prediction",
-    withDetailedPredictionCol: Boolean = false,
+    withDetailedPredictionCol: Boolean = true,
     convertUnknownCategoricalLevelsToNa: Boolean = false,
     convertInvalidNumbersToNa: Boolean = false,
     namedMojoOutputColumns: Boolean = true,
@@ -38,7 +38,6 @@ object H2OMOJOSettings {
     H2OMOJOSettings(
       predictionCol = params.getPredictionCol(),
       detailedPredictionCol = params.getDetailedPredictionCol(),
-      withDetailedPredictionCol = params.getWithDetailedPredictionCol(),
       withContributions = params.getWithContributions(),
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa(),

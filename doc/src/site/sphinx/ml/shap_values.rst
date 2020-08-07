@@ -48,14 +48,12 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
             import ai.h2o.sparkling.ml.algos.H2OXGBoost
             val estimator = new H2OXGBoost()
                 .setLabelCol("CAPSULE")
-                .setWithDetailedPredictionCol(true)
                 .setWithContributions(true)
             val model = estimator.fit(trainingDF)
 
-        The call ``setWithDetailedPredictionCol(true)`` tells Sparkling Water to create additional prediction column with
-        additional prediction details and the call ``setWithContributions(true)`` tells to include contributions to
-        this column. The name of this column is by default "detailed_prediction" and can be modified via
-        ``setDetailedPredictionCol`` setter.
+        The call ``setWithContributions(true)`` tells to include contributions to a column with prediction details.
+        The name of this column is by default "detailed_prediction" and can be modified via ``setDetailedPredictionCol``
+        setter.
 
         Run Predictions
 
@@ -102,11 +100,10 @@ To get SHAP values(=contributions) from H2OXGBoost model, please do:
         .. code:: python
 
             from pysparkling.ml import H2OXGBoost
-            estimator = H2OXGBoost(labelCol = "CAPSULE", withDetailedPredictionCol = True, withContributions = True)
+            estimator = H2OXGBoost(labelCol = "CAPSULE", withContributions = True)
             model = estimator.fit(trainingDF)
 
-        The parameter ``withDetailedPredictionCol = True`` tells Sparkling Water to create an additional prediction column with
-        additional prediction details and the parameter ``withContributions = True`` tells to include contributions to this column.
+        The parameter ``withContributions = True`` tells to include contributions to a column with predictions details.
         The name of this column is by default "detailed_prediction" and can be modified via ``detailedPredictionCol`` parameter.
 
         Run Predictions
@@ -152,7 +149,7 @@ there is no need to start ``H2OContext``.
             import ai.h2o.sparkling.ml.models._
 
             val path = "/path/to/mojo.zip"
-            val settings = H2OMOJOSettings(withDetailedPredictionCol = true, withContributions = true)
+            val settings = H2OMOJOSettings(withContributions = true)
             val model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions
@@ -191,7 +188,7 @@ there is no need to start ``H2OContext``.
             from pysparkling.ml import *
 
             val path = '/path/to/mojo.zip'
-            settings = H2OMOJOSettings(withDetailedPredictionCol=True, withContributions=True)
+            settings = H2OMOJOSettings(withContributions=True)
             model = H2OMOJOModel.createFromMojo(path, settings)
 
         Run Predictions

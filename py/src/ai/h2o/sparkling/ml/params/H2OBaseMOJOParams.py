@@ -17,6 +17,7 @@
 
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
+import warnings
 
 
 class H2OBaseMOJOParams(Params):
@@ -96,7 +97,9 @@ class H2OBaseMOJOParams(Params):
         return self.getOrDefault(self.detailedPredictionCol)
 
     def getWithDetailedPredictionCol(self):
-        return self.getOrDefault(self.withDetailedPredictionCol)
+        warnings.warn("The method will be removed without a replacement in the version 3.34."
+                      "Detailed prediction columns is always enabled.", DeprecationWarning)
+        return True
 
     def getWithContributions(self):
         return self.getOrDefault(self.withContributions)

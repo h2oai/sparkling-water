@@ -1,0 +1,1 @@
+{"class":"ai.h2o.sparkling.ml.features.ColumnPruner","timestamp":1596728286926,"sparkVersion":"2.1.3","uid":"columnPruner_77b2a608f19c","paramMap":{"columns":["tf_idf","wordToIndex","filtered","words"],"keep":false}}

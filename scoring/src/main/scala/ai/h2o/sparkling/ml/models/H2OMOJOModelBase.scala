@@ -42,7 +42,6 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
     // Here we should check validity of input schema however
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
-    val detailedPredictionColSchema = if (getWithDetailedPredictionCol()) getDetailedPredictionColSchema() else Nil
-    StructType(schema.fields ++ detailedPredictionColSchema ++ getPredictionColSchema())
+    StructType(schema.fields ++ getDetailedPredictionColSchema() ++ getPredictionColSchema())
   }
 }

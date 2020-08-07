@@ -36,18 +36,16 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
       val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
-      if (getWithDetailedPredictionCol()) {
-        resultBuilder += Utils.arrayToRow(pred.classProbabilities)
-        if (getWithLeafNodeAssignments()) {
-          resultBuilder += pred.leafNodeAssignments
-        }
-        if (getWithStageResults()) {
-          val stageProbabilities = pred.stageProbabilities
-          val stageProbabilitiesByTree = stageProbabilities.grouped(model.getResponseDomainValues.size).toArray
-          val stageProbabilitiesByClass = stageProbabilitiesByTree.transpose
-          Utils.arrayToRow(stageProbabilitiesByClass)
-          resultBuilder += Utils.arrayToRow(stageProbabilitiesByClass)
-        }
+      resultBuilder += Utils.arrayToRow(pred.classProbabilities)
+      if (getWithLeafNodeAssignments()) {
+        resultBuilder += pred.leafNodeAssignments
+      }
+      if (getWithStageResults()) {
+        val stageProbabilities = pred.stageProbabilities
+        val stageProbabilitiesByTree = stageProbabilities.grouped(model.getResponseDomainValues.size).toArray
+        val stageProbabilitiesByClass = stageProbabilitiesByTree.transpose
+        Utils.arrayToRow(stageProbabilitiesByClass)
+        resultBuilder += Utils.arrayToRow(stageProbabilitiesByClass)
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
@@ -64,29 +62,24 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
   def getMultinomialPredictionSchema(): StructType = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
-    val fields = if (getWithDetailedPredictionCol()) {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-      val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
-      val probabilitiesField =
-        StructField("probabilities", StructType(classFields), nullable = false)
-      val baseFields = labelField :: probabilitiesField :: Nil
-      val assignmentFields = if (getWithLeafNodeAssignments()) {
-        val assignmentsField =
-          StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
-        baseFields :+ assignmentsField
-      } else {
-        baseFields
-      }
-      val stageProbabilityFields = if (getWithStageResults()) {
-        val stageProbabilitiesField =
-          StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
-        assignmentFields :+ stageProbabilitiesField
-      } else {
-        assignmentFields
-      }
-      stageProbabilityFields
+    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
+    val probabilitiesField =
+      StructField("probabilities", StructType(classFields), nullable = false)
+    val baseFields = labelField :: probabilitiesField :: Nil
+    val assignmentFields = if (getWithLeafNodeAssignments()) {
+      val assignmentsField =
+        StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
+      baseFields :+ assignmentsField
     } else {
-      labelField :: Nil
+      baseFields
+    }
+    val fields = if (getWithStageResults()) {
+      val stageProbabilitiesField =
+        StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
+      assignmentFields :+ stageProbabilitiesField
+    } else {
+      assignmentFields
     }
 
     StructType(fields)

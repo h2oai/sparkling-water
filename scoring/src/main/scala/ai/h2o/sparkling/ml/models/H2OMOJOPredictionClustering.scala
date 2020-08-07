@@ -35,9 +35,8 @@ trait H2OMOJOPredictionClustering {
       val pred = model.predictClustering(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.cluster
-      if (getWithDetailedPredictionCol()) {
-        resultBuilder += pred.distances
-      }
+      resultBuilder += pred.distances
+
       new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
@@ -52,12 +51,8 @@ trait H2OMOJOPredictionClustering {
 
   def getClusteringPredictionSchema(): StructType = {
     val clusterField = StructField("cluster", predictionColType, nullable = predictionColNullable)
-    val fields = if (getWithDetailedPredictionCol()) {
-      val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
-      clusterField :: distancesField :: Nil
-    } else {
-      clusterField :: Nil
-    }
+    val distancesField = StructField("distances", ArrayType(DoubleType, containsNull = false), nullable = true)
+    val fields = clusterField :: distancesField :: Nil
     StructType(fields)
   }
 

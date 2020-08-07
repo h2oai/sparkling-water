@@ -52,14 +52,12 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val expectedCols = Seq("prediction")
     val predictions = model.transform(dataset)
     assert(predictions.select("prediction").schema.fields.map(_.name).sameElements(expectedCols))
-    assert(!predictions.columns.contains("detailed_prediction"))
   }
 
   test("detailedPredictionCol content with contributions, assignments and stage probabilities") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
       .setWithStageResults(true)
@@ -98,7 +96,6 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithContributions(false)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
@@ -117,11 +114,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(versicolorProbabilities(0) != versicolorProbabilities(1))
   }
 
-  test("transformSchema with detailed prediction col, contributions, assignments and stage probabilities") {
+  test("transformSchema with contributions, assignments and stage probabilities") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithContributions(true)
       .setWithLeafNodeAssignments(true)
       .setWithStageResults(true)
@@ -160,11 +156,10 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
     assert(schema == expectedSchemaByTransform)
   }
 
-  test("transformSchema with detailed prediction col and without contributions") {
+  test("transformSchema without contributions") {
     val algo = new H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithDetailedPredictionCol(true)
       .setWithContributions(false)
       .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
       .setColumnsToCategorical("class")
@@ -180,26 +175,6 @@ class BinomialPredictionTestSuite extends FunSuite with Matchers with SharedH2OT
       StructField("detailed_prediction", StructType(labelField :: probabilitiesField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
-
-    assert(schema == expectedSchema)
-    assert(schema == expectedSchemaByTransform)
-  }
-
-  test("transformSchema without detailed prediction col") {
-    val algo = new H2OGBM()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-      .setColumnsToCategorical("class")
-      .setLabelCol("class")
-    val model = algo.fit(dataset)
-
-    val datasetFields = dataset.schema.fields
-    val predictionColField = StructField("prediction", StringType, nullable = true)
-
-    val expectedSchema = StructType(datasetFields ++ (predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
     val schema = model.transformSchema(dataset.schema)
 
