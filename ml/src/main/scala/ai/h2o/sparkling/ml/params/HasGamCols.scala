@@ -37,12 +37,12 @@ trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
     super.getSWtoH2OParamNameMap() + ("gamCols" -> "gam_columns")
   }
 
-  override private[sparkling] def getExcludedCols(): Seq[String] = {
+  override private[sparkling] def getAdditionalCols(): Seq[String] = {
     val gamCols = getGamCols()
     if (gamCols != null) {
-      super.getExcludedCols() ++ gamCols
+      super.getAdditionalCols() ++ gamCols
     } else {
-      super.getExcludedCols()
+      super.getAdditionalCols()
     }
   }
 }
