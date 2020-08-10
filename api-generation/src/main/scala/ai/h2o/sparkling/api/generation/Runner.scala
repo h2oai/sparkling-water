@@ -109,7 +109,7 @@ object Runner {
         entityName,
         h2oSchemaClass,
         h2oParameterClass,
-        IgnoredParameters.all ++
+        IgnoredParameters.all(entityName.replace("Params", "")) ++
           (if (isUnsupervised(entityName)) IgnoredParameters.unsupervisedAlgos else Seq.empty),
         explicitFields,
         explicitDefaultValues,
