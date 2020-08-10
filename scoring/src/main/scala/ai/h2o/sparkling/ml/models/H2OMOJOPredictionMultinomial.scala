@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Base, Detailed, DetailedWithAssignments}
+import ai.h2o.sparkling.ml.models.H2OMOJOPredictionMultinomial.{Detailed, DetailedWithAssignments}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types._
