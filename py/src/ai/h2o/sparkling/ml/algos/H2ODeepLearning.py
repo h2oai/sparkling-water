@@ -50,7 +50,7 @@ class H2ODeepLearning(H2ODeepLearningParams, H2OSupervisedAlgoBase):
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
+                 withDetailedPredictionCol=True,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,

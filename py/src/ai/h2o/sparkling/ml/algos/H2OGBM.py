@@ -62,7 +62,7 @@ class H2OGBM(H2OGBMParams, H2OTreeBasedSupervisedAlgoBase):
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
+                 withDetailedPredictionCol=True,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,

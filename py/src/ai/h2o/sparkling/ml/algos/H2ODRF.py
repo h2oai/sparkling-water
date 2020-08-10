@@ -58,7 +58,7 @@ class H2ODRF(H2ODRFParams, H2OTreeBasedSupervisedAlgoBase):
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
+                 withDetailedPredictionCol=True,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,

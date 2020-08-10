@@ -47,7 +47,7 @@ class H2OKMeans(H2OKMeansParams, H2OUnsupervisedAlgoBase):
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
+                 withDetailedPredictionCol=True,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,

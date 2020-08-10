@@ -68,7 +68,7 @@ class H2OGLM(H2OGLMParams, H2OSupervisedAlgoBase):
                  columnsToCategorical=[],
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=False,
+                 withDetailedPredictionCol=True,
                  featuresCols=[],
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
