@@ -39,7 +39,7 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
-    val tranformedSchema = super.transformSchema(schema)
+    val transformedSchema = super.transformSchema(schema)
     require(
       schema.fields.exists(f => f.name.compareToIgnoreCase(getLabelCol()) == 0),
       s"Specified label column '${getLabelCol()} was not found in input dataset!")
@@ -49,7 +49,7 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
     require(
       getOffsetCol() == null || getOffsetCol() != getFoldCol(),
       "Specified offset column cannot be the same as the fold column!")
-    tranformedSchema
+    transformedSchema
   }
 
   override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {

@@ -79,3 +79,10 @@ H2OTreeBasedSupervisedMOJOModel <- setRefClass("H2OTreeBasedSupervisedMOJOModel"
 #' @export H2OUnsupervisedMOJOModel
 H2OUnsupervisedMOJOModel <- setRefClass("H2OUnupervisedMOJOModel", contains = ("H2OMOJOModel"), fields = list(jmojo = "ANY"), methods = list(
 ))
+
+#' @export H2OTreeBasedUnsupervisedMOJOModel
+H2OTreeBasedUnsupervisedMOJOModel <- setRefClass("H2OTreeBasedUnsupervisedMOJOModel", contains = ("H2OUnsupervisedMOJOModel"), methods = list(
+  getNtrees = function() {
+    invoke(.self$jmojo, "getNtrees")
+  }
+))

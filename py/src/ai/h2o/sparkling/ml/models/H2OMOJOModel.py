@@ -33,6 +33,8 @@ class H2OMOJOModel(H2OMOJOModelBase):
         className = javaModel.getClass().getSimpleName()
         if className == "H2OTreeBasedSupervisedMOJOModel":
             return H2OTreeBasedSupervisedMOJOModel(javaModel)
+        elif className == "H2OTreeBasedUnsupervisedMOJOModel":
+            return H2OTreeBasedUnsupervisedMOJOModel(javaModel)
         elif className == "H2OSupervisedMOJOModel":
             return H2OSupervisedMOJOModel(javaModel)
         elif className == "H2OUnsupervisedMOJOModel":
@@ -79,3 +81,9 @@ class H2OTreeBasedSupervisedMOJOModel(H2OSupervisedMOJOModel):
 
 class H2OUnsupervisedMOJOModel(H2OMOJOModel):
     pass
+
+
+class H2OTreeBasedUnsupervisedMOJOModel(H2OUnsupervisedMOJOModel):
+
+    def getNtrees(self):
+        return self._java_obj.getNtrees()

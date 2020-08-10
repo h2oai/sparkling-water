@@ -213,6 +213,7 @@ only properties that are shared across all MOJO model types from the following t
 
 - ``H2OMOJOModel``
     - ``H2OUnsupervisedMOJOModel``
+        - ``H2OTreeBasedUnsupervisedMOJOModel``
     - ``H2OSupervisedMOJOModel``
         - ``H2OTreeBasedSupervisedMOJOModel``
 
