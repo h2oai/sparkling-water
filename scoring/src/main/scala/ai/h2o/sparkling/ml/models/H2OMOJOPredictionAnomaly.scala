@@ -71,7 +71,6 @@ trait H2OMOJOPredictionAnomaly {
     } else {
       assignmentFields
     }
-    stageResultFields
     StructType(stageResultFields)
   }
 
