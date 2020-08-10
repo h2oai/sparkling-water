@@ -134,10 +134,10 @@ def testH2OGAMClassifierBehavesDiffenrentlyThanH2OGAMRegressor(prostateDataset):
 
     regressor = setParamtersForProblemSpecificTests(H2OGAMRegressor())
     regressionModel = regressor.fit(trainingDateset)
-    regressionDataset = regressionModel.transform(testingDataset)
+    regressionDataset = regressionModel.transform(testingDataset).drop("detailed_prediction")
 
     classifier = setParamtersForProblemSpecificTests(H2OGAMClassifier())
     classificationModel = classifier.fit(trainingDateset)
-    classificationDataset = classificationModel.transform(testingDataset)
+    classificationDataset = classificationModel.transform(testingDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
