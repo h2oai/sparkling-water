@@ -31,6 +31,7 @@ import hex.glrm.GLRMModel.GLRMParameters
 import hex.grid.HyperSpaceSearchCriteria
 import hex.grid.HyperSpaceSearchCriteria._
 import hex.kmeans.KMeansModel.KMeansParameters
+import hex.pca.PCAModel.PCAParameters
 import hex.schemas.HyperSpaceSearchCriteriaV99.{CartesianSearchCriteriaV99, RandomDiscreteValueSearchCriteriaV99}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
@@ -71,7 +72,7 @@ object Runner {
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
-
+    val pcaFields = Seq(ignoredCols)
     val deepLearningFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
@@ -79,7 +80,11 @@ object Runner {
     type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
 
     val explicitDefaultValues =
-      Map[String, Any]("max_w2" -> 3.402823e38f, "response_column" -> "label", "model_id" -> null)
+      Map[String, Any](
+        "max_w2" -> 3.402823e38f,
+        "response_column" -> "label",
+        "model_id" -> null,
+        "pca_impl" -> new PCAParameters()._pca_implementation)
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
       ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostFields),
@@ -88,7 +93,8 @@ object Runner {
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields),
-      ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], Seq(userX, userY, lossByColNames)))
+      ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], Seq(userX, userY, lossByColNames)),
+      ("H2OPCAParams", classOf[PCAV3.PCAParametersV3], classOf[PCAParameters], pcaFields))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
       yield ParameterSubstitutionContext(
@@ -116,7 +122,8 @@ object Runner {
       ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
-      ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty))
+      ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
+      ("H2OPCA", classOf[PCAParameters], "H2OUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
       yield AlgorithmSubstitutionContext(

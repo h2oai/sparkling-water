@@ -12,6 +12,7 @@ Machine Learning
    sw_kmeans
    sw_xgboost
    sw_glrm
+   sw_pca
 
 **Transformers**
 

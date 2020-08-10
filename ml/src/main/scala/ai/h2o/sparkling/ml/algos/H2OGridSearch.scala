@@ -36,7 +36,8 @@ import org.apache.spark.ml.param._
 import org.apache.spark.ml.util._
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.json4s._
+import org.json4s.JsonAST.JValue
+import org.json4s.{JString, _}
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
@@ -158,7 +159,7 @@ class H2OGridSearch(override val uid: String)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
     }
-    val sortedGridModels = sortGridModels(unsortedGridModels)
+    val sortedGridModels = sortGridModels(algoName, unsortedGridModels)
     gridModels = sortedGridModels.map(_._2)
     gridBinaryModels = sortedGridModels.map {
       case (modelId, _) =>
@@ -175,7 +176,9 @@ class H2OGridSearch(override val uid: String)
     gridBinaryModels.head
   }
 
-  private def sortGridModels(gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
+  private def sortGridModels(
+      algoName: String,
+      gridModels: Array[(String, H2OMOJOModel)]): Array[(String, H2OMOJOModel)] = {
     val metric = if (getSelectBestModelBy() == H2OMetric.AUTO.name()) {
       val category = H2OModelCategory.fromString(gridModels(0)._2.getModelCategory())
       category match {
@@ -183,7 +186,8 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
-        case H2OModelCategory.DimReduction => H2OMetric.GLRMMetric
+        case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
+        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.PCAMetric
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -204,6 +208,20 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = metric match {
+    case H2OMetric.PCAMetric =>
+      val ast = parse(model.getModelDetails())
+      val dataWithHeader = for {
+        JObject(obj) <- ast
+        JField("model_summary", JObject(modelSummary)) <- obj
+        JField("data", JArray(dataCol)) <- modelSummary
+        JArray(rows) <- dataCol
+      } yield rows
+      val variancesColIdx = dataWithHeader.head.indexOf(JString("Proportion of Variance"))
+      val data = dataWithHeader.tail.map(list => list(variancesColIdx))
+      val doubles = for {
+        JDouble(result) <- data
+      } yield result
+      doubles.sum
     case H2OMetric.GLRMMetric =>
       val ast = parse(model.getModelDetails())
       val metricValueOption = for {
@@ -290,7 +308,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM = Value
+    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -318,6 +336,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2ODRF => "drf"
         case H2OKMeans => "kmeans"
         case H2OGLRM => "glrm"
+        case H2OPCA => "pca"
       }
     }
   }
