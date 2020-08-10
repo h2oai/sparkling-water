@@ -24,6 +24,7 @@ from pysparkling.ml import H2OPCA
 
 from tests import unit_test_utils
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
+from pyspark.sql.functions import bround
 
 
 def testParamsPassedByConstructor():
@@ -60,11 +61,16 @@ def testPipelineSerialization(birdsDataset):
     unit_test_utils.assert_data_frames_are_identical(expected, result)
 
 
+def roundPredictions(dataframe, precision):
+    return dataframe.select(
+        bround(dataframe.prediction.getItem(0), precision).alias("prediction0"),
+        bround(dataframe.prediction.getItem(1), precision).alias("prediction1"))
+
 def testPCAResult(birdsDataset):
     [traningDataset, testingDataset] = birdsDataset.randomSplit([0.9, 0.1], 42)
     algo = getPreconfiguredAlgorithm()
     model = algo.fit(traningDataset)
-    predictions = model.transform(testingDataset)
-    expected = [Row(prediction=[0.03214994417825859, -1.2484351733088]),
-                Row(prediction=[0.06256066339344996, -0.0021765345617701724])]
-    assert predictions.select("prediction").take(2) == expected
+    predictions = roundPredictions(model.transform(testingDataset), 3)
+    expected = [Row(prediction0=0.032, prediction1=-1.248),
+                Row(prediction0=0.063, prediction1=-0.002)]
+    assert predictions.take(2) == expected
