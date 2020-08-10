@@ -125,7 +125,7 @@ object Runner {
   }
 
   private def isUnsupervised(entityName: String): Boolean = {
-    Array("H2OGLRMParams", "H2OKMeansParams", "H2OPCAParams").contains(entityName)
+    Array("H2OGLRMParams", "H2OKMeansParams", "H2OPCAParams", "H2OIsolationForestParams").contains(entityName)
   }
 
   private def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
