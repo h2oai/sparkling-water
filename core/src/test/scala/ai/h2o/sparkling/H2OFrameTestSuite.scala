@@ -198,6 +198,23 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     assert(fr.numberOfColumns == 9)
   }
 
+  test("Rename non-existent column") {
+    val fr = H2OFrame(new URI("file://" + TestUtils.locate("smalldata/prostate/prostate.csv")))
+    val thrown = intercept[IllegalArgumentException] {
+      fr.renameCol("i_do_not_exist", "new_col_name")
+    }
+    assert(thrown.getMessage == s"Column 'i_do_not_exist' does not exist in the frame ${fr.frameId}")
+  }
+
+  test("Rename existing column") {
+    val fr = H2OFrame(new URI("file://" + TestUtils.locate("smalldata/prostate/prostate.csv"))).subframe(Array("AGE"))
+    val originalLength = fr.columnNames.length
+    fr.renameCol("AGE", "NEW_AGE")
+    assert(!fr.columnNames.contains("AGE"))
+    assert(fr.columnNames.contains("NEW_AGE"))
+    assert(fr.columnNames.length == originalLength)
+  }
+
   private def assertAfterJoin(result: H2OFrame, expected: DataFrame): Unit = {
     val resultDF = hc.asSparkFrame(result.frameId).select("name", "age", "city", "salary")
     TestUtils.assertDataFramesAreIdentical(resultDF, expected)
