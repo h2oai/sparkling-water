@@ -23,17 +23,24 @@ object IgnoredParameters {
     "max_confusion_matrix_size", // Deep Learning
     "col_major", // Deep Learning
     "max_hit_ratio_k", // GBM, DRF, Deep Learning
-    "loading_name") // GLRM
+    "loading_name", // GLRM
+    "lambda_min_ratio") // GAM
 
   val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 
   val unimplemented = Seq(
     "__meta", // just for internal purposes
     "checkpoint", // GBM, DRF, XGBoost, Deep Learning
-    "interaction_pairs", // GLM
-    "pretrained_autoencoder") // DeepLearning
+    "interaction_pairs") // GLM, GAM
 
   val unsupervisedAlgos = Seq("response_column", "offset_column")
 
-  def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
+  def common: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
+
+  def all(algorithm: String): Seq[String] = algorithm match {
+    case "H2OKMeans" => common ++ Seq("response_column", "offset_column")
+    case "H2OGAM" => common ++ Seq("plug_values") // According to MK the parameter doesn't make much sense for GAM
+    case "H2ODeepLearning" => common ++ Seq("pretrained_autoencoder")
+    case _ => common
+  }
 }

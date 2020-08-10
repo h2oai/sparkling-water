@@ -24,6 +24,9 @@ import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.gam.GAMModel.GAMParameters
+import hex.schemas._
+import hex.tree.gbm.GBMModel.GBMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.glrm.GLRMModel.GLRMParameters
 import hex.grid.HyperSpaceSearchCriteria
@@ -67,9 +70,11 @@ object Runner {
     val userX = ExplicitField("user_x", "HasUserX", null)
     val userY = ExplicitField("user_y", "HasUserY", null)
     val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
+    val gamCols = ExplicitField("gam_columns", "HasGamCols", null)
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
+    val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)
@@ -91,9 +96,11 @@ object Runner {
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(calibrationDataFrame, ignoredCols)),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
+      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields),
       ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
       ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields),
       ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], Seq(userX, userY, lossByColNames)),
+      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields),
       ("H2OPCAParams", classOf[PCAV3.PCAParametersV3], classOf[PCAParameters], pcaFields))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
@@ -102,7 +109,7 @@ object Runner {
         entityName,
         h2oSchemaClass,
         h2oParameterClass,
-        IgnoredParameters.all ++
+        IgnoredParameters.all(entityName.replace("Params", "")) ++
           (if (isUnsupervised(entityName)) IgnoredParameters.unsupervisedAlgos else Seq.empty),
         explicitFields,
         explicitDefaultValues,
@@ -123,9 +130,11 @@ object Runner {
       ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
       ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
       ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
       ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
+      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OPCA", classOf[PCAParameters], "H2OUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
@@ -144,6 +153,7 @@ object Runner {
       ("H2OGBM", Seq("distribution")),
       ("H2ODRF", Seq("distribution")),
       ("H2OGLM", Seq("distribution", "family")),
+      ("H2OGAM", Seq("distribution", "family")),
       ("H2ODeepLearning", Seq("distribution")))
 
     for ((parameterEntityName, parametersToCheck) <- algorithms)

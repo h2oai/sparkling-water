@@ -35,6 +35,9 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
 
   private[sparkling] def getExcludedCols(): Seq[String] = Seq.empty
 
+  /** The list of additional columns that needs to be send to H2O-3 backend for model training. */
+  private[sparkling] def getAdditionalCols(): Seq[String] = Seq.empty
+
   private[sparkling] def getFeaturesCols(): Array[String]
 
   private[sparkling] def getColumnsToCategorical(): Array[String]
@@ -67,7 +70,8 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
         s" columns: '${getFeaturesCols().mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
     }
     val excludedColumns = excludedCols.map(sanitize).map(col)
-    val columns = featureColumns ++ excludedColumns
+    val additionalColumns = getAdditionalCols().map(sanitize).map(col)
+    val columns = (featureColumns ++ excludedColumns ++ additionalColumns).distinct
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
     val trainFrame = h2oContext.asH2OFrame(dataset.select(columns: _*).toDF())

@@ -21,6 +21,7 @@ import java.util
 import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.backend.exceptions.RestApiCommunicationException
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication, RestEncodingUtils}
+import ai.h2o.sparkling.ml.algos.H2OGridSearch.SupportedAlgos
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModel, H2OModelCategory}
 import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.ml.params.H2OGridSearchParams
@@ -249,14 +250,15 @@ class H2OGridSearch(override val uid: String)
     ensureGridSearchIsFitted()
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
     val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
+    val algoName = SupportedAlgos.getEnumValue(getAlgo()).get.toString()
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
       case (model, id) =>
-        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
+        val outputParams = extractParamsToShow(algoName, model, hyperParamNames, h2oToSwParamMap)
         Row(Seq(id) ++ outputParams.values: _*)
     }
     val colNames = gridModels.headOption
       .map { model =>
-        val outputParams = extractParamsToShow(model, hyperParamNames, h2oToSwParamMap)
+        val outputParams = extractParamsToShow(algoName, model, hyperParamNames, h2oToSwParamMap)
         outputParams.keys.map(name => StructField(name, StringType, nullable = false)).toList
       }
       .getOrElse(List.empty)
@@ -295,12 +297,13 @@ class H2OGridSearch(override val uid: String)
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
   private def extractParamsToShow(
+      algoName: String,
       model: H2OMOJOModel,
       hyperParamNames: Seq[String],
       h2oToSwParamMap: Map[String, String]): Map[String, String] = {
     model.getTrainingParams().filter {
       case (key, _) =>
-        !IgnoredParameters.all.contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
+        !IgnoredParameters.all(algoName).contains(key) && hyperParamNames.contains(h2oToSwParamMap(key))
     }
   }
 }
@@ -308,7 +311,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
+    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -330,6 +333,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
       val algoValue = getEnumValue(algo).get
       algoValue match {
         case H2OGBM => "gbm"
+        case H2OGAM => "gam"
         case H2OGLM => "glm"
         case H2ODeepLearning => "deeplearning"
         case H2OXGBoost => "xgboost"

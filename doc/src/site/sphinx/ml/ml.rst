@@ -7,6 +7,7 @@ Machine Learning
    :maxdepth: 2
 
    sw_automl
+   sw_gam
    sw_drf
    sw_grid
    sw_kmeans
