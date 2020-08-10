@@ -24,8 +24,6 @@ import ai.h2o.automl.AutoMLBuildSpec._
 import ai.h2o.sparkling.api.generation.common._
 import ai.h2o.sparkling.utils.ScalaUtils._
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.schemas._
-import hex.tree.gbm.GBMModel.GBMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.glrm.GLRMModel.GLRMParameters
 import hex.grid.HyperSpaceSearchCriteria
@@ -33,7 +31,9 @@ import hex.grid.HyperSpaceSearchCriteria._
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.pca.PCAModel.PCAParameters
 import hex.schemas.HyperSpaceSearchCriteriaV99.{CartesianSearchCriteriaV99, RandomDiscreteValueSearchCriteriaV99}
+import hex.schemas._
 import hex.tree.drf.DRFModel.DRFParameters
+import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 import water.automl.api.schemas3.AutoMLBuildSpecV99._
 
@@ -103,14 +103,17 @@ object Runner {
         h2oSchemaClass,
         h2oParameterClass,
         IgnoredParameters.all ++
-          (if (entityName == "H2OKMeansParams") Seq("response_column", "offset_column") else Seq.empty),
+          (if (isUnsupervised(entityName)) IgnoredParameters.unsupervisedAlgos else Seq.empty),
         explicitFields,
         explicitDefaultValues,
         typeExceptions = TypeExceptions.all(),
         defaultValueSource = DefaultValueSource.Field,
         defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
         generateParamTag = true)
+  }
 
+  private def isUnsupervised(entityName: String): Boolean = {
+    Array("H2OGLRMParams", "H2OKMeansParams").contains(entityName)
   }
 
   private def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {

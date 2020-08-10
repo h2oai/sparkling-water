@@ -33,5 +33,7 @@ object IgnoredParameters {
     "interaction_pairs", // GLM
     "pretrained_autoencoder") // DeepLearning
 
+  val unsupervisedAlgos = Seq("response_column", "offset_column")
+
   def all: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
 }
