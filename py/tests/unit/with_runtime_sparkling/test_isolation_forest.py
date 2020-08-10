@@ -35,17 +35,17 @@ def testParamsPassedBySetters():
 
 
 def testPipelineSerialization(prostateDataset):
-    algo = H2OIsolationForest(seed=1, splitRatio=0.8)
+    algo = H2OIsolationForest(seed=1)
 
     pipeline = Pipeline(stages=[algo])
     pipeline.write().overwrite().save("file://" + os.path.abspath("build/isolation_forest_pipeline"))
     loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/isolation_forest_pipeline"))
     model = loadedPipeline.fit(prostateDataset)
-    expected = model.transform(model)
+    expected = model.transform(prostateDataset)
 
     model.write().overwrite().save("file://" + os.path.abspath("build/isolation_forest_pipeline_model"))
     loadedModel = PipelineModel.load("file://" + os.path.abspath("build/isolation_forest_pipeline_model"))
-    result = loadedModel.transform(model)
+    result = loadedModel.transform(prostateDataset)
 
     unit_test_utils.assert_data_frames_are_identical(expected, result)
 
