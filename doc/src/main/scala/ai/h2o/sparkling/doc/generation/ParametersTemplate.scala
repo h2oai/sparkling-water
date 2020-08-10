@@ -74,6 +74,7 @@ object ParametersTemplate {
   private def getParametersContent(entity: Class[_]): String = {
     val instance = entity.newInstance().asInstanceOf[Params]
     instance.params
+      .filterNot(_.name == "withDetailedPredictionCol")
       .map { param =>
         val defaultValue = instance.getDefault(param).get
 
