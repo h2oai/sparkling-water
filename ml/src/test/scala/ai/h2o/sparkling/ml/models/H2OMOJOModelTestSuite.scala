@@ -240,14 +240,18 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val reloadedModel = H2OMOJOModel.load(modelFolder)
     val predAfterReload = reloadedModel.transform(df)
 
-    TestUtils.assertDataFramesAreIdentical(predBeforeSave, predAfterReload)
+    TestUtils.assertDataFramesAreIdentical(
+      predBeforeSave.drop("detailed_prediction"),
+      predAfterReload.drop("detailed_prediction"))
   }
 
   private def assertEqual(m1: H2OMOJOModel, m2: H2OMOJOModel, df: DataFrame): Unit = {
     val predMojo = m1.transform(df)
     val predModel = m2.transform(df)
 
-    TestUtils.assertDataFramesAreIdentical(predMojo, predModel)
+    TestUtils.assertDataFramesAreIdentical(
+      predMojo.drop("detailed_prediction"),
+      predModel.drop("detailed_prediction"))
   }
 
   private def tempFolder(prefix: String) = {

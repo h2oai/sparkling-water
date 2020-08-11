@@ -85,7 +85,7 @@ The following sections describe how to train the DRF model in Sparkling Water in
         .. code:: python
 
             from pysparkling.ml import H2ODRF
-            estimator = H2ODRF(labelCol = "CAPSULE")
+            estimator = H2ODRF(labelCol = "CAPSULE", withDetailedPredictionCol = False)
             model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:

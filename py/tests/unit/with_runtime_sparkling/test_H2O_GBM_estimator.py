@@ -34,8 +34,8 @@ def testLoadAndTrainMojo(hc, spark, prostateDataset):
     mojoFile = gbm.download_mojo(path=os.path.abspath("build/"), get_genmodel_jar=False)
     trainedMojo = H2OMOJOModel.createFromMojo("file://" + mojoFile)
 
-    expect = referenceMojo.transform(prostateDataset)
-    result = trainedMojo.transform(prostateDataset)
+    expect = referenceMojo.transform(prostateDataset).drop("detailed_prediction")
+    result = trainedMojo.transform(prostateDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_are_identical(expect, result)
 

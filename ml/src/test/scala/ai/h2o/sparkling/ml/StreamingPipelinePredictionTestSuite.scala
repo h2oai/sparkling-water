@@ -79,7 +79,9 @@ class StreamingPipelinePredictionTestSuite extends PipelinePredictionTestBase {
     // Run predictions on the trained model right now in Scala
     val predictions2 = trainedPipelineModel(spark).transform(data).drop("label")
 
-    TestUtils.assertDataFramesAreIdentical(predictions1, predictions2)
+    TestUtils.assertDataFramesAreIdentical(
+      predictions1.drop("detailed_prediction"),
+      predictions2.drop("detailed_prediction"))
   }
 
 }
