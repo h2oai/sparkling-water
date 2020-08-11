@@ -235,7 +235,10 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
   def createFromMojo(mojo: File, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojo)
     val model = mojoModel match {
-      case _: SharedTreeMojoModel | _: XGBoostMojoModel => new H2OTreeBasedSupervisedMOJOModel(uid)
+      case (_: SharedTreeMojoModel | _: XGBoostMojoModel) if mojoModel.isSupervised =>
+        new H2OTreeBasedSupervisedMOJOModel(uid)
+      case m: SharedTreeMojoModel if !m.isSupervised =>
+        new H2OTreeBasedUnsupervisedMOJOModel(uid)
       case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
       case _ => new H2OUnsupervisedMOJOModel(uid)
     }

@@ -20,6 +20,7 @@ package ai.h2o.sparkling.api.generation.common
 object ParameterNameConverter {
   val h2oToSWExceptions: Map[String, String] = Map(
     "response_column" -> "labelCol",
+    "validation_response_column" -> "validationLabelCol",
     "weights_column" -> "weightCol",
     "lambda" -> "lambdaValue",
     "alpha" -> "alphaValue",

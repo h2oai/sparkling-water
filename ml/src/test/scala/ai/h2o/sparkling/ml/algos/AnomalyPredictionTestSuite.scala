@@ -25,41 +25,101 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class AnomalyPredictionTestSuite
-  extends FunSuite
-  with Matchers
-  with SharedH2OTestContext
-  with TransformSchemaTestSuite {
+class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
-  override protected lazy val dataset: DataFrame = {
+  private lazy val dataset: DataFrame = {
     spark.read
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
   }
 
-  override protected def mojoName: String = "isolation_forest_prostate.mojo"
+  test("predictionCol content") {
+    val algo = new H2OIsolationForest()
 
-  override protected def expectedDetailedPredictionCol: StructField = {
+    val model = algo.fit(dataset)
+    val transformed = model.transform(dataset)
+
+    val result = transformed.select("prediction").take(2).map(_.getDouble(0))
+    assert(result(0) != result(1))
+  }
+
+  test("detailedPredictionCol content") {
+    val algo = new H2OIsolationForest()
+      .setWithLeafNodeAssignments(true)
+      .setWithStageResults(true)
+
+    val model = algo.fit(dataset)
+
+    val predictions = model.transform(dataset).limit(2).cache()
+
+    val expectedCols = Seq("score", "normalizedScore", "leafNodeAssignments", "stageResults")
+    assert(predictions.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
+
+    val scores = predictions.select("detailed_prediction.score").take(2).map(_.getDouble(0))
+    assert(scores(0) != scores(1))
+
+    val normalizedScore = predictions.select("detailed_prediction.normalizedScore").take(2).map(_.getDouble(0))
+    assert(normalizedScore(0) != normalizedScore(1))
+
+    val leafNodeAssignments = predictions.select("detailed_prediction.leafNodeAssignments").head().getSeq[String](0)
+    assert(leafNodeAssignments != null)
+    assert(leafNodeAssignments.length == algo.getNtrees())
+
+    val stageResults = predictions.select("detailed_prediction.stageResults").head().getSeq[Double](0)
+    assert(stageResults != null)
+    assert(stageResults.size == algo.getNtrees())
+  }
+
+  test("transformSchema with leafNodeAssignments and stageResults") {
+    val algo = new H2OIsolationForest()
+      .setWithStageResults(true)
+      .setWithLeafNodeAssignments(true)
+
+    val model = algo.fit(dataset)
+
+    val datasetFields = dataset.schema.fields
+    val predictionColField = StructField("prediction", DoubleType, nullable = true)
+
     val scoreField = StructField("score", DoubleType, nullable = false)
     val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
     val leafNodeAssignmentField =
       StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
     val stageResultsField =
       StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
-    StructField(
+    val detailedPredictionColField = StructField(
       "detailed_prediction",
       StructType(scoreField :: normalizedScoreField :: leafNodeAssignmentField :: stageResultsField :: Nil),
       nullable = true)
+
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
+    val schema = model.transformSchema(dataset.schema)
+
+    assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
 
-  override protected def expectedPredictionCol: StructField = {
-    StructField("prediction", DoubleType, nullable = true)
+  test("transformSchema without leafNodeAssignments and stageResults") {
+    val algo = new H2OIsolationForest()
+
+    val model = algo.fit(dataset)
+
+    val datasetFields = dataset.schema.fields
+    val predictionColField = StructField("prediction", DoubleType, nullable = true)
+
+    val scoreField = StructField("score", DoubleType, nullable = false)
+    val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
+    val detailedPredictionColField =
+      StructField("detailed_prediction", StructType(scoreField :: normalizedScoreField :: Nil), nullable = true)
+
+    val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
+    val expectedSchemaByTransform = model.transform(dataset).schema
+    val schema = model.transformSchema(dataset.schema)
+
+    assert(schema == expectedSchema)
+    assert(schema == expectedSchemaByTransform)
   }
-
-  override protected def getWithLeafNodeAssignments: Boolean = true
-
-  override protected def getWithStageResults: Boolean = true
 }

@@ -15,15 +15,12 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos.H2OKMeans import H2OKMeans
-from ai.h2o.sparkling.ml.algos.H2ODeepLearning import H2ODeepLearning
-from ai.h2o.sparkling.ml.algos.H2OXGBoost import H2OXGBoost
-from ai.h2o.sparkling.ml.algos.H2OGBM import H2OGBM
-from ai.h2o.sparkling.ml.algos.H2OGLM import H2OGLM
-from ai.h2o.sparkling.ml.algos.H2OGAM import H2OGAM
-from ai.h2o.sparkling.ml.algos.H2OGridSearch import H2OGridSearch
-from ai.h2o.sparkling.ml.algos.H2OAutoML import H2OAutoML
-from ai.h2o.sparkling.ml.algos.H2ODRF import H2ODRF
-from ai.h2o.sparkling.ml.algos.H2OGLRM import H2OGLRM
-from ai.h2o.sparkling.ml.algos.H2OPCA import H2OPCA
-from ai.h2o.sparkling.ml.algos.H2OIsolationForest import H2OIsolationForest
+from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
+from ai.h2o.sparkling.ml.models import H2OTreeBasedUnsupervisedMOJOModel
+from pyspark.ml.wrapper import JavaEstimator
+
+
+class H2OTreeBasedUnsupervisedAlgorithm(H2OStageBase, JavaEstimator):
+
+    def _create_model(self, java_model):
+        return H2OTreeBasedUnsupervisedMOJOModel(java_model)

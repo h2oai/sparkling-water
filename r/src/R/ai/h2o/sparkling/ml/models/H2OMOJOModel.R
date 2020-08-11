@@ -23,6 +23,8 @@ H2OMOJOModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSettings.d
   className <- invoke(invoke(jmojo, "getClass"), "getSimpleName")
   if (className == "H2OTreeBasedSupervisedMOJOModel") {
     H2OTreeBasedSupervisedMOJOModel(jmojo)
+  } else if (className == "H2OTreeBasedUnsupervisedMOJOModel") {
+    H2OTreeBasedUnsupervisedMOJOModel(jmojo)
   } else if (className == "H2OSupervisedMOJOModel") {
     H2OSupervisedMOJOModel(jmojo)
   } else if (className == "H2OUnsupervisedMOJOModel") {
@@ -77,5 +79,12 @@ H2OTreeBasedSupervisedMOJOModel <- setRefClass("H2OTreeBasedSupervisedMOJOModel"
 ))
 
 #' @export H2OUnsupervisedMOJOModel
-H2OUnsupervisedMOJOModel <- setRefClass("H2OUnupervisedMOJOModel", contains = ("H2OMOJOModel"), fields = list(jmojo = "ANY"), methods = list(
+H2OUnsupervisedMOJOModel <- setRefClass("H2OUnsupervisedMOJOModel", contains = ("H2OMOJOModel"), fields = list(jmojo = "ANY"), methods = list(
+))
+
+#' @export H2OTreeBasedUnsupervisedMOJOModel
+H2OTreeBasedUnsupervisedMOJOModel <- setRefClass("H2OTreeBasedUnsupervisedMOJOModel", contains = ("H2OUnsupervisedMOJOModel"), methods = list(
+  getNtrees = function() {
+    invoke(.self$jmojo, "getNtrees")
+  }
 ))

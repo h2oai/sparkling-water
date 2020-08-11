@@ -15,17 +15,21 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.ml.algos
 
-trait TypeExceptionsBase {
-  def all(): Map[String, Class[_]] =
-    Map(
-      "model_id" -> classOf[String],
-      "response_column" -> classOf[String],
-      "validation_response_column" -> classOf[String],
-      "fold_column" -> classOf[String],
-      "weights_column" -> classOf[String],
-      "offset_column" -> classOf[String])
+import ai.h2o.sparkling.ml.models.H2OTreeBasedUnsupervisedMOJOModel
+import hex.Model
+import org.apache.spark.sql.Dataset
+
+import scala.reflect.ClassTag
+
+abstract class H2OTreeBasedUnsupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H2OUnsupervisedAlgorithm[P] {
+
+  override def fit(dataset: Dataset[_]): H2OTreeBasedUnsupervisedMOJOModel = {
+    super.fit(dataset).asInstanceOf[H2OTreeBasedUnsupervisedMOJOModel]
+  }
+
+  def getNtrees(): Int
+
+  def setNtrees(value: Int): this.type
 }
-
-object TypeExceptions extends TypeExceptionsBase
