@@ -25,10 +25,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class AnomalyPredictionTestSuite
-  extends FunSuite
-  with Matchers
-  with SharedH2OTestContext {
+class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -115,10 +112,8 @@ class AnomalyPredictionTestSuite
 
     val scoreField = StructField("score", DoubleType, nullable = false)
     val normalizedScoreField = StructField("normalizedScore", DoubleType, nullable = false)
-    val detailedPredictionColField = StructField(
-      "detailed_prediction",
-      StructType(scoreField :: normalizedScoreField :: Nil),
-      nullable = true)
+    val detailedPredictionColField =
+      StructField("detailed_prediction", StructType(scoreField :: normalizedScoreField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
     val expectedSchemaByTransform = model.transform(dataset).schema
