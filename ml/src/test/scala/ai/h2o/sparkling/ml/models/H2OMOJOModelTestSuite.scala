@@ -249,9 +249,7 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val predMojo = m1.transform(df)
     val predModel = m2.transform(df)
 
-    TestUtils.assertDataFramesAreIdentical(
-      predMojo.drop("detailed_prediction"),
-      predModel.drop("detailed_prediction"))
+    TestUtils.assertDataFramesAreIdentical(predMojo.drop("detailed_prediction"), predModel.drop("detailed_prediction"))
   }
 
   private def tempFolder(prefix: String) = {
