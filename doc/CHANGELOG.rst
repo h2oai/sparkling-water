@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+v3.30.1.1-1 (2020-08-12)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.1-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2406 <https://0xdata.atlassian.net/browse/SW-2406>`__ - Enable 'detailed_prediction' Column for MOJO Predictions by Default
+   -  `SW-2380 <https://0xdata.atlassian.net/browse/SW-2380>`__ - Upgrade H2O 3.30.1.1
+
+-  Bug
+
+   -  `SW-2394 <https://0xdata.atlassian.net/browse/SW-2394>`__ - Put sparkVersion into resulting gradle.properties
+   -  `SW-2393 <https://0xdata.atlassian.net/browse/SW-2393>`__ - Doc: Multinode Xgboost is no longer experimental in AutoML
+   -  `SW-2392 <https://0xdata.atlassian.net/browse/SW-2392>`__ - Fix typos in documentation
+   -  `SW-2384 <https://0xdata.atlassian.net/browse/SW-2384>`__ - Doc: spark.ext.h2o.cloud.representative needs to point to leader node
+   -  `SW-2381 <https://0xdata.atlassian.net/browse/SW-2381>`__ - Deprecate removed XGBoost options
+
+-  Epic
+
+   -  `SW-2373 <https://0xdata.atlassian.net/browse/SW-2373>`__ - Update booklet to the state so it is valid on our release branch
+
 v3.30.0.7-1 (2020-07-24)
 ------------------------
 Downloads:
