@@ -18,23 +18,33 @@
 package ai.h2o.sparkling.backend
 
 import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.TaskContext
+import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.Row
 
 private[backend] object LocalityOptimizer extends Logging {
   type UploadPlan = Map[Int, NodeDesc]
 
-  def reshufflePartitions(nonEmptyPartitions: Seq[Int], uploadPlan: UploadPlan, rdd: H2OAwareRDD[Row]): Seq[Int] = {
+  case class PartitionInfo(partitionId: Int, chunkIdx: Int, address: String, executorId: String)
+
+  def reshufflePartitions(
+     nonEmptyPartitions: Seq[Int],
+     uploadPlan: UploadPlan,
+     rdd: H2OAwareRDD[Row]): (Seq[Int], PreferredLocationsRDD[Row]) = {
     require(nonEmptyPartitions.size == uploadPlan.size)
-    type SparkJob = (TaskContext, Iterator[Row]) => (Int, String)
+    type SparkJob = (TaskContext, Iterator[Row]) => PartitionInfo
     val currentLocationsJob: SparkJob = getPartitionLocations(nonEmptyPartitions)
     val currentLocations = SparkSessionUtils.active.sparkContext.runJob(rdd, currentLocationsJob, nonEmptyPartitions)
 
-    val partitionsWithLocations = currentLocations.sortBy(_._1).map(l => (nonEmptyPartitions(l._1), l._2))
-    logDebug(s"Estimated current partition locations for RDD ${rdd.name}: ${partitionsWithLocations}")
+    val partitionsWithLocations =
+      currentLocations.sortBy(_.chunkIdx).map(l => (nonEmptyPartitions(l.chunkIdx), l.address)).toSeq
+    logInfo(s"Estimated current partition locations for RDD ${rdd.name}: ${partitionsWithLocations}")
 
-    reshufflePartitions(partitionsWithLocations, uploadPlan)
+    val reshuffledPartitions = reshufflePartitions(partitionsWithLocations, uploadPlan)
+    val partitionAssignments = currentLocations.map(l => l.partitionId -> s"executor_${l.address}_${l.executorId}").toMap
+    val deterministicRDD = new PreferredLocationsRDD[Row](partitionAssignments, rdd)
+
+    (reshuffledPartitions, deterministicRDD)
   }
 
   def reshufflePartitions(partitionsWithLocations: Seq[(Int, String)], uploadPlan: UploadPlan): Seq[Int] = {
@@ -77,9 +87,9 @@ private[backend] object LocalityOptimizer extends Logging {
     result
   }
 
-  private def getPartitionLocations(partitions: Seq[Int])(context: TaskContext, it: Iterator[Row]): (Int, String) = {
+  private def getPartitionLocations(partitions: Seq[Int])(context: TaskContext, it: Iterator[Row]): PartitionInfo = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val address = java.net.InetAddress.getLocalHost().getHostAddress
-    (chunkIdx, address)
+    PartitionInfo(context.partitionId(), chunkIdx,  address, SparkEnv.get.executorId)
   }
 }

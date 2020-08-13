@@ -95,16 +95,16 @@ private[backend] object Writer extends Logging {
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
-    logDebug(s"Non-empty partitions for RDD '${rdd.name}': $nonEmptyPartitions")
+    logInfo(s"Non-empty partitions for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}': $nonEmptyPartitions")
 
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
-    logDebug(s"Upload plan for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}' : $uploadPlan")
+    logInfo(s"Upload plan for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}' : $uploadPlan")
 
-    val reshuffledPartitions = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
-    logDebug(s"Reshuffled partitions for RDD ${rdd.name}: $reshuffledPartitions")
+    val (reshuffledPartitions, deterministicRDD) = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
+    logInfo(s"Reshuffled partitions for H2OFrame '${metadata.frameId}' and RDD ${rdd.name}: $reshuffledPartitions")
 
     val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, reshuffledPartitions, partitionSizes)
-    val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, reshuffledPartitions)
+    val rows = SparkSessionUtils.active.sparkContext.runJob(deterministicRDD, operation, reshuffledPartitions)
     val res = new Array[Long](reshuffledPartitions.size)
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
@@ -119,6 +119,7 @@ private[backend] object Writer extends Logging {
       partitions: Seq[Int],
       partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
+    logInfo(s"Converting partition ${context.partitionId()} ...")
     val numRows = partitionSizes(context.partitionId())
     val domainBuilder = new CategoricalDomainBuilder(metadata.expectedTypes)
     val h2oNode = uploadPlan(chunkIdx)
