@@ -52,6 +52,7 @@ object Runner {
     "convertInvalidNumbersToNa" -> false,
     "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
+    "validationDataFrame" -> null,
     "splitRatio" -> 1.0,
     "columnsToCategorical" -> Array.empty[String],
     "withLeafNodeAssignments" -> false,
@@ -72,6 +73,7 @@ object Runner {
     val userY = ExplicitField("user_y", "HasUserY", null)
     val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null)
+    val validationLabelCol = ExplicitField("validation_response_column", "HasValidationLabelCol", "label")
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
@@ -79,7 +81,7 @@ object Runner {
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)
-    val ifFields = Seq(calibrationDataFrame)
+    val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
     val deepLearningFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -91,7 +93,6 @@ object Runner {
     val explicitDefaultValues = Map[String, Any](
       "max_w2" -> 3.402823e38f,
       "response_column" -> "label",
-      "validation_response_column" -> "label",
       "model_id" -> null,
       "pca_impl" -> new PCAParameters()._pca_implementation)
 

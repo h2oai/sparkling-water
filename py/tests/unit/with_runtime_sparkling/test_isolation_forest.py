@@ -20,6 +20,7 @@ from pyspark.mllib.linalg import *
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
 from pyspark.sql.types import *
+from pyspark.sql.functions import *
 from pysparkling.ml import H2OIsolationForest
 from tests import unit_test_utils
 
@@ -59,3 +60,15 @@ def testIsolationForestModelGiveDifferentPredictionsOnDifferentRecords(prostateD
     predictions = result.select("prediction").take(2)
 
     assert(predictions[0][0] != predictions[1][0])
+
+
+def testExplicitValidationFrameOnIsolationForest(spark, prostateDataset):
+    validationDatasetPath = "file://" + os.path.abspath("../examples/smalldata/prostate/prostate_anomaly_validation.csv")
+    validatationDataset = spark.read.csv(validationDatasetPath, header=True, inferSchema=True)
+
+    algo = H2OIsolationForest(seed=1, validationDataFrame=validatationDataset, validationLabelCol="isAnomaly")
+    model = algo.fit(prostateDataset)
+    metrics = model.getValidationMetrics()
+
+    assert(metrics['AUC'] > 0.9)
+    assert(metrics['Logloss'] < 1.0)

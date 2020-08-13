@@ -18,6 +18,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import org.apache.spark.ml.param._
+import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
 
@@ -26,11 +27,17 @@ import scala.collection.JavaConverters._
   */
 trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
 
+  protected final val validationDataFrame = new NullableDataFrameParam(
+    this,
+    "validationDataFrame",
+    "A data frame dedicated for a validation of the trained model. If the parameters is not set," +
+      "a validation frame created via the 'splitRatio' parameter.")
+
   protected final val splitRatio = new DoubleParam(
     this,
     "splitRatio",
     "Accepts values in range [0, 1.0] which determine how large part of dataset is used for training and for validation. " +
-      "For example, 0.8 -> 80% training 20% validation.")
+      "For example, 0.8 -> 80% training 20% validation. This parameter is ignored when validationDataFrame is set.")
 
   protected final val columnsToCategorical =
     new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categorical before modelling")
@@ -39,6 +46,7 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
   // Default values
   //
   setDefault(
+    validationDataFrame -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
     columnsToCategorical -> Array.empty[String])
 
@@ -50,6 +58,8 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
     $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
   }
 
+  def getValidationDataFrame(): DataFrame = $(validationDataFrame)
+
   def getSplitRatio(): Double = $(splitRatio)
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
@@ -57,6 +67,8 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
   //
   // Setters
   //
+  def setValidationDataFrame(dataFrame: DataFrame): this.type = set(validationDataFrame, dataFrame)
+
   def setSplitRatio(ratio: Double): this.type = set(splitRatio, ratio)
 
   def setColumnsToCategorical(first: String, others: String*): this.type =
