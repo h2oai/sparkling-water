@@ -100,12 +100,18 @@ private[backend] object Writer extends Logging {
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
     logInfo(s"Upload plan for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}' : $uploadPlan")
 
-    val (reshuffledPartitions, deterministicRDD) = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
-    logInfo(s"Reshuffled partitions for H2OFrame '${metadata.frameId}' and RDD ${rdd.name}: $reshuffledPartitions")
+    val (partitions, rddToExecute) =  if (metadata.conf.isLocalityOptimizationEnabled) {
+      val optimizationPair = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
+      logInfo(s"Reshuffled partitions for H2OFrame '${metadata.frameId}' " +
+        s"and RDD ${rdd.name}: ${optimizationPair._1}")
+      optimizationPair
+    } else {
+      (nonEmptyPartitions, rdd)
+    }
 
-    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, reshuffledPartitions, partitionSizes)
-    val rows = SparkSessionUtils.active.sparkContext.runJob(deterministicRDD, operation, reshuffledPartitions)
-    val res = new Array[Long](reshuffledPartitions.size)
+    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, partitions, partitionSizes)
+    val rows = SparkSessionUtils.active.sparkContext.runJob(rddToExecute, operation, partitions)
+    val res = new Array[Long](partitions.size)
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
     H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)

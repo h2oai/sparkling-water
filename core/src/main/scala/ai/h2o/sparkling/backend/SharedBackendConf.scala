@@ -174,6 +174,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def restApiTimeout: Int = sparkConf.getInt(PROP_REST_API_TIMEOUT._1, PROP_REST_API_TIMEOUT._2)
 
+  def isLocalityOptimizationEnabled: Boolean =
+    sparkConf.getBoolean(PROP_LOCALITY_OPTIMIZATION._1, PROP_LOCALITY_OPTIMIZATION._2)
+
   /** Setters */
   def setInternalClusterMode(): H2OConf = {
     if (runsInExternalClusterMode) {
@@ -352,6 +355,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setIcedDir(dir: String): H2OConf = set(PROP_ICED_DIR._1, dir)
 
   def setRestApiTimeout(timeout: Int): H2OConf = set(PROP_REST_API_TIMEOUT._1, timeout.toString)
+
+  def setLocalityOptimizationEnabled(): H2OConf = set(PROP_LOCALITY_OPTIMIZATION._1, true)
+
+  def setLocalityOptimizationDisabled(): H2OConf = set(PROP_LOCALITY_OPTIMIZATION._1, false)
 }
 
 object SharedBackendConf {
@@ -660,6 +667,13 @@ object SharedBackendConf {
     5 * 60 * 1000,
     "setSessionTimeout(Boolean)",
     "Timeout in milliseconds for Rest API requests.")
+
+  val PROP_LOCALITY_OPTIMIZATION: BooleanOption = (
+    "spark.ext.h2o.locality.optimization",
+    true,
+    """setLocalityOptimizationEnabled()
+      |setLocalityOptimizationDisabled()""".stripMargin,
+    "When enabled, the method 'asH2OFrame' will consider data locality during the conversion.")
 
   /** Language of the connected client. */
   private[sparkling] val PROP_CLIENT_LANGUAGE: (String, String) = ("spark.ext.h2o.client.language", "scala")
