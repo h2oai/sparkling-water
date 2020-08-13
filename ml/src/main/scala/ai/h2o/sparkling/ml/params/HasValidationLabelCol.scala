@@ -24,7 +24,8 @@ trait HasValidationLabelCol extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
   protected val validationLabelCol = stringParam(
     name = "validationLabelCol",
     doc = "(experimental) Name of the label column in the validation data frame. " +
-      "The label column should be binary and indicate not anomaly/anomaly.")
+      "The label column should be a string column with two distinct values indicating the anomaly. " +
+      "The negative value must be alphabetically smaller than the positive value. (E.g. '0'/'1', 'False'/'True'")
 
   setDefault(validationLabelCol -> "label")
 
