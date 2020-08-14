@@ -100,10 +100,11 @@ private[backend] object Writer extends Logging {
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
     logInfo(s"Upload plan for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}' : $uploadPlan")
 
-    val (partitions, rddToExecute) =  if (metadata.conf.isLocalityOptimizationEnabled) {
+    val (partitions, rddToExecute) = if (metadata.conf.isLocalityOptimizationEnabled) {
       val optimizationPair = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
-      logInfo(s"Reshuffled partitions for H2OFrame '${metadata.frameId}' " +
-        s"and RDD ${rdd.name}: ${optimizationPair._1}")
+      logInfo(
+        s"Reshuffled partitions for H2OFrame '${metadata.frameId}' " +
+          s"and RDD ${rdd.name}: ${optimizationPair._1}")
       optimizationPair
     } else {
       (nonEmptyPartitions, rdd)

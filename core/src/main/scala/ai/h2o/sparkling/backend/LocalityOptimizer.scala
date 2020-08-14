@@ -28,9 +28,9 @@ private[backend] object LocalityOptimizer extends Logging {
   case class PartitionInfo(partitionId: Int, chunkIdx: Int, address: String, executorId: String)
 
   def reshufflePartitions(
-     nonEmptyPartitions: Seq[Int],
-     uploadPlan: UploadPlan,
-     rdd: H2OAwareRDD[Row]): (Seq[Int], PreferredLocationsRDD[Row]) = {
+      nonEmptyPartitions: Seq[Int],
+      uploadPlan: UploadPlan,
+      rdd: H2OAwareRDD[Row]): (Seq[Int], PreferredLocationsRDD[Row]) = {
     require(nonEmptyPartitions.size == uploadPlan.size)
     type SparkJob = (TaskContext, Iterator[Row]) => PartitionInfo
     val currentLocationsJob: SparkJob = getPartitionLocations(nonEmptyPartitions)
@@ -41,7 +41,8 @@ private[backend] object LocalityOptimizer extends Logging {
     logInfo(s"Estimated current partition locations for RDD ${rdd.name}: ${partitionsWithLocations}")
 
     val reshuffledPartitions = reshufflePartitions(partitionsWithLocations, uploadPlan)
-    val partitionAssignments = currentLocations.map(l => l.partitionId -> s"executor_${l.address}_${l.executorId}").toMap
+    val partitionAssignments =
+      currentLocations.map(l => l.partitionId -> s"executor_${l.address}_${l.executorId}").toMap
     val deterministicRDD = new PreferredLocationsRDD[Row](partitionAssignments, rdd)
 
     (reshuffledPartitions, deterministicRDD)
@@ -90,6 +91,6 @@ private[backend] object LocalityOptimizer extends Logging {
   private def getPartitionLocations(partitions: Seq[Int])(context: TaskContext, it: Iterator[Row]): PartitionInfo = {
     val chunkIdx = partitions.indexOf(context.partitionId())
     val address = java.net.InetAddress.getLocalHost().getHostAddress
-    PartitionInfo(context.partitionId(), chunkIdx,  address, SparkEnv.get.executorId)
+    PartitionInfo(context.partitionId(), chunkIdx, address, SparkEnv.get.executorId)
   }
 }
