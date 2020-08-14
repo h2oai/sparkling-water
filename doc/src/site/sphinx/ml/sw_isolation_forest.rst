@@ -143,6 +143,7 @@ case, must be alphabetically smaller then the value for the positive case. E.g.:
 
         .. code:: scala
 
+            import scala.collection.mutable
             val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
             hyperParams += "ntrees" -> Array(10, 20, 30).map(_.asInstanceOf[AnyRef])
             hyperParams += "maxDepth" -> Array(5, 10, 20).map(_.asInstanceOf[AnyRef])
