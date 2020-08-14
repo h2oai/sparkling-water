@@ -108,7 +108,7 @@ Train Isolation Forest with H2OGridSearch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you're not sure about exact values for hyper-parameters of Isolation Forest, you can plug ``H2OIsolationForest`` to
-``H2OGridSearch`` and define a hyper-space to be walked through. Unlike other Sparkling Water algorithms used in
+``H2OGridSearch`` and define a hyper-parameter space to be walked through. Unlike other Sparkling Water algorithms used in
 ``H2OGridSearch``, you must pass ``validationDataFrame`` to ``H2OIsolationForest`` as a parameter in order to
 ``H2OGridSearch`` be able to evaluate produced models. The validation data frame has to have an extra column identifying
 whether the row represents an anomaly or not. The column can contain only two string values, where a value for the negative
@@ -139,7 +139,7 @@ case, must be alphabetically smaller then the value for the positive case. E.g.:
             algorithm.setValidationDataFrame(validationDF)
             algorithm.setValidationLabelCol("isAnomaly")
 
-        Define a hyper-space:
+        Define a hyper-parameter space:
 
         .. code:: scala
 
@@ -147,7 +147,7 @@ case, must be alphabetically smaller then the value for the positive case. E.g.:
             hyperParams += "ntrees" -> Array(10, 20, 30).map(_.asInstanceOf[AnyRef])
             hyperParams += "maxDepth" -> Array(5, 10, 20).map(_.asInstanceOf[AnyRef])
 
-        Pass the prepared hyper-space and algorithm to ``H2OGridSearch`` and run it:
+        Pass the prepared hyper-parameter space and algorithm to ``H2OGridSearch`` and run it:
 
         .. code:: scala
 
@@ -180,13 +180,13 @@ case, must be alphabetically smaller then the value for the positive case. E.g.:
             from pysparkling.ml import H2OIsolationForest
             algorithm = H2OIsolationForest(validationDataFrame=validationDF, validationLabelCol="isAnomaly")
 
-        Define a hyper-space:
+        Define a hyper-parameter space:
 
         .. code:: python
 
             hyperSpace = {"ntrees": [10, 20, 30], "maxDepth": [5, 10, 20]}
 
-        Pass the prepared hyper-space and algorithm to ``H2OGridSearch`` and run it:
+        Pass the prepared hyper-parameter space and algorithm to ``H2OGridSearch`` and run it:
 
         .. code:: python
 
