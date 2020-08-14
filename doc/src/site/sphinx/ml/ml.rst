@@ -14,6 +14,7 @@ Machine Learning
    sw_xgboost
    sw_glrm
    sw_pca
+   sw_isolation_forest
 
 **Transformers**
 

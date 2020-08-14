@@ -185,6 +185,7 @@ class H2OGridSearch(override val uid: String)
       category match {
         case H2OModelCategory.Regression => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
+        case H2OModelCategory.AnomalyDetection => H2OMetric.Logloss
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
         case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
@@ -311,7 +312,8 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA = Value
+    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA, H2OIsolationForest =
+      Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
       values.find { value =>
@@ -341,6 +343,7 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2OKMeans => "kmeans"
         case H2OGLRM => "glrm"
         case H2OPCA => "pca"
+        case H2OIsolationForest => "isolationforest"
       }
     }
   }

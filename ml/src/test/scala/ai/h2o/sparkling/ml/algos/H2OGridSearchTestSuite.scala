@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.params.AlgoParam
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import hex.tree.gbm.GBMModel.GBMParameters
+import org.apache.spark.sql.functions._
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
@@ -128,6 +129,32 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     hyperParams += "k" -> Array(3, 4).map(_.asInstanceOf[AnyRef])
     hyperParams += "transform" -> Array("STANDARDIZE", "NORMALIZE", "DEMEAN").map(_.asInstanceOf[AnyRef])
     testGridSearch(pca, hyperParams)
+  }
+
+  test("H2O Grid Search Isolation Forest Pipeline") {
+    val validationDataset = spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(TestUtils.locate("smalldata/prostate/prostate_anomaly_validation.csv"))
+
+    val isolationForest = new H2OIsolationForest()
+      .setValidationDataFrame(validationDataset)
+      .setValidationLabelCol("isAnomaly")
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += "ntrees" -> Array(10, 20, 30).map(_.asInstanceOf[AnyRef])
+    hyperParams += "maxDepth" -> Array(5, 10, 20).map(_.asInstanceOf[AnyRef])
+
+    val stage = new H2OGridSearch()
+      .setHyperParameters(hyperParams)
+      .setAlgo(isolationForest)
+
+    val pipeline = new Pipeline().setStages(Array(stage))
+    val model = pipeline.fit(dataset)
+
+    model.write.overwrite().save(s"ml/build/grid_isolation_forest_pipeline_model")
+    val loadedModel = PipelineModel.load(s"ml/build/grid_isolation_forest_pipeline_model")
+
+    loadedModel.transform(dataset).count()
   }
 
   private val parentParams = new Params {

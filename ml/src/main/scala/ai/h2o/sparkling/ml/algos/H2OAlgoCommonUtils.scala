@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.models.H2OBinaryModel
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
-import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.functions.col
 
 trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
@@ -38,6 +38,9 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
   /** The list of additional columns that needs to be send to H2O-3 backend for model training. */
   private[sparkling] def getAdditionalCols(): Seq[String] = Seq.empty
 
+  /** The list of additional columns that needs to be send to H2O-3 backend for model validation. */
+  private[sparkling] def getAdditionalValidationCols(): Seq[String] = Seq.empty
+
   private[sparkling] def getFeaturesCols(): Array[String]
 
   private[sparkling] def getColumnsToCategorical(): Array[String]
@@ -45,6 +48,8 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
   private[sparkling] def getSplitRatio(): Double
 
   private[sparkling] def setFeaturesCols(value: Array[String]): this.type
+
+  private[sparkling] def getValidationDataFrame(): DataFrame
 
   private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
@@ -79,7 +84,13 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     // Our MOJO wrapper needs the full column name before the array/vector expansion in order to do predictions
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
-    if (getSplitRatio() < 1.0) {
+    val validationDataFrame = getValidationDataFrame()
+    if (validationDataFrame != null) {
+      val additionalValidationColumns = getAdditionalValidationCols().map(sanitize).map(col)
+      val validationColumns = (columns ++ additionalValidationColumns).distinct
+      val validationFrame = h2oContext.asH2OFrame(validationDataFrame.select(validationColumns: _*))
+      (trainFrame, Some(validationFrame))
+    } else if (getSplitRatio() < 1.0) {
       val frames = trainFrame.split(getSplitRatio())
       if (frames.length > 1) {
         (frames(0), Some(frames(1)))
