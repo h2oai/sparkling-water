@@ -241,7 +241,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
 
     val pipeline = new Pipeline().setStages(Array(stage))
     val algoName = algo.getClass.getSimpleName
-      pipeline.write.overwrite().save(s"ml/build/grid_${algoName}_pipeline")
+    pipeline.write.overwrite().save(s"ml/build/grid_${algoName}_pipeline")
     val loadedPipeline = Pipeline.load(s"ml/build/grid_${algoName}_pipeline")
     val model = loadedPipeline.fit(dataset)
 
