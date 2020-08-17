@@ -24,7 +24,7 @@ trait H2OWord2VecTokenizerParams extends Params with HasInputCol with HasOutputC
   //
   // Param definitions
   //
-  private final val stopWords = new StringArrayParam(this, "columns", "List of stop words.")
+  private final val stopWords = new StringArrayParam(this, "stopWords", "List of stop words.")
   //
   // Default values
   //

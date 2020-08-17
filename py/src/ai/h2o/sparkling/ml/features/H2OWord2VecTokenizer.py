@@ -35,33 +35,40 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
         Params._dummy(),
         "inputCol",
         "Input Column",
-        H2OTypeConverters.toString())
+        H2OTypeConverters.toNullableString())
 
     outputCol = Param(
         Params._dummy(),
         "outputCol",
         "Output Column",
-        H2OTypeConverters.toString())
+        H2OTypeConverters.toNullableString())
 
     @keyword_only
     def __init__(self,
                  stopWords=False,
-                 inputCol=):
+                 inputCol=None,
+                 outputCol=None):
         Initializer.load_sparkling_jar()
-        super(ColumnPruner, self).__init__()
-        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.ColumnPruner", self.uid)
+        super(H2OWord2VecTokenizer, self).__init__()
+        self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OWord2VecTokenizer", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
         self._set(**kwargs)
 
-    def setKeep(self, value):
-        return self._set(keep=value)
+    def setStopWords(self, value):
+        return self._set(stopWords=value)
 
-    def setColumns(self, value):
-        return self._set(columns=value)
+    def setInputCol(self, value):
+        return self._set(inputCol=value)
 
-    def getKeep(self):
-        return self.getOrDefault(self.keep)
+    def setOutputCol(self, value):
+        return self._set(outputCol=value)
 
-    def getColumns(self):
-        return self.getOrDefault(self.columns)
+    def getStopWordds(self):
+        return self.getOrDefault(self.stopWords)
+
+    def getInputCol(self):
+        return self.getOrDefault(self.inputCol)
+
+    def getOutputCol(self):
+        return self.getOrDefault(self.outputCol)

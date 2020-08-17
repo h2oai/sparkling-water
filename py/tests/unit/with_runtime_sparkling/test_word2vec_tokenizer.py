@@ -15,7 +15,31 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.features.H2OTargetEncoder import H2OTargetEncoder
-from ai.h2o.sparkling.ml.features.ColumnPruner import ColumnPruner
-from ai.h2o.sparkling.ml.features.H2OWord2VecTokenizer import H2OWord2VecTokenizer
+from pysparkling.ml import H2OWord2VecTokenizer
 
+def testTokenizerTransform(craiglistDataset):
+        tokenizer = H2OWord2VecTokenizer(inputCol="jobtitle", outputCol="tokenized")
+        data = tokenizer.transform(craiglistDataset).select("tokenized").rdd.flatMap(lambda x: x)
+        actual = data.collect()[:20]
+        expected = [
+            "after",
+            "school",
+            "supervisor",
+            "",
+            "*****tutors",
+            "needed",
+            "-",
+            "for",
+            "all",
+            "subjects,",
+            "all",
+            "ages*****",
+            "",
+            "bay",
+            "area",
+            "family",
+            "recruiter",
+            "",
+            "adult",
+            "day"]
+        assert actual == expected

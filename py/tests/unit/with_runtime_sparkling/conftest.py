@@ -92,3 +92,13 @@ def arrestsDataset(spark, arrestsDatasetPath):
 @pytest.fixture(scope="module")
 def birdsDataset(spark, birdsDatasetPath):
     return spark.read.csv(birdsDatasetPath, header=True, inferSchema=True)
+
+
+@pytest.fixture(scope="module")
+def craiglistDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/craigslistJobTitles.csv")
+
+
+@pytest.fixture(scope="module")
+def craiglistDataset(spark, craiglistDatasetPath):
+    return spark.read.csv(craiglistDatasetPath, header=True, inferSchema=True)
