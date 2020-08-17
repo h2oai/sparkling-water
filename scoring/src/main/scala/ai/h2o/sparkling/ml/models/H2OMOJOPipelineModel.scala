@@ -40,6 +40,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     H2OMOJOPipelineCache.getMojoBackend(uid, getMojo, this)
   }
 
+  // FIXME: why preds are `List[Double]` and not Array[Double]?
   case class Mojo2Prediction(preds: List[Double])
 
   private def prepareBooleans(colType: Type, colData: Any): Any = {
@@ -105,7 +106,8 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       }
 
       builder.addRow(rowBuilder)
-      val output = mojoPipeline.transform(builder.toMojoFrame)
+      val inputFrame = builder.toMojoFrame
+      val output = mojoPipeline.transform(inputFrame)
       val predictions = output.getColumnNames.zipWithIndex.map {
         case (_, i) =>
           val columnOutput = output.getColumnData(i)
@@ -121,7 +123,24 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
           predictedVal(0)
       }
 
-      Mojo2Prediction(predictions.toList)
+      val contributions = if ($(withContributions)) {
+        val predContribMeter = mojoPipeline.predictContribMeter()
+        val contribOutput = predContribMeter.predictContribs(inputFrame)
+        // FIXME: the MOJO frame should return iterator over columns
+        val contributions = (0 until contribOutput.getNcols).map { idx =>
+          val colOut = contribOutput.getColumnData(idx)
+          val predictedVal = colOut match {
+            case floats: Array[Float] =>
+              floats.map(_.asInstanceOf[Double])
+            case _ =>
+              colOut.asInstanceOf[Array[Double]]
+          }
+          predictedVal(0)
+        }
+        contributions.toList
+      } else Nil
+
+      Mojo2Prediction(predictions.toList ++ contributions)
     }
 
   override def copy(extra: ParamMap): H2OMOJOPipelineModel = defaultCopy(extra)
@@ -208,11 +227,17 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     model.setMojo(mojo, uid)
     val pipelineMojo = MojoPipeline.loadFrom(model.getMojo().getAbsolutePath)
     val featureCols = pipelineMojo.getInputMeta.getColumnNames
+    // FIXME
+    val contribColumns = if (settings.withContributions) {
+      val contribMeter = pipelineMojo.predictContribMeter()
+      contribMeter.getPredContribNames()
+    }  else Array.empty[String]
     model.set(model.featuresCols, featureCols)
-    model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
+    model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames ++ contribColumns)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    model.set(model.withContributions -> settings.withContributions)
     model
   }
 }
