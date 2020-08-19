@@ -44,7 +44,6 @@ class H2OWord2VecTokenizer(override val uid: String)
   private final val MARKER = "empty_line_marker"
   override def transform(dataset: Dataset[_]): DataFrame = {
     require(getInputCol != null, "Input column has to be specified!")
-    require(getOutputCol != null, "Output column has to be specified!")
     val withMarker = dataset.withColumn(s"with_marker_$uid", concat(col(getInputCol), lit(" " + MARKER)))
     val tokenizer = new Tokenizer()
       .setInputCol(s"with_marker_$uid")

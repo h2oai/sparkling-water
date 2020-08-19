@@ -16,28 +16,32 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
-import org.apache.spark.ml.param.{Params, StringArrayParam}
+import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
 
-trait H2OWord2VecTokenizerParams extends Params with HasInputCol with HasOutputCol {
+trait H2OWord2VecTokenizerParams extends Params {
 
   //
   // Param definitions
   //
   private final val stopWords = new StringArrayParam(this, "stopWords", "List of stop words.")
+  private final val inputCol = new Param[String](this, "inputCol", "input column name")
+  private final val outputCol = new Param[String](this, "outputCol", "output column name")
   //
   // Default values
   //
   setDefault(
     stopWords -> Array[String](), // default is empty array which means no columns are removed
     inputCol -> null,
-    outputCol -> null
-  )
+    outputCol -> (uid + "__output"))
 
   //
   // Getters
   //
   def getStopWords(): Array[String] = $(stopWords)
+
+  def getInputCol: String = $(inputCol)
+
+  def getOutputCol: String = $(outputCol)
 
   //
   // Setters
