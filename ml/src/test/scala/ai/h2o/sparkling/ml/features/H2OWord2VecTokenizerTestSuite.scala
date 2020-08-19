@@ -94,11 +94,4 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     }
     assert(thrown.getMessage == "requirement failed: Input column has to be specified!")
   }
-
-  test("No output column specified") {
-    val thrown = intercept[IllegalArgumentException] {
-      new H2OWord2VecTokenizer().setInputCol("dummy") transform (dataset)
-    }
-    assert(thrown.getMessage == "requirement failed: Output column has to be specified!")
-  }
 }
