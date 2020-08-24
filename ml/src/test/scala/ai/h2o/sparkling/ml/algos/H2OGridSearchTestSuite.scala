@@ -149,7 +149,9 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
       .setAlgo(isolationForest)
 
     val pipeline = new Pipeline().setStages(Array(stage))
-    val model = pipeline.fit(dataset)
+    pipeline.write.overwrite().save(s"ml/build/grid_isolation_forest_pipeline")
+    val loadedPipeline = Pipeline.load(s"ml/build/grid_isolation_forest_pipeline")
+    val model = loadedPipeline.fit(dataset)
 
     model.write.overwrite().save(s"ml/build/grid_isolation_forest_pipeline_model")
     val loadedModel = PipelineModel.load(s"ml/build/grid_isolation_forest_pipeline_model")
