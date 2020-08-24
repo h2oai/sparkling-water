@@ -42,7 +42,7 @@ class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid:
         withResource(new ObjectOutputStream(byteStream)) { objectStream =>
           objectStream.writeObject(dataFrame.schema)
           val rowsWithoutSchema = dataFrame.collect().map(row => new GenericRow(row.toSeq.toArray))
-          val rowsAsList = java.util.Arrays.asList(rowsWithoutSchema : _*)
+          val rowsAsList = java.util.Arrays.asList(rowsWithoutSchema: _*)
           objectStream.writeObject(rowsAsList)
           objectStream.flush()
           val serialized = byteStream.toByteArray
