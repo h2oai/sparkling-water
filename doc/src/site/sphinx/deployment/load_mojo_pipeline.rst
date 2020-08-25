@@ -23,6 +23,16 @@ This can be achieved via ``--jars`` argument of the Spark launcher scripts.
 We also need Sparkling Water distribution which can be obtained from `H2O Download page <https://www.h2o.ai/download/>`__.
 After we downloaded the Sparkling Water distribution, extract it, and go to the extracted directory.
 
+The MOJO scoring pipeline is included in the ``mojo.zip`` archive downloaded from Driverless AI. The archive also contains
+a mojo runtime library, examples and other files. The only file which is important for scoring with Sparkling Water is
+``pipeline.mojo``. Thus before running Sparkling Water, extract the ``mojo.zip`` archive and copy ``pipeline.mojo`` to a
+location of your choice.
+
+.. code:: bash
+
+    unzip /path/to/mojo.zip -d /tmp/mojo.zip.extracted
+    cp /tmp/mojo.zip.extracted/mojo-pipeline/pipeline.mojo /path/to/pipeline.mojo
+
 Loading and Score the MOJO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,7 +81,7 @@ Now Load the MOJO as:
 
             import ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel
             val settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = true)
-            val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
+            val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
     .. tab-container:: Python
         :title: Python
@@ -80,7 +90,7 @@ Now Load the MOJO as:
 
             from pysparkling.ml import H2OMOJOPipelineModel
             settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = True)
-            mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/the/pipeline_mojo.zip", settings)
+            mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
 In the examples above ``settings`` is an optional argument. If it's not specified, the default values are used.
 
@@ -93,14 +103,14 @@ Prepare the dataset to score on:
 
         .. code:: scala
 
-            val dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
+            val dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/data.csv")
 
     .. tab-container:: Python
         :title: Python
 
         .. code:: python
 
-            dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/the/data.csv")
+            dataFrame = spark.read.option("header", "true").option("inferSchema", "true").csv("file:///path/to/data.csv")
 
 And finally, score the mojo on the loaded dataset:
 
@@ -173,6 +183,11 @@ Troubleshooting
 ~~~~~~~~~~~~~~~
 
 If you see the following exception during loading the MOJO pipeline:
-``java.io.IOException: MOJO doesn't contain resource mojo/pipeline.pb``, then it means you are adding
-incompatible mojo-runtime.jar on your classpath. It is not required and also not suggested
-to put the JAR on the classpath as Sparkling Water already bundles the correct dependencies.
+
+- ``java.io.IOException: MOJO doesn't contain resource mojo/pipeline.pb``, then it means you are adding
+  incompatible mojo-runtime.jar on your classpath. It is not required and also not suggested
+  to put the JAR on the classpath as Sparkling Water already bundles the correct dependencies.
+
+- ``java.io.IOException: None of 2 available pipeline factories [pbuf, toml] can read this mojo.``, then you most-likely
+  passed the whole ``mojo.zip`` archive to the createFromMojo method instead of the ``pipeline.mojo`` file, which is contained
+  in the archive.
