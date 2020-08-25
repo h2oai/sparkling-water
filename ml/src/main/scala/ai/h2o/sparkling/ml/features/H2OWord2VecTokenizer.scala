@@ -38,12 +38,12 @@ class H2OWord2VecTokenizer(override val uid: String)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
+    require(getInputCol != null, "Input column has to be specified!")
     StructType(schema.fields ++ Array(StructField(getOutputCol, StringType)))
   }
 
-  private final val MARKER = "empty_line_marker"
+  private val MARKER = "\u0007" // Bell Character, not expected from users to store this char in data
   override def transform(dataset: Dataset[_]): DataFrame = {
-    require(getInputCol != null, "Input column has to be specified!")
     val withMarker = dataset.withColumn(s"with_marker_$uid", concat(col(getInputCol), lit(" " + MARKER)))
     val tokenizer = new Tokenizer()
       .setInputCol(s"with_marker_$uid")

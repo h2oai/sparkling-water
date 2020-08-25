@@ -64,7 +64,7 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
     def setOutputCol(self, value):
         return self._set(outputCol=value)
 
-    def getStopWordds(self):
+    def getStopWords(self):
         return self.getOrDefault(self.stopWords)
 
     def getInputCol(self):
