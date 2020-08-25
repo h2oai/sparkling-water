@@ -280,7 +280,9 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       mojoSettings)
 
     val outputSchema = mojo.transform(df).schema
+    outputSchema.printTreeString()
     val transformedSchema = mojo.transformSchema(df.schema)
+    outputSchema.printTreeString()
 
     assert(transformedSchema === outputSchema)
   }
@@ -294,4 +296,27 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
   }
+
+  test("Test model with contributions") {
+    val inputFile = loc(Array("1/transform_XGB_dermatology_gbtree_test.csv", "2/titanic_xgb_dart_test.csv"))
+    val inputMojo = loc(Array("1/transform_XGB_dermatology_gbtree.mojo", "2/transform_XGB_dart_titanic.mojo"))
+    val testIdx = 0
+
+    // Configure mojo computation: include 
+    val settings = H2OMOJOSettings(namedMojoOutputColumns = true,
+                                   withContributions = true)
+    val df = spark.read.option("header", "true").csv(inputFile(testIdx))
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      inputMojo(testIdx),
+      settings)
+    val predsAndContrib = mojo.transform(df)
+    println("Output schema:")
+    predsAndContrib.printSchema()
+
+    val contribs = predsAndContrib.select("prediction.*")
+    println("Actual predictions:")
+    contribs.show()
+  }
+
+  private def loc(s: Array[String]) = s.map("/Users/michal/tmp/4cba/" + _)
 }

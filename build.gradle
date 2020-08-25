@@ -155,9 +155,9 @@ configure(allprojects) { project ->
 configure(subprojects) { project ->
   repositories {
     // Should be enabled only in development mode
-    if (project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
+    //if (project.hasProperty('useMavenLocal') || h2oBuild.endsWith("-SNAPSHOT")) {
       mavenLocal()
-    }
+    //}
 
     mavenCentral()
     jcenter()
