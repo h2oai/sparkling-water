@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.models
 import java.io._
 
 import ai.h2o.mojos.runtime.MojoPipeline
+import ai.h2o.mojos.runtime.api.MojoPipelineService
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
 import org.apache.spark.ml.param.{ParamMap, StringArrayParam}
 import org.apache.spark.sql._
@@ -206,7 +207,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
-    val pipelineMojo = MojoPipeline.loadFrom(model.getMojo().getAbsolutePath)
+    val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
     val featureCols = pipelineMojo.getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
     model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
@@ -219,6 +220,6 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
 
 private object H2OMOJOPipelineCache extends H2OMOJOBaseCache[MojoPipeline, H2OMOJOPipelineModel] {
   override def loadMojoBackend(mojo: File, model: H2OMOJOPipelineModel): MojoPipeline = {
-    MojoPipeline.loadFrom(mojo.getAbsolutePath)
+    MojoPipelineService.loadPipeline(mojo)
   }
 }
