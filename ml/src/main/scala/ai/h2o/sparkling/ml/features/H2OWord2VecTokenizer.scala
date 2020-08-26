@@ -57,9 +57,9 @@ class H2OWord2VecTokenizer(override val uid: String)
 
     stopWordsRemover
       .transform(tokenized)
-      .withColumn(s"exposed_$uid", explode(col(s"stop_words_removed_$uid")))
-      .withColumn(getOutputCol, regexp_replace(col(s"exposed_$uid"), MARKER, ""))
-      .drop(s"exposed_$uid", s"stop_words_removed_$uid", s"tokenized_$uid", s"with_marker_$uid")
+      .withColumn(s"exploded_$uid", explode(col(s"stop_words_removed_$uid")))
+      .withColumn(getOutputCol, regexp_replace(col(s"exploded_$uid"), MARKER, ""))
+      .drop(s"exploded_$uid", s"stop_words_removed_$uid", s"tokenized_$uid", s"with_marker_$uid")
   }
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)

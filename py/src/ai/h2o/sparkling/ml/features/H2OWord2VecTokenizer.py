@@ -29,7 +29,7 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
         Params._dummy(),
         "stopWords",
         "Remove specified words from the array vector in the dataset",
-        H2OTypeConverters.toNullableListString())
+        H2OTypeConverters.toListString())
 
     inputCol = Param(
         Params._dummy(),
@@ -45,7 +45,7 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
 
     @keyword_only
     def __init__(self,
-                 stopWords=False,
+                 stopWords=[],
                  inputCol=None,
                  outputCol=None):
         Initializer.load_sparkling_jar()
