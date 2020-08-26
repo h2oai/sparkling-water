@@ -21,6 +21,7 @@ import ai.h2o.sparkling.api.generation.common._
 
 object ParametersTemplate
   extends ((ParameterSubstitutionContext) => String)
+  with ParametersTemplateBase
   with ScalaEntityTemplate
   with ParameterResolver {
 
@@ -87,33 +88,6 @@ object ParametersTemplate
     }
   }
 
-  private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
-    parameters
-      .map { parameter =>
-        val constructorMethod = resolveParameterConstructorMethod(parameter.dataType, parameter.defaultValue)
-        val comment = if (parameter.comment.endsWith(".")) parameter.comment else parameter.comment + "."
-        s"""  protected val ${parameter.swName} = ${constructorMethod}(
-           |    name = "${parameter.swName}",
-           |    doc = \"\"\"$comment${generatePossibleValues(parameter)}\"\"\")""".stripMargin
-      }
-      .mkString("\n\n")
-  }
-
-  private def generatePossibleValues(parameter: Parameter): String = {
-    val enumTypeOption = if (parameter.dataType.isEnum) {
-      Some(parameter.dataType)
-    } else if (parameter.dataType.isArray && parameter.dataType.getComponentType.isEnum) {
-      Some(parameter.dataType.getComponentType)
-    } else {
-      None
-    }
-    enumTypeOption match {
-      case Some(enumType) =>
-        enumType.getEnumConstants().map(c => s"""``"${c}"``""").mkString(" Possible values are ", ", ", ".")
-      case None => ""
-    }
-  }
-
   private def generateDefaultValues(parameters: Seq[Parameter], explicitDefaultValues: Map[String, Any]): String = {
     parameters
       .map { parameter =>
@@ -125,15 +99,6 @@ object ParametersTemplate
         s"    ${parameter.swName} -> $defaultValue"
       }
       .mkString(",\n")
-  }
-
-  private def generateGetters(parameters: Seq[Parameter]): String = {
-    parameters
-      .map { parameter =>
-        val resolvedType = resolveParameterType(parameter.dataType)
-        s"  def get${parameter.swName.capitalize}(): $resolvedType = $$(${parameter.swName})"
-      }
-      .mkString("\n\n")
   }
 
   private def generateSetters(parameters: Seq[Parameter]): String = {
@@ -178,27 +143,7 @@ object ParametersTemplate
       .mkString(",\n")
   }
 
-  private def resolveParameterType(dataType: Class[_]): String = {
-    if (dataType.isEnum) {
-      "String"
-    } else if (dataType.isArray) {
-      s"Array[${resolveParameterType(dataType.getComponentType)}]"
-    } else {
-      dataType.getSimpleName.capitalize
-    }
-  }
-
-  private def resolveParameterConstructorMethodType(dataType: Class[_], defaultValue: Any): String = {
-    if (dataType.isEnum) {
-      "string"
-    } else if (dataType.isArray) {
-      s"${resolveParameterConstructorMethodType(dataType.getComponentType, defaultValue)}Array"
-    } else {
-      dataType.getSimpleName.toLowerCase
-    }
-  }
-
-  private def resolveParameterConstructorMethod(dataType: Class[_], defaultValue: Any): String = {
+  override protected def resolveParameterConstructorMethod(dataType: Class[_], defaultValue: Any): String = {
     val rawPrefix = resolveParameterConstructorMethodType(dataType, defaultValue)
     val finalPrefix = if (defaultValue == null) s"nullable${rawPrefix.capitalize}" else rawPrefix
     finalPrefix + "Param"

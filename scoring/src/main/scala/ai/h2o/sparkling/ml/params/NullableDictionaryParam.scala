@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param.{Param, Params}
 import org.json4s.DefaultFormats
 import org.json4s.JsonAST.JNull
-import org.json4s.jackson.JsonMethods.{compact, parse, render}
+import org.json4s.jackson.JsonMethods.{compact, render}
 import org.json4s.jackson.Serialization.{read, write}
 
 import scala.collection.JavaConverters._
@@ -35,7 +35,7 @@ class NullableDictionaryParam[T: Manifest](
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, (_: java.util.Map[String, T]) => true)
 
-  implicit val formats = DefaultFormats
+  implicit def formats = DefaultFormats
 
   override def jsonEncode(dictionary: java.util.Map[String, T]): String = {
     if (dictionary == null) {

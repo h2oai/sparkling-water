@@ -39,6 +39,26 @@ class H2OMOJOModel(H2OMOJOModelBase):
             return H2OSupervisedMOJOModel(javaModel)
         elif className == "H2OUnsupervisedMOJOModel":
             return H2OUnsupervisedMOJOModel(javaModel)
+        elif className == "H2OXGBoostMOJOModel":
+            return H2OXGBoostMOJOModel(javaModel)
+        elif className == "H2OGBMMOJOModel":
+            return H2OGBMMOJOModel(javaModel)
+        elif className == "H2ODRFMOJOModel":
+            return H2OGBMMOJOModel(javaModel)
+        elif className == "H2OGLMMOJOModel":
+            return H2OGLMMOJOModel(javaModel)
+        elif className == "H2OGAMMOJOModel":
+            return H2OGAMMOJOModel(javaModel)
+        elif className == "H2ODeepLearningMOJOModel":
+            return H2ODeepLearningMOJOModel(javaModel)
+        elif className == "H2OKMeansMOJOModel":
+            return H2OKMeansMOJOModel(javaModel)
+        elif className == "H2OGLRMMOJOModel":
+            return H2OGLRMMOJOModel(javaModel)
+        elif className == "H2OPCAMOJOModel":
+            return H2OPCAMOJOModel(javaModel)
+        elif className == "H2OIsolationForestMOJOModel":
+            return H2OIsolationForestMOJOModel(javaModel)
         else:
             return H2OMOJOModel(javaModel)
 
@@ -87,3 +107,43 @@ class H2OTreeBasedUnsupervisedMOJOModel(H2OUnsupervisedMOJOModel):
 
     def getNtrees(self):
         return self._java_obj.getNtrees()
+
+
+class H2OXGBoostMOJOModel(H2OTreeBasedSupervisedMOJOModel):
+    pass
+
+
+class H2OGBMMOJOModel(H2OTreeBasedSupervisedMOJOModel):
+    pass
+
+
+class H2ODRFMOJOModel(H2OTreeBasedSupervisedMOJOModel):
+    pass
+
+
+class H2OGLMMOJOModel(H2OSupervisedMOJOModel):
+    pass
+
+
+class H2OGAMMOJOModel(H2OSupervisedMOJOModel):
+    pass
+
+
+class H2ODeepLearningMOJOModel(H2OSupervisedMOJOModel):
+    pass
+
+
+class H2OKMeansMOJOModel(H2OUnsupervisedMOJOModel):
+    pass
+
+
+class H2OGLRMMOJOModel(H2OUnsupervisedMOJOModel):
+    pass
+
+
+class H2OPCAMOJOModel(H2OUnsupervisedMOJOModel):
+    pass
+
+
+class H2OIsolationForestMOJOModel(H2OTreeBasedUnsupervisedMOJOModel):
+    pass

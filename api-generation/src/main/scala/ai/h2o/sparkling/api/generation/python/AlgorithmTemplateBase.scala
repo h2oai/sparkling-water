@@ -14,7 +14,7 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
   def generateDefaultValuesFromExplicitFields(explicitFields: Seq[ExplicitField]): String = {
     explicitFields
       .map {
-        case ExplicitField(h2oName, _, defaultValue, swNameOption) =>
+        case ExplicitField(h2oName, _, defaultValue, swNameOption, _) =>
           val swName = swNameOption match {
             case Some(name) => name
             case None => ParameterNameConverter.convertFromH2OToSW(h2oName)

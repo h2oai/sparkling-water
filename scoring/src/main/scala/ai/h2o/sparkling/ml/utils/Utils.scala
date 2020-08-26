@@ -26,7 +26,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 object Utils {
   def getMojoModel(mojoFile: File): MojoModel = {
     val reader = MojoReaderBackendFactory.createReaderBackend(mojoFile.getAbsolutePath)
-    ModelMojoReader.readFrom(reader)
+    ModelMojoReader.readFrom(reader, true)
   }
 
   def arrayToRow[T](array: Array[T]): Row = new GenericRow(array.map(_.asInstanceOf[Any]))

@@ -2,6 +2,23 @@ description = "Sparkling Water MOJO scoring package"
 
 apply from: "$rootDir/gradle/utils.gradle"
 
+sourceSets {
+  main {
+    scala {
+      srcDirs += 'src-gen/main/scala'
+    }
+  }
+}
+
+spotless {
+  scala {
+    target project.fileTree(project.rootDir) {
+      include 'scoring/src/**/*.scala'
+      exclude "scoring/src-gen/main/**/*.scala"
+    }
+  }
+}
+
 dependencies {
   api("ai.h2o:mojo2-runtime-api:${mojoPipelineVersion}")
   api("ai.h2o:mojo2-runtime-impl:${mojoPipelineVersion}")
@@ -9,10 +26,28 @@ dependencies {
   api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
   api(project(":sparkling-water-utils"))
 
+  compileOnly(project(':sparkling-water-api-generation'))
+  compileOnly("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   compileOnly(project(":sparkling-water-macros"))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 }
+
+task cleanGeneratedApi(type: Delete) {
+  delete "$projectDir/src-gen"
+}
+
+task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
+  group = "Execution"
+  classpath = sourceSets.main.compileClasspath
+  main = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
+  args = ["scala", "$projectDir/src-gen/main/scala"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
+compileScala.dependsOn(generateApi)
+clean.dependsOn(cleanGeneratedApi)
 
 defineStandardPublication().call()

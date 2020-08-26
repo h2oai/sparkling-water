@@ -61,7 +61,7 @@ task cleanGeneratedApi(type: Delete) {
 task generateApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
   group = "Execution"
   classpath = sourceSets.main.compileClasspath
-  main = "ai.h2o.sparkling.api.generation.Runner"
+  main = "ai.h2o.sparkling.api.generation.AlgorithmAPIRunner"
   args = ["scala", "$projectDir/src-gen/main/scala"]
   standardOutput = System.out
   errorOutput = System.err
