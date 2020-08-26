@@ -90,7 +90,7 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
 
   test("No input column specified") {
     val thrown = intercept[IllegalArgumentException] {
-      new H2OWord2VecTokenizer().setOutputCol("dummy") transform (dataset)
+      new H2OWord2VecTokenizer().setOutputCol("dummy").transform(dataset)
     }
     assert(thrown.getMessage == "requirement failed: Input column has to be specified!")
   }
