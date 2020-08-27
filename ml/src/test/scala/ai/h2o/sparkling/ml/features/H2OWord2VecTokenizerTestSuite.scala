@@ -43,6 +43,7 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     new H2OWord2VecTokenizer()
       .setInputCol("jobtitle")
       .setOutputCol("tokenized")
+      .setStopWords(Array("all", "for"))
   }
 
   test("transform schema") {
@@ -62,14 +63,10 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
         "school",
         "supervisor",
         "",
-        "*****tutors",
+        "tutors",
         "needed",
-        "-",
-        "for",
-        "all",
-        "subjects,",
-        "all",
-        "ages*****",
+        "subjects",
+        "ages",
         "",
         "bay",
         "area",
@@ -77,7 +74,11 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
         "recruiter",
         "",
         "adult",
-        "day")
+        "day",
+        "programs",
+        "community",
+        "access",
+        "job")
     assert(actual.sameElements(expected))
   }
 

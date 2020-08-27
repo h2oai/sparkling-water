@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.features
 import ai.h2o.sparkling.ml.params.H2OWord2VecTokenizerParams
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover, Tokenizer}
+import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.functions._
@@ -50,19 +50,19 @@ class H2OWord2VecTokenizer(override val uid: String)
       .setOutputCol(s"tokenized_$uid")
       .setPattern(getPattern())
 
-    val tokenized = tokenizer
-          .transform(dataset)
-          .withColumn(tokenizer.getOutputCol, array_union(col(tokenizer.getOutputCol), lit(Array(""))))
-
     val stopWordsRemover = new StopWordsRemover()
       .setInputCol(tokenizer.getOutputCol)
       .setStopWords(getStopWords())
       .setOutputCol(s"stop_words_removed_$uid")
 
+    val tokenized = tokenizer
+      .transform(dataset)
+      .withColumn(tokenizer.getOutputCol, array_union(col(tokenizer.getOutputCol), lit(Array(""))))
+
     stopWordsRemover
       .transform(tokenized)
-      .withColumn(getOutputCol(), explode(col(s"stop_words_removed_$uid")))
-      .drop(s"exploded_$uid", s"stop_words_removed_$uid", s"tokenized_$uid")
+      .withColumn(getOutputCol(), explode(col(stopWordsRemover.getOutputCol)))
+      .drop(tokenizer.getOutputCol, stopWordsRemover.getOutputCol)
   }
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
