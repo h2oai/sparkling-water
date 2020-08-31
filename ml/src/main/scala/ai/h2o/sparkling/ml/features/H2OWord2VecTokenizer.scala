@@ -22,6 +22,7 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset}
@@ -42,6 +43,8 @@ class H2OWord2VecTokenizer(override val uid: String)
     StructType(schema.fields ++ Array(StructField(getOutputCol(), StringType)))
   }
 
+  private def addValue: UserDefinedFunction = udf((array: Seq[String]) => array ++ Array(""))
+
   override def transform(dataset: Dataset[_]): DataFrame = {
     require(getInputCol != null, "Input column has to be specified!")
     val tokenizer = new RegexTokenizer()
@@ -57,7 +60,7 @@ class H2OWord2VecTokenizer(override val uid: String)
 
     val tokenized = tokenizer
       .transform(dataset)
-      .withColumn(tokenizer.getOutputCol, array_union(col(tokenizer.getOutputCol), lit(Array(""))))
+      .withColumn(tokenizer.getOutputCol, addValue(col(tokenizer.getOutputCol)))
 
     stopWordsRemover
       .transform(tokenized)
