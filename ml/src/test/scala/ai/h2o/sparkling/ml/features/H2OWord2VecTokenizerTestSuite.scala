@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.features
 import java.io.File
 
 import ai.h2o.sparkling.SharedH2OTestContext
+import org.apache.spark.ml.feature.RegexTokenizer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
@@ -87,13 +88,6 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     val emptyDataset = dataset.filter(_ => false)
     val result = tokenizer.transform(emptyDataset).map(row => row.getString(0)).collect()
     assert(result.isEmpty)
-  }
-
-  test("No input column specified") {
-    val thrown = intercept[IllegalArgumentException] {
-      new H2OWord2VecTokenizer().setOutputCol("dummy").transform(dataset)
-    }
-    assert(thrown.getMessage == "requirement failed: Input column has to be specified!")
   }
 
   test("Serialization and deserialization") {
