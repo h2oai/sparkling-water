@@ -24,7 +24,7 @@ trait H2OWord2VecTokenizerParams extends Params {
   // Param definitions
   //
   private final val stopWords = new StringArrayParam(this, "stopWords", "List of stop words.")
-  private final val inputCol = new Param[String](this, "inputCol", "input column name")
+  private final val inputCol = new NullableStringParam(this, "inputCol", "input column name")
   private final val outputCol = new Param[String](this, "outputCol", "output column name")
   private final val pattern = new Param[String](this, "pattern", "Regex pattern")
   private final val minTokenLength = new IntParam(this, "minTokenLength", "Minimal length of a word")
@@ -32,7 +32,7 @@ trait H2OWord2VecTokenizerParams extends Params {
   // Default values
   //
   setDefault(
-    stopWords -> Array[String](), // default is empty array which means no columns are removed
+    stopWords -> Array.empty,
     inputCol -> null,
     outputCol -> (uid + "__output"),
     pattern -> "\\W",

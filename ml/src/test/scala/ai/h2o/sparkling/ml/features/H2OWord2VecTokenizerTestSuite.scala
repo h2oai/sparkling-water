@@ -95,4 +95,9 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     }
     assert(thrown.getMessage == "requirement failed: Input column has to be specified!")
   }
+
+  test("Serialization and deserialization") {
+    getReferenceTokenizer().write.overwrite().save("ml/build/tokenizer")
+    H2OWord2VecTokenizer.load("ml/build/tokenizer")
+  }
 }
