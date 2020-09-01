@@ -43,11 +43,25 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
         "Output Column",
         H2OTypeConverters.toNullableString())
 
+    pattern = Param(
+        Params._dummy(),
+        "pattern",
+        "Regex pattern",
+        H2OTypeConverters.toNullableString())
+
+    minTokenLength = Param(
+            Params._dummy(),
+            "minTokenLength",
+            "Minimal length of a word",
+            H2OTypeConverters.toInt())
+
     @keyword_only
     def __init__(self,
                  stopWords=[],
                  inputCol=None,
-                 outputCol=None):
+                 outputCol=None,
+                 pattern="\\W",
+                 minTokenLength=2):
         Initializer.load_sparkling_jar()
         super(H2OWord2VecTokenizer, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OWord2VecTokenizer", self.uid)
@@ -64,6 +78,12 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
     def setOutputCol(self, value):
         return self._set(outputCol=value)
 
+    def setPattern(self, value):
+        return self._set(pattern=value)
+
+    def setMinTokenLength(self, value):
+        return self._set(minTokenLength=value)
+
     def getStopWords(self):
         return self.getOrDefault(self.stopWords)
 
@@ -72,3 +92,9 @@ class H2OWord2VecTokenizer(H2OStageBase, JavaTransformer):
 
     def getOutputCol(self):
         return self.getOrDefault(self.outputCol)
+
+    def getPattern(self):
+        return self.getOrDefault(self.pattern)
+
+    def getMinTokenLength(self):
+        return self.getOrDefault(self.minTokenLength)

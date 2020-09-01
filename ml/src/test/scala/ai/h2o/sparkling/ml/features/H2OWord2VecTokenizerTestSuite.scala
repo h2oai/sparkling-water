@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.features
 import java.io.File
 
 import ai.h2o.sparkling.SharedH2OTestContext
+import org.apache.spark.ml.feature.RegexTokenizer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
@@ -43,6 +44,7 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     new H2OWord2VecTokenizer()
       .setInputCol("jobtitle")
       .setOutputCol("tokenized")
+      .setStopWords(Array("all", "for"))
   }
 
   test("transform schema") {
@@ -62,14 +64,10 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
         "school",
         "supervisor",
         "",
-        "*****tutors",
+        "tutors",
         "needed",
-        "-",
-        "for",
-        "all",
-        "subjects,",
-        "all",
-        "ages*****",
+        "subjects",
+        "ages",
         "",
         "bay",
         "area",
@@ -77,7 +75,11 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
         "recruiter",
         "",
         "adult",
-        "day")
+        "day",
+        "programs",
+        "community",
+        "access",
+        "job")
     assert(actual.sameElements(expected))
   }
 
@@ -88,10 +90,8 @@ class H2OWord2VecTokenizerTestSuite extends FunSuite with Matchers with SharedH2
     assert(result.isEmpty)
   }
 
-  test("No input column specified") {
-    val thrown = intercept[IllegalArgumentException] {
-      new H2OWord2VecTokenizer().setOutputCol("dummy").transform(dataset)
-    }
-    assert(thrown.getMessage == "requirement failed: Input column has to be specified!")
+  test("Serialization and deserialization") {
+    getReferenceTokenizer().write.overwrite().save("ml/build/tokenizer")
+    H2OWord2VecTokenizer.load("ml/build/tokenizer")
   }
 }

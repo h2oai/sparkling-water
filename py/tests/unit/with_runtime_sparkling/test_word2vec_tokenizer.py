@@ -18,22 +18,19 @@
 from pysparkling.ml import H2OWord2VecTokenizer
 
 def testTokenizerTransform(craiglistDataset):
+        stopWords = ["all", "for"]
         tokenizer = H2OWord2VecTokenizer(inputCol="jobtitle", outputCol="tokenized")
-        data = tokenizer.transform(craiglistDataset).select("tokenized").rdd.flatMap(lambda x: x)
+        data = tokenizer.setStopWords(stopWords).transform(craiglistDataset).select("tokenized").rdd.flatMap(lambda x: x)
         actual = data.collect()[:20]
         expected = [
             "after",
             "school",
             "supervisor",
             "",
-            "*****tutors",
+            "tutors",
             "needed",
-            "-",
-            "for",
-            "all",
-            "subjects,",
-            "all",
-            "ages*****",
+            "subjects",
+            "ages",
             "",
             "bay",
             "area",
@@ -41,5 +38,9 @@ def testTokenizerTransform(craiglistDataset):
             "recruiter",
             "",
             "adult",
-            "day"]
+            "day",
+            "programs",
+            "community",
+            "access",
+            "job"]
         assert actual == expected

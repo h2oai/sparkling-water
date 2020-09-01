@@ -16,7 +16,7 @@
  */
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.{Param, Params, StringArrayParam}
+import org.apache.spark.ml.param.{IntParam, Param, Params, StringArrayParam}
 
 trait H2OWord2VecTokenizerParams extends Params {
 
@@ -26,22 +26,25 @@ trait H2OWord2VecTokenizerParams extends Params {
   private final val stopWords = new StringArrayParam(this, "stopWords", "List of stop words.")
   private final val inputCol = new Param[String](this, "inputCol", "input column name")
   private final val outputCol = new Param[String](this, "outputCol", "output column name")
+  private final val pattern = new Param[String](this, "pattern", "Regex pattern")
+  private final val minTokenLength = new IntParam(this, "minTokenLength", "Minimal length of a word")
   //
   // Default values
   //
-  setDefault(
-    stopWords -> Array[String](), // default is empty array which means no columns are removed
-    inputCol -> null,
-    outputCol -> (uid + "__output"))
+  setDefault(stopWords -> Array.empty, outputCol -> (uid + "__output"), pattern -> "\\W", minTokenLength -> 2)
 
   //
   // Getters
   //
   def getStopWords(): Array[String] = $(stopWords)
 
-  def getInputCol: String = $(inputCol)
+  def getInputCol(): String = $(inputCol)
 
-  def getOutputCol: String = $(outputCol)
+  def getOutputCol(): String = $(outputCol)
+
+  def getPattern(): String = $(pattern)
+
+  def getMinTokenLength(): Int = $(minTokenLength)
 
   //
   // Setters
@@ -52,4 +55,7 @@ trait H2OWord2VecTokenizerParams extends Params {
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
+  def setPattern(value: String): this.type = set(pattern, value)
+
+  def setMinTokenLength(value: Int): this.type = set(minTokenLength, value)
 }

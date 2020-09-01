@@ -19,9 +19,10 @@ package ai.h2o.sparkling.ml.features
 import ai.h2o.sparkling.ml.params.H2OWord2VecTokenizerParams
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.feature.{StopWordsRemover, Tokenizer}
+import org.apache.spark.ml.feature.{RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset}
@@ -39,28 +40,32 @@ class H2OWord2VecTokenizer(override val uid: String)
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
     require(getInputCol != null, "Input column has to be specified!")
-    StructType(schema.fields ++ Array(StructField(getOutputCol, StringType)))
+    StructType(schema.fields ++ Array(StructField(getOutputCol(), StringType)))
   }
 
-  private val MARKER = "\u0007" // Bell Character, not expected from users to store this char in data
+  private def addValue: UserDefinedFunction = udf((array: Seq[String]) => array ++ Array(""))
+
   override def transform(dataset: Dataset[_]): DataFrame = {
     require(getInputCol != null, "Input column has to be specified!")
-    val withMarker = dataset.withColumn(s"with_marker_$uid", concat(col(getInputCol), lit(" " + MARKER)))
-    val tokenizer = new Tokenizer()
-      .setInputCol(s"with_marker_$uid")
+    val tokenizer = new RegexTokenizer()
+      .setInputCol(getInputCol())
+      .setMinTokenLength(getMinTokenLength())
       .setOutputCol(s"tokenized_$uid")
-    val tokenized = tokenizer.transform(withMarker)
+      .setPattern(getPattern())
 
     val stopWordsRemover = new StopWordsRemover()
       .setInputCol(tokenizer.getOutputCol)
       .setStopWords(getStopWords())
       .setOutputCol(s"stop_words_removed_$uid")
 
+    val tokenized = tokenizer
+      .transform(dataset)
+      .withColumn(tokenizer.getOutputCol, addValue(col(tokenizer.getOutputCol)))
+
     stopWordsRemover
       .transform(tokenized)
-      .withColumn(s"exploded_$uid", explode(col(s"stop_words_removed_$uid")))
-      .withColumn(getOutputCol, regexp_replace(col(s"exploded_$uid"), MARKER, ""))
-      .drop(s"exploded_$uid", s"stop_words_removed_$uid", s"tokenized_$uid", s"with_marker_$uid")
+      .withColumn(getOutputCol(), explode(col(stopWordsRemover.getOutputCol)))
+      .drop(tokenizer.getOutputCol, stopWordsRemover.getOutputCol)
   }
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
