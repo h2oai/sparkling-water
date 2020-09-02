@@ -36,19 +36,8 @@ trait HasMonotoneConstraints extends H2OAlgoParamsBase {
 
   def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value.asJava)
 
-  private def getMonotoneConstraintsAsKeyValuePairs(): Array[KeyValue] = {
-    val constraints = getMonotoneConstraints()
-    if (constraints == null) {
-      null
-    } else {
-      getMonotoneConstraints().map {
-        case (key, value) => new KeyValue(key, value)
-      }.toArray
-    }
-  }
-
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("monotone_constraints" -> getMonotoneConstraintsAsKeyValuePairs())
+    super.getH2OAlgorithmParams(trainingFrame) ++ Map("monotone_constraints" -> getMonotoneConstraints())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
