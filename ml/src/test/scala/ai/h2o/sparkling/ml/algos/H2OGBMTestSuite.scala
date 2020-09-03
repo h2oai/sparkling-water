@@ -53,4 +53,16 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     val withSize = leafNodeAssignments.withColumn("size", org.apache.spark.sql.functions.size($"leafNodeAssignments"))
     assert(withSize.select("size").head().getInt(0) == 2)
   }
+
+  test("H2OGBM with monotone constraints") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setLabelCol("CAPSULE")
+      .setMonotoneConstraints(Map("AGE" -> 1, "PSA" -> -1))
+    val model = algo.fit(dataset)
+    val prediction = model.transform(dataset).select("prediction")
+    val Array(first, second) = prediction.take(2)
+    first should not equal second
+  }
 }

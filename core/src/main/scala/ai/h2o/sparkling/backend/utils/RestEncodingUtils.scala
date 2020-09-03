@@ -57,7 +57,7 @@ private[sparkling] trait RestEncodingUtils {
   }
 
   protected def stringifyMap(map: Map[_, _]): String = {
-    val items = for ((key, value) <- map if value != null) yield s"{'key': $key, 'value': ${stringify(value)}"
+    val items = for ((key, value) <- map if value != null) yield s"{'key': $key, 'value': ${stringify(value)}}"
     stringifyArray(items.toArray)
   }
 
