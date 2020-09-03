@@ -51,6 +51,8 @@ task substitute() {
           .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
           .replaceAll("SUBST_SCALA_BASE_VERSION", scalaBaseVersion)
           .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
+          .replaceAll("SUBST_EXECUTOR_MEMORY_OVERHEAD", executorOverheadMemoryOption)
+          .replaceAll("SUBST_DRIVER_MEMORY_OVERHEAD", driverOverheadMemoryOption)
         file(it).write(contents, 'UTF-8')
       }
     }

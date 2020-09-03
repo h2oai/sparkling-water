@@ -139,6 +139,8 @@ configure(allprojects) { project ->
     minSupportedJavaVersion = loadVersionSpecificProp("minSupportedJavaVersion", versionSpecificProps)
     supportedEmrVersion = loadVersionSpecificProp("supportedEmrVersion", versionSpecificProps)
     unsupportedMinorSparkVersions = loadVersionSpecificProp("unsupportedMinorSparkVersions", versionSpecificProps)
+    executorOverheadMemoryOption = loadVersionSpecificProp("executorOverheadMemoryOption", versionSpecificProps)
+    driverOverheadMemoryOption = loadVersionSpecificProp("driverOverheadMemoryOption", versionSpecificProps)
   }
   // All project inherits the same versioning number
   version = loadedVersion
