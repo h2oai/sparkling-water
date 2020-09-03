@@ -35,15 +35,4 @@ trait HasMonotoneConstraints extends Params {
   def getMonotoneConstraints(): Map[String, Double] = $(monotoneConstraints).asScala.toMap
 
   def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value.asJava)
-
-  protected def getMonotoneConstraintsAsKeyValuePairs(): Array[KeyValue] = {
-    val constraints = getMonotoneConstraints()
-    if (constraints == null) {
-      null
-    } else {
-      getMonotoneConstraints().map {
-        case (key, value) => new KeyValue(key, value)
-      }.toArray
-    }
-  }
 }
