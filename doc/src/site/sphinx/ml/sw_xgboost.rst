@@ -133,8 +133,11 @@ Note: In case of Pysparkling, the YARN container will be bigger about the memory
 
 Memory Overhead on Spark driver
 ```````````````````````````````
-If you set the SW property ``spark.ext.h2o.rest.api.based.client`` to ``false``, you should also set the following properties
-in the same way as ``SUBST_EXECUTOR_MEMORY_OVERHEAD``
+If you enabled a H2O client (a special H2O node representing an entry point for the communication with the H2O cluster)
+to run on the Spark driver, you should also set the following properties in the same way as ``SUBST_EXECUTOR_MEMORY_OVERHEAD``.
 
 - ``spark.yarn.am.memoryOverhead`` - in case of deploying to YARN in the client mode
 - ``SUBST_DRIVER_MEMORY_OVERHEAD`` - in case of deploying to YARN in the cluster mode and other deployments (Kubernetes, Mesos)
+
+Note: A H2O client can run on the Spark driver only with Sparkling Water in Scala/Java API and the property
+``spark.ext.h2o.rest.api.based.client`` set to ``false``. The default value of the property is ``true``.
