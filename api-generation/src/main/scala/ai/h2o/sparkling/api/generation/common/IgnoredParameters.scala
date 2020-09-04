@@ -54,7 +54,13 @@ object IgnoredParameters {
           "custom_metric_func",
           "custom_distribution_func")
       case "H2OGAM" => Seq("plug_values") // According to MK the parameter doesn't make much sense for GAM
-      case "H2ODeepLearning" => Seq("pretrained_autoencoder")
+      case "H2ODeepLearning" =>
+        Seq(
+          "pretrained_autoencoder",
+          "gainslift_bins",
+          "custom_metric_func",
+          "max_categorical_levels",
+          "custom_distribution_func")
       case _ => Seq.empty
     }
   }
