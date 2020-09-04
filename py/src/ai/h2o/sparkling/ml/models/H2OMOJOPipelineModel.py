@@ -38,7 +38,7 @@ class H2OMOJOPipelineModel(H2OMOJOModelBase):
         return Column(java_col)
 
     def getOutputCols(self):
-        return self._java_obj.getOutputCols()
+        return list(self._java_obj.getOutputCols())
 
     def getMojoInputSchema(self):
         return self._java_obj.getMojoInputSchema()

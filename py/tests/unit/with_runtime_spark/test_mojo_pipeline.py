@@ -21,8 +21,9 @@ that mojo can run without H2O runtime in PySparkling environment
 """
 
 import os
+from pysparkling import H2OContext
 from pyspark.ml import Pipeline, PipelineModel
-from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings
+from pysparkling.ml import H2OMOJOPipelineModel, H2OMOJOSettings, H2OAutoML
 
 
 def test_h2o_mojo_pipeline_predictions(prostateDataset):
@@ -108,3 +109,39 @@ def testMojoPipelineProtoBackendWithoutError(spark):
     df = spark.createDataFrame(rdd, ['pclass', 'sex', 'age', 'ticket', 'fare', 'cabin'])
     prediction = mojo.transform(df)
     prediction.collect()
+
+
+def testBigDataPipeline(spark, creditsDataset):
+
+    mojo = H2OMOJOPipelineModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/pipeline_credit.mojo"),
+        H2OMOJOSettings(removeModel = True, expandNamedMojoOutputColumns = True))
+
+    # Create Input Dataset
+    trainingDataset = creditsDataset
+    print("Training data schema:")
+    trainingDataset.printSchema()
+
+    trainingDataset.show(10)
+    mojo.transform(trainingDataset).printSchema()
+
+    print("-------------- MOJO ----------")
+    print("Transformation input: " + str(mojo.getFeaturesCols()))
+    print("Transformation output: " + str(mojo.getOutputCols()))
+
+    H2OContext.getOrCreate()
+    #TODO: Mojo2 should provide API to get label column
+    labelCol = "default payment next month"
+    #TODO: Would be nice if mojo2 API provides this list, such as: trainingColumns
+    featuresCols = mojo.getFeaturesCols() + mojo.getOutputCols() + [labelCol]
+    model = H2OAutoML(labelCol=labelCol, maxModels=3, featuresCols=featuresCols)
+    print("Model feature columns:" + str(model.getFeaturesCols()))
+
+    # Run the pipeline
+    pipeline = Pipeline(stages=[mojo, model])
+    pipelineModel = pipeline.fit(trainingDataset)
+    pipelineModel.write().overwrite().save("file://" + os.path.abspath("build/big_data_pipeline"))
+
+    loadedPipeline = PipelineModel.load("file://" + os.path.abspath("build/big_data_pipeline"))
+    predictions = loadedPipeline.transform(trainingDataset)
+    predictions.show(10)
