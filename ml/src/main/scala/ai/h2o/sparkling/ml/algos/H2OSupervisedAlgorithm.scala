@@ -33,9 +33,13 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
 
   def getOffsetCol(): String
 
+  def getDistribution(): String
+
   def setLabelCol(value: String): this.type
 
   def setOffsetCol(value: String): this.type
+
+  def setDistribution(value: String): this.type
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
