@@ -76,7 +76,11 @@ object ParametersTemplate {
     instance.params
       .filterNot(_.name == "withDetailedPredictionCol")
       .map { param =>
-        val defaultValue = instance.getDefault(param).get
+        val defaultValue = if (instance.getDefault(param).isDefined) {
+          instance.getDefault(param).get
+        } else {
+          "No default value"
+        }
 
         s"""${param.name}
            |  ${param.doc.replace("\n ", "\n\n  - ")}
