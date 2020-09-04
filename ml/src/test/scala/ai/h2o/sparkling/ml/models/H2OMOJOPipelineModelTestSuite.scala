@@ -305,11 +305,11 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     //   - Also need schema from MOJO to assembly proper inputs for algos
     //   - there is no way how to get output columns from MOJO at this point
     //   - TODO: the MOJO should provide training schema, also scoring schema
-    val mojoTransf = H2OMOJOPipelineModel.createFromMojo(
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
       "/tmp/mojo-pipeline/pipeline.mojo",
       H2OMOJOSettings(removeModel = true, expandNamedMojoOutputColumns = true))
 
-    val inputScoringSchema = StructType(mojoTransf.getFeaturesCols().map(name => StructField(name, DoubleType, nullable = true)))
+    val inputScoringSchema = StructType(mojo.getFeaturesCols().map(name => StructField(name, DoubleType, nullable = true)))
     val inputTrainingSchema =
       StructType(inputScoringSchema.fields ++ Array(StructField("default payment next month", IntegerType, nullable = true)))
 
@@ -319,23 +319,23 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       .csv(TestUtils.locate("smalldata/creditcard.csv"))
     println(f"Training data schema: ${trainingDataset.schema}")
     trainingDataset.show(10)
-    mojoTransf.transform(trainingDataset).printSchema()
-    mojoTransf.transformSchema(trainingDataset.schema).printTreeString()
-    assert(mojoTransf.transform(trainingDataset).schema === mojoTransf.transformSchema(trainingDataset.schema))
+    mojo.transform(trainingDataset).printSchema()
+    mojo.transformSchema(trainingDataset.schema).printTreeString()
+    assert(mojo.transform(trainingDataset).schema === mojo.transformSchema(trainingDataset.schema))
 
     println("-------------- MOJO ----------")
-    println(f"Transformation input: ${mojoTransf.getFeaturesCols().mkString(",")}")
+    println(f"Transformation input: ${mojo.getFeaturesCols().mkString(",")}")
 
     // TODO: we need to figure out what were original inputs of model
     H2OContext.getOrCreate()
     val model = new H2OAutoML()
       .setLabelCol("default payment next month")
-      .setFeaturesCols(mojoTransf.getOutputCols() ++ inputTrainingSchema.map(f => f.name))
+      .setFeaturesCols(mojo.getOutputCols() ++ inputTrainingSchema.map(f => f.name))
     println("Model feature columns:")
     println(model.getFeaturesCols().mkString("\n"))
 
     val pipeline = new Pipeline()
-    pipeline.setStages(Array(mojoTransf, model))
+    pipeline.setStages(Array(mojo, model))
 
     val pipelineModel = pipeline.fit(trainingDataset)
     pipelineModel.write.overwrite().save(s"ml/build/pipelineModel.${pipeline.uid}")
