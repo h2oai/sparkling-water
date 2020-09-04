@@ -309,14 +309,14 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       "/tmp/mojo-pipeline/pipeline.mojo",
       H2OMOJOSettings(removeModel = true, expandNamedMojoOutputColumns = true))
 
-    val inputScoringSchema = StructType(mojoTransf.getFeaturesCols().map(name => StructField(name, DoubleType, true)))
+    val inputScoringSchema = StructType(mojoTransf.getFeaturesCols().map(name => StructField(name, DoubleType, nullable = true)))
     val inputTrainingSchema =
-      StructType(inputScoringSchema.fields ++ Array(StructField("default payment next month", IntegerType, true)))
+      StructType(inputScoringSchema.fields ++ Array(StructField("default payment next month", IntegerType, nullable = true)))
 
     val trainingDataset = spark.read
-      .schema(StructType(Array(StructField("ID", IntegerType, false)) ++ inputTrainingSchema.fields))
-      .option("header", true)
-      .csv("/Users/michal/Devel/projects/h2o/repos/dai/tests/data/creditcard.csv")
+      .schema(StructType(Array(StructField("ID", IntegerType, nullable = false)) ++ inputTrainingSchema.fields))
+      .option("header", value = true)
+      .csv(TestUtils.locate("smalldata/creditcard.csv"))
     println(f"Training data schema: ${trainingDataset.schema}")
     trainingDataset.show(10)
     mojoTransf.transform(trainingDataset).printSchema()
@@ -334,24 +334,14 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     println("Model feature columns:")
     println(model.getFeaturesCols().mkString("\n"))
 
-    val pipeline = new Pipeline("test_x")
+    val pipeline = new Pipeline()
     pipeline.setStages(Array(mojoTransf, model))
 
     val pipelineModel = pipeline.fit(trainingDataset)
-    pipelineModel.write.overwrite().save("/tmp/pipelineModel.xxx")
+    pipelineModel.write.overwrite().save(s"ml/build/pipelineModel.${pipeline.uid}")
 
-    val loadedPipeline = PipelineModel.load("/tmp/pipelineModel.xxx")
-    val ppredictions = loadedPipeline.transform(trainingDataset)
-    ppredictions.select("ID", "prediction").show(10)
+    val loadedPipeline = PipelineModel.load(s"ml/build/pipelineModel.${pipeline.uid}")
+    val predictions = loadedPipeline.transform(trainingDataset)
+    predictions.select("ID", "prediction").show(10)
   }
-
-  def sqlPredicate(colName: String, nestedPrefix: String, newName: (String) => String) =
-    f"`${nestedPrefix}`.`${colName}` AS `${newName(colName)}`"
-
-}
-
-object NameHelper {
-  val pattern = "\\W+".r
-
-  def normalize(n: String) = pattern.replaceAllIn(n, "_")
 }
