@@ -305,19 +305,20 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     //   - Also need schema from MOJO to assembly proper inputs for algos
     //   - there is no way how to get output columns from MOJO at this point
     //   - TODO: the MOJO should provide training schema, also scoring schema
+
+    // Load the MOJO
     val mojo = H2OMOJOPipelineModel.createFromMojo(
-      "/tmp/mojo-pipeline/pipeline.mojo",
+      this.getClass.getClassLoader.getResourceAsStream("pipeline_credit.mojo"),
+      "creditcard",
       H2OMOJOSettings(removeModel = true, expandNamedMojoOutputColumns = true))
 
-    val inputScoringSchema = StructType(mojo.getFeaturesCols().map(name => StructField(name, DoubleType, nullable = true)))
-    val inputTrainingSchema =
-      StructType(inputScoringSchema.fields ++ Array(StructField("default payment next month", IntegerType, nullable = true)))
-
+    // Create Input Dataset
     val trainingDataset = spark.read
-      .schema(StructType(Array(StructField("ID", IntegerType, nullable = false)) ++ inputTrainingSchema.fields))
+      .option("inferSchema", value = true) // our internal logic converts types to ones required by MOJO2
       .option("header", value = true)
       .csv(TestUtils.locate("smalldata/creditcard.csv"))
     println(f"Training data schema: ${trainingDataset.schema}")
+
     trainingDataset.show(10)
     mojo.transform(trainingDataset).printSchema()
     mojo.transformSchema(trainingDataset.schema).printTreeString()
@@ -325,15 +326,21 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     println("-------------- MOJO ----------")
     println(f"Transformation input: ${mojo.getFeaturesCols().mkString(",")}")
+    println(f"Transformation output: ${mojo.getOutputCols().mkString(",")}")
 
-    // TODO: we need to figure out what were original inputs of model
     H2OContext.getOrCreate()
+    //TODO: Mojo2 should provide API to get label column
+    val labelCol = "default payment next month"
+    //TODO: Would be nice if mojo2 API provides this list, such as: trainingColumns
+    val featuresCols = mojo.getFeaturesCols() ++ mojo.getOutputCols() ++ Array(labelCol)
     val model = new H2OAutoML()
-      .setLabelCol("default payment next month")
-      .setFeaturesCols(mojo.getOutputCols() ++ inputTrainingSchema.map(f => f.name))
+      .setLabelCol(labelCol)
+      .setMaxModels(3)
+      .setFeaturesCols(featuresCols)
     println("Model feature columns:")
     println(model.getFeaturesCols().mkString("\n"))
 
+    // Run the pipeline
     val pipeline = new Pipeline()
     pipeline.setStages(Array(mojo, model))
 
@@ -342,6 +349,6 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     val loadedPipeline = PipelineModel.load(s"ml/build/pipelineModel.${pipeline.uid}")
     val predictions = loadedPipeline.transform(trainingDataset)
-    predictions.select("ID", "prediction").show(10)
+    predictions.show(10)
   }
 }
