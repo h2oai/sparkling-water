@@ -69,6 +69,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     }
 
     val featureColumns = getFeaturesCols().map(sanitize).map(col)
+
     if (dataset.select(featureColumns: _*).distinct().count() == 1) {
       throw new IllegalArgumentException(s"H2O could not use any of the specified features" +
         s" columns: '${getFeaturesCols().mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
