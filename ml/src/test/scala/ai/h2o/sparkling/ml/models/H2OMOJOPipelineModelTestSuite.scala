@@ -22,7 +22,7 @@ import java.sql.{Date, Timestamp}
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
 import ai.h2o.sparkling.{SparkTestContext, TestUtils}
-import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.algos.{H2OAutoML, H2OGBM}
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
@@ -328,10 +328,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     // TODO: we need to figure out what were original inputs of model
     H2OContext.getOrCreate()
-    val model = new H2OGBM()
-      .setNtrees(100)
-      .setLearnRate(0.01)
-      .setMaxDepth(4)
+    val model = new H2OAutoML()
       .setLabelCol("default payment next month")
       .setFeaturesCols(mojoTransf.getOutputCols() ++ inputTrainingSchema.map(f => f.name))
     println("Model feature columns:")
