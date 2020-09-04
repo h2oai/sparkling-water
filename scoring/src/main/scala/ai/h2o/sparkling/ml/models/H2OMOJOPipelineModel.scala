@@ -191,8 +191,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOPipelineModel = {
     val model = new H2OMOJOPipelineModel(uid)
     model.setMojo(mojo, uid)
-    val backend = MemoryReaderBackend.fromZipStream(mojo)
-    // TODO: this should use new light-weight API to load only metadata and avoid loading full model
+    val backend = ZipFileReaderBackend.open(model.getMojo())
     val pipeline = if (settings.removeModel) {
       val factory = MojoPipelineService.INSTANCE.get(backend)
       val loader = factory.createLoader(backend, null)

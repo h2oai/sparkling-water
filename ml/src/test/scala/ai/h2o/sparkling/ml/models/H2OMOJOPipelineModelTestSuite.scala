@@ -21,7 +21,7 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
-import ai.h2o.sparkling.SparkTestContext
+import ai.h2o.sparkling.{SparkTestContext, TestUtils}
 import ai.h2o.sparkling.ml.algos.H2OGBM
 import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -43,7 +43,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
       spark.read
         .option("header", "true")
         .option("inferSchema", value = true)
-        .csv("examples/smalldata/prostate/prostate.csv")
+        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
@@ -77,7 +77,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
   test("Basic Mojo Pipeline Prediction") {
     // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -116,7 +116,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
   test("Verify that output columns are correct when using the named columns") {
     // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojoSettings = H2OMOJOSettings()
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -158,7 +158,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   test("Selection using udf on non-existent column") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -173,7 +173,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   test("Testing dataset is missing one of feature columns") {
     val schema = spark.read
       .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       .drop("AGE")
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -191,7 +191,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   test("Testing dataset has an extra feature column") {
     val schema = spark.read
       .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       .withColumn("EXTRA", lit("extra"))
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -210,7 +210,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */
   test("Prediction with null as row element") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -276,7 +276,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
