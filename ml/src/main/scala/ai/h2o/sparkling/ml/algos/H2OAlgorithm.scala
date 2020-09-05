@@ -45,15 +45,11 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
 
   def getWeightCol(): String
 
-  def getDistribution(): String
-
   def getModelId(): String
 
   def setFoldCol(value: String): this.type
 
   def setWeightCol(value: String): this.type
-
-  def setDistribution(value: String): this.type
 
   def setModelId(value: String): this.type
 

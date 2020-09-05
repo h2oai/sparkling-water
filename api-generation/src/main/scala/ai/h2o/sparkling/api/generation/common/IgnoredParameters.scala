@@ -37,10 +37,25 @@ object IgnoredParameters {
 
   def common: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
 
-  def all(algorithm: String): Seq[String] = algorithm match {
-    case "H2OKMeans" => common ++ Seq("response_column", "offset_column")
-    case "H2OGAM" => common ++ Seq("plug_values") // According to MK the parameter doesn't make much sense for GAM
-    case "H2ODeepLearning" => common ++ Seq("pretrained_autoencoder")
-    case _ => common
+  def all(algorithm: String): Seq[String] = common ++ {
+    algorithm match {
+      case "H2OKMeans" =>
+        Seq(
+          "response_column",
+          "offset_column",
+          "distribution",
+          "tweedie_power",
+          "quantile_alpha",
+          "huber_alpha",
+          "gainslift_bins",
+          "stopping_rounds",
+          "stopping_metric",
+          "stopping_tolerance",
+          "custom_metric_func",
+          "custom_distribution_func")
+      case "H2OGAM" => Seq("plug_values") // According to MK the parameter doesn't make much sense for GAM
+      case "H2ODeepLearning" => Seq("pretrained_autoencoder")
+      case _ => Seq.empty
+    }
   }
 }
