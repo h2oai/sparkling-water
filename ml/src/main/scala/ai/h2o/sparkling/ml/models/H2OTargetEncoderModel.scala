@@ -69,12 +69,11 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val params = Map(
       "model" -> targetEncoderModel.modelId,
       "frame" -> input.frameId,
-      "data_leakage_handling" -> getHoldoutStrategy(),
       "noise" -> getNoise(),
       "blending" -> getBlendedAvgEnabled(),
       "inflection_point" -> getBlendedAvgInflectionPoint(),
       "smoothing" -> getBlendedAvgSmoothing(),
-      "seed" -> getNoiseSeed())
+      "as_training" -> true)
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
     val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name).subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)

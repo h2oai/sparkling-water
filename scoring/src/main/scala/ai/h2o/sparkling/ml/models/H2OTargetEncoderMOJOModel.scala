@@ -42,7 +42,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
 
   @transient private lazy val orderOfInputColumns = {
     val mojoModel = Utils.getMojoModel(getMojo()).asInstanceOf[TargetEncoderMojoModel]
-    val indexes = mojoModel._teColumnNameToIdx
+    val indexes = mojoModel._columnNameToIdx
     indexes
   }
 
@@ -81,7 +81,7 @@ case class H2OTargetEncoderMOJOUdfWrapper(mojo: File, outputCols: Array[String])
   val mojoUdf = udf[Array[Option[Double]], Row] { r: Row =>
     val inputRowData = RowConverter.toH2ORowData(r)
     try {
-      val prediction = easyPredictModelWrapper.transformWithTargetEncoding(inputRowData)
+      val prediction = easyPredictModelWrapper.predictTargetEncoding(inputRowData)
       prediction.transformations.map(Some(_))
     } catch {
       case _: Throwable => outputCols.map(_ => None)
