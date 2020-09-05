@@ -16,13 +16,14 @@
 #
 
 from pyspark.ml.param import *
-from pyspark.ml.util import JavaMLWritable, JavaMLReadable
+from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
+from ai.h2o.sparkling.ml.util.H2OJavaMLReadable import H2OJavaMLReadable
 
 import warnings
 
 
-class H2OMOJOModelBase(JavaModel, JavaMLWritable, JavaMLReadable):
+class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
 
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
