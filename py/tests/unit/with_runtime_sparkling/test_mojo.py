@@ -18,6 +18,7 @@ import pytest
 import tempfile
 import shutil
 import unit_test_utils
+import os
 
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
@@ -25,6 +26,7 @@ from pyspark.sql.functions import array, struct
 from pysparkling.ml import *
 from h2o.estimators import H2OGradientBoostingEstimator
 from pyspark.ml.feature import VectorAssembler
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
 
 
 @pytest.fixture(scope="module")
@@ -141,3 +143,14 @@ def testMojoTrainedWithH2OAPISupportsStructs(hc, prostateDatasetWithDoubles):
             prostateDatasetWithDoubles.VOL).alias("a"),
         prostateDatasetWithDoubles.GLEASON)
     compareH2OPythonGbmOnTwoDatasets(hc, prostateDatasetWithDoubles, arrayDataset)
+
+
+def testMojoModelCouldBeSavedAndLoaded(gbmModel, prostateDataset):
+    path = "file://" + os.path.abspath("build/testMojoModelCouldBeSavedAndLoaded")
+    gbmModel.write().overwrite().save(path)
+    loadedModel = H2OMOJOModel.load(path)
+
+    expected = gbmModel.transform(prostateDataset).drop("detailed_prediction")
+    result = loadedModel.transform(prostateDataset).drop("detailed_prediction")
+
+    unit_test_utils.assert_data_frames_are_identical(expected, result)
