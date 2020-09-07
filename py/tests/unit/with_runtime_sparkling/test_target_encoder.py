@@ -19,6 +19,7 @@ import os
 import pytest
 from pyspark.ml import Pipeline, PipelineModel
 from pysparkling.ml import H2OTargetEncoder, H2OGBM
+from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
 
 from tests import unit_test_utils
 
@@ -64,6 +65,20 @@ def testTargetEncoderConstructorParametersGetPropagatedToLoadedMOJOModel(trainin
     mojoModel = loadedModel.stages[0]
 
     assertTargetEncoderAndMOJOModelParamsAreEqual(targetEncoder, mojoModel)
+
+
+def testTargetEncoderMOJOModelCouldBeSavedAndLoaded(trainingDataset, testingDataset):
+    targetEncoder = H2OTargetEncoder(foldCol="ID", labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"],
+                                     outputCols=["RACE_out", "DPROS_out", "DCAPS_out"])
+    model = targetEncoder.fit(trainingDataset)
+    path = "file://" + os.path.abspath("build/testTargetEncoderMOJOModelCouldBeSavedAndLoaded")
+    model.write().overwrite().save(path)
+    loadedModel = H2OTargetEncoderMOJOModel.load(path)
+
+    expected = model.transform(testingDataset)
+    result = loadedModel.transform(testingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(expected, result)
 
 
 def testPipelineWithTargetEncoderIsSerializable():
