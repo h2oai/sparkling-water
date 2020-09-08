@@ -1,6 +1,31 @@
 Change Log
 ==========
 
+v3.30.1.2-1 (2020-09-08)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.2-1-3.0/index.html>`__
+
+-  Bug
+
+   -  `SW-2428 <https://0xdata.atlassian.net/browse/SW-2428>`__ - H2OMOJOModel.load Method Throws Exception
+   -  `SW-2420 <https://0xdata.atlassian.net/browse/SW-2420>`__ - Fix Propagation of Monotonous Constraints
+
+-  Improvement
+
+   -  `SW-2422 <https://0xdata.atlassian.net/browse/SW-2422>`__ - Upgrade to H2O 3.30.1.2
+   -  `SW-2413 <https://0xdata.atlassian.net/browse/SW-2413>`__ - Upgrade MOJO runtime to 2.4.8
+
+-  Docs
+
+   -  `SW-2421 <https://0xdata.atlassian.net/browse/SW-2421>`__ - Improve Documentation for XGBoost Memory Requirements
+   -  `SW-2414 <https://0xdata.atlassian.net/browse/SW-2414>`__ - Make Documentation More Descriptive about Extraction of pipeline.mojo from mojo.zip
+
 v3.30.1.1-1 (2020-08-12)
 ------------------------
 Downloads:
