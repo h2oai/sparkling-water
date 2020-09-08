@@ -118,18 +118,26 @@ XGBoost Memory Configuration
 H2O XGBoost uses additionally to Java memory, off-heap memory. This means that it requires some additional memory
 available on the system.
 
-When running on YARN, please make sure to set the ``memoryOverhead`` so XGBoost has enough memory. On Spark, the following
-properties might be set
+When running on YARN or Kubernetes, please make sure to set the ``SUBST_EXECUTOR_MEMORY_OVERHEAD`` so XGBoost has enough
+native memory on executors. It's recommended to set the property to 12O% of the value set in ``spark.executor.memory``.
 
-- ``spark.yarn.am.memoryOverhead`` - in case of YARN Cluster deployment
-- ``spark.yarn.driver.memoryOverhead`` - in case of YARN client and other deployments
-- ``spark.yarn.executor.memoryOverhead`` - in all deployment scenarios
+Note: ``SUBST_EXECUTOR_MEMORY_OVERHEAD`` must be set in MiB.
 
-On YARN, the container size is determined by ``application_memory * memory_overhead``. Therefore, by specifying the
-overhead, we are also allocating some additional off-heap memory which XGBoost can use.
+Example
+```````
+If you set ``spark.executor.memory`` to ``10g``, ``SUBST_EXECUTOR_MEMORY_OVERHEAD`` should be set to ``12288``.
+The size of the corresponding YARN or Kubernetes container will be at least 22 GiB.
 
-In Spark Standalone Mode or IBM Conductor environment, please make sure to configure the following configurations:
+Note: In case of Pysparkling, the YARN container will be bigger about the memory required by the Python process.
 
 
-- ``spark.memory.offHeap.enabled=true``
-- ``spark.memory.offHeap.size=4G`` - example of setting this property to 4G of off-heap memory
+Memory Overhead on Spark driver
+```````````````````````````````
+If you enabled a H2O client (a special H2O node representing an entry point for the communication with the H2O cluster)
+to run on the Spark driver, you should also set the following properties in the same way as ``SUBST_EXECUTOR_MEMORY_OVERHEAD``.
+
+- ``spark.yarn.am.memoryOverhead`` - in case of deploying to YARN in the client mode
+- ``SUBST_DRIVER_MEMORY_OVERHEAD`` - in case of deploying to YARN in the cluster mode and other deployments (Kubernetes, Mesos)
+
+Note: A H2O client can run on the Spark driver only with Sparkling Water in Scala/Java API and the property
+``spark.ext.h2o.rest.api.based.client`` set to ``false``. The default value of the property is ``true``.
