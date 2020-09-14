@@ -23,9 +23,21 @@ trait ParameterResolver {
   def resolveParameters(parameterSubstitutionContext: ParameterSubstitutionContext): Seq[Parameter] = {
     val h2oSchemaClass = parameterSubstitutionContext.h2oSchemaClass
     val h2oParameterClass = parameterSubstitutionContext.h2oParameterClass
+    val useV3Fields = h2oSchemaClass.getName.endsWith("V3")
+    val relevantParameterNames = if (useV3Fields) {
+      h2oSchemaClass
+        .getField("fields")
+        .get(null)
+        .asInstanceOf[Array[String]]
+        .toSet
+    } else {
+      Set.empty[String]
+    }
+
     val h2oParameterInstance = h2oParameterClass.newInstance()
     val partialParameters =
       for (field <- h2oSchemaClass.getFields
+           if !useV3Fields || relevantParameterNames.contains(field.getName)
            if field.getAnnotation(classOf[API]) != null
            if !parameterSubstitutionContext.ignoredParameters.contains(field.getName)
            if !parameterSubstitutionContext.explicitFields.map(_.h2oName).contains(field.getName))

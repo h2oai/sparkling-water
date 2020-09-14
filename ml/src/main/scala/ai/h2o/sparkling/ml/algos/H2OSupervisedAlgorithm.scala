@@ -35,11 +35,19 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
 
   def getDistribution(): String
 
+  def getWeightCol(): String
+
+  def getFoldCol(): String
+
   def setLabelCol(value: String): this.type
 
   def setOffsetCol(value: String): this.type
 
   def setDistribution(value: String): this.type
+
+  def setWeightCol(value: String): this.type
+
+  def setFoldCol(value: String): this.type
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -53,6 +61,9 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
     require(
       getOffsetCol() == null || getOffsetCol() != getFoldCol(),
       "Specified offset column cannot be the same as the fold column!")
+    require(
+      getWeightCol() == null || getWeightCol() != getFoldCol(),
+      "Specified weight column cannot be the same as the fold column!")
     transformedSchema
   }
 
