@@ -50,12 +50,14 @@ class H2OTargetEncoder(override val uid: String)
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
     val params = Map(
+      "data_leakage_handling" -> getHoldoutStrategy(),
       "blending" -> getBlendedAvgEnabled(),
-      "k" -> getBlendedAvgInflectionPoint(),
-      "f" -> getBlendedAvgSmoothing(),
+      "inflection_point" -> getBlendedAvgInflectionPoint(),
+      "smoothing" -> getBlendedAvgSmoothing(),
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
       "ignored_columns" -> ignoredColumns,
+      "seed" -> getNoiseSeed(),
       "training_frame" -> input.frameId)
     val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
     val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
@@ -76,7 +78,9 @@ class H2OTargetEncoder(override val uid: String)
   def setOutputCols(values: Array[String]): this.type = set(outputCols, values)
 
   def setHoldoutStrategy(value: String): this.type = {
-    set(holdoutStrategy, EnumParamValidator.getValidatedEnumValue[TargetEncoder.DataLeakageHandlingStrategy](value))
+    set(
+      holdoutStrategy,
+      EnumParamValidator.getValidatedEnumValue[TargetEncoderModel.DataLeakageHandlingStrategy](value))
   }
 
   def setBlendedAvgEnabled(value: Boolean): this.type = set(blendedAvgEnabled, value)
