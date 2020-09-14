@@ -55,7 +55,7 @@ Options:
  None        - All rows are considered for the calculation
  LeaveOneOut - All rows except the row the calculation is made for
  KFold       - Only out-of-fold data is considered (The option requires foldCol to be set.""",
-        H2OTypeConverters.toEnumString("ai.h2o.targetencoding.TargetEncoder$DataLeakageHandlingStrategy"))
+        H2OTypeConverters.toEnumString("ai.h2o.targetencoding.TargetEncoderModel$DataLeakageHandlingStrategy"))
 
     blendedAvgEnabled = Param(
         Params._dummy(),
