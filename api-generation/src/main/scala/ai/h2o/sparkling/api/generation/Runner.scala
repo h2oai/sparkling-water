@@ -74,10 +74,11 @@ object Runner {
     val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null)
     val validationLabelCol = ExplicitField("validation_response_column", "HasValidationLabelCol", "label")
+    val distribution = ExplicitField("distribution", "HasDistribution", "distribution")
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
-    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints)
-    val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, distribution)
+    val gamFields = Seq(ignoredCols, betaConstraints, gamCols, distribution)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)
