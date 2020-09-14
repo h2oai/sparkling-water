@@ -90,11 +90,5 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
     replacement
   }
 
-  @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = {
-
-    schema
-  }
-
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
