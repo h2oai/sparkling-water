@@ -32,7 +32,8 @@ object IgnoredParameters {
 
   def all(algorithm: String): Seq[String] = implementedInParent ++ deprecated(algorithm) ++ {
     algorithm match {
-      case "H2OGAM" => Seq("plug_values", "interaction_pairs") // According to MK the parameter doesn't make much sense for GAM
+      case "H2OGAM" =>
+        Seq("plug_values", "interaction_pairs") // According to MK the parameter doesn't make much sense for GAM
       case "H2ODeepLearning" => Seq("pretrained_autoencoder", "checkpoint")
       case "H2OGBM" => Seq("checkpoint")
       case "H2ODRF" => Seq("checkpoint")
