@@ -14,17 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.ml.models.H2OUnsupervisedMOJOModel
-import hex.Model
-import org.apache.spark.sql.Dataset
+package ai.h2o.sparkling.ml.params
 
-import scala.reflect.ClassTag
+trait HasDistribution {
+  def getDistribution(): String = "AUTO"
 
-abstract class H2OUnsupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H2OAlgorithm[P] {
-
-  override def fit(dataset: Dataset[_]): H2OUnsupervisedMOJOModel = {
-    super.fit(dataset).asInstanceOf[H2OUnsupervisedMOJOModel]
-  }
+  def setDistribution(value: String): this.type = this
 }

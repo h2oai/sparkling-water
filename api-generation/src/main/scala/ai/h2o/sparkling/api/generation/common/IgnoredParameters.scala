@@ -18,43 +18,27 @@
 package ai.h2o.sparkling.api.generation.common
 
 object IgnoredParameters {
-  val deprecated: Seq[String] = Seq(
-    "r2_stopping", // All
-    "max_confusion_matrix_size", // Deep Learning
-    "col_major", // Deep Learning
-    "max_hit_ratio_k", // GBM, DRF, Deep Learning
-    "loading_name", // GLRM
-    "lambda_min_ratio") // GAM
+  def deprecated(algorithm: String): Seq[String] = algorithm match {
+    case "H2OGAM" => Seq("r2_stopping", "lambda_min_ratio", "max_hit_ratio_k")
+    case "H2OGBM" => Seq("r2_stopping", "max_hit_ratio_k")
+    case "H2OGLM" => Seq("r2_stopping", "max_hit_ratio_k")
+    case "H2ODRF" => Seq("r2_stopping", "max_hit_ratio_k")
+    case "H2OGLRM" => Seq("r2_stopping", "loading_name")
+    case "H2ODeepLearning" => Seq("r2_stopping", "max_hit_ratio_k", "col_major", "max_confusion_matrix_size")
+    case _ => Seq("r2_stopping")
+  }
 
   val implementedInParent: Seq[String] = Seq("training_frame", "validation_frame")
 
-  val unimplemented = Seq(
-    "__meta", // just for internal purposes
-    "checkpoint", // GBM, DRF, XGBoost, Deep Learning
-    "interaction_pairs") // GLM, GAM
-
-  val unsupervisedAlgos = Seq("response_column", "offset_column")
-
-  def common: Seq[String] = deprecated ++ implementedInParent ++ unimplemented
-
-  def all(algorithm: String): Seq[String] = common ++ {
+  def all(algorithm: String): Seq[String] = implementedInParent ++ deprecated(algorithm) ++ {
     algorithm match {
-      case "H2OKMeans" =>
-        Seq(
-          "response_column",
-          "offset_column",
-          "distribution",
-          "tweedie_power",
-          "quantile_alpha",
-          "huber_alpha",
-          "gainslift_bins",
-          "stopping_rounds",
-          "stopping_metric",
-          "stopping_tolerance",
-          "custom_metric_func",
-          "custom_distribution_func")
-      case "H2OGAM" => Seq("plug_values") // According to MK the parameter doesn't make much sense for GAM
-      case "H2ODeepLearning" => Seq("pretrained_autoencoder")
+      case "H2OGAM" =>
+        Seq("plug_values", "interaction_pairs") // According to MK the parameter doesn't make much sense for GAM
+      case "H2ODeepLearning" => Seq("pretrained_autoencoder", "checkpoint")
+      case "H2OGBM" => Seq("checkpoint")
+      case "H2ODRF" => Seq("checkpoint")
+      case "H2OXGBoost" => Seq("checkpoint")
+      case "H2OGLM" => Seq("interaction_pairs")
       case _ => Seq.empty
     }
   }
