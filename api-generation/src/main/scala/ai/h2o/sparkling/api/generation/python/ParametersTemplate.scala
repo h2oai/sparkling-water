@@ -98,6 +98,8 @@ object ParametersTemplate
       "EnumString"
     } else if (dataType.isArray) {
       s"List${resolveConverterType(dataType.getComponentType, defaultValue)}"
+    } else if (TypeExceptions.stringTypes.contains(dataType.getSimpleName)) {
+      "String"
     } else {
       dataType.getSimpleName.capitalize match {
         case "Double" => "Float"

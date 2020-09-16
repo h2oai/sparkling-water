@@ -32,7 +32,12 @@ case class ParameterSubstitutionContext(
     generateParamTag: Boolean)
   extends SubstitutionContextBase
 
-case class ExplicitField(h2oName: String, implementation: String, defaultValue: Any, sparkName: Option[String] = None)
+case class ExplicitField(
+    h2oName: String,
+    implementation: String,
+    defaultValue: Any,
+    sparkName: Option[String] = None,
+    mojoImplementation: Option[String] = None)
 
 object DefaultValueSource extends Enumeration {
   type DefaultValueSource = Value

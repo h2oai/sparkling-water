@@ -29,7 +29,7 @@ class DictionaryParam(parent: Params, name: String, doc: String, isValid: java.u
   def this(parent: Params, name: String, doc: String) =
     this(parent, name, doc, _ => true)
 
-  implicit val formats = DefaultFormats
+  implicit def formats = DefaultFormats
 
   override def jsonEncode(dictionary: java.util.Map[String, Double]): String = write(dictionary.asScala)
 

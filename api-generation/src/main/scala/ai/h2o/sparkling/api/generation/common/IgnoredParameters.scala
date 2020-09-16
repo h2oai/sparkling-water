@@ -42,4 +42,19 @@ object IgnoredParameters {
       case _ => Seq.empty
     }
   }
+
+  def ignoredInMOJOs(algorithm: String): Seq[String] = {
+    val common = manuallyImplementedInMOJOModel ++ unimplementedForMOJOs
+    common ++ {
+      algorithm match {
+        case "H2OGAMMOJOModel" => Seq("seed") // Not propagated correctly!
+        case "H2OPCAMOJOModel" => Seq("pca_impl") // Not propagated correctly!
+        case _ => Seq.empty
+      }
+    }
+  }
+
+  val manuallyImplementedInMOJOModel: Seq[String] = Seq("ntrees", "offset_column")
+
+  val unimplementedForMOJOs: Seq[String] = Seq("model_id", "parallelize_cross_validation")
 }

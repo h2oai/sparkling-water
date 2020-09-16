@@ -42,8 +42,7 @@ trait ScalaEntityTemplate {
        |
        |${generateImports(properties)}
        |
-       |$entityType ${properties.entityName}${properties.parameters}
-       |${referencesToInheritedClasses(properties)} {
+       |$entityType ${properties.entityName}${properties.parameters}${referencesToInheritedClasses(properties)} {
        |
        |$content
        |}
@@ -60,9 +59,9 @@ trait ScalaEntityTemplate {
     } else {
       val head = substitutionContext.inheritedEntities.head
       val tail = substitutionContext.inheritedEntities.tail
-      val headResult = s"  extends $head"
-      val result = Seq(headResult) ++ tail.map(entity => s"  with $entity")
-      result.mkString("\n")
+      val headResult = s"\n  extends $head"
+      val result = Seq(headResult) ++ tail.map(entity => s"\n  with $entity")
+      result.mkString("")
     }
   }
 

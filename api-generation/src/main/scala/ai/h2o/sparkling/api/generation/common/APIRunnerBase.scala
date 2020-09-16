@@ -17,10 +17,23 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-import ai.h2o.sparkling.ml.utils.H2OAutoMLSortMetric
+import java.io.{File, PrintWriter}
 
-object AutoMLTypeExceptions extends TypeExceptionsBase {
-  override def all(): Map[String, Class[_]] = {
-    super.all() ++ Map("sort_metric" -> classOf[H2OAutoMLSortMetric])
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+
+trait APIRunnerBase {
+  def writeResultToFile(
+      content: String,
+      substitutionContext: SubstitutionContextBase,
+      languageExtension: String,
+      destinationDir: String) = {
+    val fileName = substitutionContext.entityName
+    val namespacePath = substitutionContext.namespace.replace('.', '/')
+    val destinationDirWithNamespace = new File(destinationDir, namespacePath)
+    destinationDirWithNamespace.mkdirs()
+    val destinationFile = new File(destinationDirWithNamespace, s"$fileName.$languageExtension")
+    withResource(new PrintWriter(destinationFile)) { outputStream =>
+      outputStream.print(content)
+    }
   }
 }

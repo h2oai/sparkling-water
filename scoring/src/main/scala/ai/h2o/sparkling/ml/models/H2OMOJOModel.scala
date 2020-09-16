@@ -20,10 +20,9 @@ package ai.h2o.sparkling.ml.models
 import java.io.{File, InputStream}
 
 import _root_.hex.genmodel.algos.tree.{SharedTreeMojoModel, TreeBackedMojoModel}
-import _root_.hex.genmodel.algos.xgboost.XGBoostMojoModel
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
+import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
 import ai.h2o.sparkling.ml.utils.Utils
@@ -39,7 +38,11 @@ import _root_.hex.genmodel.algos.glrm.GlrmMojoModel
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOModel] with H2OMOJOPrediction {
+class H2OMOJOModel(override val uid: String)
+  extends H2OMOJOModelBase[H2OMOJOModel]
+  with H2OMOJOPrediction
+  with SpecificMOJOParameters {
+
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
     new NullableStringParam(this, "modelDetails", "Raw details of this model.")
@@ -89,8 +92,6 @@ class H2OMOJOModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOMod
     val columns = mojoBackend.m.getNames
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
-
-  def setSpecificParams(mojoModel: MojoModel): H2OMOJOModel = this
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
@@ -225,7 +226,11 @@ trait H2OMOJOModelUtils {
 
 }
 
-object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2OMOJOModel] with H2OMOJOModelUtils {
+object H2OMOJOModel
+  extends H2OMOJOReadable[H2OMOJOModel]
+  with H2OMOJOLoader[H2OMOJOModel]
+  with H2OMOJOModelUtils
+  with H2OMOJOModelFactory {
 
   override def createFromMojo(mojo: InputStream, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoFile = SparkSessionUtils.inputStreamToTempFile(mojo, uid, ".mojo")
@@ -234,22 +239,14 @@ object H2OMOJOModel extends H2OMOJOReadable[H2OMOJOModel] with H2OMOJOLoader[H2O
 
   def createFromMojo(mojo: File, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojo)
-    val model = mojoModel match {
-      case (_: SharedTreeMojoModel | _: XGBoostMojoModel) if mojoModel.isSupervised =>
-        new H2OTreeBasedSupervisedMOJOModel(uid)
-      case m: SharedTreeMojoModel if !m.isSupervised =>
-        new H2OTreeBasedUnsupervisedMOJOModel(uid)
-      case m if m.isSupervised => new H2OSupervisedMOJOModel(uid)
-      case _ => new H2OUnsupervisedMOJOModel(uid)
-    }
-
+    val model = createSpecificMOJOModel(uid, mojoModel._algoName)
     model.setSpecificParams(mojoModel)
     model.setMojo(mojo)
     val modelJson = getModelJson(mojo)
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
     val modelCategory = extractModelCategory(modelJson)
-    val trainingParams = extractParams(modelJson)
+    val trainingParams = extractParams(modelJson) // TODO: To be deprecated
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)

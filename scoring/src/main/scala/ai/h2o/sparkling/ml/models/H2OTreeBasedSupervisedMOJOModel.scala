@@ -27,7 +27,7 @@ class H2OTreeBasedSupervisedMOJOModel(override val uid: String)
   with H2OTreeBasedMOJOParams
   with H2OSupervisedMOJOParams {
 
-  override def setSpecificParams(mojoModel: MojoModel): H2OTreeBasedSupervisedMOJOModel = {
+  override private[sparkling] def setSpecificParams(mojoModel: MojoModel): Unit = {
     super.setSpecificParams(mojoModel)
     mojoModel match {
       case treeModel: SharedTreeMojoModel =>
@@ -38,7 +38,6 @@ class H2OTreeBasedSupervisedMOJOModel(override val uid: String)
         val algorithmName = unexpectedModel._modelDescriptor.algoFullName()
         logError(s"Tried to read tree-based properties from MOJO model of $algorithmName.")
     }
-    this
   }
 }
 
