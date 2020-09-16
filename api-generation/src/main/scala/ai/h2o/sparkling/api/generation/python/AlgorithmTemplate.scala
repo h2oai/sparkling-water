@@ -36,6 +36,7 @@ object AlgorithmTemplate
     val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
 
     val imports = Seq(
+      "warnings.warn",
       "ai.h2o.sparkling.ml.models.H2OBinaryModel",
       "pyspark.keyword_only",
       "ai.h2o.sparkling.Initializer",
