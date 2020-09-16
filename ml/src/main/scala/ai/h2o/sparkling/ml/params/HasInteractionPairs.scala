@@ -20,10 +20,8 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.expose.Logging
 
 trait HasInteractionPairs extends H2OAlgoParamsBase with Logging {
-  private val interactionPairs = new NullableStringPairArrayParam(
-    this,
-    "interactionPairs",
-    "A list of pairwise (first order) column interactions.")
+  private val interactionPairs =
+    new NullableStringPairArrayParam(this, "interactionPairs", "A list of pairwise (first order) column interactions.")
 
   setDefault(interactionPairs -> null)
 
