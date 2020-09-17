@@ -49,6 +49,8 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
          |        self._java_obj = self._new_java_obj("$namespace.$entityName", self.uid)
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
+         |        if 'interactionPairs' in kwargs:
+         |            warn("Interaction pairs are not supported!")
          |        self._set(**kwargs)
          |        self._transfer_params_to_java()
          |

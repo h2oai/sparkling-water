@@ -48,7 +48,7 @@ def testLoadAndTrainMojo(prostateDataset):
         assert predMojo[i] == predModel[i]
 
 
-def testInitialBiasAndWeightsAffectsTheResult(prostateDataset):
+def testInitialBiasAndWeightsAffectResult(prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
 
     def createInitialDeepLearningDefinition():

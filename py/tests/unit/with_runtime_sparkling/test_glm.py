@@ -69,6 +69,35 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
+def testInteractionPairsAffectResult(airlinesDataset):
+    [traningDataset, testingDataset] = airlinesDataset.randomSplit([0.95, 0.05], 1)
+    def createInitialGlmDefinition():
+        return H2OGLM(
+            seed=42,
+            family="binomial",
+            lambdaSearch=True,
+            featuresCols=["Year", "Month", "DayofMonth", "DayOfWeek", "CRSDepTime", "CRSArrTime", "UniqueCarrier",
+                         "CRSElapsedTime", "Origin", "Dest", "Distance"],
+            labelCol="IsDepDelayed")
+
+    referenceDeepLearning = createInitialGlmDefinition()
+    referenceModel = referenceDeepLearning.fit(traningDataset)
+    referenceResult = referenceModel.transform(testingDataset)
+
+    glm = createInitialGlmDefinition()
+    interactionPairs = [("CRSDepTime", "UniqueCarrier"),
+                        ("CRSDepTime", "Origin"),
+                        ("UniqueCarrier", "Origin")]
+    glm.setInteractionPairs(interactionPairs)
+    model = glm.fit(traningDataset)
+    result = model.transform(testingDataset)
+
+    # No check since interaction pairs are not supported yet. The purpose of this test is to check whether the fit
+    # method does not throw an exception. Once interaction pairs are supported the assert should be uncommented.
+    #
+    # unit_test_utils.assert_data_frames_have_different_values(referenceResult, result)
+
+
 def testPlugValuesAffectResult(spark, carsDatasetPath):
     carsDataset = spark.read.csv(carsDatasetPath, header=True, inferSchema=True)
     carsDataset = carsDataset.withColumn("economy_20mpg", carsDataset.economy_20mpg.cast("string"))

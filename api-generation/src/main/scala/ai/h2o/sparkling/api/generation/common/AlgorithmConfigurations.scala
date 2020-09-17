@@ -69,9 +69,10 @@ trait AlgorithmConfigurations {
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null, None, Some("HasGamColsOnMOJO"))
     val validationLabelCol = ExplicitField("validation_response_column", "HasValidationLabelCol", "label")
     val distribution = ExplicitField("distribution", "HasDistribution", "distribution")
+    val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
-    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, distribution)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs, distribution)
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols, distribution)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)

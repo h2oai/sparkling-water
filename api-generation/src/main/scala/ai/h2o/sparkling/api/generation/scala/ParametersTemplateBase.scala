@@ -62,6 +62,8 @@ trait ParametersTemplateBase {
       "String"
     } else if (dataType.isArray) {
       s"Array[${resolveParameterType(dataType.getComponentType)}]"
+    } else if (dataType.getSimpleName == "StringPairV3") {
+      "(String, String)"
     } else {
       dataType.getSimpleName.capitalize
     }
@@ -72,6 +74,8 @@ trait ParametersTemplateBase {
       "string"
     } else if (dataType.isArray) {
       s"${resolveParameterConstructorMethodType(dataType.getComponentType, defaultValue)}Array"
+    } else if (dataType.getSimpleName == "StringPairV3") {
+      "StringPair"
     } else {
       dataType.getSimpleName.toLowerCase
     }

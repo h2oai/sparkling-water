@@ -61,12 +61,17 @@ private[sparkling] trait RestEncodingUtils {
     stringifyArray(items.toArray)
   }
 
+  protected def stringifyPair(pair: (_, _)): String = {
+    s"""{"a": ${stringify(pair._1)}, "b": ${stringify(pair._2)}}"""
+  }
+
   protected def stringify(value: Any): String = {
     import scala.collection.JavaConverters._
     value match {
       case map: java.util.AbstractMap[_, _] => stringifyMap(map.asScala.toMap)
       case map: Map[_, _] => stringifyMap(map)
       case arr: Array[_] => stringifyArray(arr)
+      case pair: (_, _) => stringifyPair(pair)
       case primitive if isPrimitiveType(primitive) => stringifyPrimitiveParam(primitive)
       case unknown => throw new RuntimeException(s"Unsupported parameter '$unknown' of type ${unknown.getClass}")
     }
