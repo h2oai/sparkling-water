@@ -52,10 +52,7 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
          |        if 'interactionPairs' in kwargs:
          |            warn("Interaction pairs are not supported!")
          |        self._set(**kwargs)
-         |        self._transfer_params_to_java()
-         |
-         |    def getBinaryModel(self):
-         |        return H2OBinaryModel(self._java_obj.getBinaryModel())""".stripMargin
+         |        self._transfer_params_to_java()""".stripMargin
     }
   }
 }

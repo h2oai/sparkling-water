@@ -37,7 +37,6 @@ object AlgorithmTemplate
 
     val imports = Seq(
       "warnings.warn",
-      "ai.h2o.sparkling.ml.models.H2OBinaryModel",
       "pyspark.keyword_only",
       "ai.h2o.sparkling.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils") ++
