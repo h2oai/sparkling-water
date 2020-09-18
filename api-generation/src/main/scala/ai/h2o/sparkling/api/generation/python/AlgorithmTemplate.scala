@@ -46,6 +46,12 @@ object AlgorithmTemplate
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
-    generateAlgorithmClass(entityName, namespace, parameters, entitySubstitutionContext, commonSubstitutionContext)
+    generateAlgorithmClass(
+      entityName,
+      entityName,
+      namespace,
+      parameters,
+      entitySubstitutionContext,
+      commonSubstitutionContext)
   }
 }
