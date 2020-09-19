@@ -35,6 +35,7 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
 
   def generateAlgorithmClass(
       entityName: String,
+      parentReferenceSource: String,
       namespace: String,
       parameters: Seq[Parameter],
       entitySubstitutionContext: EntitySubstitutionContext,
@@ -45,17 +46,14 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
          |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
          |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}):
          |        Initializer.load_sparkling_jar()
-         |        super($entityName, self).__init__()
+         |        super($parentReferenceSource, self).__init__()
          |        self._java_obj = self._new_java_obj("$namespace.$entityName", self.uid)
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
          |        if 'interactionPairs' in kwargs:
          |            warn("Interaction pairs are not supported!")
          |        self._set(**kwargs)
-         |        self._transfer_params_to_java()
-         |
-         |    def getBinaryModel(self):
-         |        return H2OBinaryModel(self._java_obj.getBinaryModel())""".stripMargin
+         |        self._transfer_params_to_java()""".stripMargin
     }
   }
 }

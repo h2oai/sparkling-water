@@ -37,7 +37,6 @@ object AlgorithmTemplate
 
     val imports = Seq(
       "warnings.warn",
-      "ai.h2o.sparkling.ml.models.H2OBinaryModel",
       "pyspark.keyword_only",
       "ai.h2o.sparkling.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils") ++
@@ -47,6 +46,12 @@ object AlgorithmTemplate
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
-    generateAlgorithmClass(entityName, namespace, parameters, entitySubstitutionContext, commonSubstitutionContext)
+    generateAlgorithmClass(
+      entityName,
+      entityName,
+      namespace,
+      parameters,
+      entitySubstitutionContext,
+      commonSubstitutionContext)
   }
 }

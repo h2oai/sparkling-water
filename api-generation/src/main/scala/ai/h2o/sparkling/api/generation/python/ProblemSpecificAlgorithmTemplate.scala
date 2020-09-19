@@ -45,6 +45,12 @@ object ProblemSpecificAlgorithmTemplate
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
-    generateAlgorithmClass(entityName, namespace, parameters, entitySubstitutionContext, commonSubstitutionContext)
+    generateAlgorithmClass(
+      entityName,
+      parentEntityName,
+      namespace,
+      parameters,
+      entitySubstitutionContext,
+      commonSubstitutionContext)
   }
 }

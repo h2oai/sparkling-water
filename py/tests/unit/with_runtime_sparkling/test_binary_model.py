@@ -32,11 +32,33 @@ def testModelIsLoadedOnBackend(prostateDataset):
     assert isinstance(h2oBinaryModel, H2OEstimator)
 
 
-def testModelIsLoadedOnBackendWhenTrainedInSW(prostateDataset):
+def testModelIsLoadedOnBackendWhenTrainedOnGLM(prostateDataset):
     algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                   labelCol="AGE",
                   seed=1,
                   splitRatio=0.8)
+    algo.fit(prostateDataset)
+    swBinaryModel = algo.getBinaryModel()
+    h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
+    assert isinstance(h2oBinaryModel, H2OEstimator)
+
+
+def testModelIsLoadedOnBackendWhenTrainedOnGLMClassifier(prostateDataset):
+    algo = H2OGLMClassifier(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
+                            labelCol="AGE",
+                            seed=1,
+                            splitRatio=0.8)
+    algo.fit(prostateDataset)
+    swBinaryModel = algo.getBinaryModel()
+    h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
+    assert isinstance(h2oBinaryModel, H2OEstimator)
+
+
+def testModelIsLoadedOnBackendWhenTrainedOnGLMRegressor(prostateDataset):
+    algo = H2OGLMRegressor(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
+                           labelCol="AGE",
+                           seed=1,
+                           splitRatio=0.8)
     algo.fit(prostateDataset)
     swBinaryModel = algo.getBinaryModel()
     h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
