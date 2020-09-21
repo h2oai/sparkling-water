@@ -68,7 +68,7 @@ class H2OWord2Vec(override val uid: String)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  setDefault(outputCol, "Word2Vec_output")
+  setDefault(outputCol, "H2OWord2Vec_output")
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = schema

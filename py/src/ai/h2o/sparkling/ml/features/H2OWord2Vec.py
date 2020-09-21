@@ -29,7 +29,7 @@ class H2OWord2Vec(HasInputCol, HasOutputCol, H2OWord2VecParams, H2OStageBase, Ja
     @keyword_only
     def __init__(self,
                  inputCol=None,
-                 outputCol="Word2Vec_output",
+                 outputCol="H2OWord2Vec_output",
                  vecSize=5,
                  windowWize=100,
                  sentSampleRate=0.001,
