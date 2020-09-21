@@ -47,11 +47,13 @@ object MOJOModelTemplate
   }
 
   private def generateGetterMethods(parameters: Seq[Parameter]): String = {
-    parameters.map { parameter =>
-      val parameterName = parameter.swName.capitalize
-      s"""
+    parameters
+      .map { parameter =>
+        val parameterName = parameter.swName.capitalize
+        s"""
          |    def get$parameterName(self):
          |        return self._java_obj.get$parameterName()""".stripMargin
-    }.mkString("\n\n")
+      }
+      .mkString("\n\n")
   }
 }
