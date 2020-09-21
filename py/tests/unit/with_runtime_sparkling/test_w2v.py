@@ -39,7 +39,7 @@ def testPipelineSerialization(craiglistDataset):
 
     tokenizer = RegexTokenizer(inputCol="jobtitle", minTokenLength=2, outputCol="tokenized")
     stopWordsRemover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="stopWordsRemoved")
-    w2v = H2OWord2Vec(sentSampleRate=0, epochs=10, inputCol=stopWordsRemover.getOutputCol())
+    w2v = H2OWord2Vec(sentSampleRate=0, epochs=10, inputCol=stopWordsRemover.getOutputCol(), outputCol="w2v")
     gbm = H2OGBM(labelCol="category", featuresCols=[w2v.getOutputCol()])
 
     pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, w2v, gbm])
