@@ -53,7 +53,8 @@ object AlgorithmTemplate
                               |        return ${entityName}MOJOModel(javaModel)
                               |""".stripMargin
 
-    val clazz = generateAlgorithmClass(
+    val clazz =
+      generateAlgorithmClass(
       entityName,
       entityName,
       namespace,

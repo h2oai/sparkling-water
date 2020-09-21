@@ -51,8 +51,8 @@ object MOJOModelTemplate
       .map { parameter =>
         val parameterName = parameter.swName.capitalize
         s"""
-         |    def get$parameterName(self):
-         |        return self._java_obj.get$parameterName()""".stripMargin
+         |    def get${parameterName}(self):
+         |        return self._java_obj.get${parameterName}()""".stripMargin
       }
       .mkString("\n\n")
   }
