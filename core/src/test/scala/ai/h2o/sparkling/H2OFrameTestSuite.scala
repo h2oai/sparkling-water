@@ -63,6 +63,36 @@ class H2OFrameTestSuite extends FunSuite with SharedH2OTestContext {
     }
   }
 
+  test("convertColumnsToStrings with column names") {
+    val columnsToConvert = Array("ID", "AGE")
+    val originalFrame = uploadH2OFrame().convertColumnsToCategorical(columnsToConvert)
+    val alteredFrame = originalFrame.convertColumnsToStrings(columnsToConvert)
+    val convertedColumns = alteredFrame.columns.filter(col => columnsToConvert.contains(col.name))
+    // Verify that columns we asked to convert to categorical has been converted
+    convertedColumns.foreach { col =>
+      assert(col.dataType == H2OColumnType.string)
+    }
+    // Check that all other columns remained unchanged
+    alteredFrame.columns.diff(convertedColumns) foreach { col =>
+      assert(col.dataType == originalFrame.columns.find(_.name == col.name).get.dataType)
+    }
+  }
+
+  test("convertColumnsToStrings with column indices") {
+    val columnsToConvert = Array(0, 1)
+    val originalFrame = uploadH2OFrame().convertColumnsToCategorical(columnsToConvert)
+    val alteredFrame = originalFrame.convertColumnsToStrings(columnsToConvert)
+    val convertedColumns =
+      alteredFrame.columns.zipWithIndex.filter(colInfo => columnsToConvert.contains(colInfo._2)).map(_._1)
+    // Verify that columns we asked to convert to categorical has been converted
+    convertedColumns.foreach { col =>
+      assert(col.dataType == H2OColumnType.string)
+    }
+    // Check that all other columns remained unchanged
+    alteredFrame.columns.diff(convertedColumns) foreach { col =>
+      assert(col.dataType == originalFrame.columns.find(_.name == col.name).get.dataType)
+    }
+  }
   test("split with ratio 1.0") {
     val originalFrame = uploadH2OFrame()
     val thrown = intercept[IllegalArgumentException] {

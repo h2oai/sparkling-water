@@ -65,13 +65,14 @@ object ParametersTemplate
   }
 
   private def generateParameterDefinitions(parameters: Seq[Parameter]): String = {
+    val tripleQuotes = "\"\"\""
     parameters
       .map { parameter =>
         val converter = resolveConverter(parameter.dataType, parameter.defaultValue)
         s"""    ${parameter.swName} = Param(
            |        Params._dummy(),
            |        "${parameter.swName}",
-           |        "${parameter.comment}",
+           |        $tripleQuotes${parameter.comment}$tripleQuotes,
            |        $converter)""".stripMargin
       }
       .mkString("\n\n")

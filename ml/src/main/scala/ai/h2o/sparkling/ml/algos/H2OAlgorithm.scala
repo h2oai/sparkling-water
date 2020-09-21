@@ -54,7 +54,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
     val (train, valid) = prepareDatasetForFitting(dataset)
     prepareH2OTrainFrameForFitting(train)
     val params = getH2OAlgorithmParams(train) ++
-      Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey()) ++
+      Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++
       valid
         .map { fr =>
           Map("validation_frame" -> fr.frameId)
@@ -66,28 +66,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
     H2OModel(modelId)
       .toMOJOModel(Identifiable.randomUID(parameters.algoName()), H2OMOJOSettings.createFromModelParams(this))
-  }
-
-  private def convertModelIdToKey(): String = {
-    val key = getModelId()
-    if (H2OModel.modelExists(key)) {
-      val replacement = findAlternativeKey(key)
-      logWarning(
-        s"Model id '$key' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
-      replacement
-    } else {
-      key
-    }
-  }
-
-  private def findAlternativeKey(modelId: String): String = {
-    var suffixNumber = 0
-    var replacement: String = null
-    do {
-      suffixNumber = suffixNumber + 1
-      replacement = s"${modelId}_$suffixNumber"
-    } while (H2OModel.modelExists(replacement))
-    replacement
   }
 
   @DeveloperApi

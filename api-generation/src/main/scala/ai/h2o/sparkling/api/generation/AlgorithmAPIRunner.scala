@@ -17,13 +17,14 @@
 
 package ai.h2o.sparkling.api.generation
 
-import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, GridSearchConfiguration}
+import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, GridSearchConfiguration, Word2VecConfiguration}
 
 object AlgorithmAPIRunner
   extends APIRunnerBase
   with AlgorithmConfigurations
   with GridSearchConfiguration
-  with AutoMLConfiguration {
+  with AutoMLConfiguration
+  with Word2VecConfiguration {
 
   private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
 
@@ -35,6 +36,10 @@ object AlgorithmAPIRunner
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
     val destinationDir = args(1)
+
+    val w2vContext = word2VecParametersSubstitutionContext
+    val content = parameterTemplates(languageExtension)(w2vContext)
+    writeResultToFile(content, w2vContext, languageExtension, destinationDir)
 
     for (substitutionContext <- parametersConfiguration) {
       val content = parameterTemplates(languageExtension)(substitutionContext)
@@ -92,4 +97,6 @@ object AlgorithmAPIRunner
       writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
     }
   }
+
+  private def generateWord2VecParams(): Unit = {}
 }

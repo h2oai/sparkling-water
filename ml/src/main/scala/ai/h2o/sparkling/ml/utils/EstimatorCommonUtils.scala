@@ -20,6 +20,7 @@ import java.io.File
 
 import ai.h2o.sparkling.backend.H2OJob
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
+import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import hex.schemas.ModelBuilderSchema
 import org.apache.spark.expose
@@ -51,4 +52,24 @@ trait EstimatorCommonUtils extends RestCommunication {
     target
   }
 
+  protected def convertModelIdToKey(key: String): String = {
+    if (H2OModel.modelExists(key)) {
+      val replacement = findAlternativeKey(key)
+      logWarning(
+        s"Model id '$key' is already used by a different H2O model. Replacing the original id with '$replacement' ...")
+      replacement
+    } else {
+      key
+    }
+  }
+
+  private def findAlternativeKey(modelId: String): String = {
+    var suffixNumber = 0
+    var replacement: String = null
+    do {
+      suffixNumber = suffixNumber + 1
+      replacement = s"${modelId}_$suffixNumber"
+    } while (H2OModel.modelExists(replacement))
+    replacement
+  }
 }
