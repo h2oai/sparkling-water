@@ -34,11 +34,11 @@ import org.apache.spark.sql.types.StructType
 
 class H2OWord2Vec(override val uid: String)
   extends Estimator[H2OMOJOModel]
-    with H2OWord2VecParams
-    with HasInputCol
-    with HasOutputCol
-    with EstimatorCommonUtils
-    with DefaultParamsWritable {
+  with H2OWord2VecParams
+  with HasInputCol
+  with HasOutputCol
+  with EstimatorCommonUtils
+  with DefaultParamsWritable {
 
   def this() = this(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName))
 

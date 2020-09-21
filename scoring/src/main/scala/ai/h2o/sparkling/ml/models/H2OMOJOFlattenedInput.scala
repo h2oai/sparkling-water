@@ -33,8 +33,8 @@ trait H2OMOJOFlattenedInput {
   protected def outputColumnName: String
 
   protected def applyPredictionUdf(
-                                    dataset: Dataset[_],
-                                    udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
+      dataset: Dataset[_],
+      udfConstructor: Array[String] => UserDefinedFunction): DataFrame = {
     val originalDF = dataset.toDF()
     DatasetShape.getDatasetShape(dataset.schema) match {
       case DatasetShape.Flat => applyPredictionUdfToFlatDataFrame(originalDF, udfConstructor, inputColumnNames)
@@ -53,7 +53,7 @@ trait H2OMOJOFlattenedInput {
 
     def addIfPrefixExists(prefix: String): Unit = {
       if (inputs.exists(
-        input => input.startsWith(prefix + ".") && Try(input.substring(prefix.length + 1).toInt).isSuccess)) {
+            input => input.startsWith(prefix + ".") && Try(input.substring(prefix.length + 1).toInt).isSuccess)) {
         result.append(prefix)
       }
     }
@@ -72,9 +72,9 @@ trait H2OMOJOFlattenedInput {
   }
 
   protected def applyPredictionUdfToFlatDataFrame(
-                                                   flatDataFrame: DataFrame,
-                                                   udfConstructor: Array[String] => UserDefinedFunction,
-                                                   inputs: Array[String]): DataFrame = {
+      flatDataFrame: DataFrame,
+      udfConstructor: Array[String] => UserDefinedFunction,
+      inputs: Array[String]): DataFrame = {
     val relevantColumnNames = getRelevantColumnNames(flatDataFrame, inputs)
     val args = relevantColumnNames.map(c => flatDataFrame(s"`$c`"))
     val udf = udfConstructor(relevantColumnNames)

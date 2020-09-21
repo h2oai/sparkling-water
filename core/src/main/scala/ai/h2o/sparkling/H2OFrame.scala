@@ -37,14 +37,14 @@ import water.api.schemas3._
 import scala.util.Random
 
 /**
- * H2OFrame representation via Rest API
- */
+  * H2OFrame representation via Rest API
+  */
 class H2OFrame private (
-                         val frameId: String,
-                         val columns: Array[H2OColumn],
-                         private[sparkling] val chunks: Array[H2OChunk])
+    val frameId: String,
+    val columns: Array[H2OColumn],
+    private[sparkling] val chunks: Array[H2OChunk])
   extends Serializable
-    with RestEncodingUtils {
+  with RestEncodingUtils {
   private val conf = H2OContext.ensure("H2OContext needs to be running in order to create H2OFrame").getConf
   val columnNames: Array[String] = columns.map(_.name)
   lazy val numberOfRows: Long = chunks.foldLeft(0L)((acc, chunk) => acc + chunk.numberOfRows)
@@ -158,44 +158,44 @@ class H2OFrame private (
   }
 
   /**
-   * Delete this H2O Frame from the cluster
-   */
+    * Delete this H2O Frame from the cluster
+    */
   def delete(): Unit = H2OFrame.deleteFrame(conf, frameId)
 
   /**
-   * Left join this frame with another frame
-   *
-   * @param another right frame
-   * @return new frame
-   */
+    * Left join this frame with another frame
+    *
+    * @param another right frame
+    * @return new frame
+    */
   def leftJoin(another: H2OFrame): H2OFrame =
     join(another, allFromCurrent = true, allFromAnother = false, "radix")
 
   /**
-   * Right join this frame with another frame
-   *
-   * @param another right frame
-   * @return new frame
-   */
+    * Right join this frame with another frame
+    *
+    * @param another right frame
+    * @return new frame
+    */
   def rightJoin(another: H2OFrame): H2OFrame = {
     join(another, allFromCurrent = false, allFromAnother = true, "radix")
   }
 
   /**
-   * Inner join this frame with another frame
-   *
-   * @param another right frame
-   * @return new frame
-   */
+    * Inner join this frame with another frame
+    *
+    * @param another right frame
+    * @return new frame
+    */
   def innerJoin(another: H2OFrame): H2OFrame =
     join(another, allFromCurrent = false, allFromAnother = false, "radix")
 
   /**
-   * Outer join this frame with another frame
-   *
-   * @param another right frame
-   * @return new frame
-   */
+    * Outer join this frame with another frame
+    *
+    * @param another right frame
+    * @return new frame
+    */
   def outerJoin(another: H2OFrame): H2OFrame = {
     // Outer join is broken in H2O, simulate H2O's join via Spark for now
     joinUsingSpark(another, "outer")
@@ -211,19 +211,19 @@ class H2OFrame private (
   }
 
   /**
-   * Join this frame with another frame
-   *
-   * @param another        right frame
-   * @param allFromCurrent all values from current frame
-   * @param allFromAnother all values from another frame
-   * @param method         joining method
-   * @return
-   */
+    * Join this frame with another frame
+    *
+    * @param another        right frame
+    * @param allFromCurrent all values from current frame
+    * @param allFromAnother all values from another frame
+    * @param method         joining method
+    * @return
+    */
   private def join(
-                    another: H2OFrame,
-                    allFromCurrent: Boolean = false,
-                    allFromAnother: Boolean = false,
-                    method: String = "AUTO"): H2OFrame = {
+      another: H2OFrame,
+      allFromCurrent: Boolean = false,
+      allFromAnother: Boolean = false,
+      method: String = "AUTO"): H2OFrame = {
     val endpoint = getClusterEndpoint(conf)
     val params = Map(
       "ast" -> MessageFormat.format(
@@ -384,10 +384,10 @@ object H2OFrame extends RestCommunication {
   }
 
   private[sparkling] def finalizeFrame(
-                                        conf: H2OConf,
-                                        frameId: String,
-                                        rowsPerChunk: Array[Long],
-                                        columnTypes: Array[Byte]): FinalizeFrameV3 = {
+      conf: H2OConf,
+      frameId: String,
+      rowsPerChunk: Array[Long],
+      columnTypes: Array[Byte]): FinalizeFrameV3 = {
     val endpoint = getClusterEndpoint(conf)
     val parameters = Map(
       "key" -> frameId,
