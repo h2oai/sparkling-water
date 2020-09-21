@@ -17,4 +17,3 @@
 
 from ai.h2o.sparkling.ml.features.H2OTargetEncoder import H2OTargetEncoder
 from ai.h2o.sparkling.ml.features.ColumnPruner import ColumnPruner
-from ai.h2o.sparkling.ml.features.H2OWord2VecTokenizer import H2OWord2VecTokenizer
