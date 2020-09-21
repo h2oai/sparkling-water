@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
-class HasGamCols:
+class HasGamColsOnMOJO:
+
     def getGamCols(self):
         return self._java_obj.getGamCols()
