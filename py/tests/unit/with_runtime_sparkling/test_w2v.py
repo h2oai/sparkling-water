@@ -23,15 +23,6 @@ from pyspark.sql.types import *
 from pysparkling.ml import H2OGBM, H2OWord2Vec
 
 from tests import unit_test_utils
-from tests.unit.with_runtime_sparkling.algo_test_utils import *
-
-
-def testParamsPassedByConstructor():
-    assertParamsViaConstructor("H2OWord2Vec")
-
-
-def testParamsPassedBySetters():
-    assertParamsViaSetters("H2OWord2Vec")
 
 
 def testPipelineSerialization(craiglistDataset):
