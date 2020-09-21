@@ -20,4 +20,5 @@ from ai.h2o.sparkling.ml.algos.classification import H2OAutoMLClassifier, H2OGLM
 from ai.h2o.sparkling.ml.algos.regression import H2OAutoMLRegressor, H2OGLMRegressor, H2OGAMRegressor, H2OGBMRegressor, H2OXGBoostRegressor, H2ODeepLearningRegressor, H2ODRFRegressor
 from ai.h2o.sparkling.ml.features import H2OTargetEncoder, ColumnPruner
 from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel, H2OUnsupervisedMOJOModel, H2OTreeBasedUnsupervisedMOJOModel, H2OBinaryModel
+from ai.h2o.sparkling.ml.models import H2OKMeansMOJOModel, H2OGLMMOJOModel, H2OGAMMOJOModel, H2OGBMMOJOModel, H2OXGBoostMOJOModel, H2ODeepLearningMOJOModel, H2ODRFMOJOModel, H2OPCAMOJOModel, H2OIsolationForestMOJOModel
 from ai.h2o.sparkling.ml.models import H2OMOJOModel, H2OMOJOPipelineModel, H2OMOJOSettings
