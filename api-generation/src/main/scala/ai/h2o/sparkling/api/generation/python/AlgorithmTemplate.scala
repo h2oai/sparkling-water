@@ -42,7 +42,7 @@ object AlgorithmTemplate
       "ai.h2o.sparkling.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils",
       s"ai.h2o.sparkling.ml.algos.$algorithmType.$algorithmType",
-      s"ai.h2o.sparkling.ml.algos.$mojoClassName.$mojoClassName") ++
+      s"ai.h2o.sparkling.ml.models.$mojoClassName.$mojoClassName") ++
       paramClasses.map(clazz => s"ai.h2o.sparkling.ml.params.$clazz.$clazz") ++
       algorithmSubstitutionContext.extraInheritedEntities.map(clazz => s"ai.h2o.sparkling.ml.algos.$clazz.$clazz")
 
