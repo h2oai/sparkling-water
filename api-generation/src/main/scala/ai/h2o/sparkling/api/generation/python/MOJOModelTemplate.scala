@@ -32,17 +32,28 @@ object MOJOModelTemplate
         !IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
-    val algorithmType = algorithmSubstitutionContext.algorithmType.replace("Algorithm", "MOJOModel")
+    val algorithmType = algorithmSubstitutionContext.algorithmType.replace("Algorithm", "MOJOModelParams")
     val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation)
     val parents = Seq(algorithmType) ++ explicitFields
 
-    val imports = Seq(s"ai.h2o.sparkling.ml.models.$algorithmType") ++
+    val imports = Seq(
+      s"ai.h2o.sparkling.ml.params.H2OMOJOModelParams.${algorithmType}",
+      "pyspark.ml.util._jvm",
+      "ai.h2o.sparkling.Initializer.Initializer",
+      "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings") ++
       explicitFields.map(field => s"ai.h2o.sparkling.ml.params.$field.$field")
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
 
     generateEntity(entitySubstitutionContext) {
-      generateGetterMethods(parameters)
+      s"""    @staticmethod
+         |    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
+         |        # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
+         |        Initializer.load_sparkling_jar()
+         |        javaModel = _jvm().ai.h2o.sparkling.ml.models.${entityName}.createFromMojo(pathToMojo, settings.toJavaObject())
+         |        return ${entityName}(javaModel)
+         |""".stripMargin ++
+        generateGetterMethods(parameters)
     }
   }
 

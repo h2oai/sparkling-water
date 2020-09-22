@@ -55,7 +55,7 @@ object MOJOModelTemplate
       algorithmSubstitutionContext.entityName,
       parents,
       imports,
-      entityParameters)
+      parameters = entityParameters)
 
     val mojoClass = generateEntity(entitySubstitutionContext, "class") {
       s"""  //

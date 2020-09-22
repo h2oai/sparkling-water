@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml import H2OMOJOSettings, H2OMOJOPipelineModel, H2OMOJOModel, H2OBinaryModel
-from ai.h2o.sparkling.ml import H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel, H2OUnsupervisedMOJOModel
-from ai.h2o.sparkling.ml import H2OTreeBasedUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.models import H2OMOJOSettings, H2OMOJOPipelineModel, H2OMOJOModel, H2OBinaryModel
+from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OTreeBasedSupervisedMOJOModel, H2OUnsupervisedMOJOModel
+from ai.h2o.sparkling.ml.models import H2OTreeBasedUnsupervisedMOJOModel
 from ai.h2o.sparkling.ml.models import H2OKMeansMOJOModel, H2OGLMMOJOModel, H2OGAMMOJOModel, H2OGBMMOJOModel, H2OXGBoostMOJOModel
 from ai.h2o.sparkling.ml.models import H2ODeepLearningMOJOModel, H2ODRFMOJOModel, H2OPCAMOJOModel, H2OIsolationForestMOJOModel
 

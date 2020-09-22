@@ -40,7 +40,8 @@ object MOJOModelAPIRunner extends APIRunnerBase with AutoMLConfiguration {
       writeResultToFile(content, mojoContext, languageExtension, destinationDir)
     }
 
-    val mojoFactoryContext = mojoConfiguration.head.copy(entityName = "H2OMOJOModelFactory")
+    val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
+    val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
     val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
     writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
   }

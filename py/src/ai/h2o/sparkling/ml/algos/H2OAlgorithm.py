@@ -16,8 +16,8 @@
 #
 
 from ai.h2o.sparkling.ml.H2OStageBase import H2OStageBase
-from ai.h2o.sparkling.ml.models import H2OBinaryModel
-from ai.h2o.sparkling.ml.models.H2OMOJOModelFactory import H2OMOJOModelFactory
+from ai.h2o.sparkling.ml.models.H2OBinaryModel import H2OBinaryModel
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModelFactory
 from pyspark.ml.wrapper import JavaEstimator
 
 

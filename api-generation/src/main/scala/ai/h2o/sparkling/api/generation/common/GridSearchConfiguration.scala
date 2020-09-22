@@ -66,6 +66,7 @@ trait GridSearchConfiguration {
       "H2OGridSearch",
       null,
       "H2OAlgorithm",
-      Seq("H2OGridSearchExtras"))
+      Seq("H2OGridSearchExtras"),
+      false)
   }
 }

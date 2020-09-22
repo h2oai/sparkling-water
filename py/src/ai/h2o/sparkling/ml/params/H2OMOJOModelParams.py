@@ -15,23 +15,12 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.Initializer import Initializer
-from ai.h2o.sparkling.ml.models import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
-from ai.h2o.sparkling.ml.models.H2OMOJOModelFactory import H2OMOJOModelFactory
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
-from pyspark.ml.util import _jvm
 
 
-class H2OMOJOModel(H2OMOJOModelBase):
-
-    @staticmethod
-    def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):
-        # We need to make sure that Sparkling Water classes are available on the Spark driver and executor paths
-        Initializer.load_sparkling_jar()
-        javaModel = _jvm().ai.h2o.sparkling.ml.models.H2OMOJOModel.createFromMojo(pathToMojo, settings.toJavaObject())
-        return H2OMOJOModelFactory.createSpecificMOJOModel(javaModel)
+class H2OMOJOModelParams(H2OMOJOModelBase):
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
@@ -58,23 +47,29 @@ class H2OMOJOModel(H2OMOJOModelBase):
         return self._java_obj.getModelCategory()
 
 
-class H2OSupervisedMOJOModel(H2OMOJOModel):
+class HasOffsetCol:
 
     def getOffsetCol(self):
         return self._java_obj.getOffsetCol()
 
 
-class H2OTreeBasedSupervisedMOJOModel(H2OSupervisedMOJOModel):
+class HasNtrees:
 
     def getNtrees(self):
         return self._java_obj.getNtrees()
 
 
-class H2OUnsupervisedMOJOModel(H2OMOJOModel):
+class H2OUnsupervisedMOJOModelParams(H2OMOJOModelParams):
     pass
 
 
-class H2OTreeBasedUnsupervisedMOJOModel(H2OUnsupervisedMOJOModel):
+class H2OSupervisedMOJOModelParams(H2OMOJOModelParams, HasOffsetCol):
+    pass
 
-    def getNtrees(self):
-        return self._java_obj.getNtrees()
+
+class H2OTreeBasedUnsupervisedMOJOModelParams(H2OUnsupervisedMOJOModelParams, HasNtrees):
+    pass
+
+
+class H2OTreeBasedSupervisedMOJOModelParams(H2OSupervisedMOJOModelParams, HasNtrees):
+    pass
