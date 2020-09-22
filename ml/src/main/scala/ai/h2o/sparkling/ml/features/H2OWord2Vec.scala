@@ -38,15 +38,8 @@ class H2OWord2Vec(override val uid: String)
   with DefaultParamsWritable {
 
   final val inputCol: Param[String] = new Param[String](this, "inputCol", "input column name")
-
-  final def getInputCol: String = $(inputCol)
-
   final val outputCol: Param[String] = new Param[String](this, "outputCol", "output column name")
-
   setDefault(outputCol, "H2OWord2Vec_output")
-
-  /** @group getParam */
-  final def getOutputCol: String = $(outputCol)
 
   def this() = this(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName))
 
@@ -72,14 +65,21 @@ class H2OWord2Vec(override val uid: String)
       .toMOJOModel(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName), settings)
   }
 
-  def setInputCol(value: String): this.type = set(inputCol, value)
-
-  def setOutputCol(value: String): this.type = set(outputCol, value)
-
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = schema
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+
+  // Getters
+  final def getInputCol: String = $(inputCol)
+
+  final def getOutputCol: String = $(outputCol)
+
+  // Setters
+  def setInputCol(value: String): this.type = set(inputCol, value)
+
+  def setOutputCol(value: String): this.type = set(outputCol, value)
+
 }
 
 object H2OWord2Vec extends DefaultParamsReadable[H2OWord2Vec]

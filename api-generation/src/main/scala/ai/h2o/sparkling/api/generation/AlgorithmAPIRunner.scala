@@ -97,6 +97,4 @@ object AlgorithmAPIRunner
       writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
     }
   }
-
-  private def generateWord2VecParams(): Unit = {}
 }

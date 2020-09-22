@@ -32,7 +32,7 @@ The following sections describe how to train the Word2Vec model in Sparkling Wat
             val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("craigslistJobTitles.csv"))
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Create the pipeline with the Word2Vec. You can configure all the available Word2Vec arguments using provided setters.
+        Create the pipeline with the H2O Word2Vec. You can configure all the available Word2Vec arguments using provided setters.
 
         .. code:: scala
 
