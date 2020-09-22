@@ -76,4 +76,62 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     import spark.implicits._
     result.select("prediction").map(row => row.getString(0)).take(3)
   }
+
+  test("Word2Vec on empty dataset") {
+    import spark.implicits._
+    val df = Seq.empty[Array[String]].toDF()
+
+    val w2v = new H2OWord2Vec().setInputCol("value")
+
+    val thrown = intercept[IllegalArgumentException] {
+      w2v.fit(df)
+    }
+    assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
+  }
+
+  test("Word2Vec with only one and null input column") {
+    import spark.implicits._
+    val df = spark.sparkContext.parallelize(Seq(null.asInstanceOf[Array[String]])).toDF()
+
+    val w2v = new H2OWord2Vec().setInputCol("value")
+
+    val thrown = intercept[IllegalArgumentException] {
+      w2v.fit(df)
+    }
+    assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
+  }
+
+  test("Word2Vec with only one and empty input column") {
+
+    import spark.implicits._
+    val df = spark.sparkContext.parallelize(Seq(Array.empty[String])).toDS()
+
+    val w2v = new H2OWord2Vec().setInputCol("value")
+
+    val thrown = intercept[IllegalArgumentException] {
+      w2v.fit(df)
+    }
+    assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
+  }
+
+  test("Word2Vec with null input column") {
+    import spark.implicits._
+    val df = spark.sparkContext.parallelize(Seq(null.asInstanceOf[Array[String]], Array("how", "are", "you"))).toDF()
+
+    val w2v = new H2OWord2Vec().setInputCol("value")
+
+    w2v.fit(df)
+    //TODO: Assert, need to discover why getting the java.lang.NegativeArraySizeException: -1 from MK
+  }
+
+  test("Word2Vec with empty input column") {
+
+    import spark.implicits._
+    val df = spark.sparkContext.parallelize(Seq(Array.empty[String], Array("how", "are", "you"))).toDF()
+
+    val w2v = new H2OWord2Vec().setInputCol("value")
+
+    w2v.fit(df)
+    //TODO: Assert, need to discover why getting the java.lang.NegativeArraySizeException: -1 from MK
+  }
 }

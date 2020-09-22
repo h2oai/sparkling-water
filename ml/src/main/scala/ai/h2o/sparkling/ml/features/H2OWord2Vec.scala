@@ -29,7 +29,9 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, I
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, explode, udf}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{ArrayType, FloatType, StructField, StructType}
+
+import scala.collection.mutable
 
 class H2OWord2Vec(override val uid: String)
   extends Estimator[H2OMOJOModel]
@@ -37,20 +39,29 @@ class H2OWord2Vec(override val uid: String)
   with EstimatorCommonUtils
   with DefaultParamsWritable {
 
-  final val inputCol: Param[String] = new Param[String](this, "inputCol", "input column name")
-  final val outputCol: Param[String] = new Param[String](this, "outputCol", "output column name")
+  private val inputCol = new Param[String](this, "inputCol", "input column name")
+  private val outputCol = new Param[String](this, "outputCol", "output column name")
   setDefault(outputCol, "H2OWord2Vec_output")
 
   def this() = this(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName))
 
-  private def addValue: UserDefinedFunction = udf((array: Seq[String]) => array ++ Array(""))
+  private def addValue: UserDefinedFunction =
+    udf((array: mutable.WrappedArray[String]) => {
+      array.toArray ++ Array("")
+    })
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val inputCol = getInputCol
     val ds = dataset
+      .filter(inputCol + " is not null")
+      .filter(s"size($inputCol) != 0")
       .withColumn(inputCol, addValue(col(inputCol)))
       .withColumn(inputCol, explode(col(inputCol)))
       .select(inputCol)
+
+    if (ds.isEmpty) {
+      throw new IllegalArgumentException("Empty DataFrame as an input for the H2OWord2Vec is not supported.")
+    }
 
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to train the model. Please create one as H2OContext.getOrCreate().")
@@ -66,7 +77,22 @@ class H2OWord2Vec(override val uid: String)
   }
 
   @DeveloperApi
-  override def transformSchema(schema: StructType): StructType = schema
+  override def transformSchema(schema: StructType): StructType = {
+    require(getInputCol != null, "Input column can't be null!")
+    require(getOutputCol != null, "Output column can't be null!")
+    val fields = schema.fields
+    val fieldNames = fields.map(_.name)
+    require(
+      fieldNames.contains(getInputCol),
+      s"The specified input column '$inputCol' was not found in the input dataset!")
+    require(
+      getInputCol != getOutputCol,
+      s"""Input column is same as the output column. There can't be an overlap.""".stripMargin)
+    require(
+      !fieldNames.contains(getOutputCol),
+      s"The output column $getOutputCol is present already in the input dataset.")
+    schema
+  }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 
