@@ -24,8 +24,7 @@ import ai.h2o.sparkling.ml.params.H2OWord2VecParams
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
+import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -35,10 +34,19 @@ import org.apache.spark.sql.types.StructType
 class H2OWord2Vec(override val uid: String)
   extends Estimator[H2OMOJOModel]
   with H2OWord2VecParams
-  with HasInputCol
-  with HasOutputCol
   with EstimatorCommonUtils
   with DefaultParamsWritable {
+
+  final val inputCol: Param[String] = new Param[String](this, "inputCol", "input column name")
+
+  final def getInputCol: String = $(inputCol)
+
+  final val outputCol: Param[String] = new Param[String](this, "outputCol", "output column name")
+
+  setDefault(outputCol, "H2OWord2Vec_output")
+
+  /** @group getParam */
+  final def getOutputCol: String = $(outputCol)
 
   def this() = this(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName))
 
@@ -67,8 +75,6 @@ class H2OWord2Vec(override val uid: String)
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
-
-  setDefault(outputCol, "H2OWord2Vec_output")
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = schema
