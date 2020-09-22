@@ -18,25 +18,95 @@ from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OGLRM, H2OPCA, H2OIsolationForest
 
 def testGBMParameters(prostateDataset):
-    algorithm = H2OGBM(seed=1, labelCol="CAPSULE")
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OGBM(seed=1, labelCol="CAPSULE", featuresCols=features)
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
 
-def compareParameterValues(algorithm, model):
-    methods = filter(lambda x: x.startswith("get"), dir(model))
+def testDRFParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2ODRF(seed=1, labelCol="CAPSULE", featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testXGBoostParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OXGBoost(seed=1, labelCol="CAPSULE", featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testGLMParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OGLM(seed=1, labelCol="CAPSULE", alphaValue=[0.5], lambdaValue=[0.5], maxIterations=30,
+                       objectiveEpsilon=0.001, gradientEpsilon=0.001, objReg=0.001, maxActivePredictors=3000,
+                       lambdaMinRatio=0.001, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testGAMParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OGAM(seed=1, labelCol="CAPSULE", gamCols=["PSA", "AGE"], numKnots=[5, 5], featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model, ["getFeaturesCols"])
+
+
+def testDeepLearningParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2ODeepLearning(seed=1, labelCol="CAPSULE", featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testKmeansParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OKMeans(seed=1, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testGLRMParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OGLRM(seed=1, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testPCAParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OPCA(seed=1, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testIsolationForestParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OIsolationForest(seed=1, sampleRate=0.5, featuresCols=features)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def compareParameterValues(algorithm, model, ignored=[]):
+    algorithmMethods = dir(algorithm)
+    methods = filter(lambda x: x.startswith("get") and x in algorithmMethods and x not in ignored, dir(model))
     for method in methods:
         print(method)
         modelValue = getattr(model, method)()
         algorithmValue = getattr(algorithm, method)()
-        assert(valuesAraEqual(modelValue, algorithmValue))
+        assert(valuesAreEqual(algorithmValue, modelValue))
 
-def valuesAraEqual(algorithmValue, modelValue):
+
+def valuesAreEqual(algorithmValue, modelValue):
     if algorithmValue == "AUTO":
         return True
     elif algorithmValue == "auto":
         return True
     elif algorithmValue == "family_default":
+        return True
+    elif algorithmValue == {} and modelValue is None:
         return True
     else:
         return algorithmValue == modelValue
