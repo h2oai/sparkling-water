@@ -41,7 +41,7 @@ class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   override protected def mojoName: String = "word2vec.mojo"
 
   private def predictionColType = {
-    MapType(StringType, ArrayType(FloatType, containsNull = false), valueContainsNull = true)
+    ArrayType(FloatType, containsNull = false)
   }
 
   override protected def expectedDetailedPredictionCol: StructField = {
@@ -50,7 +50,7 @@ class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestCo
   }
 
   override protected def expectedPredictionCol: StructField = {
-    val predictionColType = MapType(StringType, ArrayType(FloatType, containsNull = false), valueContainsNull = true)
+    val predictionColType = ArrayType(FloatType, containsNull = false)
     StructField("prediction", predictionColType, nullable = true)
   }
 }
