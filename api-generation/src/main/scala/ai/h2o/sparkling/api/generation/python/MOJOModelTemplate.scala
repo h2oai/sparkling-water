@@ -40,7 +40,8 @@ object MOJOModelTemplate
       s"ai.h2o.sparkling.ml.params.H2OMOJOModelParams.${algorithmType}",
       "pyspark.ml.util._jvm",
       "ai.h2o.sparkling.Initializer.Initializer",
-      "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings") ++
+      "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
+      "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters") ++
       explicitFields.map(field => s"ai.h2o.sparkling.ml.params.$field.$field")
 
     val entitySubstitutionContext = EntitySubstitutionContext(namespace, entityName, parents, imports)
@@ -61,10 +62,17 @@ object MOJOModelTemplate
     parameters
       .map { parameter =>
         val parameterName = parameter.swName.capitalize
+        val valueConversion = generateValueConversion(parameter)
         s"""
          |    def get${parameterName}(self):
-         |        return self._java_obj.get${parameterName}()""".stripMargin
+         |        value = self._java_obj.get${parameterName}()
+         |        return $valueConversion""".stripMargin
       }
       .mkString("\n\n")
+  }
+
+  private def generateValueConversion(parameter: Parameter): String = parameter.dataType match {
+    case x if x.isArray => "H2OTypeConverters.scalaArrayToPythonArray(value)"
+    case _ => "value"
   }
 }

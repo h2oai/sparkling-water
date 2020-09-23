@@ -89,10 +89,17 @@ def testIsolationForestParameters(prostateDataset):
     compareParameterValues(algorithm, model)
 
 
-def compareParameterValues(algorithm, model, explicitelyIgnored=[]):
-    ignored = explicitelyIgnored + ["getOrDefault"]
+def compareParameterValues(algorithm, model, ignored=[]):
     algorithmMethods = dir(algorithm)
-    methods = filter(lambda x: x.startswith("get") and x in algorithmMethods and x not in ignored, dir(model))
+
+    def isMethodRelevant(method):
+        return method.startswith("get") and \
+            getattr(model, method).__code__.co_nlocals == 1 and \
+            method in algorithmMethods and \
+            method not in ignored
+
+    methods = filter(isMethodRelevant, dir(model))
+
     for method in methods:
         print(method)
         modelValue = getattr(model, method)()
