@@ -29,7 +29,7 @@ import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, I
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, explode, udf}
-import org.apache.spark.sql.types.{ArrayType, FloatType, StructField, StructType}
+import org.apache.spark.sql.types.StructType
 
 import scala.collection.mutable
 

@@ -1,3 +1,27 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ai.h2o.sparkling.api.generation.python
+
+import org.apache.spark.ml.param.Params
+
+object Word2VecTemplate {
+  def apply(): String = {
+    s"""
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -28,19 +52,7 @@ class H2OWord2Vec(HasInputCol, HasOutputCol, H2OWord2VecParams, H2OStageBase, Ja
 
     @keyword_only
     def __init__(self,
-                 inputCol=None,
-                 outputCol="H2OWord2Vec_output",
-                 vecSize=5,
-                 windowWize=100,
-                 sentSampleRate=0.001,
-                 normModel="HSM",
-                 epochs=5,
-                 minWordFreq=5,
-                 initLearningRate=0.025,
-                 wordModel="SkipGram",
-                 modelId=None,
-                 maxRuntimeSecs=0.0,
-                 exportCheckpointsDir=None):
+${getInitParameters()}):
         Initializer.load_sparkling_jar()
         super(H2OWord2Vec, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OWord2Vec", self.uid)
@@ -56,3 +68,24 @@ class H2OWord2Vec(HasInputCol, HasOutputCol, H2OWord2VecParams, H2OStageBase, Ja
 
     def setOutputCol(self, value):
         return self._set(outputCol=value)
+     """.stripMargin
+  }
+
+  private def getInitParameters(): String = {
+    val clazz = Class.forName("ai.h2o.sparkling.ml.features.H2OWord2Vec")
+    val instance = clazz.newInstance().asInstanceOf[Params]
+    val params = instance.extractParamMap()
+    val listParams = params.toSeq.map { paramPair =>
+      val name = paramPair.param.name
+      val value = if (paramPair.value == null) {
+        "None"
+      } else if (paramPair.value.isInstanceOf[String]) {
+        "\"" + paramPair.value + "\""
+      } else {
+        paramPair.value
+      }
+      s"$name=$value"
+    } ++ Seq("inputCol=None")
+    listParams.map("                 " + _).mkString(",\n")
+  }
+}
