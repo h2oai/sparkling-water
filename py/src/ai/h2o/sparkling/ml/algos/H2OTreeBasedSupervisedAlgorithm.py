@@ -16,10 +16,7 @@
 #
 
 from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm import H2OSupervisedAlgorithm
-from ai.h2o.sparkling.ml.models import H2OTreeBasedSupervisedMOJOModel
 
 
 class H2OTreeBasedSupervisedAlgorithm(H2OSupervisedAlgorithm):
-
-    def _create_model(self, java_model):
-        return H2OTreeBasedSupervisedMOJOModel(java_model)
+    pass

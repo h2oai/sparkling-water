@@ -40,7 +40,8 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
       "H2OAutoML",
       null,
       "H2OSupervisedAlgorithm",
-      Seq("H2OAutoMLExtras"))
+      Seq("H2OAutoMLExtras"),
+      false)
   }
 
   def problemSpecificAutoMLAlgorithmContext: ProblemSpecificAlgorithmSubstitutionContext = {

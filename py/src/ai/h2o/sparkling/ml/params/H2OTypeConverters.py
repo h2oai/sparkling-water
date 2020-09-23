@@ -453,3 +453,13 @@ class H2OTypeConverters(object):
             return map
         else:
             raise TypeError("Invalid type.")
+
+
+    @staticmethod
+    def scalaArrayToPythonArray(array):
+        if array is None:
+            return None
+        elif isinstance(array, JavaObject):
+            return [v for v in array]
+        else:
+            raise TypeError("Invalid type.")

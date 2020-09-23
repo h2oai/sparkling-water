@@ -46,21 +46,21 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on DRF") {
     val algorithm = new H2ODRF().setLabelCol("CAPSULE").setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on XGBoost") {
     val algorithm = new H2OXGBoost().setLabelCol("CAPSULE").setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on GLM") {
@@ -77,7 +77,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setLambdaMinRatio(0.001)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on GAM") {
@@ -89,35 +89,35 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setBs(Array(5, 5))
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo, Set("getFeaturesCols"))
+    compareParameterValues(algorithm, mojo, Set("getFeaturesCols"))
   }
 
   test("Test MOJO parameters on Deep Learning") {
     val algorithm = new H2ODeepLearning().setLabelCol("CAPSULE").setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on KMeans") {
     val algorithm = new H2OKMeans().setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on GLRM") {
     val algorithm = new H2OGLRM().setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on PCA") {
     val algorithm = new H2OPCA().setSeed(1)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
   test("Test MOJO parameters on Isolation Forest") {
@@ -126,10 +126,10 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setSampleRate(0.5)
     val mojo = algorithm.fit(dataset)
 
-    compareMOJOAndParameterValues(algorithm, mojo)
+    compareParameterValues(algorithm, mojo)
   }
 
-  protected def compareMOJOAndParameterValues[A <: Estimator[H2OMOJOModel]: ClassTag, M <: H2OMOJOModel: ClassTag](
+  protected def compareParameterValues[A <: Estimator[H2OMOJOModel]: ClassTag, M <: H2OMOJOModel: ClassTag](
       algorithm: A,
       mojoModel: M,
       ignoredMethods: Set[String] = Set.empty): Unit = {

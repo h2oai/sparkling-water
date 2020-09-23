@@ -21,8 +21,9 @@ import ai.h2o.sparkling.api.generation.common._
 
 object MOJOModelAPIRunner extends APIRunnerBase with AutoMLConfiguration {
 
-  private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate)
-  private val mojoFactoryTemplates = Map("scala" -> scala.MOJOModelFactoryTemplate)
+  private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate, "py" -> python.MOJOModelTemplate)
+  private val mojoFactoryTemplates =
+    Map("scala" -> scala.MOJOModelFactoryTemplate, "py" -> python.MOJOModelFactoryTemplate)
 
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
@@ -39,7 +40,8 @@ object MOJOModelAPIRunner extends APIRunnerBase with AutoMLConfiguration {
       writeResultToFile(content, mojoContext, languageExtension, destinationDir)
     }
 
-    val mojoFactoryContext = mojoConfiguration.head.copy(entityName = "H2OMOJOModelFactory")
+    val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
+    val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
     val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
     writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
   }
