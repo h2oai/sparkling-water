@@ -251,7 +251,7 @@ object H2OMOJOModel
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
     val modelDetails = getModelDetails(modelJson)
     val modelCategory = extractModelCategory(modelJson)
-    val trainingParams = extractParams(modelJson) // TODO: To be deprecated
+    val trainingParams = extractParams(modelJson)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
