@@ -31,7 +31,9 @@ object ParametersTemplate
     val parameters = resolveParameters(parameterSubstitutionContext)
     val imports = Seq(h2oParameterFullName, "ai.h2o.sparkling.H2OFrame") ++
       parameters.filter(_.dataType.isEnum).map(_.dataType.getCanonicalName)
-    val parents = Seq("H2OAlgoParamsBase") ++ parameterSubstitutionContext.explicitFields.map(_.implementation)
+    val parents = Seq("H2OAlgoParamsBase") ++
+      parameterSubstitutionContext.explicitFields.map(_.implementation) ++
+      parameterSubstitutionContext.deprecatedFields.map(_.implementation)
 
     val entitySubstitutionContext = EntitySubstitutionContext(
       parameterSubstitutionContext.namespace,

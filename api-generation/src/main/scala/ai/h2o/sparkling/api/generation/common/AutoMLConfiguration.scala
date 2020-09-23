@@ -24,6 +24,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         h2oParameterClass,
         AutoMLIgnoredParameters.all,
         explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols) else Seq.empty,
+        deprecatedFields = Seq.empty,
         explicitDefaultValues =
           Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
         defaultValueFieldPrefix = "",
