@@ -34,6 +34,8 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import _root_.hex.genmodel.algos.glrm.GlrmMojoModel
+import ai.h2o.sparkling.macros.DeprecatedMethod
+import org.apache.spark.expose.Logging
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -41,7 +43,8 @@ import scala.reflect.ClassTag
 class H2OMOJOModel(override val uid: String)
   extends H2OMOJOModelBase[H2OMOJOModel]
   with H2OMOJOPrediction
-  with SpecificMOJOParameters {
+  with SpecificMOJOParameters
+  with Logging {
 
   H2OMOJOCache.startCleanupThread()
   protected final val modelDetails: NullableStringParam =
@@ -81,6 +84,8 @@ class H2OMOJOModel(override val uid: String)
       getTrainingMetrics()
     }
   }
+
+  @DeprecatedMethod("a dedicated getter method for a given parameter", "3.34")
   def getTrainingParams(): Map[String, String] = $(trainingParams)
 
   def getModelCategory(): String = $(modelCategory)
