@@ -32,7 +32,11 @@ trait H2OMOJOPredictionWordEmbedding {
     val function = (r: Row) => {
       val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
       val colIdx = model.m.getColIdx(getFeaturesCols().head)
-      val pred = model.predictWord2Vec(r.getSeq[String](colIdx).toArray)
+      val pred = if (r.getSeq[String](colIdx) == null) {
+        null
+      } else {
+        model.predictWord2Vec(r.getSeq[String](colIdx).toArray)
+      }
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred
       new GenericRowWithSchema(resultBuilder.toArray, schema)

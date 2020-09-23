@@ -26,6 +26,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
+import scala.collection.mutable
+
 @RunWith(classOf[JUnitRunner])
 class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
@@ -114,24 +116,41 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     assert(thrown.getMessage == "Empty DataFrame as an input for the H2OWord2Vec is not supported.")
   }
 
+  private def truncateAt(n: Double, p: Int): Double = { val s = math pow (10, p); (math floor n * s) / s }
+
   test("Word2Vec with null input column") {
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(null.asInstanceOf[Array[String]], Array("how", "are", "you"))).toDF()
 
-    val w2v = new H2OWord2Vec().setInputCol("value")
-
-    w2v.fit(df)
-    //TODO: Assert, need to discover why getting the java.lang.NegativeArraySizeException: -1 from MK
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
+    val model = w2v.fit(df)
+    val result = model.transform(df).select("value", w2v.getOutputCol).collect()
+    assert(result(0)(0) == null)
+    assert(result(0)(1) == null)
+    assert(result(1)(0) == mutable.WrappedArray.make(Array("how", "are", "you")))
+    val embeddings = result(1).getAs[mutable.WrappedArray[Float]](1)
+    assert(truncateAt(embeddings(0), 3).toString == "-0.062")
+    assert(truncateAt(embeddings(1), 3).toString == "0.037")
+    assert(truncateAt(embeddings(2), 3).toString == "0.002")
   }
 
   test("Word2Vec with empty input column") {
-
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(Array.empty[String], Array("how", "are", "you"))).toDF()
 
-    val w2v = new H2OWord2Vec().setInputCol("value")
-
+    val w2v = new H2OWord2Vec().setMinWordFreq(1).setVecSize(3).setInputCol("value")
     w2v.fit(df)
-    //TODO: Assert, need to discover why getting the java.lang.NegativeArraySizeException: -1 from MK
+    val model = w2v.fit(df)
+    val result = model.transform(df).select("value", w2v.getOutputCol).collect()
+    assert(result(0)(0) == mutable.WrappedArray.empty)
+    val emptyValues = result(0).getAs[mutable.WrappedArray[Float]](1)
+    assert(emptyValues(0).isNaN)
+    assert(emptyValues(1).isNaN)
+    assert(emptyValues(2).isNaN)
+    assert(result(1)(0) == mutable.WrappedArray.make(Array("how", "are", "you")))
+    val embeddings = result(1).getAs[mutable.WrappedArray[Float]](1)
+    assert(truncateAt(embeddings(0), 3).toString == "-0.062")
+    assert(truncateAt(embeddings(1), 3).toString == "0.037")
+    assert(truncateAt(embeddings(2), 3).toString == "0.002")
   }
 }

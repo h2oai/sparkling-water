@@ -39,8 +39,8 @@ class H2OWord2Vec(override val uid: String)
   with EstimatorCommonUtils
   with DefaultParamsWritable {
 
-  private val inputCol = new Param[String](this, "inputCol", "input column name")
-  private val outputCol = new Param[String](this, "outputCol", "output column name")
+  protected final val inputCol = new Param[String](this, "inputCol", "input column name")
+  protected final val outputCol = new Param[String](this, "outputCol", "output column name")
   setDefault(outputCol, "H2OWord2Vec_output")
 
   def this() = this(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName))
