@@ -53,7 +53,7 @@ class H2OWord2Vec(override val uid: String)
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val inputCol = getInputCol
     val ds = dataset
-      .filter(inputCol + " is not null")
+      .filter(col(inputCol).isNotNull)
       .filter(s"size($inputCol) != 0")
       .withColumn(inputCol, addValue(col(inputCol)))
       .withColumn(inputCol, explode(col(inputCol)))
