@@ -24,6 +24,7 @@ case class ParameterSubstitutionContext(
     h2oParameterClass: Class[_],
     ignoredParameters: Seq[String],
     explicitFields: Seq[ExplicitField],
+    deprecatedFields: Seq[DeprecatedField],
     explicitDefaultValues: Map[String, Any],
     typeExceptions: Map[String, Class[_]],
     defaultValueFieldPrefix: String = "_",
@@ -38,6 +39,8 @@ case class ExplicitField(
     defaultValue: Any,
     sparkName: Option[String] = None,
     mojoImplementation: Option[String] = None)
+
+case class DeprecatedField(h2oName: String, implementation: String, sparkName: String, version: String)
 
 object DefaultValueSource extends Enumeration {
   type DefaultValueSource = Value

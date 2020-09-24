@@ -71,20 +71,29 @@ trait AlgorithmConfigurations {
     val distribution = ExplicitField("distribution", "HasDistribution", "distribution")
     val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
 
+    val deprecatedWeightCol = DeprecatedField("weights_col", "DeprecatedWeightCol", "weightCol", "3.34")
+
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs, distribution)
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols, distribution)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
+    val drfFields = Seq(calibrationDataFrame, ignoredCols)
+    val glrmFields = Seq(userX, userY, lossByColNames)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val pcaFields = Seq(ignoredCols)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
-    val deepLearningFields = Seq(
+    val kmeansDeprecations = Seq(deprecatedWeightCol)
+
+    val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
       ignoredCols)
-    type DeepLearningParametersV3 = DeepLearningV3.DeepLearningParametersV3
-    type IsolationForestParametersV3 = IsolationForestV3.IsolationForestParametersV3
+
+    type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
+    type IFParamsV3 = IsolationForestV3.IsolationForestParametersV3
+    type XGBParamsV3 = XGBoostV3.XGBoostParametersV3
+    type KMeansParamsV3 = KMeansV3.KMeansParametersV3
 
     val explicitDefaultValues = Map[String, Any](
       "max_w2" -> 3.402823e38f,
@@ -92,19 +101,21 @@ trait AlgorithmConfigurations {
       "model_id" -> null,
       "pca_impl" -> new PCAParameters()._pca_implementation)
 
-    val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField])](
-      ("H2OXGBoostParams", classOf[XGBoostV3.XGBoostParametersV3], classOf[XGBoostParameters], xgboostFields),
-      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields),
-      ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], Seq(calibrationDataFrame, ignoredCols)),
-      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields),
-      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields),
-      ("H2ODeepLearningParams", classOf[DeepLearningParametersV3], classOf[DeepLearningParameters], deepLearningFields),
-      ("H2OKMeansParams", classOf[KMeansV3.KMeansParametersV3], classOf[KMeansParameters], kmeansFields),
-      ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], Seq(userX, userY, lossByColNames)),
-      ("H2OPCAParams", classOf[PCAV3.PCAParametersV3], classOf[PCAParameters], pcaFields),
-      ("H2OIsolationForestParams", classOf[IsolationForestParametersV3], classOf[IsolationForestParameters], ifFields))
+    val noDeprecation = Seq.empty
 
-    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields) <- algorithmParameters)
+    val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
+      ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),
+      ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields, noDeprecation),
+      ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], drfFields, noDeprecation),
+      ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
+      ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
+      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
+      ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, kmeansDeprecations),
+      ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], glrmFields, noDeprecation),
+      ("H2OPCAParams", classOf[PCAV3.PCAParametersV3], classOf[PCAParameters], pcaFields, noDeprecation),
+      ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
+
+    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
       yield ParameterSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.params",
         entityName,
@@ -112,6 +123,7 @@ trait AlgorithmConfigurations {
         h2oParameterClass,
         IgnoredParameters.all(entityName.replace("Params", "")),
         explicitFields,
+        deprecatedFields,
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,

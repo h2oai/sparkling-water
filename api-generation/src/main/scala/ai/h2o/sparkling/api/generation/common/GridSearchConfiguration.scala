@@ -49,6 +49,7 @@ trait GridSearchConfiguration {
         h2oParameterClass,
         ignoredParameters = Seq("__meta") ++ extraIgnoredParameters,
         explicitFields = Seq.empty,
+        deprecatedFields = Seq.empty,
         explicitDefaultValues = Map.empty,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Getter,

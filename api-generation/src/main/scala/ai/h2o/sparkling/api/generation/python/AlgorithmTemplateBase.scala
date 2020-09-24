@@ -33,6 +33,21 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
       .mkString(",\n")
   }
 
+  def generateDeprecations(deprecatedParams: Seq[DeprecatedField]): String =
+    if (deprecatedParams.isEmpty) {
+      ""
+    } else {
+      deprecatedParams
+        .map { param =>
+          val version = param.version
+          val name = param.sparkName
+          s"""        if '$name' in kwargs:
+             |            del kwargs['$name']
+             |            warn("The parameter '$name' is deprecated and will be removed in the version $version.")""".stripMargin
+        }
+        .mkString("\n")
+    }
+
   def generateAlgorithmClass(
       entityName: String,
       parentReferenceSource: String,
@@ -41,15 +56,17 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
       entitySubstitutionContext: EntitySubstitutionContext,
       commonSubstitutionContext: ParameterSubstitutionContext): String = {
     generateEntity(entitySubstitutionContext) {
+      val kwargs = if (commonSubstitutionContext.deprecatedFields.isEmpty) "" else ",\n                 **kwargs"
       s"""    @keyword_only
          |    def __init__(self,${generateDefaultValuesFromExplicitFields(commonSubstitutionContext.explicitFields)}
          |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
-         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}):
+         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}$kwargs):
          |        Initializer.load_sparkling_jar()
          |        super($parentReferenceSource, self).__init__()
          |        self._java_obj = self._new_java_obj("$namespace.$entityName", self.uid)
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
+         |${generateDeprecations(commonSubstitutionContext.deprecatedFields)}
          |        if 'interactionPairs' in kwargs:
          |            warn("Interaction pairs are not supported!")
          |        self._set(**kwargs)
