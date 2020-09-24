@@ -59,7 +59,7 @@ class H2OWord2Vec(override val uid: String)
       .withColumn(inputCol, explode(col(inputCol)))
       .select(inputCol)
 
-    if (ds.isEmpty) {
+    if (ds.count() == 0) {
       throw new IllegalArgumentException("Empty DataFrame as an input for the H2OWord2Vec is not supported.")
     }
 
