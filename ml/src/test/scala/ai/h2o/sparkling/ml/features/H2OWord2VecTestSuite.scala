@@ -104,7 +104,6 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
   }
 
   test("Word2Vec with only one and empty input column") {
-
     import spark.implicits._
     val df = spark.sparkContext.parallelize(Seq(Array.empty[String])).toDS()
 
