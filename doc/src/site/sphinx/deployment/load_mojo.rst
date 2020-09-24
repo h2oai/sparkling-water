@@ -209,14 +209,7 @@ To score the dataset using the loaded mojo, call:
             model$transform(dataset)
 
 In Scala, the ``createFromMojo`` method returns a mojo model instance cast as a base class ``H2OMOJOModel``. This class holds
-only properties that are shared across all MOJO model types from the following type hierarchy:
-
-- ``H2OMOJOModel``
-    - ``H2OUnsupervisedMOJOModel``
-        - ``H2OTreeBasedUnsupervisedMOJOModel``
-    - ``H2OSupervisedMOJOModel``
-        - ``H2OTreeBasedSupervisedMOJOModel``
-
+only properties common for all mojo models across different Sparkling Water algorithms.
 
 If a Scala user wants to get a property specific for a given MOJO model type, he/she must utilize casting or
 call the ``createFromMojo`` method on the specific MOJO model type.
@@ -224,8 +217,21 @@ call the ``createFromMojo`` method on the specific MOJO model type.
 .. code:: scala
 
     import ai.h2o.sparkling.ml.models._
-    val specificModel = H2OTreeBasedSupervisedMOJOModel.createFromMojo("prostate_mojo.zip")
-    println(s"Ntrees: ${specificModel.getNTrees()}") // Relevant only to GBM, DRF and XGBoost
+    val specificModel = H2OGBMMOJOModel.createFromMojo("prostate_mojo.zip")
+    println(s"Ntrees: ${specificModel.getNTrees()}")
+
+The list of specific MOJO models:
+
+- ``H2OXGBoostMOJOModel``
+- ``H2OGBMMOJOModel``
+- ``H2ODRFMOJOModel``
+- ``H2OGLMMOJOModel``
+- ``H2OGAMMOJOModel``
+- ``H2ODeepLearningMOJOModel``
+- ``H2OKMeansMOJOModel``
+- ``H2OGLRMMOJOModel``
+- ``H2OPCAMOJOModel``
+- ``H2OIsolationForestMOJOModel``
 
 Exporting the loaded MOJO model using Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
