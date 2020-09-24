@@ -24,7 +24,7 @@ import water._
 import water.parser.DefaultParserProviders.GUESS_INFO
 import water.parser.ParseSetup
 import water.parser.ParseSetup._
-import water.util.FrameUtils
+import water.H2O
 
 /**
   * Wrapper around Java H2O Frame
@@ -179,6 +179,8 @@ object H2OFrame {
     * @param uris      URIs of files to parse
     * @return guessed parser setup
     */
-  def parserSetup(userSetup: ParseSetup, uris: URI*): ParseSetup =
-    FrameUtils.guessParserSetup(defaultParserSetup(), uris: _*)
+  def parserSetup(userSetup: ParseSetup, uris: URI*): ParseSetup = {
+    val inKeys = uris.map(H2O.getPM.anyURIToKey(_)).toArray
+    return ParseSetup.guessSetup(inKeys, userSetup)
+  }
 }

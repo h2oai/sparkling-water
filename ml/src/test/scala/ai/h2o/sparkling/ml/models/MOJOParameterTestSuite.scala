@@ -84,6 +84,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     val algorithm = new H2OGAM()
       .setLabelCol("CAPSULE")
       .setSeed(1)
+      .setLambdaValue(Array(0.5))
       .setGamCols(Array("PSA", "AGE"))
       .setNumKnots(Array(5, 5))
       .setBs(Array(5, 5))
