@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.ArrayType
+import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -52,6 +52,21 @@ class H2OGBMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     assert(leafNodeAssignments.schema.head.dataType.simpleString == "array<string>")
     val withSize = leafNodeAssignments.withColumn("size", org.apache.spark.sql.functions.size($"leafNodeAssignments"))
     assert(withSize.select("size").head().getInt(0) == 2)
+  }
+
+  test("H2OGBM converts labelCol to categorical when the bernoulli distribution is set") {
+    val algorithm = new H2OGBM()
+      .setDistribution("bernoulli")
+      .setLabelCol("CAPSULE")
+
+    // If the labelCol wasn't converted from numeric(IntegerType) to categorical, the fit method would fail.
+    val model = algorithm.fit(dataset)
+    val probabilities = model.transform(dataset).select("detailed_prediction.probabilities")
+    val Array(first, second) = probabilities.take(2)
+
+    dataset.schema.fields.find(_.name == "CAPSULE").get.dataType shouldEqual IntegerType
+    model.getDistribution() shouldEqual "bernoulli"
+    first should not equal second
   }
 
   test("H2OGBM with monotone constraints") {

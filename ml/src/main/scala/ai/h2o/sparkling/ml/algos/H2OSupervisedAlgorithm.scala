@@ -33,8 +33,6 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
 
   def getOffsetCol(): String
 
-  def getDistribution(): String
-
   def getWeightCol(): String
 
   def getFoldCol(): String
@@ -42,8 +40,6 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
   def setLabelCol(value: String): this.type
 
   def setOffsetCol(value: String): this.type
-
-  def setDistribution(value: String): this.type
 
   def setWeightCol(value: String): this.type
 
@@ -65,16 +61,6 @@ abstract class H2OSupervisedAlgorithm[P <: Model.Parameters: ClassTag] extends H
       getWeightCol() == null || getWeightCol() != getFoldCol(),
       "Specified weight column cannot be the same as the fold column!")
     transformedSchema
-  }
-
-  override protected def prepareH2OTrainFrameForFitting(trainFrame: H2OFrame): Unit = {
-    super.prepareH2OTrainFrameForFitting(trainFrame)
-    val distribution = DistributionFamily.valueOf(getDistribution())
-    if (distribution == DistributionFamily.bernoulli || distribution == DistributionFamily.multinomial) {
-      if (trainFrame.columns.find(_.name == getLabelCol()).get.dataType != H2OColumnType.`enum`) {
-        trainFrame.convertColumnsToCategorical(Array(getLabelCol()))
-      }
-    }
   }
 
   override def fit(dataset: Dataset[_]): H2OSupervisedMOJOModel = {

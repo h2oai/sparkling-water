@@ -137,13 +137,16 @@ trait AlgorithmConfigurations {
 
   def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
 
+    val withDistribution = "DistributionBasedH2OTrainFramePreparation"
+    val withFamily = "FamilyBasedH2OTrainFramePreparation"
+
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OXGBoost", classOf[XGBoostParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
-      ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
-      ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq.empty),
-      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq.empty),
-      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq.empty),
-      ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq.empty),
+      ("H2OXGBoost", classOf[XGBoostParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
+      ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
+      ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
+      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
+      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
+      ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
       ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
       ("H2OPCA", classOf[PCAParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
@@ -164,8 +167,8 @@ trait AlgorithmConfigurations {
       ("H2OXGBoost", Seq("distribution")),
       ("H2OGBM", Seq("distribution")),
       ("H2ODRF", Seq("distribution")),
-      ("H2OGLM", Seq("distribution", "family")),
-      ("H2OGAM", Seq("distribution", "family")),
+      ("H2OGLM", Seq("family")),
+      ("H2OGAM", Seq("family")),
       ("H2ODeepLearning", Seq("distribution")))
 
     for ((parameterEntityName, parametersToCheck) <- algorithms)
