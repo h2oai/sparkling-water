@@ -68,14 +68,13 @@ trait AlgorithmConfigurations {
     val lossByColNames = ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
     val gamCols = ExplicitField("gam_columns", "HasGamCols", null, None, Some("HasGamColsOnMOJO"))
     val validationLabelCol = ExplicitField("validation_response_column", "HasValidationLabelCol", "label")
-    val distribution = ExplicitField("distribution", "HasDistribution", "distribution")
     val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
 
     val deprecatedWeightCol = DeprecatedField("weights_col", "DeprecatedWeightCol", "weightCol", "3.34")
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
-    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs, distribution)
-    val gamFields = Seq(ignoredCols, betaConstraints, gamCols, distribution)
+    val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs)
+    val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
     val glrmFields = Seq(userX, userY, lossByColNames)
