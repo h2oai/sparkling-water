@@ -24,6 +24,7 @@ import java.util.jar.JarFile
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 object Runner {
   private def writeResultToFile(content: String, fileName: String, destinationDir: String) = {
@@ -41,11 +42,16 @@ object Runner {
     val featureTransformers = getParamClasses("ai.h2o.sparkling.ml.features")
     writeResultToFile(ParametersTocTreeTemplate(algorithms, featureTransformers), "parameters", destinationDir)
     for (algorithm <- algorithms) {
-      writeResultToFile(ParametersTemplate(algorithm), s"parameters_${algorithm.getSimpleName}", destinationDir)
+      val modelClassName = s"ai.h2o.sparkling.ml.models.${algorithm.getSimpleName}MOJOModel"
+      val model = Try(Class.forName(modelClassName)).toOption
+      val content = ParametersTemplate(algorithm, model)
+      writeResultToFile(content, s"parameters_${algorithm.getSimpleName}", destinationDir)
     }
     for (featureTransformer <- featureTransformers) {
+      val modelClassName = s"ai.h2o.sparkling.ml.models.${featureTransformer.getSimpleName}MOJOModel"
+      val model = Try(Class.forName(modelClassName)).toOption
       writeResultToFile(
-        ParametersTemplate(featureTransformer),
+        ParametersTemplate(featureTransformer, model),
         s"parameters_${featureTransformer.getSimpleName}",
         destinationDir)
     }

@@ -22,15 +22,15 @@ import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
 
 object ParametersTemplate {
-  def apply(entity: Class[_]): String = {
-    val entities = getListOfAffectedEntities(entity)
-    val caption = s"Parameters of ${entity.getSimpleName}"
+  def apply(algorithm: Class[_], mojoModel: Option[Class[_]]): String = {
+    val entities = getListOfAffectedEntities(algorithm)
+    val caption = s"Parameters of ${algorithm.getSimpleName}"
     val dashes = caption.toCharArray.map(_ => '-').mkString
     val classes = entities.map(c => s"- ``${c._2}``").mkString("\n")
     val classesCaption = if (entities.length > 1) "Affected Classes" else "Affected Class"
     val classesCaptionUnderLine = classesCaption.replaceAll(".", "#")
-    val content = getParametersContent(entity)
-    s""".. _parameters_${entity.getSimpleName}:
+    val content = getParametersContent(algorithm, mojoModel)
+    s""".. _parameters_${algorithm.getSimpleName}:
        |
        |$caption
        |$dashes
@@ -71,13 +71,15 @@ object ParametersTemplate {
     withRegressor
   }
 
-  private def getParametersContent(entity: Class[_]): String = {
-    val instance = entity.newInstance().asInstanceOf[Params]
-    instance.params
+  private def getParametersContent(algorithm: Class[_], mojoModel: Option[Class[_]]): String = {
+    val algorithmInstance = algorithm.newInstance().asInstanceOf[Params]
+    val mojoModelInstanceOption =
+      mojoModel.map(_.getConstructor(classOf[String]).newInstance("uid").asInstanceOf[Params])
+    algorithmInstance.params
       .filterNot(_.name == "withDetailedPredictionCol")
       .map { param =>
-        val defaultValue = if (instance.getDefault(param).isDefined) {
-          instance.getDefault(param).get
+        val defaultValue = if (algorithmInstance.getDefault(param).isDefined) {
+          algorithmInstance.getDefault(param).get
         } else {
           "No default value"
         }
@@ -86,9 +88,22 @@ object ParametersTemplate {
            |  ${param.doc.replace("\n ", "\n\n  - ")}
            |
            |  ${generateDefaultValue(defaultValue)}
+           |  ${generateMOJOComment(param.name, mojoModelInstanceOption)}
            |""".stripMargin
       }
       .mkString("\n")
+  }
+
+  private def generateMOJOComment(paramName: String, mojoModelInstanceOption: Option[Params]): String = {
+    mojoModelInstanceOption
+      .map { mojoModelInstance =>
+        if (mojoModelInstance.hasParam(paramName)) {
+          s"\n  *Also available on the trained model.*"
+        } else {
+          ""
+        }
+      }
+      .getOrElse("")
   }
 
   private def generateDefaultValue(value: Any): String = {
