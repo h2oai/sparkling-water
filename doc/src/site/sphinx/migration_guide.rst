@@ -38,7 +38,7 @@ From 3.32 to 3.34
 
 - The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
-- The ``weightCol`` parameter on ``H2OKmeans` was removed without a replacement.
+- The ``weightCol`` parameter on ``H2OKmeans`` was removed without a replacement.
 
 From 3.30.1 to 3.32
 -------------------
