@@ -14,6 +14,7 @@ trait Word2VecConfiguration extends AlgorithmConfigurations {
       classOf[Word2VecParameters],
       IgnoredParameters.all("H2OWord2Vec"),
       explicitFields = Seq.empty,
+      deprecatedFields = Seq.empty,
       explicitDefaultValues = explicitDefaultValues,
       typeExceptions = Map.empty,
       defaultValueSource = DefaultValueSource.Field,
