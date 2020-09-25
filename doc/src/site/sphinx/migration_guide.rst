@@ -43,6 +43,8 @@ From 3.32 to 3.34
 - The ``getTrainingParams`` method on ``H2OMOJOModel`` and inherited classes has been removed in Python and Scala API.
   Use a specific getter method for a given training parameter.
 
+- The ``distribution`` parameter on ``H2OGLM`` was removed without a replacement.
+
 From 3.30.1 to 3.32
 -------------------
 
