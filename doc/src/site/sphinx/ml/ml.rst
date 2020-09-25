@@ -22,6 +22,7 @@ Machine Learning
    :maxdepth: 2
 
    sw_target_encoder
+   sw_w2v
 
 **Uncategorized**
 

@@ -8,6 +8,7 @@ dependencies {
   implementation("ai.h2o:h2o-algos:${h2oVersion}")
   implementation("ai.h2o:h2o-automl:${h2oVersion}")
   implementation("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
   implementation(project(':sparkling-water-utils'))
 }

@@ -4,8 +4,15 @@
 
 	\section{Calling H2O Algorithms}
 
-	This section describes how to call H2O algorithms from Sparkling Water. In Scala and Python, Sparkling Water
+	This section describes how to call H2O algorithms and feature transformers from Sparkling Water. In Scala and Python, Sparkling Water
 	exposes H2O algorithms via its own API. In R, we still need to use H2O's R API.
+
+	Following feature transformers are exposed in Sparkling Water:
+
+	\begin{itemize}
+		\item H2OWord2Vec
+		\item H2OTargetEncoder
+	\end{itemize}
 
 	Currently, the following algorithms are exposed:
 
@@ -20,6 +27,8 @@
 		\item GLM
 		\item GLRM
 		\item PCA
+		\item GAM
+		\item Isolation Forest
 	\end{itemize}
 
 	In the exposed algorithms above, it is up on the users to decide whether they want to run classification or
@@ -38,6 +47,7 @@
 		\item \texttt{H2OGBMClassifier} and \texttt{H2OGBMRegressor}
 		\item \texttt{H2OGLMClassifier} and \texttt{H2OGLMRegressor}
 		\item \texttt{H2OXGBoostClassifier} and \texttt{H2OOXGBoostRegressor}
+		\item \texttt{H2OGAMClassifier} and \texttt{H2OGAMRegressor}
 	\end{itemize}
 
 	First, let's create H2OContext:

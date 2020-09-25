@@ -51,6 +51,32 @@ class H2OFrame private (
 
   def numberOfColumns: Int = columns.length
 
+  def convertColumnsToStrings(columns: Array[String]): H2OFrame = {
+    val indices = columnNames.zipWithIndex.toMap
+    val selectedIndices = columns.map { name =>
+      indices.getOrElse(name, throw new IllegalArgumentException(s"Column $name does not exist in the frame $frameId"))
+    }
+    convertColumnsToStrings(selectedIndices)
+  }
+
+  def convertColumnsToStrings(columnIndices: Array[Int]): H2OFrame = {
+    val nonExisting = columnIndices.filterNot(columns.indices.contains)
+    if (nonExisting.nonEmpty) {
+      throw new IllegalArgumentException(
+        s"Columns with indices ${nonExisting.mkString("[", ",", "]")} are not in the frame $frameId." +
+          s" The frame has ${columnNames.length} columns.")
+    }
+    val endpoint = getClusterEndpoint(conf)
+    if (columnIndices.isEmpty) {
+      this
+    } else {
+      val params = Map("ast" -> MessageFormat
+        .format(s"( assign {0} (:= {0} (as.character (cols {0} {1})) {1} []))", frameId, stringifyArray(columnIndices)))
+      val rapidsFrameV3 = update[RapidsFrameV3](endpoint, "99/Rapids", conf, params)
+      H2OFrame(rapidsFrameV3.key.name)
+    }
+  }
+
   def convertColumnsToCategorical(columns: Array[String]): H2OFrame = {
     val indices = columnNames.zipWithIndex.toMap
     val selectedIndices = columns.map { name =>

@@ -16,12 +16,13 @@
  */
 package ai.h2o.sparkling.ml.models
 
+import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.col
-import ai.h2o.sparkling.sql.functions.udf
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, Row}
+import scala.collection.mutable
 
 trait H2OMOJOPredictionWordEmbedding {
   self: H2OMOJOModel =>
@@ -30,13 +31,20 @@ trait H2OMOJOPredictionWordEmbedding {
     val schema = getWordEmbeddingPredictionSchema()
     val function = (r: Row) => {
       val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-      val pred = model.predictWord2Vec(RowConverter.toH2ORowData(r))
-      new GenericRowWithSchema(Array(pred.wordEmbeddings), schema)
+      val colIdx = model.m.getColIdx(getFeaturesCols().head)
+      val pred = if (r.getSeq[String](colIdx) == null) {
+        null
+      } else {
+        model.predictWord2Vec(r.getSeq[String](colIdx).toArray)
+      }
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
   }
 
-  private val predictionColType = DataTypes.createMapType(StringType, ArrayType(FloatType, containsNull = false))
+  private val predictionColType = ArrayType(FloatType, containsNull = false)
   private val predictionColNullable = true
 
   def getWordEmbeddingPredictionColSchema(): Seq[StructField] = {

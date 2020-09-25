@@ -37,6 +37,7 @@ object IgnoredParameters {
       case "H2OGBM" => Seq("checkpoint")
       case "H2ODRF" => Seq("checkpoint")
       case "H2OXGBoost" => Seq("checkpoint")
+      case "H2OWord2Vec" => Seq("pre_trained")
       case _ => Seq.empty
     }
   }

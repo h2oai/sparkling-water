@@ -60,12 +60,12 @@ trait H2OMOJOFlattenedInput {
 
     flatDataFrame.schema.fields.foreach { field =>
       field.dataType match {
+        case _ if inputs.contains(field.name) => result.append(field.name)
         case _: BinaryType => addIfPrefixExists(field.name)
         case _: ArrayType => addIfPrefixExists(field.name)
         case _: MapType => addIfPrefixExists(field.name)
         case v if ExposeUtils.isAnyVectorUDT(v) => addIfPrefixExists(field.name)
-        case _ if inputs.contains(field.name) => result.append(field.name)
-        case _ => {}
+        case _ =>
       }
     }
     result.toArray

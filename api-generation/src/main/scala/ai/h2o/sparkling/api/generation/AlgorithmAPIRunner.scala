@@ -17,13 +17,15 @@
 
 package ai.h2o.sparkling.api.generation
 
-import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, GridSearchConfiguration}
+import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, GridSearchConfiguration, SubstitutionContextBase, Word2VecConfiguration}
+import ai.h2o.sparkling.api.generation.python.Word2VecTemplate
 
 object AlgorithmAPIRunner
   extends APIRunnerBase
   with AlgorithmConfigurations
   with GridSearchConfiguration
-  with AutoMLConfiguration {
+  with AutoMLConfiguration
+  with Word2VecConfiguration {
 
   private val algorithmTemplates = Map("scala" -> scala.AlgorithmTemplate, "py" -> python.AlgorithmTemplate)
 
@@ -35,6 +37,8 @@ object AlgorithmAPIRunner
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
     val destinationDir = args(1)
+
+    generateWord2Vec(languageExtension, destinationDir)
 
     for (substitutionContext <- parametersConfiguration) {
       val content = parameterTemplates(languageExtension)(substitutionContext)
@@ -90,6 +94,22 @@ object AlgorithmAPIRunner
     if (languageExtension != "scala") {
       val content = algorithmTemplates(languageExtension)(gridSearchAlgorithmContext, gridSearchParameterConfiguration)
       writeResultToFile(content, gridSearchAlgorithmContext, languageExtension, destinationDir)
+    }
+  }
+
+  private def generateWord2Vec(languageExtension: String, destinationDir: String): Unit = {
+    val w2vContext = word2VecParametersSubstitutionContext
+    val content = parameterTemplates(languageExtension)(w2vContext)
+    writeResultToFile(content, w2vContext, languageExtension, destinationDir)
+
+    if (languageExtension != "scala") {
+      val content = Word2VecTemplate.apply()
+      val context = new SubstitutionContextBase {
+        override def namespace: String = "ai.h2o.sparkling.ml.features"
+
+        override def entityName: String = "H2OWord2Vec"
+      }
+      writeResultToFile(content, context, languageExtension, destinationDir)
     }
   }
 }
