@@ -38,6 +38,7 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   extends Estimator[H2OMOJOModel]
   with H2OCommonParams
   with H2OAlgoCommonUtils
+  with H2OTrainFramePreparation
   with DefaultParamsWritable
   with RestCommunication {
 
@@ -47,8 +48,6 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
   protected def paramTag: ClassTag[P]
 
   protected var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
-
-  protected def prepareH2OTrainFrameForFitting(frame: H2OFrame): Unit = {}
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     val (train, valid) = prepareDatasetForFitting(dataset)

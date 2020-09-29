@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -106,5 +107,20 @@ class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     H2OModel.modelExists(key1) shouldBe true
     H2OModel.modelExists(key2) shouldBe true
     H2OModel.modelExists(key3) shouldBe true
+  }
+
+  test("H2OGLM converts labelCol to categorical when the binomial family is set") {
+    val algorithm = new H2OGLM()
+      .setFamily("binomial")
+      .setLabelCol("CAPSULE")
+
+    // If the labelCol wasn't converted from numeric(IntegerType) to categorical, the fit method would fail.
+    val model = algorithm.fit(dataset)
+    val probabilities = model.transform(dataset).select("detailed_prediction.probabilities")
+    val Array(first, second) = probabilities.take(2)
+
+    dataset.schema.fields.find(_.name == "CAPSULE").get.dataType shouldEqual IntegerType
+    model.getFamily() shouldEqual "binomial"
+    first should not equal second
   }
 }

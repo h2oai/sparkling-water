@@ -15,12 +15,6 @@
 # limitations under the License.
 #
 
-from pyspark.ml.param import *
 
-class HasDistribution:
-
-    def getGamCols(self):
-        return "AUTO"
-
-    def setGamCols(self, value):
-        return self
+class FamilyBasedH2OTrainFramePreparation:
+    pass
