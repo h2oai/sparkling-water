@@ -64,28 +64,16 @@ class H2OGridSearchParams(
         javaAlgo = self._java_obj.getAlgo()
         if javaAlgo is None:
             return None
-        algoName = javaAlgo.parameters().algoName()
-        if algoName == "GBM":
-            from ai.h2o.sparkling.ml.algos import H2OGBM
-            algo = H2OGBM()
-        elif algoName == "DeepLearning":
-            from ai.h2o.sparkling.ml.algos import H2ODeepLearning
-            algo = H2ODeepLearning()
-        elif algoName == "XGBoost":
-            from ai.h2o.sparkling.ml.algos import H2OXGBoost
-            algo = H2OXGBoost()
-        elif algoName == "GLM":
-            from ai.h2o.sparkling.ml.algos import H2OGLM
-            algo = H2OGLM()
-        elif algoName == "DRF":
-            from ai.h2o.sparkling.ml.algos import H2ODRF
-            algo = H2ODRF()
-        elif algoName == "KMeans":
-            from ai.h2o.sparkling.ml.algos import H2OKMeans
-            algo = H2OKMeans()
+        algoName = javaAlgo.getClass().getSimpleName()
+        if algoName.endswith("Classifier"):
+            import ai.h2o.sparkling.ml.algos.classification
+            algo = getattr(ai.h2o.sparkling.ml.algos.classification, algoName)()
+        elif algoName.endswith("Regressor"):
+            import ai.h2o.sparkling.ml.algos.regression
+            algo = getattr(ai.h2o.sparkling.ml.algos.regression, algoName)()
         else:
-            raise ValueError('Unsupported algorithm for H2OGridSearch')
-
+            import ai.h2o.sparkling.ml.algos
+            algo = getattr(ai.h2o.sparkling.ml.algos, algoName)()
         algo._resetUid(javaAlgo.uid())
         algo._java_obj = javaAlgo
         algo._transfer_params_from_java()
