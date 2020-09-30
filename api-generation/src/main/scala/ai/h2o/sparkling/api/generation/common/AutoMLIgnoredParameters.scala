@@ -28,6 +28,7 @@ object AutoMLIgnoredParameters {
       "blending_frame",
       "leaderboard_frame",
       "monotone_constraints",
+      "preprocessing",
       "stopping_criteria",
       "modeling_plan",
       "algo_parameters")
