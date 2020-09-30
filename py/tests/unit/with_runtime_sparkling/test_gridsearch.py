@@ -21,7 +21,7 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import col
 from pysparkling.ml.algos import H2OGridSearch, H2OGBM, H2OXGBoost, H2ODeepLearning, H2OGLM, H2OGAM, H2ODRF, H2OKMeans
 from pysparkling.ml.algos.classification import H2ODRFClassifier
-from pysparkling.ml.algos.regression import H2ODRFRegressor
+from pysparkling.ml.algos.regression import H2ODRFRegressor, H2OGBMRegressor
 
 from tests.unit.with_runtime_sparkling.algo_test_utils import *
 from tests import unit_test_utils
@@ -188,3 +188,14 @@ def testGridSearchWithDRFClassifierBehavesDiffenrentlyThanGridSearchWithDRFRegre
     classificationDataset = classificationModel.transform(testingDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
+
+
+def testGridSearchGetAlgoIsAbleToReturnAlgorithmOfVariousTypes():
+    grid = H2OGridSearch(algo=H2ODRFClassifier())
+    assert grid.getAlgo().__class__.__name__ == "H2ODRFClassifier"
+
+    grid.setAlgo(H2OKMeans())
+    assert grid.getAlgo().__class__.__name__ == "H2OKMeans"
+
+    grid.setAlgo(H2OGBMRegressor())
+    assert grid.getAlgo().__class__.__name__ == "H2OGBMRegressor"
