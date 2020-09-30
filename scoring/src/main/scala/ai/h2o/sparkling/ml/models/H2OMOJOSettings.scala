@@ -29,7 +29,9 @@ case class H2OMOJOSettings(
     withContributions: Boolean = false,
     withLeafNodeAssignments: Boolean = false,
     withStageResults: Boolean = false,
-    withReconstructedData: Boolean = false)
+    withReconstructedData: Boolean = false,
+    removeModel: Boolean = false,
+    expandNamedMojoOutputColumns: Boolean = false)
 
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()

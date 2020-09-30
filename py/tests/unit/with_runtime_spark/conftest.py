@@ -31,3 +31,8 @@ def spark(spark_conf):
 def prostateDataset(spark):
     return spark.read.csv("file://" + os.path.abspath("../examples/smalldata/prostate/prostate.csv"),
                           header=True, inferSchema=True)
+
+@pytest.fixture(scope="module")
+def creditsDataset(spark):
+    return spark.read.csv("file://" + os.path.abspath("../examples/smalldata/creditcard.csv"),
+                          header=True, inferSchema=True)

@@ -21,7 +21,9 @@ import java.sql.{Date, Timestamp}
 
 import ai.h2o.mojos.runtime.frame.MojoColumn
 import ai.h2o.mojos.runtime.utils.MojoDateTime
-import ai.h2o.sparkling.SparkTestContext
+import ai.h2o.sparkling.ml.algos.H2OAutoML
+import ai.h2o.sparkling.{SparkTestContext, TestUtils}
+import org.apache.spark.h2o.H2OContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -33,14 +35,15 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
-  override def createSparkSession(): SparkSession = sparkSession("local[*]")
+  override def createSparkSession(): SparkSession =
+    sparkSession("local[*]", defaultSparkConf.set("spark.sql.codegen.wholeStage", "false"))
 
   test("Test columns names and numbers") {
     val df =
       spark.read
         .option("header", "true")
         .option("inferSchema", value = true)
-        .csv("examples/smalldata/prostate/prostate.csv")
+        .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     H2OMOJOPipelineModel.createFromMojo(
@@ -74,7 +77,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
   test("Basic Mojo Pipeline Prediction") {
     // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojoSettings = H2OMOJOSettings(namedMojoOutputColumns = false)
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -113,7 +116,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
   test("Verify that output columns are correct when using the named columns") {
     // Test data
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojoSettings = H2OMOJOSettings()
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -155,7 +158,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   test("Selection using udf on non-existent column") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -170,7 +173,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   test("Testing dataset is missing one of feature columns") {
     val schema = spark.read
       .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       .drop("AGE")
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -188,7 +191,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   test("Testing dataset has an extra feature column") {
     val schema = spark.read
       .option("header", "true")
-      .csv("examples/smalldata/prostate/prostate.csv")
+      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
       .withColumn("EXTRA", lit("extra"))
       .schema
     val mojo = H2OMOJOPipelineModel.createFromMojo(
@@ -207,7 +210,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
     * The purpose of this test is to simply pass and don't throw NullPointerException
     */
   test("Prediction with null as row element") {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     // Test mojo
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
@@ -273,7 +276,7 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   }
 
   private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
-    val df = spark.read.option("header", "true").csv("examples/smalldata/prostate/prostate.csv")
+    val df = spark.read.option("header", "true").csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     val mojo = H2OMOJOPipelineModel.createFromMojo(
       this.getClass.getClassLoader.getResourceAsStream("mojo2data/pipeline.mojo"),
       "prostate_pipeline.mojo",
@@ -293,5 +296,59 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
   test("Transform and transformSchema methods are aligned - namedMojoOutputColumns is enabled") {
     val settings = H2OMOJOSettings()
     testTransformAndTransformSchemaAreAligned(settings)
+  }
+
+  test("Test distributed pipeline") {
+    // Test mojo
+    // Notes:
+    //   - Need to disable stage codegen: 'spark.sql.codegen.wholeStage' = false
+    //   - Also need schema from MOJO to assembly proper inputs for algos
+    //   - there is no way how to get output columns from MOJO at this point
+    //   - TODO: the MOJO should provide training schema, also scoring schema
+
+    // Load the MOJO
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("pipeline_credit.mojo"),
+      "creditcard",
+      H2OMOJOSettings(removeModel = true, expandNamedMojoOutputColumns = true))
+
+    // Create Input Dataset
+    val trainingDataset = spark.read
+      .option("inferSchema", value = true) // our internal logic converts types to ones required by MOJO2
+      .option("header", value = true)
+      .csv(TestUtils.locate("smalldata/creditcard.csv"))
+    println(f"Training data schema: ${trainingDataset.schema}")
+
+    trainingDataset.show(10)
+    mojo.transform(trainingDataset).printSchema()
+    mojo.transformSchema(trainingDataset.schema).printTreeString()
+    assert(mojo.transform(trainingDataset).schema === mojo.transformSchema(trainingDataset.schema))
+
+    println("-------------- MOJO ----------")
+    println(f"Transformation input: ${mojo.getFeaturesCols().mkString(",")}")
+    println(f"Transformation output: ${mojo.getOutputCols().mkString(",")}")
+
+    H2OContext.getOrCreate()
+    //TODO: Mojo2 should provide API to get label column
+    val labelCol = "default payment next month"
+    //TODO: Would be nice if mojo2 API provides this list, such as: trainingColumns
+    val featuresCols = mojo.getFeaturesCols() ++ mojo.getOutputCols() ++ Array(labelCol)
+    val model = new H2OAutoML()
+      .setLabelCol(labelCol)
+      .setMaxModels(3)
+      .setFeaturesCols(featuresCols)
+    println("Model feature columns:")
+    println(model.getFeaturesCols().mkString("\n"))
+
+    // Run the pipeline
+    val pipeline = new Pipeline()
+    pipeline.setStages(Array(mojo, model))
+
+    val pipelineModel = pipeline.fit(trainingDataset)
+    pipelineModel.write.overwrite().save(s"ml/build/pipelineModel.${pipeline.uid}")
+
+    val loadedPipeline = PipelineModel.load(s"ml/build/pipelineModel.${pipeline.uid}")
+    val predictions = loadedPipeline.transform(trainingDataset)
+    predictions.show(10)
   }
 }
