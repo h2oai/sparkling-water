@@ -68,7 +68,8 @@ class H2OAutoML(override val uid: String)
     // Removing "include_algos", "exclude_algos" from s H2OAutoMLBuildModelsParams since an effective set algorithms
     // needs to be calculated and stored into "include_algos". The "exclude_algos" are then reset to null and both
     // altered parameters are added to the result.
-    val essentialParameters = getH2OAutoMLBuildModelsParams() - ("include_algos", "exclude_algos")
+    val essentialParameters =
+      getH2OAutoMLBuildModelsParams() ++ getPreProcessingParams() - ("include_algos", "exclude_algos")
 
     essentialParameters ++ Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ extra
   }

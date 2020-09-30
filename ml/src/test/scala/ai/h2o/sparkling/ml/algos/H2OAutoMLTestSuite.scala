@@ -82,4 +82,18 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     val model = automl.fit(dataset)
     model.transform(dataset).collect()
   }
+
+  test("TargetEncoding configuration on AutoML is propagated to backend") {
+    val automl = new H2OAutoML()
+      .setLabelCol("CAPSULE")
+      .setIgnoredCols(Array("ID"))
+      .setExcludeAlgos(Array("GLM"))
+      .setPreProcessing(Array("TargetEncoding"))
+      .setNfolds(3)
+      .setMaxModels(15)
+
+    automl.fit(dataset.withColumn("CAPSULE", 'CAPSULE.cast("string")))
+    val numberOfModelsWithTE = automl.getLeaderboard().filter('model_id.like("%TargetEncoder%")).count()
+    assert(numberOfModelsWithTE > 0)
+  }
 }

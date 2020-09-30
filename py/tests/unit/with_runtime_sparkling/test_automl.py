@@ -91,8 +91,8 @@ def testH2OAutoMLRegressorBehavesTheSameAsGenericH2OAutoMLOnNumericLabelColumn(p
     referenceModel = automl.fit(trainingDateset)
     referenceDataset = referenceModel.transform(testingDataset)
 
-    classifier = setParametersForTesting(H2OAutoMLRegressor())
-    model = classifier.fit(trainingDateset)
+    regressor = setParametersForTesting(H2OAutoMLRegressor())
+    model = regressor.fit(trainingDateset)
     result = model.transform(testingDataset)
 
     unit_test_utils.assert_data_frames_are_identical(referenceDataset, result)
@@ -110,3 +110,19 @@ def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDat
     classificationDataset = classificationModel.transform(testingDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
+
+
+def testH2OAutoMLClassifierIsAbleToUseTargetEncoding(prostateDataset):
+    classifierWithTE = setParametersForTesting(H2OAutoMLClassifier(preProcessing=["TargetEncoding"])).setMaxModels(10)
+    classifierWithTE.fit(prostateDataset)
+    leaderboard = classifierWithTE.getLeaderboard()
+    numberOfTEModels = leaderboard.filter(leaderboard.model_id.like("%TargetEncoder%")).count()
+    assert numberOfTEModels > 0
+
+
+def testH2OAutoMLRegressorReturnsDifferentResultWithTargetEncoder(prostateDataset):
+    regressorWithTE = setParametersForTesting(H2OAutoMLRegressor(preProcessing=["TargetEncoding"])).setMaxModels(10)
+    regressorWithTE.fit(prostateDataset)
+    leaderboard = regressorWithTE.getLeaderboard()
+    numberOfTEModels = leaderboard.filter(leaderboard.model_id.like("%TargetEncoder%")).count()
+    assert numberOfTEModels > 0

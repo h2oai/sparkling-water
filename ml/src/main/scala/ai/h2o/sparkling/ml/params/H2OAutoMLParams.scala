@@ -23,3 +23,4 @@ trait H2OAutoMLParams
   with H2OAutoMLInputParams
   with H2OAutoMLStoppingCriteriaParams
   with HasMonotoneConstraints
+  with HasPreProcessing
