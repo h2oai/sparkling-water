@@ -47,8 +47,16 @@ class H2OMOJOModelParallelTestSuite extends FunSuite with SparkTestContext {
 
     val threads = for (i <- 0 until numberOfThreads) yield {
       // Scala Futures could be used here, but they don't guarantee the parallel execution.
-      val thread = new Thread(() => results(i) = scoreWithBinomialModel())
-      thread.setUncaughtExceptionHandler((_, exception) => exceptions(i) = exception)
+      val thread = new Thread {
+        override def run(): Unit = {
+          results(i) = scoreWithBinomialModel()
+        }
+      }
+      thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler {
+        override def uncaughtException(t: Thread, exception: Throwable): Unit = {
+          exceptions(i) = exception
+        }
+      })
       thread.start()
       thread
     }
