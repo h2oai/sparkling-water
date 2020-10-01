@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.{SparkTestContext, TestUtils}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
