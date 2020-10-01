@@ -55,7 +55,7 @@ class H2OMOJOModelParallelTestSuite extends FunSuite with SparkTestContext {
 
     threads.foreach(_.join())
 
-    for((exception, i) <- exceptions.zipWithIndex if exception != null) {
+    for ((exception, i) <- exceptions.zipWithIndex if exception != null) {
       throw new AssertionError(s"The thread $i has thrown an exception.", exception)
     }
 
