@@ -21,35 +21,62 @@ import ai.h2o.sparkling.backend.utils.SupportedTypes
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.ExposeUtils
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 import water.fvec.Vec
-import water.parser.{BufferedString, PreviewParseWriter}
+import water.parser.{BufferedString, Categorical, PreviewParseWriter}
 
 private[backend] object DataTypeConverter {
 
-  private def stringTypesToExpectedTypes(rdd: RDD[Row], schema: StructType): Map[Int, ExpectedType] = {
+  private def stringTypesToExpectedTypes(dataFrame: DataFrame): Map[Int, ExpectedType] = {
     val stringTypeIndices = for {
-      (field, index) <- schema.fields.zipWithIndex
+      (field, index) <- dataFrame.schema.fields.zipWithIndex
       if field.dataType == StringType
     } yield index
 
+    val rdd = dataFrame.rdd
     val types = if (rdd.getNumPartitions > 0) {
       val serializedPreview = rdd
         .mapPartitions[Array[Byte]](createPartitionPreview(_, stringTypeIndices))
         .reduce(mergePartitionPreview)
 
       val preview = CategoricalPreviewWriter.deserialize(serializedPreview)
-      preview.guessTypes().map {
+      val typesFromPreview = preview.guessTypes().map {
         case Vec.T_CAT => ExpectedTypes.Categorical
         case _ => ExpectedTypes.String
       }
+      correctCategoricalTypesForTooHighCardinality(dataFrame, typesFromPreview)
     } else {
       stringTypeIndices.map(_ => ExpectedTypes.String)
     }
 
     stringTypeIndices.zip(types).toMap
+  }
+
+  private def correctCategoricalTypesForTooHighCardinality(
+    dataFrame: DataFrame,
+    expectedTypes: Array[ExpectedType]): Array[ExpectedType] = {
+    val stringColumns = dataFrame.schema.fields.filter(_.dataType == StringType).map(_.name).zipWithIndex
+    val categoricalColumns = stringColumns.zip(expectedTypes).filter(_._2 == ExpectedTypes.Categorical).map(_._1)
+    val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
+
+    val allowedError = 0.05 // Spark default on approx_count_distinct
+
+    // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
+    // and the approximate count won't be above threshold.
+    val threshold = Categorical.MAX_CATEGORICAL_COUNT * (1 + allowedError + 0.01)
+    val queries = categoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
+    val contraventions = dataFrame.select(queries: _*).head().toSeq
+    val contraventionMap = categoricalIndices.zip(contraventions).toMap
+
+    for ((expectedType, index) <- expectedTypes.zipWithIndex) yield {
+      if (expectedType == ExpectedTypes.Categorical) {
+        if (contraventionMap(index) == true) ExpectedTypes.String else ExpectedTypes.Categorical
+      } else {
+        expectedType
+      }
+    }
   }
 
   private def createPartitionPreview(rows: Iterator[Row], stringTypeIndices: Array[Int]): Iterator[Array[Byte]] = {
@@ -83,9 +110,9 @@ private[backend] object DataTypeConverter {
     CategoricalPreviewWriter.serialize(result)
   }
 
-  def determineExpectedTypes(rdd: RDD[Row], schema: StructType): Array[ExpectedType] = {
-    val stringTypes = stringTypesToExpectedTypes(rdd, schema)
-    schema.zipWithIndex.map {
+  def determineExpectedTypes(dataFrame: DataFrame): Array[ExpectedType] = {
+    val stringTypes = stringTypesToExpectedTypes(dataFrame)
+    dataFrame.schema.zipWithIndex.map {
       case (field, index) =>
         field.dataType match {
           case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>

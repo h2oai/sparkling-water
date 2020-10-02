@@ -43,7 +43,7 @@ object SparkDataFrameConverter extends Logging {
   def toH2OFrame(hc: H2OContext, dataFrame: DataFrame, frameKeyName: Option[String]): H2OFrame = {
     val df = dataFrame.toDF() // Because of PySparkling, we can receive Dataset[Primitive] in this method, ensure that
     // we are dealing with Dataset[Row]
-    val flatDataFrame = flattenDataFrame(df)
+    val flatDataFrame = flattenDataFrame(df).cache()
 
     val elemMaxSizes = collectMaxElementSizes(flatDataFrame)
     val vecIndices = collectVectorLikeTypes(flatDataFrame.schema).toArray
@@ -51,9 +51,10 @@ object SparkDataFrameConverter extends Logging {
     val colNames = flattenSchema.map(_.name).toArray
     val maxVecSizes = vecIndices.map(elemMaxSizes(_))
 
-    val rdd = flatDataFrame.rdd
-    val expectedTypes = DataTypeConverter.determineExpectedTypes(rdd, flatDataFrame.schema)
+    val expectedTypes = DataTypeConverter.determineExpectedTypes(flatDataFrame)
 
+    val rdd = flatDataFrame.rdd
+    flatDataFrame.unpersist()
     val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + scala.util.Random.nextInt())
     val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
     Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
