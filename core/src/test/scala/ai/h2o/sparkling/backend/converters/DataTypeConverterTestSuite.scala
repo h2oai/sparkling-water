@@ -35,35 +35,25 @@ class DataTypeConverterTestSuite extends FunSuite with SparkTestContext with Mat
   import spark.implicits._
 
   test("Columns with to many categorical level are be treated as strings") {
-    val dataFrame = spark
-      .range(Categorical.MAX_CATEGORICAL_COUNT * 4)
-      .select(
-        'id.cast(StringType) as "col1",
-        ('id mod (Categorical.MAX_CATEGORICAL_COUNT * 2)).cast(StringType) as "col2",
-        ('id mod (Categorical.MAX_CATEGORICAL_COUNT * 1.07)).cast(StringType) as "col3",
-        ('id mod (Categorical.MAX_CATEGORICAL_COUNT)).cast(StringType) as "col4")
-
-    val result = DataTypeConverter.determineExpectedTypes(dataFrame)
-
-    result(0) shouldEqual ExpectedTypes.String
-    result(1) shouldEqual ExpectedTypes.String
-    result(2) shouldEqual ExpectedTypes.String
-    result(3) shouldEqual ExpectedTypes.Categorical
+    myTest(
+      Categorical.MAX_CATEGORICAL_COUNT / 10,
+      (ExpectedTypes.String, ExpectedTypes.Categorical, ExpectedTypes.Categorical))
   }
 
-  test("Unique string columns are treated as strings, otherwise as categoricals") {
-    val numberOfRows = 1000000
-    val dataFrame = spark
-      .range(numberOfRows)
+  def myTest(number: Int, expectedColumnTypes: (ExpectedType, ExpectedType, ExpectedType)): Unit = {
+    val n = (number * 1.07).asInstanceOf[Int]
+    val dataframe = spark
+      .range(number * 4)
       .select(
         'id.cast(StringType) as "col1",
-        ('id mod (numberOfRows / 2)).cast(StringType) as "col2",
-        ('id mod (numberOfRows / 4)).cast(StringType) as "col3")
+        ('id mod (number * 2)).cast(StringType) as "col2",
+        ('id mod n).cast(StringType) as "col3")
+    dataframe.show()
 
-    val result = DataTypeConverter.determineExpectedTypes(dataFrame)
+    val result = DataTypeConverter.determineExpectedTypes(dataframe)
 
-    result(0) shouldEqual ExpectedTypes.String
-    result(1) shouldEqual ExpectedTypes.Categorical
-    result(2) shouldEqual ExpectedTypes.Categorical
+    result(0) shouldEqual expectedColumnTypes._1
+    result(1) shouldEqual expectedColumnTypes._2
+    result(2) shouldEqual expectedColumnTypes._3
   }
 }

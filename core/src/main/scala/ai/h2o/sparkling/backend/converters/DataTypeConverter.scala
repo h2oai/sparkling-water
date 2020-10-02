@@ -59,23 +59,28 @@ private[backend] object DataTypeConverter {
       expectedTypes: Array[ExpectedType]): Array[ExpectedType] = {
     val stringColumns = dataFrame.schema.fields.filter(_.dataType == StringType).map(_.name).zipWithIndex
     val categoricalColumns = stringColumns.zip(expectedTypes).filter(_._2 == ExpectedTypes.Categorical).map(_._1)
-    val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
 
-    val allowedError = 0.05 // Spark default on approx_count_distinct
+    if (categoricalColumns.nonEmpty) {
+      val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
 
-    // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
-    // and the approximate count won't be above threshold.
-    val threshold = Categorical.MAX_CATEGORICAL_COUNT * (1 + allowedError + 0.01)
-    val queries = categoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
-    val contraventions = dataFrame.select(queries: _*).head().toSeq
-    val contraventionMap = categoricalIndices.zip(contraventions).toMap
+      val allowedError = 0.05 // Spark default on approx_count_distinct
 
-    for ((expectedType, index) <- expectedTypes.zipWithIndex) yield {
-      if (expectedType == ExpectedTypes.Categorical) {
-        if (contraventionMap(index) == true) ExpectedTypes.String else ExpectedTypes.Categorical
-      } else {
-        expectedType
+      // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
+      // and the approximate count won't be above threshold.
+      val threshold = Categorical.MAX_CATEGORICAL_COUNT * (1 + allowedError + 0.01)
+      val queries = categoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
+      val contraventions = dataFrame.select(queries: _*).head().toSeq
+      val contraventionMap = categoricalIndices.zip(contraventions).toMap
+
+      for ((expectedType, index) <- expectedTypes.zipWithIndex) yield {
+        if (expectedType == ExpectedTypes.Categorical) {
+          if (contraventionMap(index) == true) ExpectedTypes.String else ExpectedTypes.Categorical
+        } else {
+          expectedType
+        }
       }
+    } else {
+      expectedTypes
     }
   }
 
