@@ -66,7 +66,7 @@ trait H2OMOJOBaseCache[B, M] extends Logging {
 
   logDebug("Cleaner thread for unused MOJOs started.")
 
-  def startCleanupThread(): Unit = {
+  def startCleanupThread(): Unit = Lock.synchronized {
     if (!cleanerThread.isAlive) {
       cleanerThread.setDaemon(true)
       cleanerThread.start()
