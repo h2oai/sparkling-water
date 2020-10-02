@@ -55,8 +55,8 @@ private[backend] object DataTypeConverter {
   }
 
   private def correctCategoricalTypesForTooHighCardinality(
-    dataFrame: DataFrame,
-    expectedTypes: Array[ExpectedType]): Array[ExpectedType] = {
+      dataFrame: DataFrame,
+      expectedTypes: Array[ExpectedType]): Array[ExpectedType] = {
     val stringColumns = dataFrame.schema.fields.filter(_.dataType == StringType).map(_.name).zipWithIndex
     val categoricalColumns = stringColumns.zip(expectedTypes).filter(_._2 == ExpectedTypes.Categorical).map(_._1)
     val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
