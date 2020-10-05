@@ -19,7 +19,6 @@ package ai.h2o.sparkling.backend.converters
 
 import ai.h2o.sparkling.SparkTestContext
 import ai.h2o.sparkling.extensions.serde.ExpectedTypes
-import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StringType
 import org.junit.runner.RunWith

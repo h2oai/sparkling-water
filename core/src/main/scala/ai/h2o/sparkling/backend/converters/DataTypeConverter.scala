@@ -63,7 +63,7 @@ private[backend] object DataTypeConverter {
     if (categoricalColumns.nonEmpty) {
       val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
 
-      val allowedError = 0.05 // Spark default on approx_count_distinct
+      val allowedError = 0.2
 
       // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
       // and the approximate count won't be above threshold.
