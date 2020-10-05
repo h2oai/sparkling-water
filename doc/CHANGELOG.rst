@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+v3.30.1.3-1 (2020-10-05)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.30.1.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.30.1.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.30.1.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.30.1.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.30.1.3-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2456 <https://0xdata.atlassian.net/browse/SW-2456>`__ - Upgrade to H2O 3.30.1.3
+
+-  Bug
+
+   -  `SW-2455 <https://0xdata.atlassian.net/browse/SW-2455>`__ - Parallel MOJO Scoring Throws  IllegalThreadStateException
+
 v3.30.1.2-1 (2020-09-08)
 ------------------------
 Downloads:
