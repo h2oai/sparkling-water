@@ -68,7 +68,8 @@ private[backend] object DataTypeConverter {
       // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
       // and the approximate count won't be above threshold.
       val threshold = Categorical.MAX_CATEGORICAL_COUNT * (1 + allowedError + 0.01)
-      val queries = categoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
+      val escapedCategoricalNames = categoricalNames.map(s => s"`$s`")
+      val queries = escapedCategoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
       val contraventions = dataFrame.select(queries: _*).head().toSeq
       val contraventionMap = categoricalIndices.zip(contraventions).toMap
 
