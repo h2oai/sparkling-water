@@ -208,6 +208,18 @@ trait H2OMOJOModelUtils {
     H2OModelCategory.fromString(json.get("model_category").getAsString)
   }
 
+  protected def extractFeatureTypes(modelJson: JsonObject): Map[String, String] = {
+    val output = modelJson.get("output").getAsJsonObject
+    val names = output.getAsJsonArray("names").asScala.map(_.getAsString)
+    val columnTypesJsonArray = output.getAsJsonArray("column_types")
+    if (columnTypesJsonArray != null) {
+      val types = columnTypesJsonArray.asScala.map(_.getAsString)
+      names.zip(types).toMap
+    } else {
+      Map.empty[String, String]
+    }
+  }
+
   private def stringifyJSON(value: JsonElement): Option[String] = {
     value match {
       case v: JsonPrimitive => Some(v.getAsString)
@@ -242,6 +254,7 @@ object H2OMOJOModel
     createFromMojo(mojoFile, uid, settings)
   }
 
+
   def createFromMojo(mojo: File, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojo)
     val model = createSpecificMOJOModel(uid, mojoModel._algoName)
@@ -252,8 +265,10 @@ object H2OMOJOModel
     val modelDetails = getModelDetails(modelJson)
     val modelCategory = extractModelCategory(modelJson)
     val trainingParams = extractParams(modelJson)
+    val featureTypes = extractFeatureTypes(modelJson)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
+    model.set(model.featureTypes -> featureTypes.asJava)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
