@@ -254,7 +254,6 @@ object H2OMOJOModel
     createFromMojo(mojoFile, uid, settings)
   }
 
-
   def createFromMojo(mojo: File, uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojoModel = Utils.getMojoModel(mojo)
     val model = createSpecificMOJOModel(uid, mojoModel._algoName)
