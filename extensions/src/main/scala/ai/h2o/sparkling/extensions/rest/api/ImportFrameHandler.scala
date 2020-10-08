@@ -17,14 +17,15 @@
 
 package ai.h2o.sparkling.extensions.rest.api
 
-import ai.h2o.sparkling.extensions.internals.{CollectCategoricalDomainsTask, UpdateCategoricalIndicesTask}
+import ai.h2o.sparkling.extensions.internals.{CollectCategoricalDomainsTask, ConvertCategoricalToStringColumnsTask, UpdateCategoricalIndicesTask}
 import ai.h2o.sparkling.extensions.rest.api.schema.{FinalizeFrameV3, InitializeFrameV3, UploadPlanV3}
 import ai.h2o.sparkling.utils.Base64Encoding
 import water.{DKV, Key}
 import water.api.Handler
-import water.fvec.{ChunkUtils, Frame, Vec}
-import water.parser.Categorical
+import water.fvec.{AppendableVec, ChunkUtils, Frame, Vec}
 import water.util.Log
+
+import scala.collection.mutable.ArrayBuffer
 
 class ImportFrameHandler extends Handler {
   def initialize(version: Int, request: InitializeFrameV3): InitializeFrameV3 = {
@@ -42,27 +43,64 @@ class ImportFrameHandler extends Handler {
     collectDomainsTask.doAllNodes()
     val stringDomains = collectDomainsTask.getDomains()
     val domains = expandDomains(stringDomains, columnTypes)
+    val frame = DKV.getGet[Frame](frameKey)
+
+    // Convert unique categorical columns with too many categorical levels to T_STR
+    val indicesOfChanges = refineDataTypesAndReturnIndicesOfChanges(columnTypes, stringDomains, frame.names())
+    if (indicesOfChanges.nonEmpty) {
+      val vectorsToBeConvertedToString = indicesOfChanges.map(frame.vec(_))
+      val domainIndices = for ((domain, idx) <- stringDomains.zipWithIndex if domain == null) yield idx
+      val convertCategoricalToStringColumnsTask = new ConvertCategoricalToStringColumnsTask(frameKey, domainIndices)
+      convertCategoricalToStringColumnsTask.doAll(Vec.T_STR, vectorsToBeConvertedToString: _*)
+      val newVectors = AppendableVec.closeAll(convertCategoricalToStringColumnsTask.appendables())
+      for ((newVector, index) <- newVectors.zip(indicesOfChanges)) {
+        val oldVector = frame.replace(index, newVector)
+        oldVector.remove()
+      }
+    }
 
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
 
     // Update categorical indices for all chunks.
-    val frame = DKV.getGet[Frame](frameKey)
     val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
     updateCategoricalIndicesTask.doAll(frame)
 
-    // Convert categorical columns with too many categories to T_STR
-    categoricalColumnIndices.foreach { catColIdx =>
-      val vector = frame.vec(catColIdx)
-      if (vector.cardinality() > Categorical.MAX_CATEGORICAL_COUNT) {
-        Log.warn(
-          s"Categorical column with index '$catColIdx' exceeded maximum number of categories. " +
-            "Converting it to a column of strings ...")
-        frame.replace(catColIdx, vector.toStringVec())
+    // Convert unique categorical columns to T_STR
+    categoricalColumnIndices.foreach { idx =>
+      val vector = frame.vec(idx)
+      val ratio = vector.length().asInstanceOf[Double] / vector.cardinality()
+      if (ratio > 0.95) {
+        Log.info(s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
+            s" between distinct count and total count is $ratio.")
+        val oldVector = frame.replace(idx, vector.toStringVec())
+        oldVector.remove()
       }
     }
 
     request
+  }
+
+  private def refineDataTypesAndReturnIndicesOfChanges(
+      columnTypes: Array[Byte],
+      stringDomains: Array[Array[String]],
+      columnNames: Array[String]): Array[Int] = {
+    var strIdx = 0
+    var idx = 0
+    val result = ArrayBuffer[Int]()
+    while (idx < columnTypes.length) {
+      if (columnTypes(idx) == Vec.T_CAT) {
+        if (stringDomains(strIdx) == null) {
+          columnTypes(idx) = Vec.T_STR
+          result.append(idx)
+          Log.info(s"A categorical column '${columnNames(idx)}' exceeded maximum number of categories. " +
+              "Converting it to a column of strings ...")
+        }
+        strIdx += 1
+      }
+      idx += 1
+    }
+    result.toArray
   }
 
   private def expandDomains(stringDomains: Array[Array[String]], columnTypes: Array[Byte]): Array[Array[String]] = {

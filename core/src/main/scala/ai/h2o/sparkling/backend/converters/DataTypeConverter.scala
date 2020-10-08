@@ -29,102 +29,13 @@ import water.parser.{BufferedString, Categorical, PreviewParseWriter}
 
 private[backend] object DataTypeConverter {
 
-  private def stringTypesToExpectedTypes(dataFrame: DataFrame): Map[Int, ExpectedType] = {
-    val stringTypeIndices = for {
-      (field, index) <- dataFrame.schema.fields.zipWithIndex
-      if field.dataType == StringType
-    } yield index
-
-    val rdd = dataFrame.rdd
-    val types = if (rdd.getNumPartitions > 0) {
-      val serializedPreview = rdd
-        .mapPartitions[Array[Byte]](createPartitionPreview(_, stringTypeIndices))
-        .reduce(mergePartitionPreview)
-
-      val preview = CategoricalPreviewWriter.deserialize(serializedPreview)
-      val typesFromPreview = preview.guessTypes().map {
-        case Vec.T_CAT => ExpectedTypes.Categorical
-        case _ => ExpectedTypes.String
-      }
-      correctCategoricalTypesForTooHighCardinality(dataFrame, typesFromPreview)
-    } else {
-      stringTypeIndices.map(_ => ExpectedTypes.String)
-    }
-
-    stringTypeIndices.zip(types).toMap
-  }
-
-  private def correctCategoricalTypesForTooHighCardinality(
-      dataFrame: DataFrame,
-      expectedTypes: Array[ExpectedType]): Array[ExpectedType] = {
-    val stringColumns = dataFrame.schema.fields.filter(_.dataType == StringType).map(_.name).zipWithIndex
-    val categoricalColumns = stringColumns.zip(expectedTypes).filter(_._2 == ExpectedTypes.Categorical).map(_._1)
-
-    if (categoricalColumns.nonEmpty) {
-      val (categoricalNames, categoricalIndices) = categoricalColumns.unzip
-
-      val allowedError = 0.2
-
-      // Adding margin 0.01 just to be sure that the real distinct count won't be under Categorical.MAX_CATEGORICAL_COUNT
-      // and the approximate count won't be above threshold.
-      val threshold = Categorical.MAX_CATEGORICAL_COUNT * (1 + allowedError + 0.01)
-      val escapedCategoricalNames = categoricalNames.map(s => s"`$s`")
-      val queries = escapedCategoricalNames.map(approx_count_distinct(_, allowedError) > lit(threshold))
-      val contraventions = dataFrame.select(queries: _*).head().toSeq
-      val contraventionMap = categoricalIndices.zip(contraventions).toMap
-
-      for ((expectedType, index) <- expectedTypes.zipWithIndex) yield {
-        if (expectedType == ExpectedTypes.Categorical) {
-          if (contraventionMap(index) == true) ExpectedTypes.String else ExpectedTypes.Categorical
-        } else {
-          expectedType
-        }
-      }
-    } else {
-      expectedTypes
-    }
-  }
-
-  private def createPartitionPreview(rows: Iterator[Row], stringTypeIndices: Array[Int]): Iterator[Array[Byte]] = {
-    val previewParseWriter = new CategoricalPreviewWriter(stringTypeIndices.length)
-    val bufferedString = new BufferedString()
-    var rowId = 0
-    while (rows.hasNext && rowId < CategoricalPreviewWriter.MAX_PREVIEW_RECORDS) {
-      val row = rows.next()
-      var i = 0
-      while (i < stringTypeIndices.length) {
-        val colId = stringTypeIndices(i)
-        val string = row.getString(colId)
-        if (string == null) {
-          previewParseWriter.addInvalidCol(i)
-        } else {
-          bufferedString.set(string)
-          previewParseWriter.addStrCol(i, bufferedString)
-        }
-        i += 1
-      }
-      rowId += 1
-    }
-    Iterator.single(CategoricalPreviewWriter.serialize(previewParseWriter))
-  }
-
-  private def mergePartitionPreview(first: Array[Byte], second: Array[Byte]): Array[Byte] = {
-    val firstObject = CategoricalPreviewWriter.deserialize(first)
-    val secondObject = CategoricalPreviewWriter.deserialize(second)
-    val result =
-      PreviewParseWriter.unifyColumnPreviews(firstObject, secondObject).asInstanceOf[CategoricalPreviewWriter]
-    CategoricalPreviewWriter.serialize(result)
-  }
-
-  def determineExpectedTypes(dataFrame: DataFrame): Array[ExpectedType] = {
-    val stringTypes = stringTypesToExpectedTypes(dataFrame)
-    dataFrame.schema.zipWithIndex.map {
-      case (field, index) =>
+  def determineExpectedTypes(schema: StructType): Array[ExpectedType] = {
+    schema.map {
+      case field =>
         field.dataType match {
           case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>
             ExpectedTypes.Double
           case v if ExposeUtils.isAnyVectorUDT(v) => ExpectedTypes.Vector
-          case StringType => stringTypes(index)
           case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
         }
     }.toArray

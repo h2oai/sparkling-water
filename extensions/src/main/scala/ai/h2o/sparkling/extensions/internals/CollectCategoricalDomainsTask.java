@@ -23,6 +23,7 @@ import water.H2O;
 import water.Key;
 import water.MRTask;
 import water.parser.BufferedString;
+import water.parser.Categorical;
 import water.parser.PackedDomains;
 import water.util.Log;
 
@@ -51,16 +52,26 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     byte[][] result = new byte[domains.length][];
     for (int i = 0; i < domains.length; i++) {
       String[] columnDomain = domains[i];
-      BufferedString[] values = BufferedString.toBufferedString(columnDomain);
-      Arrays.sort(values);
-      result[i] = PackedDomains.pack(values);
+      if (columnDomain.length > Categorical.MAX_CATEGORICAL_COUNT) {
+        result[i] = null;
+      } else {
+        BufferedString[] values = BufferedString.toBufferedString(columnDomain);
+        Arrays.sort(values);
+        result[i] = PackedDomains.pack(values);
+      }
     }
     return result;
   }
 
   private void mergePackedDomains(byte[][] target, byte[][] source) {
     for (int i = 0; i < target.length; i++) {
-      target[i] = PackedDomains.merge(target[i], source[i]);
+      if (target[i] == null || source[i] == null) {
+        target[i] = null;
+      } else if (target[i].length + source[i].length > Categorical.MAX_CATEGORICAL_COUNT) {
+        target[i] = null;
+      } else {
+        target[i] = PackedDomains.merge(target[i], source[i]);
+      }
     }
   }
 
@@ -76,7 +87,13 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
             new H2O.H2OCountedCompleter(currThrPriority()) {
               @Override
               public void compute2() {
-                packedDomains[fi] = PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
+                if (packedDomains[fi] == null || other.packedDomains[fi] == null) {
+                  packedDomains[fi] = null;
+                } else if (PackedDomains.sizeOf(packedDomains[fi]) + PackedDomains.sizeOf(other.packedDomains[fi]) > Categorical.MAX_CATEGORICAL_COUNT) {
+                  packedDomains[fi] = null;
+                } else {
+                  packedDomains[fi] = PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
+                }
                 tryComplete();
               }
             };
@@ -90,7 +107,11 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     if (packedDomains == null) return null;
     String[][] result = new String[packedDomains.length][];
     for (int i = 0; i < packedDomains.length; i++) {
-      result[i] = PackedDomains.unpackToStrings(packedDomains[i]);
+      if (packedDomains[i] == null) {
+        result[i] = null;
+      } else {
+        result[i] = PackedDomains.unpackToStrings(packedDomains[i]);
+      }
     }
     return result;
   }

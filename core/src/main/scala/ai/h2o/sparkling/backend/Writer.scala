@@ -143,12 +143,8 @@ private[backend] object Writer {
             case _: DecimalType => con.put(row.getDecimal(idxField).doubleValue())
             case DoubleType => con.put(row.getDouble(idxField))
             case StringType =>
-              metadata.expectedTypes(idxField) match {
-                case ExpectedTypes.String => con.put(row.getString(idxField))
-                case ExpectedTypes.Categorical =>
-                  val valueIndex = domainBuilder.addStringToDomain(row.getString(idxField), idxField)
-                  con.put(valueIndex)
-              }
+              val valueIndex = domainBuilder.addStringToDomain(row.getString(idxField), idxField)
+              con.put(valueIndex)
             case TimestampType =>
               con.put(timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Timestamp](idxField)))
             case DateType => con.put(timeZoneConverter.fromSparkTimeZoneToUTC(row.getAs[java.sql.Date](idxField)))
