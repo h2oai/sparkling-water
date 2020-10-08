@@ -267,7 +267,7 @@ object H2OMOJOModel
     val featureTypes = extractFeatureTypes(modelJson)
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
-    model.set(model.featureTypes -> featureTypes.asJava)
+    model.set(model.featureTypes -> featureTypes)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)

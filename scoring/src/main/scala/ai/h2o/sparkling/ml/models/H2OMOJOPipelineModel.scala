@@ -211,7 +211,7 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     val featureCols = pipelineMojo.getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
     val featureTypeNames = pipelineMojo.getInputMeta.getColumnTypes().map(_.toString)
-    val featureTypesMap = pipelineMojo.getInputMeta.getColumnNames.zip(featureTypeNames).toMap.asJava
+    val featureTypesMap = pipelineMojo.getInputMeta.getColumnNames.zip(featureTypeNames).toMap
     model.set(model.featureTypes, featureTypesMap)
     model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
