@@ -37,9 +37,8 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
     .drop("class")
 
-  private lazy val glrmModel = H2OMOJOModel.createFromMojo(
-    this.getClass.getClassLoader.getResourceAsStream("glrm.mojo"),
-    "glrm.mojo")
+  private lazy val glrmModel =
+    H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("glrm.mojo"), "glrm.mojo")
 
   test("predictionCol content") {
     val transformed = glrmModel.transform(dataset)
