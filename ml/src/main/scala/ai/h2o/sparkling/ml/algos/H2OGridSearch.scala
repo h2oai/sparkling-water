@@ -188,7 +188,6 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.AnomalyDetection => H2OMetric.Logloss
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
-        case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -208,20 +207,8 @@ class H2OGridSearch(override val uid: String)
       "The fit method of the grid search must be called first to be able to obtain a list of models.")
   }
 
-  private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = metric match {
-    case H2OMetric.GLRMMetric =>
-      val ast = parse(model.getModelDetails())
-      val metricValueOption = for {
-        JObject(obj) <- ast
-        JField("model_summary", JObject(modelSummary)) <- obj
-        JField("columns", JArray(columns)) <- modelSummary
-        ("final_objective_value", index) <- columns.arr.map(getColumnNameInModelSummaryTable).zipWithIndex
-        JField("data", JArray(data)) <- modelSummary
-        JArray(List(JDouble(result))) <- data.arr(index)
-      } yield result
-      metricValueOption.head
-    case _ =>
-      model.getCurrentMetrics().find(_._1 == metric.name()).get._2
+  private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = {
+    model.getCurrentMetrics().find(_._1 == metric.name()).get._2
   }
 
   private def getColumnNameInModelSummaryTable(value: JValue): String = {
@@ -297,7 +284,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OIsolationForest =
+    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OIsolationForest =
       Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
@@ -326,7 +313,6 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2OXGBoost => "xgboost"
         case H2ODRF => "drf"
         case H2OKMeans => "kmeans"
-        case H2OGLRM => "glrm"
         case H2OIsolationForest => "isolationforest"
       }
     }

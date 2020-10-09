@@ -70,11 +70,6 @@ trait H2OBaseMOJOParams extends Params with Logging {
   protected final val withStageResults =
     new BooleanParam(this, "withStageResults", "Enables or disables computation of stage results.")
 
-  protected final val withReconstructedData = new BooleanParam(
-    this,
-    "withReconstructedData",
-    "Enables or disables computation of reconstructed data for dimension reduction problems.")
-
   //
   //
   // Default values
@@ -88,8 +83,7 @@ trait H2OBaseMOJOParams extends Params with Logging {
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
-    withStageResults -> H2OMOJOSettings.default.withStageResults,
-    withReconstructedData -> H2OMOJOSettings.default.withReconstructedData)
+    withStageResults -> H2OMOJOSettings.default.withStageResults)
 
   //
   // Getters
@@ -114,6 +108,4 @@ trait H2OBaseMOJOParams extends Params with Logging {
   def getWithLeafNodeAssignments(): Boolean = $(withLeafNodeAssignments)
 
   def getWithStageResults(): Boolean = $(withStageResults)
-
-  def getWithReconstructedData(): Boolean = $(withReconstructedData)
 }

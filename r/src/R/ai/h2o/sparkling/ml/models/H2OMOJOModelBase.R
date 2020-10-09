@@ -52,9 +52,6 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   getWithStageResults = function() {
     invoke(.self$jmojo, "getWithStageResults")
   },
-  getWithReconstructedData = function() {
-    invoke(.self$jmojo, "getWithReconstructedData")
-  },
   transform = function(sparkFrame) {
     sparkFrame <- spark_dataframe(sparkFrame)
     outputFrame <- invoke(.self$jmojo, "transform", sparkFrame)

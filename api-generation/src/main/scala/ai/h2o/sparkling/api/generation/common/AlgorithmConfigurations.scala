@@ -22,9 +22,8 @@ import java.util
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.gam.GAMModel.GAMParameters
 import hex.glm.GLMModel.GLMParameters
-import hex.glrm.GLRMModel.GLRMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
-import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, GLRMV3, IsolationForestV3, KMeansV3, XGBoostV3}
+import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.isofor.IsolationForestModel.IsolationForestParameters
@@ -45,8 +44,7 @@ trait AlgorithmConfigurations {
     "splitRatio" -> 1.0,
     "columnsToCategorical" -> Array.empty[String],
     "withLeafNodeAssignments" -> false,
-    "withStageResults" -> false,
-    "withReconstructedData" -> false)
+    "withStageResults" -> false)
 
   val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
 
@@ -77,7 +75,6 @@ trait AlgorithmConfigurations {
     val gamFields = Seq(ignoredCols, betaConstraints, gamCols)
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
-    val glrmFields = Seq(userX, userY, lossByColNames)
     val kmeansFields = Seq(userPoints, ignoredCols)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
@@ -107,7 +104,6 @@ trait AlgorithmConfigurations {
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, kmeansDeprecations),
-      ("H2OGLRMParams", classOf[GLRMV3.GLRMParametersV3], classOf[GLRMParameters], glrmFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
@@ -127,7 +123,7 @@ trait AlgorithmConfigurations {
   }
 
   private def isUnsupervised(entityName: String): Boolean = {
-    Array("H2OGLRMParams", "H2OKMeansParams", "H2OIsolationForestParams").contains(entityName)
+    Array("H2OKMeansParams", "H2OIsolationForestParams").contains(entityName)
   }
 
   def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
@@ -143,7 +139,6 @@ trait AlgorithmConfigurations {
       ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
-      ("H2OGLRM", classOf[GLRMParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)

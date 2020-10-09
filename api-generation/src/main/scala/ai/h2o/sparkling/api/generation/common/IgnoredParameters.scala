@@ -20,7 +20,6 @@ package ai.h2o.sparkling.api.generation.common
 object IgnoredParameters {
   def deprecated(algorithm: String): Seq[String] = algorithm match {
     case "H2OGAM" => Seq("r2_stopping", "lambda_min_ratio")
-    case "H2OGLRM" => Seq("r2_stopping", "loading_name")
     case "H2ODeepLearning" => Seq("r2_stopping", "col_major", "max_confusion_matrix_size")
     case _ => Seq("r2_stopping")
   }

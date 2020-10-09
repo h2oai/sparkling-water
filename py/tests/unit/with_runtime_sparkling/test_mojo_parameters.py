@@ -15,7 +15,7 @@
 #
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM
-from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OGLRM, H2OIsolationForest
+from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
@@ -65,13 +65,6 @@ def testDeepLearningParameters(prostateDataset):
 def testKmeansParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OKMeans(seed=1, featuresCols=features)
-    model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model)
-
-
-def testGLRMParameters(prostateDataset):
-    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OGLRM(seed=1, featuresCols=features)
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
