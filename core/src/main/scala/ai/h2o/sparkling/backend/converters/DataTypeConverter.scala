@@ -35,6 +35,7 @@ private[backend] object DataTypeConverter {
         field.dataType match {
           case n if n.isInstanceOf[DecimalType] & n.getClass.getSuperclass != classOf[DecimalType] =>
             ExpectedTypes.Double
+          case StringType => ExpectedTypes.Categorical
           case v if ExposeUtils.isAnyVectorUDT(v) => ExpectedTypes.Vector
           case dt: DataType => SupportedTypes.bySparkType(dt).expectedType
         }

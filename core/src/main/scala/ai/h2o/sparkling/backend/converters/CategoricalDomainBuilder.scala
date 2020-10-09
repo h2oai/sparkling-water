@@ -28,7 +28,7 @@ import scala.collection.mutable
 private[backend] class CategoricalDomainBuilder(expectedTypes: Array[ExpectedType]) {
 
   private def categoricalIndexes: Array[Int] =
-    for ((eType, index) <- expectedTypes.zipWithIndex if eType == ExpectedTypes.String) yield index
+    for ((eType, index) <- expectedTypes.zipWithIndex if eType == ExpectedTypes.Categorical) yield index
 
   private val indexMapping = categoricalIndexes.zipWithIndex.toMap
 

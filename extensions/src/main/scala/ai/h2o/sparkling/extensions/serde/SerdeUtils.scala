@@ -29,7 +29,8 @@ object SerdeUtils {
       case ExpectedTypes.Bool | ExpectedTypes.Byte | ExpectedTypes.Char | ExpectedTypes.Short | ExpectedTypes.Int |
           ExpectedTypes.Long | ExpectedTypes.Float | ExpectedTypes.Double =>
         Array(Vec.T_NUM)
-      case ExpectedTypes.String => Array(Vec.T_CAT)
+      case ExpectedTypes.String => Array(Vec.T_STR)
+      case ExpectedTypes.Categorical => Array(Vec.T_CAT)
       case ExpectedTypes.Timestamp => Array(Vec.T_TIME)
       case ExpectedTypes.Vector =>
         val result = Array.fill(vecElemSizes(vecCount))(Vec.T_NUM)
