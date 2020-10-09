@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.H2OBaseMOJOParams
+import ai.h2o.sparkling.ml.params.{H2OBaseMOJOParams, MapStringStringParam}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.{Model => SparkModel}
 import org.apache.spark.sql.types.{StructField, StructType}
@@ -28,6 +28,13 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
   with HasMojo
   with H2OMOJOWritable
   with H2OMOJOFlattenedInput {
+
+  protected final val featureTypes: MapStringStringParam =
+    new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
+
+  setDefault(featureTypes -> Map.empty[String, String])
+
+  def getFeatureTypes(): Map[String, String] = $(featureTypes)
 
   protected def getPredictionColSchema(): Seq[StructField]
 

@@ -286,11 +286,12 @@ Obtaining Model Category
 
 The method ``getModelCategory`` can be used to get the model category (such as ``binomial``, ``multinomial`` etc).
 
-Obtaining Training Params
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Obtaining Feature Types
+^^^^^^^^^^^^^^^^^^^^^^^
 
-The method ``getTrainingParams`` can be used to get a map containing all training parameters used in the H2O. It is a map
-from the parameter name to the value. The parameters name use the H2O's naming structure.
+The method ``getFeatureTypes`` returns a map/dictionary from a feature name to a corresponding feature type
+[``enum`` (categorical), ``numeric``, ``string``, etc.]. These pieces helps to understand how individual columns of
+the training dataset were treated during the model training.
 
 
 Obtaining Metrics

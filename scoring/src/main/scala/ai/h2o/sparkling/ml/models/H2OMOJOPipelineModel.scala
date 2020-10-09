@@ -29,11 +29,11 @@ import org.apache.spark.sql.types._
 
 import scala.collection.mutable
 import scala.util.Random
+import scala.collection.JavaConverters._
 
 class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
 
   H2OMOJOPipelineCache.startCleanupThread()
-
   // private parameter used to store MOJO output columns
   protected final val outputCols: StringArrayParam = new StringArrayParam(this, "outputCols", "OutputCols")
 
@@ -210,6 +210,9 @@ object H2OMOJOPipelineModel extends H2OMOJOReadable[H2OMOJOPipelineModel] with H
     val pipelineMojo = MojoPipelineService.loadPipeline(model.getMojo())
     val featureCols = pipelineMojo.getInputMeta.getColumnNames
     model.set(model.featuresCols, featureCols)
+    val featureTypeNames = pipelineMojo.getInputMeta.getColumnTypes().map(_.toString)
+    val featureTypesMap = pipelineMojo.getInputMeta.getColumnNames.zip(featureTypeNames).toMap
+    model.set(model.featureTypes, featureTypesMap)
     model.set(model.outputCols, pipelineMojo.getOutputMeta.getColumnNames)
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)

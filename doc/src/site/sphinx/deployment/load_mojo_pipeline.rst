@@ -191,3 +191,8 @@ If you see the following exception during loading the MOJO pipeline:
 - ``java.io.IOException: None of 2 available pipeline factories [pbuf, toml] can read this mojo.``, then you most-likely
   passed the whole ``mojo.zip`` archive to the createFromMojo method instead of the ``pipeline.mojo`` file, which is contained
   in the archive.
+
+- A similar error to ``java.lang.ClassCastException: Mojo column of type Float32 can be assigned Java values only from the following types: [class java.lang.Short, class java.lang.Double, class java.lang.Byte, class java.lang.Integer, class java.lang.Float], Java class on the input was: Long``,
+  then call the method ``getFeatureTypes()`` to get a map/dictionary from feature names to expected types. Identify a feature
+  with the expected type ``Float32` and ``Long` type in the dataset for scoring and manually cast the feature column
+  from ``Long`` to ``Double`` or ``Integer``.

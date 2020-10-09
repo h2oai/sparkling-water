@@ -66,6 +66,20 @@ def testTrainingMetrics(gbmModel):
     assert len(metrics) is 6
 
 
+def testFeatureTypes(gbmModel):
+    types = gbmModel.getFeatureTypes()
+    assert types["DPROS"] == "Numeric"
+    assert types["GLEASON"] == "Numeric"
+    assert types["DCAPS"] == "Numeric"
+    assert types["VOL"] == "Numeric"
+    assert types["AGE"] == "Numeric"
+    assert types["PSA"] == "Numeric"
+    assert types["capsule"] == "Enum"
+    assert types["RACE"] == "Numeric"
+    assert types["ID"] == "Numeric"
+    assert len(types) == 9
+
+
 def getCurrentMetrics():
     metrics = gbmModel.getCurrentMetrics()
     assert metrics == gbmModel.getTrainingMetrics()

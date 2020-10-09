@@ -64,6 +64,23 @@ def test_h2o_mojo_pipeline_predictions_with_named_cols(prostateDataset):
     assert preds[4][0] == 66.11327967814829
 
 
+def test_feature_types_on_h2o_mojo_pipeline():
+    mojo = H2OMOJOPipelineModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
+    types = mojo.getFeatureTypes()
+
+    types["DPROS"] == "Int32"
+    types["GLEASON"] == "Int32"
+    types["VOL"] == "Float64"
+    types["DCAPS"] == "Int32"
+    types["PSA"] == "Float64"
+    types["VOL"] == "Float64"
+    types["CAPSULE"] == "Int32"
+    types["RACE"] == "Int32"
+    types["ID"] == "Int32"
+    len(types) == 9
+
+
 def test_mojo_dai_pipeline_serialize(prostateDataset):
     mojo = H2OMOJOPipelineModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/mojo2data/pipeline.mojo"))
