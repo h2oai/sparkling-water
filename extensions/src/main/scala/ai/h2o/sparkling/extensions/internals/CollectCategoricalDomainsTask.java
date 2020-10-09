@@ -89,10 +89,13 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
               public void compute2() {
                 if (packedDomains[fi] == null || other.packedDomains[fi] == null) {
                   packedDomains[fi] = null;
-                } else if (PackedDomains.sizeOf(packedDomains[fi]) + PackedDomains.sizeOf(other.packedDomains[fi]) > Categorical.MAX_CATEGORICAL_COUNT) {
+                } else if (PackedDomains.sizeOf(packedDomains[fi])
+                        + PackedDomains.sizeOf(other.packedDomains[fi])
+                    > Categorical.MAX_CATEGORICAL_COUNT) {
                   packedDomains[fi] = null;
                 } else {
-                  packedDomains[fi] = PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
+                  packedDomains[fi] =
+                      PackedDomains.merge(packedDomains[fi], other.packedDomains[fi]);
                 }
                 tryComplete();
               }

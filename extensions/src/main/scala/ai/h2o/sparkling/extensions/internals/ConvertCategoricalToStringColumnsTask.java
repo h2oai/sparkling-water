@@ -17,20 +17,15 @@
 
 package ai.h2o.sparkling.extensions.internals;
 
-import water.DKV;
 import water.H2O;
 import water.Key;
 import water.MRTask;
 import water.exceptions.H2OIllegalArgumentException;
-import water.fvec.CStrChunk;
 import water.fvec.Chunk;
-import water.fvec.Frame;
 import water.fvec.NewChunk;
-import water.parser.BufferedString;
-import water.util.IcedHashMap;
-import water.util.StringUtils;
 
-public class ConvertCategoricalToStringColumnsTask extends MRTask<ConvertCategoricalToStringColumnsTask> {
+public class ConvertCategoricalToStringColumnsTask
+    extends MRTask<ConvertCategoricalToStringColumnsTask> {
   private final Key frameKey;
   private final int[] domainIndices;
 

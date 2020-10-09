@@ -71,7 +71,8 @@ class ImportFrameHandler extends Handler {
       val vector = frame.vec(idx)
       val ratio = vector.length().asInstanceOf[Double] / vector.cardinality()
       if (ratio > 0.95) {
-        Log.info(s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
+        Log.info(
+          s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
             s" between distinct count and total count is $ratio.")
         val oldVector = frame.replace(idx, vector.toStringVec())
         oldVector.remove()
@@ -93,7 +94,8 @@ class ImportFrameHandler extends Handler {
         if (stringDomains(strIdx) == null) {
           columnTypes(idx) = Vec.T_STR
           result.append(idx)
-          Log.info(s"A categorical column '${columnNames(idx)}' exceeded maximum number of categories. " +
+          Log.info(
+            s"A categorical column '${columnNames(idx)}' exceeded maximum number of categories. " +
               "Converting it to a column of strings ...")
         }
         strIdx += 1
