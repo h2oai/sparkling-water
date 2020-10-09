@@ -24,7 +24,7 @@ import ai.h2o.sparkling.extensions.serde.ExpectedTypes.ExpectedType
 import water.AutoBuffer
 import water.fvec.{ChunkUtils, NewChunk}
 
-final class gitChunkAutoBufferReader(val inputStream: InputStream) extends Closeable with ChunkSerdeConstants {
+final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeable with ChunkSerdeConstants {
 
   private val buffer = new AutoBuffer(inputStream)
   private var isLastNAVar: Boolean = false
