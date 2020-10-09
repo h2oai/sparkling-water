@@ -407,7 +407,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val df = spark.createDataFrame(rdd, schema)
 
     val flattenDF = SchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF)
+    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF.rdd, flattenDF.schema)
     val expandedSchema = SchemaUtils.expandedSchema(SchemaUtils.flattenSchema(df), maxElementSizes)
     val expected: Vector[StructField] = Vector(
       StructField("a.n", IntegerType, nullable = false),
@@ -751,7 +751,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
   private def getSchemaInfo(df: DataFrame): (DataFrame, Array[Int], Seq[StructField]) = {
     val flattenDF = SchemaUtils.flattenDataFrame(df)
-    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF)
+    val maxElementSizes = SchemaUtils.collectMaxElementSizes(flattenDF.rdd, flattenDF.schema)
     val expandedSchema = SchemaUtils.expandedSchema(SchemaUtils.flattenSchema(df), maxElementSizes)
     (flattenDF, maxElementSizes, expandedSchema)
   }
