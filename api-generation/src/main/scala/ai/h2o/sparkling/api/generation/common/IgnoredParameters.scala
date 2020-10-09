@@ -47,7 +47,6 @@ object IgnoredParameters {
     common ++ {
       algorithm match {
         case "H2OGAMMOJOModel" => Seq("seed") // Not propagated correctly!
-        case "H2OPCAMOJOModel" => Seq("pca_impl") // Not propagated correctly!
         case _ => Seq.empty
       }
     }

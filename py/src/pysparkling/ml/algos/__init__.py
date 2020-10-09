@@ -16,7 +16,7 @@
 #
 
 from ai.h2o.sparkling.ml.algos import H2OKMeans, H2OAutoML, H2OGridSearch, H2OGLM, H2OGBM, H2OXGBoost, H2ODeepLearning
-from ai.h2o.sparkling.ml.algos import H2ODRF, H2OGLRM, H2OGAM, H2OPCA, H2OIsolationForest
+from ai.h2o.sparkling.ml.algos import H2ODRF, H2OGLRM, H2OGAM, H2OIsolationForest
 
 __all__ = ["H2OAutoML", "H2OGridSearch", "H2OGLM", "H2OGAM", "H2OGBM", "H2OXGBoost", "H2ODeepLearning", "H2OKMeans", "H2ODRF",
-           "H2OGLRM", "H2OPCA", "H2OIsolationForest"]
+           "H2OGLRM", "H2OIsolationForest"]
