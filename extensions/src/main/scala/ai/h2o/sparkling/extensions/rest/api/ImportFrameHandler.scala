@@ -93,7 +93,7 @@ class ImportFrameHandler extends Handler {
     categoricalColumnIndices.foreach { idx =>
       val vector = frame.vec(idx)
       val ratio = vector.cardinality() / vector.length().asInstanceOf[Double]
-      if (ratio > 0.95) {
+      if (ratio >= 0.95) {
         Log.info(
           s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
             s" between distinct count and total count is $ratio.")
