@@ -43,11 +43,17 @@ class ImportFrameHandler extends Handler {
     collectDomainsTask.doAllNodes()
     val stringDomains = collectDomainsTask.getDomains()
     val domains = expandDomains(stringDomains, columnTypes)
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
     val frame = DKV.getGet[Frame](frameKey)
 
     // Convert categorical columns with too many categorical levels to T_STR
-    val indicesOfChanges = refineDataTypesAndReturnIndicesOfChanges(columnTypes, stringDomains, frame.names())
+    val indicesOfChanges = indicesOfChangedCategoricalColumnsToStringColumns(columnTypes, stringDomains)
     if (indicesOfChanges.nonEmpty) {
+      indicesOfChanges.foreach { idx =>
+        Log.info(
+          s"A categorical column '${frame.names()(idx)}' exceeded maximum number of categories. " +
+            "Converting it to a column of strings ...")
+      }
       val vectorsToBeConvertedToString = indicesOfChanges.map(frame.vec(_))
       val domainIndices = for ((domain, idx) <- stringDomains.zipWithIndex if domain == null) yield idx
       val convertCategoricalToStringColumnsTask = new ConvertCategoricalToStringColumnsTask(frameKey, domainIndices)
@@ -58,8 +64,6 @@ class ImportFrameHandler extends Handler {
         oldVector.remove()
       }
     }
-
-    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
 
     // Update categorical indices for all chunks.
     val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
@@ -82,21 +86,16 @@ class ImportFrameHandler extends Handler {
     request
   }
 
-  private def refineDataTypesAndReturnIndicesOfChanges(
+  private def indicesOfChangedCategoricalColumnsToStringColumns(
       columnTypes: Array[Byte],
-      stringDomains: Array[Array[String]],
-      columnNames: Array[String]): Array[Int] = {
+      stringDomains: Array[Array[String]]): Array[Int] = {
     var strIdx = 0
     var idx = 0
     val result = ArrayBuffer[Int]()
     while (idx < columnTypes.length) {
       if (columnTypes(idx) == Vec.T_CAT) {
         if (stringDomains(strIdx) == null) {
-          columnTypes(idx) = Vec.T_STR
           result.append(idx)
-          Log.info(
-            s"A categorical column '${columnNames(idx)}' exceeded maximum number of categories. " +
-              "Converting it to a column of strings ...")
         }
         strIdx += 1
       }

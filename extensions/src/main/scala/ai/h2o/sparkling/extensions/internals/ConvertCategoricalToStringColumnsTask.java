@@ -51,11 +51,11 @@ public class ConvertCategoricalToStringColumnsTask
       String[] localDomain = localDomains[domainIdx];
       for (int valIdx = 0; valIdx < chunk._len; ++valIdx) {
         if (chunk.isNA(valIdx)) {
-          newChunk.setNA(valIdx);
+          newChunk.addNA();
         } else {
           final int oldValue = (int) chunk.at8(valIdx);
           final String category = localDomain[oldValue];
-          newChunk.set(valIdx, category);
+          newChunk.addStr(category);
         }
       }
     }
