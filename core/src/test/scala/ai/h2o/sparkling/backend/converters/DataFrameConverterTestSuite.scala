@@ -32,6 +32,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{Assertions, FunSuite}
+import water.parser.Categorical
 
 @RunWith(classOf[JUnitRunner])
 class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
@@ -324,6 +325,19 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isCategorical())
+
+    val resultDF = hc.asSparkFrame(h2oFrame)
+    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+  }
+
+  test("DataFrame[String] with more than 10M unique values to H2OFrame[T_STR] and back") {
+    val uniqueValues = (0 to Categorical.MAX_CATEGORICAL_COUNT)
+    val values = (uniqueValues ++ uniqueValues).map(_.toString)
+    val df = values.toDF("Strings").repartition(3)
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.columns(0).isString())
 
     val resultDF = hc.asSparkFrame(h2oFrame)
     TestUtils.assertDataFramesAreIdentical(df, resultDF)

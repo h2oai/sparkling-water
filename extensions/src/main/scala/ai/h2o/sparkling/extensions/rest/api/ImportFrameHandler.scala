@@ -42,12 +42,18 @@ class ImportFrameHandler extends Handler {
     val collectDomainsTask = new CollectCategoricalDomainsTask(frameKey)
     collectDomainsTask.doAllNodes()
     val stringDomains = collectDomainsTask.getDomains()
-    val domains = expandDomains(stringDomains, columnTypes)
-    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypes, domains)
+    val isEmpty = stringDomains == null
+    val columnTypesAwareOfEmptyFrames = if (isEmpty) {
+      columnTypes.map(columnType => if (columnType == Vec.T_CAT) Vec.T_STR else columnType)
+    } else {
+      columnTypes
+    }
+    val domains = expandDomains(stringDomains, columnTypesAwareOfEmptyFrames)
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypesAwareOfEmptyFrames, domains)
     val frame = DKV.getGet[Frame](frameKey)
 
     // Convert categorical columns with too many categorical levels to T_STR
-    val indicesOfChanges = indicesOfChangedCategoricalColumnsToStringColumns(columnTypes, stringDomains)
+    val indicesOfChanges = indicesOfChangedColumnsFromCategoricalToString(columnTypesAwareOfEmptyFrames, stringDomains)
     if (indicesOfChanges.nonEmpty) {
       indicesOfChanges.foreach { idx =>
         Log.info(
@@ -86,7 +92,7 @@ class ImportFrameHandler extends Handler {
     request
   }
 
-  private def indicesOfChangedCategoricalColumnsToStringColumns(
+  private def indicesOfChangedColumnsFromCategoricalToString(
       columnTypes: Array[Byte],
       stringDomains: Array[Array[String]]): Array[Int] = {
     var strIdx = 0
