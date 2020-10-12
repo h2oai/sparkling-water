@@ -69,23 +69,6 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(fr.numberOfRows == 0)
   }
 
-  test("PUBDEV-766 H2OFrame[T_ENUM] to DataFrame[StringType]") {
-    val df = spark.sparkContext.parallelize(Array("ONE", "ZERO", "ZERO", "ONE")).toDF("C0")
-    val h2oFrame = hc.asH2OFrame(df)
-    h2oFrame.convertColumnsToCategorical(Array(0))
-    assert(h2oFrame.columns(0).isCategorical())
-
-    val dataFrame = hc.asSparkFrame(h2oFrame)
-    assert(dataFrame.count == h2oFrame.numberOfRows)
-    assert(dataFrame.take(4)(3)(0) == "ONE")
-    assert(dataFrame.schema.fields(0) match {
-      case StructField("C0", StringType, false, _) => true
-      case _ => false
-    })
-
-    h2oFrame.delete()
-  }
-
   test("H2OFrame[T_TIME] to DataFrame[TimestampType]") {
     val rdd = spark.sparkContext
       .parallelize(Array(1428517563L, 1428517564L, 1428517565L, 1428517566L).map(v => Row(new Timestamp(v))))
@@ -237,6 +220,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[ShortField] to H2OFrame[Numeric]") {
@@ -245,6 +229,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[IntField] to H2OFrame[Numeric]") {
@@ -254,6 +239,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[LongField] to H2OFrame[Numeric]") {
@@ -263,6 +249,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[FloatField] to H2OFrame[Numeric]") {
@@ -272,6 +259,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[BooleanField] to H2OFrame[Numeric]") {
@@ -282,6 +270,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
     assertVectorIntValues(h2oFrame.collectInts(0), Seq(1, 0, 1, 0))
+    h2oFrame.delete()
   }
 
   test("DataFrame[DoubleField] to H2OFrame[Numeric]") {
@@ -291,6 +280,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isNumeric())
+    h2oFrame.delete()
   }
 
   test("DataFrame[StringField] to H2OFrame[String]") {
@@ -306,41 +296,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrameWithCat.columns(0).isCategorical())
     assert(h2oFrameWithCat.columns(0).domain != null)
     assert(h2oFrameWithCat.columns(0).domain.length == domSize)
-  }
-
-  test("DataFrame[String] to H2OFrame[T_STRING] and back") {
-    val df = Seq("one", "two", "three", "four", "five", "six", "seven").toDF("Strings").repartition(3)
-    val h2oFrame = hc.asH2OFrame(df)
-
-    assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isString())
-
-    val resultDF = hc.asSparkFrame(h2oFrame)
-    TestUtils.assertDataFramesAreIdentical(df, resultDF)
-  }
-
-  test("DataFrame[String] to H2OFrame[T_CAT] and back") {
-    val df = Seq("one", "two", "three", "one", "two", "three", "one").toDF("Strings").repartition(3)
-    val h2oFrame = hc.asH2OFrame(df)
-
-    assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isCategorical())
-
-    val resultDF = hc.asSparkFrame(h2oFrame)
-    TestUtils.assertDataFramesAreIdentical(df, resultDF)
-  }
-
-  test("DataFrame[String] with more than 10M unique values to H2OFrame[T_STR] and back") {
-    val uniqueValues = (0 to Categorical.MAX_CATEGORICAL_COUNT)
-    val values = (uniqueValues ++ uniqueValues).map(_.toString)
-    val df = values.toDF("Strings").repartition(3)
-    val h2oFrame = hc.asH2OFrame(df)
-
-    assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isString())
-
-    val resultDF = hc.asSparkFrame(h2oFrame)
-    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+    h2oFrame.delete()
   }
 
   test("DataFrame[DateType] to H2OFrame[Time]") {
@@ -356,6 +312,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     val values = dates.indices.map(i => new java.sql.Date(toUTC(h2oFrame.collectLongs(0)(i))).toString)
     assert(values.sorted == dates.sorted)
+    h2oFrame.delete()
   }
 
   test("DataFrame[TimeStampField] to H2OFrame[Time]") {
@@ -366,6 +323,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assertH2OFrameInvariants(df, h2oFrame)
     assert(h2oFrame.columns(0).isTime())
+    h2oFrame.delete()
   }
 
   test("DataFrame[Struct(TimeStampField)] to H2OFrame[Time]") {
@@ -378,6 +336,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(h2oFrame.columns(0).isNumeric())
     assert(h2oFrame.columns(1).isString())
     assert(h2oFrame.columns(2).isTime())
+    h2oFrame.delete()
   }
 
   test("H2OFrame[Simple StructType] to DataFrame[flattened StructType]") {
@@ -388,6 +347,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val h2oFrame = hc.asH2OFrame(df)
 
     assertH2OFrameInvariants(df, h2oFrame)
+    h2oFrame.delete()
   }
 
   test("DataFrame[flattened StructType] to H2OFrame[Composed StructType]") {
@@ -397,6 +357,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val h2oFrame = hc.asH2OFrame(df)
 
     assertH2OFrameInvariants(df, h2oFrame)
+    h2oFrame.delete()
   }
 
   test("DataFrame[IntField] to H2OFrame with empty partitions (error detected in calling ShuffleSplitFrame)") {
@@ -405,6 +366,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     val h2oFrame = hc.asH2OFrame(df)
     h2oFrame.split(0.5, 0.3, 0.1)
+    h2oFrame.delete()
   }
 
   test("Expand composed schema of DataFrame") {
@@ -443,6 +405,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorIntValues(h2oFrame.collectInts(0), Seq(1, 2))
     assertVectorStringValues(h2oFrame.collectStrings(1), Seq("name=1", "name=2"))
     assertVectorDoubleValues(h2oFrame.collectDoubles(2), Seq(1.0, 2.0))
+    h2oFrame.delete()
   }
 
   test("Expand schema with array") {
@@ -476,6 +439,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorIntValues(h2oFrame.collectInts(2), Seq(0, 0, 3, 3, 3))
     assertVectorIntValues(h2oFrame.collectInts(3), Seq(0, 0, 0, 4, 4))
     assertVectorIntValues(h2oFrame.collectInts(4), Seq(0, 0, 0, 0, 5))
+    h2oFrame.delete()
   }
 
   test("Expand schema with MLLIB dense vectors") {
@@ -502,6 +466,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.collectDoubles(0), Seq(1.0, 1.0, 1.0))
     assertVectorDoubleValues(h2oFrame.collectDoubles(1), Seq(0, 2.0, 2.0))
     assertVectorDoubleValues(h2oFrame.collectDoubles(2), Seq(0, 0, 3.0))
+    h2oFrame.delete()
   }
 
   test("Expand schema with MLLIB sparse vectors") {
@@ -527,6 +492,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
+    h2oFrame.delete()
   }
 
   test("Expand schema with MLLIB empty sparse vectors") {
@@ -552,6 +518,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
+    h2oFrame.delete()
   }
 
   test("Expand schema with ML dense vectors") {
@@ -576,6 +543,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorDoubleValues(h2oFrame.collectDoubles(0), Seq(0.0, 1.0, 1.0))
     // For vectors missing values are replaced by zeros
     assertVectorDoubleValues(h2oFrame.collectDoubles(1), Seq(0.0, 0.0, 2.0))
+    h2oFrame.delete()
   }
 
   test("Expand schema with ML sparse vectors") {
@@ -602,6 +570,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     // Verify data stored in h2oFrame after transformation
     assertDoubleFrameValues(h2oFrame, values.map(_.f.toArray))
+    h2oFrame.delete()
   }
 
   test("Expand complex schema with sparse and dense vectors") {
@@ -645,6 +614,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
         Array(1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
         Array(0.0, 1.0, 0.0, 1.0, 1.0, 0.0),
         Array(0.0, 0.0, 1.0, 2.0, 1.0, 2.0)))
+    h2oFrame.delete()
   }
 
   test("Add metadata to Dataframe numeric column") {
@@ -675,6 +645,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val dfDouble = spark.sqlContext.sql("SELECT IF(r.status = 'ok', 0.0, 1.0) AS cancelled FROM responses AS r")
     val frame = hc.asH2OFrame(dfDouble)
     assertVectorDoubleValues(frame.collectDoubles(0), Seq(0.0, 1.0, 0.0, 1.0, 1.0))
+    frame.delete()
   }
 
   test("SW-304 DateType column conversion failure") {
@@ -685,6 +656,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assert(hf.numberOfColumns == 1)
     val expectedValue = DateTimeUtils.fromUTCTime(Date.valueOf("2016-12-24").getTime * 1000, TimeZone.getDefault.getID) / 1000
     assert(hf.collectLongs(0)(0) == expectedValue)
+    hf.delete()
   }
 
   test("SW-310 Decimal(2,1) not compatible in h2o frame") {
@@ -697,6 +669,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorIntValues(hf.collectInts("single"), Seq(1, 2, 3, 4, 5, 6))
     assertVectorIntValues(hf.collectInts("double"), Seq(1, 4, 9, 16, 25, 36))
     assertVectorDoubleValues(hf.collectDoubles("label"), Seq(1.0, 1.0, 0.0, 0.0, 0.0, 0.0))
+    hf.delete()
   }
 
   test("SparkDataFrame with BinaryType to H2O Frame") {
@@ -715,6 +688,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     assertVectorIntValues(hf.collectInts(0), Seq(0, 0, 0))
     assertVectorIntValues(hf.collectInts(1), Seq(0, 1, 1))
     assertVectorIntValues(hf.collectInts(2), Seq(0, 0, 2))
+    hf.delete()
 
   }
 
@@ -723,6 +697,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val df = sc.parallelize(1 to 10).toDF("with.dot")
     val hf = hc.asH2OFrame(df)
     assert(hf.columnNames.head == "with.dot")
+    hf.delete()
   }
 
   test("Convert nested DataFrame to H2OFrame with dots in column names") {
@@ -740,6 +715,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     val hf = hc.asH2OFrame(renamedDF)
 
     assert(hf.columnNames.sameElements(Array("name.given.name", "name.family", "person.age")))
+    hf.delete()
   }
 
   test("Test conversion of DataFrame to H2OFrame and back with a high number of columns") {
@@ -756,6 +732,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
 
     assert(hf.numberOfColumns == numCols)
     resultDF.foreach(_ => {})
+    hf.delete()
   }
 
   private def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
