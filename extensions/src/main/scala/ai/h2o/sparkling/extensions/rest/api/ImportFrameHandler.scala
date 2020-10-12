@@ -52,8 +52,25 @@ class ImportFrameHandler extends Handler {
     ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypesAwareOfEmptyFrames, domains)
     val frame = DKV.getGet[Frame](frameKey)
 
-    // Convert categorical columns with too many categorical levels to T_STR
-    val indicesOfChanges = indicesOfChangedColumnsFromCategoricalToString(columnTypesAwareOfEmptyFrames, stringDomains)
+    convertColumnsWithTooManyCategoricalLevelsToStringColumns(frame, columnTypesAwareOfEmptyFrames, stringDomains)
+
+    val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
+
+    // Update categorical indices for all chunks. (local chunk domains -> global domains)
+    val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
+    updateCategoricalIndicesTask.doAll(frame)
+
+    // Convert unique categorical columns to T_STR
+    convertUniqueCategoricalColumnsToStringColumns(frame, categoricalColumnIndices)
+
+    request
+  }
+
+  private def convertColumnsWithTooManyCategoricalLevelsToStringColumns(
+      frame: Frame,
+      columnTypes: Array[Byte],
+      stringDomains: Array[Array[String]]) = {
+    val indicesOfChanges = indicesOfChangedColumnsFromCategoricalToString(columnTypes, stringDomains)
     if (indicesOfChanges.nonEmpty) {
       indicesOfChanges.foreach { idx =>
         Log.info(
@@ -62,7 +79,7 @@ class ImportFrameHandler extends Handler {
       }
       val vectorsToBeConvertedToString = indicesOfChanges.map(frame.vec(_))
       val domainIndices = for ((domain, idx) <- stringDomains.zipWithIndex if domain == null) yield idx
-      val convertCategoricalToStringColumnsTask = new ConvertCategoricalToStringColumnsTask(frameKey, domainIndices)
+      val convertCategoricalToStringColumnsTask = new ConvertCategoricalToStringColumnsTask(frame._key, domainIndices)
       convertCategoricalToStringColumnsTask.doAll(Vec.T_STR, vectorsToBeConvertedToString: _*)
       val newVectors = AppendableVec.closeAll(convertCategoricalToStringColumnsTask.appendables())
       for ((newVector, index) <- newVectors.zip(indicesOfChanges)) {
@@ -70,13 +87,9 @@ class ImportFrameHandler extends Handler {
         oldVector.remove()
       }
     }
+  }
 
-    // Update categorical indices for all chunks.
-    val categoricalColumnIndices = for ((vec, idx) <- frame.vecs().zipWithIndex if vec.isCategorical) yield idx
-    val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
-    updateCategoricalIndicesTask.doAll(frame)
-
-    // Convert unique categorical columns to T_STR
+  private def convertUniqueCategoricalColumnsToStringColumns(frame: Frame, categoricalColumnIndices: Array[Int]) = {
     categoricalColumnIndices.foreach { idx =>
       val vector = frame.vec(idx)
       val ratio = vector.cardinality() / vector.length().asInstanceOf[Double]
@@ -88,8 +101,6 @@ class ImportFrameHandler extends Handler {
         oldVector.remove()
       }
     }
-
-    request
   }
 
   private def indicesOfChangedColumnsFromCategoricalToString(
