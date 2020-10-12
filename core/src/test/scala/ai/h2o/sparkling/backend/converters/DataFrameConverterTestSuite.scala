@@ -731,7 +731,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
   test("Test conversion of DataFrame to H2OFrame and back with a high number of columns") {
     import org.apache.spark.sql.functions._
     import spark.implicits._
-    val numCols = 10000
+    val numCols = 20000
     val cols = (1 to numCols).map(n => $"_tmp".getItem(n).as("col" + n))
 
     val df = sc.parallelize(Seq((1 to numCols).mkString(","))).toDF

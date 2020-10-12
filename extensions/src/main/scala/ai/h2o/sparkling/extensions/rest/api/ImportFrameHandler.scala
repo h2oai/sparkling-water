@@ -45,7 +45,7 @@ class ImportFrameHandler extends Handler {
     val domains = expandDomains(stringDomains, columnTypes)
     val frame = DKV.getGet[Frame](frameKey)
 
-    // Convert unique categorical columns with too many categorical levels to T_STR
+    // Convert categorical columns with too many categorical levels to T_STR
     val indicesOfChanges = refineDataTypesAndReturnIndicesOfChanges(columnTypes, stringDomains, frame.names())
     if (indicesOfChanges.nonEmpty) {
       val vectorsToBeConvertedToString = indicesOfChanges.map(frame.vec(_))
@@ -69,7 +69,7 @@ class ImportFrameHandler extends Handler {
     // Convert unique categorical columns to T_STR
     categoricalColumnIndices.foreach { idx =>
       val vector = frame.vec(idx)
-      val ratio = vector.length().asInstanceOf[Double] / vector.cardinality()
+      val ratio = vector.cardinality() / vector.length().asInstanceOf[Double]
       if (ratio > 0.95) {
         Log.info(
           s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
