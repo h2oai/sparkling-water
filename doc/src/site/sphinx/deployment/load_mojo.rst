@@ -229,7 +229,6 @@ The list of specific MOJO models:
 - ``H2OGAMMOJOModel``
 - ``H2ODeepLearningMOJOModel``
 - ``H2OKMeansMOJOModel``
-- ``H2OGLRMMOJOModel``
 - ``H2OIsolationForestMOJOModel``
 
 Exporting the loaded MOJO model using Sparkling Water
@@ -268,8 +267,6 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
   it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
-- ``withReconstructedData`` - When enabled, a user can obtain reconstructed data for dimensional reduction models.
-  This option is only supported by the GLRM algorithm and is disabled by default.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -330,12 +327,3 @@ with the actual value of your detailed prediction col. By default, it is ``detai
 The stage results are an array of values, where a value at the position *t* is the prediction/probability combined from contributions of trees *T1, T2, ..., Tt*.
 For *t* equal to a number of model trees, the value is the same as the final prediction/probability. The stage results (probabilities) for the classification problem
 are represented by a list of columns, where one column contains stage probabilities for a given prediction class.
-
-Obtaining Reconstructed Data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To obtain reconstructed data for dimensional reduction models, please first make sure to set ``withReconstructedData``
-to true on your MOJO settings object. Reconstructed columns will be located under the
-``${detailedPredictionCol}.reconstructed`` column on the dataset obtained from the prediction.
-Please replace ``${detailedPredictionCol}`` with the actual value of your detailed prediction col. By default,
-it is ``detailed_prediction``.

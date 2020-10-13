@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.functions.bround
 import org.apache.spark.sql.types._
@@ -36,21 +37,11 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
     .drop("class")
 
-  def getPreconfiguredAlgorithm() = {
-    new H2OGLRM()
-      .setK(3)
-      .setLoss("Quadratic")
-      .setGammaX(0.5)
-      .setGammaY(0.5)
-      .setSeed(42)
-      .setTransform("standardize")
-  }
+  private lazy val glrmModel =
+    H2OMOJOModel.createFromMojo(this.getClass.getClassLoader.getResourceAsStream("glrm.mojo"), "glrm.mojo")
 
   test("predictionCol content") {
-    val algo = getPreconfiguredAlgorithm()
-
-    val model = algo.fit(dataset)
-    val transformed = model.transform(dataset)
+    val transformed = glrmModel.transform(dataset)
 
     // the 'dimensions' from the dimension reduction prediction are directly in predictionCol
     assert(transformed.select("prediction").head().getList[Double](0).size() == 3)
@@ -58,12 +49,10 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
   test("detailedPredictionCol content") {
     import spark.implicits._
-    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
 
-    val model = algo.fit(dataset)
-    val transformed = model.transform(dataset).cache()
+    val transformed = glrmModel.transform(dataset).cache()
 
-    val expectedCols = Seq("dimensions", "reconstructed")
+    val expectedCols = Seq("dimensions")
     assert(transformed.select("detailed_prediction.*").schema.fields.map(_.name).sameElements(expectedCols))
 
     def roundResult(dataFrame: DataFrame, precision: Int): DataFrame = {
@@ -75,52 +64,21 @@ class DimReductionPredictionTestSuite extends FunSuite with Matchers with Shared
 
     val expected = roundResult(transformed.select("prediction"), 3)
     val result = roundResult(transformed.select($"detailed_prediction.dimensions" as "prediction"), 3)
-    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head().getStruct(0)
-    val reconstructedColumns = transformed.select("detailed_prediction.reconstructed.*").schema.fieldNames
 
     TestUtils.assertDataFramesAreIdentical(expected, result)
-    assert(reconstructedRow.size == model.getFeaturesCols().length)
-    assert(reconstructedColumns.toSeq == model.getFeaturesCols().toSeq)
-  }
-
-  test("reconstructed data on categorical columns") {
-    import spark.implicits._
-    val dataset = spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-      .withColumn("CAPSULE", 'CAPSULE.cast("string"))
-      .withColumn("RACE", 'RACE.cast("string"))
-
-    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
-
-    val model = algo.fit(dataset)
-    val transformed = model.transform(dataset)
-
-    val reconstructedRow = transformed.select("detailed_prediction.reconstructed").head().getStruct(0)
-    val reconstructedColumns = transformed.select("detailed_prediction.reconstructed.*").schema.fieldNames
-
-    assert(reconstructedRow.size == model.getFeaturesCols().length)
-    assert(reconstructedColumns.toSeq == model.getFeaturesCols().toSeq)
   }
 
   test("transformSchema") {
-    val algo = getPreconfiguredAlgorithm().setWithReconstructedData(true)
-
-    val model = algo.fit(dataset)
-
     val datasetFields = dataset.schema.fields
     val predictionColField = StructField("prediction", ArrayType(DoubleType, containsNull = false), nullable = true)
 
     val dimensionsField = StructField("dimensions", ArrayType(DoubleType, containsNull = false), nullable = true)
-    val reconstructedFields = algo.getFeaturesCols().map(StructField(_, DoubleType, nullable = false))
-    val reconstructedField = StructField("reconstructed", StructType(reconstructedFields), nullable = true)
     val detailedPredictionColField =
-      StructField("detailed_prediction", StructType(dimensionsField :: reconstructedField :: Nil), nullable = true)
+      StructField("detailed_prediction", StructType(dimensionsField :: Nil), nullable = true)
 
     val expectedSchema = StructType(datasetFields ++ (detailedPredictionColField :: predictionColField :: Nil))
-    val expectedSchemaByTransform = model.transform(dataset).schema
-    val schema = model.transformSchema(dataset.schema)
+    val expectedSchemaByTransform = glrmModel.transform(dataset).schema
+    val schema = glrmModel.transformSchema(dataset.schema)
 
     assert(schema == expectedSchema)
     assert(schema == expectedSchemaByTransform)

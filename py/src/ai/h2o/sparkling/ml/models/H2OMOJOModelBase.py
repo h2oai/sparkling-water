@@ -67,6 +67,3 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
 
     def getWithStageResults(self):
         return self._java_obj.getWithStageResults()
-
-    def getWithReconstructedData(self):
-        return self._java_obj.getWithReconstructedData()

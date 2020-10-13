@@ -28,8 +28,7 @@ case class H2OMOJOSettings(
     namedMojoOutputColumns: Boolean = true,
     withContributions: Boolean = false,
     withLeafNodeAssignments: Boolean = false,
-    withStageResults: Boolean = false,
-    withReconstructedData: Boolean = false)
+    withStageResults: Boolean = false)
 
 object H2OMOJOSettings {
   def default = H2OMOJOSettings()
@@ -42,7 +41,6 @@ object H2OMOJOSettings {
       convertUnknownCategoricalLevelsToNa = params.getConvertUnknownCategoricalLevelsToNa(),
       convertInvalidNumbersToNa = params.getConvertInvalidNumbersToNa(),
       withLeafNodeAssignments = params.getWithLeafNodeAssignments(),
-      withStageResults = params.getWithStageResults(),
-      withReconstructedData = params.getWithReconstructedData())
+      withStageResults = params.getWithStageResults())
   }
 }

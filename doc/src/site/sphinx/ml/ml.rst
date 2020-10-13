@@ -12,7 +12,6 @@ Machine Learning
    sw_grid
    sw_kmeans
    sw_xgboost
-   sw_glrm
    sw_isolation_forest
 
 **Transformers**
