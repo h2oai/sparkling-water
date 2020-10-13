@@ -23,7 +23,7 @@ import org.apache.spark.sql.types.{StringType, StructField}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{Assertions, FunSuite}
+import org.scalatest.FunSuite
 import water.parser.Categorical
 
 @RunWith(classOf[JUnitRunner])
@@ -73,10 +73,18 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
     h2oFrame.delete()
   }
 
-  test("DataFrame[String] with more than 10M unique values to H2OFrame[T_STR] and back") {
-    val uniqueValues = (1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.2).toInt)
-    val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toString())
-    val rdd = sc.parallelize(values, 100)
+  test("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
+    testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
+  }
+
+  test("DataFrame[String] with more than 10M unique values in 100 partitions to H2OFrame[T_STR] and back") {
+    testDataFrameConversionWithHighNumberOfCategoricalLevels(100)
+  }
+
+  def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
+    val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
+    val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString)
+    val rdd = sc.parallelize(values, numPartitions)
 
     val df = rdd.toDF("strings")
     val h2oFrame = hc.asH2OFrame(df)
