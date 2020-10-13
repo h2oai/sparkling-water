@@ -189,7 +189,6 @@ class H2OGridSearch(override val uid: String)
         case H2OModelCategory.Multinomial => H2OMetric.Logloss
         case H2OModelCategory.Clustering => H2OMetric.TotWithinss
         case H2OModelCategory.DimReduction if algoName == "glrm" => H2OMetric.GLRMMetric
-        case H2OModelCategory.DimReduction if algoName == "pca" => H2OMetric.PCAMetric
       }
     } else {
       H2OMetric.valueOf(getSelectBestModelBy())
@@ -210,20 +209,6 @@ class H2OGridSearch(override val uid: String)
   }
 
   private def getMetricValue(model: H2OMOJOModel, metric: H2OMetric): Double = metric match {
-    case H2OMetric.PCAMetric =>
-      val ast = parse(model.getModelDetails())
-      val dataWithHeader = for {
-        JObject(obj) <- ast
-        JField("model_summary", JObject(modelSummary)) <- obj
-        JField("data", JArray(dataCol)) <- modelSummary
-        JArray(rows) <- dataCol
-      } yield rows
-      val variancesColIdx = dataWithHeader.head.indexOf(JString("Proportion of Variance"))
-      val data = dataWithHeader.tail.map(list => list(variancesColIdx))
-      val doubles = for {
-        JDouble(result) <- data
-      } yield result
-      doubles.sum
     case H2OMetric.GLRMMetric =>
       val ast = parse(model.getModelDetails())
       val metricValueOption = for {
@@ -312,7 +297,7 @@ class H2OGridSearch(override val uid: String)
 object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
 
   object SupportedAlgos extends Enumeration {
-    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OPCA, H2OIsolationForest =
+    val H2OGBM, H2OGLM, H2OGAM, H2ODeepLearning, H2OXGBoost, H2ODRF, H2OKMeans, H2OGLRM, H2OIsolationForest =
       Value
 
     def getEnumValue(algo: H2OAlgorithm[_ <: Model.Parameters]): Option[SupportedAlgos.Value] = {
@@ -342,7 +327,6 @@ object H2OGridSearch extends H2OParamsReadable[H2OGridSearch] {
         case H2ODRF => "drf"
         case H2OKMeans => "kmeans"
         case H2OGLRM => "glrm"
-        case H2OPCA => "pca"
         case H2OIsolationForest => "isolationforest"
       }
     }

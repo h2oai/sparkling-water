@@ -123,14 +123,6 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(glrm, hyperParams)
   }
 
-  test("H2O Grid Search PCA Pipeline") {
-    val pca = new H2OPCA()
-    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += "k" -> Array(3, 4).map(_.asInstanceOf[AnyRef])
-    hyperParams += "transform" -> Array("STANDARDIZE", "NORMALIZE", "DEMEAN").map(_.asInstanceOf[AnyRef])
-    testGridSearch(pca, hyperParams)
-  }
-
   test("H2O Grid Search Isolation Forest Pipeline") {
     val validationDataset = spark.read
       .option("header", "true")

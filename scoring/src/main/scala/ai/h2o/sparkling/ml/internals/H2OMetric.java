@@ -44,8 +44,7 @@ public enum H2OMetric {
   Betweenss(true),
   TotWithinss(false),
   Totss(false),
-  GLRMMetric(false),
-  PCAMetric(true);
+  GLRMMetric(false);
 
   public boolean higherTheBetter() {
     return higherTheBetter;
