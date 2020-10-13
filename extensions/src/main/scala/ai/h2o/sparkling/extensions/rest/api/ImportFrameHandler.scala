@@ -61,7 +61,6 @@ class ImportFrameHandler extends Handler {
     val updateCategoricalIndicesTask = new UpdateCategoricalIndicesTask(frameKey, categoricalColumnIndices)
     updateCategoricalIndicesTask.doAll(frame)
 
-    // Convert unique categorical columns to T_STR
     convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
 
     request
