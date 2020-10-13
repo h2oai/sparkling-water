@@ -27,7 +27,6 @@ import org.apache.spark.internal.Logging
   * properties passed from user to Sparkling Water.
   */
 class H2OConf(sparkConf: SparkConf) extends ai.h2o.sparkling.H2OConf(sparkConf) {
-  this.set("spark.ext.h2o.rest.api.based.client", value = false)
   logWarning(
     "The class org.apache.spark.h2o.H2OConf is deprecated and will be removed in the version 3.34." +
       " Please use ai.h2o.sparkling.H2OConf instead.")
