@@ -106,8 +106,9 @@ class ImportFrameHandler extends Handler {
           val oldVector = frame.replace(idx, vector.toNumericVec())
           oldVector.remove()
         case unexpectedType =>
-          Log.err(s"The categorical column '${frame.names()(idx)}' has been identified to be " +
-            s"type of '${unexpectedType}', but the conversion is not supported. ")
+          Log.err(
+            s"The categorical column '${frame.names()(idx)}' has been identified to be " +
+              s"type of '${unexpectedType}', but the conversion is not supported. ")
       }
     }
   }

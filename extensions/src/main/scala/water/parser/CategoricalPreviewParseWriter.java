@@ -17,30 +17,30 @@
 
 package water.parser;
 
-import water.util.IcedHashMap;
-
 import java.lang.reflect.Field;
+import water.util.IcedHashMap;
 
 public class CategoricalPreviewParseWriter extends PreviewParseWriter {
 
-    public CategoricalPreviewParseWriter(String[] domain, int totalCount) {
-        super(1);
-        this._nstrings[0] = totalCount;
-        IcedHashMap<String, String>[] domains = getPrivateDomains();
-        for (int i = 0;  i < domain.length; i++) {
-            domains[0].put(domain[i], "");
-        }
+  public CategoricalPreviewParseWriter(String[] domain, int totalCount) {
+    super(1);
+    this._nstrings[0] = totalCount;
+    IcedHashMap<String, String>[] domains = getPrivateDomains();
+    for (int i = 0; i < domain.length; i++) {
+      domains[0].put(domain[i], "");
+    }
+  }
+
+  private IcedHashMap<String, String>[] getPrivateDomains() {
+    IcedHashMap<String, String>[] domains = null;
+    try {
+      Field domainsField = this.getClass().getDeclaredField("_domains");
+      domainsField.setAccessible(true);
+      domains = (IcedHashMap<String, String>[]) domainsField.get(this);
+      domainsField.setAccessible(false);
+    } catch (Exception e) {
     }
 
-    private IcedHashMap<String,String>[] getPrivateDomains() {
-        IcedHashMap<String, String>[] domains = null;
-        try {
-            Field domainsField = this.getClass().getDeclaredField("_domains");
-            domainsField.setAccessible(true);
-            domains = (IcedHashMap<String, String>[]) domainsField.get(this);
-            domainsField.setAccessible(false);
-        } catch (Exception e) {}
-
-        return domains;
-    }
+    return domains;
+  }
 }
