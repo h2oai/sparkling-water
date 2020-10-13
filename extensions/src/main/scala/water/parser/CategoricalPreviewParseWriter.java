@@ -34,7 +34,7 @@ public class CategoricalPreviewParseWriter extends PreviewParseWriter {
   private IcedHashMap<String, String>[] getPrivateDomains() {
     IcedHashMap<String, String>[] domains = null;
     try {
-      Field domainsField = this.getClass().getDeclaredField("_domains");
+      Field domainsField = PreviewParseWriter.class.getDeclaredField("_domains");
       domainsField.setAccessible(true);
       domains = (IcedHashMap<String, String>[]) domainsField.get(this);
       domainsField.setAccessible(false);
