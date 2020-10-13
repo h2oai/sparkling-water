@@ -17,27 +17,24 @@
 
 package water.parser;
 
-import java.lang.reflect.Field;
 import water.util.IcedHashMap;
 
-public class CategoricalPreviewParseWriter extends PreviewParseWriter {
+public class IcedHashMapWrapper extends IcedHashMap<String, String> {
+    private String[] _values = null;
 
-  public CategoricalPreviewParseWriter(String[] domain, int totalCount) {
-    super(1);
-    this._nstrings[0] = totalCount;
-    IcedHashMap<String, String>[] domains = new IcedHashMap[1];
-    domains[0] = new IcedHashMapWrapper(domain);
-    setPrivateDomains(domains);
-  }
-
-  private void setPrivateDomains(IcedHashMap<String, String>[] domains) {
-    try {
-      Field domainsField = PreviewParseWriter.class.getDeclaredField("_domains");
-      domainsField.setAccessible(true);
-      domainsField.set(this, domains);
-      domainsField.setAccessible(false);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    public IcedHashMapWrapper(String[] values) {
+        this._values = values;
     }
-  }
+
+    @Override public int size() {
+        return _values.length;
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        for (String value: this._values) {
+            if (value.equals(key)) return true;
+        }
+        return false;
+    }
 }

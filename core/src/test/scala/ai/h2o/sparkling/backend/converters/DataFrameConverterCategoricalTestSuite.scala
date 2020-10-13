@@ -97,6 +97,29 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
     h2oFrame.delete()
   }
 
+  test("DataFrame[String] with only unique values with in one partition to H2OFrame[T_STR] and back") {
+    testDataFrameConversionWithOnlyUniqueValues(1)
+  }
+
+  test("DataFrame[String] with only unique values with in 100 partitions to H2OFrame[T_STR] and back") {
+    testDataFrameConversionWithOnlyUniqueValues(100)
+  }
+
+  def testDataFrameConversionWithOnlyUniqueValues(numPartitions: Int) {
+    val uniqueValues = (1 to (Categorical.MAX_CATEGORICAL_COUNT / 10)).map(_.toHexString)
+    val rdd = sc.parallelize(uniqueValues, numPartitions)
+
+    val df = rdd.toDF("strings")
+    val h2oFrame = hc.asH2OFrame(df)
+
+    assertH2OFrameInvariants(df, h2oFrame)
+    assert(h2oFrame.columns(0).isString())
+
+    val resultDF = hc.asSparkFrame(h2oFrame)
+    TestUtils.assertDataFramesAreIdentical(df, resultDF)
+    h2oFrame.delete()
+  }
+
   private def assertH2OFrameInvariants(inputDF: DataFrame, df: H2OFrame): Unit = {
     assert(inputDF.count == df.numberOfRows, "Number of rows has to match")
     assert(df.numberOfColumns == SchemaUtils.flattenSchema(inputDF).length, "Number columns should match")
