@@ -20,7 +20,7 @@ package ai.h2o.sparkling.backend.converters
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import ai.h2o.sparkling.{H2OFrame, SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types.{StringType, StructField}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite

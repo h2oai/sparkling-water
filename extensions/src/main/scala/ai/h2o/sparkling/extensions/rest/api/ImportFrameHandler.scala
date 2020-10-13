@@ -23,6 +23,7 @@ import ai.h2o.sparkling.utils.Base64Encoding
 import water.{DKV, Key}
 import water.api.Handler
 import water.fvec.{AppendableVec, ChunkUtils, Frame, Vec}
+import water.parser.CategoricalPreviewParseWriter
 import water.util.Log
 
 import scala.collection.mutable.ArrayBuffer
@@ -61,7 +62,7 @@ class ImportFrameHandler extends Handler {
     updateCategoricalIndicesTask.doAll(frame)
 
     // Convert unique categorical columns to T_STR
-    convertUniqueCategoricalColumnsToStringColumns(frame, categoricalColumnIndices)
+    convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
 
     request
   }
@@ -89,16 +90,24 @@ class ImportFrameHandler extends Handler {
     }
   }
 
-  private def convertUniqueCategoricalColumnsToStringColumns(frame: Frame, categoricalColumnIndices: Array[Int]) = {
+  private def convertCategoricalColumnsToOtherTypesIfNeeded(frame: Frame, categoricalColumnIndices: Array[Int]) = {
     categoricalColumnIndices.foreach { idx =>
       val vector = frame.vec(idx)
-      val ratio = vector.cardinality() / vector.length().asInstanceOf[Double]
-      if (ratio >= 0.95) {
-        Log.info(
-          s"The categorical column '${frame.names()(idx)}' has been converted to string since the ratio" +
-            s" between distinct count and total count is $ratio.")
-        val oldVector = frame.replace(idx, vector.toStringVec())
-        oldVector.remove()
+      val previewWriter = new CategoricalPreviewParseWriter(vector.domain(), vector.length().toInt)
+      val types = previewWriter.guessTypes()
+      types(0) match {
+        case Vec.T_CAT => // No action needed
+        case Vec.T_STR =>
+          Log.info(s"The categorical column '${frame.names()(idx)}' has been converted to string.")
+          val oldVector = frame.replace(idx, vector.toStringVec())
+          oldVector.remove()
+        case Vec.T_NUM =>
+          Log.info(s"The categorical column '${frame.names()(idx)}' has been converted to numeric.")
+          val oldVector = frame.replace(idx, vector.toNumericVec())
+          oldVector.remove()
+        case unexpectedType =>
+          Log.err(s"The categorical column '${frame.names()(idx)}' has been identified to be " +
+            s"type of '${unexpectedType}', but the conversion is not supported. ")
       }
     }
   }
