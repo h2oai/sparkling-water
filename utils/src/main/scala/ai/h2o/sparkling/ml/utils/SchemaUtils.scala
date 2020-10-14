@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.utils
 
 import org.apache.spark.ml.attribute.AttributeGroup
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.functions.col
@@ -388,15 +389,15 @@ object SchemaUtils {
     *
     * @return array containing size of each element
     */
-  def collectMaxElementSizes(flatDataFrame: DataFrame): Array[Int] = {
-    val vectorIndices = collectVectorLikeTypes(flatDataFrame.schema)
-    val simpleIndices = collectSimpleLikeTypes(flatDataFrame.schema)
+  def collectMaxElementSizes(rdd: RDD[Row], schema: StructType): Array[Int] = {
+    val vectorIndices = collectVectorLikeTypes(schema)
+    val simpleIndices = collectSimpleLikeTypes(schema)
 
-    val sizeFromMetadata = vectorIndices.map(idx => fieldSizeFromMetadata(flatDataFrame.schema.fields(idx)))
+    val sizeFromMetadata = vectorIndices.map(idx => fieldSizeFromMetadata(schema.fields(idx)))
     val maxCollectionSizes = if (sizeFromMetadata.forall(_.isDefined)) {
       sizeFromMetadata.map(_.get).toArray
     } else {
-      val sizes = flatDataFrame.rdd.map { row =>
+      val sizes = rdd.map { row =>
         vectorIndices.map { idx =>
           getCollectionSize(row, idx)
         }
