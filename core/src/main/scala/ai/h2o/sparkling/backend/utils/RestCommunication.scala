@@ -34,6 +34,13 @@ import scala.reflect.{ClassTag, classTag}
 
 trait RestCommunication extends Logging with RestEncodingUtils {
 
+  object LoggingLevel extends Enumeration {
+    type LoggingLevel = Value
+    val Info, Debug = Value
+  }
+
+  import LoggingLevel._
+
   /**
     *
     * @param endpoint      An address of H2O node with exposed REST endpoint
@@ -50,8 +57,10 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       suffix: String,
       conf: H2OConf,
       params: Map[String, Any] = Map.empty,
-      skippedFields: Seq[(Class[_], String)] = Seq.empty): ResultType = {
-    request(endpoint, "GET", suffix, conf, params, skippedFields)
+      skippedFields: Seq[(Class[_], String)] = Seq.empty,
+      confirmationLoggingLevel: LoggingLevel = Info): ResultType = {
+    val encodeParamsAsJson = false
+    request(endpoint, "GET", suffix, conf, params, skippedFields, encodeParamsAsJson, confirmationLoggingLevel)
   }
 
   /**
@@ -163,10 +172,13 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       conf: H2OConf,
       params: Map[String, Any] = Map.empty,
       skippedFields: Seq[(Class[_], String)] = Seq.empty,
-      encodeParamsAsJson: Boolean = false): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson, None)) { response =>
-      val content = IOUtils.toString(response)
-      deserialize[ResultType](content, skippedFields)
+      encodeParamsAsJson: Boolean = false,
+      confirmationLoggingLevel: LoggingLevel = Info): ResultType = {
+    withResource(
+      readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson, None, confirmationLoggingLevel)) {
+      response =>
+        val content = IOUtils.toString(response)
+        deserialize[ResultType](content, skippedFields)
     }
   }
 
@@ -276,7 +288,8 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       conf: H2OConf,
       params: Map[String, Any] = Map.empty,
       encodeParamsAsJson: Boolean = false,
-      file: Option[String]): InputStream = {
+      file: Option[String],
+      confirmationLoggingLevel: LoggingLevel = Info): InputStream = {
     val suffixWithParams =
       if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
@@ -284,7 +297,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       val connection = url.openConnection().asInstanceOf[HttpURLConnection]
       connection.setRequestMethod(requestType)
       setHeaders(connection, conf, requestType, params, encodeParamsAsJson, file)
-      checkResponseCode(connection)
+      checkResponseCode(connection, confirmationLoggingLevel)
       connection.getInputStream()
     } catch {
       case e: RestApiException => throw e
@@ -292,14 +305,19 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     }
   }
 
-  def checkResponseCode(connection: HttpURLConnection): Unit = {
+  def checkResponseCode(connection: HttpURLConnection, confirmationLoggingLevel: LoggingLevel = Info): Unit = {
     val url = connection.getURL
     val requestType = connection.getRequestMethod
     val statusCode = retry(3) {
       connection.getResponseCode()
     }
     statusCode match {
-      case HttpURLConnection.HTTP_OK => logInfo(s"H2O node $url successfully responded for the $requestType.")
+      case HttpURLConnection.HTTP_OK =>
+        val message = s"H2O node $url successfully responded for the $requestType."
+        confirmationLoggingLevel match {
+          case Info => logInfo(message)
+          case Debug => logDebug(message)
+        }
       case HttpURLConnection.HTTP_UNAUTHORIZED =>
         throw new RestApiUnauthorisedException(
           s"""H2O node ${urlToString(url)} could not be reached because the client is not authorized.

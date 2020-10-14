@@ -29,7 +29,7 @@ trait RestApiUtils extends RestCommunication {
 
   def getPingInfo(conf: H2OConf): PingV3 = {
     val endpoint = getClusterEndpoint(conf)
-    query[PingV3](endpoint, "/3/Ping", conf)
+    query[PingV3](endpoint, "/3/Ping", conf, confirmationLoggingLevel = LoggingLevel.Debug)
   }
 
   def shutdownCluster(conf: H2OConf): Unit = {
