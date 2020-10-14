@@ -82,7 +82,6 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
       testDataFrameConversionWithHighNumberOfCategoricalLevels(100)
     }
 
-
     def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
       val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
       val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString)
