@@ -73,28 +73,31 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
     h2oFrame.delete()
   }
 
-  test("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
-    testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
-  }
+  if (hc.getConf.runsInInternalClusterMode) { // External backed can go OOM in testing docker image
+    test("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
+      testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
+    }
 
-  test("DataFrame[String] with more than 10M unique values in 100 partitions to H2OFrame[T_STR] and back") {
-    testDataFrameConversionWithHighNumberOfCategoricalLevels(100)
-  }
+    test("DataFrame[String] with more than 10M unique values in 100 partitions to H2OFrame[T_STR] and back") {
+      testDataFrameConversionWithHighNumberOfCategoricalLevels(100)
+    }
 
-  def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
-    val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
-    val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString)
-    val rdd = sc.parallelize(values, numPartitions)
 
-    val df = rdd.toDF("strings")
-    val h2oFrame = hc.asH2OFrame(df)
+    def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
+      val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
+      val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString)
+      val rdd = sc.parallelize(values, numPartitions)
 
-    assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isString())
+      val df = rdd.toDF("strings")
+      val h2oFrame = hc.asH2OFrame(df)
 
-    val resultDF = hc.asSparkFrame(h2oFrame)
-    TestUtils.assertDataFramesAreIdentical(df, resultDF)
-    h2oFrame.delete()
+      assertH2OFrameInvariants(df, h2oFrame)
+      assert(h2oFrame.columns(0).isString())
+
+      val resultDF = hc.asSparkFrame(h2oFrame)
+      TestUtils.assertDataFramesAreIdentical(df, resultDF)
+      h2oFrame.delete()
+    }
   }
 
   test("DataFrame[String] with only unique values with in one partition to H2OFrame[T_STR] and back") {
