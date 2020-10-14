@@ -73,7 +73,8 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
     h2oFrame.delete()
   }
 
-  if (hc.getConf.runsInInternalClusterMode) { // External backed can go OOM in testing docker image
+  // External backed can go OOM in testing docker image
+  if (sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal") == "internal") {
     test("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
       testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
     }
