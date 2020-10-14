@@ -27,6 +27,12 @@ import org.apache.spark.internal.Logging
   * properties passed from user to Sparkling Water.
   */
 class H2OConf(sparkConf: SparkConf) extends ai.h2o.sparkling.H2OConf(sparkConf) {
+  if (!this.contains("spark.ext.h2o.rest.api.based.client")) {
+    this.set("spark.ext.h2o.rest.api.based.client", value = false)
+    logWarning(
+      "Sparkling Water will run a thick H2O client enabling usage of internal Java API. If you wish to disable " +
+      "H2O client, set the configuration property 'spark.ext.h2o.rest.api.based.client' to true.")
+  }
   logWarning(
     "The class org.apache.spark.h2o.H2OConf is deprecated and will be removed in the version 3.34." +
       " Please use ai.h2o.sparkling.H2OConf instead.")
