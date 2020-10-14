@@ -20,21 +20,22 @@ package water.parser;
 import water.util.IcedHashMap;
 
 public class IcedHashMapWrapper extends IcedHashMap<String, String> {
-    private String[] _values = null;
+  private String[] _values = null;
 
-    public IcedHashMapWrapper(String[] values) {
-        this._values = values;
-    }
+  public IcedHashMapWrapper(String[] values) {
+    this._values = values;
+  }
 
-    @Override public int size() {
-        return _values.length;
-    }
+  @Override
+  public int size() {
+    return _values.length;
+  }
 
-    @Override
-    public boolean containsKey(Object key) {
-        for (String value: this._values) {
-            if (value.equals(key)) return true;
-        }
-        return false;
+  @Override
+  public boolean containsKey(Object key) {
+    for (String value : this._values) {
+      if (value.equals(key)) return true;
     }
+    return false;
+  }
 }
