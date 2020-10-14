@@ -174,9 +174,11 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       skippedFields: Seq[(Class[_], String)] = Seq.empty,
       encodeParamsAsJson: Boolean = false,
       confirmationLoggingLevel: LoggingLevel = Info): ResultType = {
-    withResource(readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson, None)) { response =>
-      val content = IOUtils.toString(response)
-      deserialize[ResultType](content, skippedFields)
+    withResource(
+      readURLContent(endpoint, requestType, suffix, conf, params, encodeParamsAsJson, None, confirmationLoggingLevel)) {
+      response =>
+        val content = IOUtils.toString(response)
+        deserialize[ResultType](content, skippedFields)
     }
   }
 
