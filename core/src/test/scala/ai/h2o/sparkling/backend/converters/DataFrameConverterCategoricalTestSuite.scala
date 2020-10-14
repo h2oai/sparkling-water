@@ -75,7 +75,9 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
 
   // External backed can go OOM in testing docker image
   if (sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal") == "internal") {
-    test("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
+
+    // Spark 2.2 - 2.4 fails on such a big task
+    ignore("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
       testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
     }
 
