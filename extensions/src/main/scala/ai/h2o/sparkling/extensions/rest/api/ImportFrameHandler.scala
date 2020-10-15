@@ -93,7 +93,8 @@ class ImportFrameHandler extends Handler {
   private def convertCategoricalColumnsToOtherTypesIfNeeded(frame: Frame, categoricalColumnIndices: Array[Int]) = {
     categoricalColumnIndices.foreach { idx =>
       val vector = frame.vec(idx)
-      val previewWriter = new CategoricalPreviewParseWriter(vector.domain(), vector.length().toInt)
+      val previewWriter =
+        new CategoricalPreviewParseWriter(vector.domain(), vector.length().toInt, vector.naCnt().toInt)
       val types = previewWriter.guessTypes()
       types(0) match {
         case Vec.T_CAT => // No action needed

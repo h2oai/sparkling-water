@@ -22,9 +22,11 @@ import water.util.IcedHashMap;
 
 public class CategoricalPreviewParseWriter extends PreviewParseWriter {
 
-  public CategoricalPreviewParseWriter(String[] domain, int totalCount) {
+  public CategoricalPreviewParseWriter(String[] domain, int totalCount, int naCount) {
     super(1);
-    this._nstrings[0] = totalCount;
+    this._nlines = totalCount;
+    this._nempty[0] = naCount;
+    this._nstrings[0] = totalCount - naCount;
     IcedHashMap<String, String>[] domains = new IcedHashMap[1];
     domains[0] = new IcedHashMapWrapper(domain);
     setPrivateDomains(domains);
