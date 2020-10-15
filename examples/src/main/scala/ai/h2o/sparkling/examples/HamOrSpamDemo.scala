@@ -43,10 +43,11 @@ object HamOrSpamDemo {
     val stopWordsRemover = createStopWordsRemover(tokenizer)
     val hashingTF = createHashingTF(stopWordsRemover)
     val idf = createIDF(hashingTF)
-    val columnPruner = createColumnPruner(idf, hashingTF, stopWordsRemover, tokenizer)
+    val columnPruner = createColumnPruner(hashingTF, stopWordsRemover, tokenizer)
+    val columnPruner2 = new ColumnPruner().setColumns(Array(idf.getOutputCol))
     val estimators = Array(gbm(), deepLearning(), autoML(), gridSearch(), xgboost())
     estimators.foreach { estimator =>
-      val stages = Array(tokenizer, stopWordsRemover, hashingTF, idf, estimator, columnPruner)
+      val stages = Array(tokenizer, stopWordsRemover, hashingTF, idf, columnPruner, estimator, columnPruner2)
       val pipeline = createPipeline(stages)
       val model = trainPipeline(pipeline, data)
       assertPredictions(spark, model)
@@ -114,12 +115,11 @@ object HamOrSpamDemo {
   }
 
   def createColumnPruner(
-      idf: IDF,
       hashingTF: HashingTF,
       stopWordsRemover: StopWordsRemover,
       tokenizer: RegexTokenizer): ColumnPruner = {
-    new ColumnPruner().setColumns(
-      Array[String](idf.getOutputCol, hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
+    new ColumnPruner()
+      .setColumns(Array[String](hashingTF.getOutputCol, stopWordsRemover.getOutputCol, tokenizer.getOutputCol))
   }
 
   def trainPipeline(pipeline: Pipeline, data: DataFrame): PipelineModel = {
