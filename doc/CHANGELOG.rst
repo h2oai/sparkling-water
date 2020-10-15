@@ -19,7 +19,7 @@ Downloads:
    -  `SW-2436 <https://0xdata.atlassian.net/browse/SW-2436>`__ - Deprecate 'trainingParameters' Method on H2OMOJOModel
    -  `SW-2434 <https://0xdata.atlassian.net/browse/SW-2434>`__ - Deprecate 'weightCol' Parameter on H2OKmeans
    -  `SW-2433 <https://0xdata.atlassian.net/browse/SW-2433>`__ - Deprecate 'distribution' Parameter on H2OGLM
-   -  `SW-2432 <https://0xdata.atlassian.net/browse/SW-2432>`__ - Limit Generated Parameters Only to parameters in *ParameteV3.fields
+   -  `SW-2432 <https://0xdata.atlassian.net/browse/SW-2432>`__ - Limit Generated Parameters Only to parameters in xxxParameteV3.fields
    -  `SW-2430 <https://0xdata.atlassian.net/browse/SW-2430>`__ - Upgrade to a Docker Image with Spark 2.4.7 and 3.0.1
    -  `SW-2423 <https://0xdata.atlassian.net/browse/SW-2423>`__ - Remove Irrelevant Parameters from Kmeans API
    -  `SW-2417 <https://0xdata.atlassian.net/browse/SW-2417>`__ - Clean up w2v tokenizer and expose minTokenLength and pattern to provide same features as H2O tokenize method
