@@ -1,6 +1,77 @@
 Change Log
 ==========
 
+v3.32.0.1-1 (2020-10-15)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.1-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2463 <https://0xdata.atlassian.net/browse/SW-2463>`__ - Move Ping Messages to Debug Logging Level
+   -  `SW-2459 <https://0xdata.atlassian.net/browse/SW-2459>`__ - Upgrade to H2O 3.32.0.1
+   -  `SW-2442 <https://0xdata.atlassian.net/browse/SW-2442>`__ - Remove "max_hit_ratio_k" from the List of Deprecated Parameters 
+   -  `SW-2436 <https://0xdata.atlassian.net/browse/SW-2436>`__ - Deprecate 'trainingParameters' Method on H2OMOJOModel
+   -  `SW-2434 <https://0xdata.atlassian.net/browse/SW-2434>`__ - Deprecate 'weightCol' Parameter on H2OKmeans
+   -  `SW-2433 <https://0xdata.atlassian.net/browse/SW-2433>`__ - Deprecate 'distribution' Parameter on H2OGLM
+   -  `SW-2432 <https://0xdata.atlassian.net/browse/SW-2432>`__ - Limit Generated Parameters Only to parameters in *ParameteV3.fields
+   -  `SW-2430 <https://0xdata.atlassian.net/browse/SW-2430>`__ - Upgrade to a Docker Image with Spark 2.4.7 and 3.0.1
+   -  `SW-2423 <https://0xdata.atlassian.net/browse/SW-2423>`__ - Remove Irrelevant Parameters from Kmeans API
+   -  `SW-2417 <https://0xdata.atlassian.net/browse/SW-2417>`__ - Clean up w2v tokenizer and expose minTokenLength and pattern to provide same features as H2O tokenize method
+   -  `SW-2401 <https://0xdata.atlassian.net/browse/SW-2401>`__ - Automatically generate LaTex configuration from Scala code
+   -  `SW-2397 <https://0xdata.atlassian.net/browse/SW-2397>`__ - Automatically generate R configuration from Scala code
+   -  `SW-2395 <https://0xdata.atlassian.net/browse/SW-2395>`__ - Automatically generate the configuration table in documentation
+   -  `SW-2374 <https://0xdata.atlassian.net/browse/SW-2374>`__ - Update booklet to the state so it is valid on our master branch
+   -  `SW-2345 <https://0xdata.atlassian.net/browse/SW-2345>`__ - Delete H2OFrames Produced by Algorithm Parameters
+
+-  Bug
+
+   -  `SW-2462 <https://0xdata.atlassian.net/browse/SW-2462>`__ - org.apache.spark.h2o.H2OConf Shouldn't Override Settings from Command Line
+   -  `SW-2453 <https://0xdata.atlassian.net/browse/SW-2453>`__ - Newly Introduced Parameter 'preprocessing' Broke SW API Generation
+   -  `SW-2450 <https://0xdata.atlassian.net/browse/SW-2450>`__ - Add missing ' in the migration guide
+   -  `SW-2449 <https://0xdata.atlassian.net/browse/SW-2449>`__ - asH2OFrame Method Could Fail on a String Column Having More Than 10 Million Distinct Values
+   -  `SW-2448 <https://0xdata.atlassian.net/browse/SW-2448>`__ - The Method `getAlgo()` on H2OGridSearch Supports only a Subset of Algorithms
+   -  `SW-2445 <https://0xdata.atlassian.net/browse/SW-2445>`__ - Add logic of FrameUtils.guessParserSetup to Sparkling Water
+   -  `SW-2439 <https://0xdata.atlassian.net/browse/SW-2439>`__ - Missing Import of H2OBinaryModel in Python Classification and Regression Classes
+   -  `SW-2435 <https://0xdata.atlassian.net/browse/SW-2435>`__ - Use `family` Parameter on H2OGLM, H2OGAM for Determining a Need to Convert the Label Column to Categoricals
+   -  `SW-2427 <https://0xdata.atlassian.net/browse/SW-2427>`__ - Fix parameter generation in doc
+   -  `SW-2416 <https://0xdata.atlassian.net/browse/SW-2416>`__ - Kubernetes tests should clean up the environment in case of an error
+   -  `SW-2412 <https://0xdata.atlassian.net/browse/SW-2412>`__ - NullableDataFrameParam Should Be Persistable
+   -  `SW-2399 <https://0xdata.atlassian.net/browse/SW-2399>`__ - Missing mappings for  'negativebinomial' and 'fractionalbinomial' in ProblemType.distributionToProblemType
+   -  `SW-2361 <https://0xdata.atlassian.net/browse/SW-2361>`__ - Throw explicit exception in case hyper parameter does not exist
+
+-  New Feature
+
+   -  `SW-2458 <https://0xdata.atlassian.net/browse/SW-2458>`__ - Expose Feature Types on H2OPipelineMOJOModel and H2OMOJOModel
+   -  `SW-2440 <https://0xdata.atlassian.net/browse/SW-2440>`__ - Generate Algorithm-specific Python MOJO Classes
+   -  `SW-2415 <https://0xdata.atlassian.net/browse/SW-2415>`__ - Generate Algorithm-specific MOJO Scala Classes
+   -  `SW-2411 <https://0xdata.atlassian.net/browse/SW-2411>`__ - Add Isolation Forest to GridSearch
+   -  `SW-2408 <https://0xdata.atlassian.net/browse/SW-2408>`__ - Add H2O Isolation Forest to Algo API
+   -  `SW-2407 <https://0xdata.atlassian.net/browse/SW-2407>`__ - Add renameCol method to asH2OFrame Scala API
+   -  `SW-2386 <https://0xdata.atlassian.net/browse/SW-2386>`__ - Add H2O GAM to Algo API
+   -  `SW-2365 <https://0xdata.atlassian.net/browse/SW-2365>`__ - Expose Reconstructed Columns on DimReduction Predictions
+   -  `SW-2364 <https://0xdata.atlassian.net/browse/SW-2364>`__ - Expose Reconstruction Mean Squared Error on AutoEncoder Prediction
+   -  `SW-2363 <https://0xdata.atlassian.net/browse/SW-2363>`__ - Expose Stage Results/Probabilities on MOJO Detailed Prediction
+   -  `SW-2353 <https://0xdata.atlassian.net/browse/SW-2353>`__ - Expose H2OBinaryModel in Sparkling Water ( without methods so far)
+   -  `SW-2339 <https://0xdata.atlassian.net/browse/SW-2339>`__ - Expose beta_constraints on GLM
+   -  `SW-2338 <https://0xdata.atlassian.net/browse/SW-2338>`__ - Expose calibration_frame on GBM, DRF, XGBoost
+   -  `SW-2335 <https://0xdata.atlassian.net/browse/SW-2335>`__ - Expose 'random_columns' on GLM
+   -  `SW-2332 <https://0xdata.atlassian.net/browse/SW-2332>`__ - Expose interaction_pairs on GLM
+
+-  Docs
+
+   -  `SW-2452 <https://0xdata.atlassian.net/browse/SW-2452>`__ - Add Comments to the Documentation Indicating Whether a Parameter is Exposed on MOJO or Not
+   -  `SW-2444 <https://0xdata.atlassian.net/browse/SW-2444>`__ - Update Documentation with Usage of Algorithm-specific MOJO Classes
+
+-  Engineering Story
+
+   -  `SW-2342 <https://0xdata.atlassian.net/browse/SW-2342>`__ - Fix intermittent error during stopping kubernetes tests
+
 v3.30.1.3-1 (2020-10-05)
 ------------------------
 Downloads:
