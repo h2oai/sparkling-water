@@ -7,6 +7,7 @@ dependencies {
   compileOnly("ai.h2o:h2o-core:${h2oVersion}")
   compileOnly("javax.servlet:servlet-api:2.5")
 
+  testImplementation("org.scala-lang:scala-library:${scalaVersion}")
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")
   testImplementation("ai.h2o:h2o-core:${h2oVersion}")
