@@ -71,11 +71,14 @@ xgboost = H2OXGBoost(convertUnknownCategoricalLevelsToNa=True,
 data = load()
 
 def trainPipelineModel(idf, hashingTF, stopWordsRemover, tokenizer, algoStage, data):
-    ## Remove all helper columns
-    colPruner = ColumnPruner(columns=[idf.getOutputCol(), hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
+    ## Remove all temporary columns before algorithm stage
+    colPruner = ColumnPruner(columns=[hashingTF.getOutputCol(), stopWordsRemover.getOutputCol(), tokenizer.getOutputCol()])
+
+    ## Remove temporary column produced by the IDF stage
+    idfColPruner = ColumnPruner(columns=[idf.getOutputCol()])
 
     ## Create the pipeline by defining all the stages
-    pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, algoStage, colPruner])
+    pipeline = Pipeline(stages=[tokenizer, stopWordsRemover, hashingTF, idf, colPruner, algoStage, idfColPruner])
 
     ## Test exporting and importing the pipeline. On Systems where HDFS & Hadoop is not available, this call store the pipeline
     ## to local file in the current directory. In case HDFS & Hadoop is available, this call stores the pipeline to HDFS home
