@@ -33,20 +33,16 @@ class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
   with H2OTargetEncoderBase
   with DefaultParamsWritable
-  with H2OTargetEncoderModelUtils
   with RestCommunication
   with EstimatorCommonUtils {
 
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
-    if (dataset.select(getLabelCol()).distinct().count() > 2) {
-      throw new RuntimeException("The label column can not contain more than two unique values.")
-    }
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val input = h2oContext.asH2OFrame(dataset.toDF())
-    convertRelevantColumnsToCategorical(input)
+    input.convertColumnsToCategorical(getInputCols())
     val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
     val params = Map(

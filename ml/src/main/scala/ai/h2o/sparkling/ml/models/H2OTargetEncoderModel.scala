@@ -19,10 +19,10 @@ package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
-import ai.h2o.sparkling.ml.features.H2OTargetEncoderModelUtils
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.ml.Model
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
@@ -33,7 +33,6 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   extends Model[H2OTargetEncoderModel]
   with H2OTargetEncoderBase
   with MLWritable
-  with H2OTargetEncoderModelUtils
   with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
@@ -61,7 +60,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = hc.asH2OFrame(relevantColumnsDF)
-    convertRelevantColumnsToCategorical(input)
+    input.convertColumnsToCategorical(getInputCols())
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
     val conf = hc.getConf

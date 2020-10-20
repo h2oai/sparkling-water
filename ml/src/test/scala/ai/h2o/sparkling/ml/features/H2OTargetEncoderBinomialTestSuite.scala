@@ -28,15 +28,18 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
+
+  import spark.implicits._
 
   private def loadDataFrameFromCsv(path: String): DataFrame = {
     spark.read
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(TestUtils.locate(path))
+      .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
   }
 
   private def loadDataFrameFromCsvAsResource(path: String): DataFrame = {
@@ -45,13 +48,14 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(filePath)
+      .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
   private lazy val trainingDataset = dataset.limit(300).cache()
   private lazy val testingDataset = dataset.except(trainingDataset).cache()
   private lazy val expectedTestingDataset =
-    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed.csv").cache()
+    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed_binomial.csv").cache()
 
   test("A pipeline with a target encoder transform training and testing dataset without an exception") {
     val targetEncoder = new H2OTargetEncoder()
@@ -128,7 +132,9 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setLabelCol("CAPSULE")
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedValue = trainingDataset
+      .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
+      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
     val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -143,7 +149,9 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setLabelCol("CAPSULE")
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedValue = trainingDataset
+      .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
+      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
     val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -158,7 +166,9 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setLabelCol("CAPSULE")
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedValue = trainingDataset
+      .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
+      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
     val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -173,7 +183,9 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
       .setLabelCol("CAPSULE")
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-    val expectedValue = trainingDataset.groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+    val expectedValue = trainingDataset
+      .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
+      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
     val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -264,24 +276,6 @@ class H2OTargetEncoderTestSuite extends FunSuite with Matchers with SharedH2OTes
     val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
 
     TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test("The fit function throws a runtime exception when the label domain has more than two categories") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.3, lit("a"))
-        .when(rand(1) < 0.5, lit("b"))
-        .otherwise(lit("c")))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-
-    val thrown = intercept[RuntimeException] {
-      targetEncoder.fit(trainingDatasetWithLabel)
-    }
-    assert(thrown.getMessage == "The label column can not contain more than two unique values.")
   }
 
   test(
