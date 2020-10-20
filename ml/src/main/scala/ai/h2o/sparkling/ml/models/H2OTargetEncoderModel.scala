@@ -22,7 +22,6 @@ import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._

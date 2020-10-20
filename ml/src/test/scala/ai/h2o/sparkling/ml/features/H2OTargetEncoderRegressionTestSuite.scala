@@ -254,8 +254,8 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
   test("The target encoder can work with arbitrary label categories") {
     val condition =
       when(rand(1) < 0.3, lit(0.5))
-      .when(rand(1) < 0.5, lit(1.5))
-      .otherwise(lit(2.5))
+        .when(rand(1) < 0.5, lit(1.5))
+        .otherwise(lit(2.5))
     val trainingDatasetWithLabel = trainingDataset.withColumn("LABEL", condition)
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
@@ -270,11 +270,12 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
+  test(
+    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
     val condition =
       when(rand(1) < 0.3, lit(0.5))
-      .when(rand(1) < 0.5, lit(1.5))
-      .otherwise(lit(2.5))
+        .when(rand(1) < 0.5, lit(1.5))
+        .otherwise(lit(2.5))
     val trainingDatasetWithLabel = trainingDataset.withColumn("LABEL", condition)
     val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit(3.5))
     val targetEncoder = new H2OTargetEncoder()
@@ -290,7 +291,8 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
+  test(
+    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
     val condition =
       when(rand(1) < 0.3, lit(0.5))
         .when(rand(1) < 0.5, lit(1.5))

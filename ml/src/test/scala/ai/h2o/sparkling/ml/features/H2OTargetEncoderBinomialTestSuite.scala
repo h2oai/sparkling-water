@@ -134,7 +134,10 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset
       .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+      .groupBy()
+      .avg("CAPSULE")
+      .collect()(0)
+      .getDouble(0)
     val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -151,7 +154,10 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset
       .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+      .groupBy()
+      .avg("CAPSULE")
+      .collect()(0)
+      .getDouble(0)
     val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -168,7 +174,10 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset
       .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+      .groupBy()
+      .avg("CAPSULE")
+      .collect()(0)
+      .getDouble(0)
     val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
@@ -185,7 +194,10 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset
       .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-      .groupBy().avg("CAPSULE").collect()(0).getDouble(0)
+      .groupBy()
+      .avg("CAPSULE")
+      .collect()(0)
+      .getDouble(0)
     val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
