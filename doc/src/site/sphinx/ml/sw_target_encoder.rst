@@ -201,7 +201,8 @@ appropriate results.
 
 Limitations and Edge Cases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-- The label column can't contain more than two unique categorical values.
+- The target encoder currently supports only Binomial and Regression problems. In other words, if the label column is of
+  a string type, it can contain only two distinct values. Otherwise, the label column must be numeric.
 - The label column can't contain any ``null`` values.
 - Input columns transformed by Target Encoder can contain ``null`` values.
 - Novel values in a testing/production data set and ``null`` values belong to the same category. In other words,
