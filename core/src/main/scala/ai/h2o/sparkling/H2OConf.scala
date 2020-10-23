@@ -120,9 +120,7 @@ object H2OConf extends Logging {
 
   def apply(sparkConf: SparkConf): H2OConf = new H2OConf(sparkConf)
 
-  private val deprecatedOptions = Map[String, String](
-    "spark.ext.h2o.node.extra" -> "spark.ext.h2o.extra.properties",
-    "spark.ext.h2o.client.extra" -> "spark.ext.h2o.extra.properties")
+  private val deprecatedOptions = Map[String, String]()
 
   private def checkDeprecatedOptions(sparkConf: SparkConf): Unit = {
     deprecatedOptions.foreach {
