@@ -10,7 +10,7 @@ resource "aws_security_group_rule" "worker_group_mgmt_one_ingress" {
   protocol = "-1"
 
   cidr_blocks = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.worker_group_mgmt_one.id}"
+  security_group_id = aws_security_group.worker_group_mgmt_one.id
 }
 
 resource "aws_security_group_rule" "worker_group_mgmt_one_egress" {
@@ -20,5 +20,5 @@ resource "aws_security_group_rule" "worker_group_mgmt_one_egress" {
   protocol = "-1"
 
   cidr_blocks = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.worker_group_mgmt_one.id}"
+  security_group_id = aws_security_group.worker_group_mgmt_one.id
 }
