@@ -75,9 +75,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
-  @DeprecatedMethod("logDir", "3.34")
-  def h2oNodeLogDir: Option[String] = logDir
-
   def logDir: Option[String] = sparkConf.getOption(PROP_LOG_DIR._1)
 
   def backendHeartbeatInterval: Int =
@@ -119,9 +116,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def flowDir: Option[String] = sparkConf.getOption(PROP_FLOW_DIR._1)
 
   def clientIp: Option[String] = sparkConf.getOption(PROP_CLIENT_IP._1)
-
-  @DeprecatedMethod("logDir", "3.34")
-  def h2oClientLogDir: Option[String] = logDir
 
   def clientWebPort: Int = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
 
@@ -228,9 +222,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
 
-  @DeprecatedMethod("setLogDir", "3.34")
-  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
-
   def setLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
 
   def setBackendHeartbeatInterval(interval: Int): H2OConf = set(PROP_BACKEND_HEARTBEAT_INTERVAL._1, interval.toString)
@@ -286,9 +277,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setFlowDir(dir: String): H2OConf = set(PROP_FLOW_DIR._1, dir)
 
   def setClientIp(ip: String): H2OConf = set(PROP_CLIENT_IP._1, ip)
-
-  @DeprecatedMethod("setLogDir", "3.34")
-  def setH2OClientLogDir(dir: String): H2OConf = setLogDir(dir)
 
   def setClientWebPort(port: Int): H2OConf = set(PROP_CLIENT_WEB_PORT._1, port.toString)
 
