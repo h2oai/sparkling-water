@@ -73,9 +73,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def autoFlowSsl: Boolean = sparkConf.getBoolean(PROP_AUTO_SSL_FLOW._1, PROP_AUTO_SSL_FLOW._2)
 
-  @DeprecatedMethod("logLevel", "3.34")
-  def h2oNodeLogLevel: String = logLevel
-
   def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
   @DeprecatedMethod("logDir", "3.34")
@@ -128,9 +125,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   @DeprecatedMethod("icedDir", "3.34")
   def clientIcedDir: Option[String] = icedDir
-
-  @DeprecatedMethod("logLevel", "3.34")
-  def h2oClientLogLevel: String = logLevel
 
   @DeprecatedMethod("logDir", "3.34")
   def h2oClientLogDir: Option[String] = logDir
@@ -241,9 +235,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def setAutoFlowSslDisabled(): H2OConf = set(PROP_AUTO_SSL_FLOW._1, value = false)
 
-  @DeprecatedMethod("setLogLevel", "3.34")
-  def setH2ONodeLogLevel(level: String): H2OConf = setLogLevel(level)
-
   def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
 
   @DeprecatedMethod("setLogDir", "3.34")
@@ -310,9 +301,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   @DeprecatedMethod("setIcedDir", "3.34")
   def setClientIcedDir(icedDir: String): H2OConf = setIcedDir(icedDir)
-
-  @DeprecatedMethod("setLogLevel", "3.34")
-  def setH2OClientLogLevel(level: String): H2OConf = setLogLevel(level)
 
   @DeprecatedMethod("setLogDir", "3.34")
   def setH2OClientLogDir(dir: String): H2OConf = setLogDir(dir)
