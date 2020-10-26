@@ -100,9 +100,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def mojoDestroyTimeout: Int = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
 
-  @DeprecatedMethod("extraProperties", "3.34")
-  def nodeExtraProperties: Option[String] = extraProperties
-
   def extraProperties: Option[String] = sparkConf.getOption(PROP_EXTRA_PROPERTIES._1)
 
   def flowExtraHttpHeaders: Option[String] = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
@@ -124,9 +121,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def clientNetworkMask: Option[String] = sparkConf.getOption(PROP_CLIENT_NETWORK_MASK._1)
 
   def clientFlowBaseurlOverride: Option[String] = sparkConf.getOption(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1)
-
-  @DeprecatedMethod("extraProperties", "3.34")
-  def clientExtraProperties: Option[String] = extraProperties
 
   def runsInExternalClusterMode: Boolean = backendClusterMode.toLowerCase() == BACKEND_MODE_EXTERNAL
 
@@ -248,9 +242,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf =
     set(PROP_MOJO_DESTROY_TIMEOUT._1, timeoutInMilliseconds.toString)
 
-  @DeprecatedMethod("setExtraProperties", "3.34")
-  def setNodeExtraProperties(extraProperties: String): H2OConf = setExtraProperties(extraProperties)
-
   def setExtraProperties(extraProperties: String): H2OConf = set(PROP_EXTRA_PROPERTIES._1, extraProperties)
 
   def setFlowExtraHttpHeaders(headers: String): H2OConf = { // R mapping
@@ -289,9 +280,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setClientFlowBaseurlOverride(baseUrl: String): H2OConf = set(PROP_CLIENT_FLOW_BASEURL_OVERRIDE._1, baseUrl)
 
   def setClientCheckRetryTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
-
-  @DeprecatedMethod("setExtraProperties", "3.34")
-  def setClientExtraProperties(extraProperties: String): H2OConf = setExtraProperties(extraProperties)
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
