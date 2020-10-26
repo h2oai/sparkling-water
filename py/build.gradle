@@ -30,7 +30,7 @@ python {
   }
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
-  pip "pytest:4.6.5" // For running tests
+  pip "pytest:4.6.9" // For running tests
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
   pip "future:0.17.1"
@@ -320,7 +320,11 @@ task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
 
 task testPython(type: PythonTask, dependsOn: distPython) {
   extraArgs(*createUnitTestArgs())
-  command = "tests/test_runner.py 'tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py'"
+  def tests = "tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+  if (project.hasProperty("tests")) {
+    tests = project.property("tests").toString()
+  }
+  command = "tests/test_runner.py '${tests}'"
 }
 
 if (project.property("testMojoPipeline") == "true") {
