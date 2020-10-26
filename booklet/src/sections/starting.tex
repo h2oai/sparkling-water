@@ -134,7 +134,7 @@ val conf = new H2OConf()
     .useAutoClusterStart()
     .setH2ODriverPath("path_to_h2o_driver")
     .setClusterSize(1)
-    .setMapperXmx("2G")
+    .setExternalMemory("2G")
     .setYARNQueue("abc")
 val hc = H2OContext.getOrCreate(conf)
     \end{lstlisting}
@@ -145,7 +145,7 @@ conf = H2OConf()
     .useAutoClusterStart()
     .setH2ODriverPath("path_to_h2o_driver")
     .setClusterSize(1)
-    .mapperXmx("2G")
+    .setExternalMemory("2G")
     .setYARNQueue("abc")
 hc = H2OContext.getOrCreate(conf)
     \end{lstlisting}
@@ -158,7 +158,7 @@ conf <- H2OConf()
     $useAutoClusterStart()
     $setH2ODriverPath("path_to_h2o_driver")
     $setClusterSize(1)
-    $setMapperXmx("2G")
+    $setExternalMemory("2G")
     $setYARNQueue("abc")
 hc <- H2OContext.getOrCreate(conf)
     \end{lstlisting}
@@ -335,6 +335,6 @@ $SPARK_HOME/conf/spark-defaults.conf
 
 In the external backend, only the H2O client (Scala only) is running in the Spark driver and is affected by Spark
 memory configuration. Memory has to be configured explicitly for the H2O nodes in the external backend via the
-\texttt{spark.ext.h2o.hadoop.memory} option or \texttt{setMapperXmx} setter on \texttt{H2OConf}.
+\texttt{spark.ext.h2o.external.memory} option or \texttt{setExternalMemory} setter on \texttt{H2OConf}.
 
 For YARN-specific configuration, refer to the Spark documentation \url{https://spark.apache.org/docs/latest/running-on-yarn.html}.

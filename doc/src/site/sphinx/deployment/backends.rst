@@ -139,7 +139,7 @@ To start an H2O cluster and connect to it, run:
                         .useAutoClusterStart()
                         .setH2ODriverPath("path_to_h2o_driver")
                         .setClusterSize(1) // Number of H2O worker nodes to start
-                        .setMapperXmx("2G") // Memory per single H2O worker node
+                        .setExternalMemory("2G") // Memory per single H2O worker node
                         .setYARNQueue("abc")
             val hc = H2OContext.getOrCreate(conf)
 
@@ -157,7 +157,7 @@ To start an H2O cluster and connect to it, run:
                     .useAutoClusterStart()
                     .setH2ODriverPath("path_to_h2o_driver")
                     .setClusterSize(1) # Number of H2O worker nodes to start
-                    .setMapperXmx("2G") # Memory per single H2O worker node
+                    .setExternalMemory("2G") # Memory per single H2O worker node
                     .setYARNQueue("abc")
             hc = H2OContext.getOrCreate(conf)
 
