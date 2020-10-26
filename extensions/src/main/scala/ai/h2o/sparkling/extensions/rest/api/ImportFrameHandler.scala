@@ -50,7 +50,7 @@ class ImportFrameHandler extends Handler {
       columnTypes
     }
     val domains = expandDomains(stringDomains, columnTypesAwareOfEmptyFrames)
-    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypesAwareOfEmptyFrames, domains)
+    ChunkUtils.finalizeFrame(request.key, rowsPerChunk, columnTypesAwareOfEmptyFrames, domains, false)
     val frame = DKV.getGet[Frame](frameKey)
 
     convertColumnsWithTooManyCategoricalLevelsToStringColumns(frame, columnTypesAwareOfEmptyFrames, stringDomains)
@@ -64,6 +64,8 @@ class ImportFrameHandler extends Handler {
     convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
 
     DKV.put(frame)
+    frame.unlock()
+
     request
   }
 
