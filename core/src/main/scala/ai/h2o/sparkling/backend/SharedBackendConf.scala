@@ -99,9 +99,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def internalPortOffset: Int = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
 
-  @DeprecatedMethod("basePort", "3.34")
-  def nodeBasePort: Int = basePort
-
   def basePort: Int = sparkConf.getInt(PROP_BASE_PORT._1, PROP_BASE_PORT._2)
 
   def mojoDestroyTimeout: Int = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
@@ -128,9 +125,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   @DeprecatedMethod("logDir", "3.34")
   def h2oClientLogDir: Option[String] = logDir
-
-  @DeprecatedMethod("basePort", "3.34")
-  def clientBasePort: Int = basePort
 
   def clientWebPort: Int = sparkConf.getInt(PROP_CLIENT_WEB_PORT._1, PROP_CLIENT_WEB_PORT._2)
 
@@ -261,9 +255,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def setInternalPortOffset(offset: Int): H2OConf = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
 
-  @DeprecatedMethod("setBasePort", "3.34")
-  def setNodeBasePort(port: Int): H2OConf = setBasePort(port)
-
   def setBasePort(port: Int): H2OConf = set(PROP_BASE_PORT._1, port.toString)
 
   def setMojoDestroyTimeout(timeoutInMilliseconds: Int): H2OConf =
@@ -304,9 +295,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   @DeprecatedMethod("setLogDir", "3.34")
   def setH2OClientLogDir(dir: String): H2OConf = setLogDir(dir)
-
-  @DeprecatedMethod("setBasePort", "3.34")
-  def setClientBasePort(basePort: Int): H2OConf = setBasePort(basePort)
 
   def setClientWebPort(port: Int): H2OConf = set(PROP_CLIENT_WEB_PORT._1, port.toString)
 
