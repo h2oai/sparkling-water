@@ -18,8 +18,8 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.models.SpecificMOJOParameters
-import hex.KeyValue
 import hex.genmodel.MojoModel
+import hex.genmodel.attributes.parameters.KeyValue
 import org.apache.spark.expose.Logging
 
 import scala.collection.JavaConverters._
@@ -45,8 +45,9 @@ trait HasMonotoneConstraintsOnMOJO extends ParameterConstructorMethods with Spec
       val h2oParameters = h2oMojo._modelAttributes.getModelParameters()
       val h2oParametersMap = h2oParameters.map(i => i.name -> i.actual_value).toMap
       h2oParametersMap.get("monotone_constraints").foreach { value =>
-        val keyValues = value.asInstanceOf[Array[KeyValue]]
-        val javaMap = if (keyValues != null) {
+        val objectArray = value.asInstanceOf[Array[AnyRef]]
+        val javaMap = if (objectArray != null) {
+          val keyValues = objectArray.map(_.asInstanceOf[KeyValue])
           keyValues.map(kv => kv.getKey -> kv.getValue).toMap.asJava
         } else {
           null

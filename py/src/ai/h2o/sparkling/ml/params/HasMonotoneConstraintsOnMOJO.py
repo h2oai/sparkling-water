@@ -15,7 +15,11 @@
 # limitations under the License.
 #
 
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+
+
 class HasMonotoneConstraintsOnMOJO:
 
     def getMonotoneConstraints(self):
-        return self._java_obj.getMonotoneConstraints()
+        value = self._java_obj.getMonotoneConstraints()
+        return H2OTypeConverters.toNullableDictionaryWithFloatElements()(value)
