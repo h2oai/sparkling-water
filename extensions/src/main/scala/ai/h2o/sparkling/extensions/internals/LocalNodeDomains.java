@@ -83,6 +83,43 @@ public final class LocalNodeDomains {
     }
   }
 
+  /**
+   * Removes local domains associated with the column indices
+   *
+   * @param frameKey a frame key
+   * @param domainIndices a sorted list of domain indices
+   */
+  public static synchronized void remove(Key frameKey, int[] domainIndices) {
+    if (domainIndices.length > 0) {
+      ArrayList<String> chunkKeys = frameKeyToChunkKeys.get(frameKey);
+      if (chunkKeys != null) {
+        ArrayList<String[][]> newFrameDomains = new ArrayList<>();
+        for (int i = 0; i < chunkKeys.size(); i++) {
+          String chunkKey = chunkKeys.get(i);
+          String[][] oldDomains = domainsMapByChunk.get(chunkKey);
+          String[][] newDomains = removeDomains(oldDomains, domainIndices);
+          domainsMapByChunk.replace(chunkKey, newDomains);
+          newFrameDomains.add(newDomains);
+        }
+        domainsMap.replace(frameKey, newFrameDomains);
+      }
+    }
+  }
+
+  private static String[][] removeDomains(String[][] originalDomains, int[] domainsToRemove) {
+    int newSize = originalDomains.length - domainsToRemove.length;
+    String[][] result = new String[newSize][];
+    int removedDomainIndex = 0;
+    for (int originalIndex = 0; originalIndex < originalDomains.length; originalIndex++) {
+      if (removedDomainIndex >= domainsToRemove.length || originalIndex != domainsToRemove[removedDomainIndex]) {
+        result[originalIndex - removedDomainIndex] = originalDomains[originalIndex];
+      } else {
+        removedDomainIndex++;
+      }
+    }
+    return result;
+  }
+
   private static String createChunkKey(Key frameKey, int chunkId) {
     return frameKey.toString() + "_" + chunkId;
   }
