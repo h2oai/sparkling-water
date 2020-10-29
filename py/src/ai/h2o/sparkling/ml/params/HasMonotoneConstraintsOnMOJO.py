@@ -22,4 +22,4 @@ class HasMonotoneConstraintsOnMOJO:
 
     def getMonotoneConstraints(self):
         value = self._java_obj.getMonotoneConstraints()
-        return H2OTypeConverters.toNullableDictionaryWithFloatElements()(value)
+        return H2OTypeConverters.nullableScalaMapStringStringToDictStringAny(value)
