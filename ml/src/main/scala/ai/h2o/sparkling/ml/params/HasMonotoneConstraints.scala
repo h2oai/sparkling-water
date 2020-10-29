@@ -17,24 +17,19 @@
 
 package ai.h2o.sparkling.ml.params
 
-import java.util
-
 import ai.h2o.sparkling.H2OFrame
-import hex.KeyValue
-
-import scala.collection.JavaConverters._
 
 trait HasMonotoneConstraints extends H2OAlgoParamsBase {
-  private val monotoneConstraints = new DictionaryParam(
+  private val monotoneConstraints = new MapStringDoubleParam(
     this,
     "monotoneConstraints",
     "A key must correspond to a feature name and value could be 1 or -1")
 
-  setDefault(monotoneConstraints -> new util.HashMap[String, Double]())
+  setDefault(monotoneConstraints -> Map[String, Double]())
 
-  def getMonotoneConstraints(): Map[String, Double] = $(monotoneConstraints).asScala.toMap
+  def getMonotoneConstraints(): Map[String, Double] = $(monotoneConstraints)
 
-  def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value.asJava)
+  def setMonotoneConstraints(value: Map[String, Double]): this.type = set(monotoneConstraints, value)
 
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
     super.getH2OAlgorithmParams(trainingFrame) ++ Map("monotone_constraints" -> getMonotoneConstraints())
