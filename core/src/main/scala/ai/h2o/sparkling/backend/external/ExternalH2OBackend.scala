@@ -148,7 +148,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
 
   private def getExternalExtraJavaProperties(conf: H2OConf): Seq[String] = {
     conf.externalExtraJavaProperties match {
-      case Some(x) => x.split("\s+").flatMap(Seq("-JJ", _))
+      case Some(x) => x.split("\\s+").flatMap(Seq("-JJ", _))
       case None => Seq.empty[String]
     }
   }
