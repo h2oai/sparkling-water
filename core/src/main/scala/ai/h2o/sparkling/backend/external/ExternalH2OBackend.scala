@@ -142,7 +142,15 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .add("-refreshTokens", conf.isKerberizedHiveEnabled)
       .add(conf.extraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
+      .add(getExternalExtraJavaProperties(conf))
       .buildArgs()
+  }
+
+  private def getExternalExtraJavaProperties(conf: H2OConf): Seq[String] = {
+    conf.externalExtraJavaProperties match {
+      case Some(x) => x.split("\s+").flatMap(Seq("-JJ", _))
+      case None => Seq.empty[String]
+    }
   }
 
   private def getExtensionsAssemblyJar(): File = {

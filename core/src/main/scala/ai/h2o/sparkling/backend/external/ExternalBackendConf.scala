@@ -20,7 +20,6 @@ package ai.h2o.sparkling.backend.external
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
 import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -88,6 +87,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
     sparkConf.get(PROP_EXTERNAL_HADOOP_EXECUTABLE._1, PROP_EXTERNAL_HADOOP_EXECUTABLE._2)
 
   def externalExtraJars: Option[String] = sparkConf.getOption(PROP_EXTERNAL_EXTRA_JARS._1)
+
+  def externalExtraJavaProperties: Option[String] = sparkConf.getOption(PROP_EXTERNAL_EXTRA_JAVA_PROPERTIES._1)
 
   def externalCommunicationCompression: String =
     sparkConf.get(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, PROP_EXTERNAL_COMMUNICATION_COMPRESSION._2)
@@ -190,6 +191,18 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   def setExternalExtraJars(paths: java.util.ArrayList[String]): H2OConf = setExternalExtraJars(paths.asScala)
 
   def setExternalExtraJars(paths: Seq[String]): H2OConf = setExternalExtraJars(paths.mkString(","))
+
+  def setExternalExtraJavaProperties(whiteSpaceSeparatedProperties: String): H2OConf = {
+    set(PROP_EXTERNAL_EXTRA_JAVA_PROPERTIES._1, whiteSpaceSeparatedProperties)
+  }
+
+  def setExternalExtraJavaProperties(properties: java.util.ArrayList[String]): H2OConf = {
+    setExternalExtraJavaProperties(properties.asScala)
+  }
+
+  def setExternalExtraJavaProperties(properties: Seq[String]): H2OConf = {
+    setExternalExtraJavaProperties(properties.mkString(" "))
+  }
 
   def setExternalCommunicationCompression(compressionType: String): H2OConf = {
     set(PROP_EXTERNAL_COMMUNICATION_COMPRESSION._1, compressionType)
@@ -364,6 +377,13 @@ object ExternalBackendConf {
     """setExternalExtraJars(String)
       |setExternalExtraJars(String[])""".stripMargin,
     "Comma-separated paths to jars that will be placed onto classpath of each H2O node.")
+
+  val PROP_EXTERNAL_EXTRA_JAVA_PROPERTIES: OptionOption = (
+    "spark.ext.h2o.external.extra.java.properties",
+    None,
+    """setExternalExtraJavaProperties(String)
+      |setExternalExtraJavaProperties(String[])""".stripMargin,
+    "White-space-separated java properties passed to nodes of an automatically started external backend.")
 
   val PROP_EXTERNAL_COMMUNICATION_COMPRESSION: StringOption = (
     "spark.ext.h2o.external.communication.compression",
