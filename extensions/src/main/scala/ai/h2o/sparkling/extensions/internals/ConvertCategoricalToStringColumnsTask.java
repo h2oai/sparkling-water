@@ -60,4 +60,10 @@ public class ConvertCategoricalToStringColumnsTask
       }
     }
   }
+
+  @Override
+  public void closeLocal() {
+    super.closeLocal();
+    LocalNodeDomains.remove(frameKey, domainIndices);
+  }
 }

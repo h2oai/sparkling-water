@@ -72,7 +72,8 @@ public class UpdateCategoricalIndicesTask extends MRTask<UpdateCategoricalIndice
   }
 
   @Override
-  public void postGlobal() {
+  public void closeLocal() {
+    super.closeLocal();
     LocalNodeDomains.remove(frameKey);
   }
 }
