@@ -44,6 +44,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     val algorithm = new H2OGBM()
       .setLabelCol("CAPSULE")
       .setSeed(1)
+      .setMonotoneConstraints(Map("AGE" -> 1.0, "RACE" -> -1.0))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
@@ -57,7 +58,10 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
   }
 
   test("Test MOJO parameters on XGBoost") {
-    val algorithm = new H2OXGBoost().setLabelCol("CAPSULE").setSeed(1)
+    val algorithm = new H2OXGBoost()
+      .setLabelCol("CAPSULE")
+      .setSeed(1)
+      .setMonotoneConstraints(Map("AGE" -> 1.0, "RACE" -> -1.0))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
