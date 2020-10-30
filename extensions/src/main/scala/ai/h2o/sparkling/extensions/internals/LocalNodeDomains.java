@@ -111,7 +111,8 @@ public final class LocalNodeDomains {
     String[][] result = new String[newSize][];
     int removedDomainIndex = 0;
     for (int originalIndex = 0; originalIndex < originalDomains.length; originalIndex++) {
-      if (removedDomainIndex >= domainsToRemove.length || originalIndex != domainsToRemove[removedDomainIndex]) {
+      if (removedDomainIndex >= domainsToRemove.length
+          || originalIndex != domainsToRemove[removedDomainIndex]) {
         result[originalIndex - removedDomainIndex] = originalDomains[originalIndex];
       } else {
         removedDomainIndex++;
