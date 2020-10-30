@@ -87,14 +87,17 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
 
     def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
       val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
-      val values = uniqueValues.map(i => (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString)
+      val values = uniqueValues
+        .map(i => ((i % 10).toString, (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString, (i % 100).toHexString))
       val rdd = sc.parallelize(values, numPartitions)
 
-      val df = rdd.toDF("strings")
+      val df = rdd.toDF("cat10", "strings", "cat100")
       val h2oFrame = hc.asH2OFrame(df)
 
       assertH2OFrameInvariants(df, h2oFrame)
-      assert(h2oFrame.columns(0).isString())
+      assert(h2oFrame.columns(0).isCategorical())
+      assert(h2oFrame.columns(1).isString())
+      assert(h2oFrame.columns(2).isCategorical())
 
       val resultDF = hc.asSparkFrame(h2oFrame)
       TestUtils.assertDataFramesAreIdentical(df, resultDF)
@@ -111,14 +114,17 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
   }
 
   def testDataFrameConversionWithOnlyUniqueValues(numPartitions: Int) {
-    val uniqueValues = (1 to (Categorical.MAX_CATEGORICAL_COUNT / 10)).map(_.toHexString)
-    val rdd = sc.parallelize(uniqueValues, numPartitions)
+    val uniqueValues = (1 to (Categorical.MAX_CATEGORICAL_COUNT / 10))
+    val values = uniqueValues.map(i => ((i % 10).toString, i.toHexString, (i % 100).toHexString))
+    val rdd = sc.parallelize(values, numPartitions)
 
-    val df = rdd.toDF("strings")
+    val df = rdd.toDF("cat10", "strings", "cat100")
     val h2oFrame = hc.asH2OFrame(df)
 
     assertH2OFrameInvariants(df, h2oFrame)
-    assert(h2oFrame.columns(0).isString())
+    assert(h2oFrame.columns(0).isCategorical())
+    assert(h2oFrame.columns(1).isString())
+    assert(h2oFrame.columns(2).isCategorical())
 
     val resultDF = hc.asSparkFrame(h2oFrame)
     TestUtils.assertDataFramesAreIdentical(df, resultDF)
