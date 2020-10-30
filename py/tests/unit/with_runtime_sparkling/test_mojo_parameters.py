@@ -19,7 +19,7 @@ from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OGBM(seed=1, labelCol="CAPSULE", featuresCols=features)
+    algorithm = H2OGBM(seed=1, labelCol="CAPSULE", featuresCols=features, monotoneConstraints={'AGE': 1, 'RACE': -1})
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
@@ -33,7 +33,7 @@ def testDRFParameters(prostateDataset):
 
 def testXGBoostParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OXGBoost(seed=1, labelCol="CAPSULE", featuresCols=features)
+    algorithm = H2OXGBoost(seed=1, labelCol="CAPSULE", featuresCols=features, monotoneConstraints={'AGE': 1, 'RACE': -1})
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
@@ -88,7 +88,6 @@ def compareParameterValues(algorithm, model, ignored=[]):
     methods = filter(isMethodRelevant, dir(model))
 
     for method in methods:
-        print(method)
         modelValue = getattr(model, method)()
         algorithmValue = getattr(algorithm, method)()
         assert(valuesAreEqual(algorithmValue, modelValue))

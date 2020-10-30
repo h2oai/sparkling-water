@@ -454,6 +454,12 @@ class H2OTypeConverters(object):
         else:
             raise TypeError("Invalid type.")
 
+    @staticmethod
+    def nullableScalaMapStringStringToDictStringAny(value):
+        if value is None:
+            return None
+        else:
+            H2OTypeConverters.scalaMapStringStringToDictStringAny(value)
 
     @staticmethod
     def scalaArrayToPythonArray(array):

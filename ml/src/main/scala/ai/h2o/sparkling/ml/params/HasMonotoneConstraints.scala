@@ -20,7 +20,6 @@ package ai.h2o.sparkling.ml.params
 import java.util
 
 import ai.h2o.sparkling.H2OFrame
-import hex.KeyValue
 
 import scala.collection.JavaConverters._
 
