@@ -63,7 +63,7 @@ class ImportFrameHandler extends Handler {
 
     convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
 
-    DKV.put(frame)
+    frame.update()
     frame.unlock()
 
     request
