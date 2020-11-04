@@ -101,6 +101,7 @@ dependencies {
   testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
   testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation(project(':sparkling-water-extensions'))
   testImplementation(project(':sparkling-water-macros'))
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")

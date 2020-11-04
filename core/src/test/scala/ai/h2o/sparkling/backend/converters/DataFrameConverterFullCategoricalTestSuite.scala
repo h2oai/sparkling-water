@@ -27,7 +27,7 @@ import org.scalatest.FunSuite
 import water.parser.Categorical
 
 @RunWith(classOf[JUnitRunner])
-class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTestContext {
+class DataFrameConverterFullCategoricalTestSuite extends FunSuite with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
   import spark.implicits._
@@ -71,38 +71,6 @@ class DataFrameConverterCategoricalTestSuite extends FunSuite with SharedH2OTest
     val resultDF = hc.asSparkFrame(h2oFrame)
     TestUtils.assertDataFramesAreIdentical(df, resultDF)
     h2oFrame.delete()
-  }
-
-  // External backed can go OOM in testing docker image
-  if (sys.props.getOrElse("spark.ext.h2o.backend.cluster.mode", "internal") == "internal") {
-
-    // Spark 2.2 - 2.4 fails on such a big task
-    ignore("DataFrame[String] with more than 10M unique values in one partition to H2OFrame[T_STR] and back") {
-      testDataFrameConversionWithHighNumberOfCategoricalLevels(1)
-    }
-
-    test("DataFrame[String] with more than 10M unique values in 100 partitions to H2OFrame[T_STR] and back") {
-      testDataFrameConversionWithHighNumberOfCategoricalLevels(100)
-    }
-
-    def testDataFrameConversionWithHighNumberOfCategoricalLevels(numPartitions: Int) {
-      val uniqueValues = 1 to (Categorical.MAX_CATEGORICAL_COUNT * 1.1).toInt
-      val values = uniqueValues
-        .map(i => ((i % 10).toString, (i % (Categorical.MAX_CATEGORICAL_COUNT + 1)).toHexString, (i % 100).toHexString))
-      val rdd = sc.parallelize(values, numPartitions)
-
-      val df = rdd.toDF("cat10", "strings", "cat100")
-      val h2oFrame = hc.asH2OFrame(df)
-
-      assertH2OFrameInvariants(df, h2oFrame)
-      assert(h2oFrame.columns(0).isCategorical())
-      assert(h2oFrame.columns(1).isString())
-      assert(h2oFrame.columns(2).isCategorical())
-
-      val resultDF = hc.asSparkFrame(h2oFrame)
-      TestUtils.assertDataFramesAreIdentical(df, resultDF)
-      h2oFrame.delete()
-    }
   }
 
   test("DataFrame[String] with only unique values with in one partition to H2OFrame[T_STR] and back") {

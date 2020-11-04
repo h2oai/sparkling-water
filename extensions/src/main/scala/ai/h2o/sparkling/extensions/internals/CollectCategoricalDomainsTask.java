@@ -23,16 +23,17 @@ import water.H2O;
 import water.Key;
 import water.MRTask;
 import water.parser.BufferedString;
-import water.parser.Categorical;
 import water.parser.PackedDomains;
 import water.util.Log;
 
 public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDomainsTask> {
   private final Key frameKey;
   private byte[][] packedDomains;
+  private int maximumCategoricalLevels;
 
   public CollectCategoricalDomainsTask(Key frameKey) {
     this.frameKey = frameKey;
+    this.maximumCategoricalLevels = CategoricalConstants.getMaximumCategoricalLevels();
   }
 
   @Override
@@ -52,7 +53,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     byte[][] result = new byte[domains.length][];
     for (int i = 0; i < domains.length; i++) {
       String[] columnDomain = domains[i];
-      if (columnDomain.length > Categorical.MAX_CATEGORICAL_COUNT) {
+      if (columnDomain.length > this.maximumCategoricalLevels) {
         result[i] = null;
       } else {
         BufferedString[] values = BufferedString.toBufferedString(columnDomain);
@@ -67,7 +68,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
     for (int i = 0; i < target.length; i++) {
       if (target[i] == null || source[i] == null) {
         target[i] = null;
-      } else if (target[i].length + source[i].length > Categorical.MAX_CATEGORICAL_COUNT) {
+      } else if (target[i].length + source[i].length > this.maximumCategoricalLevels) {
         target[i] = null;
       } else {
         target[i] = PackedDomains.merge(target[i], source[i]);
@@ -91,7 +92,7 @@ public class CollectCategoricalDomainsTask extends MRTask<CollectCategoricalDoma
                   packedDomains[fi] = null;
                 } else if (PackedDomains.sizeOf(packedDomains[fi])
                         + PackedDomains.sizeOf(other.packedDomains[fi])
-                    > Categorical.MAX_CATEGORICAL_COUNT) {
+                    > maximumCategoricalLevels) {
                   packedDomains[fi] = null;
                 } else {
                   packedDomains[fi] =
