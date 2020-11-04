@@ -83,7 +83,8 @@ class ImportFrameHandler extends Handler {
       val vectorsToBeConvertedToString = indicesOfChanges.map(frame.vec(_))
       val domainIndices = for ((domain, idx) <- stringDomains.zipWithIndex if domain == null) yield idx
       val convertCategoricalToStringColumnsTask = new ConvertCategoricalToStringColumnsTask(frame._key, domainIndices)
-      convertCategoricalToStringColumnsTask.doAll(Vec.T_STR, vectorsToBeConvertedToString: _*)
+      val outputTypes = vectorsToBeConvertedToString.map(_ => Vec.T_STR)
+      convertCategoricalToStringColumnsTask.doAll(outputTypes, vectorsToBeConvertedToString: _*)
       val newVectors = AppendableVec.closeAll(convertCategoricalToStringColumnsTask.appendables())
       for ((newVector, index) <- newVectors.zip(indicesOfChanges)) {
         val oldVector = frame.replace(index, newVector)
