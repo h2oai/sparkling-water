@@ -42,9 +42,6 @@ task integTest(type: Test) {
     systemProperty "spark.testing", "true"
     systemProperty "spark.test.home", "${sparkHome}"
 
-    // Show standard out and standard error of the test JVM(s) on the console
-    testLogging.showStandardStreams = true
-
     // Also setup expected Scala version for Spark launcher
     environment "SPARK_SCALA_VERSION", "$scalaBaseVersion"
 
@@ -53,6 +50,9 @@ task integTest(type: Test) {
         showExceptions = true
         showStackTraces = true
         exceptionFormat = TestExceptionFormat.FULL
+
+        // Show standard out and standard error of the test JVM(s) on the console
+        showStandardStreams = true
     }
 }
 
