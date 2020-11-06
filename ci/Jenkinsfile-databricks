@@ -146,7 +146,7 @@ def waitForJobToFinish(jobId, language, clusterId) {
         def status = parsedJson.state.result_state
         if (["FAILED", "TIMEDOUT", "CANCELLED"].contains(status)) {
             cleanEnvironment(clusterId)
-            throw new RuntimeException("${language} tests failed!")
+            throw new RuntimeException("${language} tests failed!\n\nDetails:\n\n${rawJson}")
         }
         done = status == "SUCCESS"
         Thread.sleep(1000)
