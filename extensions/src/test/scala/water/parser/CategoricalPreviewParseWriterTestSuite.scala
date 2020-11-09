@@ -46,8 +46,7 @@ class CategoricalPreviewParseWriterTestSuite extends FunSuite with Matchers {
 
       val domain = testCase.filter(_ != null).distinct.toArray
       val naCount = testCase.filter(_ == null).length
-      val categoricalWriter = new CategoricalPreviewParseWriter(domain, testCase.length, naCount)
-      val result = categoricalWriter.guessTypes()(0)
+      val result = CategoricalPreviewParseWriter.guessType(domain, testCase.length, naCount)
 
       result shouldEqual expected
     }
