@@ -17,29 +17,30 @@
 
 package water.parser;
 
-import java.lang.reflect.Field;
-import water.util.IcedHashMap;
+public class CategoricalPreviewParseWriter {
 
-public class CategoricalPreviewParseWriter extends PreviewParseWriter {
+  public static byte guessType(String[] domain, int nLines, int nEmpty) {
+    final int nStrings = nLines - nEmpty;
+    final int nNums = 0;
+    final int nDates = 0;
+    final int nUUID = 0;
+    final int nZeros = 0;
 
-  public CategoricalPreviewParseWriter(String[] domain, int totalCount, int naCount) {
-    super(1);
-    this._nlines = totalCount;
-    this._nempty[0] = naCount;
-    this._nstrings[0] = totalCount - naCount;
-    IcedHashMap<String, String>[] domains = new IcedHashMap[1];
-    domains[0] = new IcedHashMapWrapper(domain);
-    setPrivateDomains(domains);
-  }
+    PreviewParseWriter.IDomain domainWrapper =
+        new PreviewParseWriter.IDomain() {
+          public int size() {
+            return domain.length;
+          }
 
-  private void setPrivateDomains(IcedHashMap<String, String>[] domains) {
-    try {
-      Field domainsField = PreviewParseWriter.class.getDeclaredField("_domains");
-      domainsField.setAccessible(true);
-      domainsField.set(this, domains);
-      domainsField.setAccessible(false);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+          public boolean contains(String value) {
+            for (String domainValue : domain) {
+              if (value.equals(domainValue)) return true;
+            }
+            return false;
+          }
+        };
+
+    return PreviewParseWriter.guessType(
+        nLines, nNums, nStrings, nDates, nUUID, nZeros, nEmpty, domainWrapper);
   }
 }
