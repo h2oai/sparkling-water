@@ -8,7 +8,8 @@ def dockerPull(image) {
 }
 
 String getAWSDockerRepo() {
-    def registryId = readFromInfraState("docker_registry_id")
+    //def registryId = readFromInfraState("docker_registry_id")
+    def registryId = 524466471676
     return "${registryId}.dkr.ecr.us-west-2.amazonaws.com"
 }
 
@@ -66,7 +67,7 @@ def withSparklingWaterDockerImage(code) {
 }
 
 def withTerraform(groovy.lang.Closure code) {
-    withDocker("hashicorp/terraform:0.12.24", code, "--entrypoint=''")
+    withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint=''")
 }
 
 def withPacker(groovy.lang.Closure code) {
