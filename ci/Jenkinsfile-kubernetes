@@ -583,7 +583,55 @@ node("docker") {
         }
     }
 
-    parallel(getBuildAndPublishStages(props))
+    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
+        stage("Build & Publish Images For Spark $sparkMajorVersion") {
+            try {
+                ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                    cleanWs()
+                    checkout scm
+                    commons.withSparklingWaterDockerImage {
+                        sh "sudo apt -y install docker.io"
+                        sh "sudo service docker start"
+                        sh "sudo chmod 666 /var/run/docker.sock"
+                        def sparkVersion = getSparkVersion(sparkMajorVersion)
+                        unstash "shared"
+                        sh """
+                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
+                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
+                            sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
+                            """
+                        sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
+                        def customEnv = [
+                                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
+                        ]
+                        unstash "properties"
+                        def repoId = readPropertiesFile("properties")["docker_registry_id"]
+                        def repoUrl = "${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com"
+                        docker.withRegistry("https://${repoUrl}", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
+                            withEnv(customEnv) {
+                                dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
+                                    buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
+                                    sh """
+                                        docker rmi spark-r:${sparkVersion}
+                                        docker rmi spark-py:${sparkVersion}
+                                        docker rmi spark:${sparkVersion}
+                                       """
+                                    buildAndPublishSparklingWaterImage("external-backend", sparklingVersion, repoUrl)
+
+                                }
+                            }
+                        }
+                    }
+                    cleanWs()
+                }
+            } catch (Exception e) {
+                stopEKSCluster(commons)
+                throw e
+            }
+        }
+    }
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test Scala, Spark ${sparkMajorVersion}") {
