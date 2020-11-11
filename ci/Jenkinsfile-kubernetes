@@ -73,6 +73,7 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
                 try {
                     ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
                         commons.withSparklingWaterDockerImage {
+                            sh "sudo apt-get update"
                             sh "sudo apt -y install docker.io"
                             sh "sudo service docker start"
                             sh "sudo chmod 666 /var/run/docker.sock"
@@ -590,6 +591,7 @@ node("docker") {
                     cleanWs()
                     checkout scm
                     commons.withSparklingWaterDockerImage {
+                        sh "sudo apt-get update"
                         sh "sudo apt -y install docker.io"
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
