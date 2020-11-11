@@ -596,6 +596,7 @@ node("docker") {
                         sh "sudo service docker start"
                         sh "sudo chmod 666 /var/run/docker.sock"
                         def sparkVersion = getSparkVersion(sparkMajorVersion)
+                        def fullSparklingVersion = getSparklingVersion(props, sparkMajorVersion)
                         unstash "shared"
                         sh """
                             sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
@@ -611,16 +612,16 @@ node("docker") {
                         def repoUrl = "${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com"
                         docker.withRegistry("https://${repoUrl}", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
                             withEnv(customEnv) {
-                                dir("./dist/build/zip/sparkling-water-${sparklingVersion}") {
-                                    buildAndPublishSparklingWaterImage("scala", sparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("python", sparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("r", sparklingVersion, repoUrl)
+                                dir("./dist/build/zip/sparkling-water-${fullSparklingVersion}") {
+                                    buildAndPublishSparklingWaterImage("scala", fullSparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("python", fullSparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("r", fullSparklingVersion, repoUrl)
                                     sh """
                                         docker rmi spark-r:${sparkVersion}
                                         docker rmi spark-py:${sparkVersion}
                                         docker rmi spark:${sparkVersion}
                                        """
-                                    buildAndPublishSparklingWaterImage("external-backend", sparklingVersion, repoUrl)
+                                    buildAndPublishSparklingWaterImage("external-backend", fullSparklingVersion, repoUrl)
 
                                 }
                             }
