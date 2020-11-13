@@ -137,7 +137,7 @@ def withGitPushCredentials(groovy.lang.Closure code) {
 }
 
 def withGitPullCredentials(groovy.lang.Closure code) {
-    withCredentials([usernamePassword(credentialsId: 'd57016f6-d172-43ea-bea1-1d6c7c1747a0', usernameVariable: 'GITHUB_PULL_USER', passwordVariable: 'GITHUB_PULL_PASS')]) {
+    withCredentials([usernamePassword(credentialsId: 'h2o-ops-gh-2020', usernameVariable: 'GITHUB_PULL_USER', passwordVariable: 'GITHUB_PULL_PASS')]) {
         code()
     }
 }
