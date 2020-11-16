@@ -25,11 +25,7 @@ import water.AutoBuffer
 
 import scala.collection.JavaConverters._
 
-class NullableStringArrayArrayParam(
-    parent: Params,
-    name: String,
-    doc: String,
-    isValid: Array[Array[String]] => Boolean)
+class NullableStringArrayArrayParam(parent: Params, name: String, doc: String, isValid: Array[Array[String]] => Boolean)
   extends Param[Array[Array[String]]](parent, name, doc, isValid) {
 
   def this(parent: Params, name: String, doc: String) =
