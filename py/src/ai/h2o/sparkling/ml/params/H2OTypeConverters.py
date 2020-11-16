@@ -261,6 +261,26 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toNullableListListString():
+        def convert(value):
+            if value is None:
+                return None
+            else:
+                return H2OTypeConverters.toListListString()(value)
+
+        return convert
+
+    @staticmethod
+    def toListListString():
+        def convert(value):
+            if value is None:
+                raise TypeError("None is not allowed.")
+            else:
+                return [H2OTypeConverters.toListString()(v) for v in TypeConverters.toList(value)]
+
+        return convert
+
+    @staticmethod
     def toDenseMatrix():
         def convert(value):
             if value is None:

@@ -87,4 +87,8 @@ trait ParameterConstructorMethods extends Params {
   protected def nullableStringPairArrayParam(name: String, doc: String): NullableStringPairArrayParam = {
     new NullableStringPairArrayParam(this, name, doc)
   }
+
+  protected def nullableStringArrayArrayParam(name: String, doc: String): NullableStringArrayArrayParam = {
+    new NullableStringArrayArrayParam(this, name, doc)
+  }
 }
