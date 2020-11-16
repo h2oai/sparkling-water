@@ -54,7 +54,7 @@ String getH2OBranchMajorVersion() {
 }
 
 String getH2OBranchMajorName() {
-    "bleeding_edge"
+    return "bleeding_edge"
 }
 
 String getH2OBranchBuildVersion() {
