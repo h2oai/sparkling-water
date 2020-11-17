@@ -56,8 +56,7 @@ String getH2OBranchMajorVersion() {
 }
 
 String getH2OBranchMajorName() {
-    def versionLine = readFile("h2o-3/gradle.properties").split("\n").find() { line -> line.startsWith('codename') }
-    return versionLine.split("=")[1]
+    return "bleeding_edge"
 }
 
 String getH2OBranchBuildVersion() {
