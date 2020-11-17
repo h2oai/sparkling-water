@@ -222,4 +222,9 @@ class Initializer(object):
             You are using PySparkling for Spark {}, but your PySpark is of version {}.
             Please make sure Spark and PySparkling versions are compatible.""".format(
                 sparkVersionFromPySparkling, sparkVersionFromPySpark))
+
+        if sparkVersionFromPySpark == "2.1":
+            warnings.warn("PySpark 2.1.x is deprecated and " +
+                          "the support will be removed in the Sparkling Water version 3.34.")
+
         return version
