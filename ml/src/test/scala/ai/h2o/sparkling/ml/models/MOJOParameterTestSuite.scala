@@ -62,7 +62,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setLabelCol("CAPSULE")
       .setSeed(1)
       .setMonotoneConstraints(Map("AGE" -> 1.0, "RACE" -> -1.0))
-      .setInteractionConstraints(Array(Array("DPROS", "DCAPS"), Array("PSA", "VOL" , "GLEASON")))
+      .setInteractionConstraints(Array(Array("DPROS", "DCAPS"), Array("PSA", "VOL", "GLEASON")))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
