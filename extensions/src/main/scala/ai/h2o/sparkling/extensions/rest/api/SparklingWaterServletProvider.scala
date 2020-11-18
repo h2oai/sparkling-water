@@ -30,8 +30,9 @@ class SparklingWaterServletProvider extends ServletProvider {
     */
   override def servlets(): util.List[ServletMeta] = {
     Seq(
-      new ServletMeta(Paths.CHUNK, classOf[ChunkServlet]),
-      new ServletMeta(Paths.CHUNK_CATEGORICAL_DOMAINS, classOf[ChunkCategoricalDomainsServlet]),
-      new ServletMeta(Paths.SPARKLING_INTERNAL, classOf[InternalUtilsServlet])).asJava
+      new ServletMeta.Builder(Paths.CHUNK, classOf[ChunkServlet]).withAlwaysEnabled(true).build(),
+      new ServletMeta.Builder(Paths.CHUNK_CATEGORICAL_DOMAINS, classOf[ChunkCategoricalDomainsServlet]).withAlwaysEnabled(true).build(),
+      new ServletMeta.Builder(Paths.SPARKLING_INTERNAL, classOf[InternalUtilsServlet]).withAlwaysEnabled(true).build()
+    ).asJava
   }
 }
