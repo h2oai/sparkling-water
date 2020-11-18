@@ -35,7 +35,7 @@ location of your choice.
 Starting a Scoring Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, we need to start an environment for the desired language with a Driverless AI license. There are two variants.
+First, we need to start a scoring environment for the desired language with a Driverless AI license. There are two variants.
 We can use Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark
 directly and add the dependencies manually.
 
