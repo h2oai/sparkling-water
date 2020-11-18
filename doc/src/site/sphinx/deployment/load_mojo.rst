@@ -5,9 +5,8 @@ When training algorithm using Sparkling Water API, Sparkling Water always produc
 to import existing MOJO into the Sparkling Water ecosystem from H2O-3. After importing the H2O-3 MOJO the API is unified for the
 loaded MOJO and the one created in Sparkling Water, for example, using ``H2OXGBoost``.
 
-H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as a local file, S3 or HDFS and the
-semantics of the import is the same as in the Spark API.
-
+H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as a local file, S3 or
+HDFS and the semantics of the import is the same as in the Spark API.
 
 When creating a MOJO specified by a relative path and HDFS is enabled, the method attempts to load
 the MOJO from the HDFS home directory of the current user. In case we are not running on a HDFS-enabled system, we create
