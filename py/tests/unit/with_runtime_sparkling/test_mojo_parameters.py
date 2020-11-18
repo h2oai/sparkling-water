@@ -33,7 +33,9 @@ def testDRFParameters(prostateDataset):
 
 def testXGBoostParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OXGBoost(seed=1, labelCol="CAPSULE", featuresCols=features, monotoneConstraints={'AGE': 1, 'RACE': -1})
+    algorithm = H2OXGBoost(seed=1, labelCol="CAPSULE", featuresCols=features,
+                           monotoneConstraints={'AGE': 1, 'RACE': -1},
+                           interactionConstraints=[['AGE', 'RACE', 'DPROS'], ['DCAPS', 'PSA']])
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
