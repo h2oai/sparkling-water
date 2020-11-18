@@ -468,7 +468,7 @@ object H2OContext extends Logging {
   }
 
   private def isSparkVersionDeprecated(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.1")
+    SparkSessionUtils.active.version.startsWith("2.1.")
   }
 
   private def logStartingInfo(conf: H2OConf): Unit = {
@@ -495,7 +495,7 @@ object H2OContext extends Logging {
     }
     if (isSparkVersionDeprecated) {
       logWarning(
-        "Apache Spark 2.1.x is deprecated and " +
+        s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
           "the support will be removed in the Sparkling Water version 3.34.")
     }
   }
