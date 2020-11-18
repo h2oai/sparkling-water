@@ -62,6 +62,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setLabelCol("CAPSULE")
       .setSeed(1)
       .setMonotoneConstraints(Map("AGE" -> 1.0, "RACE" -> -1.0))
+      .setInteractionConstraints(Array(Array("DPROS", "DCAPS"), Array("PSA", "VOL" , "GLEASON")))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
@@ -146,6 +147,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     case (_, "auto") => true
     case (_, "family_default") => true
     case (null, map: Map[_, _]) if map.isEmpty => true
+    case (array1: Array[Array[_]], array2: Array[Array[_]]) => array1.map(_.toSeq).toSeq == array2.map(_.toSeq).toSeq
     case (array1: Array[_], array2: Array[_]) => array1.toSeq == array2.toSeq
     case (val1, val2) => val1 == val2
   }
