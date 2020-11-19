@@ -1,13 +1,58 @@
 Importing H2O MOJOs from H2O-3
 ------------------------------
 
-When training algorithm using Sparkling Water API, Sparkling Water always produces ``H2OMOJOModel``. It is however also possible
-to import existing MOJO into the Sparkling Water ecosystem from H2O-3. After importing the H2O-3 MOJO the API is unified for the
-loaded MOJO and the one created in Sparkling Water, for example, using ``H2OXGBoost``.
+When training algorithm using Sparkling Water API, Sparkling Water always produces ``H2OMOJOModel``. It is also possible
+to import existing MOJO models into the Sparkling Water ecosystem from H2O-3. Such MOJO models then have the same scoring
+capabilities as MOJO models trained via Sparkling Water API.
 
-H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as a local file, S3 or HDFS and the
-semantics of the import is the same as in the Spark API.
+**Note**: Sparkling Water is backward compatible with MOJO versions produced by different H2O-3 versions.
 
+One advantage of scoring the MOJO artifacts is that ``H2OContext`` does not have to be created if we only want to
+run predictions on MOJOs using Spark. It is important to mention that the format of prediction on MOJOs from
+Driverless AI differs from predictions on H2O-3 MOJOs. The format of H2O-3 predictions is explained bellow.
+
+Starting a Scoring Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, we need to start a scoring environment for the desired language. There are two variants.
+We can use Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark
+directly and add the dependencies manually.
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: bash
+
+            ./bin/spark-shell --jars jars/sparkling-water-assembly_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+
+        .. code:: bash
+
+            ./bin/sparkling-shell
+
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: bash
+
+            ./bin/pyspark --py-files py/build/dist/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+
+        .. code:: bash
+
+            ./bin/pysparkling
+
+
+At this point, we have a Spark interactive terminal where we can carry out predictions. If we don't require an interactive environment,
+we can deploy our scoring logic with ``./bin/spark-submit``. The parameters will be the same as in the example above.
+
+
+Loading and Usage of H2O-3 MOJO Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+H2O MOJOs can be imported to Sparkling Water from all data sources supported by Apache Spark such as a local file, S3 or
+HDFS and the semantics of the import is the same as in the Spark API.
 
 When creating a MOJO specified by a relative path and HDFS is enabled, the method attempts to load
 the MOJO from the HDFS home directory of the current user. In case we are not running on a HDFS-enabled system, we create

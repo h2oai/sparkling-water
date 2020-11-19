@@ -8,9 +8,8 @@ Sparkling Water.
 **Note**: Sparkling Water is backward compatible with MOJO versions produced by different Driverless AI versions.
 
 One advantage of scoring the MOJO artifacts is that ``H2OContext`` does not have to be created if we only want to
-run predictions on MOJOs using Spark. This is because the scoring is independent of the H2O run-time. It is also
-important to mention that the format of prediction on MOJOs from Driverless AI differs from predictions on H2O-3 MOJOs.
-The format of Driverless AI prediction is explained bellow.
+run predictions on MOJOs using Spark. It is also important to mention that the format of prediction on MOJOs
+from Driverless AI differs from predictions on H2O-3 MOJOs. The format of Driverless AI prediction is explained bellow.
 
 Requirements
 ~~~~~~~~~~~~
@@ -33,12 +32,12 @@ location of your choice.
     unzip /path/to/mojo.zip -d /tmp/mojo.zip.extracted
     cp /tmp/mojo.zip.extracted/mojo-pipeline/pipeline.mojo /path/to/pipeline.mojo
 
-Loading and Score the MOJO
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Starting a Scoring Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, start the environment for the desired language with a Driverless AI license. There are two variants. We can use
-Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark directly
-and add the dependencies manually.
+First, we need to start a scoring environment for the desired language with a Driverless AI license. There are two variants.
+We can use Sparkling Water prepared scripts which put required dependencies on the Spark classpath or we can use Spark
+directly and add the dependencies manually.
 
 .. content-tabs::
 
@@ -66,11 +65,13 @@ and add the dependencies manually.
             ./bin/pysparkling --jars license.sig
 
 
-At this point, we should have a Spark interactive terminal where we can carry out predictions.
-For productionalizing the scoring process, we can use the same configuration,
-except instead of using Spark shell, we would submit the application using ``./bin/spark-submit``.
+At this point, we have a Spark interactive terminal where we can carry out predictions. If we don't require an interactive environment,
+we can deploy our scoring logic with ``./bin/spark-submit``. The parameters will be the same as in the example above.
 
-Now Load the MOJO as:
+Loading and Usage of Driveless AI MOJO Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Pipeline MOJO model could be loaded as:
 
 .. content-tabs::
 
