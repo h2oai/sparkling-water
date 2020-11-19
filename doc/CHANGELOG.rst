@@ -1,6 +1,49 @@
 Change Log
 ==========
 
+v3.32.0.2-1 (2020-11-19)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.2-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2486 <https://0xdata.atlassian.net/browse/SW-2486>`__ - Upgrade MOJO runtime to 2.5.3
+   -  `SW-2485 <https://0xdata.atlassian.net/browse/SW-2485>`__ - Deprecate Apache Spark 2.1
+   -  `SW-2484 <https://0xdata.atlassian.net/browse/SW-2484>`__ - Upgrade to H2O 3.32.0.2
+   -  `SW-2472 <https://0xdata.atlassian.net/browse/SW-2472>`__ - Remove xmxMapper from Examples in Documentation
+   -  `SW-2469 <https://0xdata.atlassian.net/browse/SW-2469>`__ - Proper Locking of H2O Frames during Conversion from Spark Data Frames
+
+-  New Feature
+
+   -  `SW-2482 <https://0xdata.atlassian.net/browse/SW-2482>`__ - Expose Interaction Constraints on H2OXGBoost
+
+-  Engineering Story
+
+   -  `SW-2480 <https://0xdata.atlassian.net/browse/SW-2480>`__ - Fix Publishing of Nightly Build Images to DockerHub
+   -  `SW-2479 <https://0xdata.atlassian.net/browse/SW-2479>`__ - Show Stack Trace of Exceptions in Failed Tests
+   -  `SW-2478 <https://0xdata.atlassian.net/browse/SW-2478>`__ - Run Databricks Automated Tests on ML Runtime Versions
+   -  `SW-2477 <https://0xdata.atlassian.net/browse/SW-2477>`__ - Replace  IcedHashMapWrapper with New guessType Method On PreviewParseWriter
+   -  `SW-2468 <https://0xdata.atlassian.net/browse/SW-2468>`__ - Enable to Run Python Tests with  SW Runtime Individually
+
+-  Bug
+
+   -  `SW-2476 <https://0xdata.atlassian.net/browse/SW-2476>`__ - asH2OFrame Could Fail on ArrayIndexOutOfBoundsException
+   -  `SW-2474 <https://0xdata.atlassian.net/browse/SW-2474>`__ - Fix Monotone Constraints on GBM and XGBoost MOJO Model
+   -  `SW-2470 <https://0xdata.atlassian.net/browse/SW-2470>`__ - Fails to Convert Categorical Columns on Big Dataset and Identity Column
+   -  `SW-2467 <https://0xdata.atlassian.net/browse/SW-2467>`__ - Fix Publishing of SW Booklet
+   -  `SW-2465 <https://0xdata.atlassian.net/browse/SW-2465>`__ - Fix HamOrSpam Python Integration Test
+   -  `SW-2437 <https://0xdata.atlassian.net/browse/SW-2437>`__ - Make Sparkling Water Runnable on Databricks ML Distributions
+
+-  Docs
+
+   -  `SW-2473 <https://0xdata.atlassian.net/browse/SW-2473>`__ - Update Sparkling Water MOJO Deployment Documentation
+
 v3.32.0.1-2 (2020-10-15)
 ------------------------
 Downloads:
