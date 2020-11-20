@@ -29,7 +29,7 @@ import org.apache.spark.sql.SparkSession
   *
   * This test verifies the data upload servlets are active while running on Kubernetes.
   */
-object DataFrameUploadTest {
+object DataFrameConversionTest {
 
   def run(spark: SparkSession, hc: H2OContext): Unit = {
     import spark.implicits._

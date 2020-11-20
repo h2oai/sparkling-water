@@ -32,6 +32,6 @@ class KubernetesTests {
     */
   def runTests(spark: SparkSession, hc: H2OContext): Unit = {
     InitTest.run(spark, hc)
-    DataFrameUploadTest.run(spark, hc)
+    DataFrameConversionTest.run(spark, hc)
   }
 }
