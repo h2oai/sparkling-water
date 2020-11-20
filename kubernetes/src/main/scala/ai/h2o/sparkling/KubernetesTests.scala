@@ -34,5 +34,4 @@ class KubernetesTests {
     InitTest.run(spark, hc)
     DataFrameUploadTest.run(spark, hc)
   }
-
 }
