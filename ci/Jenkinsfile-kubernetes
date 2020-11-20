@@ -67,11 +67,11 @@ def getBuildAndPublishStage(props, sparkMajorVersion) {
     return {
         stage("Build & Publish Images For Spark $sparkMajorVersion") {
             node('docker') {
-                cleanWs()
-                checkout scm
                 def commons = load 'ci/commons.groovy'
                 try {
                     ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
+                        cleanWs()
+                        checkout scm
                         commons.withSparklingWaterDockerImage {
                             sh "sudo apt-get update"
                             sh "sudo apt -y install docker.io"
@@ -584,57 +584,7 @@ node("docker") {
         }
     }
 
-    getKubernetesSparkVersions(props).each { sparkMajorVersion ->
-        stage("Build & Publish Images For Spark $sparkMajorVersion") {
-            try {
-                ws("${env.WORKSPACE}-spark-${sparkMajorVersion}") {
-                    cleanWs()
-                    checkout scm
-                    commons.withSparklingWaterDockerImage {
-                        sh "sudo apt-get update"
-                        sh "sudo apt -y install docker.io"
-                        sh "sudo service docker start"
-                        sh "sudo chmod 666 /var/run/docker.sock"
-                        def sparkVersion = getSparkVersion(sparkMajorVersion)
-                        def fullSparklingVersion = getSparklingVersion(props, sparkMajorVersion)
-                        unstash "shared"
-                        sh """
-                            sed -i 's/^h2oMajorName=.*\$/h2oMajorName=${getH2OBranchMajorName()}/' gradle.properties
-                            sed -i 's/^h2oMajorVersion=.*\$/h2oMajorVersion=${getH2OBranchMajorVersion()}/' gradle.properties
-                            sed -i 's/^h2oBuild=.*\$/h2oBuild=${getH2OBranchBuildVersion()}/' gradle.properties
-                            """
-                        sh "H2O_HOME=${env.WORKSPACE}/h2o-3 ./gradlew dist -Pspark=$sparkMajorVersion -Dmaven.repo.local=${env.WORKSPACE}/.m2 -PbuildAgainstH2OBranch=${props["testH2OBranch"]} -Ph2oMajorVersion=${getH2OBranchMajorVersion()} -Ph2oMajorName=${getH2OBranchMajorName()} -Ph2oBuild=${getH2OBranchBuildVersion()}"
-                        def customEnv = [
-                                "SPARK_HOME=/home/jenkins/spark-${sparkVersion}-bin-hadoop2.7",
-                        ]
-                        unstash "properties"
-                        def repoId = readPropertiesFile("properties")["docker_registry_id"]
-                        def repoUrl = "${repoId}.dkr.ecr.${awsRegion()}.amazonaws.com"
-                        docker.withRegistry("https://${repoUrl}", "ecr:${awsRegion()}:SW_FULL_AWS_CREDS") {
-                            withEnv(customEnv) {
-                                dir("./dist/build/zip/sparkling-water-${fullSparklingVersion}") {
-                                    buildAndPublishSparklingWaterImage("scala", fullSparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("python", fullSparklingVersion, repoUrl)
-                                    buildAndPublishSparklingWaterImage("r", fullSparklingVersion, repoUrl)
-                                    sh """
-                                        docker rmi spark-r:${sparkVersion}
-                                        docker rmi spark-py:${sparkVersion}
-                                        docker rmi spark:${sparkVersion}
-                                       """
-                                    buildAndPublishSparklingWaterImage("external-backend", fullSparklingVersion, repoUrl)
-
-                                }
-                            }
-                        }
-                    }
-                    cleanWs()
-                }
-            } catch (Exception e) {
-                stopEKSCluster(commons)
-                throw e
-            }
-        }
-    }
+    parallel(getBuildAndPublishStages(props))
 
     getKubernetesSparkVersions(props).each { sparkMajorVersion ->
         stage("Test Scala, Spark ${sparkMajorVersion}") {
