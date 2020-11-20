@@ -57,7 +57,7 @@ Dynamic allocation must be disabled in Spark.
             --conf spark.executor.instances=3 \
             --conf spark.driver.host=sparkling-water-app \
             --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
         **To start an interactive shell in a client mode:**
@@ -124,7 +124,7 @@ Dynamic allocation must be disabled in Spark.
             --conf spark.executor.instances=3 \
             --conf spark.driver.host=sparkling-water-app \
             --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
     .. tab-container:: Python
@@ -295,7 +295,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
         **To start an interactive shell in a client mode:**
@@ -372,7 +372,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
             --conf spark.ext.h2o.cloud.name=root \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
     .. tab-container:: Python
@@ -555,7 +555,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
             --conf spark.ext.h2o.external.cluster.size=2 \
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
         **To start an interactive shell in a client mode:**
@@ -634,7 +634,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
             --conf spark.ext.h2o.external.cluster.size=2 \
             --conf spark.ext.h2o.external.memory=2G \
             --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION \
-            --class ai.h2o.sparkling.InitTest \
+            --class ai.h2o.sparkling.KubernetesTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
     .. tab-container:: Python

@@ -188,7 +188,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --master $master \
          --deploy-mode cluster \
          --name test \
-         --class ai.h2o.sparkling.InitTest \
+         --class ai.h2o.sparkling.KubernetesTest \
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.jar
         """
@@ -254,12 +254,12 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --conf spark.kubernetes.container.image=${image}  \
          --master $master \
          --name test \
-         --class ai.h2o.sparkling.InitTest \
+         --class ai.h2o.sparkling.KubernetesTest \
          --conf spark.driver.host=sparkling-water-app \
          --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
          --deploy-mode client \
          --conf spark.executor.instances=3 \
-         local:///opt/sparkling-water/tests/initTest.jar
+         local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -446,8 +446,8 @@ static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, s
         prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
     }
     return """${prefix} \
-              --class ai.h2o.sparkling.InitTest \
-              local:///opt/sparkling-water/tests/initTest.jar
+              --class ai.h2o.sparkling.KubernetesTest \
+              local:///opt/sparkling-water/tests/kubernetesTest.jar
            """
 }
 
