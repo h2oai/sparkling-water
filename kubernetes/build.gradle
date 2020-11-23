@@ -68,8 +68,21 @@ task createRDockerfile(type: Dockerfile) {
                 R -e 'install.packages("RCurl", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("jsonlite", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'library(devtools); install_version("sparklyr", repos = "http://cran.us.r-project.org", version = "1.3.1")'
+                R -e 'install.packages("base64enc’", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("config", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("DBI", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("dplyr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("forge", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("generics", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("globals", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("purrr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("r2d3", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("rappdirs", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("rjson", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("tidyr", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("uuid", repos = "http://cran.us.r-project.org")' && \\
+                R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/sparklyr/sparklyr_1.3.1.tar.gz", repos=NULL, type="source")'
                 """
   copyFile("h2o.tar.gz", "/opt/spark/R/lib/h2o.tar.gz")
   runCommand "cd /opt/spark/R/lib && R CMD INSTALL h2o.tar.gz"
