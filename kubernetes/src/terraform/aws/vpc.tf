@@ -4,7 +4,7 @@ variable "region" {
 }
 
 provider "aws" {
-  version = ">= 2.28.1"
+  version = ">= 2.55.0"
   region = var.aws_region
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
@@ -23,7 +23,6 @@ resource "random_string" "suffix" {
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  version = "2.6.0"
 
   name = "SWKubernetes-vpc"
   cidr = "10.0.0.0/16"
