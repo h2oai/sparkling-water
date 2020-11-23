@@ -3,7 +3,7 @@
 
 properties(
         [
-//               pipelineTriggers([cron('H 16 * * *')]),
+                pipelineTriggers([cron('H 16 * * *')]),
                 buildDiscarder(logRotator(numToKeepStr: '10'))
         ]
 )
@@ -596,11 +596,11 @@ node("docker") {
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
                 withTestEnv(commons, image) {
                     testScalaInternalBackendClusterMode(registryId, master, version)
-                    //testScalaInternalBackendClientMode(registryId, master, version)
+                    testScalaInternalBackendClientMode(registryId, master, version)
                     testScalaExternalBackendManualClusterMode(registryId, master, version)
-                    //testScalaExternalBackendManualClientMode(registryId, master, version)
+                    testScalaExternalBackendManualClientMode(registryId, master, version)
                     testScalaExternalBackendAutoClusterMode(registryId, master, version)
-                    //testScalaExternalBackendAutoClientMode(registryId, master, version)
+                    testScalaExternalBackendAutoClientMode(registryId, master, version)
                 }
             } catch (Exception e) {
                 stopEKSCluster(commons)
@@ -617,11 +617,11 @@ node("docker") {
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
                 withTestEnv(commons, image) {
                     testPythonInternalBackendClusterMode(registryId, master, version)
-                    //testPythonInternalBackendClientMode(registryId, master, version)
+                    testPythonInternalBackendClientMode(registryId, master, version)
                     testPythonExternalBackendManualClusterMode(registryId, master, version)
-                    //testPythonExternalBackendManualClientMode(registryId, master, version)
+                    testPythonExternalBackendManualClientMode(registryId, master, version)
                     testPythonExternalBackendAutoClusterMode(registryId, master, version)
-                    //testPythonExternalBackendAutoClientMode(registryId, master, version)
+                    testPythonExternalBackendAutoClientMode(registryId, master, version)
                 }
             } catch (Exception e) {
                 stopEKSCluster(commons)
