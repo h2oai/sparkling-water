@@ -1,6 +1,7 @@
 module "eks" {
   source = "terraform-aws-modules/eks/aws"
   cluster_name = local.cluster_name
+  cluster_version = var.eks_cluster_version
   subnets = module.vpc.private_subnets
   vpc_id = module.vpc.vpc_id
 
@@ -11,8 +12,7 @@ module "eks" {
       asg_desired_capacity = 4
       asg_min_size = 4
       asg_max_size = 4
-      additional_security_group_ids = [
-        aws_security_group.worker_group_mgmt_one.id]
+      additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
     }
   ]
 }
@@ -22,7 +22,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token = data.aws_eks_cluster_auth.cluster.token
   load_config_file = false
-  version = "~> 1.11"
+  version = "~> 1.11.1"
 }
 
 data "aws_eks_cluster" "cluster" {
