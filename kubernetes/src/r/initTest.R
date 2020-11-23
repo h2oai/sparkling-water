@@ -17,6 +17,7 @@
 library(sparklyr)
 library(rsparkling)
 library(testthat)
+options(sparklyr.console.log = TRUE)
 master <- Sys.getenv("KUBERNETES_MASTER")
 registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
