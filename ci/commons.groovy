@@ -8,8 +8,7 @@ def dockerPull(image) {
 }
 
 String getAWSDockerRepo() {
-    //def registryId = readFromInfraState("docker_registry_id")
-    def registryId = 524466471676
+    def registryId = readFromInfraState("docker_registry_id")
     return "${registryId}.dkr.ecr.us-west-2.amazonaws.com"
 }
 
