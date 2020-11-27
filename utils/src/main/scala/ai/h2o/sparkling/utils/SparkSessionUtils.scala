@@ -52,7 +52,7 @@ object SparkSessionUtils extends Logging {
   }
 
   def readHDFSFile(path: String): InputStream = {
-    val hadoopPath = new Path (path)
+    val hadoopPath = new Path(path)
     readHDFSFile(hadoopPath)
   }
 
