@@ -115,8 +115,22 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
   }
 
   protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
+    val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+    val h2oClusterName = conf.cloudName.get
     try {
-      lockCloud(conf)
+      var numberOfTries = 6
+      while (numberOfTries > 1) {
+        try {
+          logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
+          lockCloud(conf)
+          numberOfTries = 0
+        } catch {
+          case cause: RestApiException if numberOfTries > 1 =>
+            numberOfTries = numberOfTries - 1
+            logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
+            Thread.sleep(10000) // Sleep for 10 seconds
+        }
+      }
       verifyWebOpen(conf)
       if (!conf.isBackendVersionCheckDisabled) {
         verifyVersion(conf)
@@ -124,12 +138,11 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       RestApiUtils.getNodes(conf)
     } catch {
       case cause: RestApiException =>
-        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
         throw new H2OClusterNotReachableException(
-          s"""H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+          s"""H2O cluster $h2oCluster - $h2oClusterName is not reachable.
              |H2OContext has not been created.""".stripMargin,
           cause)
     }
