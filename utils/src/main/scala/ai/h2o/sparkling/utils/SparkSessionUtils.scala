@@ -52,7 +52,11 @@ object SparkSessionUtils extends Logging {
   }
 
   def readHDFSFile(path: String): InputStream = {
-    val hadoopPath = new Path(path)
+    val hadoopPath = new Path (path)
+    readHDFSFile(hadoopPath)
+  }
+
+  def readHDFSFile(hadoopPath: Path): InputStream = {
     val fs = hadoopPath.getFileSystem(SparkSessionUtils.active.sparkContext.hadoopConfiguration)
     val qualifiedPath = hadoopPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
     fs.open(qualifiedPath)
