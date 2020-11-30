@@ -402,6 +402,7 @@ def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
         docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
         docker push h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
         docker rmi h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker rmi sparkling-water-${type}:${version}
     """
 }
 
