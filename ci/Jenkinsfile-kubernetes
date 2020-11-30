@@ -640,8 +640,9 @@ node("docker") {
                 withTestEnv(commons, image) {
                     // R sets deployment mode automatically
                     testRInternalBackend(registryId, master, version, sparkVersion)
-                    testRExternalBackendManual(registryId, master, version, sparkVersion)
-                    testRExternalBackendAuto(registryId, master, version, sparkVersion)
+                    // Uncomment after the release Sparklyr 1.5.1, see description of the Jira ticket SW-2492
+                    //testRExternalBackendManual(registryId, master, version, sparkVersion)
+                    //testRExternalBackendAuto(registryId, master, version, sparkVersion)
                 }
             } catch (Exception e) {
                 stopEKSCluster(commons)
