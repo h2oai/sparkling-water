@@ -397,11 +397,12 @@ def publishNightly() {
 }
 
 def publishSparklingWaterDockerImage(String type, version, sparkMajorVersion) {
+    def branchName = env.BRANCH_NAME
     sh """
         H2O_HOME=${env.WORKSPACE}/h2o-3 ./bin/build-kubernetes-images.sh ${type}
-        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker push h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
-        docker rmi h2oai/sparkling-water-${type}:latest-nightly-${sparkMajorVersion}
+        docker tag sparkling-water-${type}:${version} h2oai/sparkling-water-${type}:latest-nightly-${branchName}-${sparkMajorVersion}
+        docker push h2oai/sparkling-water-${type}:latest-nightly-${branchName}-${sparkMajorVersion}
+        docker rmi h2oai/sparkling-water-${type}:latest-nightly-${branchName}-${sparkMajorVersion}
         docker rmi sparkling-water-${type}:${version}
     """
 }
