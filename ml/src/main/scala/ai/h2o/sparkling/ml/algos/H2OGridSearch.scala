@@ -184,6 +184,7 @@ class H2OGridSearch(override val uid: String)
       val category = H2OModelCategory.fromString(gridModels(0)._2.getModelCategory())
       category match {
         case H2OModelCategory.Regression => H2OMetric.RMSE
+        case H2OModelCategory.CoxPH => H2OMetric.RMSE
         case H2OModelCategory.Binomial => H2OMetric.AUC
         case H2OModelCategory.AnomalyDetection => H2OMetric.Logloss
         case H2OModelCategory.Multinomial => H2OMetric.Logloss

@@ -31,6 +31,7 @@ trait H2OMOJOPrediction
   with H2OMOJOPredictionDimReduction
   with H2OMOJOPredictionClustering
   with H2OMOJOPredictionBinomial
+  with H2OMOJOPredictionCoxPH
   with H2OMOJOPredictionOrdinal {
   self: H2OMOJOModel =>
 
@@ -46,6 +47,7 @@ trait H2OMOJOPrediction
       case ModelCategory.WordEmbedding => extractWordEmbeddingPredictionColContent()
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
       case ModelCategory.Ordinal => extractOrdinalPredictionColContent()
+      case ModelCategory.CoxPH => extractCoxPHPredictionColContent()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -62,6 +64,7 @@ trait H2OMOJOPrediction
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionUDF()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF()
       case ModelCategory.Ordinal => getOrdinalPredictionUDF()
+      case ModelCategory.CoxPH => getCoxPHPredictionUDF()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -78,6 +81,7 @@ trait H2OMOJOPrediction
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionColSchema()
+      case ModelCategory.CoxPH => getCoxPHPredictionColSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
@@ -98,6 +102,7 @@ trait H2OMOJOPrediction
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()
       case ModelCategory.Ordinal => getOrdinalPredictionSchema()
+      case ModelCategory.CoxPH => getCoxPHPredictionSchema()
       case _ => throw new RuntimeException("Unknown model category " + predictWrapper.getModelCategory)
     }
   }
