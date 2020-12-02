@@ -115,8 +115,8 @@ Dynamic allocation must be disabled in Spark.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash \
-            /opt/spark/bin/spark-submit \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- \
+            $SPARK_HOME/bin/spark-submit \
             --master "k8s://KUBERNETES_ENDPOINT" \
             --deploy-mode client \
             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
@@ -360,8 +360,8 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash \
-            /opt/spark/bin/spark-submit \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- \
+            $SPARK_HOME/bin/spark-submit \
             --master "k8s://KUBERNETES_ENDPOINT" \
             --deploy-mode client \
             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
@@ -574,8 +574,8 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
         .. code:: bash
 
-            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- /bin/bash \
-            /opt/spark/bin/spark-submit \
+            kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app --image=h2oai/sparkling-water-scala:SUBST_SW_VERSION -- \
+            $SPARK_HOME/bin/spark-submit \
             --master "k8s://KUBERNETES_ENDPOINT" \
             --deploy-mode client \
             --conf spark.scheduler.minRegisteredResourcesRatio=1 \
