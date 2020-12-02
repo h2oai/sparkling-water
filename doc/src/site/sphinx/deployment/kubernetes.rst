@@ -56,7 +56,7 @@ Dynamic allocation must be disabled in Spark.
             --conf spark.kubernetes.container.image=h2oai/sparkling-water-scala:SUBST_SW_VERSION \
             --conf spark.executor.instances=3 \
             --conf spark.driver.host=sparkling-water-app \
-            --conf spark.kubernetes.driver.pod.name=sparkling-water-app
+            --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
             --class ai.h2o.sparkling.InitTest \
             local:///opt/sparkling-water/tests/initTest.jar
 
