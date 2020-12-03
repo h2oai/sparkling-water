@@ -36,7 +36,9 @@ object InitTest {
     spark.sparkContext.addFile(
       "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
     val frame = H2OFrame(new URI("file://" + SparkFiles.get("prostate.csv")))
-    val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+    val sparkDF = hc.asSparkFrame(frame)
+      .repartition(10)
+      .withColumn("CAPSULE", $"CAPSULE" cast "string")
     val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
     import ai.h2o.sparkling.ml.algos.H2OXGBoost
