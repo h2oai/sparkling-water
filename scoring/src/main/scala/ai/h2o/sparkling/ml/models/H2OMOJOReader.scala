@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.nio.file.Paths
+import org.apache.hadoop.fs.Path
 
 import ai.h2o.sparkling.ml.utils.H2OReaderBase
 import ai.h2o.sparkling.utils.SparkSessionUtils
@@ -27,7 +27,7 @@ private[models] class H2OMOJOReader[T <: HasMojo] extends H2OReaderBase[T] {
 
   override def load(path: String): T = {
     val model = super.load(path)
-    val inputPath = Paths.get(path, H2OMOJOProps.serializedFileName).toString
+    val inputPath = new Path(path, H2OMOJOProps.serializedFileName)
     withResource(SparkSessionUtils.readHDFSFile(inputPath)) { inputStream =>
       model.setMojo(inputStream)
     }
