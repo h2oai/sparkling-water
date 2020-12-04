@@ -107,7 +107,6 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
 
     predictions.count() shouldBe dataset.count()
     predictions.filter("prediction is not null").count() shouldBe dataset.count()
-    predictions.first().get(0) shouldBe 0.20032351116082292
-
+    predictions.first().getDouble(0) shouldBe (0.20032351116082292 +- 0.0001)
   }
 }
