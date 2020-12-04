@@ -21,8 +21,8 @@ from pysparkling.ml.algos.regression import *
 from pysparkling.ml.features import *
 from pysparkling.ml.models import *
 
-__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OGAM", "H2OMOJOModel",
-           "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJOModel", "H2OUnsupervisedMOJOModel",
+__all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost", "H2OGLM", "H2OCoxPH", "H2OGAM", "H2OMOJOModel",
+           "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJOModel", "H2OUnsupervisedMOJOModel", "H2OCoxPHMOJOModel",
            "H2OTreeBasedUnsupervisedMOJOModel", "H2OMOJOPipelineModel", "H2OGridSearch", "H2OMOJOSettings", "H2OKMeans",
            "H2OTargetEncoder", "H2ODRF", "H2OAutoMLClassifier", "H2OGLMClassifier", "H2OGAMClassifier", "H2OGBMClassifier", "H2OXGBoostClassifier",
            "H2ODeepLearningClassifier", "H2ODRFClassifier", "H2OAutoMLRegressor", "H2OGLMRegressor", "H2OGBMRegressor",

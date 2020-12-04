@@ -111,3 +111,13 @@ def craiglistDatasetPath():
 @pytest.fixture(scope="module")
 def craiglistDataset(spark, craiglistDatasetPath):
     return spark.read.csv(craiglistDatasetPath, header=True, inferSchema=True)
+
+
+@pytest.fixture(scope="module")
+def heartDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/coxph_test/heart.csv")
+
+
+@pytest.fixture(scope="module")
+def heartDataset(spark, heartDatasetPath):
+    return spark.read.csv(heartDatasetPath, header=True, inferSchema=True)
