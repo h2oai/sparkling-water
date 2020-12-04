@@ -37,25 +37,13 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/coxph_test/heart.csv"))
 
-////  test("Propagation of predictionCol settings") {
-////
-////    val predictionCol = "my_prediction_col_name"
-////    val algo = new H2OGLM()
-////      .setSplitRatio(0.8)
-////      .setSeed(1)
-////      .setFeaturesCols("age")
-////      .setLabelCol("AGE")
-////      .setPredictionCol(predictionCol)
-////
-////    val model = algo.fit(dataset)
-////
-////    assert(model.transform(dataset).columns.contains(predictionCol))
-//  }
+  private lazy val datasetTest = spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/coxph_test/heart_test.csv"))
 
   test("Test H2OCoxPH Pipeline") {
-
     val algo = new H2OCoxPH()
-      .setSplitRatio(0.8)
       .setStartCol("start")
       .setStopCol("stop")
       .setLabelCol("event")
@@ -71,56 +59,55 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     loadedModel.transform(dataset).count()
   }
 
-//  test("H2OGLM with set modelId is trained mutliple times") {
-//    val modelId = "testingH2OGLMModel"
-//
-//    val key1 = Key.make(modelId).toString
-//    val key2 = Key.make(modelId + "_1").toString
-//    val key3 = Key.make(modelId + "_2").toString
-//
-//    val dataset = spark.read
-//      .option("header", "true")
-//      .option("inferSchema", "true")
-//      .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
-//
-//    // Create GLM model
-//    val algo = new H2OGLM()
-//      .setModelId(modelId)
-//      .setSplitRatio(0.8)
-//      .setSeed(1)
-//      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-//      .setLabelCol("AGE")
-//
-//    H2OModel.modelExists(key1) shouldBe false
-//
-//    algo.fit(dataset)
-//    H2OModel.modelExists(key1) shouldBe true
-//    H2OModel.modelExists(key2) shouldBe false
-//    H2OModel.modelExists(key3) shouldBe false
-//
-//    algo.fit(dataset)
-//    H2OModel.modelExists(key1) shouldBe true
-//    H2OModel.modelExists(key2) shouldBe true
-//    H2OModel.modelExists(key3) shouldBe false
-//
-//    algo.fit(dataset)
-//    H2OModel.modelExists(key1) shouldBe true
-//    H2OModel.modelExists(key2) shouldBe true
-//    H2OModel.modelExists(key3) shouldBe true
-//  }
-//
-//  test("H2OGLM converts labelCol to categorical when the binomial family is set") {
-//    val algorithm = new H2OGLM()
-//      .setFamily("binomial")
-//      .setLabelCol("CAPSULE")
-//
-//    // If the labelCol wasn't converted from numeric(IntegerType) to categorical, the fit method would fail.
-//    val model = algorithm.fit(dataset)
-//    val probabilities = model.transform(dataset).select("detailed_prediction.probabilities")
-//    val Array(first, second) = probabilities.take(2)
-//
-//    dataset.schema.fields.find(_.name == "CAPSULE").get.dataType shouldEqual IntegerType
-//    model.getFamily() shouldEqual "binomial"
-//    first should not equal second
-//  }
+  test("H2OCoxPH with set modelId is trained mutliple times") {
+    val modelId = "testingH2OCoxPHModel"
+
+    val key1 = Key.make(modelId).toString
+    val key2 = Key.make(modelId + "_1").toString
+    val key3 = Key.make(modelId + "_2").toString
+
+    // Create  model
+    val algo = new H2OCoxPH()
+      .setModelId(modelId)
+      .setStartCol("start")
+      .setStopCol("stop")
+      .setLabelCol("event")
+
+    H2OModel.modelExists(key1) shouldBe false
+
+    algo.fit(dataset)
+    print(H2OModel.listAllModels().mkString("Array(", ", ", ")"))
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe false
+    H2OModel.modelExists(key3) shouldBe false
+
+    algo.fit(dataset)
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe true
+    H2OModel.modelExists(key3) shouldBe false
+
+    algo.fit(dataset)
+    H2OModel.modelExists(key1) shouldBe true
+    H2OModel.modelExists(key2) shouldBe true
+    H2OModel.modelExists(key3) shouldBe true
+  }
+
+  test("predictions have reasonable values") {
+    // Create  model
+    val algo = new H2OCoxPH()
+      .setStartCol("start")
+      .setStopCol("stop")
+      .setLabelCol("event")
+      .setIgnoredCols(Array("id"))
+
+    val model = algo.fit(dataset)
+    val predictions = model.transform(dataset) .select("prediction")
+
+    predictions.show()
+
+    predictions.count() shouldBe dataset.count()
+    predictions.filter("prediction is not null").count() shouldBe dataset.count()
+    predictions.first().get(0) shouldBe 0.20032351116082292
+
+  }
 }
