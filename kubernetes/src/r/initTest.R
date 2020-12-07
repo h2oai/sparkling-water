@@ -17,7 +17,6 @@
 library(sparklyr)
 library(rsparkling)
 library(testthat)
-options(sparklyr.console.log = TRUE)
 master <- Sys.getenv("KUBERNETES_MASTER")
 registryId <- Sys.getenv("REGISTRY_ID")
 version <- Sys.getenv("SW_VERSION")
@@ -48,7 +47,6 @@ config <- spark_config_kubernetes(master = master,
                                  version = sparkVersion,
                                  executors = numExecutors,
                                  conf = extraOptionsParsed,
-                                 timeout = 300,
                                  ports = c(8880, 8881, 4040, 54321))
 config["spark.home"] <- sparkHome
 sc <- spark_connect(config = config, spark_home = sparkHome)

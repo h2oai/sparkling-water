@@ -215,9 +215,7 @@ Dynamic allocation must be disabled in Spark.
     .. tab-container:: R
         :title: R
 
-        First, make sure that RSparkling is installed on the node we want to run RSparkling from. Also check that the version
-        of your Sparklyr is older or equal to ``1.3.1``. There is a problem with the deployment on Kubernetes since Sparklyr ``1.4``.
-
+        First, make sure that RSparkling is installed on the node we want to run RSparkling from.
         You can install RSparkling as:
 
         .. code:: r
@@ -480,9 +478,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
     .. tab-container:: R
         :title: R
 
-        First, make sure that RSparkling is installed on the node we want to run RSparkling from. Also check that the version
-        of your Sparklyr is older or equal to ``1.3.1``. There is a problem with the deployment on Kubernetes since Sparklyr ``1.4``.
-
+        First, make sure that RSparkling is installed on the node we want to run RSparkling from.
         You can install RSparkling as:
 
         .. code:: r
