@@ -114,21 +114,31 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     }
   }
 
+  private def tryToLockCloud(conf: H2OConf, attemptId: Int, maximumNumberOfAttempts: Int): Boolean = {
+      val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+      val h2oClusterName = conf.cloudName.get
+      try {
+        logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
+        lockCloud(conf)
+        true
+      } catch {
+        case cause: RestApiException if attemptId < maximumNumberOfAttempts - 1 =>
+          logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
+          false
+      }
+  }
+
   protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
-    val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-    val h2oClusterName = conf.cloudName.get
     try {
-      var numberOfTries = 6
-      while (numberOfTries > 1) {
-        try {
-          logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
-          lockCloud(conf)
-          numberOfTries = 0
-        } catch {
-          case cause: RestApiException if numberOfTries > 1 =>
-            numberOfTries = numberOfTries - 1
-            logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
-            Thread.sleep(10000) // Sleep for 10 seconds
+      val maximumNumberOfAttempts = 6
+      var attemptId = 0
+      while (attemptId < maximumNumberOfAttempts) {
+        val locked = tryToLockCloud(conf, attemptId, maximumNumberOfAttempts)
+        if (locked) {
+          attemptId = maximumNumberOfAttempts
+        } else {
+          Thread.sleep(10000) // Wait for 10 seconds
+          attemptId = attemptId + 1
         }
       }
       verifyWebOpen(conf)
@@ -141,6 +151,8 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
+        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+        val h2oClusterName = conf.cloudName.get
         throw new H2OClusterNotReachableException(
           s"""H2O cluster $h2oCluster - $h2oClusterName is not reachable.
              |H2OContext has not been created.""".stripMargin,
