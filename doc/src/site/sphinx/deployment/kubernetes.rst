@@ -500,7 +500,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 
             library(sparklyr)
             library(rsparkling)
-            config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+            config <- spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
                              image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
                              account = "default",
                              executors = 2,
@@ -511,7 +511,7 @@ After we created the external H2O backend, we can connect to it from Sparkling W
                                      "spark.ext.h2o.external.memory"="2G",
                                      "spark.ext.h2o.cloud.representative"="h2o-service.default.svc.cluster.local:54321",
                                      "spark.ext.h2o.cloud.name"="root",
-                                     "spark.kubernetes.file.upload.path"="file:///tmp")
+                                     "spark.kubernetes.file.upload.path"="file:///tmp"),
                              ports = c(8880, 8881, 4040, 54321))
             config["spark.home"] <- Sys.getenv("SPARK_HOME")
             sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
@@ -765,7 +765,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 
             library(sparklyr)
             library(rsparkling)
-            config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+            config <- spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
                              image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
                              account = "default",
                              executors = 2,
@@ -777,7 +777,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
                                      "spark.ext.h2o.external.memory"="2G",
                                      "spark.ext.h2o.external.cluster.size"="2",
                                      "spark.ext.h2o.external.k8s.docker.image"="h2oai/sparkling-water-external-backend:SUBST_SW_VERSION",
-                                     "spark.kubernetes.file.upload.path"="file:///tmp")
+                                     "spark.kubernetes.file.upload.path"="file:///tmp"),
                              ports = c(8880, 8881, 4040, 54321))
             config["spark.home"] <- Sys.getenv("SPARK_HOME")
             sc <- spark_connect(config = config, spark_home = Sys.getenv("SPARK_HOME"))
