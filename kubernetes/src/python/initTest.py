@@ -26,7 +26,7 @@ assert h2o.cluster().cloud_size == int(spark.sparkContext.getConf().get("spark.e
 
 # Prepare Data
 frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-sparkDF = hc.asSparkFrame(frame)
+sparkDF = hc.asSparkFrame(frame).repartition(10)
 sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
 [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
