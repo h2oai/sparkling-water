@@ -115,17 +115,17 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
   }
 
   private def tryToLockCloud(conf: H2OConf, catchException: Boolean): Boolean = {
-      val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
-      val h2oClusterName = conf.cloudName.get
-      try {
-        logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
-        lockCloud(conf)
-        true
-      } catch {
-        case cause: RestApiException if catchException =>
-          logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
-          false
-      }
+    val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+    val h2oClusterName = conf.cloudName.get
+    try {
+      logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
+      lockCloud(conf)
+      true
+    } catch {
+      case cause: RestApiException if catchException =>
+        logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
+        false
+    }
   }
 
   protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
