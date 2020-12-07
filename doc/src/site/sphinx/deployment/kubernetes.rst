@@ -236,7 +236,7 @@ Dynamic allocation must be disabled in Spark.
 
             library(sparklyr)
             library(rsparkling)
-            config = spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
+            config <- spark_config_kubernetes("k8s://KUBERNETES_ENDPOINT",
                              image = "h2oai/sparkling-water-r:SUBST_SW_VERSION",
                              account = "default",
                              executors = 3,
@@ -706,7 +706,7 @@ is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
             --conf spark.ext.h2o.external.auto.start.backend=kubernetes \
             --conf spark.ext.h2o.external.cluster.size=2 \
             --conf spark.ext.h2o.external.memory=2G \
-            --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION \
+            --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION
 
         4. Inside the shell, run:
 
