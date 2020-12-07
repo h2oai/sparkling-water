@@ -114,7 +114,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     }
   }
 
-  private def tryToLockCloud(conf: H2OConf, attemptId: Int, maximumNumberOfAttempts: Int): Boolean = {
+  private def tryToLockCloud(conf: H2OConf, catchException: Boolean): Boolean = {
       val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
       val h2oClusterName = conf.cloudName.get
       try {
@@ -122,7 +122,7 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
         lockCloud(conf)
         true
       } catch {
-        case cause: RestApiException if attemptId < maximumNumberOfAttempts - 1 =>
+        case cause: RestApiException if catchException =>
           logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
           false
       }
@@ -133,7 +133,8 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       val maximumNumberOfAttempts = 6
       var attemptId = 0
       while (attemptId < maximumNumberOfAttempts) {
-        val locked = tryToLockCloud(conf, attemptId, maximumNumberOfAttempts)
+        val catchException = attemptId < maximumNumberOfAttempts - 1
+        val locked = tryToLockCloud(conf, catchException)
         if (locked) {
           attemptId = maximumNumberOfAttempts
         } else {
