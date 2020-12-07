@@ -114,9 +114,34 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
     }
   }
 
+  private def tryToLockCloud(conf: H2OConf, catchException: Boolean): Boolean = {
+    val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+    val h2oClusterName = conf.cloudName.get
+    try {
+      logInfo(s"Trying to lock H2O cluster $h2oCluster - $h2oClusterName.")
+      lockCloud(conf)
+      true
+    } catch {
+      case cause: RestApiException if catchException =>
+        logWarning(s"Locking of the H2O cluster $h2oCluster - $h2oClusterName failed.", cause)
+        false
+    }
+  }
+
   protected def getAndVerifyWorkerNodes(conf: H2OConf): Array[NodeDesc] = {
     try {
-      lockCloud(conf)
+      val maximumNumberOfAttempts = 6
+      var attemptId = 0
+      while (attemptId < maximumNumberOfAttempts) {
+        val catchException = attemptId < maximumNumberOfAttempts - 1
+        val locked = tryToLockCloud(conf, catchException)
+        if (locked) {
+          attemptId = maximumNumberOfAttempts
+        } else {
+          Thread.sleep(10000) // Wait for 10 seconds
+          attemptId = attemptId + 1
+        }
+      }
       verifyWebOpen(conf)
       if (!conf.isBackendVersionCheckDisabled) {
         verifyVersion(conf)
@@ -124,12 +149,13 @@ trait H2OContextExtensions extends RestCommunication with RestApiUtils with Shel
       RestApiUtils.getNodes(conf)
     } catch {
       case cause: RestApiException =>
-        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
         if (conf.isAutoClusterStartUsed) {
           stopExternalH2OCluster(conf)
         }
+        val h2oCluster = conf.h2oCluster.get + conf.contextPath.getOrElse("")
+        val h2oClusterName = conf.cloudName.get
         throw new H2OClusterNotReachableException(
-          s"""H2O cluster $h2oCluster - ${conf.cloudName.get} is not reachable.
+          s"""H2O cluster $h2oCluster - $h2oClusterName is not reachable.
              |H2OContext has not been created.""".stripMargin,
           cause)
     }
