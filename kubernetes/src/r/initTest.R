@@ -44,7 +44,7 @@ if (optionName %in% names(extraOptionsParsed) && extraOptionsParsed[optionName] 
 config <- spark_config_kubernetes(master = master,
                                  image = paste0(registryId, ".dkr.ecr.us-east-2.amazonaws.com/sw_kubernetes_repo/sparkling-water:r-", version),
                                  account = "default",
-                                 driver = "driver-r",
+                                 driver = "sparkling-water-app",
                                  version = sparkVersion,
                                  executors = numExecutors,
                                  conf = extraOptionsParsed,
