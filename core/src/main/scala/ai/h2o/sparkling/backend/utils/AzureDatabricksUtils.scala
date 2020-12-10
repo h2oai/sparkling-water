@@ -17,10 +17,9 @@
 
 package ai.h2o.sparkling.backend.utils
 
-import java.io.FileNotFoundException
-
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
+import org.apache.spark.SparkConf
 import org.apache.spark.expose.Logging
 
 object AzureDatabricksUtils extends Logging {
@@ -43,34 +42,15 @@ object AzureDatabricksUtils extends Logging {
     conf.clientCheckRetryTimeout
   }
 
-  def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = {
+  def isRunningOnAzureDatabricks(conf: H2OConf): Boolean = isRunningOnAzureDatabricks(conf.sparkConf)
+
+  def isRunningOnAzureDatabricks(conf: SparkConf): Boolean = {
     conf.getOption("spark.databricks.cloudProvider").contains("Azure")
   }
 
-  def flowURL(conf: H2OConf): String = {
+  def relativeFlowURL(conf: H2OConf): String = {
     val clusterId = conf.get("spark.databricks.clusterUsageTags.clusterId")
     val orgId = conf.get("spark.databricks.clusterUsageTags.clusterOwnerOrgId")
-    val azureHost = s"https://${azureRegion()}.azuredatabricks.net"
-    s"$azureHost/driver-proxy/o/$orgId/$clusterId/${conf.clientWebPort}/flow/index.html"
-  }
-
-  private def azureRegion(): String = {
-    val substRegion = "YOUR_AZURE_REGION"
-    val region = try {
-      val confFile = scala.io.Source.fromFile("/databricks/common/conf/deploy.conf")
-      confFile.getLines
-        .find(_.contains("databricks.region.name"))
-        .map(_.trim.split("=")(1).trim().replaceAll("\"", ""))
-        .getOrElse(substRegion)
-    } catch {
-      case e: FileNotFoundException => substRegion
-    }
-
-    if (region == substRegion) {
-      logWarning(
-        "Azure region could not be determined automatically, please replace " +
-          s"'$substRegion' in the provided flow URL with your region.")
-    }
-    region
+    s"/driver-proxy/o/$orgId/$clusterId/${conf.clientWebPort}/flow/index.html"
   }
 }
