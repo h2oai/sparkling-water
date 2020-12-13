@@ -25,6 +25,8 @@ import hex.gam.GAMModel.GAMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
 import hex.schemas.CoxPHV3.CoxPHParametersV3
+import hex.rulefit.RuleFitModel.RuleFitParameters
+import hex.schemas.RuleFitV3.RuleFitParametersV3
 import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -102,6 +104,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, dlDeprecations),
+      ("H2ORuleFitParams", classOf[RuleFitParametersV3], classOf[RuleFitParameters], Seq(ignoredCols), noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
       ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
@@ -146,6 +149,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), Some("H2OGLMMetrics")),
       ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), None),
+      ("H2ORuleFit", classOf[RuleFitParameters], "H2OSupervisedAlgorithm", Seq(withDistribution), None),
       ("H2OKMeans", classOf[KMeansParameters], unsupervised, Seq("H2OKMeansExtras"), Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, Seq.empty, Some("H2ORegressionCoxPHMetrics")),
       ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")))
@@ -168,7 +172,8 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2ODRF", Seq("distribution")),
       ("H2OGLM", Seq("family")),
       ("H2OGAM", Seq("family")),
-      ("H2ODeepLearning", Seq("distribution")))
+      ("H2ODeepLearning", Seq("distribution")),
+      ("H2ORuleFit", Seq("distribution")))
 
     for ((parameterEntityName, parametersToCheck) <- algorithms)
       yield ProblemSpecificAlgorithmSubstitutionContext(
