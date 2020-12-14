@@ -73,6 +73,11 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
+    val ruleFitFields = Seq(
+      ExplicitField("offset_column", "HasUnsupportedOffsetCol", null),
+      ExplicitField("fold_column", "HasUnsupportedFoldCol", null),
+      ignoredCols)
+
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
@@ -104,7 +109,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, dlDeprecations),
-      ("H2ORuleFitParams", classOf[RuleFitParametersV3], classOf[RuleFitParameters], Seq(ignoredCols), noDeprecation),
+      ("H2ORuleFitParams", classOf[RuleFitParametersV3], classOf[RuleFitParameters], ruleFitFields, noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
       ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
