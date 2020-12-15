@@ -127,6 +127,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
       cloudV3.compiled_on)
     val h2oClusterInfo = H2OClusterInfo(
       s"$flowIp:$flowPort",
+      visibleFlowURL,
       cloudV3.cloud_healthy,
       cloudV3.internal_security_enabled,
       nodes.map(_.ipPort()),
@@ -270,12 +271,26 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
   }
 
   def flowURL(): String = {
-    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
-      AzureDatabricksUtils.flowURL(conf)
-    } else if (conf.clientFlowBaseurlOverride.isDefined) {
+    if (conf.clientFlowBaseurlOverride.isDefined) {
       conf.clientFlowBaseurlOverride.get + conf.contextPath.getOrElse("")
     } else {
       "%s://%s:%d%s".format(conf.getScheme(), flowIp, flowPort, conf.contextPath.getOrElse(""))
+    }
+  }
+
+  def visibleFlowURL(): String = {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
+      AzureDatabricksUtils.relativeFlowURL(conf)
+    } else {
+      flowURL()
+    }
+  }
+
+  private def getFlowUIHint() = {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(conf)) {
+      "Go to Spark UI > Sparkling Water tab > click Flow UI link"
+    } else {
+      s"${flowURL()} (CMD + click in Mac OSX)"
     }
   }
 
@@ -295,7 +310,7 @@ class H2OContext private[sparkling] (private val conf: H2OConf) extends H2OConte
          |  ${nodes.mkString("\n  ")}
          |  ------------------------
          |
-         |  Open H2O Flow in browser: ${flowURL()} (CMD + click in Mac OSX)
+         |  Open H2O Flow in browser: ${getFlowUIHint}
          |
     """.stripMargin
     val sparkYarnAppId = if (sparkContext.master.toLowerCase.startsWith("yarn")) {
