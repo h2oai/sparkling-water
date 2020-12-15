@@ -17,11 +17,12 @@
 
 package org.apache.spark.h2o.ui
 
+import ai.h2o.sparkling.backend.utils.AzureDatabricksUtils
 import javax.servlet.http.HttpServletRequest
 import org.apache.spark.h2o.SparkSpecificUtils
 import org.apache.spark.ui.{UIUtils, WebUIPage}
 
-import scala.xml.Node
+import scala.xml.{Attribute, Node, Null, Text}
 
 /**
   * Sparkling Water info page.
@@ -41,7 +42,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       ("H2O Build On", h2oBuildInfo.h2oBuildOn))
   }
 
-  private def flowUrl(): String = s"http://${provider.localIpPort}"
+  private def flowUrl(): String = parent.provider.H2OClusterInfo.flowURL
 
   private def swProperties(): Seq[(String, String, String)] = provider.sparklingWaterProperties
 
@@ -58,7 +59,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
 
     val content = if (provider.isSparklingWaterStarted) {
 
-      val swInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, swInfo(), fixedWidth = true)
+      val swInfoTable = UIUtils.listingTable(propertyHeader, h2oRowWithId, swInfo(), fixedWidth = true)
       val swPropertiesTable =
         UIUtils.listingTable(Seq("Name", "Value", "Documentation"), propertiesRow, swProperties(), fixedWidth = true)
       val h2oInfoTable = UIUtils.listingTable(propertyHeader, h2oRow, h2oInfo(), fixedWidth = true)
@@ -88,24 +89,36 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
             <strong>Memory Info:</strong>{memoryInfo}
           </li>
           <li>
-            <a href={flowUrl()}>
+            <a id="Flow UI Link" target="_blank" href={flowUrl()}>
               <strong>Flow UI</strong>
             </a>
           </li>
         </ul>
       </div>
-        <span>
-          <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>{
-        h2oInfoTable
-      }
-        </span>
-
+      <span>
+        <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>
+        {h2oInfoTable}
+        {additionalScript()}
+      </span>
     } else {
       <div>
         <h4>Sparkling Water UI not ready yet!</h4>
       </div>
     }
     SparkSpecificUtils.headerSparkPage(request, "Sparkling Water", content, parent, helpText)
+  }
+
+  private def additionalScript(): Seq[Node] = {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(parent.parent.conf)) {
+      val javaScript = scala.xml.Unparsed(
+        s"""document.getElementById("Flow UI").innerHTML = window.location.protocol + "//" + window.location.hostname + "${flowUrl()}";
+           |document.getElementById("Flow UI Link").href = "${flowUrl()}";""".stripMargin)
+      <script type="text/javascript">{
+        javaScript
+      }</script>
+    } else {
+      Seq.empty
+    }
   }
 
   private def propertyHeader = Seq("Name", "Value")
@@ -126,5 +139,13 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     </td> <td>
       {kv._2}
     </td>
+  </tr>
+
+  private def h2oRowWithId(kv: (String, String)) = <tr>
+    <td>
+      {kv._1}
+    </td> {<td>
+      {kv._2}
+    </td> % Attribute(None, "id", Text(kv._1), Null)}
   </tr>
 }
