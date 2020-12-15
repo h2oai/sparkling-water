@@ -30,8 +30,8 @@ class NullableFloatArrayParam(parent: Params, name: String, doc: String, isValid
     this(parent, name, doc, _ => true)
 
   /** Creates a param pair with a `java.util.List` of values (for Java and Python). */
-  def w(value: java.util.List[java.lang.Float]): ParamPair[Array[Float]] =
-    w(value.asScala.map(_.asInstanceOf[Float]).toArray)
+  def w(value: java.util.List[java.lang.Double]): ParamPair[Array[Float]] =
+    w(value.asScala.map(_.doubleValue().toFloat).toArray)
 
   override def jsonEncode(value: Array[Float]): String = {
     if (value == null) {

@@ -51,7 +51,10 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
   }
 
   test("Test MOJO parameters on DRF") {
-    val algorithm = new H2ODRF().setLabelCol("CAPSULE").setSeed(1)
+    val algorithm = new H2ODRF()
+      .setLabelCol("CAPSULE")
+      .setSeed(1)
+      .setClassSamplingFactors(Array(0.2f, 1, 1))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
