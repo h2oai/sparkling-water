@@ -34,14 +34,7 @@ object SparkSpecificUtils extends CrossSparkUtils {
       activeTab: SparkUITab,
       helpText: String): Seq[Node] = {
     val method = UIUtils.getClass.getMethods.find(m => m.getName == "headerSparkPage").get
-    val arguments = Seq[AnyRef](
-      request,
-      title,
-      () => content,
-      activeTab,
-      Some(helpText),
-      FALSE,
-      FALSE)
+    val arguments = Seq[AnyRef](request, title, () => content, activeTab, Some(helpText), FALSE, FALSE)
     val result = if (arguments.length == method.getParameterCount) {
       method.invoke(UIUtils, arguments: _*)
     } else if (arguments.length + 1 == method.getParameterCount) {

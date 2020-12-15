@@ -51,8 +51,6 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
     Seq(("Flow UI", flowUrl()), ("Nodes", cloudInfo.cloudNodes.mkString(","))) ++ cloudInfo.extraBackendInfo
   }
 
-
-
   override def render(request: HttpServletRequest): Seq[Node] = {
     val helpText =
       """
@@ -99,10 +97,10 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
       </div>
       <span>
         <h4>Sparkling Water</h4>{swInfoTable}<h4>Sparkling Water Properties</h4>{swPropertiesTable}<h4>H2O Build Information</h4>
-        { h2oInfoTable }
-        { additionalScript() }
+        {h2oInfoTable}
+        {additionalScript()}
       </span>
-     } else {
+    } else {
       <div>
         <h4>Sparkling Water UI not ready yet!</h4>
       </div>
@@ -111,7 +109,7 @@ case class SparklingWaterInfoPage(parent: SparklingWaterUITab) extends WebUIPage
   }
 
   private def additionalScript(): Seq[Node] = {
-    if(AzureDatabricksUtils.isRunningOnAzureDatabricks(parent.parent.conf)) {
+    if (AzureDatabricksUtils.isRunningOnAzureDatabricks(parent.parent.conf)) {
       val javaScript = scala.xml.Unparsed(
         s"""document.getElementById("Flow UI").innerHTML = window.location.protocol + "//" + window.location.hostname + "${flowUrl()}";
            |document.getElementById("Flow UI Link").href = "${flowUrl()}";""".stripMargin)
