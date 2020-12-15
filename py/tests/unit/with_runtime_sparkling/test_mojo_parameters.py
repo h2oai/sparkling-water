@@ -26,7 +26,7 @@ def testGBMParameters(prostateDataset):
 
 def testDRFParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2ODRF(seed=1, labelCol="CAPSULE", featuresCols=features)
+    algorithm = H2ODRF(seed=1, labelCol="CAPSULE", featuresCols=features, classSamplingFactors=[.2, .8, 1])
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 

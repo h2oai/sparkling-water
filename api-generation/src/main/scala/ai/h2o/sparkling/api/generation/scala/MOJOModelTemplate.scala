@@ -102,13 +102,22 @@ object MOJOModelTemplate
           case "long" => "value.asInstanceOf[java.lang.Long].longValue()"
           case "float" => "value.asInstanceOf[java.lang.Float].floatValue()"
           case "double" => "value.asInstanceOf[java.lang.Double].doubleValue()"
+          case "float[]" =>
+            """if (value.isInstanceOf[Array[Double]]) {
+              |            value.asInstanceOf[Array[Double]].map(_.toFloat)
+              |          } else {
+              |            value
+              |          }""".stripMargin
           case "ColSpecifierV3" =>
             "if (value == null) null " +
               "else value.asInstanceOf[hex.genmodel.attributes.parameters.ColumnSpecifier].getColumnName()"
           case _ => "value"
         }
         s"""      try {
-           |        h2oParametersMap.get("$h2oName").foreach(value => set("$swName", $value))
+           |        h2oParametersMap.get("$h2oName").foreach { value =>
+           |          val convertedValue = $value
+           |          set("$swName", convertedValue)
+           |        }
            |      } catch {
            |        case e: Throwable => logError("An error occurred during setting up the '$swName' parameter.", e)
            |      }""".stripMargin
