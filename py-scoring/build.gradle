@@ -1,0 +1,234 @@
+description = "PySparklingScoring - Sparkling Water Python Scoring Package"
+
+apply from: "$rootDir/gradle/utils.gradle"
+apply plugin: 'ru.vyarus.use-python'
+
+import ru.vyarus.gradle.plugin.python.cmd.Python
+
+def getPythonVersion() {
+  Python p = new Python(project, python.getPythonPath(), python.getPythonBinary())
+  return p.version
+}
+
+ext {
+  FS = File.separator
+  FPS = File.pathSeparator
+  pythonBinary = findProperty("pythonBinary") ?: "python"
+  pkgDir = file("$buildDir/pkg")
+  distDir = file("$buildDir/dist")
+  condaDir = file("$buildDir/conda/h2o_pysparkling_scoring_${sparkMajorVersion}")
+}
+
+// Define the environment required to run tests
+python {
+  if (project.hasProperty("pythonBinary")) {
+    pythonBinary project.findProperty("pythonBinary").toString()
+  }
+  if (project.hasProperty("pythonPath")) {
+    pythonPath project.findProperty("pythonPath").toString()
+  }
+
+  pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
+  pip "pytest:4.6.9" // For running tests
+  pip "tabulate:0.8.3"
+  pip "requests:2.21.0"
+  pip "future:0.17.1"
+  pip "colorama:0.3.8"
+  pip "numpy:1.16.5"
+  pip "pyspark:${sparkVersion}"
+  if (project.hasProperty("pythonEnvBasePath")) {
+    // for CI as we use pre-cached environment
+    envPath "${project.findProperty("pythonEnvBasePath")}/${getPythonVersion()}/${sparkVersion}"
+  } else {
+    envPath "${rootDir}/.gradle/python/${getPythonVersion()}/${sparkVersion}"
+  }
+}
+
+configurations {
+  sparklingWaterAssemblyJar
+  apiGeneration
+}
+
+dependencies {
+  sparklingWaterAssemblyJar project(':sparkling-water-scoring')
+  apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
+  apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
+  apiGeneration project(path: ':sparkling-water-assembly', configuration: 'shadow')
+  apiGeneration "org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}"
+}
+
+//
+// Create a file with version for Python dist task
+//
+task createVersionFile {
+  doLast {
+    def versionFileDir = new File(pkgDir, "ai/h2o/sparkling")
+    if (!versionFileDir.exists()) {
+      versionFileDir.mkdirs()
+    }
+    File version_file = new File(versionFileDir, "version.txt")
+
+    def version_txt = version
+    version_file.write(version_txt)
+  }
+}
+
+def copyPySetup() {
+
+  copy {
+    from("$projectDir/src") {
+      include 'setup.py'
+    }
+    filter {
+      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+        .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+        .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir") {
+      include 'README.rst'
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir/src") {
+      include 'MANIFEST.in'
+      include 'setup.cfg'
+      include 'pysparkling/**/*'
+      include 'ai/**/*'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir/src-gen") {
+      include 'ai/**/*'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION") {
+      include 'bld.bat'
+      include 'build.sh'
+    }
+    into condaDir
+  }
+
+  copy {
+    from("$projectDir/conda/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION") {
+      include 'meta.yaml'
+    }
+    filter {
+      it.replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
+        .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
+    }
+    into condaDir
+  }
+}
+
+//
+// Make PySparkling distribution zip package
+//
+task distPython(type: Zip, dependsOn: configurations.sparklingWaterAssemblyJar) {
+
+  doFirst {
+    copyPySetup()
+
+    // Copy sparkling water assembly jar
+    def fatJar = configurations.sparklingWaterAssemblyJar.singleFile
+    copy {
+      from fatJar
+      into file("${project.pkgDir}/sparkling_water")
+      rename ".*", "sparkling_water_scoring.jar"
+    }
+    // Save comment into module file
+    file("${project.pkgDir}/sparkling_water/").mkdir()
+    file("${project.pkgDir}/sparkling_water/__init__.py").write("# Sparkling-water JAR holder for pySparklingScoring module.")
+  }
+  // Configure proper name
+  archiveBaseName = "h2o_pysparkling_scoring_${sparkMajorVersion}"
+
+  from pkgDir
+  destinationDirectory = distDir
+}
+
+configurations {
+  sdist
+}
+
+artifacts {
+  sdist distPython
+}
+
+def createUnitTestArgs() {
+  return ["${distPython.archiveFile.get()}"]
+}
+
+task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
+  extraArgs(*createUnitTestArgs())
+  command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+}
+
+task testPython(type: PythonTask, dependsOn: distPython) {
+  extraArgs(*createUnitTestArgs())
+  def tests = "tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+  if (project.hasProperty("tests")) {
+    tests = project.property("tests").toString()
+  }
+  command = "tests/test_runner.py '${tests}'"
+}
+
+if (project.property("testMojoPipeline") == "true") {
+  testPython.dependsOn testPythonMojoPipeline
+}
+
+//
+// Cleanup
+//
+task cleanPython(type: Delete) {
+  delete getBuildDir()
+}
+
+task cleanGeneratedApi(type: Delete) {
+  delete "$projectDir/src-gen"
+}
+
+task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
+  group = "Execution"
+  classpath = files(* (configurations.apiGeneration.files as List))
+  main = "ai.h2o.sparkling.api.generation.MOJOModelAPIRunner"
+  args = ["py", "$projectDir/src-gen"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
+task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
+  group = "Execution"
+  classpath = files(* (configurations.apiGeneration.files as List))
+  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
+  args = ["$projectDir/src-gen/ai/h2o/sparkling", "py"]
+  standardOutput = System.out
+  errorOutput = System.err
+}
+
+//
+// Setup execution graph
+//
+clean.dependsOn cleanPython
+clean.dependsOn cleanGeneratedApi
+createVersionFile.dependsOn clean
+distPython.dependsOn createVersionFile
+distPython.dependsOn generateMOJOApi
+distPython.dependsOn generateConf
+
+build.dependsOn distPython
+test.dependsOn testPython

@@ -1,0 +1,4 @@
+# include additional files which are not fetched by default by setuptools
+
+# We need to manually specify version files for h2o and sparkling water to make sdist and pip happy
+include ai/h2o/sparkling/version.txt
