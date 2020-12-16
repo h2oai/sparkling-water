@@ -36,7 +36,7 @@ object DataFrameConversionTest {
     spark.sparkContext.addFile(
       "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
     val frame = H2OFrame(new URI("file://" + SparkFiles.get("prostate.csv")))
-    val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string")
+    val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string").repartition(10)
     val h2oFrame = hc.asH2OFrame(sparkDF)
 
     assert(h2oFrame.columnNames.toSeq == sparkDF.columns.toSeq)
