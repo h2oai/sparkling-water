@@ -111,6 +111,8 @@ object MOJOModelTemplate
           case "ColSpecifierV3" =>
             "if (value == null) null " +
               "else value.asInstanceOf[hex.genmodel.attributes.parameters.ColumnSpecifier].getColumnName()"
+          case _ if parameter.dataType.isArray && parameter.dataType.getComponentType.isEnum =>
+            "if (value == null) null else value.asInstanceOf[Array[AnyRef]].map(_.toString)"
           case _ => "value"
         }
         s"""      try {
