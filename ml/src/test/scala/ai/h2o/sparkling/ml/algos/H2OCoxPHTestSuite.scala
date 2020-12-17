@@ -59,7 +59,7 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     loadedModel.transform(dataset).count()
   }
 
-  test("H2OCoxPH with set modelId is trained mutliple times") {
+  test("H2OCoxPH with set modelId is trained multiple times") {
     val modelId = "testingH2OCoxPHModel"
 
     val key1 = Key.make(modelId).toString
