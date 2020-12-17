@@ -78,9 +78,8 @@ def testIsolationForestParameters(prostateDataset):
     compareParameterValues(algorithm, model)
 
 def testCoxPHParameters(heartDataset):
-    features = ['age', 'surgery']
-    heartDataset.show()
-    algorithm = H2OCoxPH(labelCol="event", featuresCols=features, startCol='start', stopCol='stop', ignoredCols=["id"], foldCol=None)
+    features = ['age', 'year', 'surgery', 'transplant', 'start', 'stop']
+    algorithm = H2OCoxPH(labelCol="event", featuresCols=features, startCol='start', stopCol='stop')
     model = algorithm.fit(heartDataset)
     compareParameterValues(algorithm, model)
 

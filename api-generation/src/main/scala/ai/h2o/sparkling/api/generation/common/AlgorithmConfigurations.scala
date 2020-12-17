@@ -137,7 +137,7 @@ trait AlgorithmConfigurations {
       ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
-      ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq("H2OCoxPHExtras")),
+      ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
