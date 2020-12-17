@@ -8,7 +8,6 @@ dependencies {
   implementation(project(":sparkling-water-scoring")) {
     exclude group: "org.xerial.snappy", module: "snappy-java"
   }
-
 }
 
 jar {
@@ -17,7 +16,6 @@ jar {
 
 shadowJar {
   mergeServiceFiles()
-
   archiveBaseName = "${archiveBaseName.get()}_${scalaBaseVersion}"
 }
 
