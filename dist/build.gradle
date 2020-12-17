@@ -120,6 +120,7 @@ def distTaskDependencies = [
   ":sparkling-water-doc:site",
   ":sparkling-water-r:distR",
   ":sparkling-water-assembly:shadowJar",
+  ":sparkling-water-assembly-scoring:shadowJar",
   ":sparkling-water-assembly-extensions:shadowJar",
   ":sparkling-water-templates:build",
   ":sparkling-water-py:distPython",
@@ -130,6 +131,7 @@ def distTaskDependencies = [
   ":sparkling-water-ml:publish",
   ":sparkling-water-examples:publish",
   ":sparkling-water-package:publish",
+  ":sparkling-water-package-scoring:publish",
   ":sparkling-water-scoring:publish",
   ":sparkling-water-extensions:publish",
   ":sparkling-water-utils:publish",
@@ -166,6 +168,7 @@ task copyFilesForZipDistribution {
 
     copySingle("r/build/", "rsparkling_${version}.tar.gz", "$zipDir")
     copySingle("assembly-extensions/build/libs/", "sparkling-water-assembly-extensions_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
+    copySingle("assembly-scoring/build/libs/", "sparkling-water-assembly-scoring_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
     copySingle("assembly/build/libs/", "sparkling-water-assembly_$scalaBaseVersion-${version}-all.jar", "$zipDir/jars")
 
     createSupportedHadoopFile("$zipDir")
