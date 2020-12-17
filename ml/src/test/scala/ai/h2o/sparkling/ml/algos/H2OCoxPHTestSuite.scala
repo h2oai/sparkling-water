@@ -101,7 +101,7 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
       .setIgnoredCols(Array("id"))
 
     val model = algo.fit(dataset)
-    val predictions = model.transform(dataset) .select("prediction")
+    val predictions = model.transform(dataset).select("prediction")
 
     predictions.show()
 
