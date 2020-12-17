@@ -92,8 +92,7 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     H2OModel.modelExists(key3) shouldBe true
   }
 
-  test("predictions have reasonable values") {
-    // Create  model
+  test("predictions have right values") {
     val algo = new H2OCoxPH()
       .setStartCol("start")
       .setStopCol("stop")
