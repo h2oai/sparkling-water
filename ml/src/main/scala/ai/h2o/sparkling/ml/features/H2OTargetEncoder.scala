@@ -43,7 +43,7 @@ class H2OTargetEncoder(override val uid: String)
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val input = h2oContext.asH2OFrame(dataset.toDF())
     input.convertColumnsToCategorical(getInputCols())
-    val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).map(Option(_)).flatten
+    val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).flatMap(Option(_))
     val ignoredColumns = dataset.columns.diff(columnsToKeep)
     val params = Map(
       "data_leakage_handling" -> getHoldoutStrategy(),

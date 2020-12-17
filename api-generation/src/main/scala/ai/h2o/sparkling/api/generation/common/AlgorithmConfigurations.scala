@@ -75,7 +75,7 @@ trait AlgorithmConfigurations {
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
-    val coxPHFields = Seq(ignoredCols)
+    val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
     val dlFields = Seq(
@@ -121,7 +121,7 @@ trait AlgorithmConfigurations {
   }
 
   private def isUnsupervised(entityName: String): Boolean = {
-    Array("H2OKMeansParams", "H2OIsolationForestParams", "H2OCoxPHParams").contains(entityName)
+    Array("H2OKMeansParams", "H2OIsolationForestParams").contains(entityName)
   }
 
   def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
@@ -137,7 +137,7 @@ trait AlgorithmConfigurations {
       ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
-      ("H2OCoxPH", classOf[CoxPHParameters], "H2OUnsupervisedAlgorithm", Seq.empty),
+      ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq("H2OCoxPHExtras")),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
