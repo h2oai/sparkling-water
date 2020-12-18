@@ -179,7 +179,7 @@ def withTestEnv(commons, image, code) {
 
 def testScalaInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version} \
          --conf spark.driver.host=sparkling-water-app \
@@ -191,13 +191,13 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --class ai.h2o.sparkling.KubernetesTest \
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.jar
-        """)
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+        """
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testPythonInternalBackendClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.kubernetes.container.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version} \
          --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
@@ -208,19 +208,19 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
          --name test \
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.py
-        """)
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+        """
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testRInternalBackend(registryId, master, version, sparkVersion) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo("""
+    runCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
-        """)
+        """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
@@ -246,7 +246,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
@@ -260,15 +260,15 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --deploy-mode client \
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
-        """)
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+        """
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testPythonInternalBackendClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
@@ -281,9 +281,9 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
         --deploy-mode client \
         --conf spark.executor.instances=3 \
         local:///opt/sparkling-water/tests/initTest.py
-        """)
+        """
 
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def installH2OHeadlessService() {
@@ -366,14 +366,14 @@ def stopExternalH2OBackend() {
 def testRExternalBackendManual(registryId, master, version, sparkVersion) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo( """
+    runCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
-        """)
+        """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
@@ -386,14 +386,14 @@ def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
         kubectl create namespace h2o
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfo("""
+    runCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
         export SW_VERSION=$version
         export SPARK_VERSION=$sparkVersion
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.k8s.namespace=h2o spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
-        """)
+        """
     sh 'sleep 60'
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
@@ -454,8 +454,8 @@ static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, s
 def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}")
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfoAndSuppressFailure "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -464,11 +464,11 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
-        """)
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+        """
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -478,8 +478,8 @@ def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
         kubectl create namespace h2o
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}")
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfoAndSuppressFailure "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testScalaExternalBackendAutoClientMode(registryId, master, version) {
@@ -490,12 +490,12 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
-        """)
+        """
     sh "sleep 330"
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, startMode) {
@@ -514,8 +514,8 @@ static String pythonExternalBackendSubmitCmd(registryId, master, version, mode, 
 def testPythonExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}")
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfoAndSuppressFailure "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -524,11 +524,11 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
-        """)
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+        """
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
 
@@ -538,8 +538,8 @@ def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
         kubectl create namespace h2o
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
-    runCommandWithK8sDebugInfoAndSuppressFailure("${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}")
-    runCommandWithK8sDebugInfo("kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1")
+    runCommandWithK8sDebugInfoAndSuppressFailure "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
 def testPythonExternalBackendAutoClientMode(registryId, master, version) {
@@ -550,10 +550,10 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
-    runCommandWithK8sDebugInfoAndSuppressFailure("""
+    runCommandWithK8sDebugInfoAndSuppressFailure """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
-        """)
+        """
     sh "sleep 330"
     runCommandWithK8sDebugInfo "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
