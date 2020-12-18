@@ -48,6 +48,20 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     testGridSearch(glm, hyperParams)
   }
 
+  test("H2O Grid Search CoxPH Pipeline") {
+    val coxPH = new H2OCoxPH()
+      .setStartCol("start")
+      .setStopCol("stop")
+      .setLabelCol("event")
+      .setIgnoredCols(Array("id"))
+
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += ("lre_min" -> Array(7,8,9).map(_.asInstanceOf[AnyRef]), "ties" -> Array("efron", "breslow").map(
+      _.asInstanceOf[AnyRef]))
+
+    testGridSearch(coxPH, hyperParams)
+  }
+
   test("H2O Grid Search GBM Pipeline") {
     val gbm = new H2OGBM().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
