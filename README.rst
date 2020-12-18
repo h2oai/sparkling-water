@@ -43,8 +43,9 @@ Each Sparkling Water release is published into Maven central with following coor
 - ``ai.h2o:sparkling-water-examples_{{scala_version}}:{{version}}`` - Includes example applications
 - ``ai.h2o:sparkling-water-repl_{{scala_version}}:{{version}}`` - Spark REPL integration into H2O Flow UI
 - ``ai.h2o:sparkling-water-ml_{{scala_version}}:{{version}}`` - Extends Spark ML package by H2O-based transformations
-- ``ai.h2o:sparkling-water-scoring_{{scala_version}}:{{version}}`` - Lightweight package used for Scoring with H2O MOJOs. This package does not have run-time dependency on H2O cluster.
-- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Uber Sparkling Water package containing all dependencies. This is designed to use as Spark package via ``--packages`` option
+- ``ai.h2o:sparkling-water-scoring_{{scala_version}}:{{version}}`` - A library containing scoring logic and definition of Sparkling Water MOJO models.
+- ``ai.h2o:sparkling-water-scoring-package_{{scala_version}}:{{version}}`` - Lightweight Sparkling Water package including all dependencies required just for scoring with H2O-3 and DAI MOJO models.
+- ``ai.h2o:sparkling-water-package_{{scala_version}}:{{version}}`` - Sparkling Water package containing all dependencies required for model training and scoring. This is designed to use as Spark package via ``--packages`` option.
 
    **Note:** The ``{{version}}`` references to a release version of Sparkling Water, the ``{{scala_version}}``
    references to Scala base version.

@@ -1,0 +1,17 @@
+description = 'Sparkling Water Spark Package'
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+dependencies {
+  api(project(path: ':sparkling-water-assembly-scoring', configuration: 'shadow'))
+}
+
+jar {
+  enabled = false
+}
+
+shadowJar {
+  archiveClassifier = null
+}
+
+defineShadowPublication().call()
