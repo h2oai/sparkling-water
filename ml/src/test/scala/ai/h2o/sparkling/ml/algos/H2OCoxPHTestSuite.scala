@@ -102,8 +102,6 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     val model = algo.fit(dataset)
     val predictions = model.transform(dataset).select("prediction")
 
-    predictions.show()
-
     predictions.count() shouldBe dataset.count()
     predictions.filter("prediction is not null").count() shouldBe dataset.count()
     predictions.first().getDouble(0) shouldBe (0.20032351116082292 +- 0.0001)
