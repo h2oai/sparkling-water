@@ -24,7 +24,7 @@ import hex.Model
 
 import scala.reflect.ClassTag
 
-abstract class H2OSupervisedAlgorithmWithFold[P <: Model.Parameters: ClassTag] extends H2OSupervisedAlgorithm[P] {
+abstract class H2OSupervisedAlgorithmWithFoldColumn[P <: Model.Parameters: ClassTag] extends H2OSupervisedAlgorithm[P] {
 
   def getFoldCol(): String
 
