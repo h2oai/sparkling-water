@@ -160,6 +160,17 @@ def copyPySetup() {
   }
 
   copy {
+    from("$rootDir/py-scoring/src") {
+      include 'ai/h2o/sparkling/ml/**/*'
+      include 'pysparkling/ml/**/*'
+      exclude 'ai/h2o/sparkling/ml/__init__.py'
+      exclude 'pysparkling/ml/__init__.py'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src-gen") {
       include 'ai/**/*'
       exclude '**/*.pyc'

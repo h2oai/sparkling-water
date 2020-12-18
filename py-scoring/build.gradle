@@ -30,11 +30,6 @@ python {
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
-  pip "tabulate:0.8.3"
-  pip "requests:2.21.0"
-  pip "future:0.17.1"
-  pip "colorama:0.3.8"
-  pip "numpy:1.16.5"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
     // for CI as we use pre-cached environment
@@ -50,7 +45,7 @@ configurations {
 }
 
 dependencies {
-  sparklingWaterAssemblyJar project(':sparkling-water-scoring')
+  sparklingWaterAssemblyJar project(path: ':sparkling-water-assembly-scoring', configuration: 'shadow')
   apiGeneration "org.scala-lang:scala-library:${scalaVersion}"
   apiGeneration project(path: ':sparkling-water-api-generation', configuration: 'shadow')
   apiGeneration project(path: ':sparkling-water-assembly', configuration: 'shadow')
@@ -148,7 +143,7 @@ task distPython(type: Zip, dependsOn: configurations.sparklingWaterAssemblyJar) 
     copy {
       from fatJar
       into file("${project.pkgDir}/sparkling_water")
-      rename ".*", "sparkling_water_scoring.jar"
+      rename ".*", "sparkling_water_assembly_scoring.jar"
     }
     // Save comment into module file
     file("${project.pkgDir}/sparkling_water/").mkdir()
@@ -211,15 +206,6 @@ task generateMOJOApi(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-
   errorOutput = System.err
 }
 
-task generateConf(type: JavaExec, dependsOn: [cleanGeneratedApi, ':sparkling-water-api-generation:build']) {
-  group = "Execution"
-  classpath = files(* (configurations.apiGeneration.files as List))
-  main = "ai.h2o.sparkling.api.generation.ConfigurationRunner"
-  args = ["$projectDir/src-gen/ai/h2o/sparkling", "py"]
-  standardOutput = System.out
-  errorOutput = System.err
-}
-
 //
 // Setup execution graph
 //
@@ -228,7 +214,6 @@ clean.dependsOn cleanGeneratedApi
 createVersionFile.dependsOn clean
 distPython.dependsOn createVersionFile
 distPython.dependsOn generateMOJOApi
-distPython.dependsOn generateConf
 
 build.dependsOn distPython
 test.dependsOn testPython
