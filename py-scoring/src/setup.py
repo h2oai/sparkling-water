@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION',
+    name='h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -36,7 +36,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel',
+    keywords='machine learning, data mining, statistical analysis, modeling, big data, distributed, parallel, scoring',
 
     # find python packages starting in the current directory
     packages=find_packages(),
@@ -50,6 +50,5 @@ setup(
 
     # bundled binary packages
     package_data={'sparkling_water': ['*.jar'],
-                  'h2o': ['version.txt', 'buildinfo.txt'],
                   'ai.h2o.sparkling': ['version.txt']},
 )
