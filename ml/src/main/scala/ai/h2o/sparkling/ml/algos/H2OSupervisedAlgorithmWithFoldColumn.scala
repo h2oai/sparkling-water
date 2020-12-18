@@ -42,10 +42,6 @@ abstract class H2OSupervisedAlgorithmWithFoldColumn[P <: Model.Parameters: Class
     transformedSchema
   }
 
-  override def fit(dataset: Dataset[_]): H2OSupervisedMOJOModel = {
-    super.fit(dataset).asInstanceOf[H2OSupervisedMOJOModel]
-  }
-
   override private[sparkling] def getExcludedCols(): Seq[String] = {
     super.getExcludedCols() ++ Seq(getFoldCol())
       .flatMap(Option(_)) // Remove nulls
