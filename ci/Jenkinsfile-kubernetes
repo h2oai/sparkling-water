@@ -192,6 +192,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
+    sh "kubectl describe pod sparkling-water-app"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
