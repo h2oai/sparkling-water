@@ -47,7 +47,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.driver.host=sparkling-water-app \
 --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 \textbf{To start an interactive shell in a client mode:}
@@ -108,7 +108,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.driver.host=sparkling-water-app \
 --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 \subsubsection{Python}
@@ -267,7 +267,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
 --conf spark.ext.h2o.cloud.name=root \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 \textbf{To start an interactive shell in a client mode:}
@@ -337,7 +337,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 \
 --conf spark.ext.h2o.cloud.name=root \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 
@@ -510,7 +510,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.ext.h2o.external.memory=2G \
 --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 \textbf{To start an interactive shell in a client mode:}
@@ -582,7 +582,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.ext.h2o.external.memory=2G \
 --conf spark.ext.h2o.external.k8s.docker.image=h2oai/sparkling-water-external-backend:SUBST_SW_VERSION \
 --class ai.h2o.sparkling.KubernetesTest \
-local:///opt/sparkling-water/tests/initTest.jar
+local:///opt/sparkling-water/tests/kubernetesTest.jar
 \end{lstlisting}
 
 \subsubsection{Python}
