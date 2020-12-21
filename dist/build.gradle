@@ -124,6 +124,7 @@ def distTaskDependencies = [
   ":sparkling-water-assembly-extensions:shadowJar",
   ":sparkling-water-templates:build",
   ":sparkling-water-py:distPython",
+  ":sparkling-water-py-scoring:distPython",
   ":sparkling-water-r:createCranRepo",
   ":sparkling-water-core:publish",
   ":sparkling-water-doc:publish",
@@ -173,7 +174,8 @@ task copyFilesForZipDistribution {
 
     createSupportedHadoopFile("$zipDir")
 
-    copyAndKeepPath("py/build/dist/h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir")
+    copySingle("py/build/dist/", "h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$zipDir/py")
+    copySingle("py-scoring/build/dist/", "h2o_pysparkling_scoring_$sparkMajorVersion-${version}.zip", "$zipDir/py")
     copyAndKeepPath("LICENSE", "$zipDir")
     copyAndKeepPath("README.rst", "$zipDir")
     copyAndSubstituteGradleProperties()
@@ -207,7 +209,8 @@ task dist(dependsOn: zipDistribution) {
     def buildTimeLocal = new Date().toString()
 
     // Prepare additional files which are accessible directly from the page
-    copySingle("py/build/dist/", "h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$distDir/py")
+    copySingle("py/", "h2o_pysparkling_$sparkMajorVersion-${version}.zip", "$distDir/py")
+    copySingle("py/", "h2o_pysparkling_scoring_$sparkMajorVersion-${version}.zip", "$distDir/py")
     copyRecursive("r/build/repo/", "$distDir/R")
     copyRecursive("core/build/docs/scaladoc/", "$distDir/scaladoc")
     if (makeBooklet.toBoolean()) {
