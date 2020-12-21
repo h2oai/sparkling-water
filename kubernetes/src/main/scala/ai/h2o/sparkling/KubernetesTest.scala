@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 /**
   * Main class of the Kubernetes test suite. Invokes all Kubernetes tests.
   */
-class KubernetesTests {
+object KubernetesTest {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder.appName("App name").getOrCreate()
