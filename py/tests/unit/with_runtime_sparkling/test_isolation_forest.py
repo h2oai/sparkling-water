@@ -70,5 +70,5 @@ def testExplicitValidationFrameOnIsolationForest(spark, prostateDataset):
     model = algo.fit(prostateDataset)
     metrics = model.getValidationMetrics()
 
-    assert(metrics['AUC'] > 0.9)
+    assert(metrics['AUC'] > 0.85)
     assert(metrics['Logloss'] < 1.0)
