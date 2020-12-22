@@ -22,27 +22,25 @@ import java.net.URI
 import org.apache.spark.SparkFiles
 import org.apache.spark.sql.SparkSession
 
-object InitTest {
+/**
+  * When running on Kubernetes, H2O-3 disables servlets on non-leader nodes to avoid using a misconfigured cluster.
+  * Yet there are servlets required to be accessible on each node by Sparkling water - those servlets are used by SW
+  * to upload chunks of data to each node.
+  *
+  * This test verifies the data upload servlets are active while running on Kubernetes.
+  */
+object DataFrameConversionTest {
 
-  /**
-    * Tests Kubernetes clustering and ability of the cluster to run XGBoost
-    * @param spark A valid instance of SparkSession
-    * @param hc A valid instance of H2OContext
-    */
   def run(spark: SparkSession, hc: H2OContext): Unit = {
     import spark.implicits._
     spark.sparkContext.addFile(
       "https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
     val frame = H2OFrame(new URI("file://" + SparkFiles.get("prostate.csv")))
-    val sparkDF = hc
-      .asSparkFrame(frame)
-      .repartition(10)
-      .withColumn("CAPSULE", $"CAPSULE" cast "string")
-    val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
+    val sparkDF = hc.asSparkFrame(frame).withColumn("CAPSULE", $"CAPSULE" cast "string").repartition(10)
+    val h2oFrame = hc.asH2OFrame(sparkDF)
 
-    import ai.h2o.sparkling.ml.algos.H2OXGBoost
-    val estimator = new H2OXGBoost().setLabelCol("CAPSULE")
-    val model = estimator.fit(trainingDF)
-    model.transform(testingDF).collect()
+    assert(h2oFrame.columnNames.toSeq == sparkDF.columns.toSeq)
+    assert(h2oFrame.numberOfRows == sparkDF.count())
   }
+
 }

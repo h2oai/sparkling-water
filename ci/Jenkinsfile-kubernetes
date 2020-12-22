@@ -188,10 +188,12 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --master $master \
          --deploy-mode cluster \
          --name test \
-         --class ai.h2o.sparkling.InitTest \
+         --class ai.h2o.sparkling.KubernetesTest \
          --conf spark.executor.instances=3 \
-         local:///opt/sparkling-water/tests/initTest.jar
+         local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
+    sh "sleep 60"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -209,6 +211,8 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.py
         """
+    sh "sleep 60"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -254,13 +258,15 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --conf spark.kubernetes.container.image=${image}  \
          --master $master \
          --name test \
-         --class ai.h2o.sparkling.InitTest \
+         --class ai.h2o.sparkling.KubernetesTest \
          --conf spark.driver.host=sparkling-water-app \
          --conf spark.kubernetes.driver.pod.name=sparkling-water-app \
          --deploy-mode client \
          --conf spark.executor.instances=3 \
-         local:///opt/sparkling-water/tests/initTest.jar
+         local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
+    sh "sleep 60"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -282,7 +288,8 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
         --conf spark.executor.instances=3 \
         local:///opt/sparkling-water/tests/initTest.py
         """
-
+    sh "sleep 60"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -446,8 +453,8 @@ static String scalaExternalBackendSubmitCmd(registryId, master, version, mode, s
         prefix = externalBackendAutoSharedSubmitCmd(registryId, master, version, mode, "scala")
     }
     return """${prefix} \
-              --class ai.h2o.sparkling.InitTest \
-              local:///opt/sparkling-water/tests/initTest.jar
+              --class ai.h2o.sparkling.KubernetesTest \
+              local:///opt/sparkling-water/tests/kubernetesTest.jar
            """
 }
 
@@ -455,6 +462,7 @@ def testScalaExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
@@ -468,6 +476,7 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
@@ -479,6 +488,7 @@ def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -495,6 +505,7 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
         --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
     sh "sleep 330"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -515,6 +526,7 @@ def testPythonExternalBackendManualClusterMode(registryId, master, version) {
     startExternalH2OBackend(registryId, version)
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "manual")}"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
@@ -528,6 +540,7 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
 }
@@ -539,6 +552,7 @@ def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
         """
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
@@ -555,6 +569,7 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
         --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
     sh "sleep 330"
+    sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
 
