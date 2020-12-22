@@ -192,7 +192,7 @@ def testScalaInternalBackendClusterMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
-    sh "kubectl describe pod sparkling-water-app"
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -211,6 +211,7 @@ def testPythonInternalBackendClusterMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/initTest.py
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -264,6 +265,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -286,6 +288,7 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
         --conf spark.executor.instances=3 \
         local:///opt/sparkling-water/tests/initTest.py
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
