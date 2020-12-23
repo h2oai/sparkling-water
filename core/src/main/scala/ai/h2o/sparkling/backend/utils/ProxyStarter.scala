@@ -107,7 +107,8 @@ private[sparkling] object ProxyStarter extends Logging {
         val serverSocket = new ServerSocket()
         serverSocket.setReuseAddress(false)
         val host = SparkEnv.get.blockManager.blockManagerId.host
-        val socketAddress = new InetSocketAddress(InetAddress.getByName(host), port)
+        logInfo(s"Trying to bind on $host:$port using 0.0.0.0 ip address")
+        val socketAddress = new InetSocketAddress("0.0.0.0", port)
         serverSocket.bind(socketAddress, 1)
         serverSocket.close()
         true
