@@ -21,7 +21,7 @@ from ai.h2o.sparkling.Initializer import Initializer
 
 
 def testSubmissionSparklingImportBeforeSparkCreated():
-    cmd = [os.environ["PYSPARK_DRIVER_PYTHON"], "tests/unit/simple/pySparklingImportLoadsJustScoringJar.py"]
+    cmd = [os.environ["PYSPARK_DRIVER_PYTHON"], "build/tests/unit/simple/pySparklingImportLoadsJustScoringJar.py"]
     returnCode = subprocess.call(cmd)
     assert returnCode == 0, "Process ended in a wrong way. It ended with return code " + str(returnCode)
 
