@@ -50,6 +50,7 @@ class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val algo = new H2OIsolationForest()
       .setWithLeafNodeAssignments(true)
       .setWithStageResults(true)
+      .setSeed(42)
 
     val model = algo.fit(dataset)
 
@@ -77,6 +78,7 @@ class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     val algo = new H2OIsolationForest()
       .setWithStageResults(true)
       .setWithLeafNodeAssignments(true)
+      .setSeed(42)
 
     val model = algo.fit(dataset)
 
@@ -103,7 +105,7 @@ class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
   }
 
   test("transformSchema without leafNodeAssignments and stageResults") {
-    val algo = new H2OIsolationForest()
+    val algo = new H2OIsolationForest().setSeed(42)
 
     val model = algo.fit(dataset)
 
