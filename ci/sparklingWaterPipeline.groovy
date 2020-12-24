@@ -275,30 +275,19 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
-        stage('QA: PyUnit Tests 3.6 - ' + config.backendMode) {
-            if (config.runPyUnitTests.toBoolean()) {
-                try {
-                    config.commons.withDAICredentials {
-                        sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
-                            """
+        for (pythonProject in ["py", "py-scoring"]) {
+            for (pythonVersion in ["2.7", "3.6"]) {
+                stage("QA: PyUnit Tests ${pythonVersion} - ${pythonProject} - ${config.backendMode}") {
+                    if (config.runPyUnitTests.toBoolean()) {
+                        try {
+                            config.commons.withDAICredentials {
+                                sh "${getGradleCommand(config)} :sparkling-water-${pythonProject}:test " +
+                                   "-PpythonPath=/envs/h2o_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}"
+                            }
+                        } finally {
+                            arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
+                        }
                     }
-                } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
-                }
-            }
-        }
-
-        stage('QA: PyUnit Tests 2.7 - ' + config.backendMode) {
-            if (config.runPyUnitTests.toBoolean()) {
-                try {
-                    config.commons.withDAICredentials {
-                        sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
-                            """
-                    }
-                } finally {
-                    arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
                 }
             }
         }
