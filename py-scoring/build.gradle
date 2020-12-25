@@ -30,6 +30,7 @@ python {
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
+  pip "numpy:1.16.5"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
     // for CI as we use pre-cached environment
