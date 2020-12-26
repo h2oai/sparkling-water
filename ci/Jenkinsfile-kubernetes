@@ -504,7 +504,7 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
-    sh "sleep 330"
+    sh "sleep 420"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -568,7 +568,7 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
         --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
-    sh "sleep 330"
+    sh "sleep 420"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
