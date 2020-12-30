@@ -144,7 +144,7 @@ task distPython(type: Zip, dependsOn: configurations.sparklingWaterAssemblyJar) 
     copy {
       from fatJar
       into file("${project.pkgDir}/sparkling_water")
-      rename ".*", "sparkling_water_assembly.jar"
+      rename ".*", "sparkling_water_scoring_assembly.jar"
     }
     // Save comment into module file
     file("${project.pkgDir}/sparkling_water/").mkdir()

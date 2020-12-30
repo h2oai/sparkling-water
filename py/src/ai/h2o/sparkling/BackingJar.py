@@ -15,6 +15,13 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.Initializer import Initializer
-from ai.h2o.sparkling.BackingJar import BackingJar
-from ai.h2o.sparkling.VersionComponents import VersionComponents
+
+class BackingJar(object):
+
+    @staticmethod
+    def getName():
+        return "sparkling_water_assembly.jar"
+
+    @staticmethod
+    def getRelativePath():
+        return "sparkling_water/" + BackingJar.getName()

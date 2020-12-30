@@ -166,6 +166,7 @@ def copyPySetup() {
       exclude 'ai/h2o/sparkling/ml/__init__.py'
       exclude 'pysparkling/ml/__init__.py'
       exclude 'ai/h2o/sparkling/__init__.py'
+      exclude 'ai/h2o/sparkling/BackingJar.py'
       exclude 'pysparkling/__init__.py'
       exclude '**/*.pyc'
     }
