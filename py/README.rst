@@ -1,6 +1,9 @@
 PySparkling
 ===========
 
+This package contains complete functionality for training and scoring Sparkling Water/H20-3 models. It's also possible
+to use this package for scoring with Driveless AI models.
+
 |Join the chat at https://gitter.im/h2oai/sparkling-water| |License| |Powered by H2O.ai|
 
 PySparkling Documentation is hosted at our documentation page:
