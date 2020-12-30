@@ -1,6 +1,49 @@
 Change Log
 ==========
 
+v3.32.0.3-1 (2020-12-30)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.3-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2508 <https://0xdata.atlassian.net/browse/SW-2508>`__ - Upgrade to H2O 3.32.0.3
+
+-  Engineering Story
+
+   -  `SW-2507 <https://0xdata.atlassian.net/browse/SW-2507>`__ - Set Seed in AnomalyPredictionTestSuite
+   -  `SW-2506 <https://0xdata.atlassian.net/browse/SW-2506>`__ - Fix Python Isolation Forest Test after H2O Changes
+   -  `SW-2500 <https://0xdata.atlassian.net/browse/SW-2500>`__ - Temporarily Disable Beta Constraints Tests
+   -  `SW-2497 <https://0xdata.atlassian.net/browse/SW-2497>`__ - K8s Tests Should Transform Datasets in a Distributed Way 
+   -  `SW-2494 <https://0xdata.atlassian.net/browse/SW-2494>`__ - Add Branch Name to Nightly Artefact on DockerHub
+   -  `SW-2493 <https://0xdata.atlassian.net/browse/SW-2493>`__ - Proper Removal of Sparkling Water Images from Local Docker Registry
+   -  `SW-2490 <https://0xdata.atlassian.net/browse/SW-2490>`__ - Rename Driver Pods to Fix K8s Tests in Client Mode
+   -  `SW-2488 <https://0xdata.atlassian.net/browse/SW-2488>`__ - Enable Generation of Dependency License Report as CSV
+   -  `SW-2457 <https://0xdata.atlassian.net/browse/SW-2457>`__ - Fix Deployment of Kubernetes Tests on Jenkins
+
+-  Bug
+
+   -  `SW-2503 <https://0xdata.atlassian.net/browse/SW-2503>`__ - Tried using port 54321 for Flow proxy, but port was already occupied
+   -  `SW-2502 <https://0xdata.atlassian.net/browse/SW-2502>`__ - Fix Propagation of randomLink and randomFamily to MOJOModel Properties
+   -  `SW-2501 <https://0xdata.atlassian.net/browse/SW-2501>`__ - ClassSamplingFactors Parameter Throws Exception During Deserialization
+   -  `SW-2498 <https://0xdata.atlassian.net/browse/SW-2498>`__ - Try to Lock Cloud Multiple Times
+   -  `SW-2496 <https://0xdata.atlassian.net/browse/SW-2496>`__ - Fix the Flow link for DBC (Azure (latest Runtime))
+   -  `SW-2491 <https://0xdata.atlassian.net/browse/SW-2491>`__ - Loading of Pipeline Containing SW Stage Throws NPE
+
+-  Docs
+
+   -  `SW-2495 <https://0xdata.atlassian.net/browse/SW-2495>`__ - Fix K8s Examples in Sparkling Water Documentation
+
+-  New Feature
+
+   -  `SW-2487 <https://0xdata.atlassian.net/browse/SW-2487>`__ - Keep node-specific API open despite K8S API shutdown
+
 v3.32.0.2-1 (2020-11-19)
 ------------------------
 Downloads:
