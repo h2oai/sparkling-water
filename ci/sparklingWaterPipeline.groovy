@@ -257,7 +257,7 @@ def unitTests() {
                 try {
                     config.commons.withDAICredentials {
                         sh """
-                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x :sparkling-water-py-scoring:test -x integTest -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
