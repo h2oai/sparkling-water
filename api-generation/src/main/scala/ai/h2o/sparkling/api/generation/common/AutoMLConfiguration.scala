@@ -30,8 +30,10 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         defaultValueFieldPrefix = "",
         typeExceptions = Map("sort_metric" -> classOf[H2OAutoMLSortMetric]),
         defaultValueSource = source,
-        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
-          Map("monotoneConstraints" -> new util.HashMap[String, Double](), "ignoredCols" -> ignoredCols.defaultValue),
+        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++ Map(
+          "monotoneConstraints" -> new util.HashMap[String, Double](),
+          "ignoredCols" -> ignoredCols.defaultValue,
+          "preProcessing" -> null),
         generateParamTag = false)
   }
 
