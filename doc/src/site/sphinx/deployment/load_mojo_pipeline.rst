@@ -46,7 +46,7 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/spark-shell --jars license.sig,jars/sparkling-water-assembly_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+            ./bin/spark-shell --jars license.sig,jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
 
         .. code:: bash
 
@@ -58,7 +58,7 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/pyspark --jars license.sig --py-files py/build/dist/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+            ./bin/pyspark --jars license.sig --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
 
         .. code:: bash
 
@@ -68,8 +68,8 @@ directly and add the dependencies manually.
 At this point, we have a Spark interactive terminal where we can carry out predictions. If we don't require an interactive environment,
 we can deploy our scoring logic with ``./bin/spark-submit``. The parameters will be the same as in the example above.
 
-Loading and Usage of Driveless AI MOJO Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Loading and Usage of Driverless AI MOJO Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Pipeline MOJO model could be loaded as:
 
