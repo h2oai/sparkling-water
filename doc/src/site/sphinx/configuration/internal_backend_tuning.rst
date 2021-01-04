@@ -57,6 +57,12 @@ Furthermore, we recommend that you configure the following Spark properties to s
 | ``spark.dynamicAllocation.enabled``             | ``false``                | Disable Spark support for  |
 |                                                 |                          | dynamic allocation.        |
 +-------------------------------------------------+--------------------------+----------------------------+
+| ``spark.yarn.heterogeneousExecutors.enabled``   | ``false``                | Disable heterogeneous      |
+|                                                 |                          | executors. This option is  |
+|                                                 |                          | enabled by default on some |
+|                                                 |                          | versions of AWS EMR        |
+|                                                 |                          | (e.g. 5.32.0)              |
++-------------------------------------------------+--------------------------+----------------------------+
 | ``spark.yarn.am.extraJavaOptions``              | ``-XX:MaxPermSize=384m`` | Increase PermGem if you    |
 |                                                 |                          | are running in Java7 on    |
 |                                                 |                          | the Yarn application       |
