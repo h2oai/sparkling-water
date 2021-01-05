@@ -74,7 +74,7 @@ ext {
     project(':sparkling-water-doc'),
     project(':sparkling-water-booklet')
   ]
-  pythonProjects = [project(':sparkling-water-py')]
+  pythonProjects = [project(':sparkling-water-py'), project(':sparkling-water-py-scoring')]
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 

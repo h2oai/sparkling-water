@@ -21,16 +21,30 @@ that mojo can run without H2O runtime in PySparkling environment
 """
 
 import os
+import unit_test_utils
+import pytest
 from pyspark.ml import Pipeline, PipelineModel
+from pyspark.sql.functions import col
 from pyspark.sql import Row
 from pysparkling.ml import H2OMOJOModel, H2OMOJOSettings
 
 
-def testMojoPredictions(prostateDataset):
+@pytest.fixture(scope="module")
+def prostateDatasetWithBinomialPrediction(spark):
+    return spark.read.csv("file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate_prediction.csv"),
+                          header=True, inferSchema=True)
+
+
+def testMojoPredictions(prostateDataset, prostateDatasetWithBinomialPrediction):
     # Try loading the Mojo and prediction on it without starting H2O Context
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/binom_model_prostate.mojo"))
-    mojo.transform(prostateDataset).repartition(1).collect()
+    result = mojo.transform(prostateDataset)\
+        .repartition(1)\
+        .withColumn("prob0", col("detailed_prediction.probabilities.0")) \
+        .withColumn("prob1", col("detailed_prediction.probabilities.1")) \
+        .drop("detailed_prediction")
+    unit_test_utils.assert_data_frames_are_identical(result, prostateDatasetWithBinomialPrediction)
 
 
 def testMojoPredictionsUnseenCategoricals(spark):

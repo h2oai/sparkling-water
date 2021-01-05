@@ -25,6 +25,7 @@ import tempfile
 import warnings
 import zipfile
 from ai.h2o.sparkling.VersionComponents import VersionComponents
+from ai.h2o.sparkling.BackingJar import BackingJar
 from codecs import open
 from os import path
 from pyspark import SparkContext
@@ -115,10 +116,9 @@ class Initializer(object):
                 Initializer.__extracted_jar_dir = sc._temp_dir
             import zipfile
             with zipfile.ZipFile(zip_file) as fzip:
-                fzip.extract('sparkling_water/sparkling_water_assembly.jar', path=Initializer.__extracted_jar_dir)
+                fzip.extract(BackingJar.getRelativePath(), path=Initializer.__extracted_jar_dir)
 
-        return os.path.abspath(
-            "{}/sparkling_water/sparkling_water_assembly.jar".format(Initializer.__extracted_jar_dir))
+        return os.path.abspath("{}/{}".format(Initializer.__extracted_jar_dir, BackingJar.getRelativePath()))
 
     @staticmethod
     def __get_pysparkling_zip_path():
@@ -162,7 +162,7 @@ class Initializer(object):
             return Initializer.__extracted_jar_path(sc)
         else:
             from pkg_resources import resource_filename
-            return os.path.abspath(resource_filename("sparkling_water", 'sparkling_water_assembly.jar'))
+            return os.path.abspath(resource_filename("sparkling_water", BackingJar.getName()))
 
     @staticmethod
     def __get_logger(jvm):

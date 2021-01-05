@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-from h2o.utils.typechecks import assert_is_type
 from pyspark.ml.param import *
 from pyspark.ml.wrapper import JavaWrapper
 
@@ -34,14 +33,14 @@ class H2OMOJOSettings(JavaWrapper):
                  withStageResults=False):
         self._java_obj = None
 
-        assert_is_type(predictionCol, str)
-        assert_is_type(detailedPredictionCol, str)
-        assert_is_type(convertUnknownCategoricalLevelsToNa, bool)
-        assert_is_type(convertInvalidNumbersToNa, bool)
-        assert_is_type(namedMojoOutputColumns, bool)
-        assert_is_type(withContributions, bool)
-        assert_is_type(withLeafNodeAssignments, bool)
-        assert_is_type(withStageResults, bool)
+        assert isinstance(predictionCol, str)
+        assert isinstance(detailedPredictionCol, str)
+        assert isinstance(convertUnknownCategoricalLevelsToNa, bool)
+        assert isinstance(convertInvalidNumbersToNa, bool)
+        assert isinstance(namedMojoOutputColumns, bool)
+        assert isinstance(withContributions, bool)
+        assert isinstance(withLeafNodeAssignments, bool)
+        assert isinstance(withStageResults, bool)
         self.predictionCol = predictionCol
         self.detailedPredictionCol = detailedPredictionCol
         self.convertUnknownCategoricalLevelsToNa = convertUnknownCategoricalLevelsToNa

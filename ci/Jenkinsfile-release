@@ -275,25 +275,30 @@ def buildConda() {
     return { params ->
         stage('Build Conda Packages') {
             if (params.buildConda.toBoolean()) {
-                dir("py/build/conda") {
-                    def pythonVersions = ['2.7', '3.6']
-                    for (pyVersion in pythonVersions) {
-                        sh """
-                           . /envs/h2o_env_python3.6/bin/activate
-
-                           conda build h2o_pysparkling_${params.spark} --output-folder "." --no-anaconda-upload --py ${pyVersion}
-
-                           PACKAGE_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
-                           CURRENT_PLATFORM=\$(basename \$(dirname \$PACKAGE_PATH))
-                           mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
-                           cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
-
-                           conda convert \$PACKAGE_PATH -p linux-32 -o ../../../dist/build/dist/py/conda/
-                           conda convert \$PACKAGE_PATH -p linux-64 -o ../../../dist/build/dist/py/conda/
-                           conda convert \$PACKAGE_PATH -p win-32 -o ../../../dist/build/dist/py/conda/
-                           conda convert \$PACKAGE_PATH -p win-64 -o ../../../dist/build/dist/py/conda/
-                           conda convert \$PACKAGE_PATH -p osx-64 -o ../../../dist/build/dist/py/conda/
-                           """
+                def packages = [
+                    [path: "py/build/conda", name: "h2o_pysparkling_${params.spark}"],
+                    [path: "py-scoring/build/conda", name: "h2o_pysparkling_scoring_${params.spark}"]]
+                for (packageDetails in packages) {
+                    dir(packageDetails.path) {
+                        def pythonVersions = ['2.7', '3.6']
+                        for (pyVersion in pythonVersions) {
+                            sh """
+                               . /envs/h2o_env_python3.6/bin/activate
+    
+                               conda build ${packageDetails.name} --output-folder "." --no-anaconda-upload --py ${pyVersion}
+    
+                               PACKAGE_PATH=\$(conda build ${packageDetails.name} --py ${pyVersion} --output-folder "." --output | tail -1)
+                               CURRENT_PLATFORM=\$(basename \$(dirname \$PACKAGE_PATH))
+                               mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
+                               cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
+    
+                               conda convert \$PACKAGE_PATH -p linux-32 -o ../../../dist/build/dist/py/conda/
+                               conda convert \$PACKAGE_PATH -p linux-64 -o ../../../dist/build/dist/py/conda/
+                               conda convert \$PACKAGE_PATH -p win-32 -o ../../../dist/build/dist/py/conda/
+                               conda convert \$PACKAGE_PATH -p win-64 -o ../../../dist/build/dist/py/conda/
+                               conda convert \$PACKAGE_PATH -p osx-64 -o ../../../dist/build/dist/py/conda/
+                               """
+                        }
                     }
                 }
             }
@@ -345,13 +350,15 @@ def publishToPipy() {
     return { params ->
         stage('Publish to PiPy') {
             if (params.publishToPiPy.toBoolean()) {
-                dir("py/build/pkg") {
-                    params.commons.withPipyCredentials {
-                        sh """
-                            . /envs/h2o_env_python3.6/bin/activate
-                            python setup.py sdist
-                            twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
-                            """
+                for (projectName in ["py", "py-scoring"]) {
+                    dir("$projectName/build/pkg") {
+                        params.commons.withPipyCredentials {
+                            sh """
+                               . /envs/h2o_env_python3.6/bin/activate
+                               python setup.py sdist
+                               twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
+                               """
+                        }
                     }
                 }
             }
@@ -367,10 +374,10 @@ def publishCondaArtifact(arch, pkgName) {
 }
 
 
-def getCondaPkgName(params, pyVersion) {
+def getCondaPkgName(pyVersion, packageName) {
     return sh(returnStdout: true, script:
             """
-            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build h2o_pysparkling_${params.spark} --py ${pyVersion} --output-folder "." --output | tail -1)
+            CONDA_PKG_CURRENT_ARCH_PATH=\$(conda build ${packageName} --py ${pyVersion} --output-folder "." --output | tail -1)
             basename \$CONDA_PKG_CURRENT_ARCH_PATH
             """).trim()
 }
@@ -379,13 +386,18 @@ def publishToConda() {
     return { params ->
         stage('Publish to Conda') {
             if (params.buildConda.toBoolean() && params.publishConda.toBoolean()) {
-                dir("py/build/conda") {
-                    params.commons.withCondaCredentials {
-                        def pythonVersions = ['2.7', '3.6']
-                        for (pyVersion in pythonVersions) {
-                            def pkgName = getCondaPkgName(params, pyVersion)
-                            for (arch in ['osx-64', 'linux-32', 'linux-64', 'win-32', 'win-64']) {
-                                publishCondaArtifact(arch, pkgName)
+                def packages = [
+                    [path: "py/build/conda", name: "h2o_pysparkling_${params.spark}"],
+                    [path: "py-scoring/build/conda", name: "h2o_pysparkling_scoring_${params.spark}"]]
+                for (packageDetails in packages) {
+                    dir(packageDetails.path) {
+                        params.commons.withCondaCredentials {
+                            def pythonVersions = ['2.7', '3.6']
+                            for (pyVersion in pythonVersions) {
+                                def pkgName = getCondaPkgName(pyVersion, packageDetails.name)
+                                for (arch in ['osx-64', 'linux-32', 'linux-64', 'win-32', 'win-64']) {
+                                    publishCondaArtifact(arch, pkgName)
+                                }
                             }
                         }
                     }

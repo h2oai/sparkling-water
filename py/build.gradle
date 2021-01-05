@@ -160,6 +160,20 @@ def copyPySetup() {
   }
 
   copy {
+    from("$rootDir/py-scoring/src") {
+      include 'ai/h2o/sparkling/**/*'
+      include 'pysparkling/**/*'
+      exclude 'ai/h2o/sparkling/ml/__init__.py'
+      exclude 'pysparkling/ml/__init__.py'
+      exclude 'ai/h2o/sparkling/__init__.py'
+      exclude 'ai/h2o/sparkling/BackingJar.py'
+      exclude 'pysparkling/__init__.py'
+      exclude '**/*.pyc'
+    }
+    into pkgDir
+  }
+
+  copy {
     from("$projectDir/src-gen") {
       include 'ai/**/*'
       exclude '**/*.pyc'
@@ -313,18 +327,34 @@ def createIntegTestArgs() {
   ]
 }
 
-task testPythonMojoPipeline(type: PythonTask, dependsOn: distPython) {
-  extraArgs(*createUnitTestArgs())
-  command = "tests/test_runner.py tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+task cleanPythonTests(type: Delete) {
+  delete "${getBuildDir()}/tests"
 }
 
-task testPython(type: PythonTask, dependsOn: distPython) {
+task buildTests(type: Copy, dependsOn: [distPython, cleanPythonTests]) {
+  from("tests") {
+    include '**/*.*'
+  }
+  from("../py-scoring/tests") {
+    include '**/*.*'
+  }
+  into "${getBuildDir()}/tests"
+}
+
+task testPythonMojoPipeline(type: PythonTask, dependsOn: buildTests) {
   extraArgs(*createUnitTestArgs())
-  def tests = "tests/unit --ignore=tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+  def buildDir = getBuildDir()
+  command = "${buildDir}/tests/test_runner.py ${buildDir}/tests/unit/with_runtime_spark/test_mojo_pipeline.py"
+}
+
+task testPython(type: PythonTask, dependsOn: buildTests) {
+  extraArgs(*createUnitTestArgs())
+  def buildDir = getBuildDir()
+  def tests = "${buildDir}/tests/unit --ignore=${buildDir}/tests/unit/with_runtime_spark/test_mojo_pipeline.py"
   if (project.hasProperty("tests")) {
     tests = project.property("tests").toString()
   }
-  command = "tests/test_runner.py '${tests}'"
+  command = "${buildDir}/tests/test_runner.py '${tests}'"
 }
 
 if (project.property("testMojoPipeline") == "true") {
@@ -333,12 +363,14 @@ if (project.property("testMojoPipeline") == "true") {
 
 task integTestPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
   extraArgs(*createIntegTestArgs())
-  command = "tests/test_runner.py 'tests/integration --ignore=tests/integration/external_only'"
+  def buildDir = getBuildDir()
+  command = "${buildDir}/tests/test_runner.py '${buildDir}/tests/integration --ignore=${buildDir}/tests/integration/external_only'"
 }
 
 task integTestPythonExternal(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
   extraArgs(*createIntegTestArgs())
-  command = "tests/test_runner.py tests/integration/external_only"
+  def buildDir = getBuildDir()
+  command = "${buildDir}/tests/test_runner.py ${buildDir}/tests/integration/external_only"
 }
 
 
