@@ -21,6 +21,8 @@ To start Sparkling Water ``H2OContext`` on Databricks Azure, the steps are:
 
     In order to create the Java library in Databricks, go to **Libraries**, select **Maven** as the library source and type the following into the coordinates field: ``ai.h2o:sparkling-water-package_SUBST_SCALA_BASE_VERSION:SUBST_SW_VERSION``.
 
+    If you don't want to train new models and just score with existing H2O-3, SW, Driverless AI MOJO models, you can use a smaller package called ``ai.h2o:sparkling-water-scoring-package_SUBST_SCALA_BASE_VERSION:SUBST_SW_VERSION`` instead.
+
     .. figure:: ../images/databricks_sw_maven.png
         :alt: Uploading Sparkling Water assembly JAR
 

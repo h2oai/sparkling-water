@@ -25,7 +25,10 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/spark-shell --jars jars/sparkling-water-assembly_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+            ./bin/spark-shell --jars jars/sparkling-water-assembly-scoring_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar
+
+        If there is a need to train H2O-3/SW models at the same time when we score with existing MOJO models, use
+        ``jars/sparkling-water-assembly_SUBST_SCALA_BASE_VERSION-SUBST_SW_VERSION-all.jar`` instead.
 
         .. code:: bash
 
@@ -37,7 +40,10 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/pyspark --py-files py/build/dist/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+            ./bin/pyspark --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+
+        If there is a need to train H2O-3/SW models at the same time when we score with existing MOJO models, use
+        ``py/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip`` instead.
 
         .. code:: bash
 
