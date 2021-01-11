@@ -27,11 +27,11 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SparkSession}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
+class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -132,6 +132,26 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext {
 
     println("Predictions:")
     assertPredictedValuesForNamedCols(udfSelection.take(5))
+  }
+
+  test("Test MOJO with different outputTypes") {
+    // Test data
+    val df = spark.read.option("header", "true").csv("examples/smalldata/airlines/airlines_big_data_100.csv")
+    // Test mojo
+    val mojoSettings = H2OMOJOSettings()
+    val mojo = H2OMOJOPipelineModel.createFromMojo(
+      this.getClass.getClassLoader.getResourceAsStream("daiMojos/stringFeaturesOutputPipeline.mojo"),
+      "stringFeaturesOutputPipeline.mojo",
+      mojoSettings)
+
+    val resultDF = mojo.transform(df).select("prediction.*")
+    resultDF.collect()
+
+    val columns = resultDF.schema.fields
+    val stringColumn = columns.find(_.name.contains("StringConcat")).get
+    stringColumn.dataType shouldEqual StringType
+    val floatColumn = columns.find(_.name.contains("CatTE")).get
+    floatColumn.dataType shouldEqual FloatType
   }
 
   test("Named columns with multiple output columns") {
