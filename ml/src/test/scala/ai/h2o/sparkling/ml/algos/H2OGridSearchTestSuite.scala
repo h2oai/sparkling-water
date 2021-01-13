@@ -22,6 +22,7 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import hex.tree.gbm.GBMModel.GBMParameters
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
@@ -41,6 +42,11 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
+  private lazy val dataset_heart = spark.read
+    .option("header", "true")
+    .option("inferSchema", "true")
+    .csv(TestUtils.locate("smalldata/coxph_test/heart.csv"))
+
   test("H2O Grid Search GLM Pipeline") {
     val glm = new H2OGLM().setLabelCol("AGE")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
@@ -56,10 +62,15 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
       .setIgnoredCols(Array("id"))
 
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
-    hyperParams += ("lre_min" -> Array(7,8,9).map(_.asInstanceOf[AnyRef]), "ties" -> Array("efron", "breslow").map(
-      _.asInstanceOf[AnyRef]))
+    hyperParams += (
+      "weightCol" -> Array("w1", "w2").map(_.asInstanceOf[AnyRef])
+    )
 
-    testGridSearch(coxPH, hyperParams)
+    val frame = dataset_heart
+      .withColumn("w1", abs(col("year")))
+      .withColumn("w2", abs(col("age")))
+    frame.show()
+    testGridSearch(coxPH, hyperParams, frame)
   }
 
   test("H2O Grid Search GBM Pipeline") {
@@ -234,7 +245,8 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
 
   private def testGridSearch(
       algo: H2OAlgorithm[_ <: Model.Parameters],
-      hyperParams: mutable.HashMap[String, Array[AnyRef]]): Unit = {
+      hyperParams: mutable.HashMap[String, Array[AnyRef]],
+      data: DataFrame = dataset): Unit = {
     val stage = new H2OGridSearch()
       .setHyperParameters(hyperParams)
       .setAlgo(algo)
@@ -243,12 +255,12 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val algoName = algo.getClass.getSimpleName
     pipeline.write.overwrite().save(s"ml/build/grid_${algoName}_pipeline")
     val loadedPipeline = Pipeline.load(s"ml/build/grid_${algoName}_pipeline")
-    val model = loadedPipeline.fit(dataset)
+    val model = loadedPipeline.fit(data)
 
     model.write.overwrite().save(s"ml/build/grid_${algoName}_pipeline_model")
     val loadedModel = PipelineModel.load(s"ml/build/grid_${algoName}_pipeline_model")
 
-    loadedModel.transform(dataset).count()
+    loadedModel.transform(data).count()
   }
 
 }
