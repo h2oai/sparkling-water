@@ -156,6 +156,8 @@ class H2OGridSearch(override val uid: String)
     }
     algo.deleteRegisteredH2OFrames()
     deleteRegisteredH2OFrames()
+    train.delete()
+    valid.foreach(_.delete())
     val unsortedGridModels = getGridModels(gridId, algoName)
     if (unsortedGridModels.isEmpty) {
       throw new IllegalArgumentException("No model returned.")
