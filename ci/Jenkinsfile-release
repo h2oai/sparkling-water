@@ -288,9 +288,7 @@ def buildConda() {
                            mkdir -p ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM
                            cp \$PACKAGE_PATH ../../../dist/build/dist/py/conda/\$CURRENT_PLATFORM/
 
-                           conda convert \$PACKAGE_PATH -p linux-32 -o ../../../dist/build/dist/py/conda/
                            conda convert \$PACKAGE_PATH -p linux-64 -o ../../../dist/build/dist/py/conda/
-                           conda convert \$PACKAGE_PATH -p win-32 -o ../../../dist/build/dist/py/conda/
                            conda convert \$PACKAGE_PATH -p win-64 -o ../../../dist/build/dist/py/conda/
                            conda convert \$PACKAGE_PATH -p osx-64 -o ../../../dist/build/dist/py/conda/
                            """
@@ -384,7 +382,7 @@ def publishToConda() {
                         def pythonVersions = ['2.7', '3.6']
                         for (pyVersion in pythonVersions) {
                             def pkgName = getCondaPkgName(params, pyVersion)
-                            for (arch in ['osx-64', 'linux-32', 'linux-64', 'win-32', 'win-64']) {
+                            for (arch in ['osx-64', 'linux-64', 'win-64']) {
                                 publishCondaArtifact(arch, pkgName)
                             }
                         }
