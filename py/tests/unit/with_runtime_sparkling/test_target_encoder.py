@@ -227,7 +227,6 @@ def testTargetEncoderInPipelineAppliesNoiseOnTrainingDataset(trainingDataset):
     expected = referenceTEModel.transformTrainingDataset(trainingDataset)
     unexpected = referenceTEModel.transform(trainingDataset)
 
-
     class DummyTransformer(Transformer):
         def _transform(self, dataset):
             return dataset
