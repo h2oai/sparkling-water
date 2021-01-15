@@ -26,7 +26,7 @@ class H2OTargetEncoderModel(H2OTargetEncoderMOJOParams, JavaModel, JavaMLWritabl
 
     def transform(self, dataset):
         callerFrame = inspect.stack()[1]
-        inTrainingMode = (callerFrame.function == '_fit') & callerFrame.filename.endswith('pyspark/ml/pipeline.py')
+        inTrainingMode = (callerFrame[3] == '_fit') & callerFrame[1].endswith('pyspark/ml/pipeline.py')
         if inTrainingMode:
             return self.transformTrainingDataset(dataset)
         else:
