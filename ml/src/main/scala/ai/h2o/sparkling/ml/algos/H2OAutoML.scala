@@ -90,8 +90,6 @@ class H2OAutoML(override val uid: String)
 
     val algoName = getLeaderboard().select("model_id").head().getString(0)
     deleteRegisteredH2OFrames()
-    train.delete()
-    valid.foreach(_.delete())
     val leaderModelId = getLeaderModelId(autoMLId)
     val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
