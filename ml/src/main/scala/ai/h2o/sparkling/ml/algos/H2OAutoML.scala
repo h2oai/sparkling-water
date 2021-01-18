@@ -80,7 +80,7 @@ class H2OAutoML(override val uid: String)
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     amlKeyOption = None
-    val (train, valid) = prepareDatasetForFitting(dataset)
+    val (train, valid) = prepareDatasetForFitting(dataset, registerFramesForDeletion = false)
     val inputSpec = getInputSpec(train, valid)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
@@ -89,10 +89,10 @@ class H2OAutoML(override val uid: String)
     amlKeyOption = Some(autoMLId)
 
     val algoName = getLeaderboard().select("model_id").head().getString(0)
-    deleteRegisteredH2OFrames()
     val leaderModelId = getLeaderModelId(autoMLId)
     val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
+    deleteRegisteredH2OFrames()
     H2OModel(leaderModelId)
       .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this))
   }
