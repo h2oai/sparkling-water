@@ -77,8 +77,8 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val outputColumnsOnlyFrame = output.subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)
     input.delete()
-    output.delete()
     outputColumnsOnlyFrame.delete()
+    output.delete()
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
     }
