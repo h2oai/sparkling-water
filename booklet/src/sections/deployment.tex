@@ -42,7 +42,7 @@ zip package
 
 \begin{lstlisting}[style=Bash]
 $SPARK_HOME/bin/spark-submit \
-  --py-files /sparkling-water-distribution/py/build/dist/h2o_pysparkling_3.0-3.30.1.1-1-3.0.zip \
+  --py-files /sparkling-water-distribution/py/h2o_pysparkling_3.0-3.30.1.1-1-3.0.zip \
   app.py
 \end{lstlisting}
 
@@ -203,7 +203,7 @@ You can access Flow by going to localhost:54321.
 \begin{enumerate}
 \item Create a new Python library containing the PySparkling zip file.
 \item Download the selected Sparkling Water version from \url{https://www.h2o.ai/download/}.
-\item The PySparkling zip file is located in the sparkling water zip file at the following location: `py/build/dist/h2o\_pysparkling\_*.zip.`
+\item The PySparkling zip file is located in the sparkling water zip file at the following location: `py/h2o\_pysparkling\_*.zip.`
 \item Create libraries for the following python modules: request, tabulate, future and colorama.
 \item Attach the PySparkling library and python modules to the cluster.
 \item Create a new python notebook.
