@@ -18,6 +18,7 @@
 import os
 import pytest
 from pyspark.ml import Pipeline, PipelineModel
+from pyspark.ml import Estimator, Transformer
 from pysparkling.ml import H2OTargetEncoder, H2OGBM
 from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
 
@@ -210,3 +211,30 @@ def testTargetEncoderModelProduceSameResultsRegardlessSpecificationOfOutputCols(
     dataFrameCustomOutputCols = trainAndReturnTranformedTestingDataset(targetEncoderCustomOutputCols)
 
     unit_test_utils.assert_data_frames_are_identical(dataFrameDefaultOutputCols, dataFrameCustomOutputCols)
+
+
+def testTargetEncoderInPipelineAppliesNoiseOnTrainingDataset(trainingDataset):
+    def createTargetEncoder():
+        return H2OTargetEncoder() \
+            .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+            .setLabelCol("CAPSULE") \
+            .setHoldoutStrategy("None") \
+            .setBlendedAvgEnabled(False) \
+            .setNoise(5.0) \
+            .setNoiseSeed(42)
+
+    referenceTEModel = createTargetEncoder().fit(trainingDataset)
+    expected = referenceTEModel.transformTrainingDataset(trainingDataset)
+    unexpected = referenceTEModel.transform(trainingDataset)
+
+    class DummyTransformer(Transformer):
+        def _transform(self, dataset):
+            return dataset
+
+    class AssertionEstimator(Estimator):
+        def _fit(self, dataset):
+            unit_test_utils.assert_data_frames_are_identical(expected, dataset)
+            unit_test_utils.assert_data_frames_have_different_values(unexpected, dataset)
+            return DummyTransformer()
+
+    Pipeline(stages=[createTargetEncoder(),AssertionEstimator()]).fit(trainingDataset)
