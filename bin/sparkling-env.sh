@@ -175,7 +175,7 @@ export SPARK_MAJOR_VERSION
 SPARK_MAJOR_VERSION=$(echo "$SPARK_VERSION" | cut -d . -f 1,2)
 
 PY_ZIP="h2o_pysparkling_${SPARK_MAJOR_VERSION}-${VERSION}.zip"
-export PY_ZIP_FILE="$TOPDIR/py/build/dist/$PY_ZIP"
+export PY_ZIP_FILE="$TOPDIR/py/$PY_ZIP"
 export AVAILABLE_H2O_DRIVERS
 AVAILABLE_H2O_DRIVERS=$( [ -f "$TOPDIR/h2o_drivers.txt" ] && cat "$TOPDIR/h2o_drivers.txt" || echo "N/A" )
 
