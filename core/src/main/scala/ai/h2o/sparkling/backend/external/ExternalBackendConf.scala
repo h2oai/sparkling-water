@@ -116,6 +116,18 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
 
+  def isFaultToleranceEnabled: Boolean =
+    sparkConf.getBoolean(PROP_EXTERNAL_FAULT_TOLERANCE_ENABLED._1, PROP_EXTERNAL_FAULT_TOLERANCE_ENABLED._2)
+
+  def faultToleranceDir: Option[String] = sparkConf.getOption(PROP_EXTERNAL_FAULT_TOLERANCE_DIR._1)
+
+  def faultToleranceMaximumRetries: Int =
+    sparkConf.getInt(PROP_EXTERNAL_FAULT_TOLERANCE_MAXIMUM_RETRIES._1, PROP_EXTERNAL_FAULT_TOLERANCE_MAXIMUM_RETRIES._2)
+
+  def faultToleranceDelayBetweenRetries: Int = sparkConf.getInt(
+    PROP_EXTERNAL_FAULT_TOLERANCE_DELAY_BETWEEN_RETRIES._1,
+    PROP_EXTERNAL_FAULT_TOLERANCE_DELAY_BETWEEN_RETRIES._2)
+
   /** Setters */
   /**
     * Sets node and port representing H2O Cluster to which should H2O connect when started in external mode.
@@ -234,6 +246,26 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
+  }
+
+  def setFaultToleranceEnabled(): H2OConf = {
+    set(PROP_EXTERNAL_FAULT_TOLERANCE_ENABLED._1, true)
+  }
+
+  def setFaultToleranceDisabled(): H2OConf = {
+    set(PROP_EXTERNAL_FAULT_TOLERANCE_ENABLED._1, false)
+  }
+
+  def setFaultToleranceDir(path: String): H2OConf = {
+    set(PROP_EXTERNAL_FAULT_TOLERANCE_DIR._1, path)
+  }
+
+  def setFaultToleranceMaximumRetries(numberOfRetries: Int): H2OConf = {
+    set(PROP_EXTERNAL_FAULT_TOLERANCE_MAXIMUM_RETRIES._1, numberOfRetries.toString)
+  }
+
+  def setFaultToleranceDelayBetweenRetries(delay: Int): H2OConf = {
+    set(PROP_EXTERNAL_FAULT_TOLERANCE_DELAY_BETWEEN_RETRIES._1, delay.toString)
   }
 }
 
@@ -423,6 +455,34 @@ object ExternalBackendConf {
     60 * 5,
     "setExternalK8sServiceTimeout(Int)",
     "Timeout in seconds used as a limit for K8s service creation.")
+
+  val PROP_EXTERNAL_FAULT_TOLERANCE_ENABLED: BooleanOption = (
+    "spark.ext.h2o.external.faultTolerance.enabled",
+    false,
+    """setFaultToleranceEnabled()
+      |setFaultToleranceDisabled()""".stripMargin,
+    "When enabled and deployed on K8s, Sparkling Water creates a new cluster after the current one crashes.")
+
+  val PROP_EXTERNAL_FAULT_TOLERANCE_DIR: OptionOption = (
+    "spark.ext.h2o.external.faultTolerance.dir",
+    None,
+    "setFaultToleranceDir(String)",
+    "When specified algorithms save all necessary data (frames, models) into this directory. " +
+    "When the external H2O cluster crashes on K8s, algorithms will recover from this directory and will continue with" +
+    "model training. (use HDFS or other distributed file-system). The directory can be also set directly on the algorithm.")
+
+  val PROP_EXTERNAL_FAULT_TOLERANCE_MAXIMUM_RETRIES: IntOption = (
+    "spark.ext.h2o.external.faultTolerance.retries.maximum",
+    5,
+    "setFaultToleranceMaximumRetries(Int)",
+    "The maximum number of retries that an algorithm tries to connect to a new H2O-3 cluster to progress on model training " +
+    "after a failure.")
+
+  val PROP_EXTERNAL_FAULT_TOLERANCE_DELAY_BETWEEN_RETRIES: IntOption = (
+    "spark.ext.h2o.external.faultTolerance.retries.delay.seconds",
+    30,
+    "setFaultToleranceDelayBetweenRetries(Int)",
+    "A delay between individual tries for an algorithm to connect to a new H2O-3 cluster to progress on model training.")
 
   private[sparkling] val PROP_EXTERNAL_DISABLE_VERSION_CHECK: (String, Boolean) =
     ("spark.ext.h2o.external.disable.version.check", false)

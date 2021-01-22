@@ -49,6 +49,11 @@ trait H2OGridSearchParams
       | 0 -> H2O selects parallelism level based on cluster configuration, such as number of cores
       | 1 -> Sequential model building, no parallelism
       | n>1 -> n models will be built in parallel if possible""".stripMargin)
+  private val recoveryDir = new NullableStringParam(
+    this,
+    "recoveryDir",
+    """When specified the grid and all necessary data (frames, models) will be saved to this directory
+      |(use HDFS or other distributed file-system).""".stripMargin)
 
   //
   // Default values
@@ -57,7 +62,8 @@ trait H2OGridSearchParams
     algo -> null,
     hyperParameters -> Map.empty[String, Array[AnyRef]].asJava,
     selectBestModelBy -> H2OMetric.AUTO.name(),
-    parallelism -> 1)
+    parallelism -> 1,
+    recoveryDir -> null)
 
   //
   // Getters
@@ -69,6 +75,8 @@ trait H2OGridSearchParams
   def getSelectBestModelBy(): String = $(selectBestModelBy)
 
   def getParallelism(): Int = $(parallelism)
+
+  def getRecoveryDir(): String = $(recoveryDir)
 
   //
   // Setters
@@ -91,4 +99,6 @@ trait H2OGridSearchParams
   }
 
   def setParallelism(value: Int): this.type = set(parallelism, value)
+
+  def setRecoveryDir(value: String): this.type = set(recoveryDir, value)
 }

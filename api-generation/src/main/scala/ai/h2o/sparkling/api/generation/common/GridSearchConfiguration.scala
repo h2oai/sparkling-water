@@ -57,7 +57,8 @@ trait GridSearchConfiguration {
           "algo" -> null,
           "hyperParameters" -> new util.HashMap[String, AnyRef](),
           "selectBestModelBy" -> "AUTO",
-          "parallelism" -> 1),
+          "parallelism" -> 1,
+          "recoveryDir" -> null),
         generateParamTag = false)
   }
 

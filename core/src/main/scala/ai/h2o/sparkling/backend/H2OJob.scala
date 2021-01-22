@@ -17,18 +17,19 @@
 
 package ai.h2o.sparkling.backend
 
+import ai.h2o.sparkling.backend.exceptions.{RestApiCommunicationException, RestApiNotReachableException}
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import ai.h2o.sparkling.backend.utils.RestApiUtils.getClusterEndpoint
 import ai.h2o.sparkling.backend.utils.RestCommunication
 import org.apache.spark.expose.Logging
 import water.api.schemas3.{JobV3, JobsV3}
 
-private[sparkling] class H2OJob private (val id: String) extends Logging {
+private[sparkling] class H2OJob private (val id: String, val recoverable: Boolean) extends Logging {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
 
   def waitForFinish(): Unit = {
     while (true) {
-      val job = H2OJob.verifyAndGetJob(conf, id)
+      val job = verifyAndGetJobWithRecovery(id)
       val status = H2OJobStatus.fromString(job.status)
       status match {
         case H2OJobStatus.DONE =>
@@ -45,21 +46,44 @@ private[sparkling] class H2OJob private (val id: String) extends Logging {
       }
     }
   }
+
+  private def verifyAndGetJobWithRecovery(jobId: String): JobV3 = {
+    val maxAttempts = if (recoverable) conf.faultToleranceMaximumRetries + 1 else 1
+    var attempts = 0
+    var result: JobV3 = null
+    while (result != null && attempts < maxAttempts) {
+      try {
+        result = H2OJob.verifyAndGetJob(conf, jobId)
+      } catch {
+        case e: RestApiNotReachableException => processRestApiException(jobId, e, attempts, maxAttempts)
+        case e: RestApiCommunicationException => processRestApiException(jobId, e, attempts, maxAttempts)
+      }
+      attempts += 1
+    }
+    result
+  }
+
+  private def processRestApiException(jobId: String, e: Exception, attempts: Int, maxAttempts: Int): Unit = {
+    if (recoverable && attempts < maxAttempts) {
+      logInfo(s"Job request failed $jobId, waiting for cluster to restart.")
+      Thread.sleep(conf.faultToleranceDelayBetweenRetries * 1000L)
+    } else {
+      throw e
+    }
+  }
 }
 
 private[sparkling] object H2OJob extends RestCommunication {
   def apply(jobId: String): H2OJob = {
     val conf = H2OContext.ensure().getConf
-    verifyAndGetJob(conf, jobId)
-    new H2OJob(jobId)
+    val job = verifyAndGetJob(conf, jobId)
+    new H2OJob(jobId, job.auto_recoverable)
   }
 
   private def verifyAndGetJob(conf: H2OConf, jobId: String): JobV3 = {
     val endpoint = getClusterEndpoint(conf)
     val jobs = query[JobsV3](endpoint, s"/3/Jobs/$jobId", conf)
-    if (jobs.jobs.length == 0) {
-      throw new IllegalArgumentException(s"Job $jobId does not exist!")
-    }
+    if (jobs.jobs.length == 0) throw new IllegalArgumentException(s"Job $jobId does not exist!")
     jobs.jobs(0)
   }
 }

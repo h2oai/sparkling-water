@@ -137,6 +137,7 @@ class H2OGridSearch(override val uid: String)
     val (train, valid) = algo.prepareDatasetForFitting(dataset)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
+      "recovery_dir" -> getRecoveryDir(),
       "parallelism" -> getParallelism(),
       "search_criteria" -> getSearchCriteria()) ++ getAlgoParams(algo, train, valid)
     val algoName = H2OGridSearch.SupportedAlgos.toH2OAlgoName(algo)

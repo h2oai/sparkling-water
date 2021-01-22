@@ -140,6 +140,7 @@ class ExternalH2OBackend(val hc: H2OContext) extends SparklingBackend with Shell
       .addIf("-hiveJdbcUrlPattern", conf.hiveJdbcUrlPattern, conf.isKerberizedHiveEnabled)
       .addIf("-hiveToken", conf.hiveToken, conf.isKerberizedHiveEnabled)
       .add("-refreshTokens", conf.isKerberizedHiveEnabled)
+      .add("-auto_recovery_dir", conf.faultToleranceDir)
       .add(conf.extraProperties)
       .add(ExternalH2OBackend.getExtraHttpHeaderArgs(conf).flatMap(arg => Seq("-J", arg)))
       .buildArgs()

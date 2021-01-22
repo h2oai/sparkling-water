@@ -57,6 +57,13 @@ class H2OGridSearchParams(
            n>1 -> n models will be built in parallel if possible""",
         H2OTypeConverters.toInt())
 
+    recoveryDir = Param(
+        Params._dummy(),
+        "recoveryDir",
+        """When specified the grid and all necessary data (frames, models) will be saved to this directory
+           (use HDFS or other distributed file-system).""",
+        H2OTypeConverters.toNullableString())
+
     ##
     # Getters
     ##
@@ -88,6 +95,9 @@ class H2OGridSearchParams(
     def getParallelism(self):
         return self.getOrDefault(self.parallelism)
 
+    def getRecoveryDir(self):
+        return self.getOrDefault(self.recoveryDir)
+
     ##
     # Setters
     ##
@@ -104,3 +114,6 @@ class H2OGridSearchParams(
 
     def setParallelism(self, value):
         return self._set(parallelism=value)
+
+    def setRecoveryDir(self, value):
+        return self._set(recoveryDir=value)
