@@ -33,3 +33,4 @@ from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OTreeBasedUnsupervisedMOJO
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OSupervisedMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OUnsupervisedMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModel
+from ai.h2o.sparkling.ml.models.H2OCoxPHMOJOModel import H2OCoxPHMOJOModel
