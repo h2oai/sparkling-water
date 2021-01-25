@@ -361,13 +361,13 @@ if (project.property("testMojoPipeline") == "true") {
   testPython.dependsOn testPythonMojoPipeline
 }
 
-task integTestPython(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+task integTestPython(type: PythonTask, dependsOn: [buildTests, distPython, checkSparkVersionTask]) {
   extraArgs(*createIntegTestArgs())
   def buildDir = getBuildDir()
   command = "${buildDir}/tests/test_runner.py '${buildDir}/tests/integration --ignore=${buildDir}/tests/integration/external_only'"
 }
 
-task integTestPythonExternal(type: PythonTask, dependsOn: [distPython, checkSparkVersionTask]) {
+task integTestPythonExternal(type: PythonTask, dependsOn: [buildTests, distPython, checkSparkVersionTask]) {
   extraArgs(*createIntegTestArgs())
   def buildDir = getBuildDir()
   command = "${buildDir}/tests/test_runner.py ${buildDir}/tests/integration/external_only"
