@@ -37,7 +37,7 @@ class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
   }
 
   test("predictionCol content") {
-    val algo = new H2OIsolationForest()
+    val algo = new H2OIsolationForest().setSeed(42)
 
     val model = algo.fit(dataset)
     val transformed = model.transform(dataset)
