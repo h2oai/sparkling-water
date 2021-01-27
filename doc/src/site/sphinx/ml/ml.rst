@@ -13,6 +13,7 @@ Machine Learning
    sw_kmeans
    sw_xgboost
    sw_isolation_forest
+   sw_coxph
 
 **Transformers**
 
