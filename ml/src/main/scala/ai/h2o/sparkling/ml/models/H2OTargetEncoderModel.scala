@@ -75,8 +75,11 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
       "smoothing" -> getBlendedAvgSmoothing(),
       "as_training" -> true)
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
-    val outputColumnsOnlyFrame = H2OFrame(frameKeyV3.name).subframe(outputFrameColumns)
+    val output = H2OFrame(frameKeyV3.name)
+    val outputColumnsOnlyFrame = output.subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)
+    input.delete()
+    output.delete()
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
       case (df, (to, from)) => df.withColumnRenamed(from, to)
     }

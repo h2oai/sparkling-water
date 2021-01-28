@@ -17,15 +17,13 @@
 
 package ai.h2o.sparkling.ml.params
 
+import ai.h2o.sparkling.backend.utils.H2OFrameLifecycle
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.linalg.{DenseMatrix, DenseVector}
-import org.apache.spark.ml.param._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.collection.mutable.ArrayBuffer
-
-trait H2OAlgoParamsBase extends ParameterConstructorMethods {
+trait H2OAlgoParamsBase extends ParameterConstructorMethods with H2OFrameLifecycle {
   private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = Map.empty
 
   private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = Map.empty
@@ -89,14 +87,5 @@ trait H2OAlgoParamsBase extends ParameterConstructorMethods {
       registerH2OFrameForDeletion(frame)
       frame.frameId
     }
-  }
-
-  private val h2oFramesToBeDeleted = new ArrayBuffer[H2OFrame]()
-
-  private[sparkling] final def registerH2OFrameForDeletion(frame: H2OFrame): Unit = h2oFramesToBeDeleted.append(frame)
-
-  private[sparkling] final def deleteRegisteredH2OFrames(): Unit = {
-    h2oFramesToBeDeleted.foreach(_.delete())
-    h2oFramesToBeDeleted.clear()
   }
 }

@@ -16,13 +16,14 @@
  */
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.backend.utils.H2OFrameLifecycle
 import ai.h2o.sparkling.ml.models.H2OBinaryModel
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.functions.col
 
-trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
+trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
 
   protected var binaryModel: Option[H2OBinaryModel] = None
 
@@ -52,6 +53,12 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
   private[sparkling] def getValidationDataFrame(): DataFrame
 
   private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
+    prepareDatasetForFitting(dataset, registerFramesForDeletion = true)
+  }
+
+  private[sparkling] def prepareDatasetForFitting(
+      dataset: Dataset[_],
+      registerFramesForDeletion: Boolean): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
 
     if (getFeaturesCols().isEmpty) {
@@ -85,7 +92,7 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     trainFrame.convertColumnsToCategorical(getColumnsToCategorical())
 
     val validationDataFrame = getValidationDataFrame()
-    if (validationDataFrame != null) {
+    val (resultTrainFrame, resultTestFrame) = if (validationDataFrame != null) {
       val additionalValidationColumns = getAdditionalValidationCols().map(sanitize).map(col)
       val validationColumns = (columns ++ additionalValidationColumns).distinct
       val validationFrame = h2oContext.asH2OFrame(validationDataFrame.select(validationColumns: _*))
@@ -100,6 +107,11 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils {
     } else {
       (trainFrame, None)
     }
+    if (registerFramesForDeletion) {
+      registerH2OFrameForDeletion(resultTrainFrame)
+      registerH2OFrameForDeletion(resultTestFrame)
+    }
+    (resultTrainFrame, resultTestFrame)
   }
 
   def sanitize(colName: String) = '`' + colName + '`'
