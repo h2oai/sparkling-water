@@ -60,11 +60,12 @@ abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
         }
         .getOrElse(Map())
     val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
-    deleteRegisteredH2OFrames()
     val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
-    H2OModel(modelId)
+    val result = H2OModel(modelId)
       .toMOJOModel(Identifiable.randomUID(parameters.algoName()), H2OMOJOSettings.createFromModelParams(this))
+    deleteRegisteredH2OFrames()
+    result
   }
 
   @DeveloperApi
