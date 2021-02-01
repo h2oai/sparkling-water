@@ -1,7 +1,7 @@
 Sparkling Water
 ===============
 
-|Documentation| |Join the chat at https://gitter.im/h2oai/sparkling-water|
+|Join the chat at https://gitter.im/h2oai/sparkling-water|
 |image2| |image3| |Powered by H2O.ai|
 
 Sparkling Water integrates |H2O|'s fast scalable machine learning engine with Spark. It provides:
@@ -234,8 +234,6 @@ Change logs are available at `Change Logs <http://docs.h2o.ai/sparkling-water/2.
 
 ---------------
 
-.. |Documentation| image:: https://media.readthedocs.org/static/projects/badges/passing.svg
-   :target: http://docs.h2o.ai/sparkling-water/2.4/latest-stable/doc/index.html
 .. |Join the chat at https://gitter.im/h2oai/sparkling-water| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/h2oai/sparkling-water?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |image2| image:: https://maven-badges.herokuapp.com/maven-central/ai.h2o/sparkling-water-core_2.12/badge.svg
