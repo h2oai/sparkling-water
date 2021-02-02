@@ -1,6 +1,38 @@
 Change Log
 ==========
 
+v3.32.0.4-1 (2021-02-02)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.4-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.4-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.4-1-3.0/index.html>`__
+
+-  Docs
+
+   -  `SW-2524 <https://0xdata.atlassian.net/browse/SW-2524>`__ - Upgrade Links in readme.md to Documentation for Spark 3.0
+   -  `SW-2523 <https://0xdata.atlassian.net/browse/SW-2523>`__ - Remove Documentation Badge From Redme.md
+   -  `SW-2499 <https://0xdata.atlassian.net/browse/SW-2499>`__ - Document Properties for running SW on EMR 5.32
+
+-  Improvement
+
+   -  `SW-2521 <https://0xdata.atlassian.net/browse/SW-2521>`__ - Upgrade to H2O 3.32.0.4
+
+-  Engineering Story
+
+   -  `SW-2519 <https://0xdata.atlassian.net/browse/SW-2519>`__ - Fix Flaky Test in AnomalyPredictionTestSuite 
+   -  `SW-2513 <https://0xdata.atlassian.net/browse/SW-2513>`__ - Stop Publishing 32bit Artifacts to Conda Repository
+   -  `SW-2509 <https://0xdata.atlassian.net/browse/SW-2509>`__ - Increase Limit of K8s Tests for Automatic External Backend
+
+-  Bug
+
+   -  `SW-2517 <https://0xdata.atlassian.net/browse/SW-2517>`__ - Fix TargetEncoder MOJO for Distributed Environment
+   -  `SW-2515 <https://0xdata.atlassian.net/browse/SW-2515>`__ - Fix TargetEncoder for Usage in Python Pipeline
+   -  `SW-2514 <https://0xdata.atlassian.net/browse/SW-2514>`__ - Delete Train and Validation H2O Frame after Training a Model
+
 v3.32.0.3-1 (2020-12-30)
 ------------------------
 Downloads:
