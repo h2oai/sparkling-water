@@ -15,11 +15,8 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.backend.external
+package ai.h2o.sparkling.backend.external.crd
 
-trait K8sUtils {
+import io.fabric8.kubernetes.client.CustomResourceList
 
-  protected def convertLabel(label: String): String = {
-    label.split("=").mkString(": ")
-  }
-}
+class H2OClusterList extends CustomResourceList[H2OCluster]

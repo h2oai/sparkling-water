@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.api.generation.python
 
 import java.lang.reflect.Method
+import ai.h2o.sparkling.utils.DeprecatedConfigurationMethod
 
 object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) => String) {
 
@@ -68,22 +69,41 @@ object ConfigurationTemplate extends ((Array[Method], Array[Method], Class[_]) =
   }
 
   private def generateGetter(m: Method): String = {
-    s"""    def ${m.getName}(self):
+    s"""    def ${m.getName}(self):${generateDeprecation(m)}
        |        ${getReturnLine(m)}
        |""".stripMargin
   }
 
   private def generateSetter(m: Method): String = {
     if (m.getParameterCount == 0) {
-      s"""    def ${m.getName}(self):
+      s"""    def ${m.getName}(self):${generateDeprecation(m)}
          |        self._jconf.${m.getName}()
          |        return self
          |""".stripMargin
     } else {
-      s"""    def ${m.getName}(self, value):
+      s"""    def ${m.getName}(self, value):${generateDeprecation(m)}
          |        self._jconf.${m.getName}(value)
          |        return self
          |""".stripMargin
+    }
+  }
+
+  private def generateDeprecation(m: Method): String = {
+    val deprecatedAnotation = m.getDeclaredAnnotations
+      .filter(_.annotationType() == classOf[DeprecatedConfigurationMethod])
+      .headOption
+      .map(_.asInstanceOf[DeprecatedConfigurationMethod])
+    deprecatedAnotation match {
+      case None => ""
+      case Some(annotation) =>
+        val action = if (annotation.replacement == "") {
+          s"will be removed without replacement in the version ${annotation.version}."
+        } else {
+          s"replaced by '${annotation.replacement}'. The method will be removed in the version ${annotation.version}."
+        }
+        s"""
+           |        import warnings
+           |        warnings.warn("The method is deprecated and $action")""".stripMargin
     }
   }
 

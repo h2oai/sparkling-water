@@ -27,7 +27,7 @@ import scala.reflect.macros.whitebox.Context
   * @param replacement Name of a method replacing the deprecated method
   * @param version     Version when this method will be removed
   */
-class DeprecatedMethod(replacement: String = "", version: String = "") extends StaticAnnotation {
+class DeprecatedMethod(val replacement: String = "", val version: String = "") extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro DeprecatedMethodMacro.impl
 }
 

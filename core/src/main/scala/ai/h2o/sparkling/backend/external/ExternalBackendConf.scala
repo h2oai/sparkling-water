@@ -17,10 +17,13 @@
 
 package ai.h2o.sparkling.backend.external
 
+import java.lang.annotation.Annotation
+
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption, StringOption}
 import ai.h2o.sparkling.backend.{BuildInfo, SharedBackendConf}
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import ai.h2o.sparkling.utils.DeprecatedConfigurationMethod
 import ai.h2o.sparkling.utils.Compression
 import org.apache.spark.expose.Logging
 
@@ -95,16 +98,25 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   def externalAutoStartBackend: String =
     sparkConf.get(PROP_EXTERNAL_AUTO_START_BACKEND._1, PROP_EXTERNAL_AUTO_START_BACKEND._2)
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def externalK8sH2OServiceName: String =
     sparkConf.get(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._2)
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def externalK8sH2OStatefulsetName: String =
     sparkConf.get(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._2)
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def externalK8sH2OLabel: String = sparkConf.get(PROP_EXTERNAL_K8S_H2O_LABEL._1, PROP_EXTERNAL_K8S_H2O_LABEL._2)
 
   def externalK8sH2OApiPort: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_API_PORT._1, PROP_EXTERNAL_K8S_H2O_API_PORT._2)
+
+  def externalK8sH2OClusterName: String =
+    sparkConf.get(PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._1, PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._2)
 
   def externalK8sNamespace: String = sparkConf.get(PROP_EXTERNAL_K8S_NAMESPACE._1, PROP_EXTERNAL_K8S_NAMESPACE._2)
 
@@ -113,6 +125,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def externalK8sDomain: String = sparkConf.get(PROP_EXTERNAL_K8S_DOMAIN._1, PROP_EXTERNAL_K8S_DOMAIN._2)
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def externalK8sServiceTimeout: Int =
     sparkConf.getInt(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._2)
 
@@ -204,20 +218,30 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
     set(PROP_EXTERNAL_AUTO_START_BACKEND._1, backend)
   }
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def setExternalK8sH2OServiceName(serviceName: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_SERVICE_NAME._1, serviceName)
   }
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def setExternalK8sH2OStatefulsetName(statefulsetName: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME._1, statefulsetName)
   }
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def setExternalK8sH2OLabel(label: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_LABEL._1, label)
   }
 
   def setExternalK8sH2OApiPort(port: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_API_PORT._1, port.toString)
+  }
+
+  def setExternalK8sH2OClusterName(clusterName: String): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._1, clusterName)
   }
 
   def setExternalK8sNamespace(namespace: String): H2OConf = {
@@ -232,6 +256,8 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
     set(PROP_EXTERNAL_K8S_DOMAIN._1, domain)
   }
 
+  @DeprecatedMethod(version = "3.36")
+  @DeprecatedConfigurationMethod(version = "3.36")
   def setExternalK8sServiceTimeout(timeout: Int): H2OConf = {
     set(PROP_EXTERNAL_K8S_SERVICE_TIMEOUT._1, timeout.toString)
   }
@@ -383,22 +409,34 @@ object ExternalBackendConf {
     "spark.ext.h2o.external.k8s.h2o.service.name",
     "h2o-service",
     "setExternalK8sH2OServceName(String)",
-    "Name of H2O service required to start H2O on K8s.")
+    "Name of H2O service required to start H2O on K8s. " +
+      "**The option has no effect and will be removed in the version 3.36 without replacement.**")
 
   val PROP_EXTERNAL_K8S_H2O_STATEFULSET_NAME: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.statefulset.name",
     "h2o-statefulset",
     "setExternalK8sH2OStatefulsetName(String)",
-    "Name of H2O stateful set required to start H2O on K8s.")
+    "Name of H2O stateful set required to start H2O on K8s. " +
+      "**The option has no effect and will be removed in the version 3.36 without replacement.**")
 
   val PROP_EXTERNAL_K8S_H2O_LABEL: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.label",
     "app=h2o",
     "setExternalK8sH2OLabel(String)",
-    "Label used to select node for H2O cluster formation.")
+    "Label used to select node for H2O cluster formation. " +
+      "**The option has no effect and will be removed in the version 3.36 without replacement.**")
 
-  val PROP_EXTERNAL_K8S_H2O_API_PORT: IntOption =
-    ("spark.ext.h2o.external.k8s.h2o.api.port", 8081, "setExternalK8sH2OApiPort(String)", "Kubernetes API port.")
+  val PROP_EXTERNAL_K8S_H2O_API_PORT: IntOption = (
+    "spark.ext.h2o.external.k8s.h2o.api.port",
+    80,
+    "setExternalK8sH2OApiPort(String)",
+    "Kubernetes API port.")
+
+  val PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME: StringOption = (
+    "spark.ext.h2o.external.k8s.h2o.cluster.name",
+    "h2o-cluster",
+    "setExternalK8sH2OClusterName(String)",
+    "Name of the H2O cluster deployed to a K8s environment.")
 
   val PROP_EXTERNAL_K8S_NAMESPACE: StringOption = (
     "spark.ext.h2o.external.k8s.namespace",
@@ -410,7 +448,8 @@ object ExternalBackendConf {
     "spark.ext.h2o.external.k8s.docker.image",
     s"""See doc""",
     "setExternalK8sDockerImage(String)",
-    s"Docker image containing Sparkling Water external H2O backend. Default value is h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}")
+    s"Docker image containing Sparkling Water external H2O backend. " +
+      s"Default value is h2oai/sparkling-water-external-backend:${BuildInfo.SWVersion}.")
 
   val PROP_EXTERNAL_K8S_DOMAIN: StringOption = (
     "spark.ext.h2o.external.k8s.domain",
@@ -422,7 +461,8 @@ object ExternalBackendConf {
     "spark.ext.h2o.external.k8s.svc.timeout",
     60 * 5,
     "setExternalK8sServiceTimeout(Int)",
-    "Timeout in seconds used as a limit for K8s service creation.")
+    "Timeout in seconds used as a limit for K8s service creation. " +
+      "**The option has no effect and will be removed in the version 3.36 without replacement.**")
 
   private[sparkling] val PROP_EXTERNAL_DISABLE_VERSION_CHECK: (String, Boolean) =
     ("spark.ext.h2o.external.disable.version.check", false)
