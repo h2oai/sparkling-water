@@ -118,6 +118,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
   def externalK8sH2OClusterName: String =
     sparkConf.get(PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._1, PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._2)
 
+  def externalK8sH2OClusterTimeout: Int =
+    sparkConf.getInt(PROP_EXTERNAL_K8S_H2O_CLUSTER_TIMEOUT._1, PROP_EXTERNAL_K8S_H2O_CLUSTER_TIMEOUT._2)
+
   def externalK8sNamespace: String = sparkConf.get(PROP_EXTERNAL_K8S_NAMESPACE._1, PROP_EXTERNAL_K8S_NAMESPACE._2)
 
   def externalK8sDockerImage: String =
@@ -242,6 +245,10 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def setExternalK8sH2OClusterName(clusterName: String): H2OConf = {
     set(PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME._1, clusterName)
+  }
+
+  def setExternalK8sH2OClusterTimeout(timeout: Int): H2OConf = {
+    set(PROP_EXTERNAL_K8S_H2O_CLUSTER_TIMEOUT._1, timeout.toString)
   }
 
   def setExternalK8sNamespace(namespace: String): H2OConf = {
@@ -437,6 +444,12 @@ object ExternalBackendConf {
     "h2o-cluster",
     "setExternalK8sH2OClusterName(String)",
     "Name of the H2O cluster deployed to a K8s environment.")
+
+  val PROP_EXTERNAL_K8S_H2O_CLUSTER_TIMEOUT: IntOption = (
+    "spark.ext.h2o.external.k8s.h2o.cluster.timeout",
+    60 * 5,
+    "setExternalK8sH2OClusterTimeout(Int)",
+    "Timeout in seconds used as a limit for deploying H2O-3 cluster and getting it ready.")
 
   val PROP_EXTERNAL_K8S_NAMESPACE: StringOption = (
     "spark.ext.h2o.external.k8s.namespace",

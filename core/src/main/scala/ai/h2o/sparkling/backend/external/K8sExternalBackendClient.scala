@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.backend.external
 
+import scala.collection.JavaConverters._
+
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.external.crd._
 import io.fabric8.kubernetes.api.model.ObjectMeta
@@ -46,7 +48,28 @@ trait K8sExternalBackendClient extends Logging {
     }
     val resource = spec(conf)
     crClient.create(resource)
+    waitToBeReady(conf)
     conf.setH2OCluster(s"${getH2OHeadlessServiceURL(conf)}:54321")
+  }
+
+  private def waitToBeReady(conf: H2OConf): Unit = {
+    var tries = 0
+    var ready = false
+    while (!ready && tries < conf.externalK8sH2OClusterTimeout) {
+      val pods = client.pods()
+        .inNamespace(conf.externalK8sNamespace)
+        .withLabel("app", conf.externalK8sH2OClusterName)
+        .list().getItems.asScala
+      val allRunning = pods.count(_.getStatus.getPhase == "Running") == conf.clusterSize.get.toInt
+      val oneReady = pods
+        .flatMap(_.getStatus.getConditions.asScala)
+        .count(i => i.getType == "Ready" && i.getStatus == "True") == 1
+      ready = allRunning && oneReady
+      if (!ready) {
+        Thread.sleep(1000)
+        tries = tries + 1
+      }
+    }
   }
 
   protected def getH2OHeadlessServiceURL(conf: H2OConf): String = {
