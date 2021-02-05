@@ -526,10 +526,33 @@ After we created the external H2O backend, we can connect to it from Sparkling W
 Automatic Mode of External Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the automatic mode, Sparkling Water starts external H2O on Kubernetes automatically. To achieve that the
-driver node is configured to communicate with the Kubernetes cluster, H2O-operator is installed on the K8s cluster
-(see `the deployment instructions <https://github.com/h2oai/h2o-kubernetes/blob/master/operator/README.md#deployment>`__),
-and Docker image for the external H2O backend is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
+In the automatic mode, Sparkling Water starts external H2O on Kubernetes automatically.
+
+Prerequisites
+"""""""""""""
+1.  The spark driver node is configured to communicate with the Kubernetes cluster.
+2.  H2O-operator is installed on the K8s cluster
+    (see `the deployment instructions <https://github.com/h2oai/h2o-kubernetes/blob/master/operator/README.md#deployment>`__).
+3.  A docker image for the external H2O backend is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
+4.  The user or service account under which Spark driver is running has permissions to manipulate with custom resources
+    from the ``h2o.ai`` api group.
+
+    .. code:: bash
+
+        cat <<EOF | kubectl apply -f -
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRole
+        metadata:
+            name: "h2o-crs"
+        rules:
+            - apiGroups: ["h2o.ai"]
+              resources:
+              - "*"
+              verbs:
+              - "*"
+        EOF
+
+        kubectl create clusterrolebinding h2o-crs-binding --clusterrole=h2o-crs --serviceaccount=default:default --namespace=default
 
 .. content-tabs::
 
