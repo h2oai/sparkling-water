@@ -195,7 +195,7 @@ EOF
        """
     sh """
        kubectl create clusterrolebinding h2o-custom-resource-binding --clusterrole=h2o-custom-resource --serviceaccount=default:default --namespace=default
-       curl "https://github.com/h2oai/h2o-kubernetes/blob/master/operator/bundle/manifests/h2o.crd.yaml" -o "h2o.crd.yaml"
+       curl "https://raw.githubusercontent.com/h2oai/h2o-kubernetes/master/operator/bundle/manifests/h2os.h2o.ai.crd.yaml" -o "h2o.crd.yaml"
        kubectl apply -f h2o.crd.yaml
        """
     sh """
@@ -688,7 +688,7 @@ node("docker") {
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
                 withTestEnv(commons, image) {
-                    //testScalaInternalBackendClusterMode(registryId, master, version)
+                    testScalaInternalBackendClusterMode(registryId, master, version)
                     //testScalaInternalBackendClientMode(registryId, master, version)
                     //testScalaExternalBackendManualClusterMode(registryId, master, version)
                     //testScalaExternalBackendManualClientMode(registryId, master, version)
@@ -709,7 +709,7 @@ node("docker") {
                 def master = "k8s://" + readPropertiesFile("properties")["cluster_endpoint"]
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
                 withTestEnv(commons, image) {
-                    //testPythonInternalBackendClusterMode(registryId, master, version)
+                    testPythonInternalBackendClusterMode(registryId, master, version)
                     //testPythonInternalBackendClientMode(registryId, master, version)
                     //testPythonExternalBackendManualClusterMode(registryId, master, version)
                     //testPythonExternalBackendManualClientMode(registryId, master, version)
