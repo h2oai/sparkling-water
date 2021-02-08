@@ -221,7 +221,7 @@ spec:
       - name: h2o-operator
         image: pscheidl/h2o-operator:test
         imagePullPolicy: Always
-EOF       
+EOF
        """
 }
 
