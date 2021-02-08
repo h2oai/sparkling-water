@@ -1,4 +1,4 @@
-.. _isolation_forest:
+.. _coxph:
 
 Train CoxPH Model in Sparkling Water
 -----------------------------------------------
@@ -29,11 +29,10 @@ See also :ref:`parameters_H2OCoxPH`.
         Parse the data using H2O and convert them to Spark Frame
 
         .. code:: scala
-
-	        import org.apache.spark.SparkFiles
+            import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart.csv")
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart_test.csv")
-	        val trainingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart.csv"))
+            val trainingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart.csv"))
             val testingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart_test.csv"))
 
         Train the model. You can configure all the available CoxPH parameters using provided setters.
