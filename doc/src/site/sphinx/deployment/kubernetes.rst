@@ -531,7 +531,7 @@ In the automatic mode, Sparkling Water starts external H2O on Kubernetes automat
 Prerequisites
 """""""""""""
 1.  The spark driver node is configured to communicate with the Kubernetes cluster.
-2.  H2O-operator is installed on the K8s cluster
+2.  H2O-operator is installed to a namespace of the K8s cluster, where H2O cluster will be deployed to.
     (see `the deployment instructions <https://github.com/h2oai/h2o-kubernetes/blob/master/operator/README.md#deployment>`__).
 3.  A docker image for the external H2O backend is specified using the ``spark.ext.h2o.external.k8s.docker.image`` option.
 4.  The user or service account under which Spark driver is running has permissions to manipulate with custom resources
