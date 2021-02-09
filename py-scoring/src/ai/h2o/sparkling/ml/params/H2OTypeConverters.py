@@ -67,6 +67,17 @@ class H2OTypeConverters(object):
         return convert
 
     @staticmethod
+    def toList(value):
+        if value is None:
+            raise TypeError("None is not allowed.")
+        else:
+            valueForConversion = value
+            if isinstance(value, JavaObject):
+                valueForConversion = list(value)
+
+            return TypeConverters.toList(valueForConversion)
+
+    @staticmethod
     def toListString():
         def convert(value):
             if value is None:
@@ -256,7 +267,7 @@ class H2OTypeConverters(object):
             if value is None:
                 raise TypeError("None is not allowed.")
             else:
-                return [H2OTypeConverters.toListFloat()(v) for v in TypeConverters.toList(value)]
+                return [H2OTypeConverters.toListFloat()(v) for v in H2OTypeConverters.toList(value)]
 
         return convert
 
@@ -276,7 +287,7 @@ class H2OTypeConverters(object):
             if value is None:
                 raise TypeError("None is not allowed.")
             else:
-                return [H2OTypeConverters.toListString()(v) for v in TypeConverters.toList(value)]
+                return [H2OTypeConverters.toListString()(v) for v in H2OTypeConverters.toList(value)]
 
         return convert
 

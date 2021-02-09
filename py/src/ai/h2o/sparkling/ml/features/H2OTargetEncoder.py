@@ -37,16 +37,32 @@ class H2OTargetEncoder(H2OTargetEncoderMOJOParams, H2OStageBase, JavaEstimator):
                  blendedAvgInflectionPoint=10.0,
                  blendedAvgSmoothing=20.0,
                  noise=0.01,
-                 noiseSeed=-1):
+                 noiseSeed=-1,
+                 columnsToEncode=None):
         Initializer.load_sparkling_jar()
         super(H2OTargetEncoder, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OTargetEncoder", self.uid)
         self._setDefaultValuesFromJava()
         kwargs = Utils.getInputKwargs(self)
+        if 'inputCols' in kwargs:
+            kwargs['inputCols'] = self._convertInputCols(kwargs['inputCols'])
         self._set(**kwargs)
+        self.setInputCols(self.getInputCols())
 
     def _create_model(self, java_model):
         return H2OTargetEncoderModel(java_model)
+
+    def _toStringArray(self, value):
+        if isinstance(value, list):
+            return value
+        else:
+            return [str(value)]
+
+    def _convertInputCols(self, value):
+        if isinstance(value, list):
+            return [self._toStringArray(item) for item in value]
+        else:
+            return value
 
     ##
     # Setters
@@ -58,7 +74,7 @@ class H2OTargetEncoder(H2OTargetEncoderMOJOParams, H2OStageBase, JavaEstimator):
         return self._set(labelCol=value)
 
     def setInputCols(self, value):
-        return self._set(inputCols=value)
+        return self._set(inputCols=self._convertInputCols(value))
 
     def setOutputCols(self, value):
         return self._set(outputCols=value)

@@ -39,7 +39,7 @@ class H2OTargetEncoderMOJOParams(Params):
         Params._dummy(),
         "inputCols",
         "Names of columns that will be transformed",
-        H2OTypeConverters.toListString())
+        H2OTypeConverters.toNullableListListString())
 
     outputCols = Param(
         Params._dummy(),

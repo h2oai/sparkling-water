@@ -48,7 +48,9 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     }
   }
 
-  private def inputColumnNameToInternalOutputName(inputColumnName: String): String = inputColumnName + "_te"
+  private def inputColumnNameToInternalOutputName(groupColumnNames: Array[String]): String = {
+    groupColumnNames.mkString("~") + "_te"
+  }
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
     val hc = H2OContext.ensure(
@@ -56,10 +58,12 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val temporaryColumn = getClass.getSimpleName + "_temporary_id"
     val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
     val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
-    val relevantColumns = getInputCols() ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
+    val distinctInputCols = getInputCols().flatten.distinct
+    val relevantColumns = distinctInputCols ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = hc.asH2OFrame(relevantColumnsDF)
-    input.convertColumnsToCategorical(getInputCols())
+
+    input.convertColumnsToCategorical(distinctInputCols)
     val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
     val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
     val conf = hc.getConf

@@ -39,10 +39,12 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams
     require(
       fieldNames.contains(getLabelCol()),
       s"The specified label column '${getLabelCol()}' was not found in the input dataset!")
-    getInputCols().foreach { inputCol =>
-      require(
-        fieldNames.contains(inputCol),
-        s"The specified input column '$inputCol' was not found in the input dataset!")
+    getInputCols().foreach { inputColGroup =>
+      inputColGroup.foreach { inputCol =>
+        require(
+          fieldNames.contains(inputCol),
+          s"The specified input column '$inputCol' was not found in the input dataset!")
+      }
     }
     val inputAndOutputIntersection = getInputCols().intersect(getOutputCols())
     require(
