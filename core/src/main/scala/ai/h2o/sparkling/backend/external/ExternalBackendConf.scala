@@ -433,11 +433,8 @@ object ExternalBackendConf {
     "Label used to select node for H2O cluster formation. " +
       "**The option has no effect and will be removed in the version 3.36 without replacement.**")
 
-  val PROP_EXTERNAL_K8S_H2O_API_PORT: IntOption = (
-    "spark.ext.h2o.external.k8s.h2o.api.port",
-    80,
-    "setExternalK8sH2OApiPort(String)",
-    "Kubernetes API port.")
+  val PROP_EXTERNAL_K8S_H2O_API_PORT: IntOption =
+    ("spark.ext.h2o.external.k8s.h2o.api.port", 80, "setExternalK8sH2OApiPort(String)", "Kubernetes API port.")
 
   val PROP_EXTERNAL_K8S_H2O_CLUSTER_NAME: StringOption = (
     "spark.ext.h2o.external.k8s.h2o.cluster.name",

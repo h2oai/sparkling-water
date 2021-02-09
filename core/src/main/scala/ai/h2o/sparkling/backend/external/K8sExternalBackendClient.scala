@@ -30,7 +30,7 @@ trait K8sExternalBackendClient extends Logging {
   @transient private lazy val client = new DefaultKubernetesClient()
 
   def stopExternalH2OOnKubernetes(conf: H2OConf): Unit = {
-    val crClient = customResourceClient(client)
+    val crClient = customResourceClient(client, conf)
     val result = crClient
       .inNamespace(conf.externalK8sNamespace)
       .withName(conf.externalK8sH2OClusterName)
@@ -41,7 +41,7 @@ trait K8sExternalBackendClient extends Logging {
   }
 
   def startExternalH2OOnKubernetes(conf: H2OConf): Unit = {
-    val crClient = customResourceClient(client)
+    val crClient = customResourceClient(client, conf)
     if (crClient == null) {
       throw new RuntimeException(
         s"Couldn't find custom resource definition for H2O-3 cluster, make sure H2O operator is running!")
@@ -56,10 +56,13 @@ trait K8sExternalBackendClient extends Logging {
     var tries = 0
     var ready = false
     while (!ready && tries < conf.externalK8sH2OClusterTimeout) {
-      val pods = client.pods()
+      val pods = client
+        .pods()
         .inNamespace(conf.externalK8sNamespace)
         .withLabel("app", conf.externalK8sH2OClusterName)
-        .list().getItems.asScala
+        .list()
+        .getItems
+        .asScala
       val allRunning = pods.count(_.getStatus.getPhase == "Running") == conf.clusterSize.get.toInt
       val oneReady = pods
         .flatMap(_.getStatus.getConditions.asScala)
@@ -76,8 +79,8 @@ trait K8sExternalBackendClient extends Logging {
     s"${conf.externalK8sH2OClusterName}.${conf.externalK8sNamespace}.svc.${conf.externalK8sDomain}"
   }
 
-  private def customResourceClient(client: KubernetesClient) = {
-    val crd = client.customResourceDefinitions().load(H2OCluster.definitionAsStream).get()
+  private def customResourceClient(client: KubernetesClient, conf: H2OConf) = {
+    val crd = client.customResourceDefinitions().load(H2OCluster.definitionAsStream(conf)).get()
     client.customResources(crd, classOf[H2OCluster], classOf[H2OClusterList], classOf[H2OClusterDoneable])
   }
 
@@ -90,13 +93,15 @@ trait K8sExternalBackendClient extends Logging {
     cluster.setApiVersion("h2o.ai/v1beta")
     cluster.setKind("H2O")
     cluster.setMetadata(metadata)
-    cluster.setSpec(new H2OClusterSpec()
-      .setNodes(conf.clusterSize.get.toInt)
-      .setCustomImage(new H2OClusterCustomImage().setImage(conf.externalK8sDockerImage))
-      .setResources(new H2OClusterResources()
-        .setCpu(if (conf.nthreads < 1) 1 else conf.nthreads)
-        .setMemory(conf.externalMemory)
-        .setMemoryPercentage(100 - conf.externalExtraMemoryPercent)))
+    cluster.setSpec(
+      new H2OClusterSpec()
+        .setNodes(conf.clusterSize.get.toInt)
+        .setCustomImage(new H2OClusterCustomImage().setImage(conf.externalK8sDockerImage))
+        .setResources(
+          new H2OClusterResources()
+            .setCpu(if (conf.nthreads < 1) 1 else conf.nthreads)
+            .setMemory(conf.externalMemory)
+            .setMemoryPercentage(100 - conf.externalExtraMemoryPercent)))
     cluster
   }
 }

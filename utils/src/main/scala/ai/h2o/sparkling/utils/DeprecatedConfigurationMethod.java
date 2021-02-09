@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface DeprecatedConfigurationMethod {
-    public String version() default "";
-    public String replacement() default "";
+  public String version() default "";
+
+  public String replacement() default "";
 }

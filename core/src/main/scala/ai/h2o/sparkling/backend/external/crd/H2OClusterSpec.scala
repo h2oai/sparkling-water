@@ -25,7 +25,6 @@ class H2OClusterSpec extends KubernetesResource {
   private var customImage: H2OClusterCustomImage = null
   private var resources: H2OClusterResources = null
 
-
   def getNodes(): Int = nodes
   def getCustomImage(): H2OClusterCustomImage = customImage
   def getResources(): H2OClusterResources = resources

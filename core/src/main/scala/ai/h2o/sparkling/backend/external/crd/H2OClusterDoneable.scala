@@ -20,5 +20,5 @@ package ai.h2o.sparkling.backend.external.crd
 import io.fabric8.kubernetes.api.builder.Function
 import io.fabric8.kubernetes.client.CustomResourceDoneable
 
-class H2OClusterDoneable(resource: H2OCluster, function: Function[H2OCluster,H2OCluster])
+class H2OClusterDoneable(resource: H2OCluster, function: Function[H2OCluster, H2OCluster])
   extends CustomResourceDoneable[H2OCluster](resource, function)

@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.external.crd
 
 import java.io.{ByteArrayInputStream, InputStream}
 
+import ai.h2o.sparkling.H2OConf
 import io.fabric8.kubernetes.client.CustomResource
 
 class H2OCluster extends CustomResource {
@@ -42,11 +43,12 @@ class H2OCluster extends CustomResource {
 }
 
 object H2OCluster {
-  val definition: String =
-    """apiVersion: apiextensions.k8s.io/v1
+  def definition(conf: H2OConf): String =
+    s"""apiVersion: apiextensions.k8s.io/v1
       |kind: CustomResourceDefinition
       |metadata:
       |  name: h2os.h2o.ai
+      |  namespace: ${conf.externalK8sNamespace}
       |spec:
       |  group: h2o.ai
       |  names:
@@ -86,7 +88,7 @@ object H2OCluster {
       |                      minimum: 1
       |                    memory:
       |                      type: string
-      |                      pattern: "^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$"
+      |                      pattern: "^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$$"
       |                    memoryPercentage:
       |                      type: integer
       |                      minimum: 1
@@ -98,5 +100,5 @@ object H2OCluster {
       |              required: ["nodes", "resources"]
       |""".stripMargin
 
-  def definitionAsStream: InputStream = new ByteArrayInputStream(definition.getBytes)
+  def definitionAsStream(conf: H2OConf): InputStream = new ByteArrayInputStream(definition(conf).getBytes)
 }

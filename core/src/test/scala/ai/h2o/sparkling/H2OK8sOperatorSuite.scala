@@ -36,7 +36,7 @@ class H2OK8sOperatorSuite extends FunSuite with SparkTestContext {
       .setClusterSize(3)
       .setExternalK8sDockerImage("h2oai/sparkling-water-external-backend:3.32.0.3-1-3.0")
       .setExternalK8sH2OApiPort(2)
-    val client =  new DefaultKubernetesClient("https://0684CB86995C83A559928F00C18D4E46.gr7.us-west-2.eks.amazonaws.com")
+    val client = new DefaultKubernetesClient("https://0684CB86995C83A559928F00C18D4E46.gr7.us-west-2.eks.amazonaws.com")
 //    Console.println(DummyOperator.isH2OOperatorRunning(client, h2oConf))
     DummyClient.startExternalH2OOnKubernetes(h2oConf)
 //    Console.println(DummyOperator.isH2OOperatorRunning(client, h2oConf))
