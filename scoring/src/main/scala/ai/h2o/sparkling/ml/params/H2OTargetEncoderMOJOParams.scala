@@ -32,7 +32,10 @@ trait H2OTargetEncoderMOJOParams extends Params {
     "A name of a column determining folds when ``KFold`` holdoutStrategy is applied.")
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name.")
   protected final val inputCols =
-    new NullableStringArrayArrayParam(this, "inputCols", "Names of columns that will be transformed.")
+    new NullableStringArrayArrayParam(
+    this,
+    "inputCols",
+    "Names of columns that will be transformed.")
   protected final val outputCols =
     new StringArrayParam(
       this,
