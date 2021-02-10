@@ -779,9 +779,9 @@ node("docker") {
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
                 withTestEnv(commons, image) {
                     testScalaInternalBackendClusterMode(registryId, master, version)
-                    //testScalaInternalBackendClientMode(registryId, master, version)
-                    //testScalaExternalBackendManualClusterMode(registryId, master, version)
-                    //testScalaExternalBackendManualClientMode(registryId, master, version)
+                    testScalaInternalBackendClientMode(registryId, master, version)
+                    testScalaExternalBackendManualClusterMode(registryId, master, version)
+                    testScalaExternalBackendManualClientMode(registryId, master, version)
                     testScalaExternalBackendAutoClusterMode(registryId, master, version)
                     testScalaExternalBackendAutoClientMode(registryId, master, version)
                 }
@@ -800,9 +800,9 @@ node("docker") {
                 def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
                 withTestEnv(commons, image) {
                     testPythonInternalBackendClusterMode(registryId, master, version)
-                    //testPythonInternalBackendClientMode(registryId, master, version)
-                    //testPythonExternalBackendManualClusterMode(registryId, master, version)
-                    //testPythonExternalBackendManualClientMode(registryId, master, version)
+                    testPythonInternalBackendClientMode(registryId, master, version)
+                    testPythonExternalBackendManualClusterMode(registryId, master, version)
+                    testPythonExternalBackendManualClientMode(registryId, master, version)
                     testPythonExternalBackendAutoClusterMode(registryId, master, version)
                     testPythonExternalBackendAutoClientMode(registryId, master, version)
                 }
@@ -822,8 +822,8 @@ node("docker") {
                 def sparkVersion = getSparkVersion(sparkMajorVersion)
                 withTestEnv(commons, image) {
                     // R sets deployment mode automatically
-                    //testRInternalBackend(registryId, master, version, sparkVersion)
-                    //testRExternalBackendManual(registryId, master, version, sparkVersion)
+                    testRInternalBackend(registryId, master, version, sparkVersion)
+                    testRExternalBackendManual(registryId, master, version, sparkVersion)
                     testRExternalBackendAuto(registryId, master, version, sparkVersion)
                 }
             } catch (Exception e) {
