@@ -1,4 +1,4 @@
-:q#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 function checkSparkHome() {
   # Example class prefix

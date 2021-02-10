@@ -194,8 +194,9 @@ rules:
 EOF
        """
     sh """
-       kubectl create clusterrolebinding edit-specific-namespace --clusterrole=edit --serviceaccount=default:default --namespace=${namespace}
-       kubectl create clusterrolebinding h2o-custom-resource-binding --clusterrole=h2o-custom-resource --serviceaccount=default:default --namespace=${namespace}
+       kubectl create clusterrolebinding edit-specific-namespace-operator --clusterrole=edit --serviceaccount=${namespace}:default --namespace=${namespace}
+       kubectl create clusterrolebinding h2o-custom-resource-binding-caller --clusterrole=h2o-custom-resource --serviceaccount=default:default --namespace=${namespace}
+       kubectl create clusterrolebinding h2o-custom-resource-binding-operator --clusterrole=h2o-custom-resource --serviceaccount=${namespace}:default --namespace=${namespace}
        """
     sh """
 cat <<EOF | kubectl apply -f -
@@ -286,8 +287,9 @@ def deleteK8sOperator(namespace) {
     sh """
        kubectl delete deployment h2o-operator --namespace=${namespace} --ignore-not-found
        kubectl delete crd h2os.h2o.ai --namespace=${namespace} --ignore-not-found
-       kubectl delete clusterrolebinding edit-specific-namespace --namespace=${namespace} --ignore-not-found
-       kubectl delete clusterrolebinding h2o-custom-resource-binding --namespace=${namespace} --ignore-not-found
+       kubectl delete clusterrolebinding edit-specific-namespace-operator --namespace=${namespace} --ignore-not-found
+       kubectl delete clusterrolebinding h2o-custom-resource-binding-caller --namespace=${namespace} --ignore-not-found
+       kubectl delete clusterrolebinding h2o-custom-resource-binding-operator --namespace=${namespace} --ignore-not-found
        kubectl delete clusterrole h2o-custom-resource --namespace=${namespace} --ignore-not-found
        """
 }

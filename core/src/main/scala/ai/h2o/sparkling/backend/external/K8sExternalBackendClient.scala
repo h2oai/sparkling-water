@@ -32,7 +32,6 @@ trait K8sExternalBackendClient extends Logging {
   def stopExternalH2OOnKubernetes(conf: H2OConf): Unit = {
     val crClient = customResourceClient(client, conf)
     val result = crClient
-      .inNamespace(conf.externalK8sNamespace)
       .withName(conf.externalK8sH2OClusterName)
       .delete()
     if (!result) {
@@ -81,7 +80,9 @@ trait K8sExternalBackendClient extends Logging {
 
   private def customResourceClient(client: KubernetesClient, conf: H2OConf) = {
     val crd = client.customResourceDefinitions().load(H2OCluster.definitionAsStream(conf)).get()
-    client.customResources(crd, classOf[H2OCluster], classOf[H2OClusterList], classOf[H2OClusterDoneable])
+    client
+      .customResources(crd, classOf[H2OCluster], classOf[H2OClusterList], classOf[H2OClusterDoneable])
+      .inNamespace(conf.externalK8sNamespace)
   }
 
   private def spec(conf: H2OConf): H2OCluster = {
