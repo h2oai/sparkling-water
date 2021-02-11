@@ -211,6 +211,7 @@ def gitCommit(files, msg) {
 }
 
 def installDocker() {
+    sh "sudo rm /etc/apt/sources.list.d/hdp.list*"
     sh "sudo apt-get update"
     sh "sudo apt -y install docker.io"
     sh "sudo service docker start"
