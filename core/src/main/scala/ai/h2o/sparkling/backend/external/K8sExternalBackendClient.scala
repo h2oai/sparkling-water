@@ -75,8 +75,9 @@ trait K8sExternalBackendClient extends Logging {
     if (ready) {
       logInfo(s"H2O cluster is considered to be ready after $tries to check the satisfactory condition.")
     } else {
-      throw new RuntimeException(s"H2O cluster is not considered to be ready after" +
-        s"expiration of the deployment timeout (${conf.externalK8sH2OClusterTimeout} seconds).")
+      throw new RuntimeException(
+        s"H2O cluster is not considered to be ready after" +
+          s"expiration of the deployment timeout (${conf.externalK8sH2OClusterTimeout} seconds).")
     }
   }
 
