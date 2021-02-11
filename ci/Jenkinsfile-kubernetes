@@ -342,7 +342,7 @@ def testRInternalBackend(registryId, master, version, sparkVersion) {
         export SPARK_VERSION=$sparkVersion
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
-    sh 'sleep 60'
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
 }
@@ -369,7 +369,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --conf spark.kubernetes.container.image=${image}  \
@@ -393,7 +393,7 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
         --conf spark.kubernetes.container.image=${image}  \
@@ -479,7 +479,7 @@ spec:
             value: '8081'
 EOF
     """
-    sh 'sleep 60'
+    sh "sleep 60"
 }
 
 def stopExternalH2OBackend() {
@@ -498,7 +498,7 @@ def testRExternalBackendManual(registryId, master, version, sparkVersion) {
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.start.mode=manual spark.ext.h2o.external.memory=2G spark.ext.h2o.cloud.representative=h2o-service.default.svc.cluster.local:54321 spark.ext.h2o.cloud.name=root"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
-    sh 'sleep 60'
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -512,7 +512,7 @@ def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     deleteK8sOperator("h2o")
     installK8sOperator("h2o")
-    sh 'sleep 60'
+    sh "sleep 60"
     runRCommandWithK8sDebugInfo """
         export KUBERNETES_MASTER=$master
         export REGISTRY_ID=$registryId
@@ -521,7 +521,7 @@ def testRExternalBackendAuto(registryId, master, version, sparkVersion) {
         export EXTRA_OPTIONS="spark.ext.h2o.backend.cluster.mode=external spark.ext.h2o.external.k8s.namespace=h2o spark.ext.h2o.external.start.mode=auto spark.ext.h2o.external.cluster.size=2 spark.ext.h2o.external.k8s.docker.image=${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:external-backend-${version} spark.ext.h2o.external.auto.start.backend=kubernetes spark.ext.h2o.external.memory=2G"
         Rscript --default-packages=methods,utils /opt/sparkling-water/tests/initTest.R
         """
-    sh 'sleep 60'
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app | grep -q \"Open H2O Flow in browser\" && echo \"OK\" || exit 1"
     sh "kubectl logs sparkling-water-app | grep -qv \"ASSERTION ERROR\" && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -595,9 +595,10 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m  --image=${image} -- \
+        --image=${image} -- \
         ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -611,7 +612,7 @@ def testScalaExternalBackendAutoClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     deleteK8sOperator("h2o")
     installK8sOperator("h2o")
-    sh 'sleep 60'
+    sh "sleep 60"
     runCommandWithK8sDebugInfo "${scalaExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -626,14 +627,15 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     deleteK8sOperator("h2o")
     installK8sOperator("h2o")
-    sh 'sleep 60'
+    sh "sleep 60"
     installSparkHeadlessService()
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m  --image=${image} -- \
+        --image=${image} -- \
         ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     deleteK8sOperator("h2o")
@@ -668,9 +670,10 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        --image=${image} -- \
         ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -684,7 +687,7 @@ def testPythonExternalBackendAutoClusterMode(registryId, master, version) {
     sh "kubectl delete pod sparkling-water-app --ignore-not-found"
     deleteK8sOperator("h2o")
     installK8sOperator("h2o")
-    sh 'sleep 60'
+    sh "sleep 60"
     runCommandWithK8sDebugInfo "${pythonExternalBackendSubmitCmd(registryId, master, version, "cluster", "auto")}"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -700,13 +703,14 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
     installSparkHeadlessService()
     deleteK8sOperator("h2o")
     installK8sOperator("h2o")
-    sh 'sleep 60'
+    sh "sleep 60"
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        --image=${image} -- \
         ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
+    sh "sleep 60"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     deleteK8sOperator("h2o")
