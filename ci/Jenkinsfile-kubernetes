@@ -369,7 +369,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- \
+        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
          --conf spark.scheduler.minRegisteredResourcesRatio=1 \
          --conf spark.kubernetes.container.image=${image}  \
@@ -393,7 +393,7 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- \
+        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
         \$SPARK_HOME/bin/spark-submit \
         --conf spark.scheduler.minRegisteredResourcesRatio=1 \
         --conf spark.kubernetes.container.image=${image}  \
@@ -595,7 +595,8 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
+        --pod-running-timeout=5m --timeout=5m  --image=${image} -- \
+        ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -630,7 +631,8 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:scala-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        --pod-running-timeout=5m --timeout=5m  --image=${image} -- \
+        ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -666,7 +668,8 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
+        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
@@ -701,7 +704,8 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
     def image = "${registryId}.dkr.ecr.${awsRegion()}.amazonaws.com/sw_kubernetes_repo/sparkling-water:python-${version}"
     runCommandWithK8sDebugInfo """
         kubectl run -n default -i --tty sparkling-water-app --restart=Never --labels spark-driver-selector=sparkling-water-app \
-        --image=${image} -- ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
+        --pod-running-timeout=5m --timeout=5m --image=${image} -- \
+        ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
