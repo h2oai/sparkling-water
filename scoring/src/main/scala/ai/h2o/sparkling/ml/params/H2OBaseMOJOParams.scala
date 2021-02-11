@@ -36,11 +36,6 @@ trait H2OBaseMOJOParams extends Params with Logging {
     "detailedPredictionCol",
     "Column containing additional prediction details, its content depends on the model type.")
 
-  protected final val withDetailedPredictionCol = new BooleanParam(
-    this,
-    "withDetailedPredictionCol",
-    "Enables or disables generating additional prediction column, but with more details")
-
   protected final val withContributions = new BooleanParam(
     this,
     "withContributions",
@@ -77,7 +72,6 @@ trait H2OBaseMOJOParams extends Params with Logging {
   setDefault(
     predictionCol -> H2OMOJOSettings.default.predictionCol,
     detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
-    withContributions -> H2OMOJOSettings.default.withContributions,
     featuresCols -> Array.empty[String],
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
     convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
@@ -91,9 +85,6 @@ trait H2OBaseMOJOParams extends Params with Logging {
   def getPredictionCol(): String = $(predictionCol)
 
   def getDetailedPredictionCol(): String = $(detailedPredictionCol)
-
-  @DeprecatedMethod(version = "3.34")
-  def getWithDetailedPredictionCol(): Boolean = true
 
   def getWithContributions(): Boolean = $(withContributions)
 

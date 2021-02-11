@@ -203,8 +203,6 @@ From 3.30.1 to 3.32
 +-----------------------------------------+--------------------------------------------+--------------------------------------------+
 | ``detailedPredictionCol``               | ``getDetailedPredictionCol``               | ``setDetailedPredictionCol``               |
 +-----------------------------------------+--------------------------------------------+--------------------------------------------+
-| ``withDetailedPredictionCol``           | ``getWithDetailedPredictionCol``           | ``setWithDetailedPredictionCol``           |
-+-----------------------------------------+--------------------------------------------+--------------------------------------------+
 | ``featuresCols``                        | ``getFeaturesCols``                        | ``setFeaturesCols``                        |
 +-----------------------------------------+--------------------------------------------+--------------------------------------------+
 | ``convertUnknownCategoricalLevelsToNa`` | ``getConvertUnknownCategoricalLevelsToNa`` | ``setConvertUnknownCategoricalLevelsToNa`` |

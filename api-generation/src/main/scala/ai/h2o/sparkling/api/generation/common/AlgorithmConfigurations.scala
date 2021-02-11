@@ -35,7 +35,6 @@ trait AlgorithmConfigurations {
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
-    "withDetailedPredictionCol" -> true,
     "convertUnknownCategoricalLevelsToNa" -> false,
     "convertInvalidNumbersToNa" -> false,
     "namedMojoOutputColumns" -> true,

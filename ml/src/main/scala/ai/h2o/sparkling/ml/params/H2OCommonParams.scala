@@ -85,9 +85,6 @@ trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
 
   def setDetailedPredictionCol(columnName: String): this.type = set(detailedPredictionCol, columnName)
 
-  @DeprecatedMethod(version = "3.34")
-  def setWithDetailedPredictionCol(enabled: Boolean): this.type = this
-
   def setWithContributions(enabled: Boolean): this.type = set(withContributions, enabled)
 
   def setWithLeafNodeAssignments(enabled: Boolean): this.type = set(withLeafNodeAssignments, enabled)

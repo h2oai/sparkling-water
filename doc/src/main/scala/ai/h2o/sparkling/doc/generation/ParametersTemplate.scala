@@ -76,7 +76,6 @@ object ParametersTemplate {
     val mojoModelInstanceOption =
       mojoModel.map(_.getConstructor(classOf[String]).newInstance("uid").asInstanceOf[Params])
     algorithmInstance.params
-      .filterNot(_.name == "withDetailedPredictionCol")
       .map { param =>
         val defaultValue = if (algorithmInstance.getDefault(param).isDefined) {
           algorithmInstance.getDefault(param).get

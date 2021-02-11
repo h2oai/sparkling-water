@@ -232,9 +232,8 @@ it is \texttt{detailed\_prediction}.
 
 \subsubsection{Obtaining Stage Probabilities}
 
-To obtain the stage results, please first make sure to set \texttt{withStageResults} and
-\texttt{withDetailedPredictionCol} to true on your MOJO settings object. The stage results for regression and
-anomaly detection problems
+To obtain the stage results, please first make sure to set \texttt{withStageResults} on your MOJO settings object.
+The stage results for regression and anomaly detection problems
 are stored in the \texttt{\${detailedPredictionCol}.stageResults} on the dataset obtained from the prediction. The
 stage results for classification(binomial, multinomial) problems are stored under \\
 \texttt{\${detailedPredictionCol}.stageProbabilities}. Please replace \\ \texttt{\${detailedPredictionCol}}

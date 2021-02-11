@@ -39,11 +39,6 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
     def getDetailedPredictionCol(self):
         return self._java_obj.getDetailedPredictionCol()
 
-    def getWithDetailedPredictionCol(self):
-        warnings.warn("The method will be removed without a replacement in the version 3.34."
-                      "Detailed prediction columns is always enabled.", DeprecationWarning)
-        return True
-
     def getFeaturesCols(self):
         return list(self._java_obj.getFeaturesCols())
 
