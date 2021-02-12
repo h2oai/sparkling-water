@@ -80,7 +80,7 @@ The Pipeline MOJO model could be loaded as:
 
         .. code:: scala
 
-            import ai.h2o.sparkling.ml.models.H2OMOJOPipelineModel
+            import ai.h2o.sparkling.ml.models._
             val settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = true)
             val mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
@@ -89,7 +89,7 @@ The Pipeline MOJO model could be loaded as:
 
         .. code:: python
 
-            from pysparkling.ml import H2OMOJOPipelineModel
+            from pysparkling.ml import *
             settings = H2OMOJOSettings(predictionCol = "fruit_type", convertUnknownCategoricalLevelsToNa = True)
             mojo = H2OMOJOPipelineModel.createFromMojo("file:///path/to/pipeline.mojo", settings)
 
