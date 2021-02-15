@@ -69,7 +69,6 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
-@pytest.mark.skip("SW-2500")
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
     featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"]
