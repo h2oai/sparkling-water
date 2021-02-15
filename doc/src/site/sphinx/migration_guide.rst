@@ -40,9 +40,6 @@ From 3.32 to 3.34
 
 - The ``weightCol`` parameter on ``H2OKmeans`` was removed without a replacement.
 
-- The ``getTrainingParams`` method on ``H2OMOJOModel`` and inherited classes has been removed in Python and Scala API.
-  Use a specific getter method for a given training parameter.
-
 - The ``distribution`` parameter on ``H2OGLM`` was removed without a replacement.
 
 - The support for Apache Spark 2.1.x has been removed.

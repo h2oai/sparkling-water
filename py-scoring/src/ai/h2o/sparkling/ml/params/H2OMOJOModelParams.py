@@ -18,7 +18,6 @@
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
-import warnings
 
 
 class H2OMOJOModelParams(H2OMOJOModelBase):
@@ -42,8 +41,6 @@ class H2OMOJOModelParams(H2OMOJOModelBase):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCurrentMetrics())
 
     def getTrainingParams(self):
-        warnings.warn("The method 'getTrainingParams' is deprecated and will be removed in 3.34."
-                      "Use a dedicated getter method for a given parameter.")
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingParams())
 
     def getModelCategory(self):
