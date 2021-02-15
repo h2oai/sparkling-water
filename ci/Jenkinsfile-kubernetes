@@ -277,7 +277,7 @@ spec:
     spec:
       containers:
       - name: h2o-operator
-        image: h2oai/h2o-k8s-operator:0.1.0
+        image: pscheidl/h2o-operator:latest
         imagePullPolicy: Always
 EOF
        """
@@ -382,7 +382,7 @@ def testScalaInternalBackendClientMode(registryId, master, version) {
          --conf spark.executor.instances=3 \
          local:///opt/sparkling-water/tests/kubernetesTest.jar
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -405,7 +405,7 @@ def testPythonInternalBackendClientMode(registryId, master, version) {
         --conf spark.executor.instances=3 \
         local:///opt/sparkling-water/tests/initTest.py
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
 }
@@ -598,7 +598,7 @@ def testScalaExternalBackendManualClientMode(registryId, master, version) {
         --image=${image} -- \
         ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -635,7 +635,7 @@ def testScalaExternalBackendAutoClientMode(registryId, master, version) {
         --image=${image} -- \
         ${scalaExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     deleteK8sOperator("h2o")
@@ -673,7 +673,7 @@ def testPythonExternalBackendManualClientMode(registryId, master, version) {
         --image=${image} -- \
         ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "manual")}
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     stopExternalH2OBackend()
@@ -710,7 +710,7 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
         --image=${image} -- \
         ${pythonExternalBackendSubmitCmd(registryId, master, version, "client", "auto")}
         """
-    sh "sleep 60"
+    sh "sleep 120"
     sh "kubectl logs sparkling-water-app"
     sh "kubectl get pod sparkling-water-app | grep -q Completed && echo \"OK\" || exit 1"
     deleteK8sOperator("h2o")
