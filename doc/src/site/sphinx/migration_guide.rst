@@ -3,6 +3,19 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.34 to 3.36
+-----------------
+
+- The Sparkling Water configuration properties ``spark.ext.h2o.external.k8s.h2o.service.name``,
+  ``spark.ext.h2o.external.k8s.h2o.statefulset.name``,  ``spark.ext.h2o.external.k8s.h2o.label``,
+  ``spark.ext.h2o.external.k8s.svc.timeout`` have been removed without replacement.
+
+- The setter methods ``setExternalK8sH2OServiceName``, ``setExternalK8sH2OStatefulsetName``, ``setExternalK8sH2OLabel``,
+  ``setExternalK8sServiceTimeout`` on ``H2OConf`` have been removed without replacement.
+
+- The getter methods ``getExternalK8sH2OServiceName``, ``getExternalK8sH2OStatefulsetName``, ``getExternalK8sH2OLabel``,
+  ``getExternalK8sServiceTimeout`` on ``H2OConf`` have been removed without replacement.
+
 From 3.32 to 3.34
 -----------------
 
