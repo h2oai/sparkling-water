@@ -23,6 +23,8 @@ import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.gam.GAMModel.GAMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
+import hex.rulefit.RuleFitModel.RuleFitParameters
+import hex.schemas.RuleFitV3.RuleFitParametersV3
 import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -75,6 +77,11 @@ trait AlgorithmConfigurations {
     val kmeansFields = Seq(userPoints, ignoredCols)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
+    val ruleFitFields = Seq(
+      ExplicitField("offset_column", "HasUnsupportedOffsetCol", null),
+      ExplicitField("fold_column", "HasUnsupportedFoldCol", null),
+      ignoredCols)
+
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
@@ -97,6 +104,7 @@ trait AlgorithmConfigurations {
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
+      ("H2ORuleFitParams", classOf[RuleFitParametersV3], classOf[RuleFitParameters], ruleFitFields, noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
 
@@ -132,6 +140,7 @@ trait AlgorithmConfigurations {
       ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
+      ("H2ORuleFit", classOf[RuleFitParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
 
@@ -152,7 +161,8 @@ trait AlgorithmConfigurations {
       ("H2ODRF", Seq("distribution")),
       ("H2OGLM", Seq("family")),
       ("H2OGAM", Seq("family")),
-      ("H2ODeepLearning", Seq("distribution")))
+      ("H2ODeepLearning", Seq("distribution")),
+      ("H2ORuleFit", Seq("distribution")))
 
     for ((parameterEntityName, parametersToCheck) <- algorithms)
       yield ProblemSpecificAlgorithmSubstitutionContext(
