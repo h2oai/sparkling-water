@@ -30,6 +30,7 @@ if [ "$1" = "external-backend" ]; then
   # case, the name of H2O is always bleeding_edge
   if [ "${H2O_NAME}" = "bleeding_edge" ]; then
       cp "$H2O_HOME/build/h2o.jar" "$WORKDIR/h2o.jar"
+      cp "$H2O_HOME/h2o-clustering/build/libs/h2o-clustering.jar" "$WORKDIR/h2o-clustering.jar"
   fi
   docker build -t "sparkling-water-external-backend:$VERSION" -f "$WORKDIR/Dockerfile-External-backend" "$WORKDIR"
   echo "Done!"

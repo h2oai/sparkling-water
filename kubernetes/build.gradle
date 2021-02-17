@@ -27,6 +27,7 @@ task createExternalBackendDockerfile(type: Dockerfile) {
     from "openjdk:11"
     runCommand "mkdir -p /opt/h2oai/h2o-3/"
     copyFile("h2o.jar", "/opt/h2oai/h2o-3/")
+    copyFile("h2o-clustering.jar", "/opt/h2oai/h2o-3/")
   } else {
     from "h2oai/h2o-open-source-k8s:${h2oMajorVersion}.${h2oBuild}"
   }
@@ -34,7 +35,7 @@ task createExternalBackendDockerfile(type: Dockerfile) {
   defaultCommand(
     "java",
     "-cp",
-    "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar",
+    "/opt/h2oai/h2o-3/sparkling-water-assembly-extensions_${scalaBaseVersion}-${version}-all.jar:/opt/h2oai/h2o-3/h2o.jar:/opt/h2oai/h2o-3/h2o-clustering.jar",
     "-XX:+UseContainerSupport",
     "-XX:MaxRAMPercentage=50",
     "water.H2OApp")
