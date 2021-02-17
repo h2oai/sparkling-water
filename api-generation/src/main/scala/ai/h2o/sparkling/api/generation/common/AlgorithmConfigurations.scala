@@ -19,10 +19,12 @@ package ai.h2o.sparkling.api.generation.common
 
 import java.util
 
+import hex.coxph.CoxPHModel.CoxPHParameters
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.gam.GAMModel.GAMParameters
 import hex.glm.GLMModel.GLMParameters
 import hex.kmeans.KMeansModel.KMeansParameters
+import hex.schemas.CoxPHV3.CoxPHParametersV3
 import hex.schemas.{DRFV3, DeepLearningV3, GAMV3, GBMV3, GLMV3, IsolationForestV3, KMeansV3, XGBoostV3}
 import hex.tree.drf.DRFModel.DRFParameters
 import hex.tree.gbm.GBMModel.GBMParameters
@@ -73,6 +75,7 @@ trait AlgorithmConfigurations {
     val gbmFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val drfFields = Seq(calibrationDataFrame, ignoredCols)
     val kmeansFields = Seq(userPoints, ignoredCols)
+    val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
     val dlFields = Seq(
@@ -98,6 +101,7 @@ trait AlgorithmConfigurations {
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
+      ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
@@ -133,6 +137,7 @@ trait AlgorithmConfigurations {
       ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
       ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
+      ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)

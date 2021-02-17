@@ -281,6 +281,7 @@ The list of specific MOJO models:
 - ``H2ODeepLearningMOJOModel``
 - ``H2OKMeansMOJOModel``
 - ``H2OIsolationForestMOJOModel``
+- ``H2OCoxPHMOJOModel``
 
 Exporting the loaded MOJO model using Sparkling Water
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

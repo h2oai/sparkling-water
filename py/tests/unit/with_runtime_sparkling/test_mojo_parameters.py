@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM
+from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
 
 def testGBMParameters(prostateDataset):
@@ -77,6 +77,11 @@ def testIsolationForestParameters(prostateDataset):
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
+def testCoxPHParameters(heartDataset):
+    features = ['age', 'year', 'surgery', 'transplant', 'start', 'stop']
+    algorithm = H2OCoxPH(labelCol="event", featuresCols=features, startCol='start', stopCol='stop')
+    model = algorithm.fit(heartDataset)
+    compareParameterValues(algorithm, model)
 
 def compareParameterValues(algorithm, model, ignored=[]):
     algorithmMethods = dir(algorithm)
