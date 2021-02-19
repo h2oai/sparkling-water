@@ -120,6 +120,7 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
             val gbm = new H2OGBM()
                 .setFeaturesCols(targetEncoder.getOutputCols())
                 .setLabelCol("CAPSULE")
+                .setProblemType("Binomial")
             val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
 
         Train the created pipeline
@@ -153,7 +154,8 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
             from pysparkling.ml import H2OTargetEncoder
             targetEncoder = H2OTargetEncoder()\
               .setInputCols(["RACE", "DPROS", "DCAPS"])\
-              .setLabelCol("CAPSULE")
+              .setLabelCol("CAPSULE")\
+              .setProblemType("Binomial")
 
         Also, create an instance of an algorithm consuming encoded columns and define pipeline:
 
@@ -199,10 +201,8 @@ an algorithm without ML pipeline, the 'transformTrainingDataset' method should b
 appropriate results.
 
 
-Limitations and Edge Cases
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-- The target encoder currently supports only Binomial and Regression problems. In other words, if the label column is of
-  a string type, it can contain only two distinct values. Otherwise, the label column must be numeric.
+Edge Cases
+~~~~~~~~~~
 - The label column can't contain any ``null`` values.
 - Input columns transformed by Target Encoder can contain ``null`` values.
 - Novel values in a testing/production data set and ``null`` values belong to the same category. In other words,

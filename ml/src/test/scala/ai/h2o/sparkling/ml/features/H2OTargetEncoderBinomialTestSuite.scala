@@ -61,6 +61,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
+
     val gbm = new H2OGBM().setLabelCol("CAPSULE")
 
     val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
@@ -73,6 +75,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
+
     val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
     val model = pipeline.fit(trainingDataset)
@@ -89,6 +93,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
       .setNoise(0.5)
+      .setProblemType("Binomial")
+
     val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
     val model = pipeline.fit(trainingDataset)
@@ -103,6 +109,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
     val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
@@ -118,6 +126,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setHoldoutStrategy("None")
       .setBlendedAvgEnabled(true)
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
     val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
@@ -130,6 +140,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset
@@ -150,6 +161,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset
@@ -170,6 +182,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset
@@ -190,6 +203,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("CAPSULE")
+      .setProblemType("Binomial")
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset
@@ -213,6 +227,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val trainingWithNullsDF = trainingDataset
       .withColumn("DCAPS", when(rand(1) < 0.5, 'DCAPS).otherwise(lit(null)))
@@ -235,12 +250,14 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setHoldoutStrategy("KFold")
       .setFoldCol("ID")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val targetEncoderLeaveOneOut = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("LeaveOneOut")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val modelKFold = targetEncoderKFold.fit(trainingDataset)
     val modelLeaveOneOut = targetEncoderLeaveOneOut.fit(trainingDataset)
@@ -258,6 +275,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val datasetWithStrings = dataset
       .withColumn("RACE", 'RACE cast StringType)
       .withColumn("DPROS", 'DPROS cast StringType)
@@ -282,6 +301,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
     val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
@@ -300,6 +321,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
     val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
@@ -318,6 +341,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
     val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
@@ -335,6 +360,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
         .setLabelCol("CAPSULE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
+        .setProblemType("Binomial")
 
       val model = targetEncoder.fit(trainingDataset)
       model.transformTrainingDataset(trainingDataset)
@@ -356,6 +382,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
         .setLabelCol("CAPSULE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
+        .setProblemType("Binomial")
 
       val model = targetEncoder.fit(trainingDataset)
       model.transform(testingDataset)
@@ -379,6 +406,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transformTrainingDataset(testingSubDataset)
@@ -401,6 +429,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transform(testingSubDataset)
@@ -422,6 +451,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val model = targetEncoder.fit(trainingDataset)
     val expectedResult = model
@@ -443,6 +473,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
 
     val model = targetEncoder.fit(trainingDataset)
     val expectedResult = model
@@ -463,6 +494,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val expected = expectedTestingDataset
       .withColumn("DPROS_out", 'DPROS_te)
       .drop('DPROS_te)
@@ -486,6 +519,8 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .setLabelCol("CAPSULE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
+      .setProblemType("Binomial")
+
     val expected = expectedTestingDataset
       .withColumn("DPROS_out", 'DPROS_te)
       .drop('DPROS_te)

@@ -22,11 +22,14 @@ import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.ml.Model
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset}
 import water.api.schemas3.KeyV3.FrameKeyV3
+
+import scala.collection.JavaConverters._
 
 class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
   extends Model[H2OTargetEncoderModel]
@@ -48,10 +51,6 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     }
   }
 
-  private def inputColumnNameToInternalOutputName(groupColumnNames: Array[String]): String = {
-    groupColumnNames.mkString(groupColumnsSeparator) + "_te"
-  }
-
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
     val hc = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
@@ -63,9 +62,9 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = hc.asH2OFrame(relevantColumnsDF)
 
-    input.convertColumnsToCategorical(distinctInputCols)
-    val internalOutputColumns = getInputCols().map(inputColumnNameToInternalOutputName)
-    val outputFrameColumns = internalOutputColumns ++ Array(temporaryColumn)
+    val toCategorical = if (getProblemType() == "Regression") distinctInputCols else distinctInputCols ++ Seq(getLabelCol())
+    input.convertColumnsToCategorical(toCategorical)
+
     val conf = hc.getConf
     val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val params = Map(
@@ -78,16 +77,38 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
       "as_training" -> true)
     val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
     val output = H2OFrame(frameKeyV3.name)
+    val inOutMapping = getInOutMapping(targetEncoderModel.modelId)
+    val internalOutputColumns = getInputCols().map(i => inOutMapping.get(i.toSeq).get)
+    val distinctInternalOutputColumns = internalOutputColumns.flatten.distinct
+    val outputFrameColumns = distinctInternalOutputColumns ++ Array(temporaryColumn)
     val outputColumnsOnlyFrame = output.subframe(outputFrameColumns)
     val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)
     input.delete()
     output.delete()
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
-      case (df, (to, from)) => df.withColumnRenamed(from, to)
+      case (df, (to, Seq(from))) => df.withColumnRenamed(from, to)
+      case (df, (to, from)) =>
+        val assembler = new VectorAssembler().setInputCols(from.toArray).setOutputCol(to)
+        assembler.transform(df).drop(from: _*)
     }
     withIdDF
       .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")
       .drop(temporaryColumn)
+  }
+
+  private def getInOutMapping(modelId: String): Map[Seq[String], Seq[String]] = {
+    val details = H2OModel(modelId).getDetails()
+    val result = details
+      .getAsJsonObject("output")
+      .getAsJsonArray("input_to_output_columns")
+      .iterator().asScala
+      .map { element =>
+        val jsonObject = element.getAsJsonObject
+        val from = jsonObject.getAsJsonArray("from").asScala.map(_.getAsString).toSeq
+        val to = jsonObject.getAsJsonArray("to").asScala.map(_.getAsString).toSeq
+        (from, to)
+      }.toMap
+    result
   }
 
   private def inTrainingMode: Boolean = {

@@ -25,6 +25,8 @@ object ExposeUtils {
     org.apache.spark.util.Utils.classForName(className)
   }
 
+  def getMLVectorUDT(): DataType = new ml.linalg.VectorUDT()
+
   def isMLVectorUDT(dataType: DataType): Boolean = {
     dataType match {
       case _: ml.linalg.VectorUDT => true

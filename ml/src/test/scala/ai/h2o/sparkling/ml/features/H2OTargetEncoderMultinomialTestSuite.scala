@@ -22,13 +22,13 @@ import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OTargetEncoderMultinomialTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -39,27 +39,25 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(TestUtils.locate(path))
+      .withColumn("AGE", 'AGE.cast(StringType))
   }
 
   private def loadDataFrameFromCsvAsResource(path: String): DataFrame = {
     val filePath = getClass.getResource(path).getFile
-    spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(filePath)
+    spark.read.parquet(filePath)
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
   private lazy val trainingDataset = dataset.limit(300).cache()
   private lazy val testingDataset = dataset.except(trainingDataset).cache()
   private lazy val expectedTestingDataset =
-    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed_regression.csv").cache()
+    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed_multinomial.parquet").cache()
 
   test("A pipeline with a target encoder transform training and testing dataset without an exception") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("AGE")
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val gbm = new H2OGBM().setLabelCol("AGE")
 
@@ -73,7 +71,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("AGE")
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
@@ -82,7 +80,6 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     model.write.overwrite().save(path)
     val loadedModel = PipelineModel.load(path)
     val transformedTestingDataset = loadedModel.transform(testingDataset)
-
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
@@ -91,7 +88,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("AGE")
       .setNoise(0.5)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
@@ -107,7 +104,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
@@ -124,7 +121,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setHoldoutStrategy("None")
       .setBlendedAvgEnabled(true)
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
@@ -134,66 +131,36 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test("TargetEncoderMOJOModel will use global average for unexpected values in the testing dataset") {
+  test("TargetEncoderMOJOModel treats nulls as unexpected values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("AGE")
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
-    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-    val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
-    val model = targetEncoder.fit(trainingDataset)
-
-    val resultDF = model.transform(unexpectedValuesDF)
-
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
-  }
-
-  test("TargetEncoderModel will use global average for unexpected values in the testing dataset") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Regression")
-
-    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-    val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
-    val model = targetEncoder.fit(trainingDataset)
-
-    val resultDF = model.transformTrainingDataset(unexpectedValuesDF)
-
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
-  }
-
-  test("TargetEncoderMOJOModel will use global average for null values in the testing dataset") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Regression")
-
+    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-    val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+
     val model = targetEncoder.fit(trainingDataset)
 
-    val resultDF = model.transform(withNullsDF)
+    val expectedDF = model.transform(unexpectedValuesDF).drop("DCAPS")
+    val resultDF = model.transform(withNullsDF).drop("DCAPS")
 
     TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
 
-  test("TargetEncoderModel will use global average for null values in the testing dataset") {
+  test("TargetEncoderModel treats nulls as unexpected values in the testing dataset") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("DCAPS"))
       .setLabelCol("AGE")
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
+    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-    val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+
     val model = targetEncoder.fit(trainingDataset)
 
-    val resultDF = model.transformTrainingDataset(withNullsDF)
+    val expectedDF = model.transformTrainingDataset(unexpectedValuesDF).drop("DCAPS")
+    val resultDF = model.transformTrainingDataset(withNullsDF).drop("DCAPS")
 
     TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
   }
@@ -205,7 +172,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val trainingWithNullsDF = trainingDataset
       .withColumn("DCAPS", when(rand(1) < 0.5, 'DCAPS).otherwise(lit(null)))
@@ -228,14 +195,14 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setHoldoutStrategy("KFold")
       .setFoldCol("ID")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val targetEncoderLeaveOneOut = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("AGE")
       .setHoldoutStrategy("LeaveOneOut")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val modelKFold = targetEncoderKFold.fit(trainingDataset)
     val modelLeaveOneOut = targetEncoderLeaveOneOut.fit(trainingDataset)
@@ -253,12 +220,13 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val datasetWithStrings = dataset
       .withColumn("RACE", 'RACE cast StringType)
       .withColumn("DPROS", 'DPROS cast StringType)
       .withColumn("DCAPS", 'DCAPS cast StringType)
+      .withColumn("AGE", 'AGE cast StringType)
     val trainingDataset = dataset.limit(300).cache()
     val testingDataset = dataset.except(trainingDataset).cache()
     val model = targetEncoder.fit(trainingDataset)
@@ -271,17 +239,17 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
   }
 
   test("The target encoder can work with arbitrary label categories") {
-    val condition =
-      when(rand(1) < 0.3, lit(0.5))
-        .when(rand(1) < 0.5, lit(1.5))
-        .otherwise(lit(2.5))
-    val trainingDatasetWithLabel = trainingDataset.withColumn("LABEL", condition)
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.3, lit("a"))
+        .when(rand(1) < 0.5, lit("b"))
+        .otherwise(lit("c")))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -291,20 +259,19 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
   }
 
-  test(
-    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
-    val condition =
-      when(rand(1) < 0.3, lit(0.5))
-        .when(rand(1) < 0.5, lit(1.5))
-        .otherwise(lit(2.5))
-    val trainingDatasetWithLabel = trainingDataset.withColumn("LABEL", condition)
-    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit(3.5))
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.3, lit("a"))
+        .when(rand(1) < 0.5, lit("b"))
+        .otherwise(lit("c")))
+    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("d"))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -316,19 +283,18 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
   test(
     "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
-    val condition =
-      when(rand(1) < 0.3, lit(0.5))
-        .when(rand(1) < 0.5, lit(1.5))
-        .otherwise(lit(2.5))
-    val trainingDatasetWithLabel =
-      trainingDataset.withColumn("LABEL", condition)
-    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit(1.5)).otherwise(lit(null)))
+    val trainingDatasetWithLabel = trainingDataset.withColumn(
+      "LABEL",
+      when(rand(1) < 0.3, lit("a"))
+        .when(rand(1) < 0.5, lit("b"))
+        .otherwise(lit("c")))
+    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("LABEL")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingDatasetWithLabel)
 
@@ -347,7 +313,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
         .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
-        .setProblemType("Regression")
+        .setProblemType("Multinomial")
 
       val model = targetEncoder.fit(trainingDataset)
       model.transformTrainingDataset(trainingDataset)
@@ -369,7 +335,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
         .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
-        .setProblemType("Regression")
+        .setProblemType("Multinomial")
 
       val model = targetEncoder.fit(trainingDataset)
       model.transform(testingDataset)
@@ -393,7 +359,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transformTrainingDataset(testingSubDataset)
@@ -416,7 +382,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingSubDataset)
     val expectedResult = model.transform(testingSubDataset)
@@ -438,7 +404,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingDataset)
     val expectedResult = model
@@ -452,7 +418,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
   test("TargetEncoderMOJOModel transforms a dataset with a subset of columns the same way as full dataset") {
     import spark.implicits._
-    val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"CAPSULE")
+    val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
     val testingSubDataset = testingDataset.select(order: _*)
 
     val targetEncoder = new H2OTargetEncoder()
@@ -460,7 +426,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val model = targetEncoder.fit(trainingDataset)
     val expectedResult = model
@@ -481,7 +447,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val expected = expectedTestingDataset
       .withColumn("DPROS_out", 'DPROS_te)
@@ -506,7 +472,7 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .setLabelCol("AGE")
       .setHoldoutStrategy("None")
       .setNoise(0.0)
-      .setProblemType("Regression")
+      .setProblemType("Multinomial")
 
     val expected = expectedTestingDataset
       .withColumn("DPROS_out", 'DPROS_te)

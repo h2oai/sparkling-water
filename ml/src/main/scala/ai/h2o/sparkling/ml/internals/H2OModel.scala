@@ -23,17 +23,31 @@ import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import org.apache.spark.expose.Utils
+import ai.h2o.sparkling.utils.ScalaUtils._
+import com.google.gson.JsonObject
+import org.apache.commons.io.IOUtils
 import water.api.schemas3.ModelsV3
 
 private[sparkling] class H2OModel private (val modelId: String) extends RestCommunication {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
+  private val endpoint = RestApiUtils.getClusterEndpoint(conf)
 
   private[sparkling] def downloadMojo(): File = {
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
     val sparkTmpDir = Utils.createTempDir(Utils.getLocalDir(conf.sparkConf))
     val target = new File(sparkTmpDir, this.modelId)
     downloadBinaryURLContent(endpoint, s"/3/Models/${this.modelId}/mojo", conf, target)
     target
+  }
+
+  private[sparkling] def getDetails() : JsonObject = {
+    val jsonObject = withResource(readURLContent(endpoint, "GET", s"/3/Models/${this.modelId}", conf)) {
+      response =>
+        val content = IOUtils.toString(response)
+        deserializeAsJsonObject(content, Seq.empty)
+    }
+    jsonObject
+      .getAsJsonArray("models")
+      .get(0).getAsJsonObject()
   }
 
   private[sparkling] def toMOJOModel(uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
