@@ -33,7 +33,7 @@ node('mr-0xc10') {
         sh "./gradlew :sparkling-water-ci:createDockerFile"
         dir("ci/build/docker") {
             sh """
-            docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76
+            docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:84
             docker build --no-cache -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
            """
         }
