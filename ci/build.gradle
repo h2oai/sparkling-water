@@ -18,7 +18,7 @@ task copyFiles(type: Copy) {
 
 task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
-  from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:76'
+  from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:84'
 
   environmentVariable("LANG", "'C.UTF-8'")
   runCommand "locale"
