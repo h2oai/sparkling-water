@@ -34,16 +34,16 @@ class H2OConf(sparkConf: SparkConf) extends ai.h2o.sparkling.H2OConf(sparkConf) 
         "H2O client, set the configuration property 'spark.ext.h2o.rest.api.based.client' to true.")
   }
   logWarning(
-    "The class org.apache.spark.h2o.H2OConf is deprecated and will be removed in the version 3.34." +
+    "The class org.apache.spark.h2o.H2OConf is deprecated and will be removed in the version 3.36." +
       " Please use ai.h2o.sparkling.H2OConf instead.")
   def this() = this(SparkSessionUtils.active.sparkContext.getConf)
 }
 
 object H2OConf extends Logging {
-  @DeprecatedMethod("ai.h2o.sparkling.H2OConf", "3.34")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OConf", "3.36")
   def apply(): H2OConf = new H2OConf()
 
-  @DeprecatedMethod("ai.h2o.sparkling.H2OConf", "3.34")
+  @DeprecatedMethod("ai.h2o.sparkling.H2OConf", "3.36")
   def apply(sparkConf: SparkConf): H2OConf = new H2OConf(sparkConf)
 
   private var _sparkConfChecked = false
