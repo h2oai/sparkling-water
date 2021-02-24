@@ -177,7 +177,6 @@ def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
         glm.fit(semiconductorDataset)
 
 
-@pytest.mark.skip("SW-2500")
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
     featuresCols = ["AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]
