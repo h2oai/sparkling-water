@@ -514,8 +514,4 @@ object H2OContext extends Logging {
           "the support will be removed in the Sparkling Water version 3.34.")
     }
   }
-  // H2O Py/R Clients does not support certificate verification as well
-  HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-    def verify(string: String, ssls: SSLSession) = true
-  })
 }
