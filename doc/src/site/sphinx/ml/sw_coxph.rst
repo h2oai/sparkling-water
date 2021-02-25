@@ -29,6 +29,7 @@ See also :ref:`parameters_H2OCoxPH`.
         Parse the data using H2O and convert them to Spark Frame
 
         .. code:: scala
+
             import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart.csv")
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart_test.csv")
