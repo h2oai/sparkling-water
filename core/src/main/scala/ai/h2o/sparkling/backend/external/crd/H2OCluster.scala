@@ -61,6 +61,8 @@ object H2OCluster {
       |    - name: v1beta
       |      served: true
       |      storage: true
+      |      subresources:
+      |        status: { }
       |      schema:
       |        openAPIV3Schema:
       |          type: object
@@ -98,6 +100,22 @@ object H2OCluster {
       |                - required: ["version"]
       |                - required: ["customImage"]
       |              required: ["nodes", "resources"]
+      |            status:
+      |              type: object
+      |              properties:
+      |                phase:
+      |                  description: The resource's readiness
+      |                  type: string
+      |                conditions:
+      |                  description: States of this object
+      |                  type: array
+      |                  items:
+      |                    type: object
+      |                    properties:
+      |                      type:
+      |                        type: string
+      |                      status:
+      |                        type: string
       |""".stripMargin
 
   def definitionAsStream(conf: H2OConf): InputStream = new ByteArrayInputStream(definition(conf).getBytes)
