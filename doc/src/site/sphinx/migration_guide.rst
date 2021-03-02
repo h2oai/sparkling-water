@@ -9,6 +9,9 @@ From 3.32 to 3.34
 - On ``H2OConf``, the setters ``setClientIcedDir`` and ``setNodeIcedDir`` are replaced by ``setIcedDir`` and
   getters ``clientIcedDir`` and ``nodeIcedDir`` are replaced by ``icedDir``. Also the spark options
   ``spark.ext.h2o.client.iced.dir`` and ``spark.ext.h2o.node.iced.dir`` are replaced by ``spark.ext.h2o.iced.dir``.
+  The property ``spark.ext.h2o.node.iced.dir`` and the setter method ``setNodeIcedDir`` has no effect in all `3.30.x.y-z` versions.
+  If a user needs to set a custom iced directory for executors, he/she can set the property ``spark.ext.h2o.node.extra`` to ``-ice_root dir``,
+  where ``dir`` is a user-specified directory.
 
 - On ``H2OConf``, the setters ``setH2OClientLogLevel`` and ``setH2ONodeLogLevel`` are replaced by ``setLogLevel`` and
   getters ``h2oClientLogLevel`` and ``h2oNodeLogLevel`` are replaced by ``logLevel``. Also the spark options
@@ -238,6 +241,10 @@ From 3.28.1 to 3.30
   to be available. In particular, the methods ``setClientWebEnabled``, ``setClientWebDisabled`` and
   ``clientWebEnabled`` are removed without replacement. Also the option ``spark.ext.h2o.client.enable.web`` does not have
   any effect anymore.
+
+- The property ``spark.ext.h2o.node.iced.dir`` and the setter method ``setNodeIcedDir`` on ``H2OConf`` has no effect in all `3.30.x.y-z` versions.
+  If a user needs to set a custom iced directory for executors, he/she can set the property ``spark.ext.h2o.node.extra`` to ``-ice_root dir``,
+  where ``dir`` is a user-specified directory.
 
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
