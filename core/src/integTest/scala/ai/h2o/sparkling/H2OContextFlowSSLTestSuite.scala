@@ -100,20 +100,22 @@ class H2OContextFlowSSLTestSuite_AutoSSLEnabled extends H2OContextFlowSSLTestSui
 
 @RunWith(classOf[JUnitRunner])
 class H2OContextFlowSSLTestSuite_AutoSSLAndSecureInternalConnectionsEnabled extends H2OContextFlowSSLTestSuiteBase {
-  override def sparkConf: SparkConf = defaultSparkConf
-    .set("spark.ext.h2o.auto.flow.ssl", true.toString)
-    .set("spark.ext.h2o.internal_secure_connections", false.toString)
+  override def sparkConf: SparkConf =
+    defaultSparkConf
+      .set("spark.ext.h2o.auto.flow.ssl", true.toString)
+      .set("spark.ext.h2o.internal_secure_connections", false.toString)
 }
 
 abstract class H2OContextFlowSSLTestSuite_CertificateVerificationDisabledBase(certificateName: String)
   extends H2OContextFlowSSLTestSuiteBase {
 
   val certificatePath = locateCertificate(certificateName)
-  override def sparkConf: SparkConf = defaultSparkConf
-    .set("spark.ext.h2o.jks", certificatePath)
-    .set("spark.ext.h2o.jks.pass", "h2oh2o")
-    .set("spark.ext.h2o.jks.alias", "h2o")
-    .set("spark.ext.h2o.verify_ssl_certificates", false.toString)
+  override def sparkConf: SparkConf =
+    defaultSparkConf
+      .set("spark.ext.h2o.jks", certificatePath)
+      .set("spark.ext.h2o.jks.pass", "h2oh2o")
+      .set("spark.ext.h2o.jks.alias", "h2o")
+      .set("spark.ext.h2o.verify_ssl_certificates", false.toString)
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -132,15 +134,18 @@ class H2OContextFlowSSLTestSuite_CACertificateInTrustStore_SignedByFake extends 
 
   System.setProperty("javax.net.ssl.trustStore", caCertificatePath)
 
-  override def sparkConf: SparkConf = defaultSparkConf
-    .set("spark.ext.h2o.jks", certificatePath)
-    .set("spark.ext.h2o.jks.pass", "h2oh2o")
-    .set("spark.ext.h2o.jks.alias", "h2o")
-    .set("spark.executor.extraJavaOptions", s"-Djavax.net.ssl.trustStore=$caCertificatePath")
+  override def sparkConf: SparkConf =
+    defaultSparkConf
+      .set("spark.ext.h2o.jks", certificatePath)
+      .set("spark.ext.h2o.jks.pass", "h2oh2o")
+      .set("spark.ext.h2o.jks.alias", "h2o")
+      .set("spark.executor.extraJavaOptions", s"-Djavax.net.ssl.trustStore=$caCertificatePath")
 }
 
 abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(certificateName: String)
-  extends FunSuite with SparkTestContext with TestingCertificates {
+  extends FunSuite
+  with SparkTestContext
+  with TestingCertificates {
   override def createSparkSession(): SparkSession = sparkSession("local-cluster[2, 1, 1024]")
 
   test(s"H2OContext won't start since the $certificateName won't be verified") {
@@ -150,7 +155,7 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(cer
       .set("spark.ext.h2o.jks.pass", "h2oh2o")
       .set("spark.ext.h2o.jks.alias", "h2o")
 
-    intercept[NoSuchElementException]{ // No reference to H2O cluster.
+    intercept[NoSuchElementException] { // No reference to H2O cluster.
       H2OContext.getOrCreate(conf)
     }
   }

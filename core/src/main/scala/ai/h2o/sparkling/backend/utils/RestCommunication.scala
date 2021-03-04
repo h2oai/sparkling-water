@@ -231,7 +231,6 @@ trait RestCommunication extends Logging with RestEncodingUtils {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
-
   private def openUrlConnection(url: URL, conf: H2OConf): HttpURLConnection = {
     val connection = url.openConnection()
     if (connection.isInstanceOf[HttpsURLConnection]) {
@@ -263,7 +262,6 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     sslContext.init(null, Array(allCertificatesTrustedManager), null)
     connection.setSSLSocketFactory(sslContext.getSocketFactory)
   }
-
 
   private def setSelfSignedCertificateVerification(connection: HttpsURLConnection, conf: H2OConf): Unit = {
     val keyStore = loadKeyStore(conf)
