@@ -242,6 +242,10 @@ From 3.28.1 to 3.30
   ``clientWebEnabled`` are removed without replacement. Also the option ``spark.ext.h2o.client.enable.web`` does not have
   any effect anymore.
 
+- The property ``spark.ext.h2o.node.iced.dir`` and the setter method ``setNodeIcedDir`` on ``H2OConf`` has no effect in all `3.30.x.y-z` versions.
+  If users need to set a custom iced directory for executors, they can set the property ``spark.ext.h2o.node.extra`` to ``-ice_root dir``,
+  where ``dir`` is a user-specified directory.
+
 Removal of Deprecated Methods and Classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
