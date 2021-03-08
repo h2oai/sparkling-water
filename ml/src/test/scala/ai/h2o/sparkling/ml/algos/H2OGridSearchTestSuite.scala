@@ -263,4 +263,29 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     loadedModel.transform(data).count()
   }
 
+  test("The first row of the result produced by getGridModelsMetrics() method is the same as model's current metrics") {
+    val drf = new H2ODRF()
+      .setFeaturesCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
+      .setLabelCol("CAPSULE")
+      .setColumnsToCategorical(Array("RACE", "DPROS", "DCAPS", "GLEASON", "CAPSULE"))
+      .setSplitRatio(0.8)
+      .setNfolds(4)
+
+    val hyperParams = Map("ntrees" -> Array(2, 5).map(_.asInstanceOf[AnyRef]))
+
+    val search = new H2OGridSearch()
+      .setHyperParameters(hyperParams)
+      .setAlgo(drf)
+      .setStrategy("RandomDiscrete")
+
+    val model = search.fit(dataset)
+    val expectedMetrics = model.getCurrentMetrics()
+
+    println(model.getCurrentMetrics())
+
+    val gridModelMetrics = search.getGridModelsMetrics().drop("MOJO Model ID")
+    val modelMetricsFromGrid = gridModelMetrics.columns.zip(gridModelMetrics.head().toSeq).toMap
+
+    modelMetricsFromGrid shouldEqual expectedMetrics
+  }
 }

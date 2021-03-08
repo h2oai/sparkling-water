@@ -243,17 +243,13 @@ class H2OGridSearch(override val uid: String)
 
   def getGridModelsMetrics(): DataFrame = {
     ensureGridSearchIsFitted()
+    val columnNames = gridModels.headOption.map(_.getCurrentMetrics().keys).getOrElse(Set.empty).toSeq
     val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
-      case (model, id) =>
-        Row(Seq(id) ++ model.getCurrentMetrics().values: _*)
+      case (model, id) => Row(Seq(id) ++ columnNames.map(model.getCurrentMetrics()): _*)
     }
-    val colNames = gridModels.headOption
-      .map { model =>
-        model.getCurrentMetrics().keys.map(StructField(_, DoubleType, nullable = false)).toList
-      }
-      .getOrElse(List.empty)
 
-    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
+    val columns = columnNames.map(StructField(_, DoubleType, nullable = false))
+    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ columns)
     val spark = SparkSessionUtils.active
     spark.createDataFrame(spark.sparkContext.parallelize(rowValues), schema)
   }
