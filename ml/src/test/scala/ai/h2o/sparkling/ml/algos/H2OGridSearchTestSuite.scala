@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.api.generation.common.IgnoredParameters
 import ai.h2o.sparkling.ml.params.AlgoParam
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
@@ -237,4 +238,54 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     loadedModel.transform(dataset).count()
   }
 
+  test("The first row returned by getGridModelsMetrics() method is the same as current metrics of the best model") {
+    val drf = new H2ODRF()
+      .setFeaturesCols(Array("AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"))
+      .setLabelCol("CAPSULE")
+      .setColumnsToCategorical(Array("RACE", "DPROS", "DCAPS", "GLEASON", "CAPSULE"))
+      .setSplitRatio(0.8)
+      .setNfolds(4)
+
+    val hyperParams = Map("ntrees" -> Array(2, 5).map(_.asInstanceOf[AnyRef]))
+
+    val search = new H2OGridSearch()
+      .setHyperParameters(hyperParams)
+      .setAlgo(drf)
+      .setStrategy("RandomDiscrete")
+
+    val model = search.fit(dataset)
+    val expectedMetrics = model.getCurrentMetrics()
+
+    val gridModelMetrics = search.getGridModelsMetrics().drop("MOJO Model ID")
+    val modelMetricsFromGrid = gridModelMetrics.columns.zip(gridModelMetrics.head().toSeq).toMap
+
+    modelMetricsFromGrid shouldEqual expectedMetrics
+  }
+
+  test("The first row returned by getGridModelsParams() method is the same as training params of the best model") {
+    val drf = new H2ODRF().setLabelCol("AGE")
+    val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
+    hyperParams += "ntrees" -> Array(10, 30).map(_.asInstanceOf[AnyRef])
+    hyperParams += "seed" -> Array(1, 2).map(_.asInstanceOf[AnyRef])
+    hyperParams += "mtries" -> Array(-1, -2).map(_.asInstanceOf[AnyRef])
+    hyperParams += "maxDepth" -> Array(5, 10).map(_.asInstanceOf[AnyRef])
+    hyperParams += "nbins" -> Array(5, 15).map(_.asInstanceOf[AnyRef])
+
+    val grid = new H2OGridSearch()
+      .setHyperParameters(hyperParams)
+      .setAlgo(drf)
+
+    val model = grid.fit(dataset)
+    val h2oToSwParamMap = grid.getAlgo().getSWtoH2OParamNameMap().map(_.swap)
+    val expectedParams = model
+      .getTrainingParams()
+      .filter {
+        case (key, _) => !IgnoredParameters.all("drf").contains(key) && hyperParams.contains(h2oToSwParamMap(key))
+      }
+
+    val df = grid.getGridModelsParams().drop("MOJO Model ID")
+    val paramsFromGrid = df.columns.zip(df.head().toSeq).toMap
+
+    paramsFromGrid shouldEqual expectedParams
+  }
 }

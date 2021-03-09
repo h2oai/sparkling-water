@@ -224,35 +224,32 @@ class H2OGridSearch(override val uid: String)
     val hyperParamNames = getHyperParameters().keySet().asScala.toSeq
     val h2oToSwParamMap = getAlgo().getSWtoH2OParamNameMap().map(_.swap)
     val algoName = SupportedAlgos.getEnumValue(getAlgo()).get.toString()
-    val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
-      case (model, id) =>
-        val outputParams = extractParamsToShow(algoName, model, hyperParamNames, h2oToSwParamMap)
-        Row(Seq(id) ++ outputParams.values: _*)
-    }
-    val colNames = gridModels.headOption
+    val columnNames = gridModels.headOption
       .map { model =>
         val outputParams = extractParamsToShow(algoName, model, hyperParamNames, h2oToSwParamMap)
-        outputParams.keys.map(name => StructField(name, StringType, nullable = false)).toList
+        outputParams.keys.toSeq
       }
-      .getOrElse(List.empty)
-    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
+      .getOrElse(Seq.empty)
+    val rowValues = gridModels.map { model =>
+      val outputParams = extractParamsToShow(algoName, model, hyperParamNames, h2oToSwParamMap)
+      Row(Seq(model.uid) ++ columnNames.map(outputParams): _*)
+    }
+
+    val columns = columnNames.map(StructField(_, StringType, nullable = false))
+    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ columns)
     val spark = SparkSessionUtils.active
     spark.createDataFrame(spark.sparkContext.parallelize(rowValues), schema)
   }
 
   def getGridModelsMetrics(): DataFrame = {
     ensureGridSearchIsFitted()
-    val rowValues = gridModels.zip(gridModels.map(_.uid)).map {
-      case (model, id) =>
-        Row(Seq(id) ++ model.getCurrentMetrics().values: _*)
+    val columnNames = gridModels.headOption.map(_.getCurrentMetrics().keys.toSeq).getOrElse(Seq.empty)
+    val rowValues = gridModels.map { model =>
+      Row(Seq(model.uid) ++ columnNames.map(model.getCurrentMetrics()): _*)
     }
-    val colNames = gridModels.headOption
-      .map { model =>
-        model.getCurrentMetrics().keys.map(StructField(_, DoubleType, nullable = false)).toList
-      }
-      .getOrElse(List.empty)
 
-    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ colNames)
+    val columns = columnNames.map(StructField(_, DoubleType, nullable = false))
+    val schema = StructType(List(StructField("MOJO Model ID", StringType, nullable = false)) ++ columns)
     val spark = SparkSessionUtils.active
     spark.createDataFrame(spark.sparkContext.parallelize(rowValues), schema)
   }
