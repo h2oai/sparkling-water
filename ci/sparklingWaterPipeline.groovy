@@ -257,7 +257,7 @@ def unitTests() {
                 try {
                     config.commons.withDAICredentials {
                         sh """
-                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} test -x :sparkling-water-r:test -x :sparkling-water-py:test -x integTest  -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
@@ -280,7 +280,7 @@ def pyUnitTests() {
                 try {
                     config.commons.withDAICredentials {
                         sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
@@ -294,7 +294,7 @@ def pyUnitTests() {
                 try {
                     config.commons.withDAICredentials {
                         sh """
-                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PbackendMode=${config.backendMode}
+                            ${getGradleCommand(config)} :sparkling-water-py:test -PpythonPath=/envs/h2o_env_python2.7/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest  -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                             """
                     }
                 } finally {
