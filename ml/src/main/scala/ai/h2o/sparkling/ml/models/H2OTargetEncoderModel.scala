@@ -49,7 +49,7 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   }
 
   private def inputColumnNameToInternalOutputName(groupColumnNames: Array[String]): String = {
-    groupColumnNames.mkString("~") + "_te"
+    groupColumnNames.mkString(groupColumnsSeparator) + "_te"
   }
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {

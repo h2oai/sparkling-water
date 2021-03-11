@@ -20,6 +20,9 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderMOJOParams extends Params {
+
+  protected val groupColumnsSeparator = ":"
+
   //
   // List of Parameters
   //
@@ -28,10 +31,8 @@ trait H2OTargetEncoderMOJOParams extends Params {
     "foldCol",
     "A name of a column determining folds when ``KFold`` holdoutStrategy is applied.")
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name.")
-  protected final val inputCols = new NullableStringArrayArrayParam(
-    this,
-    "inputCols",
-    "Names of columns that will be transformed.")
+  protected final val inputCols =
+    new NullableStringArrayArrayParam(this, "inputCols", "Names of columns that will be transformed.")
   protected final val outputCols =
     new StringArrayParam(
       this,
@@ -94,7 +95,7 @@ trait H2OTargetEncoderMOJOParams extends Params {
   def getOutputCols(): Array[String] = {
     val columns = $(outputCols)
     if (columns.isEmpty) {
-      getInputCols().map(_.mkString("~") + "_te")
+      getInputCols().map(_.mkString(groupColumnsSeparator) + "_te")
     } else {
       columns
     }
