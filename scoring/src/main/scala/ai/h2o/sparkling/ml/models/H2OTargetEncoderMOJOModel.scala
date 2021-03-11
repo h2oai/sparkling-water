@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import java.io.File
+import scala.collection.JavaConverters._
 
 import _root_.hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
@@ -25,7 +26,7 @@ import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{udf, col}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
 class H2OTargetEncoderMOJOModel(override val uid: String)
@@ -34,16 +35,17 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   with H2OMOJOWritable
   with H2OMOJOFlattenedInput {
 
-  override protected def inputColumnNames: Array[String] = getInputCols()
+  override protected def inputColumnNames: Array[String] = getInputCols().flatten.distinct
 
   override protected def outputColumnName: String = getClass.getSimpleName + "_output"
 
   def this() = this(Identifiable.randomUID(getClass.getSimpleName))
 
-  @transient private lazy val orderOfInputColumns = {
+  @transient private lazy val inOutMapping: Map[Seq[String], (Seq[String], Int)] = {
     val mojoModel = Utils.getMojoModel(getMojo()).asInstanceOf[TargetEncoderMojoModel]
-    val indexes = mojoModel._columnNameToIdx
-    indexes
+    mojoModel._inoutMapping.asScala.zipWithIndex.map {
+      case (entry, index) => (entry.from.toList, (entry.to.toList, index))
+    }.toMap
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
@@ -55,8 +57,16 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
       .withColumns(
         outputCols,
         outputCols.zip(getInputCols()).map {
-          case (outputCol, inputCol) =>
-            val index = orderOfInputColumns.get(inputCol)
+          case (outputCol, inputColGroup) =>
+            val (outputColumns, index) = inOutMapping.getOrElse(inputColGroup.toList, (Seq.empty[String], 0))
+            if (outputColumns.length == 0) {
+              throw new RuntimeException(
+                s"The target encoder MOJO model doesn't return any column for the input column group '$outputColumns'")
+            }
+            if (outputColumns.length > 1) {
+              throw new RuntimeException(
+                s"Sparkling Water doesn't support Terget Encoder MOJO for multinomial problems!")
+            }
             col(outputColumnName)(index) as outputCol
         })
       .drop(outputColumnName)

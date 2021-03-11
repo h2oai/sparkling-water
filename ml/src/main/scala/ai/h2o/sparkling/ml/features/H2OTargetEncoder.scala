@@ -42,9 +42,8 @@ class H2OTargetEncoder(override val uid: String)
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val input = h2oContext.asH2OFrame(dataset.toDF())
-    input.convertColumnsToCategorical(getInputCols())
-    val columnsToKeep = getInputCols() ++ Seq(getFoldCol(), getLabelCol()).flatMap(Option(_))
-    val ignoredColumns = dataset.columns.diff(columnsToKeep)
+    val distinctInputCols = getInputCols().flatten.distinct
+    input.convertColumnsToCategorical(distinctInputCols)
     val params = Map(
       "data_leakage_handling" -> getHoldoutStrategy(),
       "blending" -> getBlendedAvgEnabled(),
@@ -52,7 +51,7 @@ class H2OTargetEncoder(override val uid: String)
       "smoothing" -> getBlendedAvgSmoothing(),
       "response_column" -> getLabelCol(),
       "fold_column" -> getFoldCol(),
-      "ignored_columns" -> ignoredColumns,
+      "columns_to_encode" -> getInputCols(),
       "seed" -> getNoiseSeed(),
       "training_frame" -> input.frameId)
     val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
@@ -70,7 +69,9 @@ class H2OTargetEncoder(override val uid: String)
 
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
-  def setInputCols(values: Array[String]): this.type = set(inputCols, values)
+  def setInputCols(values: Array[String]): this.type = set(inputCols, values.map(v => Array(v)))
+
+  def setInputCols(groups: Array[Array[String]]): this.type = set(inputCols, groups)
 
   def setOutputCols(values: Array[String]): this.type = set(outputCols, values)
 

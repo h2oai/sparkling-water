@@ -134,7 +134,7 @@ def testPipelineWithTargetEncoderTransformsTrainingAndTestingDatasetWithoutExcep
 
 
 def testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult(trainingDataset, testingDataset):
-    targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=["RACE", "DPROS", "DCAPS"])
+    targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=[["RACE"], ["DPROS", "DCAPS"]])
     pipeline = Pipeline(stages=[targetEncoder])
     producedModel = pipeline.fit(trainingDataset)
     path = "file://" + os.path.abspath("build/testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult")
@@ -149,7 +149,7 @@ def testProducedMOJOModelAndLoadedMOJOModelReturnsSameResult(trainingDataset, te
 
 def testTargetEncoderModelWithDisabledNoiseAndTargetEncoderMOJOModelTransformTheTrainingDatasetSameWay(trainingDataset):
     targetEncoder = H2OTargetEncoder() \
-        .setInputCols(["RACE", "DPROS", "DCAPS"]) \
+        .setInputCols([["RACE"], ["DPROS", "DCAPS"]]) \
         .setLabelCol("CAPSULE") \
         .setHoldoutStrategy("None") \
         .setNoise(0.0)

@@ -20,6 +20,9 @@ package ai.h2o.sparkling.ml.params
 import org.apache.spark.ml.param._
 
 trait H2OTargetEncoderMOJOParams extends Params {
+
+  protected val groupColumnsSeparator = ":"
+
   //
   // List of Parameters
   //
@@ -28,7 +31,8 @@ trait H2OTargetEncoderMOJOParams extends Params {
     "foldCol",
     "A name of a column determining folds when ``KFold`` holdoutStrategy is applied.")
   protected final val labelCol = new Param[String](this, "labelCol", "Label column name.")
-  protected final val inputCols = new StringArrayParam(this, "inputCols", "Names of columns that will be transformed.")
+  protected final val inputCols =
+    new NullableStringArrayArrayParam(this, "inputCols", "Names of columns that will be transformed.")
   protected final val outputCols =
     new StringArrayParam(
       this,
@@ -70,7 +74,7 @@ trait H2OTargetEncoderMOJOParams extends Params {
   setDefault(
     foldCol -> null,
     labelCol -> "label",
-    inputCols -> Array[String](),
+    inputCols -> Array[Array[String]](),
     outputCols -> Array[String](),
     holdoutStrategy -> "None",
     blendedAvgEnabled -> false,
@@ -86,12 +90,12 @@ trait H2OTargetEncoderMOJOParams extends Params {
 
   def getLabelCol(): String = $(labelCol)
 
-  def getInputCols(): Array[String] = $(inputCols)
+  def getInputCols(): Array[Array[String]] = $(inputCols)
 
   def getOutputCols(): Array[String] = {
     val columns = $(outputCols)
     if (columns.isEmpty) {
-      getInputCols().map(_ + "_te")
+      getInputCols().map(_.mkString(groupColumnsSeparator) + "_te")
     } else {
       columns
     }
