@@ -235,21 +235,27 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     val connection = url.openConnection()
     if (connection.isInstanceOf[HttpsURLConnection]) {
       val secureConnection = connection.asInstanceOf[HttpsURLConnection]
+
       if (!conf.verifySslCertificates) {
         disableCertificateVerification(secureConnection)
       } else if (conf.autoFlowSsl) {
         setSelfSignedCertificateVerification(secureConnection, conf)
       }
 
-      // Enable all hosts since the certificate located in the distributed jks file could be created
-      // on a different server.
-      secureConnection.setHostnameVerifier(new HostnameVerifier {
-        override def verify(s: String, sslSession: SSLSession): Boolean = true
-      })
+      if (!conf.verifySslCertificates || !conf.verifySslHostnames || conf.autoFlowSsl) {
+        disableHostnameVerification(secureConnection)
+      }
+
       secureConnection
     } else {
       connection.asInstanceOf[HttpURLConnection]
     }
+  }
+
+  private def createSSLContext(): SSLContext = SSLContext.getInstance("TLSv1.2")
+
+  private def disableHostnameVerification(secureConnection: HttpsURLConnection): Unit = {
+    secureConnection.setHostnameVerifier((_: String, _: SSLSession) => true)
   }
 
   private def disableCertificateVerification(connection: HttpsURLConnection): Unit = {
@@ -258,7 +264,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
       def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
     }
-    val sslContext = SSLContext.getInstance("TLSv1.2")
+    val sslContext = createSSLContext()
     sslContext.init(null, Array(allCertificatesTrustedManager), null)
     connection.setSSLSocketFactory(sslContext.getSocketFactory)
   }
@@ -269,7 +275,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
     trustManagerFactory.init(keyStore)
 
-    val sslContext = SSLContext.getInstance("TLSv1.2")
+    val sslContext = createSSLContext()
     sslContext.init(null, trustManagerFactory.getTrustManagers, null)
     connection.setSSLSocketFactory(sslContext.getSocketFactory)
   }

@@ -132,6 +132,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def verifySslCertificates: Boolean =
     sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
+  def verifySslHostnames: Boolean =
+    sparkConf.getBoolean(PROP_VERIFY_SSL_HOSTNAMES._1, PROP_VERIFY_SSL_HOSTNAMES._2)
+
   def isKerberizedHiveEnabled: Boolean =
     sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
 
@@ -282,6 +285,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setClientCheckRetryTimeout(timeout: Int): H2OConf = set(PROP_EXTERNAL_CLIENT_RETRY_TIMEOUT._1, timeout.toString)
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
+
+  def setVerifySslHostnames(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_HOSTNAMES._1, verify)
 
   def setKerberizedHiveEnabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, true)
 
@@ -566,7 +571,18 @@ object SharedBackendConf {
     "spark.ext.h2o.verify_ssl_certificates",
     true,
     "setVerifySslCertificates(Boolean)",
-    "Whether certificates should be verified before using in H2O or not.")
+    """If the property is enabled, Sparkling Water will verify ssl certificates during establishing secured http connections
+      |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
+      |during data exchange between Spark executors and H2O nodes. If the property is disabled, hostname verification is
+      |disabled as well.""")
+
+  val PROP_VERIFY_SSL_HOSTNAMES: BooleanOption = (
+    "spark.ext.h2o.verify_ssl_hostnames",
+    true,
+    "setVerifySslHostnames(Boolean)",
+    """If the property is enabled, Sparkling Water will verify a hostname during establishing of secured http connections
+      |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
+      |during data exchange between Spark executors and H2O nodes.""".stripMargin)
 
   val PROP_KERBERIZED_HIVE_ENABLED: BooleanOption = (
     "spark.ext.h2o.kerberized.hive.enabled",
