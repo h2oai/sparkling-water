@@ -255,7 +255,10 @@ trait RestCommunication extends Logging with RestEncodingUtils {
   private def createSSLContext(): SSLContext = SSLContext.getInstance("TLSv1.2")
 
   private def disableHostnameVerification(secureConnection: HttpsURLConnection): Unit = {
-    secureConnection.setHostnameVerifier((_: String, _: SSLSession) => true)
+    val hostnameVerifier = new HostnameVerifier {
+      override def verify(s: String, sslSession: SSLSession): Boolean = true
+    }
+    secureConnection.setHostnameVerifier(hostnameVerifier)
   }
 
   private def disableCertificateVerification(connection: HttpsURLConnection): Unit = {
