@@ -129,11 +129,11 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
-    new ArgumentBuilder()
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
+      .addIf("-hostname_as_jks_alias", conf.isHostnameAsJksAliasEnabled)
       .addIf("-hash_login", conf.hashLogin)
       .addIf("-ldap_login", conf.ldapLogin)
       .addIf("-kerberos_login", conf.kerberosLogin)
@@ -142,7 +142,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
       .add("-allow_insecure_xgboost", conf.isInsecureXGBoostAllowed)
       .buildArgs()
-  }
 
   /**
     * Get H2O arguments which are passed to every node - regular node, client node
