@@ -1,21 +1,21 @@
 Enabling SSL
 ------------
 
-Both Spark and H2O support basic node authentication and data encryption. In H2O's case, we encrypt all the data
-sent between server nodes and between client and server nodes.
+This section describes how to secure communication and data exchange among nodes of H2O-3 cluster deployed with Sparkling water.
 
-Currently, only encryption based on Java's key pair is supported (more in-depth explanation can be found in H2O's documentation linked below).
+To secure communication between Spark instances (executors + driver) and H2O nodes, enable SSL on H2O FLOW UI (see :ref:`secured_flow`).
 
-To enable security for Spark methods, please review their `Spark Security documentation <http://spark.apache.org/docs/latest/security.html>`__.
+To configure security for logic writen in Spark API, please see `Spark Security documentation <http://spark.apache.org/docs/latest/security.html>`__.
 
-Security for data exchanged between H2O instances can be enabled by generating all necessary files and distributing
-them to all worker nodes (as described in the `H2O-3 documentation <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/security.html#ssl-internode-security>`__).
+Security of communication and data exchange among H2O-3 nodes via files containing secrets
+(see the `H2O-3 documentation <http://docs.h2o.ai/h2o/latest-stable/h2o-docs/security.html#ssl-internode-security>`__ for more details).
+
 Sparkling Water allows the user to use the manually created security files or it can generate it automatically.
 
 Using Automatically Generated Security Files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To automatically generate and apply the security configuration. please set ``spark.ext.h2o.internal_secure_connections=true`` option to the Spark submit:
+To automatically generate and apply the security configuration, please set ``spark.ext.h2o.internal_secure_connections=true`` option to the Spark submit:
 
 .. code:: shell
 

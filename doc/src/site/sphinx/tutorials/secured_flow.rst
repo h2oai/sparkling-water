@@ -1,10 +1,13 @@
-Using SSL to secure H2O Flow
-============================
+Using SSL to secure H2O Flow UI
+===============================
 
-Sparkling Water supports the security of the H2O Flow user interface. There are two ways how to secure the Flow.
+Sparkling Water allows user to set https for communication with H2O Flow user interface. The security settings for FLOW UI
+are also applied to communication and data exchange between Spark instances (driver + executors) and H2O nodes.
 
-- Provide the existing Java key store and password.
-- Let Sparkling Water automatically create the necessary files. This solution has several limitations
+**There are two ways how to secure Flow UI**
+
+- Provide an existing SSL certificate in Java key store to Sparkling Water
+- Let Sparkling Water automatically generate SSL certificate. This solution has several limitations
   which are described below.
 
 Using existing Java Keystore
@@ -12,9 +15,14 @@ Using existing Java Keystore
 
 In order to use https correctly, the following two options need to be specified:
 
-- ``spark.ext.h2o.jks`` - path to Java keystore file
-- ``spark.ext.h2o.jks.pass`` - keystore file password
+- ``spark.ext.h2o.jks`` - A Path to the Java keystore file containing a SSL certificate
+- ``spark.ext.h2o.jks.pass`` - A password to the Java keystore file
+- ``spark.ext.h2o.jks.alias`` - (Optional) Alias of the SSL certificate if the Java keystore file contains more than one
+  certificate.
 
+If the certificate doesn't cover all hostnames of all H2O nodes and contains just hostname of Spark driver where H2O FLOW UI
+lives, hostname verification on Spark instances (driver + executor) for connections to H2O nodes must be disabled by setting
+the property ``spark.ext.h2o.verify_ssl_hostnames`` to ``false``.
 
 .. content-tabs::
 

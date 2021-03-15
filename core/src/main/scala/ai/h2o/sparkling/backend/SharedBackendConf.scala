@@ -374,21 +374,21 @@ object SharedBackendConf {
     "spark.ext.h2o.jks",
     None,
     "setJks(String)",
-    "Path to Java KeyStore file with certificates securing H2O Flow UI and internal REST connections between " +
-    "Spark executors and H2O nodes. When configuring this property, you must consider that a Spark executor can " +
-    "communicate to any of H2O nodes and verifies H2O node according to the hostname specified in the KeyStore " +
+    "Path to a Java keystore file with certificates securing H2O Flow UI and internal REST connections between " +
+    "instances (driver + executors) and H2O nodes. When configuring this property, you must consider that a Spark executor " +
+    "can communicate to any of H2O nodes and verifies H2O node according to the hostname specified in the keystore " +
     "certificate. You can consider usage of a wildcard certificate or you can disable the hostname verification " +
-    "completely with the `spark.ext.h2o.verify_ssl_hostnames` property.")
+    "completely with the ``spark.ext.h2o.verify_ssl_hostnames`` property.")
 
   val PROP_JKS_PASS: OptionOption =
-    ("spark.ext.h2o.jks.pass", None, "setJksPass(String)", "Password for Java KeyStore file.")
+    ("spark.ext.h2o.jks.pass", None, "setJksPass(String)", "Password for the Java keystore file.")
 
   val PROP_JKS_ALIAS: OptionOption = (
     "spark.ext.h2o.jks.alias",
     None,
     "setJksAlias(String)",
     "Alias to certificate in the to Java KeyStore file to secure H2O Flow UI and internal REST connections " +
-    "between Spark executors and H2O nodes.")
+    "between Spark instances (driver + executors) and H2O nodes.")
 
   val PROP_HASH_LOGIN: BooleanOption = (
     "spark.ext.h2o.hash.login",
