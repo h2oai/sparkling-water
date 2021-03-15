@@ -1,3 +1,5 @@
+.. _tutorials_secured_flow:
+
 Using SSL to secure H2O Flow UI
 ===============================
 

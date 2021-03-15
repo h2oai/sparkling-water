@@ -374,11 +374,11 @@ object SharedBackendConf {
     "spark.ext.h2o.jks",
     None,
     "setJks(String)",
-    "Path to a Java keystore file with certificates securing H2O Flow UI and internal REST connections between " +
-    "instances (driver + executors) and H2O nodes. When configuring this property, you must consider that a Spark executor " +
-    "can communicate to any of H2O nodes and verifies H2O node according to the hostname specified in the keystore " +
-    "certificate. You can consider usage of a wildcard certificate or you can disable the hostname verification " +
-    "completely with the ``spark.ext.h2o.verify_ssl_hostnames`` property.")
+    """Path to a Java keystore file with certificates securing H2O Flow UI and internal REST connections between
+      |instances (driver + executors) and H2O nodes. When configuring this property, you must consider that a Spark executor
+      |can communicate to any of H2O nodes and verifies H2O node according to the hostname specified in the keystore
+      |certificate. You can consider usage of a wildcard certificate or you can disable the hostname verification
+      |completely with the ``spark.ext.h2o.verify_ssl_hostnames`` property.""".stripMargin)
 
   val PROP_JKS_PASS: OptionOption =
     ("spark.ext.h2o.jks.pass", None, "setJksPass(String)", "Password for the Java keystore file.")
@@ -387,8 +387,8 @@ object SharedBackendConf {
     "spark.ext.h2o.jks.alias",
     None,
     "setJksAlias(String)",
-    "Alias to certificate in the to Java KeyStore file to secure H2O Flow UI and internal REST connections " +
-    "between Spark instances (driver + executors) and H2O nodes.")
+    """Alias to certificate in the to the Java keystore file to secure H2O Flow UI and internal REST connections
+      |between Spark instances (driver + executors) and H2O nodes.""".stripMargin)
 
   val PROP_HASH_LOGIN: BooleanOption = (
     "spark.ext.h2o.hash.login",
@@ -437,8 +437,9 @@ object SharedBackendConf {
     false,
     """setAutoFlowSslEnabled()
       |setAutoFlowSslDisabled()""".stripMargin,
-    "Automatically generate the required key store and password to secure secure H2O Flow UI and internal REST connections " +
-    "between Spark executors and H2O nodes. Hostname verification is disabled when creating SSL connections to H2O nodes.")
+    """Automatically generate the required key store and password to secure secure H2O Flow UI and internal REST
+      |connections between Spark executors and H2O nodes. Hostname verification is disabled when creating SSL
+      |connections to H2O nodes.""".stripMargin)
 
   val PROP_LOG_LEVEL: StringOption = ("spark.ext.h2o.log.level", "INFO", "setLogLevel(String)", "H2O log level.")
 
@@ -587,7 +588,7 @@ object SharedBackendConf {
     """If the property is enabled, Sparkling Water will verify ssl certificates during establishing secured http connections
       |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
       |during data exchange between Spark executors and H2O nodes. If the property is disabled, hostname verification is
-      |disabled as well.""")
+      |disabled as well.""".stripMargin)
 
   val PROP_VERIFY_SSL_HOSTNAMES: BooleanOption = (
     "spark.ext.h2o.verify_ssl_hostnames",

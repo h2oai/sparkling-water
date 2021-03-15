@@ -3,7 +3,7 @@ Enabling SSL
 
 This section describes how to secure communication and data exchange among nodes of H2O-3 cluster deployed with Sparkling water.
 
-To secure communication between Spark instances (executors + driver) and H2O nodes, enable SSL on H2O FLOW UI (see :ref:`secured_flow`).
+To secure communication between Spark instances (executors + driver) and H2O nodes, enable SSL on H2O FLOW UI (see :ref:`tutorials_secured_flow`).
 
 To configure security for logic writen in Spark API, please see `Spark Security documentation <http://spark.apache.org/docs/latest/security.html>`__.
 

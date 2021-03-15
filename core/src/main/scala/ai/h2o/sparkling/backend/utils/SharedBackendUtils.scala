@@ -129,7 +129,8 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = new ArgumentBuilder()
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] =
+    new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
