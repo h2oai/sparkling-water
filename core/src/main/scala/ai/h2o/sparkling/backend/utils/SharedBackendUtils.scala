@@ -133,7 +133,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
       .add("-jks_alias", conf.jksAlias)
-      .addIf("-hostname_as_jks_alias", conf.isHostnameAsJksAliasEnabled)
       .addIf("-hash_login", conf.hashLogin)
       .addIf("-ldap_login", conf.ldapLogin)
       .addIf("-kerberos_login", conf.kerberosLogin)

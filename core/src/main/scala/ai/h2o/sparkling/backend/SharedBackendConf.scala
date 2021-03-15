@@ -57,9 +57,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def jksAlias: Option[String] = sparkConf.getOption(PROP_JKS_ALIAS._1)
 
-  def isHostnameAsJksAliasEnabled: Boolean =
-    sparkConf.getBoolean(PROP_HOSTNAME_AS_JKS_ALIAS._1, PROP_HOSTNAME_AS_JKS_ALIAS._2)
-
   def hashLogin: Boolean = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
 
   def ldapLogin: Boolean = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
@@ -195,10 +192,6 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setJksPass(password: String): H2OConf = set(PROP_JKS_PASS._1, password)
 
   def setJksAlias(alias: String): H2OConf = set(PROP_JKS_ALIAS._1, alias)
-
-  def setHostnameAsJksEnabled(): H2OConf = set(PROP_HOSTNAME_AS_JKS_ALIAS._1, value = true)
-
-  def setHostnameAsJksDisabled(): H2OConf = set(PROP_HOSTNAME_AS_JKS_ALIAS._1, value = false)
 
   def setHashLoginEnabled(): H2OConf = set(PROP_HASH_LOGIN._1, value = true)
 
@@ -384,8 +377,8 @@ object SharedBackendConf {
     "Path to Java KeyStore file with certificates securing H2O Flow UI and internal REST connections between " +
     "Spark executors and H2O nodes. When configuring this property, you must consider that a Spark executor can " +
     "communicate to any of H2O nodes and verifies H2O node according to the hostname specified in the KeyStore " +
-    "certificate. You can consider usage of `spark.ext.h2o.jks.hostname_as_alias` property, a wildcard certificate or " +
-    "you can disable the hostname verification completely with the `spark.ext.h2o.verify_ssl_hostnames` property.")
+    "certificate. You can consider usage of a wildcard certificate or you can disable the hostname verification " +
+    "completely with the `spark.ext.h2o.verify_ssl_hostnames` property.")
 
   val PROP_JKS_PASS: OptionOption =
     ("spark.ext.h2o.jks.pass", None, "setJksPass(String)", "Password for Java KeyStore file.")
@@ -395,18 +388,7 @@ object SharedBackendConf {
     None,
     "setJksAlias(String)",
     "Alias to certificate in the to Java KeyStore file to secure H2O Flow UI and internal REST connections " +
-    "between Spark executors and H2O nodes. The alias can't be set if the property `spark.ext.h2o.jks.hostname_as_alias` " +
-    "is set to `true`.")
-
-  val PROP_HOSTNAME_AS_JKS_ALIAS: BooleanOption = (
-    "spark.ext.h2o.jks.hostname_as_alias",
-    false,
-    """setHostnameAsJksAliasEnabled()
-      |setHostnameAsJksAliasDisabled()""",
-    "If the property is set to true, Sparkling Water / H2O-3 picks a certificate from Java KeyStore for a H2O node by " +
-    "the name of the host where the H2O node is running on. If this property is set, you can't set also " +
-    "the `spark.ext.h2o.jks.alias` property and you need make sure that the Java KeyStore file contains certificates " +
-    "for all hosts where H2O nodes are running.")
+    "between Spark executors and H2O nodes.")
 
   val PROP_HASH_LOGIN: BooleanOption = (
     "spark.ext.h2o.hash.login",
