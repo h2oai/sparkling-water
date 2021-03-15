@@ -61,10 +61,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       SecurityUtils.enableSSL(conf)
     }
 
-    if (conf.jks.isDefined) {
-      System.setProperty("javax.net.ssl.trustStore", conf.jks.get)
-    }
-
     if (conf.autoFlowSsl) {
       SecurityUtils.enableFlowSSL(conf)
     }
@@ -133,7 +129,7 @@ trait SharedBackendUtils extends Logging with Serializable {
     sc.listFiles().exists(new File(_).getName == fileName)
   }
 
-  def getH2OSecurityArgs(conf: H2OConf): Seq[String] = {
+  def getH2OSecurityArgs(conf: H2OConf): Seq[String] =
     new ArgumentBuilder()
       .add("-jks", getDistributedFilePath(conf.jks))
       .add("-jks_pass", conf.jksPass)
@@ -146,7 +142,6 @@ trait SharedBackendUtils extends Logging with Serializable {
       .add("-internal_security_conf", getDistributedFilePath(conf.sslConf))
       .add("-allow_insecure_xgboost", conf.isInsecureXGBoostAllowed)
       .buildArgs()
-  }
 
   /**
     * Get H2O arguments which are passed to every node - regular node, client node

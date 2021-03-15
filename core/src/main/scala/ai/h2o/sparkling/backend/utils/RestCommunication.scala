@@ -19,6 +19,7 @@ package ai.h2o.sparkling.backend.utils
 
 import java.io._
 import java.net.{HttpURLConnection, URI, URL}
+import java.security.KeyStore
 
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.NodeDesc
@@ -26,7 +27,10 @@ import ai.h2o.sparkling.backend.exceptions._
 import ai.h2o.sparkling.utils.ScalaUtils._
 import ai.h2o.sparkling.utils.{Compression, FinalizingOutputStream}
 import com.google.gson.{ExclusionStrategy, FieldAttributes, GsonBuilder}
+import javax.net.ssl._
+import java.security.cert.X509Certificate
 import org.apache.commons.io.IOUtils
+import org.apache.spark.SparkFiles
 import org.apache.spark.expose.Logging
 
 import scala.collection.immutable.Map
@@ -140,7 +144,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       params: Map[String, Any] = Map.empty): OutputStream = {
     val url = resolveUrl(endpoint, s"$suffix?${stringifyParams(params)}")
     try {
-      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      val connection = openUrlConnection(url, conf)
       val requestMethod = "PUT"
       connection.setRequestMethod(requestMethod)
       connection.setDoOutput(true)
@@ -227,6 +231,68 @@ trait RestCommunication extends Logging with RestEncodingUtils {
 
   private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
 
+  private def openUrlConnection(url: URL, conf: H2OConf): HttpURLConnection = {
+    val connection = url.openConnection()
+    if (connection.isInstanceOf[HttpsURLConnection]) {
+      val secureConnection = connection.asInstanceOf[HttpsURLConnection]
+
+      if (!conf.verifySslCertificates) {
+        disableCertificateVerification(secureConnection)
+      } else if (conf.autoFlowSsl) {
+        setSelfSignedCertificateVerification(secureConnection, conf)
+      }
+
+      if (!conf.verifySslCertificates || !conf.verifySslHostnames || conf.autoFlowSsl) {
+        disableHostnameVerification(secureConnection)
+      }
+
+      secureConnection
+    } else {
+      connection.asInstanceOf[HttpURLConnection]
+    }
+  }
+
+  private def createSSLContext(): SSLContext = SSLContext.getInstance("TLSv1.2")
+
+  private def disableHostnameVerification(secureConnection: HttpsURLConnection): Unit = {
+    val hostnameVerifier = new HostnameVerifier {
+      override def verify(s: String, sslSession: SSLSession): Boolean = true
+    }
+    secureConnection.setHostnameVerifier(hostnameVerifier)
+  }
+
+  private def disableCertificateVerification(connection: HttpsURLConnection): Unit = {
+    val allCertificatesTrustedManager = new X509TrustManager() {
+      def getAcceptedIssuers: Array[X509Certificate] = null
+      def checkClientTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
+      def checkServerTrusted(x509Certificates: Array[X509Certificate], s: String): Unit = {}
+    }
+    val sslContext = createSSLContext()
+    sslContext.init(null, Array(allCertificatesTrustedManager), null)
+    connection.setSSLSocketFactory(sslContext.getSocketFactory)
+  }
+
+  private def setSelfSignedCertificateVerification(connection: HttpsURLConnection, conf: H2OConf): Unit = {
+    val keyStore = loadKeyStore(conf)
+
+    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+    trustManagerFactory.init(keyStore)
+
+    val sslContext = createSSLContext()
+    sslContext.init(null, trustManagerFactory.getTrustManagers, null)
+    connection.setSSLSocketFactory(sslContext.getSocketFactory)
+  }
+
+  private def loadKeyStore(conf: H2OConf): KeyStore = {
+    val localJKSFile = SparkFiles.get(new File(conf.jks.get).getName)
+    withResource(new FileInputStream(localJKSFile)) { inputStream =>
+      val keyStore = KeyStore.getInstance("JKS")
+      val password = conf.jksPass.get
+      keyStore.load(inputStream, password.toCharArray)
+      keyStore
+    }
+  }
+
   private def resolveUrl(endpoint: URI, suffix: String): URL = {
     val endpointAsString = endpoint.toString
     val endpointWithDelimiter = if (endpointAsString.endsWith("/")) endpointAsString else endpointAsString + "/"
@@ -294,7 +360,7 @@ trait RestCommunication extends Logging with RestEncodingUtils {
       if (params.nonEmpty && (requestType == "GET")) s"$suffix?${stringifyParams(params)}" else suffix
     val url = resolveUrl(endpoint, suffixWithParams)
     try {
-      val connection = url.openConnection().asInstanceOf[HttpURLConnection]
+      val connection = openUrlConnection(url, conf)
       connection.setRequestMethod(requestType)
       setHeaders(connection, conf, requestType, params, encodeParamsAsJson, file)
       checkResponseCode(connection, confirmationLoggingLevel)
