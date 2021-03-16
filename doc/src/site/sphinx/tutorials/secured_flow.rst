@@ -24,7 +24,7 @@ In order to use https correctly, the following two options need to be specified:
 
 If the certificate doesn't cover all hostnames of all H2O nodes and contains just hostname of Spark driver where H2O FLOW UI
 lives, hostname verification on Spark instances (driver + executor) for connections to H2O nodes must be disabled by setting
-the property ``spark.ext.h2o.verify_ssl_hostnames`` to ``false``.
+the property ``spark.ext.h2o.internal.rest.verify_ssl_hostnames`` to ``false``.
 
 .. content-tabs::
 
@@ -91,9 +91,8 @@ the property ``spark.ext.h2o.verify_ssl_hostnames`` to ``false``.
             hc <- H2OContext.getOrCreate(conf)
 
 
-In case your certificates are self-signed, the connection to the H2O cluster will fail due to the security
-limitations. In this case, you can skip the certificates verification
-by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
+In case your certificates are self-signed or signed by an untrusted CA, the connection to the H2O cluster will fail due to
+the security limitations. In this case, you can skip the certificates verification as follows:
 
 .. content-tabs::
 
@@ -102,7 +101,7 @@ by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
 
         .. code:: scala
 
-            val conf = new H2OConf().setVerifySslCertificates(false)
+            val conf = new H2OConf().setSslHostnameVerificationInInternalRestConnectionsDisabled()
             val hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: Python
@@ -110,7 +109,9 @@ by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
 
         .. code:: python
 
-            conf = H2OConf().setVerifySslCertificates(False)
+            conf = H2OConf()
+            conf.setSslHostnameVerificationInInternalRestConnectionsDisabled()
+            conf.setVerifySslCertificates(False)
             hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: R
@@ -118,7 +119,9 @@ by calling ``setVerifySslCertificates`` on ``H2OConf`` as:
 
         .. code:: r
 
-            conf <- H2OConf()$setVerifySslCertificates(FALSE)
+            conf <- H2OConf()
+            conf$setSslHostnameVerificationInInternalRestConnectionsDisabled()
+            conf$setVerifySslCertificates(FALSE)
             hc <- H2OContext.getOrCreate(conf)
 
 Generate the files automatically
@@ -138,7 +141,7 @@ certificates are created.
 
         .. code:: shell
 
-            bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true" --conf "spark.ext.h2o.verify_ssl_certificates=false"
+            bin/sparkling-shell --conf "spark.ext.h2o.auto.flow.ssl=true"
 
         and when you have the shell running, start ``H2OContext`` as:
 
@@ -153,7 +156,7 @@ certificates are created.
         .. code:: scala
 
             import ai.h2o.sparkling._
-            val conf = new H2OConf().setAutoFlowSslEnabled().setVerifySslCertificates(false)
+            val conf = new H2OConf().setAutoFlowSslEnabled()
             val hc = H2OContext.getOrCreate(conf)
 
 
