@@ -159,7 +159,7 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(cer
       .set("spark.ext.h2o.internal.rest.verify_ssl_hostnames", false.toString)
       .setClusterSize(1)
 
-    if(conf.runsInInternalClusterMode) {
+    if (conf.runsInInternalClusterMode) {
       intercept[NoSuchElementException] { // No reference to H2O cluster.
         H2OContext.getOrCreate(conf)
       }
