@@ -152,11 +152,12 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(cer
 
   test(s"H2OContext won't start since the $certificateName won't be verified") {
     val certificatePath = locateCertificate(certificateName)
-    val conf = new H2OConf()
+    val conf = new H2OConf(defaultSparkConf)
       .set("spark.ext.h2o.jks", certificatePath)
       .set("spark.ext.h2o.jks.pass", "h2oh2o")
       .set("spark.ext.h2o.jks.alias", "h2o")
       .set("spark.ext.h2o.internal.rest.verify_ssl_hostnames", false.toString)
+      .setClusterSize(1)
 
     intercept[NoSuchElementException] { // No reference to H2O cluster.
       H2OContext.getOrCreate(conf)
