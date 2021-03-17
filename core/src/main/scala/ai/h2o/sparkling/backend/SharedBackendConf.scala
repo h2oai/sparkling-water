@@ -609,7 +609,7 @@ object SharedBackendConf {
     "spark.ext.h2o.internal.rest.verify_ssl_certificates",
     true,
     """setSslCertificateVerificationInInternalRestConnectionsEnabled()
-      |setSslCertificateVerificationInInternalRestConnectionsDisabled()""",
+      |setSslCertificateVerificationInInternalRestConnectionsDisabled()""".stripMargin,
     """If the property is enabled, Sparkling Water will verify ssl certificates during establishing secured http connections
       |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
       |during data exchange between Spark executors and H2O nodes. If the property is disabled, hostname verification is
