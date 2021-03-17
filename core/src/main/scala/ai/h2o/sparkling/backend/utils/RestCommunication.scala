@@ -229,20 +229,22 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     }
   }
 
-  private def urlToString(url: URL) = s"${url.getHost}:${url.getPort}"
+  private def urlToString(url: URL) = s"${url.getProtocol}://${url.getHost}:${url.getPort}"
 
   private def openUrlConnection(url: URL, conf: H2OConf): HttpURLConnection = {
     val connection = url.openConnection()
     if (connection.isInstanceOf[HttpsURLConnection]) {
       val secureConnection = connection.asInstanceOf[HttpsURLConnection]
 
-      if (!conf.verifySslCertificates) {
+      if (!conf.isSslCertificateVerificationInInternalRestConnectionsEnabled) {
         disableCertificateVerification(secureConnection)
       } else if (conf.autoFlowSsl) {
         setSelfSignedCertificateVerification(secureConnection, conf)
       }
 
-      if (!conf.verifySslCertificates || !conf.verifySslHostnames || conf.autoFlowSsl) {
+      if (!conf.isSslHostnameVerificationInInternalRestConnectionsEnabled ||
+          !conf.isSslCertificateVerificationInInternalRestConnectionsEnabled ||
+          conf.autoFlowSsl) {
         disableHostnameVerification(secureConnection)
       }
 

@@ -116,6 +116,7 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationDisabledBase(ce
       .set("spark.ext.h2o.jks.pass", "h2oh2o")
       .set("spark.ext.h2o.jks.alias", "h2o")
       .set("spark.ext.h2o.verify_ssl_certificates", false.toString)
+      .set("spark.ext.h2o.internal.rest.verify_ssl_certificates", false.toString)
 }
 
 @RunWith(classOf[JUnitRunner])
@@ -139,7 +140,7 @@ class H2OContextFlowSSLTestSuite_CACertificateInTrustStore_SignedByFake extends 
       .set("spark.ext.h2o.jks", certificatePath)
       .set("spark.ext.h2o.jks.pass", "h2oh2o")
       .set("spark.ext.h2o.jks.alias", "h2o")
-      .set("spark.ext.h2o.verify_ssl_hostnames", false.toString)
+      .set("spark.ext.h2o.internal.rest.verify_ssl_hostnames", false.toString)
       .set("spark.executor.extraJavaOptions", s"-Djavax.net.ssl.trustStore=$caCertificatePath")
 }
 
@@ -155,7 +156,7 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(cer
       .set("spark.ext.h2o.jks", certificatePath)
       .set("spark.ext.h2o.jks.pass", "h2oh2o")
       .set("spark.ext.h2o.jks.alias", "h2o")
-      .set("spark.ext.h2o.verify_ssl_hostnames", false.toString)
+      .set("spark.ext.h2o.internal.rest.verify_ssl_hostnames", false.toString)
 
     intercept[NoSuchElementException] { // No reference to H2O cluster.
       H2OContext.getOrCreate(conf)

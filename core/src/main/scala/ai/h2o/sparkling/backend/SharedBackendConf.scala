@@ -159,8 +159,15 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def verifySslCertificates: Boolean =
     sparkConf.getBoolean(PROP_VERIFY_SSL_CERTIFICATES._1, PROP_VERIFY_SSL_CERTIFICATES._2)
 
-  def verifySslHostnames: Boolean =
-    sparkConf.getBoolean(PROP_VERIFY_SSL_HOSTNAMES._1, PROP_VERIFY_SSL_HOSTNAMES._2)
+  def isSslHostnameVerificationInInternalRestConnectionsEnabled: Boolean =
+    sparkConf.getBoolean(
+      PROP_SSL_HOSTNAME_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1,
+      PROP_SSL_HOSTNAME_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._2)
+
+  def isSslCertificateVerificationInInternalRestConnectionsEnabled: Boolean =
+    sparkConf.getBoolean(
+      PROP_SSL_CERTIFICATE_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1,
+      PROP_SSL_CERTIFICATE_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._2)
 
   def isKerberizedHiveEnabled: Boolean =
     sparkConf.getBoolean(PROP_KERBERIZED_HIVE_ENABLED._1, PROP_KERBERIZED_HIVE_ENABLED._2)
@@ -340,7 +347,17 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def setVerifySslCertificates(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_CERTIFICATES._1, verify)
 
-  def setVerifySslHostnames(verify: Boolean): H2OConf = set(PROP_VERIFY_SSL_HOSTNAMES._1, verify)
+  def setSslHostnameVerificationInInternalRestConnectionsEnabled(): H2OConf =
+    set(PROP_SSL_HOSTNAME_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1, true)
+
+  def setSslHostnameVerificationInInternalRestConnectionsDisabled(): H2OConf =
+    set(PROP_SSL_HOSTNAME_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1, false)
+
+  def setSslCertificateVerificationInInternalRestConnectionsEnabled(): H2OConf =
+    set(PROP_SSL_CERTIFICATE_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1, true)
+
+  def setSslCertificateVerificationInInternalRestConnectionsDisabled(): H2OConf =
+    set(PROP_SSL_CERTIFICATE_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS._1, false)
 
   def setKerberizedHiveEnabled(): H2OConf = set(PROP_KERBERIZED_HIVE_ENABLED._1, true)
 
@@ -639,15 +656,24 @@ object SharedBackendConf {
     "spark.ext.h2o.verify_ssl_certificates",
     true,
     "setVerifySslCertificates(Boolean)",
+    """If the property is enabled, Pysparkling or RSparkling client will verify certificates when connecting
+      |Sparkling Water Flow UI.""".stripMargin)
+
+  val PROP_SSL_CERTIFICATE_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS: BooleanOption = (
+    "spark.ext.h2o.internal.rest.verify_ssl_certificates",
+    true,
+    """setSslCertificateVerificationInInternalRestConnectionsEnabled()
+      |setSslCertificateVerificationInInternalRestConnectionsDisabled()""",
     """If the property is enabled, Sparkling Water will verify ssl certificates during establishing secured http connections
       |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
       |during data exchange between Spark executors and H2O nodes. If the property is disabled, hostname verification is
       |disabled as well.""".stripMargin)
 
-  val PROP_VERIFY_SSL_HOSTNAMES: BooleanOption = (
-    "spark.ext.h2o.verify_ssl_hostnames",
+  val PROP_SSL_HOSTNAME_VERIFICATION_IN_INTERNAL_REST_CONNECTIONS: BooleanOption = (
+    "spark.ext.h2o.internal.rest.verify_ssl_hostnames",
     true,
-    "setVerifySslHostnames(Boolean)",
+    """setSslHostnameVerificationInInternalRestConnectionsEnabled()
+      |setSslHostnameVerificationInInternalRestConnectionsDisabled()""".stripMargin,
     """If the property is enabled, Sparkling Water will verify a hostname during establishing of secured http connections
       |to one of H2O nodes. Such connections are utilized for delegation of Flow UI calls to H2O leader node or
       |during data exchange between Spark executors and H2O nodes.""".stripMargin)
