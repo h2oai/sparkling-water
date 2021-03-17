@@ -21,7 +21,7 @@ import java.io.File
 import java.net.{SocketException, URI}
 
 import ai.h2o.sparkling.backend.api.dataframes.DataFrames
-import ai.h2o.sparkling.backend.exceptions.RestApiNotReachableException
+import ai.h2o.sparkling.backend.exceptions.{H2OClusterNotReachableException, RestApiNotReachableException}
 import ai.h2o.sparkling.backend.utils.RestApiUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -159,8 +159,14 @@ abstract class H2OContextFlowSSLTestSuite_CertificateVerificationEnabledBase(cer
       .set("spark.ext.h2o.internal.rest.verify_ssl_hostnames", false.toString)
       .setClusterSize(1)
 
-    intercept[NoSuchElementException] { // No reference to H2O cluster.
-      H2OContext.getOrCreate(conf)
+    if (conf.runsInInternalClusterMode) {
+      intercept[NoSuchElementException] { // No reference to H2O cluster.
+        H2OContext.getOrCreate(conf)
+      }
+    } else {
+      intercept[H2OClusterNotReachableException] {
+        H2OContext.getOrCreate(conf)
+      }
     }
   }
 }
