@@ -347,6 +347,7 @@ def publishToPipy() {
                     params.commons.withPipyCredentials {
                         sh """
                             . /envs/h2o_env_python3.6/bin/activate
+                            pip install -U setuptools
                             python setup.py sdist
                             twine upload dist/* -u $PIPY_USERNAME -p $PIPY_PASSWORD
                             """
