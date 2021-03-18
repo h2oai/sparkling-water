@@ -1,6 +1,39 @@
 Change Log
 ==========
 
+v3.32.0.5-1 (2021-03-18)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.5-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.0.5-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.5-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.0.5-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.5-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.0.5-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.5-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.0.5-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.5-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.0.5-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2540 <https://0xdata.atlassian.net/browse/SW-2540>`__ - Upgrade to H2O 3.32.0.5
+
+-  New Feature
+
+   -  `SW-2539 <https://0xdata.atlassian.net/browse/SW-2539>`__ - Disable SSL Certificate Verification in Python Client and Spark Instances Separately
+
+-  Bug
+
+   -  `SW-2538 <https://0xdata.atlassian.net/browse/SW-2538>`__ - The getGridModelsMetrics() and getGridModelsParams() Methods Do Not Name Columns Correctly
+   -  `SW-2535 <https://0xdata.atlassian.net/browse/SW-2535>`__ - Fix Handling of Flow UI SSL Configuration
+
+-  Engineering Story
+
+   -  `SW-2536 <https://0xdata.atlassian.net/browse/SW-2536>`__ - Update Spark in Docker Images to 3.0.2
+   -  `SW-2530 <https://0xdata.atlassian.net/browse/SW-2530>`__ - Enable Beta Constraints Tests On H2OGAM and H2OGLM
+
+-  Docs
+
+   -  `SW-2534 <https://0xdata.atlassian.net/browse/SW-2534>`__ - Update docs to reflect correct `ice` dir call for 3.30
+   -  `SW-2529 <https://0xdata.atlassian.net/browse/SW-2529>`__ - Fix Imports in Documentation Sample for Pipeline MOJO
+
 v3.32.0.4-1 (2021-02-02)
 ------------------------
 Downloads:
