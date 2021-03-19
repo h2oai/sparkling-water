@@ -44,7 +44,7 @@ class H2OTargetEncoder(override val uid: String)
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
     val problemType = H2OTargetEncoderProblemType.valueOf(getProblemType())
-    val toConvertDF= if (problemType == H2OTargetEncoderProblemType.Regression) {
+    val toConvertDF = if (problemType == H2OTargetEncoderProblemType.Regression) {
       dataset.withColumn(getLabelCol(), col(getLabelCol()).cast(DoubleType))
     } else {
       dataset.toDF()

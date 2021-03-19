@@ -54,7 +54,8 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     import org.apache.spark.sql.DatasetExtensions._
     val outputCols = getOutputCols()
-    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
+    val udfWrapper =
+      H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
     val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
     withPredictionsDF
       .withColumns(
@@ -80,9 +81,9 @@ private[models] case class OutputColumns(columns: Seq[String], totalOrderOfFirst
   * The class holds all necessary dependencies of udf that needs to be serialized.
   */
 case class H2OTargetEncoderMOJOUdfWrapper(
-  mojoGetter: () => File,
-  outputCols: Array[String],
-  problemType: H2OTargetEncoderProblemType) {
+    mojoGetter: () => File,
+    outputCols: Array[String],
+    problemType: H2OTargetEncoderProblemType) {
 
   @transient private lazy val mojoModel = Utils.getMojoModel(mojoGetter()).asInstanceOf[TargetEncoderMojoModel]
 
@@ -101,9 +102,12 @@ case class H2OTargetEncoderMOJOUdfWrapper(
       val inputRowData = RowConverter.toH2ORowData(r)
       try {
         val prediction = easyPredictModelWrapper.predictTargetEncoding(inputRowData)
-        positions.sliding(2).map {
-          case Seq(current, next) => Some(new DenseVector(prediction.transformations.slice(current, next)).compressed)
-        }.toArray
+        positions
+          .sliding(2)
+          .map {
+            case Seq(current, next) => Some(new DenseVector(prediction.transformations.slice(current, next)).compressed)
+          }
+          .toArray
       } catch {
         case _: Throwable => outputCols.map(_ => None)
       }

@@ -106,13 +106,15 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val result = details
       .getAsJsonObject("output")
       .getAsJsonArray("input_to_output_columns")
-      .iterator().asScala
+      .iterator()
+      .asScala
       .map { element =>
         val jsonObject = element.getAsJsonObject
         val from = jsonObject.getAsJsonArray("from").asScala.map(_.getAsString).toSeq
         val to = jsonObject.getAsJsonArray("to").asScala.map(_.getAsString).toSeq
         (from, to)
-      }.toMap
+      }
+      .toMap
     result
   }
 

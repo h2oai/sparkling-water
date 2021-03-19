@@ -202,15 +202,21 @@ trait RestCommunication extends Logging with RestEncodingUtils {
     builder.create()
   }
 
-  private[sparkling] def deserialize[ResultType: ClassTag](content: String, skippedFields: Seq[(Class[_], String)]): ResultType = {
+  private[sparkling] def deserialize[ResultType: ClassTag](
+      content: String,
+      skippedFields: Seq[(Class[_], String)]): ResultType = {
     createGsonSerde(skippedFields).fromJson(content, classTag[ResultType].runtimeClass)
   }
 
-  private[sparkling] def deserialize[ResultType: ClassTag](content: JsonElement, skippedFields: Seq[(Class[_], String)]): ResultType = {
+  private[sparkling] def deserialize[ResultType: ClassTag](
+      content: JsonElement,
+      skippedFields: Seq[(Class[_], String)]): ResultType = {
     createGsonSerde(skippedFields).fromJson(content, classTag[ResultType].runtimeClass)
   }
 
-  private[sparkling] def deserializeAsJsonObject(content: String, skippedFields: Seq[(Class[_], String)]): JsonObject = {
+  private[sparkling] def deserializeAsJsonObject(
+      content: String,
+      skippedFields: Seq[(Class[_], String)]): JsonObject = {
     createGsonSerde(skippedFields).fromJson(content, classOf[JsonObject])
   }
 

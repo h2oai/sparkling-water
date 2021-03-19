@@ -39,15 +39,15 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
     target
   }
 
-  private[sparkling] def getDetails() : JsonObject = {
-    val jsonObject = withResource(readURLContent(endpoint, "GET", s"/3/Models/${this.modelId}", conf)) {
-      response =>
-        val content = IOUtils.toString(response)
-        deserializeAsJsonObject(content, Seq.empty)
+  private[sparkling] def getDetails(): JsonObject = {
+    val jsonObject = withResource(readURLContent(endpoint, "GET", s"/3/Models/${this.modelId}", conf)) { response =>
+      val content = IOUtils.toString(response)
+      deserializeAsJsonObject(content, Seq.empty)
     }
     jsonObject
       .getAsJsonArray("models")
-      .get(0).getAsJsonObject()
+      .get(0)
+      .getAsJsonObject()
   }
 
   private[sparkling] def toMOJOModel(uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
