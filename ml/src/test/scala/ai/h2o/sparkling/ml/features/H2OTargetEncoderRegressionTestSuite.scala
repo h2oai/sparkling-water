@@ -18,11 +18,12 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.models.H2OTargetEncoderModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StringType}
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -41,19 +42,16 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
       .csv(TestUtils.locate(path))
   }
 
-  private def loadDataFrameFromCsvAsResource(path: String): DataFrame = {
+  private def loadDataFrameFromParquetAsResource(path: String): DataFrame = {
     val filePath = getClass.getResource(path).getFile
-    spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .csv(filePath)
+    spark.read.parquet(filePath)
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
   private lazy val trainingDataset = dataset.limit(300).cache()
   private lazy val testingDataset = dataset.except(trainingDataset).cache()
   private lazy val expectedTestingDataset =
-    loadDataFrameFromCsvAsResource("/target_encoder/testing_dataset_transformed_regression.csv").cache()
+    loadDataFrameFromParquetAsResource("/target_encoder/testing_dataset_transformed_regression.parquet").cache()
 
   test("A pipeline with a target encoder transform training and testing dataset without an exception") {
     val targetEncoder = new H2OTargetEncoder()
@@ -83,6 +81,21 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
     val loadedModel = PipelineModel.load(path)
     val transformedTestingDataset = loadedModel.transform(testingDataset)
 
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+  }
+
+  test("The target encoder automatically resolves a regression problem") {
+    val targetEncoder = new H2OTargetEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setLabelCol("AGE")
+      .setProblemType("Auto")
+
+    val pipeline = new Pipeline().setStages(Array(targetEncoder))
+
+    val model = pipeline.fit(trainingDataset)
+    val transformedTestingDataset = model.transform(testingDataset)
+    expectedTestingDataset.show(100, false)
+    transformedTestingDataset.show(100, false)
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
@@ -142,12 +155,13 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
+    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te_val", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
+    val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
     val resultDF = model.transform(unexpectedValuesDF)
 
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
   }
 
   test("TargetEncoderModel will use global average for unexpected values in the testing dataset") {
@@ -158,12 +172,13 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
     val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
     val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te", lit(expectedValue))
+    val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te_val", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
+    val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
     val resultDF = model.transformTrainingDataset(unexpectedValuesDF)
 
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
   }
 
   test("TargetEncoderMOJOModel will use global average for null values in the testing dataset") {
@@ -174,12 +189,13 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+    val expectedDF = withNullsDF.withColumn("DCAPS_te_val", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
+    val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
     val resultDF = model.transform(withNullsDF)
 
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
   }
 
   test("TargetEncoderModel will use global average for null values in the testing dataset") {
@@ -190,12 +206,13 @@ class H2OTargetEncoderRegressionTestSuite extends FunSuite with Matchers with Sh
 
     val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
     val expectedValue = trainingDataset.groupBy().avg("AGE").collect()(0).getDouble(0)
-    val expectedDF = withNullsDF.withColumn("DCAPS_te", lit(expectedValue))
+    val expectedDF = withNullsDF.withColumn("DCAPS_te_val", lit(expectedValue))
     val model = targetEncoder.fit(trainingDataset)
 
+    val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
     val resultDF = model.transformTrainingDataset(withNullsDF)
 
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
   }
 
   test("The targetEncoder can be trained and used on a dataset with null values") {

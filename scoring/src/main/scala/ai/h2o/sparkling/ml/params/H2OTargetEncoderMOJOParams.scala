@@ -74,9 +74,9 @@ trait H2OTargetEncoderMOJOParams extends Params {
     this,
     "problemType",
     """A type of ML problem type for which the target encoder will be used for:
-      | ``Binomial``    - A classification problem with a label column with cardinality equal to 2
-      | ``Multinomial`` - A classification problem with a label column with cardinality greater than 2
-      | ``Regression``  - A regression problem""".stripMargin)
+      | ``Auto``           - If this option is chosen (default), the problem type will be automatically resolved based on the data type of labelCol
+      | ``Classification`` - A classification problem
+      | ``Regression``     - A regression problem""".stripMargin)
 
   //
   // Default values
@@ -92,7 +92,7 @@ trait H2OTargetEncoderMOJOParams extends Params {
     blendedAvgSmoothing -> 20.0,
     noise -> 0.01,
     noiseSeed -> -1,
-    problemType -> "Binomial")
+    problemType -> "Auto")
 
   //
   // Getters

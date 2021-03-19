@@ -20,9 +20,9 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
+import ai.h2o.sparkling.ml.params.H2OTargetEncoderProblemType
 import ai.h2o.sparkling.ml.utils.SchemaUtils
 import org.apache.spark.ml.Model
-import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.functions._
@@ -62,7 +62,11 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
     val input = hc.asH2OFrame(relevantColumnsDF)
 
-    val toCategorical = if (getProblemType() == "Regression") distinctInputCols else distinctInputCols ++ Seq(getLabelCol())
+    val toCategorical = if (getProblemType() == H2OTargetEncoderProblemType.Regression.name) {
+      distinctInputCols
+    } else {
+      distinctInputCols ++ Seq(getLabelCol())
+    }
     input.convertColumnsToCategorical(toCategorical)
 
     val conf = hc.getConf
@@ -86,10 +90,11 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
     input.delete()
     output.delete()
     val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
-      case (df, (to, Seq(from))) => df.withColumnRenamed(from, to)
-      case (df, (to, from)) =>
-        val assembler = new VectorAssembler().setInputCols(from.toArray).setOutputCol(to)
-        assembler.transform(df).drop(from: _*)
+      case (df, (to, Seq(from))) =>
+        val temporaryName = to + "_" + uid
+        val dfWithTemporaryColumn = df.withColumnRenamed(from, temporaryName)
+        createVectorColumn(dfWithTemporaryColumn, to, Array(temporaryName))
+      case (df, (to, from)) => createVectorColumn(df, to, from.toArray)
     }
     withIdDF
       .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")

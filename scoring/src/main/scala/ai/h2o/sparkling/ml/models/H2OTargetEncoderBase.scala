@@ -20,16 +20,14 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams
 import org.apache.spark.ExposeUtils
 import org.apache.spark.ml.PipelineStage
-import org.apache.spark.sql.types.{DoubleType, NumericType, StructField, StructType}
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.{NumericType, StructField, StructType}
 
 trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams {
   override def transformSchema(schema: StructType): StructType = {
     validateSchema(schema)
-    val outputType = if (getProblemType() == "Multinomial") {
-      ExposeUtils.getMLVectorUDT()
-    } else {
-      DoubleType
-    }
+    val outputType = ExposeUtils.getMLVectorUDT()
     StructType(schema.fields ++ getOutputCols().map(StructField(_, outputType, nullable = true)))
   }
 
@@ -73,6 +71,10 @@ trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams
         labelField.dataType.isInstanceOf[NumericType],
         s"The label column '${getLabelCol()}' must be of a numeric if the problem type is set to regression.")
     }
+  }
 
+  private[sparkling] def createVectorColumn(df: DataFrame, name: String, sourceColumns: Array[String]): DataFrame = {
+    val assembler = new VectorAssembler().setInputCols(sourceColumns).setOutputCol(name)
+    assembler.transform(df).drop(sourceColumns: _*)
   }
 }

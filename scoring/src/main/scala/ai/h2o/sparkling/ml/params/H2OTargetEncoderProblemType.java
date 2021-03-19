@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.params;
 
 public enum H2OTargetEncoderProblemType {
-    Binomial,
-    Multinomial,
+    Auto,
+    Classification,
     Regression
 }

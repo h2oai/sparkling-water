@@ -28,6 +28,8 @@ import org.apache.spark.ml.Estimator
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.types.DoubleType
 
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
@@ -41,10 +43,20 @@ class H2OTargetEncoder(override val uid: String)
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
     val h2oContext = H2OContext.ensure(
       "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val input = h2oContext.asH2OFrame(dataset.toDF())
+    val problemType = H2OTargetEncoderProblemType.valueOf(getProblemType())
+    val toConvertDF= if (problemType == H2OTargetEncoderProblemType.Regression) {
+      dataset.withColumn(getLabelCol(), col(getLabelCol()).cast(DoubleType))
+    } else {
+      dataset.toDF()
+    }
+    val input = h2oContext.asH2OFrame(toConvertDF)
     val distinctInputCols = getInputCols().flatten.distinct
-    val toCategorical = if (getProblemType() == "Regression") distinctInputCols else distinctInputCols ++ Seq(getLabelCol())
-    input.convertColumnsToCategorical(toCategorical)
+    val toCategorical = if (problemType == H2OTargetEncoderProblemType.Classification) {
+      distinctInputCols ++ Seq(getLabelCol())
+    } else {
+      distinctInputCols
+    }
+    val converted = input.convertColumnsToCategorical(toCategorical)
     val params = Map(
       "data_leakage_handling" -> getHoldoutStrategy(),
       "blending" -> getBlendedAvgEnabled(),
@@ -54,7 +66,7 @@ class H2OTargetEncoder(override val uid: String)
       "fold_column" -> getFoldCol(),
       "columns_to_encode" -> getInputCols(),
       "seed" -> getNoiseSeed(),
-      "training_frame" -> input.frameId)
+      "training_frame" -> converted.frameId)
     val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
     input.delete()
     val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)

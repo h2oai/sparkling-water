@@ -19,6 +19,7 @@ import os
 import pytest
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml import Estimator, Transformer
+from pyspark.sql.functions import when, col
 from pysparkling.ml import H2OTargetEncoder, H2OGBM
 from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
 
@@ -238,3 +239,39 @@ def testTargetEncoderInPipelineAppliesNoiseOnTrainingDataset(trainingDataset):
             return DummyTransformer()
 
     Pipeline(stages=[createTargetEncoder(),AssertionEstimator()]).fit(trainingDataset)
+
+
+def testAutoProblemTypeOnNumericTypeBehavesAsRegression(trainingDataset):
+    dataset = trainingDataset.withColumn("CAPSULE", when(col("CAPSULE") == 1, 10).otherwise(5))
+
+    def createTargetEncoder():
+        return H2OTargetEncoder() \
+            .setInputCols([["RACE"], ["DPROS", "DCAPS"]]) \
+            .setLabelCol("CAPSULE") \
+            .setHoldoutStrategy("None") \
+            .setNoise(0.0)
+
+    autoResult = createTargetEncoder().setProblemType("auto").fit(dataset).transform(dataset)
+    regressionResult = createTargetEncoder().setProblemType("regression").fit(dataset).transform(dataset)
+    classificationResult = createTargetEncoder().setProblemType("classification").fit(dataset).transform(dataset)
+
+    unit_test_utils.assert_data_frames_are_identical(autoResult, regressionResult)
+    unit_test_utils.assert_data_frames_have_different_values(autoResult, classificationResult)
+
+
+def testAutoProblemTypeOnStringTypeBehavesAsClassification(trainingDataset):
+    dataset = trainingDataset.withColumn("CAPSULE", when(col("CAPSULE") == 1, 10).otherwise(5).cast("string"))
+
+    def createTargetEncoder():
+        return H2OTargetEncoder() \
+            .setInputCols([["RACE"], ["DPROS", "DCAPS"]]) \
+            .setLabelCol("CAPSULE") \
+            .setHoldoutStrategy("None") \
+            .setNoise(0.0)
+
+    autoResult = createTargetEncoder().setProblemType("auto").fit(dataset).transform(dataset)
+    regressionResult = createTargetEncoder().setProblemType("regression").fit(dataset).transform(dataset)
+    classificationResult = createTargetEncoder().setProblemType("classification").fit(dataset).transform(dataset)
+
+    unit_test_utils.assert_data_frames_have_different_values(autoResult, regressionResult)
+    unit_test_utils.assert_data_frames_are_identical(autoResult, classificationResult)

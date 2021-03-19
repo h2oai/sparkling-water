@@ -22,6 +22,7 @@ import java.io.File
 import scala.collection.JavaConverters._
 import _root_.hex.genmodel.algos.targetencoder.TargetEncoderMojoModel
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
+import ai.h2o.sparkling.ml.params.H2OTargetEncoderProblemType
 import ai.h2o.sparkling.ml.utils.Utils
 import org.apache.spark.ml.Model
 import org.apache.spark.ml.linalg.{DenseVector, Vector}
@@ -53,7 +54,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   override def transform(dataset: Dataset[_]): DataFrame = {
     import org.apache.spark.sql.DatasetExtensions._
     val outputCols = getOutputCols()
-    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, getProblemType())
+    val udfWrapper = H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
     val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
     withPredictionsDF
       .withColumns(
@@ -78,7 +79,10 @@ private[models] case class OutputColumns(columns: Seq[String], totalOrderOfFirst
 /**
   * The class holds all necessary dependencies of udf that needs to be serialized.
   */
-case class H2OTargetEncoderMOJOUdfWrapper(mojoGetter: () => File, outputCols: Array[String], problemType: String) {
+case class H2OTargetEncoderMOJOUdfWrapper(
+  mojoGetter: () => File,
+  outputCols: Array[String],
+  problemType: H2OTargetEncoderProblemType) {
 
   @transient private lazy val mojoModel = Utils.getMojoModel(mojoGetter()).asInstanceOf[TargetEncoderMojoModel]
 
@@ -92,7 +96,7 @@ case class H2OTargetEncoderMOJOUdfWrapper(mojoGetter: () => File, outputCols: Ar
 
   @transient private lazy val positions: Seq[Int] = mojoModel._inoutMapping.asScala.map(_.to.length).scanLeft(0)(_ + _)
 
-  val mojoUdf: UserDefinedFunction = if (problemType == "Multinomial") {
+  val mojoUdf: UserDefinedFunction =
     udf[Array[Option[Vector]], Row] { r: Row =>
       val inputRowData = RowConverter.toH2ORowData(r)
       try {
@@ -104,17 +108,6 @@ case class H2OTargetEncoderMOJOUdfWrapper(mojoGetter: () => File, outputCols: Ar
         case _: Throwable => outputCols.map(_ => None)
       }
     }
-  } else {
-    udf[Array[Option[Double]], Row] { r: Row =>
-      val inputRowData = RowConverter.toH2ORowData(r)
-      try {
-        val prediction = easyPredictModelWrapper.predictTargetEncoding(inputRowData)
-        prediction.transformations.map(Some(_))
-      } catch {
-        case _: Throwable => outputCols.map(_ => None)
-      }
-    }
-  }
 }
 
 object H2OTargetEncoderMOJOModel extends H2OMOJOReadable[H2OTargetEncoderMOJOModel]
