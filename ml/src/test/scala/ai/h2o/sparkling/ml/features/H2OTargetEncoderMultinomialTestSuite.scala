@@ -53,453 +53,460 @@ class H2OTargetEncoderMultinomialTestSuite extends FunSuite with Matchers with S
   private lazy val expectedTestingDataset =
     loadDataFrameFromParquetAsResource("/target_encoder/testing_dataset_transformed_multinomial.parquet").cache()
 
-  test("A pipeline with a target encoder transform training and testing dataset without an exception") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Classification")
+  // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
+  // https://issues.apache.org/jira/browse/SPARK-19425
+  if (!createSparkSession().version.startsWith("2.1")) {
 
-    val gbm = new H2OGBM().setLabelCol("AGE")
-
-    val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
-
-    val model = pipeline.fit(trainingDataset)
-    model.transform(testingDataset)
-  }
-
-  test("The target encoder is able to transform dataset after it's saved and loaded") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Classification")
-
-    val pipeline = new Pipeline().setStages(Array(targetEncoder))
-
-    val model = pipeline.fit(trainingDataset)
-    val path = "build/ml/targetEncoder_save_load"
-    model.write.overwrite().save(path)
-    val loadedModel = PipelineModel.load(path)
-    val transformedTestingDataset = loadedModel.transform(testingDataset)
-    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
-  }
-
-  test("The target encoder automatically resolves a multi-class problem") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Auto")
-
-    val pipeline = new Pipeline().setStages(Array(targetEncoder))
-
-    val model = pipeline.fit(trainingDataset)
-    val transformedTestingDataset = model.transform(testingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
-  }
-
-  test("The target encoder doesn't apply noise on the testing dataset") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setNoise(0.5)
-      .setProblemType("Classification")
-
-    val pipeline = new Pipeline().setStages(Array(targetEncoder))
-
-    val model = pipeline.fit(trainingDataset)
-    val transformedTestingDataset = model.transform(testingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
-  }
-
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val targetEncoderModel = targetEncoder.fit(trainingDataset)
-
-    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
-    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setBlendedAvgEnabled(true)
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val targetEncoderModel = targetEncoder.fit(trainingDataset)
-
-    val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
-    val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test("TargetEncoderMOJOModel treats nulls as unexpected values in the testing dataset") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Classification")
-
-    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
-    val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-
-    val model = targetEncoder.fit(trainingDataset)
-
-    val expectedDF = model.transform(unexpectedValuesDF).drop("DCAPS")
-    val resultDF = model.transform(withNullsDF).drop("DCAPS")
-
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
-  }
-
-  test("TargetEncoderModel treats nulls as unexpected values in the testing dataset") {
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DCAPS"))
-      .setLabelCol("AGE")
-      .setProblemType("Classification")
-
-    val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
-    val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-
-    val model = targetEncoder.fit(trainingDataset)
-
-    val expectedDF = model.transformTrainingDataset(unexpectedValuesDF).drop("DCAPS")
-    val resultDF = model.transformTrainingDataset(withNullsDF).drop("DCAPS")
-
-    TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
-  }
-
-  test("The targetEncoder can be trained and used on a dataset with null values") {
-    import spark.implicits._
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val trainingWithNullsDF = trainingDataset
-      .withColumn("DCAPS", when(rand(1) < 0.5, 'DCAPS).otherwise(lit(null)))
-      .cache()
-
-    val model = targetEncoder.fit(trainingWithNullsDF)
-    val transformedByModel = model.transformTrainingDataset(trainingWithNullsDF).cache()
-    val transformedByMOJOModel = model.transform(trainingWithNullsDF).cache()
-
-    transformedByModel.filter('DCAPS_te.isNull).count() shouldBe 0
-    transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test("The KFold strategy with column should give the same results as LeaveOneOut on the training dataset") {
-    val targetEncoderKFold = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("KFold")
-      .setFoldCol("ID")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val targetEncoderLeaveOneOut = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("LeaveOneOut")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val modelKFold = targetEncoderKFold.fit(trainingDataset)
-    val modelLeaveOneOut = targetEncoderLeaveOneOut.fit(trainingDataset)
-    val transformedKFold = modelKFold.transformTrainingDataset(trainingDataset)
-    val transformedLeaveOneOut = modelLeaveOneOut.transformTrainingDataset(trainingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
-  }
-
-  test("The target encoder treats string columns as other types") {
-    import spark.implicits._
-
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val datasetWithStrings = dataset
-      .withColumn("RACE", 'RACE cast StringType)
-      .withColumn("DPROS", 'DPROS cast StringType)
-      .withColumn("DCAPS", 'DCAPS cast StringType)
-      .withColumn("AGE", 'AGE cast StringType)
-    val trainingDataset = dataset.limit(300).cache()
-    val testingDataset = dataset.except(trainingDataset).cache()
-    val model = targetEncoder.fit(trainingDataset)
-
-    val transformedByModel = model.transformTrainingDataset(testingDataset)
-    val transformedByMOJOModel = model.transform(testingDataset)
-
-    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
-    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
-  }
-
-  test("The target encoder can work with arbitrary label categories") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.3, lit("a"))
-        .when(rand(1) < 0.5, lit("b"))
-        .otherwise(lit("c")))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val model = targetEncoder.fit(trainingDatasetWithLabel)
-
-    val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
-    val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test(
-    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.3, lit("a"))
-        .when(rand(1) < 0.5, lit("b"))
-        .otherwise(lit("c")))
-    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("d"))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val model = targetEncoder.fit(trainingDatasetWithLabel)
-
-    val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
-    val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test(
-    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
-    val trainingDatasetWithLabel = trainingDataset.withColumn(
-      "LABEL",
-      when(rand(1) < 0.3, lit("a"))
-        .when(rand(1) < 0.5, lit("b"))
-        .otherwise(lit("c")))
-    val testingDatasetWithLabel = testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("LABEL")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
-
-    val model = targetEncoder.fit(trainingDatasetWithLabel)
-
-    val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
-    val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
-
-    TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
-  }
-
-  test("TargetEncoderModel returns the same result regardless the order of the inputCols specification") {
-    import spark.implicits._
-
-    def transformTrainingDataset(inputCols: Array[String]): DataFrame = {
+    test("A pipeline with a target encoder transform training and testing dataset without an exception") {
       val targetEncoder = new H2OTargetEncoder()
-        .setInputCols(inputCols)
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
         .setLabelCol("AGE")
-        .setHoldoutStrategy("None")
-        .setNoise(0.0)
         .setProblemType("Classification")
 
-      val model = targetEncoder.fit(trainingDataset)
-      model.transformTrainingDataset(trainingDataset)
-    }
+      val gbm = new H2OGBM().setLabelCol("AGE")
 
-    val expectedResult = transformTrainingDataset(Array("RACE", "DPROS", "DCAPS"))
-    val result = transformTrainingDataset(Array("DPROS", "DCAPS", "RACE"))
-      .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+      val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
-
-  test("TargetEncoderMOJOModel returns the same result regardless the order of the inputCols specification") {
-    import spark.implicits._
-
-    def transformTestingDataset(inputCols: Array[String]): DataFrame = {
-      val targetEncoder = new H2OTargetEncoder()
-        .setInputCols(inputCols)
-        .setLabelCol("AGE")
-        .setHoldoutStrategy("None")
-        .setNoise(0.0)
-        .setProblemType("Classification")
-
-      val model = targetEncoder.fit(trainingDataset)
+      val model = pipeline.fit(trainingDataset)
       model.transform(testingDataset)
     }
 
-    val expectedResult = transformTestingDataset(Array("RACE", "DPROS", "DCAPS"))
-    val result = transformTestingDataset(Array("DPROS", "DCAPS", "RACE"))
-      .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+    test("The target encoder is able to transform dataset after it's saved and loaded") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setProblemType("Classification")
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
+      val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
-  test("TargetEncoderModel transforms a dataset regardless the order of columns") {
-    import spark.implicits._
-    val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
-    val trainingSubDataset = trainingDataset.select(originalOrder: _*)
-    val testingSubDataset = testingDataset.select(originalOrder: _*)
+      val model = pipeline.fit(trainingDataset)
+      val path = "build/ml/targetEncoder_save_load"
+      model.write.overwrite().save(path)
+      val loadedModel = PipelineModel.load(path)
+      val transformedTestingDataset = loadedModel.transform(testingDataset)
+      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    }
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+    test("The target encoder automatically resolves a multi-class problem") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setProblemType("Auto")
 
-    val model = targetEncoder.fit(trainingSubDataset)
-    val expectedResult = model.transformTrainingDataset(testingSubDataset)
+      val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
-    val result = model
-      .transformTrainingDataset(testingSubDataset.select(originalOrder.reverse: _*))
-      .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+      val model = pipeline.fit(trainingDataset)
+      val transformedTestingDataset = model.transform(testingDataset)
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
+      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    }
 
-  test("TargetEncoderMOJOModel transforms a dataset regardless the order of columns") {
-    import spark.implicits._
-    val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
-    val trainingSubDataset = trainingDataset.select(originalOrder: _*)
-    val testingSubDataset = testingDataset.select(originalOrder: _*)
+    test("The target encoder doesn't apply noise on the testing dataset") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setNoise(0.5)
+        .setProblemType("Classification")
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+      val pipeline = new Pipeline().setStages(Array(targetEncoder))
 
-    val model = targetEncoder.fit(trainingSubDataset)
-    val expectedResult = model.transform(testingSubDataset)
+      val model = pipeline.fit(trainingDataset)
+      val transformedTestingDataset = model.transform(testingDataset)
 
-    val result = model
-      .transform(testingSubDataset.select(originalOrder.reverse: _*))
-      .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+    }
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
+    test(
+      "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
 
-  test("TargetEncoderModel transforms a dataset with a subset of columns the same way as full dataset") {
-    import spark.implicits._
-    val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
-    val testingSubDataset = testingDataset.select(order: _*)
+      val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+      val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
+      val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
-    val model = targetEncoder.fit(trainingDataset)
-    val expectedResult = model
-      .transformTrainingDataset(testingSubDataset)
-      .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
 
-    val result = model.transformTrainingDataset(testingSubDataset)
+    test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setBlendedAvgEnabled(true)
+        .setNoise(0.0)
+        .setProblemType("Classification")
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
+      val targetEncoderModel = targetEncoder.fit(trainingDataset)
 
-  test("TargetEncoderMOJOModel transforms a dataset with a subset of columns the same way as full dataset") {
-    import spark.implicits._
-    val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
-    val testingSubDataset = testingDataset.select(order: _*)
+      val transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
+      val transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
 
-    val model = targetEncoder.fit(trainingDataset)
-    val expectedResult = model
-      .transform(testingDataset)
-      .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+    test("TargetEncoderMOJOModel treats nulls as unexpected values in the testing dataset") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("DCAPS"))
+        .setLabelCol("AGE")
+        .setProblemType("Classification")
 
-    val result = model.transform(testingSubDataset)
+      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
+      val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
 
-    TestUtils.assertDataFramesAreIdentical(expectedResult, result)
-  }
+      val model = targetEncoder.fit(trainingDataset)
 
-  test("TargetEncoderModel supports custom outputCols") {
-    import spark.implicits._
+      val expectedDF = model.transform(unexpectedValuesDF).drop("DCAPS")
+      val resultDF = model.transform(withNullsDF).drop("DCAPS")
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DPROS", "DCAPS", "RACE"))
-      .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+      TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    }
 
-    val expected = expectedTestingDataset
-      .withColumn("DPROS_out", 'DPROS_te)
-      .drop('DPROS_te)
-      .withColumn("DCAPS_out", 'DCAPS_te)
-      .drop('DCAPS_te)
-      .withColumn("RACE_out", 'RACE_te)
-      .drop('RACE_te)
+    test("TargetEncoderModel treats nulls as unexpected values in the testing dataset") {
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("DCAPS"))
+        .setLabelCol("AGE")
+        .setProblemType("Classification")
 
-    val model = targetEncoder.fit(trainingDataset)
-    val transformedTestingDataset = model.transformTrainingDataset(testingDataset)
+      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
+      val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
 
-    TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
-  }
+      val model = targetEncoder.fit(trainingDataset)
 
-  test("TargetEncoderMOJOModel supports custom outputCols") {
-    import spark.implicits._
+      val expectedDF = model.transformTrainingDataset(unexpectedValuesDF).drop("DCAPS")
+      val resultDF = model.transformTrainingDataset(withNullsDF).drop("DCAPS")
 
-    val targetEncoder = new H2OTargetEncoder()
-      .setInputCols(Array("DPROS", "DCAPS", "RACE"))
-      .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
-      .setLabelCol("AGE")
-      .setHoldoutStrategy("None")
-      .setNoise(0.0)
-      .setProblemType("Classification")
+      TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
+    }
 
-    val expected = expectedTestingDataset
-      .withColumn("DPROS_out", 'DPROS_te)
-      .drop('DPROS_te)
-      .withColumn("DCAPS_out", 'DCAPS_te)
-      .drop('DCAPS_te)
-      .withColumn("RACE_out", 'RACE_te)
-      .drop('RACE_te)
+    test("The targetEncoder can be trained and used on a dataset with null values") {
+      import spark.implicits._
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
 
-    val model = targetEncoder.fit(trainingDataset)
-    val transformedTestingDataset = model.transform(testingDataset)
+      val trainingWithNullsDF = trainingDataset
+        .withColumn("DCAPS", when(rand(1) < 0.5, 'DCAPS).otherwise(lit(null)))
+        .cache()
 
-    TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+      val model = targetEncoder.fit(trainingWithNullsDF)
+      val transformedByModel = model.transformTrainingDataset(trainingWithNullsDF).cache()
+      val transformedByMOJOModel = model.transform(trainingWithNullsDF).cache()
+
+      transformedByModel.filter('DCAPS_te.isNull).count() shouldBe 0
+      transformedByMOJOModel.filter('DCAPS_te.isNull).count() shouldBe 0
+
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
+
+    test("The KFold strategy with column should give the same results as LeaveOneOut on the training dataset") {
+      val targetEncoderKFold = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("KFold")
+        .setFoldCol("ID")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val targetEncoderLeaveOneOut = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("LeaveOneOut")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val modelKFold = targetEncoderKFold.fit(trainingDataset)
+      val modelLeaveOneOut = targetEncoderLeaveOneOut.fit(trainingDataset)
+      val transformedKFold = modelKFold.transformTrainingDataset(trainingDataset)
+      val transformedLeaveOneOut = modelLeaveOneOut.transformTrainingDataset(trainingDataset)
+
+      TestUtils.assertDataFramesAreIdentical(transformedLeaveOneOut, transformedKFold)
+    }
+
+    test("The target encoder treats string columns as other types") {
+      import spark.implicits._
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val datasetWithStrings = dataset
+        .withColumn("RACE", 'RACE cast StringType)
+        .withColumn("DPROS", 'DPROS cast StringType)
+        .withColumn("DCAPS", 'DCAPS cast StringType)
+        .withColumn("AGE", 'AGE cast StringType)
+      val trainingDataset = dataset.limit(300).cache()
+      val testingDataset = dataset.except(trainingDataset).cache()
+      val model = targetEncoder.fit(trainingDataset)
+
+      val transformedByModel = model.transformTrainingDataset(testingDataset)
+      val transformedByMOJOModel = model.transform(testingDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByModel)
+      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedByMOJOModel)
+    }
+
+    test("The target encoder can work with arbitrary label categories") {
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("LABEL")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+      val transformedByModel = model.transformTrainingDataset(trainingDatasetWithLabel)
+      val transformedByMOJOModel = model.transform(trainingDatasetWithLabel)
+
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
+
+    test(
+      "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
+      val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("d"))
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("LABEL")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+      val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
+      val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
+
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
+
+    test(
+      "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
+      val testingDatasetWithLabel =
+        testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("LABEL")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingDatasetWithLabel)
+
+      val transformedByModel = model.transformTrainingDataset(testingDatasetWithLabel)
+      val transformedByMOJOModel = model.transform(testingDatasetWithLabel)
+
+      TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
+    }
+
+    test("TargetEncoderModel returns the same result regardless the order of the inputCols specification") {
+      import spark.implicits._
+
+      def transformTrainingDataset(inputCols: Array[String]): DataFrame = {
+        val targetEncoder = new H2OTargetEncoder()
+          .setInputCols(inputCols)
+          .setLabelCol("AGE")
+          .setHoldoutStrategy("None")
+          .setNoise(0.0)
+          .setProblemType("Classification")
+
+        val model = targetEncoder.fit(trainingDataset)
+        model.transformTrainingDataset(trainingDataset)
+      }
+
+      val expectedResult = transformTrainingDataset(Array("RACE", "DPROS", "DCAPS"))
+      val result = transformTrainingDataset(Array("DPROS", "DCAPS", "RACE"))
+        .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderMOJOModel returns the same result regardless the order of the inputCols specification") {
+      import spark.implicits._
+
+      def transformTestingDataset(inputCols: Array[String]): DataFrame = {
+        val targetEncoder = new H2OTargetEncoder()
+          .setInputCols(inputCols)
+          .setLabelCol("AGE")
+          .setHoldoutStrategy("None")
+          .setNoise(0.0)
+          .setProblemType("Classification")
+
+        val model = targetEncoder.fit(trainingDataset)
+        model.transform(testingDataset)
+      }
+
+      val expectedResult = transformTestingDataset(Array("RACE", "DPROS", "DCAPS"))
+      val result = transformTestingDataset(Array("DPROS", "DCAPS", "RACE"))
+        .select('ID, 'CAPSULE, 'AGE, 'RACE, 'DPROS, 'DCAPS, 'PSA, 'VOL, 'GLEASON, 'RACE_te, 'DPROS_te, 'DCAPS_te)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderModel transforms a dataset regardless the order of columns") {
+      import spark.implicits._
+      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
+      val trainingSubDataset = trainingDataset.select(originalOrder: _*)
+      val testingSubDataset = testingDataset.select(originalOrder: _*)
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingSubDataset)
+      val expectedResult = model.transformTrainingDataset(testingSubDataset)
+
+      val result = model
+        .transformTrainingDataset(testingSubDataset.select(originalOrder.reverse: _*))
+        .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderMOJOModel transforms a dataset regardless the order of columns") {
+      import spark.implicits._
+      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
+      val trainingSubDataset = trainingDataset.select(originalOrder: _*)
+      val testingSubDataset = testingDataset.select(originalOrder: _*)
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingSubDataset)
+      val expectedResult = model.transform(testingSubDataset)
+
+      val result = model
+        .transform(testingSubDataset.select(originalOrder.reverse: _*))
+        .select(originalOrder ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderModel transforms a dataset with a subset of columns the same way as full dataset") {
+      import spark.implicits._
+      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
+      val testingSubDataset = testingDataset.select(order: _*)
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingDataset)
+      val expectedResult = model
+        .transformTrainingDataset(testingSubDataset)
+        .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+
+      val result = model.transformTrainingDataset(testingSubDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderMOJOModel transforms a dataset with a subset of columns the same way as full dataset") {
+      import spark.implicits._
+      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
+      val testingSubDataset = testingDataset.select(order: _*)
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val model = targetEncoder.fit(trainingDataset)
+      val expectedResult = model
+        .transform(testingDataset)
+        .select(order ++ Array($"RACE_te", $"DPROS_te", $"DCAPS_te"): _*)
+
+      val result = model.transform(testingSubDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expectedResult, result)
+    }
+
+    test("TargetEncoderModel supports custom outputCols") {
+      import spark.implicits._
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("DPROS", "DCAPS", "RACE"))
+        .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val expected = expectedTestingDataset
+        .withColumn("DPROS_out", 'DPROS_te)
+        .drop('DPROS_te)
+        .withColumn("DCAPS_out", 'DCAPS_te)
+        .drop('DCAPS_te)
+        .withColumn("RACE_out", 'RACE_te)
+        .drop('RACE_te)
+
+      val model = targetEncoder.fit(trainingDataset)
+      val transformedTestingDataset = model.transformTrainingDataset(testingDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+    }
+
+    test("TargetEncoderMOJOModel supports custom outputCols") {
+      import spark.implicits._
+
+      val targetEncoder = new H2OTargetEncoder()
+        .setInputCols(Array("DPROS", "DCAPS", "RACE"))
+        .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
+        .setLabelCol("AGE")
+        .setHoldoutStrategy("None")
+        .setNoise(0.0)
+        .setProblemType("Classification")
+
+      val expected = expectedTestingDataset
+        .withColumn("DPROS_out", 'DPROS_te)
+        .drop('DPROS_te)
+        .withColumn("DCAPS_out", 'DCAPS_te)
+        .drop('DCAPS_te)
+        .withColumn("RACE_out", 'RACE_te)
+        .drop('RACE_te)
+
+      val model = targetEncoder.fit(trainingDataset)
+      val transformedTestingDataset = model.transform(testingDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expected, transformedTestingDataset)
+    }
   }
 }

@@ -18,7 +18,6 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.params.H2OTargetEncoderMOJOParams
-import org.apache.spark.ExposeUtils
 import org.apache.spark.ml.PipelineStage
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.DataFrame
@@ -27,7 +26,7 @@ import org.apache.spark.sql.types.{NumericType, StructField, StructType}
 trait H2OTargetEncoderBase extends PipelineStage with H2OTargetEncoderMOJOParams {
   override def transformSchema(schema: StructType): StructType = {
     validateSchema(schema)
-    val outputType = ExposeUtils.getMLVectorUDT()
+    val outputType = org.apache.spark.ml.linalg.SQLDataTypes.VectorType
     StructType(schema.fields ++ getOutputCols().map(StructField(_, outputType, nullable = true)))
   }
 
