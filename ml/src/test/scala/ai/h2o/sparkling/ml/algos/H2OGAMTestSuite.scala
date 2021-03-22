@@ -43,7 +43,7 @@ class H2OGAMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setSplitRatio(0.8)
       .setSeed(1)
       .setFeaturesCols("DPROS", "DCAPS", "RACE", "GLEASON")
-      .setGamCols(Array("PSA", "AGE"))
+      .setGamCols(Array(Array("PSA"), Array("AGE")))
       .setLabelCol("CAPSULE")
 
     val pipeline = new Pipeline().setStages(Array(algo))

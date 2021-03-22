@@ -24,8 +24,9 @@ class HasGamCols(Params):
     gamCols = Param(
         Params._dummy(),
         "gamCols",
-        "Predictor column names for gam.",
-        H2OTypeConverters.toNullableListString())
+        "Arrays of predictor column names for gam for smoothers using single or multiple predictors "
+        "like {{'c1'},{'c2','c3'},{'c4'},...}",
+        H2OTypeConverters.toNullableListListString())
 
     def getGamCols(self):
         return self.getOrDefault(self.gamCols)
