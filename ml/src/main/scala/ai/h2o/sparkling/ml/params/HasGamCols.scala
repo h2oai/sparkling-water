@@ -24,7 +24,7 @@ trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
   protected val gamCols = nullableStringArrayArrayParam(
     name = "gamCols",
     doc = "Arrays of predictor column names for gam for smoothers using single or " +
-    "multiple predictors like {{'c1'},{'c2','c3'},{'c4'},...}")
+      "multiple predictors like {{'c1'},{'c2','c3'},{'c4'},...}")
 
   setDefault(gamCols -> null)
 
