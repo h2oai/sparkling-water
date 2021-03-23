@@ -32,4 +32,21 @@ class HasGamCols(Params):
         return self.getOrDefault(self.gamCols)
 
     def setGamCols(self, value):
-        return self._set(gamCols=value)
+        return self._set(gamCols=self._convertGamCols(value))
+
+    def _toStringArray(self, value):
+        if isinstance(value, list):
+            return value
+        else:
+            return [str(value)]
+
+    def _convertGamCols(self, value):
+        if isinstance(value, list):
+            return [self._toStringArray(item) for item in value]
+        else:
+            return value
+
+    def _updateInitKwargs(self, kwargs):
+        if 'gamCols' in kwargs:
+            kwargs['gamCols'] = self._convertGamCols(kwargs['gamCols'])
+        return kwargs

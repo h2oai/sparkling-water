@@ -69,6 +69,30 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
+def testPropagationOfFlatGamColsToScalaBackendViaConstructorParams(prostateDataset):
+    predictionCol = "my_prediction_col_name"
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  gamCols=["PSA", "AGE"],
+                  labelCol="CAPSULE",
+                  seed=1,
+                  splitRatio=0.8,
+                  predictionCol=predictionCol)
+
+    algo.fit(prostateDataset)
+
+
+def testPropagationOfFlatGamColsToScalaBackendViaSetter(prostateDataset):
+    predictionCol = "my_prediction_col_name"
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  labelCol="CAPSULE",
+                  seed=1,
+                  splitRatio=0.8,
+                  predictionCol=predictionCol)
+    algo.setGamCols(["PSA", "AGE"])
+
+    algo.fit(prostateDataset)
+
+
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
     featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"]
