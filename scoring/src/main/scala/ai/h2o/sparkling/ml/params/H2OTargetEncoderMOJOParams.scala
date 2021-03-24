@@ -71,10 +71,9 @@ trait H2OTargetEncoderMOJOParams extends Params {
     this,
     "problemType",
     """A type of ML problem type for which the target encoder will be used for:
-      | ``Auto``           - If this option is chosen (default), the problem type will be automatically resolved based on the data type of labelCol.
-      |                      If the data type of labelCol is boolean or string, classification is chosen. Otherwise, the target encoder chooses regression.
+      | ``Auto`` - If this option is chosen (default), the problem type will be automatically resolved based on the data type of labelCol. If the data type of labelCol is boolean or string, classification is chosen. Otherwise, the target encoder chooses regression.
       | ``Classification`` - A classification problem
-      | ``Regression``     - A regression problem""".stripMargin)
+      | ``Regression`` - A regression problem""".stripMargin)
 
   //
   // Default values
