@@ -75,6 +75,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def logLevel: String = sparkConf.get(PROP_LOG_LEVEL._1, PROP_LOG_LEVEL._2)
 
+  @DeprecatedMethod("logDir", "3.34")
+  def h2oNodeLogDir: Option[String] = logDir
+
   def logDir: Option[String] = sparkConf.getOption(PROP_LOG_DIR._1)
 
   def backendHeartbeatInterval: Int =
@@ -231,6 +234,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setAutoFlowSslDisabled(): H2OConf = set(PROP_AUTO_SSL_FLOW._1, value = false)
 
   def setLogLevel(level: String): H2OConf = set(PROP_LOG_LEVEL._1, level)
+
+  @DeprecatedMethod("setLogDir", "3.34")
+  def setH2ONodeLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
 
   def setLogDir(dir: String): H2OConf = set(PROP_LOG_DIR._1, dir)
 
