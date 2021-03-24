@@ -47,6 +47,9 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
 
   def subseqTries: Int = sparkConf.getInt(PROP_SUBSEQ_TRIES._1, PROP_SUBSEQ_TRIES._2)
 
+  @DeprecatedMethod("icedDir", "3.34")
+  def nodeIcedDir: Option[String] = sparkConf.getOption(SharedBackendConf.PROP_ICED_DIR._1)
+
   def hdfsConf: Option[String] = sparkConf.getOption(PROP_HDFS_CONF._1)
 
   def spreadRddRetriesTimeout: Int =
@@ -63,6 +66,9 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
     set(PROP_DEFAULT_CLUSTER_SIZE._1, defaultClusterSize.toString)
 
   def setSubseqTries(subseqTriesNum: Int): H2OConf = set(PROP_SUBSEQ_TRIES._1, subseqTriesNum.toString)
+
+  @DeprecatedMethod("setIcedDir", "3.34")
+  def setNodeIcedDir(dir: String): H2OConf = set(SharedBackendConf.PROP_ICED_DIR._1, dir)
 
   def setHdfsConf(path: String): H2OConf = set(PROP_HDFS_CONF._1, path)
 
