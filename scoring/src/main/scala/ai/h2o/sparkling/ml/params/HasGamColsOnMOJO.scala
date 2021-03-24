@@ -22,9 +22,12 @@ import hex.genmodel.MojoModel
 import org.apache.spark.expose.Logging
 
 trait HasGamColsOnMOJO extends ParameterConstructorMethods with SpecificMOJOParameters with Logging {
-  private val gamCols = nullableStringArrayParam(name = "gamCols", doc = "Predictor column names for gam.")
+  private val gamCols = nullableStringArrayArrayParam(
+    name = "gamCols",
+    doc = "Arrays of predictor column names for gam for smoothers using single or " +
+      "multiple predictors like {{'c1'},{'c2','c3'},{'c4'},...}")
 
-  def getGamCols(): Array[String] = $(gamCols)
+  def getGamCols(): Array[Array[String]] = $(gamCols)
 
   override private[sparkling] def setSpecificParams(h2oMojo: MojoModel): Unit = {
     super.setSpecificParams(h2oMojo)

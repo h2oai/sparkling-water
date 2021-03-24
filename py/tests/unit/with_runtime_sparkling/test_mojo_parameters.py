@@ -51,8 +51,8 @@ def testGLMParameters(prostateDataset):
 
 def testGAMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2OGAM(seed=1, labelCol="CAPSULE", gamCols=["PSA", "AGE"], numKnots=[5, 5], lambdaValue=[0.5],
-                       featuresCols=features)
+    algorithm = H2OGAM(seed=1, labelCol="CAPSULE", gamCols=[["PSA"], ["AGE"]], numKnots=[5, 5], lambdaValue=[0.5],
+                       featuresCols=features, bs=[1, 1], scale=[0.5, 0.5])
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model, ["getFeaturesCols"])
 

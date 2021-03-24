@@ -22,4 +22,4 @@ class HasGamColsOnMOJO:
 
     def getGamCols(self):
         value = self._java_obj.getGamCols()
-        return H2OTypeConverters.scalaArrayToPythonArray(value)
+        return H2OTypeConverters.toNullableListListString()(value)

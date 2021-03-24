@@ -28,3 +28,6 @@ class H2OAlgorithm(H2OStageBase, JavaEstimator):
 
     def _create_model(self, javaModel):
         return H2OMOJOModelFactory.createSpecificMOJOModel(javaModel)
+
+    def _updateInitKwargs(self, kwargs):
+        return kwargs

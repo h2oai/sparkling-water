@@ -21,13 +21,18 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
 
 trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
-  protected val gamCols = nullableStringArrayParam(name = "gamCols", doc = "Predictor column names for gam.")
+  protected val gamCols = nullableStringArrayArrayParam(
+    name = "gamCols",
+    doc = "Arrays of predictor column names for gam for smoothers using single or " +
+      "multiple predictors like {{'c1'},{'c2','c3'},{'c4'},...}")
 
   setDefault(gamCols -> null)
 
-  def getGamCols(): Array[String] = $(gamCols)
+  def getGamCols(): Array[Array[String]] = $(gamCols)
 
-  def setGamCols(value: Array[String]): this.type = set(gamCols, value)
+  def setGamCols(value: Array[Array[String]]): this.type = set(gamCols, value)
+
+  def setGamCols(value: Array[String]): this.type = setGamCols(value.map(Array(_)))
 
   override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
     super.getH2OAlgorithmParams(trainingFrame) ++ Map("gam_columns" -> getGamCols())
@@ -40,7 +45,7 @@ trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
   override private[sparkling] def getAdditionalCols(): Seq[String] = {
     val gamCols = getGamCols()
     if (gamCols != null) {
-      super.getAdditionalCols() ++ gamCols
+      super.getAdditionalCols() ++ gamCols.flatten.distinct
     } else {
       super.getAdditionalCols()
     }

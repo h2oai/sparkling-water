@@ -61,7 +61,7 @@ def testPipelineSerializationGLM(prostateDataset):
 
 
 def testPipelineSerializationGAM(prostateDataset):
-    gridSearchTester(H2OGAM().setLabelCol("AGE").setGamCols(["PSA"]), prostateDataset)
+    gridSearchTester(H2OGAM().setLabelCol("AGE").setGamCols([["PSA"]]), prostateDataset)
 
 
 def testPipelineSerializationDeepLearning(prostateDataset):

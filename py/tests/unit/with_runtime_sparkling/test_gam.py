@@ -39,7 +39,7 @@ def testParamsPassedBySetters():
 
 def testPipelineSerialization(prostateDataset):
     algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
-                  gamCols=["PSA", "AGE"],
+                  gamCols=[["PSA"], ["AGE"]],
                   labelCol="CAPSULE",
                   seed=1,
                   splitRatio=0.8)
@@ -58,7 +58,7 @@ def testPipelineSerialization(prostateDataset):
 def testPropagationOfPredictionCol(prostateDataset):
     predictionCol = "my_prediction_col_name"
     algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
-                  gamCols=["PSA", "AGE"],
+                  gamCols=[["PSA"], ["AGE"]],
                   labelCol="CAPSULE",
                   seed=1,
                   splitRatio=0.8,
@@ -69,12 +69,36 @@ def testPropagationOfPredictionCol(prostateDataset):
     assert True == (predictionCol in columns)
 
 
+def testPropagationOfFlatGamColsToScalaBackendViaConstructorParams(prostateDataset):
+    predictionCol = "my_prediction_col_name"
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  gamCols=["PSA", "AGE"],
+                  labelCol="CAPSULE",
+                  seed=1,
+                  splitRatio=0.8,
+                  predictionCol=predictionCol)
+
+    algo.fit(prostateDataset)
+
+
+def testPropagationOfFlatGamColsToScalaBackendViaSetter(prostateDataset):
+    predictionCol = "my_prediction_col_name"
+    algo = H2OGAM(featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"],
+                  labelCol="CAPSULE",
+                  seed=1,
+                  splitRatio=0.8,
+                  predictionCol=predictionCol)
+    algo.setGamCols(["PSA", "AGE"])
+
+    algo.fit(prostateDataset)
+
+
 def testBetaConstraintsAffectResult(spark, prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
     featuresCols=["DPROS", "DCAPS", "RACE", "GLEASON"]
 
     def createInitialGamDefinition():
-        return H2OGAM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8, gamCols=["PSA", "AGE"])
+        return H2OGAM(featuresCols=featuresCols, labelCol="CAPSULE", seed=1, splitRatio=0.8, gamCols=[["PSA"], ["AGE"]])
 
     referenceGam = createInitialGamDefinition()
     referenceModel = referenceGam.fit(traningDataset)
@@ -97,7 +121,7 @@ def setParamtersForProblemSpecificTests(gam):
     gam.setLabelCol("CAPSULE")
     gam.setSeed(1)
     gam.setFeaturesCols(["DPROS", "DCAPS", "RACE", "GLEASON"])
-    gam.setGamCols(["PSA", "AGE"])
+    gam.setGamCols([["PSA"], ["AGE"]])
     gam.setSplitRatio(0.8)
     return gam
 

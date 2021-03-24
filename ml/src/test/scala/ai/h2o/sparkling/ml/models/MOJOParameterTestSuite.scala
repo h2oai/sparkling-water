@@ -96,9 +96,10 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setLabelCol("CAPSULE")
       .setSeed(1)
       .setLambdaValue(Array(0.5))
-      .setGamCols(Array("PSA", "AGE"))
+      .setGamCols(Array(Array("PSA"), Array("AGE")))
       .setNumKnots(Array(5, 5))
-      .setBs(Array(5, 5))
+      .setBs(Array(1, 1))
+      .setScale(Array(.5, .5))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo, Set("getFeaturesCols"))
