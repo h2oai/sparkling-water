@@ -29,7 +29,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.DoubleType
+import org.apache.spark.sql.types.{BooleanType, DoubleType, StringType}
 
 class H2OTargetEncoder(override val uid: String)
   extends Estimator[H2OTargetEncoderModel]
@@ -51,7 +51,7 @@ class H2OTargetEncoder(override val uid: String)
     }
     val input = h2oContext.asH2OFrame(toConvertDF)
     val distinctInputCols = getInputCols().flatten.distinct
-    val toCategorical = if (problemType == H2OTargetEncoderProblemType.Classification) {
+    val toCategorical = if (isLabelColCategorical(problemType, dataset)) {
       distinctInputCols ++ Seq(getLabelCol())
     } else {
       distinctInputCols
@@ -71,6 +71,15 @@ class H2OTargetEncoder(override val uid: String)
     input.delete()
     val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
     copyValues(model)
+  }
+
+  private def isLabelColCategorical(problemType: H2OTargetEncoderProblemType, dataset: Dataset[_]): Boolean = {
+    problemType == H2OTargetEncoderProblemType.Classification ||
+    (problemType == H2OTargetEncoderProblemType.Auto && {
+      val dataType = dataset.select(col((getLabelCol()))).schema.fields.head.dataType
+      dataType.isInstanceOf[StringType] || dataType.isInstanceOf[BooleanType]
+      }
+    )
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
