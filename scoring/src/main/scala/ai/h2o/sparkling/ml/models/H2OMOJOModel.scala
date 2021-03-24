@@ -84,6 +84,7 @@ class H2OMOJOModel(override val uid: String)
     }
   }
 
+  @DeprecatedMethod("a dedicated getter method for a given parameter", "3.34")
   def getTrainingParams(): Map[String, String] = $(trainingParams)
 
   def getModelCategory(): String = $(modelCategory)
