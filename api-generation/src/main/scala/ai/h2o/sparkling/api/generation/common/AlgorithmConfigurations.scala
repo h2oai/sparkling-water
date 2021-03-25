@@ -70,6 +70,7 @@ trait AlgorithmConfigurations {
     val interactionPairs = ExplicitField("interaction_pairs", "HasInteractionPairs", null)
 
     val deprecatedDistribution = DeprecatedField("distribution", "DeprecatedDistribution", "distribution", "3.34")
+    val deprecatedWeightCol = DeprecatedField("weights_col", "DeprecatedWeightCol", "weightCol", "3.34")
 
     val xgboostFields = Seq(monotonicity, calibrationDataFrame, ignoredCols)
     val glmFields = Seq(randomCols, ignoredCols, plugValues, betaConstraints, interactionPairs)
@@ -81,6 +82,7 @@ trait AlgorithmConfigurations {
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
     val glmDeprecations = Seq(deprecatedDistribution)
+    val kmeansDeprecations = Seq(deprecatedWeightCol)
 
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -104,7 +106,7 @@ trait AlgorithmConfigurations {
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, glmDeprecations),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
       ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
-      ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
+      ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, kmeansDeprecations),
       ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
 
