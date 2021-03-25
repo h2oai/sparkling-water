@@ -49,6 +49,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
 
   def clusterInfoFile: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_INFO_FILE._1)
 
+  @DeprecatedMethod("externalMemory", "3.34")
+  def mapperXmx: String = externalMemory
+
   def externalMemory: String = sparkConf.get(PROP_EXTERNAL_MEMORY._1, PROP_EXTERNAL_MEMORY._2)
 
   def HDFSOutputDir: Option[String] = sparkConf.getOption(PROP_EXTERNAL_CLUSTER_HDFS_DIR._1)
@@ -139,6 +142,9 @@ trait ExternalBackendConf extends SharedBackendConf with Logging with ExternalBa
     set(PROP_EXTERNAL_CLUSTER_START_TIMEOUT._1, clusterStartTimeout.toString)
 
   def setClusterInfoFile(path: String): H2OConf = set(PROP_EXTERNAL_CLUSTER_INFO_FILE._1, path)
+
+  @DeprecatedMethod("setExternalMemory", "3.34")
+  def setMapperXmx(mem: String): H2OConf = setExternalMemory(mem)
 
   def setExternalMemory(memory: String): H2OConf = set(PROP_EXTERNAL_MEMORY._1, memory)
 
