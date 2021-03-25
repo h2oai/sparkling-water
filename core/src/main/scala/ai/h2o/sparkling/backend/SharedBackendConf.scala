@@ -102,6 +102,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def internalPortOffset: Int = sparkConf.getInt(PROP_INTERNAL_PORT_OFFSET._1, PROP_INTERNAL_PORT_OFFSET._2)
 
+  @DeprecatedMethod("basePort", "3.34")
+  def nodeBasePort: Int = basePort
+
   def basePort: Int = sparkConf.getInt(PROP_BASE_PORT._1, PROP_BASE_PORT._2)
 
   def mojoDestroyTimeout: Int = sparkConf.getInt(PROP_MOJO_DESTROY_TIMEOUT._1, PROP_MOJO_DESTROY_TIMEOUT._2)
@@ -270,6 +273,9 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setMaxParallelScalaCellJobs(limit: Int): H2OConf = set(PROP_FLOW_SCALA_CELL_MAX_PARALLEL._1, limit.toString)
 
   def setInternalPortOffset(offset: Int): H2OConf = set(PROP_INTERNAL_PORT_OFFSET._1, offset.toString)
+
+  @DeprecatedMethod("setBasePort", "3.34")
+  def setNodeBasePort(port: Int): H2OConf = setBasePort(port)
 
   def setBasePort(port: Int): H2OConf = set(PROP_BASE_PORT._1, port.toString)
 
