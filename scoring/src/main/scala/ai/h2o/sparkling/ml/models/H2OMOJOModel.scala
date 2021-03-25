@@ -307,15 +307,17 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
       case m: PredictContributionsFactory =>
         val modelCategory = model.getModelCategory
         if (modelCategory != ModelCategory.Regression && modelCategory != ModelCategory.Binomial) {
-          throw new IllegalArgumentException(s"""
+          logWarning(s"""
               | Computing contributions on MOJO of type '${m.getModelCategory}' is only supported for regression
               | and binomial model categories!
               |""".stripMargin)
+          false
+        } else {
+          true
         }
-        true
       case unsupported =>
-        throw new IllegalArgumentException(
-          s"Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!")
+        logWarning(s"Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!")
+        false
     }
   }
 
@@ -323,7 +325,8 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     model match {
       case _: TreeBackedMojoModel => true
       case _ =>
-        throw new IllegalArgumentException("Computing leaf node assignments is only available on tree based models!")
+        logWarning("Computing leaf node assignments is only available on tree based models!")
+        false
     }
   }
 
@@ -331,8 +334,8 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     model match {
       case _: SharedTreeMojoModel => true
       case _ =>
-        throw new IllegalArgumentException(
-          "Computing stage results is only available on tree based models except XGBoost!")
+        logWarning("Computing stage results is only available on tree based models except XGBoost!")
+        false
     }
   }
 
