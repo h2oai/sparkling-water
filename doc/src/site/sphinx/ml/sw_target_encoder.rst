@@ -22,7 +22,7 @@ An example of converting a categorical feature to continues with Target Encoder 
   Mountain View   1       0.714    
   Prague          0       0.286    
   Mountain View   0       0.714    
-  Chennai         1       0.8      
+  Chennai         1       0.8
   Mountain View   1       0.714    
   Prague          0       0.286    
   Prague          0       0.286    
@@ -62,8 +62,7 @@ and prepare the environment:
 
 	        import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
-	        val rawSparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
-            val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
+	        val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
     .. tab-container:: Python
@@ -89,7 +88,6 @@ and prepare the environment:
             import h2o
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
             sparkDF = hc.asSparkFrame(frame)
-            sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
 
@@ -109,15 +107,16 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
             import ai.h2o.sparkling.ml.features.H2OTargetEncoder
             val targetEncoder = new H2OTargetEncoder()
               .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+              .setProblemType("Classification")
               .setLabelCol("CAPSULE")
 
         Also, create an instance of an algorithm consuming encoded columns and define pipeline:
 
         .. code:: scala
 
-            import ai.h2o.sparkling.ml.algos.H2OGBM
+            import ai.h2o.sparkling.ml.algos.classification.H2OGBMClassifier
             import org.apache.spark.ml.Pipeline
-            val gbm = new H2OGBM()
+            val gbm = new H2OGBMClassifier()
                 .setFeaturesCols(targetEncoder.getOutputCols())
                 .setLabelCol("CAPSULE")
             val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
@@ -153,15 +152,16 @@ Target Encoder in Sparkling Water is implemented as a regular estimator and thus
             from pysparkling.ml import H2OTargetEncoder
             targetEncoder = H2OTargetEncoder()\
               .setInputCols(["RACE", "DPROS", "DCAPS"])\
-              .setLabelCol("CAPSULE")
+              .setLabelCol("CAPSULE")\
+              .setProblemType("Classification")
 
         Also, create an instance of an algorithm consuming encoded columns and define pipeline:
 
         .. code:: python
 
-            from pysparkling.ml import H2OGBM
+            from pysparkling.ml import H2OGBMClassifier
             from pyspark.ml import Pipeline
-            gbm = H2OGBM()\
+            gbm = H2OGBMClassifier()\
                 .setFeaturesCols(targetEncoder.getOutputCols())\
                 .setLabelCol("CAPSULE")
             pipeline = Pipeline(stages=[targetEncoder, gbm])
@@ -199,10 +199,8 @@ an algorithm without ML pipeline, the 'transformTrainingDataset' method should b
 appropriate results.
 
 
-Limitations and Edge Cases
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-- The target encoder currently supports only Binomial and Regression problems. In other words, if the label column is of
-  a string type, it can contain only two distinct values. Otherwise, the label column must be numeric.
+Edge Cases
+~~~~~~~~~~
 - The label column can't contain any ``null`` values.
 - Input columns transformed by Target Encoder can contain ``null`` values.
 - Novel values in a testing/production data set and ``null`` values belong to the same category. In other words,

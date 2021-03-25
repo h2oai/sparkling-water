@@ -28,7 +28,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 
 @RunWith(classOf[JUnitRunner])
-class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
+class H2OTargetEncoderMultinomialTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]")
 
@@ -39,19 +39,19 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       .option("header", "true")
       .option("inferSchema", "true")
       .csv(TestUtils.locate(path))
-      .withColumn("CAPSULE", 'CAPSULE.cast(StringType))
+      .withColumn("AGE", 'AGE.cast(StringType))
   }
 
   private def loadDataFrameFromParquetAsResource(path: String): DataFrame = {
     val filePath = getClass.getResource(path).getFile
-    spark.read.parquet(filePath).withColumn("CAPSULE", 'CAPSULE.cast(StringType))
+    spark.read.parquet(filePath)
   }
 
   private lazy val dataset = loadDataFrameFromCsv("smalldata/prostate/prostate.csv")
   private lazy val trainingDataset = dataset.limit(300).cache()
   private lazy val testingDataset = dataset.except(trainingDataset).cache()
   private lazy val expectedTestingDataset =
-    loadDataFrameFromParquetAsResource("/target_encoder/testing_dataset_transformed_binomial.parquet").cache()
+    loadDataFrameFromParquetAsResource("/target_encoder/testing_dataset_transformed_multinomial.parquet").cache()
 
   // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
   // https://issues.apache.org/jira/browse/SPARK-19425
@@ -60,10 +60,10 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     test("A pipeline with a target encoder transform training and testing dataset without an exception") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setProblemType("Classification")
 
-      val gbm = new H2OGBM().setLabelCol("CAPSULE")
+      val gbm = new H2OGBM().setLabelCol("AGE")
 
       val pipeline = new Pipeline().setStages(Array(targetEncoder, gbm))
 
@@ -74,7 +74,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     test("The target encoder is able to transform dataset after it's saved and loaded") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setProblemType("Classification")
 
       val pipeline = new Pipeline().setStages(Array(targetEncoder))
@@ -84,14 +84,13 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       model.write.overwrite().save(path)
       val loadedModel = PipelineModel.load(path)
       val transformedTestingDataset = loadedModel.transform(testingDataset)
-
       TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
     }
 
-    test("The target encoder automatically determines a binary problem") {
+    test("The target encoder automatically resolves a multi-class problem") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setProblemType("Auto")
 
       val pipeline = new Pipeline().setStages(Array(targetEncoder))
@@ -99,16 +98,13 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       val model = pipeline.fit(trainingDataset)
       val transformedTestingDataset = model.transform(testingDataset)
 
-      expectedTestingDataset.show(100, false)
-      transformedTestingDataset.show(100, false)
-
       TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
     }
 
     test("The target encoder doesn't apply noise on the testing dataset") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setNoise(0.5)
         .setProblemType("Classification")
 
@@ -124,7 +120,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -140,7 +136,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel apply blended average the same way") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setBlendedAvgEnabled(true)
         .setNoise(0.0)
@@ -154,99 +150,45 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       TestUtils.assertDataFramesAreIdentical(transformedByModel, transformedByMOJOModel)
     }
 
-    test("TargetEncoderMOJOModel will use global average for unexpected values in the testing dataset") {
+    test("TargetEncoderMOJOModel treats nulls as unexpected values in the testing dataset") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setProblemType("Classification")
 
-      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-      val expectedValue = trainingDataset
-        .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-        .groupBy()
-        .avg("CAPSULE")
-        .collect()(0)
-        .getDouble(0)
-      val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te_val", lit(expectedValue))
-      val model = targetEncoder.fit(trainingDataset)
-
-      val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
-      val resultDF = model.transform(unexpectedValuesDF)
-
-      TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
-    }
-
-    test("TargetEncoderModel will use global average for unexpected values in the testing dataset") {
-      val targetEncoder = new H2OTargetEncoder()
-        .setInputCols(Array("DCAPS"))
-        .setLabelCol("CAPSULE")
-        .setProblemType("Classification")
-
-      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(10))
-      val expectedValue = trainingDataset
-        .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-        .groupBy()
-        .avg("CAPSULE")
-        .collect()(0)
-        .getDouble(0)
-      val expectedDF = unexpectedValuesDF.withColumn("DCAPS_te_val", lit(expectedValue))
-      val model = targetEncoder.fit(trainingDataset)
-
-      val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
-      val resultDF = model.transformTrainingDataset(unexpectedValuesDF)
-
-      TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
-    }
-
-    test("TargetEncoderMOJOModel will use global average for null values in the testing dataset") {
-      val targetEncoder = new H2OTargetEncoder()
-        .setInputCols(Array("DCAPS"))
-        .setLabelCol("CAPSULE")
-        .setProblemType("Classification")
-
+      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
       val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-      val expectedValue = trainingDataset
-        .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-        .groupBy()
-        .avg("CAPSULE")
-        .collect()(0)
-        .getDouble(0)
-      val expectedDF = withNullsDF.withColumn("DCAPS_te_val", lit(expectedValue))
+
       val model = targetEncoder.fit(trainingDataset)
 
-      val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
-      val resultDF = model.transform(withNullsDF)
+      val expectedDF = model.transform(unexpectedValuesDF).drop("DCAPS")
+      val resultDF = model.transform(withNullsDF).drop("DCAPS")
 
-      TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
+      TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
     }
 
-    test("TargetEncoderModel will use global average for null values in the testing dataset") {
+    test("TargetEncoderModel treats nulls as unexpected values in the testing dataset") {
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setProblemType("Classification")
 
+      val unexpectedValuesDF = testingDataset.withColumn("DCAPS", lit(1000))
       val withNullsDF = testingDataset.withColumn("DCAPS", lit(null).cast(IntegerType))
-      val expectedValue = trainingDataset
-        .withColumn("CAPSULE", 'CAPSULE.cast(IntegerType))
-        .groupBy()
-        .avg("CAPSULE")
-        .collect()(0)
-        .getDouble(0)
-      val expectedDF = withNullsDF.withColumn("DCAPS_te_val", lit(expectedValue))
+
       val model = targetEncoder.fit(trainingDataset)
 
-      val expectedDFVector = model.createVectorColumn(expectedDF, "DCAPS_te", Array("DCAPS_te_val"))
-      val resultDF = model.transformTrainingDataset(withNullsDF)
+      val expectedDF = model.transformTrainingDataset(unexpectedValuesDF).drop("DCAPS")
+      val resultDF = model.transformTrainingDataset(withNullsDF).drop("DCAPS")
 
-      TestUtils.assertDataFramesAreIdentical(expectedDFVector, resultDF)
+      TestUtils.assertDataFramesAreIdentical(expectedDF, resultDF)
     }
 
     test("The targetEncoder can be trained and used on a dataset with null values") {
       import spark.implicits._
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -268,7 +210,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     test("The KFold strategy with column should give the same results as LeaveOneOut on the training dataset") {
       val targetEncoderKFold = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("KFold")
         .setFoldCol("ID")
         .setNoise(0.0)
@@ -276,7 +218,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
       val targetEncoderLeaveOneOut = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("LeaveOneOut")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -294,7 +236,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -303,7 +245,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
         .withColumn("RACE", 'RACE cast StringType)
         .withColumn("DPROS", 'DPROS cast StringType)
         .withColumn("DCAPS", 'DCAPS cast StringType)
-        .withColumn("CAPSULE", 'CAPSULE cast StringType)
+        .withColumn("AGE", 'AGE cast StringType)
       val trainingDataset = dataset.limit(300).cache()
       val testingDataset = dataset.except(trainingDataset).cache()
       val model = targetEncoder.fit(trainingDataset)
@@ -316,8 +258,11 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
     }
 
     test("The target encoder can work with arbitrary label categories") {
-      val trainingDatasetWithLabel =
-        trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
         .setLabelCol("LABEL")
@@ -335,9 +280,12 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test(
       "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with an unexpected label the same way") {
-      val trainingDatasetWithLabel =
-        trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
-      val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("c"))
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
+      val testingDatasetWithLabel = testingDataset.withColumn("LABEL", lit("d"))
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
         .setLabelCol("LABEL")
@@ -355,8 +303,11 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test(
       "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform a dataset with a null label the same way") {
-      val trainingDatasetWithLabel =
-        trainingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit("b")))
+      val trainingDatasetWithLabel = trainingDataset.withColumn(
+        "LABEL",
+        when(rand(1) < 0.3, lit("a"))
+          .when(rand(1) < 0.5, lit("b"))
+          .otherwise(lit("c")))
       val testingDatasetWithLabel =
         testingDataset.withColumn("LABEL", when(rand(1) < 0.5, lit("a")).otherwise(lit(null)))
       val targetEncoder = new H2OTargetEncoder()
@@ -380,7 +331,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       def transformTrainingDataset(inputCols: Array[String]): DataFrame = {
         val targetEncoder = new H2OTargetEncoder()
           .setInputCols(inputCols)
-          .setLabelCol("CAPSULE")
+          .setLabelCol("AGE")
           .setHoldoutStrategy("None")
           .setNoise(0.0)
           .setProblemType("Classification")
@@ -402,7 +353,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       def transformTestingDataset(inputCols: Array[String]): DataFrame = {
         val targetEncoder = new H2OTargetEncoder()
           .setInputCols(inputCols)
-          .setLabelCol("CAPSULE")
+          .setLabelCol("AGE")
           .setHoldoutStrategy("None")
           .setNoise(0.0)
           .setProblemType("Classification")
@@ -420,13 +371,13 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test("TargetEncoderModel transforms a dataset regardless the order of columns") {
       import spark.implicits._
-      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"CAPSULE")
+      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
       val trainingSubDataset = trainingDataset.select(originalOrder: _*)
       val testingSubDataset = testingDataset.select(originalOrder: _*)
 
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -443,13 +394,13 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test("TargetEncoderMOJOModel transforms a dataset regardless the order of columns") {
       import spark.implicits._
-      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"CAPSULE")
+      val originalOrder = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
       val trainingSubDataset = trainingDataset.select(originalOrder: _*)
       val testingSubDataset = testingDataset.select(originalOrder: _*)
 
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -466,12 +417,12 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test("TargetEncoderModel transforms a dataset with a subset of columns the same way as full dataset") {
       import spark.implicits._
-      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"CAPSULE")
+      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
       val testingSubDataset = testingDataset.select(order: _*)
 
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -488,12 +439,12 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
 
     test("TargetEncoderMOJOModel transforms a dataset with a subset of columns the same way as full dataset") {
       import spark.implicits._
-      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"CAPSULE")
+      val order = Array($"ID", $"RACE", $"DPROS", $"DCAPS", $"AGE")
       val testingSubDataset = testingDataset.select(order: _*)
 
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -514,7 +465,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("DPROS", "DCAPS", "RACE"))
         .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")
@@ -539,7 +490,7 @@ class H2OTargetEncoderBinomialTestSuite extends FunSuite with Matchers with Shar
       val targetEncoder = new H2OTargetEncoder()
         .setInputCols(Array("DPROS", "DCAPS", "RACE"))
         .setOutputCols(Array("DPROS_out", "DCAPS_out", "RACE_out"))
-        .setLabelCol("CAPSULE")
+        .setLabelCol("AGE")
         .setHoldoutStrategy("None")
         .setNoise(0.0)
         .setProblemType("Classification")

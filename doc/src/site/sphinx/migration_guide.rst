@@ -3,8 +3,8 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
-From 3.32 to 3.34
------------------
+From 3.32.1 to 3.34
+-------------------
 
 - On ``H2OConf``, the setters ``setClientIcedDir`` and ``setNodeIcedDir`` are replaced by ``setIcedDir`` and
   getters ``clientIcedDir`` and ``nodeIcedDir`` are replaced by ``icedDir``. Also the spark options
@@ -43,6 +43,11 @@ From 3.32 to 3.34
 - The ``distribution`` parameter on ``H2OGLM`` was removed without a replacement.
 
 - The support for Apache Spark 2.1.x has been removed.
+
+From 3.32 to 3.32.1
+-------------------
+
+- The data type of H2OTargetEncoder models has been changed from ``DoubleType`` to
 
 From 3.30.1 to 3.32
 -------------------
