@@ -36,13 +36,13 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
       val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
-      if (getWithContributions()) {
+      if (model.getEnableContributions()) {
         resultBuilder += Utils.arrayToRow(pred.contributions)
       }
-      if (getWithLeafNodeAssignments()) {
+      if (model.getEnableLeafAssignment()) {
         resultBuilder += pred.leafNodeAssignments
       }
-      if (getWithStageResults()) {
+      if (model.getEnableStagedProbabilities()) {
         resultBuilder += pred.stageProbabilities
       }
       new GenericRowWithSchema(resultBuilder.toArray, schema)
@@ -60,21 +60,21 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def getRegressionPredictionSchema(): StructType = {
     val valueField = StructField("value", DoubleType, nullable = false)
     val baseSchema = valueField :: Nil
-    val withContributionsSchema = if (getWithContributions()) {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val withContributionsSchema = if (model.getEnableContributions()) {
       val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
       baseSchema :+ contributionsField
     } else {
       baseSchema
     }
-    val withAssignmentsSchema = if (getWithLeafNodeAssignments()) {
+    val withAssignmentsSchema = if (model.getEnableLeafAssignment()) {
       val assignmentsSchema = ArrayType(StringType, containsNull = false)
       val assignmentsField = StructField("leafNodeAssignments", assignmentsSchema, nullable = false)
       withContributionsSchema :+ assignmentsField
     } else {
       withContributionsSchema
     }
-    val fields = if (getWithStageResults()) {
+    val fields = if (model.getEnableStagedProbabilities()) {
       val stageResultsField =
         StructField("stageResults", ArrayType(DoubleType, containsNull = false), nullable = false)
       withAssignmentsSchema :+ stageResultsField

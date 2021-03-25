@@ -76,7 +76,7 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
     assert(stageResults.size() == algo.getNtrees())
   }
 
-  test("contributions on unsupported algorithm") {
+  test("contributions on unsupported algorithm will be ignored") {
     val algo = new H2OGLM()
       .setSplitRatio(0.8)
       .setSeed(1)
@@ -85,13 +85,13 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setLabelCol("AGE")
 
     val model = algo.fit(dataset)
+    val result = model.transform(dataset)
 
-    intercept[IllegalArgumentException] {
-      model.transform(dataset)
-    }
+    result.foreach(_ => {})
+    result.select("detailed_prediction.*").columns should not contain "contributions"
   }
 
-  test("leaf node assignments on unsupported algorithm") {
+  test("leaf node assignments on unsupported algorithm will be ignored") {
     val algo = new H2OGLM()
       .setSplitRatio(0.8)
       .setSeed(1)
@@ -100,9 +100,10 @@ class RegressionPredictionTestSuite extends FunSuite with Matchers with SharedH2
       .setLabelCol("AGE")
 
     val model = algo.fit(dataset)
-    intercept[IllegalArgumentException] {
-      model.transform(dataset)
-    }
+    val result = model.transform(dataset)
+
+    result.foreach(_ => {})
+    result.select("detailed_prediction.*").columns should not contain "leafNodeAssignments"
   }
 
   test(s"transformSchema") {

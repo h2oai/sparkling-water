@@ -45,16 +45,16 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
       val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
       resultBuilder += pred.label
       resultBuilder += Utils.arrayToRow(pred.classProbabilities)
-      if (getWithContributions()) {
+      if (model.getEnableContributions()) {
         resultBuilder += Utils.arrayToRow(pred.contributions)
       }
       if (supportsCalibratedProbabilities(model)) {
         resultBuilder += Utils.arrayToRow(pred.calibratedClassProbabilities)
       }
-      if (getWithLeafNodeAssignments()) {
+      if (model.getEnableLeafAssignment()) {
         resultBuilder += pred.leafNodeAssignments
       }
-      if (getWithStageResults()) {
+      if (model.getEnableStagedProbabilities()) {
         val p0Array = pred.stageProbabilities
         val p1Array = p0Array.map(1 - _)
         resultBuilder += new GenericRow(Array[Any](p0Array, p1Array))
@@ -80,14 +80,14 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
     val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
     val detailedPredictionFields = baseFields :+ probabilitiesField
 
-    val contributionsFields = if (getWithContributions()) {
+    val contributionsFields = if (model.getEnableContributions()) {
       val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
       detailedPredictionFields :+ contributionsField
     } else {
       detailedPredictionFields
     }
 
-    val assignmentFields = if (getWithLeafNodeAssignments()) {
+    val assignmentFields = if (model.getEnableLeafAssignment()) {
       val assignmentField =
         StructField("leafNodeAssignments", ArrayType(StringType, containsNull = false), nullable = false)
       contributionsFields :+ assignmentField
@@ -95,7 +95,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
       contributionsFields
     }
 
-    val stageProbabilityFields = if (getWithStageResults()) {
+    val stageProbabilityFields = if (model.getEnableStagedProbabilities()) {
       val stageProbabilitiesField =
         StructField("stageProbabilities", getStageProbabilitiesSchema(model), nullable = false)
       assignmentFields :+ stageProbabilitiesField

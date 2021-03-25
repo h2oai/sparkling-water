@@ -82,4 +82,15 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     val model = automl.fit(dataset)
     model.transform(dataset).collect()
   }
+
+  test("H2OAutoML doesn't throw exception on GLM model and enabled contributions") {
+    val automl = new H2OAutoML()
+    automl.setIncludeAlgos(Array("GLM"))
+    automl.setLabelCol("CAPSULE")
+    automl.setMaxModels(5)
+    automl.setSeed(42)
+    automl.setWithContributions(true)
+
+    automl.fit(dataset).transform(dataset).collect()
+  }
 }
