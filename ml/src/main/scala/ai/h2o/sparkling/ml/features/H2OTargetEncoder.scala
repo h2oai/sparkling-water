@@ -78,8 +78,7 @@ class H2OTargetEncoder(override val uid: String)
     (problemType == H2OTargetEncoderProblemType.Auto && {
       val dataType = dataset.select(col((getLabelCol()))).schema.fields.head.dataType
       dataType.isInstanceOf[StringType] || dataType.isInstanceOf[BooleanType]
-      }
-    )
+    })
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoder = defaultCopy(extra)
