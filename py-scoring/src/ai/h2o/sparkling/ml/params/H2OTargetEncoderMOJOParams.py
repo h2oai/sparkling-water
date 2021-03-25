@@ -92,6 +92,17 @@ and a global target value. The default value is 20.""",
         "A seed of the generator producing the random noise",
         H2OTypeConverters.toInt())
 
+    problemType = Param(
+        Params._dummy(),
+        "problemType",
+        """A type of ML problem type for which the target encoder will be used for:
+              Auto           - If this option is chosen (default), the problem type will be automatically resolved based
+                               on the data type of labelCol. If the data type of labelCol is boolean or string,
+                               classification is chosen. Otherwise, the target encoder chooses regression.
+              Classification - A classification problem
+              Regression     - A regression problem""",
+        H2OTypeConverters.toEnumString("ai.h2o.sparkling.ml.params.H2OTargetEncoderProblemType"))
+
     ##
     # Getters
     ##
@@ -107,7 +118,7 @@ and a global target value. The default value is 20.""",
     def getOutputCols(self):
         columns = self.getOrDefault(self.outputCols)
         if not columns:
-            return list(map(lambda c: c + "_te", self.getInputCols()))
+            return list(map(lambda group: ":".join(group) + "_te", self.getInputCols()))
         else:
             return columns
 
@@ -128,3 +139,6 @@ and a global target value. The default value is 20.""",
 
     def getNoiseSeed(self):
         return self.getOrDefault(self.noiseSeed)
+
+    def getProblemType(self):
+        return self.getOrDefault(self.problemType)

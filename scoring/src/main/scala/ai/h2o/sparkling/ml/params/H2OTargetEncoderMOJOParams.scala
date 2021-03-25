@@ -67,6 +67,13 @@ trait H2OTargetEncoderMOJOParams extends Params {
       "Noise addition can be disabled by setting the parameter to 0.0")
   protected final val noiseSeed =
     new LongParam(this, "noiseSeed", "A seed of the generator producing the random noise.")
+  protected final val problemType = new Param[String](
+    this,
+    "problemType",
+    """A type of ML problem type for which the target encoder will be used for:
+      | ``Auto`` - If this option is chosen (default), the problem type will be automatically resolved based on the data type of labelCol. If the data type of labelCol is boolean or string, classification is chosen. Otherwise, the target encoder chooses regression.
+      | ``Classification`` - A classification problem
+      | ``Regression`` - A regression problem""".stripMargin)
 
   //
   // Default values
@@ -81,7 +88,8 @@ trait H2OTargetEncoderMOJOParams extends Params {
     blendedAvgInflectionPoint -> 10.0,
     blendedAvgSmoothing -> 20.0,
     noise -> 0.01,
-    noiseSeed -> -1)
+    noiseSeed -> -1,
+    problemType -> "Auto")
 
   //
   // Getters
@@ -112,4 +120,6 @@ trait H2OTargetEncoderMOJOParams extends Params {
   def getNoise(): Double = $(noise)
 
   def getNoiseSeed(): Long = $(noiseSeed)
+
+  def getProblemType(): String = $(problemType)
 }

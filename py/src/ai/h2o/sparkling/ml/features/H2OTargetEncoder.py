@@ -37,7 +37,9 @@ class H2OTargetEncoder(H2OTargetEncoderMOJOParams, H2OStageBase, JavaEstimator):
                  blendedAvgInflectionPoint=10.0,
                  blendedAvgSmoothing=20.0,
                  noise=0.01,
-                 noiseSeed=-1):
+                 noiseSeed=-1,
+                 columnsToEncode=None,
+                 problemType="Auto"):
         Initializer.load_sparkling_jar()
         super(H2OTargetEncoder, self).__init__()
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.features.H2OTargetEncoder", self.uid)
@@ -95,3 +97,6 @@ class H2OTargetEncoder(H2OTargetEncoderMOJOParams, H2OStageBase, JavaEstimator):
 
     def setNoiseSeed(self, value):
         return self._set(noiseSeed=value)
+
+    def setProblemType(self, value):
+        return self._set(problemType=value)
