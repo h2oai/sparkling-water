@@ -88,7 +88,7 @@ class H2OCommonParams(H2OBaseMOJOParams):
         return self._set(detailedPredictionCol=value)
 
     def setWithDetailedPredictionCol(self, value):
-        warnings.warn("The method will be removed without a replacement in the version 3.34."
+        warnings.warn("The method will be removed without a replacement in the version 3.36."
                       "Detailed prediction columns is enabled by default.", DeprecationWarning)
         return self
 

@@ -27,7 +27,7 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
     invoke(.self$jmojo, "getDetailedPredictionCol")
   },
   getWithDetailedPredictionCol = function() {
-    warning("The method 'getWithDetailedPredictionCol' is deprecated and will be removed without replacement in 3.34.
+    warning("The method 'getWithDetailedPredictionCol' is deprecated and will be removed without replacement in 3.36.
     Detailed prediction columns is always enabled.")
     TRUE
   },

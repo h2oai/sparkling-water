@@ -3,6 +3,12 @@ Migration Guide
 
 Migration guide between Sparkling Water versions.
 
+From 3.34 to 3.36
+-----------------
+
+- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
+  MOJO models were removed without replacement.
+
 From 3.32.1 to 3.34
 -------------------
 
@@ -32,9 +38,6 @@ From 3.32.1 to 3.34
 
 - On ``H2OConf``, the setter ``setMapperXmx`` is replaced by ``setExternalMemory`` and the getter ``mapperXmx``
   is replaced by ``externalMemory``. Also the Spark option ``spark.ext.h2o.hadoop.memory`` is replaced by ``spark.ext.h2o.external.memory``.
-
-- The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
-  MOJO models were removed without replacement.
 
 - The ``withDetailedPredictionCol`` field on ``H2OMOJOSettings`` was removed without a replacement.
 
