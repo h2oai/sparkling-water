@@ -92,7 +92,7 @@ trait H2OBaseMOJOParams extends Params with Logging {
 
   def getDetailedPredictionCol(): String = $(detailedPredictionCol)
 
-  @DeprecatedMethod(version = "3.34")
+  @DeprecatedMethod(version = "3.36")
   def getWithDetailedPredictionCol(): Boolean = true
 
   def getWithContributions(): Boolean = $(withContributions)
