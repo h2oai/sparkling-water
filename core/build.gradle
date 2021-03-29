@@ -82,12 +82,8 @@ dependencies {
   api("ai.h2o:h2o-automl:${h2oVersion}")
   api("ai.h2o:h2o-ext-mojo-pipeline:${h2oVersion}")
 
-  if (sparkMajorVersion >= "3.0") {
-    api("io.fabric8:kubernetes-client:4.9.2") {
-      exclude(group: "com.fasterxml.jackson.core")
-    }
-  } else {
-    api("io.fabric8:kubernetes-client:4.6.4") {
+  if (sparkMajorVersion >= kubernetesSupportSinceSpark) {
+    api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
       exclude(group: "com.fasterxml.jackson.core")
     }
   }

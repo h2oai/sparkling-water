@@ -31,7 +31,7 @@ trait TimeZoneConversions {
   def fromSparkTimeZoneToUTC(timestamp: Timestamp): Long = fromSparkTimeZoneToUTC(timestamp.getTime * 1000) / 1000
 
   def fromSparkTimeZoneToUTC(date: Date): Long = {
-    DateTimeUtils.fromUTCTime(date.getTime * 1000, ZoneId.systemDefault) / 1000
+    DateTimeUtils.fromUTCTime(date.getTime * 1000, ZoneId.systemDefault().getId) / 1000
   }
 
   def fromUTCToSparkTimeZone(timestamp: Long): Long = DateTimeUtils.toUTCTime(timestamp, sparkTimeZone.getID)
