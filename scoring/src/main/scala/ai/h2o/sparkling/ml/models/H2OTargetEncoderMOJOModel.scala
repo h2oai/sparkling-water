@@ -86,7 +86,6 @@ case class H2OTargetEncoderMOJOUdfWrapper(
     problemType: H2OTargetEncoderProblemType) {
 
   @transient private lazy val mojoModel = Utils.getMojoModel(mojoGetter()).asInstanceOf[TargetEncoderMojoModel]
-
   @transient private lazy val easyPredictModelWrapper: EasyPredictModelWrapper = {
     val config = new EasyPredictModelWrapper.Config()
     config.setModel(mojoModel)
