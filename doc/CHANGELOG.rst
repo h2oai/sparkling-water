@@ -1,6 +1,46 @@
 Change Log
 ==========
 
+v3.32.1.1-1 (2021-03-30)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.1-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.1-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.1-1-3.0/index.html>`__
+
+-  Improvement
+
+   -  `SW-2544 <https://0xdata.atlassian.net/browse/SW-2544>`__ - Upgrade to H2O 3.32.1.1
+   -  `SW-2542 <https://0xdata.atlassian.net/browse/SW-2542>`__ - Reflect Changes on GAM According to PUBDEV-7860
+   -  `SW-2471 <https://0xdata.atlassian.net/browse/SW-2471>`__ - Extend H2O Client Deprecation to 3.36
+   -  `SW-2447 <https://0xdata.atlassian.net/browse/SW-2447>`__ - Remove Deprecation of `getTrainingParams` on H2OMOJOModel
+
+-  Engineering Story
+
+   -  `SW-2543 <https://0xdata.atlassian.net/browse/SW-2543>`__ - Extend Deprecation of withDetailedPredictionCol to 3.36
+
+-  New Feature
+
+   -  `SW-2532 <https://0xdata.atlassian.net/browse/SW-2532>`__ - Extend Target Encoder to Multinomial Problems
+   -  `SW-2525 <https://0xdata.atlassian.net/browse/SW-2525>`__ - Expose Interactions on Target Encoder
+   -  `SW-2512 <https://0xdata.atlassian.net/browse/SW-2512>`__ - H2OMOJOPipelineMOJOModel can Produce Predictions of Various Types
+   -  `SW-2505 <https://0xdata.atlassian.net/browse/SW-2505>`__ - Scoring Package for Scala
+   -  `SW-2504 <https://0xdata.atlassian.net/browse/SW-2504>`__ - Python Scoring Package
+   -  `SW-2466 <https://0xdata.atlassian.net/browse/SW-2466>`__ - Extend Target Encoder for Regression Problems
+   -  `SW-2460 <https://0xdata.atlassian.net/browse/SW-2460>`__ - Add H2O CoxPH to Algo API
+
+-  Bug
+
+   -  `SW-2528 <https://0xdata.atlassian.net/browse/SW-2528>`__ - GLM Model Trained via AutoML Throws Exception when Contributions Enabled
+
+-  Docs
+
+   -  `SW-2522 <https://0xdata.atlassian.net/browse/SW-2522>`__ - Add licensing information to docs
+   -  `SW-2510 <https://0xdata.atlassian.net/browse/SW-2510>`__ - Mention Scoring Packages in Sparkling Water Documentation 
+
 v3.32.0.5-1 (2021-03-18)
 ------------------------
 Downloads:
