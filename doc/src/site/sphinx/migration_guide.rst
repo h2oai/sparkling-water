@@ -50,7 +50,10 @@ From 3.32.1 to 3.34
 From 3.32 to 3.32.1
 -------------------
 
-- The data type of H2OTargetEncoder models has been changed from ``DoubleType`` to
+- The data type of H2OTargetEncoder output columns has been changed from ``DoubleType`` to ``ml.linalg.VectorUDT``.
+
+- The sub-columns of the ``prediction`` column produced by ``H2OMOJOPipelineModel`` could be of the type ``float`` instead  of ``double``
+  if ``MOJOModelSettings.namedMojoOutputColumns`` is set to ``true``.
 
 From 3.30.1 to 3.32
 -------------------
