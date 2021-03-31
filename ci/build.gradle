@@ -66,8 +66,8 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                   ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
                   for pythonVersion in ${supportedPythonVersions}; \\
                   do \\
-                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python \\
-                  done \\ 
+                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
+                  done; \\ 
                 done && cd .. && rm -rf sparkling-water
                 """
 
