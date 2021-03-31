@@ -55,15 +55,14 @@ Each Sparkling Water release is published into Maven central with following coor
 The full list of published packages is available
 `here <http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ai.h2o%22%20AND%20a%3Asparkling-water*>`__.
 
-Sparkling Water Requirements for Spark 3.1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sparkling Water Requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  Linux/OS X/Windows
 -  Java 8+
--  Python 2.7+ For Python version of Sparkling Water (PySparkling)
--  `Spark 3.1 <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
-
-To see requirements for older Spark version, please visit relevant documentation.
+-  Python 2.7+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 2.1 - 3.0
+-  Python 3.6+ for Python version of Sparkling Water (PySparkling) build for Apache Spark 3.1
+-  `Apache Spark 2.1+ <https://spark.apache.org/downloads.html>`__ and ``SPARK_HOME`` shell variable must point to your local Spark installation
 
 ---------------
 

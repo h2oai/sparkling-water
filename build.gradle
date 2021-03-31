@@ -144,6 +144,7 @@ configure(allprojects) { project ->
     executorOverheadMemoryOption = loadVersionSpecificProp("executorOverheadMemoryOption", versionSpecificProps)
     driverOverheadMemoryOption = loadVersionSpecificProp("driverOverheadMemoryOption", versionSpecificProps)
     fabricK8sClientVersion = loadVersionSpecificProp("fabricK8sClientVersion", versionSpecificProps)
+    supportedPythonVersions = loadVersionSpecificProp("supportedPythonVersions", versionSpecificProps)
   }
   // All project inherits the same versioning number
   version = loadedVersion

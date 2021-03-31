@@ -173,7 +173,7 @@ def prepareSparklingEnvironmentStage(config) {
                         sh """
                             cd h2o-3
                             git checkout ${config.h2oBranch}
-                            . /envs/h2o_env_python2.7/bin/activate
+                            . /envs/h2o_env_python3.6/bin/activate
                             export BUILD_HADOOP=true
                             export H2O_TARGET=${config.driverHadoopVersion}
                             ./gradlew build --parallel -x check -Duser.name=ec2-user
@@ -276,7 +276,7 @@ def unitTests() {
 def pyUnitTests() {
     return { config ->
         for (pythonProject in ["py", "py-scoring"]) {
-            for (pythonVersion in ["2.7", "3.6"]) {
+            for (pythonVersion in supportedPythonVersions) {
                 stage("QA: PyUnit Tests ${pythonVersion} - ${pythonProject} - ${config.backendMode}") {
                     if (config.runPyUnitTests.toBoolean()) {
                         try {
