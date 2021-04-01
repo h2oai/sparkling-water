@@ -173,7 +173,7 @@ def prepareSparklingEnvironmentStage(config) {
                         sh """
                             cd h2o-3
                             git checkout ${config.h2oBranch}
-                            . /envs/h2o_env_python3.6/bin/activate
+                            . /envs/h2o_env_python2.7/bin/activate
                             export BUILD_HADOOP=true
                             export H2O_TARGET=${config.driverHadoopVersion}
                             ./gradlew build --parallel -x check -Duser.name=ec2-user
