@@ -84,6 +84,7 @@ dependencies {
 
   api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
     exclude(group: "com.fasterxml.jackson.core")
+    exclude(group: "com.fasterxml.jackson.module")
   }
 
   compileOnly(project(':sparkling-water-macros'))
