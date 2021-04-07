@@ -82,10 +82,8 @@ dependencies {
   api("ai.h2o:h2o-automl:${h2oVersion}")
   api("ai.h2o:h2o-ext-mojo-pipeline:${h2oVersion}")
 
-  if (sparkMajorVersion >= kubernetesSupportSinceSpark) {
-    api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
-      exclude(group: "com.fasterxml.jackson.core")
-    }
+  api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
+    exclude(group: "com.fasterxml.jackson.core")
   }
 
   compileOnly(project(':sparkling-water-macros'))
