@@ -95,10 +95,19 @@ dependencies {
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
   testImplementation("org.scala-lang:scala-library:${scalaVersion}")
-  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.scala-lang:scala-compiler:${scalaVersion}")
+  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
   testImplementation(project(':sparkling-water-extensions'))
   testImplementation(project(':sparkling-water-macros'))
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")

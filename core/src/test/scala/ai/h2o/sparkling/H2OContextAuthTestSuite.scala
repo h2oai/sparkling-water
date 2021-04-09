@@ -16,7 +16,7 @@
  */
 package ai.h2o.sparkling
 
-import java.io.{IOException, PrintWriter}
+import java.io.{File, IOException, PrintWriter}
 import java.net.URI
 
 import ai.h2o.sparkling.backend.api.dataframes.DataFrames
@@ -42,9 +42,11 @@ class H2OContextAuthTestSuite extends FunSuite with SharedH2OTestContext {
         .set("spark.ext.h2o.password", "admin_password"))
 
   private def createLoginConf(): String = {
-    val filename = "build/login.conf"
-    new PrintWriter(filename) { write("admin:admin_password"); close() }
-    filename
+    val file = File.createTempFile("login", ".conf")
+    file.deleteOnExit()
+    val filePath = file.getAbsolutePath
+    new PrintWriter(filePath) { write("admin:admin_password"); close() }
+    filePath
   }
 
   test("H2O endpoint behind Flow Proxy is accessible with provided username and password") {
