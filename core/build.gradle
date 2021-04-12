@@ -90,6 +90,7 @@ dependencies {
   compileOnly(project(':sparkling-water-macros'))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
+  compileOnly("org.apache.hadoop:hadoop-common:${hadoopCommonsVersion}")
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}") {
     exclude(group: "org.apache.hadoop")
   }

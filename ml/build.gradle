@@ -29,6 +29,7 @@ dependencies {
   implementation(project(':sparkling-water-api-generation'))
 
   compileOnly(project(":sparkling-water-macros"))
+  compileOnly("org.apache.hadoop:hadoop-common:${hadoopCommonsVersion}")
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}") {
     exclude(group: "org.apache.hadoop")
   }
