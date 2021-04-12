@@ -90,9 +90,15 @@ dependencies {
   compileOnly(project(':sparkling-water-macros'))
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
   compileOnly("org.scala-lang:scala-compiler:${scalaVersion}")
-  compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-  compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.apache.hadoop")
+  }
+  compileOnly("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.apache.hadoop")
+  }
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.apache.hadoop")
+  }
 
   testImplementation("org.scala-lang:scala-library:${scalaVersion}")
   testImplementation("org.scala-lang:scala-compiler:${scalaVersion}")

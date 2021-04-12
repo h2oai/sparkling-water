@@ -29,7 +29,9 @@ dependencies {
   implementation(project(':sparkling-water-api-generation'))
 
   compileOnly(project(":sparkling-water-macros"))
-  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
+  compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.apache.hadoop")
+  }
   compileOnly("org.scala-lang:scala-library:${scalaVersion}")
 
   testImplementation(project(":sparkling-water-macros"))
@@ -45,6 +47,7 @@ dependencies {
   // we do not get during normal production usage
   testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
   testImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
+  testImplementation('org.apache.hadoop:hadoop-client:2.7.2') { version { strictly '2.7.2' } }
   testImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
 }
 
