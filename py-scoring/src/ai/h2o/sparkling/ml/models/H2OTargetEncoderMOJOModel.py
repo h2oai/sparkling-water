@@ -23,3 +23,7 @@ from pyspark.ml.wrapper import JavaModel
 
 class H2OTargetEncoderMOJOModel(H2OTargetEncoderMOJOParams, JavaModel, JavaMLWritable, H2OJavaMLReadable):
     pass
+
+
+class H2OTargetEncoderNopMOJOModel(H2OTargetEncoderMOJOModel):
+    pass

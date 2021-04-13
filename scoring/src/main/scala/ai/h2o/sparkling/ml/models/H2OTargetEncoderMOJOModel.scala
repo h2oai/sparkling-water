@@ -44,7 +44,7 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
 
   def this() = this(Identifiable.randomUID(getClass.getSimpleName))
 
-  @transient lazy val inOutMapping: Map[Seq[String], (Seq[String], Int)] = {
+  @transient private lazy val inOutMapping: Map[Seq[String], (Seq[String], Int)] = {
     val mojoModel = Utils.getMojoModel(getMojo()).asInstanceOf[TargetEncoderMojoModel]
     mojoModel._inoutMapping.asScala.zipWithIndex.map {
       case (entry, index) => (entry.from.toList, (entry.to.toList, index))
@@ -73,6 +73,14 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoderMOJOModel = defaultCopy(extra)
+}
+
+class H2OTargetEncoderNopMOJOModel(override val uid: String) extends H2OTargetEncoderMOJOModel(uid) {
+  override protected def inputColumnNames: Array[String] = Array.empty
+
+  def this() = this(Identifiable.randomUID(getClass.getSimpleName))
+
+  override def transform(dataset: Dataset[_]): DataFrame = dataset.toDF()
 }
 
 private[models] case class OutputColumns(columns: Seq[String], totalOrderOfFirstColumnInGroup: Int)
