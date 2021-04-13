@@ -38,16 +38,18 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: Option
   with MLWritable
   with RestCommunication {
 
-  lazy val mojoModel: H2OTargetEncoderMOJOModel = targetEncoderModel match {
-    case Some(targetEncoderModel) =>
-      val mojo = targetEncoderModel.downloadMojo()
-      val model = new H2OTargetEncoderMOJOModel()
-      copyValues(model).setMojo(mojo)
-    case None =>
-      val model = new H2OTargetEncoderNopMOJOModel()
-      val emptyMojo = File.createTempFile("emptyTargetEncoder", ".mojo")
-      emptyMojo.deleteOnExit()
-      copyValues(model).setMojo(emptyMojo)
+  lazy val mojoModel: H2OTargetEncoderMOJOModel = {
+    val model = new H2OTargetEncoderMOJOModel()
+    copyValues(model)
+    targetEncoderModel match {
+      case Some(targetEncoderModel) =>
+        val mojo = targetEncoderModel.downloadMojo()
+        model.setMojo(mojo)
+      case None =>
+        val emptyMojo = File.createTempFile("emptyTargetEncoder", ".mojo")
+        emptyMojo.deleteOnExit()
+        model.setMojo(emptyMojo)
+    }
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {

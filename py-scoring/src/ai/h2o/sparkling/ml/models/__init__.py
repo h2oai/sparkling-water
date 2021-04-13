@@ -17,7 +17,6 @@
 
 from ai.h2o.sparkling.ml.models.H2OTargetEncoderModel import H2OTargetEncoderModel
 from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderMOJOModel
-from ai.h2o.sparkling.ml.models.H2OTargetEncoderMOJOModel import H2OTargetEncoderNopMOJOModel
 from ai.h2o.sparkling.ml.models.H2OMOJOSettings import H2OMOJOSettings
 from ai.h2o.sparkling.ml.models.H2OXGBoostMOJOModel import H2OXGBoostMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGBMMOJOModel import H2OGBMMOJOModel

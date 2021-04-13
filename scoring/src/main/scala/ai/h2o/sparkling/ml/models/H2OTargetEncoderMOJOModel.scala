@@ -52,35 +52,31 @@ class H2OTargetEncoderMOJOModel(override val uid: String)
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
-    import org.apache.spark.sql.DatasetExtensions._
-    val outputCols = getOutputCols()
-    val udfWrapper =
-      H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
-    val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
-    withPredictionsDF
-      .withColumns(
-        outputCols,
-        outputCols.zip(getInputCols()).map {
-          case (outputCol, inputColGroup) =>
-            val (outputColsFromMapping, index) = inOutMapping.getOrElse(inputColGroup.toList, (Seq.empty[String], 0))
-            if (outputColsFromMapping.length == 0) {
-              throw new RuntimeException(
-                s"The target encoder MOJO model doesn't return any column for the input column group '$outputColsFromMapping'")
-            }
-            col(outputColumnName)(index) as outputCol
-        })
-      .drop(outputColumnName)
+    if (getInputCols().isEmpty) {
+      dataset.toDF()
+    } else {
+      import org.apache.spark.sql.DatasetExtensions._
+      val outputCols = getOutputCols()
+      val udfWrapper =
+        H2OTargetEncoderMOJOUdfWrapper(getMojo, outputCols, H2OTargetEncoderProblemType.valueOf(getProblemType()))
+      val withPredictionsDF = applyPredictionUdf(dataset, _ => udfWrapper.mojoUdf)
+      withPredictionsDF
+        .withColumns(
+          outputCols,
+          outputCols.zip(getInputCols()).map {
+            case (outputCol, inputColGroup) =>
+              val (outputColsFromMapping, index) = inOutMapping.getOrElse(inputColGroup.toList, (Seq.empty[String], 0))
+              if (outputColsFromMapping.length == 0) {
+                throw new RuntimeException(
+                  s"The target encoder MOJO model doesn't return any column for the input column group '$outputColsFromMapping'")
+              }
+              col(outputColumnName)(index) as outputCol
+          })
+        .drop(outputColumnName)
+    }
   }
 
   override def copy(extra: ParamMap): H2OTargetEncoderMOJOModel = defaultCopy(extra)
-}
-
-class H2OTargetEncoderNopMOJOModel(override val uid: String) extends H2OTargetEncoderMOJOModel(uid) {
-  override protected def inputColumnNames: Array[String] = Array.empty
-
-  def this() = this(Identifiable.randomUID(getClass.getSimpleName))
-
-  override def transform(dataset: Dataset[_]): DataFrame = dataset.toDF()
 }
 
 private[models] case class OutputColumns(columns: Seq[String], totalOrderOfFirstColumnInGroup: Int)
