@@ -276,7 +276,7 @@ def unitTests() {
 def pyUnitTests() {
     return { config ->
         for (pythonProject in ["py", "py-scoring"]) {
-            for (pythonVersion in supportedPythonVersions) {
+            for (pythonVersion in config.commons.getSupportedPythonVersions(config.sparkMajorVersion)) {
                 stage("QA: PyUnit Tests ${pythonVersion} - ${pythonProject} - ${config.backendMode}") {
                     if (config.runPyUnitTests.toBoolean()) {
                         try {

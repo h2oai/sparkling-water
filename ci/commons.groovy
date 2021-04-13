@@ -45,6 +45,13 @@ def getSupportedSparkVersions() {
     return sparkVersions
 }
 
+def getSupportedPythonVersions(sparkVersion) {
+    def versionLine = readFile("gradle-spark${sparkVersion}.properties")
+        .split("\n")
+        .find() { line -> line.startsWith('supportedPythonVersions') }
+    return versionLine.split("=")[1].split(" ")
+}
+
 def withDocker(image, groovy.lang.Closure code, String dockerOptions = "", groovy.lang.Closure initCode = {}) {
     dockerPull(image)
     docker.image(image).inside(dockerOptions) {
