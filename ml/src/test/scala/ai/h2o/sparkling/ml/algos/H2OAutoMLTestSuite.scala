@@ -67,7 +67,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     val nonNullValues = leaderboardWithExtraColumns.select(nonNullColumns.map(col): _*).first().toSeq
 
     nullValues shouldEqual Seq(null) // TODO: This needs to be fixed in H2O-3 AutoML backend
-    nonNullValues shouldNot contain (null)
+    nonNullValues shouldNot contain(null)
     leaderboardWithExtraColumns.columns shouldEqual algo.getLeaderboard().columns ++ extraColumns
   }
 
