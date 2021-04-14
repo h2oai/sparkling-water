@@ -17,12 +17,6 @@ dependencies {
   integTestImplementation("junit:junit:4.11")
   integTestImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
   integTestImplementation("org.scala-lang:scala-library:${scalaVersion}")
-
-  // For test purposes, force newer client as the tests are modifying classpath and we get errors which
-  // we do not get during normal production usage
-  integTestImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
-  integTestImplementation('org.apache.hadoop:hadoop-common:2.7.2') { version { strictly '2.7.2' } }
-  integTestImplementation('commons-io:commons-io:2.4') { version { strictly '2.4' } }
 }
 
 defineStandardPublication().call()
