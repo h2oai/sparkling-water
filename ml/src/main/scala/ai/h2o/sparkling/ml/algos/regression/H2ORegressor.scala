@@ -34,10 +34,4 @@ private[sparkling] trait H2ORegressor extends H2OAlgoCommonUtils {
   override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     super.prepareDatasetForFitting(prepareDatasetForRegression(dataset))
   }
-
-  override private[sparkling] def prepareDatasetForFitting(
-      dataset: Dataset[_],
-      registerFramesForDeletion: Boolean): (H2OFrame, Option[H2OFrame]) = {
-    super.prepareDatasetForFitting(prepareDatasetForRegression(dataset), registerFramesForDeletion)
-  }
 }

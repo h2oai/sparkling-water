@@ -34,10 +34,4 @@ private[sparkling] trait H2OClassifier extends H2OAlgoCommonUtils {
   override private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     super.prepareDatasetForFitting(prepareDatasetForClassification(dataset))
   }
-
-  override private[sparkling] def prepareDatasetForFitting(
-      dataset: Dataset[_],
-      registerFramesForDeletion: Boolean): (H2OFrame, Option[H2OFrame]) = {
-    super.prepareDatasetForFitting(prepareDatasetForClassification(dataset), registerFramesForDeletion)
-  }
 }
