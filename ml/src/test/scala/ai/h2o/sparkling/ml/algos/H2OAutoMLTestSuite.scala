@@ -22,6 +22,7 @@ import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
+import org.apache.spark.sql.functions.col
 
 @RunWith(classOf[JUnitRunner])
 class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -59,8 +60,15 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     algo.fit(dataset)
 
     val extraColumns = Seq("training_time_ms", "predict_time_per_row_ms")
+    val nullColumns = Seq("predict_time_per_row_ms")
+    val leaderboardWithExtraColumns = algo.getLeaderboard(extraColumns: _*)
+    val nonNullColumns = leaderboardWithExtraColumns.columns.diff(nullColumns)
+    val nullValues = leaderboardWithExtraColumns.select(nullColumns.map(col): _*).first().toSeq
+    val nonNullValues = leaderboardWithExtraColumns.select(nonNullColumns.map(col): _*).first().toSeq
 
-    algo.getLeaderboard(extraColumns: _*).columns shouldEqual algo.getLeaderboard().columns ++ extraColumns
+    nullValues shouldEqual Seq(null) // TODO: This needs to be fixed in H2O-3 AutoML backend
+    nonNullValues shouldNot contain(null)
+    leaderboardWithExtraColumns.columns shouldEqual algo.getLeaderboard().columns ++ extraColumns
   }
 
   test("ALL as getLeaderboard adds extra columns to the leaderboard") {

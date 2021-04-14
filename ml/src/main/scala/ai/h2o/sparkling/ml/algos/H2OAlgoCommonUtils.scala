@@ -53,12 +53,6 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
   private[sparkling] def getValidationDataFrame(): DataFrame
 
   private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
-    prepareDatasetForFitting(dataset, registerFramesForDeletion = true)
-  }
-
-  private[sparkling] def prepareDatasetForFitting(
-      dataset: Dataset[_],
-      registerFramesForDeletion: Boolean): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
 
     if (getFeaturesCols().isEmpty) {
@@ -107,10 +101,10 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
     } else {
       (trainFrame, None)
     }
-    if (registerFramesForDeletion) {
-      registerH2OFrameForDeletion(resultTrainFrame)
-      registerH2OFrameForDeletion(resultTestFrame)
-    }
+
+    registerH2OFrameForDeletion(resultTrainFrame)
+    registerH2OFrameForDeletion(resultTestFrame)
+
     (resultTrainFrame, resultTestFrame)
   }
 

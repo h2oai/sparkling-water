@@ -80,7 +80,7 @@ class H2OAutoML(override val uid: String)
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     amlKeyOption = None
-    val (train, valid) = prepareDatasetForFitting(dataset, registerFramesForDeletion = false)
+    val (train, valid) = prepareDatasetForFitting(dataset)
     val inputSpec = getInputSpec(train, valid)
     val buildModels = getBuildModels()
     val buildControl = getBuildControl()
@@ -139,11 +139,15 @@ class H2OAutoML(override val uid: String)
     val colsData = table.getAsJsonArray("data").iterator().asScala.toArray.map(_.getAsJsonArray)
     val numRows = table.get("rowcount").getAsInt
     val rows = (0 until numRows).map { idx =>
-      Row(colsData.map(_.get(idx).getAsString): _*)
+      val rowData = colsData.map { colData =>
+        val element = colData.get(idx)
+        if (element.isJsonNull) null else element.getAsString
+      }
+      Row(rowData: _*)
     }
     val spark = SparkSessionUtils.active
     val rdd = spark.sparkContext.parallelize(rows)
-    val schema = StructType(colNames.map(name => StructField(name, StringType)))
+    val schema = StructType(colNames.map(name => StructField(name, StringType, nullable = true)))
     spark.createDataFrame(rdd, schema)
   }
 
