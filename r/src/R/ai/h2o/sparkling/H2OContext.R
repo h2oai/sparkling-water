@@ -57,7 +57,7 @@ H2OContext.getOrCreate <- function(conf = NULL) {
     if (contextPath == "") {
         contextPath <- NA_character_
     }
-    h2o.init(strict_version_check = FALSE, https=https, insecure=insecure, ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())
+    h2o.init(strict_version_check = FALSE, https=https, insecure=insecure, cacert = conf$sslCACert(), ip = ip, port = port, context_path = contextPath, startH2O = F, username = conf$userName(), password = conf$password())
     setClientConnected(jhc)
     .rsparklingenv$isConnected <- TRUE
     print(hc)

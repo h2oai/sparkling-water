@@ -48,6 +48,7 @@ class H2OContext(object):
         kwargs = {}
         kwargs["https"] = schema == "https"
         kwargs["verify_ssl_certificates"] = conf.verifySslCertificates()
+        kwargs["cacert"] = conf.sslCACert()
         if conf.userName() and conf.password():
             kwargs["auth"] = (conf.userName(), conf.password())
         url = "{}://{}:{}".format(schema, h2o_context._client_ip, h2o_context._client_port)
