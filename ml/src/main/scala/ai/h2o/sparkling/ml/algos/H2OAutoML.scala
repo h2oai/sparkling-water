@@ -92,9 +92,11 @@ class H2OAutoML(override val uid: String)
     val leaderModelId = getLeaderModelId(autoMLId)
     val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
-    deleteRegisteredH2OFrames()
-    H2OModel(leaderModelId)
+
+    val result = H2OModel(leaderModelId)
       .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this))
+    deleteRegisteredH2OFrames()
+    result
   }
 
   private def determineIncludedAlgos(): Array[String] = {
