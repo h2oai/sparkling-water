@@ -32,7 +32,7 @@ trait H2OMOJOPredictionWordEmbedding {
     val function = (r: Row) => {
       val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
       val colIdx = model.m.getColIdx(getFeaturesCols().head)
-      val pred = if (r.getSeq[String](colIdx) == null) {
+      val pred = if (r.isNullAt(colIdx)) {
         null
       } else {
         model.predictWord2Vec(r.getSeq[String](colIdx).toArray)

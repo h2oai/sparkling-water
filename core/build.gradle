@@ -82,14 +82,9 @@ dependencies {
   api("ai.h2o:h2o-automl:${h2oVersion}")
   api("ai.h2o:h2o-ext-mojo-pipeline:${h2oVersion}")
 
-  if (sparkMajorVersion >= "3.0") {
-    api("io.fabric8:kubernetes-client:4.9.2") {
-      exclude(group: "com.fasterxml.jackson.core")
-    }
-  } else {
-    api("io.fabric8:kubernetes-client:4.6.4") {
-      exclude(group: "com.fasterxml.jackson.core")
-    }
+  api("io.fabric8:kubernetes-client:${fabricK8sClientVersion}") {
+    exclude(group: "com.fasterxml.jackson.core")
+    exclude(group: "com.fasterxml.jackson.module")
   }
 
   compileOnly(project(':sparkling-water-macros'))
@@ -100,10 +95,19 @@ dependencies {
   compileOnly("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
 
   testImplementation("org.scala-lang:scala-library:${scalaVersion}")
-  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}")
-  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}")
+  testImplementation("org.scala-lang:scala-compiler:${scalaVersion}")
+  testImplementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-sql_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-mllib_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
+  testImplementation("org.apache.spark:spark-repl_${scalaBaseVersion}:${sparkVersion}") {
+    exclude(group: "org.scala-lang")
+  }
   testImplementation(project(':sparkling-water-extensions'))
   testImplementation(project(':sparkling-water-macros'))
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
