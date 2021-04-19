@@ -34,7 +34,7 @@ trait HasLeaderboardDataFrame extends H2OAlgoParamsBase {
   def setLeaderboardDataFrame(value: DataFrame): this.type = set(leaderboardDataFrame, value)
 
   private[sparkling] def getLeaderboardDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
-      Map("leaderboard_frame" -> convertDataFrameToH2OFrameKey(getLeaderboardDataFrame()))
+    Map("leaderboard_frame" -> convertDataFrameToH2OFrameKey(getLeaderboardDataFrame()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
