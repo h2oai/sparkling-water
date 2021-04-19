@@ -280,8 +280,7 @@ def buildConda() {
                     [path: "py-scoring/build/conda", name: "h2o_pysparkling_scoring_${params.spark}"]]
                 for (packageDetails in packages) {
                     dir(packageDetails.path) {
-                        def pythonVersions = ['2.7', '3.6']
-                        for (pyVersion in pythonVersions) {
+                        for (pyVersion in params.commons.getSupportedPythonVersions(params.spark)) {
                             sh """
                                . /envs/h2o_env_python3.6/bin/activate
     
@@ -391,8 +390,7 @@ def publishToConda() {
                 for (packageDetails in packages) {
                     dir(packageDetails.path) {
                         params.commons.withCondaCredentials {
-                            def pythonVersions = ['2.7', '3.6']
-                            for (pyVersion in pythonVersions) {
+                            for (pyVersion in params.commons.getSupportedPythonVersions(params.spark)) {
                                 def pkgName = getCondaPkgName(pyVersion, packageDetails.name)
                                 for (arch in ['osx-64', 'linux-64', 'win-64']) {
                                     publishCondaArtifact(arch, pkgName)
