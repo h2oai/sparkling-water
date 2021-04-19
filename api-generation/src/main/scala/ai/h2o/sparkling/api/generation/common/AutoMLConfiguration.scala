@@ -16,6 +16,9 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
       ("H2OAutoMLStoppingCriteriaParams", classOf[AutoMLStoppingCriteriaV99], classOf[AutoMLStoppingCriteria], Getter),
       ("H2OAutoMLBuildModelsParams", classOf[AutoMLBuildModelsV99], classOf[AutoMLBuildModels], Field))
 
+    val leaderboardFrame =
+      ExplicitField("leadearboard_frame", "HasLeaderboardDataFrame", null, Some("leaderboardDataFrame"), None)
+
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], source) <- autoMLParameters)
       yield ParameterSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.params",
@@ -23,7 +26,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         h2oSchemaClass,
         h2oParameterClass,
         AutoMLIgnoredParameters.all,
-        explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols) else Seq.empty,
+        explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols, leaderboardFrame) else Seq.empty,
         deprecatedFields = Seq.empty,
         explicitDefaultValues =
           Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),
@@ -31,7 +34,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         typeExceptions = Map("sort_metric" -> classOf[H2OAutoMLSortMetric]),
         defaultValueSource = source,
         defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++
-          Map("monotoneConstraints" -> new util.HashMap[String, Double](), "ignoredCols" -> ignoredCols.defaultValue),
+          Map("monotoneConstraints" -> new util.HashMap[String, Double]()),
         generateParamTag = false)
   }
 

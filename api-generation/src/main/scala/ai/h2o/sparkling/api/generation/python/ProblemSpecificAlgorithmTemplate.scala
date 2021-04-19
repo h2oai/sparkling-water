@@ -29,7 +29,6 @@ object ProblemSpecificAlgorithmTemplate
       algorithmSubstitutionContext: ProblemSpecificAlgorithmSubstitutionContext,
       parameterSubstitutionContexts: Seq[ParameterSubstitutionContext]): String = {
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
-    val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
     val parentEntityName = algorithmSubstitutionContext.parentEntityName
@@ -51,6 +50,6 @@ object ProblemSpecificAlgorithmTemplate
       namespace,
       parameters,
       entitySubstitutionContext,
-      commonSubstitutionContext)
+      parameterSubstitutionContexts)
   }
 }

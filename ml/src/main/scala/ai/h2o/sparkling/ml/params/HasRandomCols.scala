@@ -29,7 +29,7 @@ trait HasRandomCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
 
   def setRandomCols(value: Array[String]): this.type = set(randomCols, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+  private[sparkling] def getRandomColsParam(trainingFrame: H2OFrame): Map[String, Any] = {
     val randomColumnNames = getRandomCols()
     val indices = if (randomColumnNames == null) {
       null
@@ -39,16 +39,7 @@ trait HasRandomCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
       indices
     }
 
-    val basicMap = super.getH2OAlgorithmParams(trainingFrame) + ("random_columns" -> indices)
-
-    val ignoredColumns = basicMap.getOrElse("ignored_columns", null).asInstanceOf[Array[String]]
-    if (ignoredColumns == null) {
-      basicMap + ("ignored_columns" -> randomColumnNames)
-    } else if (randomColumnNames == null) {
-      basicMap + ("ignored_columns" -> ignoredColumns)
-    } else {
-      basicMap + ("ignored_columns" -> (ignoredColumns ++ randomColumnNames))
-    }
+    Map("random_columns" -> indices, "ignored_columns" -> randomColumnNames)
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

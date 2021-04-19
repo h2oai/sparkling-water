@@ -28,7 +28,6 @@ object AlgorithmTemplate
       algorithmSubstitutionContext: AlgorithmSubstitutionContext,
       parameterSubstitutionContexts: Seq[ParameterSubstitutionContext]): String = {
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
-    val commonSubstitutionContext = parameterSubstitutionContexts.head
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
     val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
@@ -65,7 +64,7 @@ object AlgorithmTemplate
         namespace,
         parameters,
         entitySubstitutionContext,
-        commonSubstitutionContext)
+        parameterSubstitutionContexts)
 
     clazz + additionalMethod
   }

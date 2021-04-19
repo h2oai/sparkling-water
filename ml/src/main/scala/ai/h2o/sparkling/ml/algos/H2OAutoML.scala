@@ -51,12 +51,12 @@ class H2OAutoML(override val uid: String)
   private var amlKeyOption: Option[String] = None
 
   private def getInputSpec(train: H2OFrame, valid: Option[H2OFrame]): Map[String, Any] = {
-    getH2OAutoMLInputParams() ++
+    getH2OAutoMLInputParams(train) ++
       Map("training_frame" -> train.frameId) ++
       valid.map(fr => Map("validation_frame" -> fr.frameId)).getOrElse(Map())
   }
 
-  private def getBuildModels(): Map[String, Any] = {
+  private def getBuildModels(train: H2OFrame): Map[String, Any] = {
     val monotoneConstraints = getMonotoneConstraints()
     val algoParameters = if (monotoneConstraints != null && monotoneConstraints.nonEmpty) {
       Map("monotone_constrains" -> monotoneConstraints)
@@ -68,22 +68,22 @@ class H2OAutoML(override val uid: String)
     // Removing "include_algos", "exclude_algos" from s H2OAutoMLBuildModelsParams since an effective set algorithms
     // needs to be calculated and stored into "include_algos". The "exclude_algos" are then reset to null and both
     // altered parameters are added to the result.
-    val essentialParameters = getH2OAutoMLBuildModelsParams() - ("include_algos", "exclude_algos")
+    val essentialParameters = getH2OAutoMLBuildModelsParams(train) - ("include_algos", "exclude_algos")
 
     essentialParameters ++ Map("include_algos" -> determineIncludedAlgos(), "exclude_algos" -> null) ++ extra
   }
 
-  private def getBuildControl(): Map[String, Any] = {
-    val stoppingCriteria = getH2OAutoMLStoppingCriteriaParams()
-    getH2OAutoMLBuildControlParams() + ("stopping_criteria" -> stoppingCriteria)
+  private def getBuildControl(train: H2OFrame): Map[String, Any] = {
+    val stoppingCriteria = getH2OAutoMLStoppingCriteriaParams(train)
+    getH2OAutoMLBuildControlParams(train) + ("stopping_criteria" -> stoppingCriteria)
   }
 
   override def fit(dataset: Dataset[_]): H2OMOJOModel = {
     amlKeyOption = None
     val (train, valid) = prepareDatasetForFitting(dataset)
     val inputSpec = getInputSpec(train, valid)
-    val buildModels = getBuildModels()
-    val buildControl = getBuildControl()
+    val buildModels = getBuildModels(train)
+    val buildControl = getBuildControl(train)
     val params = Map("input_spec" -> inputSpec, "build_models" -> buildModels, "build_control" -> buildControl)
     val autoMLId = trainAndGetDestinationKey(s"/99/AutoMLBuilder", params, encodeParamsAsJson = true)
     amlKeyOption = Some(autoMLId)

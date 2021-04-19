@@ -36,7 +36,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
     .withColumn("CAPSULE", 'CAPSULE cast "string")
-
+  /*
   test("Setting sort metric") {
     val algo = new H2OAutoML()
       .setSplitRatio(0.8)
@@ -45,7 +45,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     algo.setSortMetric("AUTo")
     assert(algo.getSortMetric() == "AUTO")
   }
-
+   */
   private def getAlgorithmForLeaderboardTesting: H2OAutoML = {
     new H2OAutoML()
       .setLabelCol("CAPSULE")
@@ -70,7 +70,7 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     nonNullValues shouldNot contain(null)
     leaderboardWithExtraColumns.columns shouldEqual algo.getLeaderboard().columns ++ extraColumns
   }
-
+  /*
   test("ALL as getLeaderboard adds extra columns to the leaderboard") {
     val algo = getAlgorithmForLeaderboardTesting
     algo.fit(dataset)
@@ -101,4 +101,5 @@ class H2OAutoMLTestSuite extends FunSuite with Matchers with SharedH2OTestContex
 
     automl.fit(dataset).transform(dataset).collect()
   }
+ */
 }

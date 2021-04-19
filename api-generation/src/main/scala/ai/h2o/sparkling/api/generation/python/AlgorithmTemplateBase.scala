@@ -54,20 +54,20 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
       namespace: String,
       parameters: Seq[Parameter],
       entitySubstitutionContext: EntitySubstitutionContext,
-      commonSubstitutionContext: ParameterSubstitutionContext): String = {
+      parameterContexts: Seq[ParameterSubstitutionContext]): String = {
     generateEntity(entitySubstitutionContext) {
-      val kwargs = if (commonSubstitutionContext.deprecatedFields.isEmpty) "" else ",\n                 **kwargs"
+      val kwargs = if (parameterContexts.flatMap(_.deprecatedFields).isEmpty) "" else ",\n                 **kwargs"
       s"""    @keyword_only
-         |    def __init__(self,${generateDefaultValuesFromExplicitFields(commonSubstitutionContext.explicitFields)}
-         |${generateCommonDefaultValues(commonSubstitutionContext.defaultValuesOfCommonParameters)},
-         |${generateDefaultValues(parameters, commonSubstitutionContext.explicitDefaultValues)}$kwargs):
+         |    def __init__(self,${generateDefaultValuesFromExplicitFields(parameterContexts.flatMap(_.explicitFields))}
+         |${generateCommonDefaultValues(parameterContexts.map(_.defaultValuesOfCommonParameters).reduce(_ ++ _))},
+         |${generateDefaultValues(parameters, parameterContexts.map(_.explicitDefaultValues).reduce(_ ++ _))}$kwargs):
          |        Initializer.load_sparkling_jar()
          |        super($parentReferenceSource, self).__init__()
          |        self._java_obj = self._new_java_obj("$namespace.$entityName", self.uid)
          |        self._setDefaultValuesFromJava()
          |        kwargs = Utils.getInputKwargs(self)
          |        kwargs = self._updateInitKwargs(kwargs)
-         |${generateDeprecations(commonSubstitutionContext.deprecatedFields)}
+         |${generateDeprecations(parameterContexts.flatMap(_.deprecatedFields))}
          |        if 'interactionPairs' in kwargs:
          |            warn("Interaction pairs are not supported!")
          |        self._set(**kwargs)

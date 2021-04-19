@@ -29,8 +29,8 @@ trait HasUserX extends H2OAlgoParamsBase {
 
   def setUserX(value: DataFrame): this.type = set(userX, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("user_x" -> convertDataFrameToH2OFrameKey(getUserX()))
+  private[sparkling] def getHasUserXParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("user_x" -> convertDataFrameToH2OFrameKey(getUserX()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

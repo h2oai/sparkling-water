@@ -18,23 +18,26 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import org.apache.spark.sql.DataFrame
 
-trait HasIgnoredCols extends H2OAlgoParamsBase {
-  private val ignoredCols =
-    new NullableStringArrayParam(this, "ignoredCols", "Names of columns to ignore for training.")
+trait HasLeaderboardDataFrame extends H2OAlgoParamsBase {
+  private val leaderboardDataFrame = new NullableBigDataFrameParam(
+    this,
+    "leaderboardDataFrame",
+    "This parameter allows the user to specify a particular data frame to use to score and rank models " +
+      "on the leaderboard. This data frame will not be used for anything besides leaderboard scoring.")
 
-  setDefault(ignoredCols -> null)
+  setDefault(leaderboardDataFrame -> null)
 
-  def getIgnoredCols(): Array[String] = $(ignoredCols)
+  def getLeaderboardDataFrame(): DataFrame = $(leaderboardDataFrame)
 
-  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
+  def setLeaderboardDataFrame(value: DataFrame): this.type = set(leaderboardDataFrame, value)
 
-  private[sparkling] def getIgnoredColsParam(trainingFrame: H2OFrame): Map[String, Any] = {
-    Map("ignored_columns" -> getIgnoredCols())
+  private[sparkling] def getLeaderboardDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
+      Map("leaderboard_frame" -> convertDataFrameToH2OFrameKey(getLeaderboardDataFrame()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() + ("ignoredCols" -> "ignored_columns")
+    super.getSWtoH2OParamNameMap() ++ Map("leaderboardDataFrame" -> "leaderboard_frame")
   }
 }

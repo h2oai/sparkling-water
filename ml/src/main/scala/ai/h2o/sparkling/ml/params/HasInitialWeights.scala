@@ -33,8 +33,7 @@ trait HasInitialWeights extends H2OAlgoParamsBase {
 
   def setInitialWeights(value: Array[DenseMatrix]): this.type = set(initialWeights, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
+  private[sparkling] def getInitialWeightsParam(trainingFrame: H2OFrame): Map[String, Any] = {
       Map("initial_weights" -> convertMatrixToH2OFrameKeyArray(getInitialWeights()))
   }
 

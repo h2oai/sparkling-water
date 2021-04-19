@@ -88,4 +88,20 @@ trait H2OAlgoParamsBase extends ParameterConstructorMethods with H2OFrameLifecyc
       frame.frameId
     }
   }
+
+  implicit class ParametersExtraMethods(val parameters: Map[String, Any]) {
+    def +++(other: Map[String, Any]): Map[String, Any] = {
+      val keys = parameters.keySet ++ other.keySet
+      keys.map { key =>
+        val first = parameters.getOrElse(key, null)
+        val second = other.getOrElse(key, null)
+        val value = (first, second) match {
+          case (f, null) => f
+          case (null, s) => s
+          case (f: Array[_], s: Array[_]) => (f ++ s).distinct
+        }
+        key -> value
+      }.toMap
+    }
+  }
 }

@@ -33,8 +33,7 @@ trait HasInitialBiases extends H2OAlgoParamsBase {
 
   def setInitialBiases(value: Array[DenseVector]): this.type = set(initialBiases, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
+  private[sparkling] def getInitialBiasesParam(trainingFrame: H2OFrame): Map[String, Any] = {
       Map("initial_biases" -> convertVectorArrayToH2OFrameKeyArray(getInitialBiases()))
   }
 

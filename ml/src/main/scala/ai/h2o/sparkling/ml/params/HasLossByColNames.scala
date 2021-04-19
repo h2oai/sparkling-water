@@ -31,7 +31,7 @@ trait HasLossByColNames extends H2OAlgoParamsBase {
 
   def setLossByColNames(value: Array[String]): this.type = set(lossByColNames, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
+  def getLossByColNamesParam(trainingFrame: H2OFrame): Map[String, Any] = {
     val names = getLossByColNames()
     val indices = if (names == null) {
       null
@@ -41,7 +41,7 @@ trait HasLossByColNames extends H2OAlgoParamsBase {
       indices
     }
 
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("loss_by_col_idx" -> indices)
+    Map("loss_by_col_idx" -> indices)
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
