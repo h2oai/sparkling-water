@@ -23,7 +23,7 @@ import ai.h2o.sparkling.utils.Base64Encoding
 import water.{DKV, Key}
 import water.api.Handler
 import water.fvec.{AppendableVec, ChunkUtils, Frame, Vec}
-import water.parser.CategoricalPreviewParseWriter
+import water.parser.{CategoricalPreviewParseWriter, ParseDataset}
 import water.util.Log
 
 import scala.collection.mutable.ArrayBuffer
@@ -62,6 +62,9 @@ class ImportFrameHandler extends Handler {
     updateCategoricalIndicesTask.doAll(frame)
 
     convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
+
+    // Final frame created -> log the same information H2O would log after import is finished
+    ParseDataset.logParseResults(frame);
 
     frame.update()
     frame.unlock()
