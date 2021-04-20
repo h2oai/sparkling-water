@@ -57,6 +57,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def jksAlias: Option[String] = sparkConf.getOption(PROP_JKS_ALIAS._1)
 
+  def sslCACert: Option[String] = sparkConf.getOption(PROP_SSL_CA_CERT._1)
+
   def hashLogin: Boolean = sparkConf.getBoolean(PROP_HASH_LOGIN._1, PROP_HASH_LOGIN._2)
 
   def ldapLogin: Boolean = sparkConf.getBoolean(PROP_LDAP_LOGIN._1, PROP_LDAP_LOGIN._2)
@@ -226,6 +228,8 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
   def setJksPass(password: String): H2OConf = set(PROP_JKS_PASS._1, password)
 
   def setJksAlias(alias: String): H2OConf = set(PROP_JKS_ALIAS._1, alias)
+
+  def setSslCACert(path: String): H2OConf = set(PROP_SSL_CA_CERT._1, path)
 
   def setHashLoginEnabled(): H2OConf = set(PROP_HASH_LOGIN._1, value = true)
 
@@ -460,6 +464,13 @@ object SharedBackendConf {
     "setJksAlias(String)",
     """Alias to certificate in the to the Java keystore file to secure H2O Flow UI and internal REST connections
       |between Spark instances (driver + executors) and H2O nodes.""".stripMargin)
+
+  val PROP_SSL_CA_CERT: OptionOption = (
+    "spark.ext.h2o.ssl.ca.cert",
+    None,
+    "setSslCACert(String)",
+    """A path to a CA bundle file or a directory with certificates of trusted CAs. This path is used by RSparkling or
+      |PySparking for connecting to a Sparkling Water backend.""".stripMargin)
 
   val PROP_HASH_LOGIN: BooleanOption = (
     "spark.ext.h2o.hash.login",
