@@ -23,7 +23,7 @@ class H2OAlgorithmReader[T <: H2OAlgoParamsBase] extends H2OReaderBase[T] {
   override def load(path: String): T = {
     val instance = super.load(path)
     val parameterOverrides = instance.getParameterDeserializationOverrides()
-    for((parameterName, transformationFunction) <- parameterOverrides) {
+    for ((parameterName, transformationFunction) <- parameterOverrides) {
       val parameter = instance.getParam(parameterName)
       val originalValue = instance.getOrDefault(parameter)
       val newValue = transformationFunction(originalValue)

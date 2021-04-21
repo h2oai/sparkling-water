@@ -38,12 +38,13 @@ trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging {
 
   override private[ml] def getParameterDeserializationOverrides(): Map[String, Any => Any] = {
     super.getParameterDeserializationOverrides() + ("leaderboardDataFrame",
-      (input: Any) => {
-        if (input != null) {
-          logWarning(s"A pipeline stage with uid '$uid' contained the 'leaderboardDataFrame' property " +
+    (input: Any) => {
+      if (input != null) {
+        logWarning(
+          s"A pipeline stage with uid '$uid' contained the 'leaderboardDataFrame' property " +
             "with a non-null value. The property was reset to null during the pipeline deserialization.")
-        }
-        null
+      }
+      null
     })
 
   }
