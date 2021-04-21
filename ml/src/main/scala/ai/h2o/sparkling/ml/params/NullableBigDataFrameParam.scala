@@ -21,14 +21,12 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 import java.util.Base64
 
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.param.{Param, Params}
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row}
 import org.json4s.JsonAST.{JNull, JString}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
+// This type of Dataframe parameter just serialize execution plans, not data.
 class NullableBigDataFrameParam(parent: Params, name: String, doc: String, isValid: DataFrame => Boolean)
   extends Param[DataFrame](parent, name, doc, isValid) {
 
@@ -40,10 +38,7 @@ class NullableBigDataFrameParam(parent: Params, name: String, doc: String, isVal
     } else {
       withResource(new ByteArrayOutputStream()) { byteStream =>
         withResource(new ObjectOutputStream(byteStream)) { objectStream =>
-          objectStream.writeObject(dataFrame.schema)
-          val rowsWithoutSchema = dataFrame.collect().map(row => new GenericRow(row.toSeq.toArray))
-          val rowsAsList = java.util.Arrays.asList(rowsWithoutSchema: _*)
-          objectStream.writeObject(rowsAsList)
+          objectStream.writeObject(dataFrame)
           objectStream.flush()
           val serialized = byteStream.toByteArray
           JString(Base64.getEncoder().encodeToString(serialized))
@@ -61,9 +56,7 @@ class NullableBigDataFrameParam(parent: Params, name: String, doc: String, isVal
         val bytes = Base64.getDecoder().decode(data)
         withResource(new ByteArrayInputStream(bytes)) { byteStream =>
           withResource(new ObjectInputStream(byteStream)) { objectStream =>
-            val schema = objectStream.readObject().asInstanceOf[StructType]
-            val rows = objectStream.readObject().asInstanceOf[java.util.List[Row]]
-            SparkSessionUtils.active.createDataFrame(rows, schema)
+            objectStream.readObject().asInstanceOf[DataFrame]
           }
         }
       case _ =>

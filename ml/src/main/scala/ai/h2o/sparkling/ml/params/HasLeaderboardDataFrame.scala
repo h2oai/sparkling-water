@@ -18,9 +18,12 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.H2OFrame
+import org.apache.spark.expose.Logging
 import org.apache.spark.sql.DataFrame
 
-trait HasLeaderboardDataFrame extends H2OAlgoParamsBase {
+trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging {
+  val uid: String
+
   private val leaderboardDataFrame = new NullableBigDataFrameParam(
     this,
     "leaderboardDataFrame",
@@ -32,6 +35,18 @@ trait HasLeaderboardDataFrame extends H2OAlgoParamsBase {
   def getLeaderboardDataFrame(): DataFrame = $(leaderboardDataFrame)
 
   def setLeaderboardDataFrame(value: DataFrame): this.type = set(leaderboardDataFrame, value)
+
+  override private[ml] def getParameterDeserializationOverrides(): Map[String, Any => Any] = {
+    super.getParameterDeserializationOverrides() + ("leaderboardDataFrame",
+      (input: Any) => {
+        if (input != null) {
+          logWarning(s"A pipeline stage with uid '$uid' contained the 'leaderboardDataFrame' property " +
+            "with a non-null value. The property was reset to null during the pipeline deserialization.")
+        }
+        null
+    })
+
+  }
 
   private[sparkling] def getLeaderboardDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("leaderboard_frame" -> convertDataFrameToH2OFrameKey(getLeaderboardDataFrame()))

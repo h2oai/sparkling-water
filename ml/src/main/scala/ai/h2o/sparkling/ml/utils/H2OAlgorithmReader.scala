@@ -18,9 +18,17 @@
 package ai.h2o.sparkling.ml.utils
 
 import ai.h2o.sparkling.ml.params.H2OAlgoParamsBase
-import org.apache.spark.ml.util.{MLReadable, MLReader}
 
-class H2OParamsReadable[T <: H2OAlgoParamsBase] extends MLReadable[T] {
-
-  override def read: MLReader[T] = new H2OAlgorithmReader[T]
+class H2OAlgorithmReader[T <: H2OAlgoParamsBase] extends H2OReaderBase[T] {
+  override def load(path: String): T = {
+    val instance = super.load(path)
+    val parameterOverrides = instance.getParameterDeserializationOverrides()
+    for((parameterName, transformationFunction) <- parameterOverrides) {
+      val parameter = instance.getParam(parameterName)
+      val originalValue = instance.getOrDefault(parameter)
+      val newValue = transformationFunction(originalValue)
+      instance.set(parameter, newValue)
+    }
+    instance
+  }
 }

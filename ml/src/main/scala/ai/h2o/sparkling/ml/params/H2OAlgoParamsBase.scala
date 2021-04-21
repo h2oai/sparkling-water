@@ -28,6 +28,8 @@ trait H2OAlgoParamsBase extends ParameterConstructorMethods with H2OFrameLifecyc
 
   private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = Map.empty
 
+  private[ml] def getParameterDeserializationOverrides(): Map[String, Any => Any] = Map.empty
+
   private def convertWithH2OContext[TInput <: AnyRef, TOutput <: AnyRef](input: TInput)(
       body: (SparkSession, H2OContext) => TOutput): TOutput = {
     if (input == null) {
@@ -99,6 +101,7 @@ trait H2OAlgoParamsBase extends ParameterConstructorMethods with H2OFrameLifecyc
           case (f, null) => f
           case (null, s) => s
           case (f: Array[_], s: Array[_]) => (f ++ s).distinct
+          case _ => throw new IllegalStateException("Merge operation on non-array types is not supported.")
         }
         key -> value
       }.toMap
