@@ -48,7 +48,7 @@ task substitute() {
           .replaceAll("SUBST_H2O_RELEASE_NAME", h2oMajorName)
           .replaceAll("SUBST_H2O_BUILD_NUMBER", h2oBuild)
           .replaceAll("SUBST_MIN_SUPPORTED_JAVA", minSupportedJavaVersion)
-          .replaceAll("SUBST_MIN_SUPPORTED_PYTHON", supportedPythonVersions(0))
+          .replaceAll("SUBST_MIN_SUPPORTED_PYTHON", supportedPythonVersions.split(" ")[0])
           .replaceAll("SUBST_EMR_VERSION", supportedEmrVersion)
           .replaceAll("SUBST_SCALA_BASE_VERSION", scalaBaseVersion)
           .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
