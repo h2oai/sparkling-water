@@ -20,7 +20,7 @@ package ai.h2o.sparkling.backend.internal
 import java.io.{File, FileWriter}
 
 import ai.h2o.sparkling.H2OConf
-import ai.h2o.sparkling.H2OConf.{IntOption, OptionOption}
+import ai.h2o.sparkling.H2OConf.{BooleanOption, IntOption, OptionOption}
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
@@ -38,6 +38,8 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
 
   /** Getters */
   def numH2OWorkers: Option[Int] = sparkConf.getOption(PROP_CLUSTER_SIZE._1).map(_.toInt)
+
+  def extraClusterNodes: Boolean = sparkConf.getBoolean(PROP_EXTRA_CLUSTER_NODES._1, PROP_EXTRA_CLUSTER_NODES._2)
 
   def drddMulFactor: Int = sparkConf.getInt(PROP_DUMMY_RDD_MUL_FACTOR._1, PROP_DUMMY_RDD_MUL_FACTOR._2)
 
@@ -92,7 +94,19 @@ object InternalBackendConf {
     None,
     "setNumH2OWorkers(Integer)",
     """Expected number of workers of H2O cluster. Value None means automatic
-      |detection of cluster size. This number must be equal to number of Spark executors""".stripMargin)
+      |detection of cluster size. This number must be equal to number of Spark executors. If Spark property
+      |``spark.executor.instances`` is specified, this Sparkling Water property is set to its value.""".stripMargin)
+
+  val PROP_EXTRA_CLUSTER_NODES: BooleanOption = (
+    "spark.ext.h2o.extra.cluster.nodes",
+    false,
+    """setExtraClusterNodesEnabled()
+      |setExtraClusterNodesDisabled()""".stripMargin,
+    """If the property is set true and the Sparkling Water internal backend identifies more executors than specified in
+      |the Spark property  ``spark.executor.instances`` or in  the Sparkling Water property
+      |``spark.ext.h2o.cluster.size``, Sparkling Water deploys H2O nodes to all discovered Spark executors. Otherwise,
+      |Sparkling Water deploys just a number of executors specified in  ``spark.ext.h2o.cluster.size``
+      |(or ``spark.executor.instances``).""".stripMargin)
 
   val PROP_DUMMY_RDD_MUL_FACTOR: IntOption = (
     "spark.ext.h2o.dummy.rdd.mul.factor",

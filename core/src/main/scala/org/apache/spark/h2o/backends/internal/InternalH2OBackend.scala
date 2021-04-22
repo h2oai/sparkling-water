@@ -169,8 +169,9 @@ object InternalH2OBackend extends InternalBackendUtils {
 
   private def registerEndpoints(hc: H2OContext): Array[RpcEndpointRef] = {
     val endpoints = new SpreadRDDBuilder(hc, guessTotalExecutorSize(SparkSessionUtils.active.sparkContext)).build()
-    val endpointsFinal = if (hc.getConf.numH2OWorkers.isDefined) {
-      endpoints.take(hc.getConf.numH2OWorkers.get)
+    val conf = hc.getConf
+    val endpointsFinal = if (conf.numH2OWorkers.isDefined && !conf.extraClusterNodes) {
+      endpoints.take(conf.numH2OWorkers.get)
     } else {
       endpoints
     }
