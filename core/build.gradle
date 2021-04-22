@@ -76,9 +76,7 @@ dependencies {
   api("ai.h2o:h2o-persist-s3:${h2oVersion}") {
     exclude(group: "com.fasterxml.jackson.core")
   }
-  api("ai.h2o:h2o-persist-gcs:${h2oVersion}") {
-    exclude(group: "com.google.guava")
-  }
+  api("ai.h2o:h2o-persist-gcs:${h2oVersion}")
   api("ai.h2o:h2o-jetty-9:${h2oVersion}")
   api("ai.h2o:h2o-webserver-iface:${h2oVersion}")
   api("ai.h2o:h2o-automl:${h2oVersion}")
