@@ -18,6 +18,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
 
     val leaderboardFrame =
       ExplicitField("leadearboard_frame", "HasLeaderboardDataFrame", null, Some("leaderboardDataFrame"), None)
+    val blendingFrame = ExplicitField("blending_frame", "HasBlendingDataFrame", null, Some("blendingDataFrame"), None)
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], source) <- autoMLParameters)
       yield ParameterSubstitutionContext(
@@ -26,7 +27,8 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
         h2oSchemaClass,
         h2oParameterClass,
         AutoMLIgnoredParameters.all,
-        explicitFields = if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols, leaderboardFrame) else Seq.empty,
+        explicitFields =
+          if (entityName == "H2OAutoMLInputParams") Seq(ignoredCols, leaderboardFrame, blendingFrame) else Seq.empty,
         deprecatedFields = Seq.empty,
         explicitDefaultValues =
           Map("include_algos" -> ai.h2o.automl.Algo.values().map(_.name()), "response_column" -> "label"),

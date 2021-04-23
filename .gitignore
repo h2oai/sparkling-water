@@ -84,9 +84,6 @@ templates/src/terraform/aws/modules/network/terraform.tfstate.backup
 jenkins/docker/regular-tests/Dockerfile
 
 # Generated code and documentation
-ml/src-gen
-scoring/src-gen
-py/src-gen
-r/src-gen
+src-gen/
 doc/src/site/sphinx/parameters
 doc/src/site/sphinx/configuration/configuration_properties.rst

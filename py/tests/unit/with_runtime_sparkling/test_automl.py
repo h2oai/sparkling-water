@@ -24,7 +24,7 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pyspark.sql.functions import col, substring
+from pyspark.sql.functions import col, substring, length
 
 from pysparkling.ml.algos import H2OAutoML
 from pysparkling.ml.algos.classification import H2OAutoMLClassifier
@@ -114,23 +114,24 @@ def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDat
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
 
 
+def prepareLeaderboardForComparison(df):
+    return df.withColumn("model_id", substring(col("model_id"), 1, 20)).drop("")
+
+
 def testLeaderboardDataFrameHasImpactOnAutoMLLeaderboard(classificationDataset):
     [trainingDateset, testingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
 
-    def truncateModelId(df):
-        return df.withColumn("model_id", substring(col("model_id"), 1, 10))
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(trainingDateset)
+    defaultLeaderboard1 = prepareLeaderboardForComparison(automl.getLeaderboard())
 
     automl = setParametersForTesting(H2OAutoML())
     automl.fit(trainingDateset)
-    defaultLeaderboard1 = truncateModelId(automl.getLeaderboard())
-
-    automl = setParametersForTesting(H2OAutoML())
-    automl.fit(trainingDateset)
-    defaultLeaderboard2 = truncateModelId(automl.getLeaderboard())
+    defaultLeaderboard2 = prepareLeaderboardForComparison(automl.getLeaderboard())
 
     automl = setParametersForTesting(H2OAutoML()).setLeaderboardDataFrame(testingDataset)
     automl.fit(trainingDateset)
-    leaderboardWithCustomDataFrameSet = truncateModelId(automl.getLeaderboard())
+    leaderboardWithCustomDataFrameSet = prepareLeaderboardForComparison(automl.getLeaderboard())
 
     unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard1, defaultLeaderboard2)
     unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard1, leaderboardWithCustomDataFrameSet)
@@ -142,7 +143,38 @@ def testDeserializationOfUnfittedPipelineWithAutoML(classificationDataset):
     algo = setParametersForTesting(H2OAutoML()).setLeaderboardDataFrame(testingDataset)
 
     pipeline = Pipeline(stages=[algo])
-    pipeline.write().overwrite().save("file://" + os.path.abspath("build/automl_pipeline"))
-    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/automl_pipeline"))
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/automl_pipeline_leaderboardDF"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/automl_pipeline_leaderboardDF"))
     loadedPipeline.fit(trainingDateset)
 
+
+def testBlendingDataFrameHasImpactOnAutoMLStackedEnsambleModels(classificationDataset):
+    [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
+
+    def separateEnsembleModels(df):
+        stackedEnsembleDF = df.filter(df.model_id.startswith('StackedEnsemble'))
+        othersDF = df.subtract(stackedEnsembleDF)
+        return (stackedEnsembleDF, othersDF)
+
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(trainingDateset)
+    defaultLeaderboard = separateEnsembleModels(prepareLeaderboardForComparison(automl.getLeaderboard()))
+
+    automl = setParametersForTesting(H2OAutoML()).setBlendingDataFrame(blendingDataset)
+    automl.fit(trainingDateset)
+    leaderboardWithBlendingFrameSet = separateEnsembleModels(prepareLeaderboardForComparison(automl.getLeaderboard()))
+
+    assert defaultLeaderboard[0].count() == 2
+    unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard[0], leaderboardWithBlendingFrameSet[0])
+    unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard[1], leaderboardWithBlendingFrameSet[1])
+
+
+def testDeserializationOfUnfittedPipelineWithAutoML(classificationDataset):
+    [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
+
+    algo = setParametersForTesting(H2OAutoML()).setBlendingDataFrame(blendingDataset)
+
+    pipeline = Pipeline(stages=[algo])
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/automl_pipeline_blendingDF"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/automl_pipeline_blendingDF"))
+    loadedPipeline.fit(trainingDateset)
