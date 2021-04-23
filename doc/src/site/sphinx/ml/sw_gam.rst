@@ -33,12 +33,12 @@ The following sections describe how to train the GAM model in Sparkling Water in
             val sparkDF = rawSparkDF.withColumn("CAPSULE", $"CAPSULE" cast "string")
             val Array(trainingDF, testingDF) = sparkDF.randomSplit(Array(0.8, 0.2))
 
-        Train the model. You can configure all the available GAM arguments using provided setters, such as the label column.
+        Train the model. You can configure all the available GAM arguments using provided setters, such as the label column and gam columns, which are mandatory.
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2OGAM
-            val estimator = new H2OGAM().setLabelCol("CAPSULE")
+            val estimator = new H2OGAM().setLabelCol("CAPSULE").setGamCols(Array(Array("PSA", "DCAPS"), Array("AGE")))
             val model = estimator.fit(trainingDF)
 
         By default, the ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
@@ -86,12 +86,13 @@ The following sections describe how to train the GAM model in Sparkling Water in
             sparkDF = sparkDF.withColumn("CAPSULE", sparkDF.CAPSULE.cast("string"))
             [trainingDF, testingDF] = sparkDF.randomSplit([0.8, 0.2])
 
-        Train the model. You can configure all the available GAM arguments using provided setters or constructor parameters, such as the label column.
+        Train the model. You can configure all the available GAM arguments using provided setters or constructor parameters,
+        such as the label column and gam columns, which are mandatory.
 
         .. code:: python
 
             from pysparkling.ml import H2OGAM
-            estimator = H2OGAM(labelCol = "CAPSULE")
+            estimator = H2OGAM(labelCol = "CAPSULE", gamCols=[["PSA", "DCAPS"], ["AGE"]])
             model = estimator.fit(trainingDF)
 
         By default, the ``H2OGAM`` algorithm distinguishes between a classification and regression problem based on the type of
