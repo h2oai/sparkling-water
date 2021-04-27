@@ -41,6 +41,14 @@ dependencies {
   testImplementation("org.scalatest:scalatest_${scalaBaseVersion}:${scalaTestVersion}")
   testImplementation("junit:junit:4.11")
   testImplementation(project(path: ':sparkling-water-core', configuration: 'testArchives'))
+
+  if (sparkMajorVersion <= "2.4") {
+    // ai.h2o:h2o-persist-gcs has com.google.guava:guava:20.0 as a dependency, which is incompatible with
+    // Hadoop 2.6.5. This version of Spark is a default dependency of Spark 2.2-2.4.
+    testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core') { version { strictly '2.7.2' } }
+    testImplementation('org.apache.hadoop:hadoop-common') { version { strictly '2.7.2' } }
+    testImplementation('commons-io:commons-io') { version { strictly '2.4' } }
+  }
 }
 
 test {

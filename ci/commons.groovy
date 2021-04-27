@@ -37,11 +37,6 @@ def getSupportedSparkVersions() {
     def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('supportedSparkVersions') }
     sparkVersions = versionLine.split("=")[1].split(" ")
 
-    if (isPrJob()) {
-        // test PRs only on first and last supported Spark
-        sparkVersions = [sparkVersions.first(), sparkVersions.last()]
-    }
-
     return sparkVersions
 }
 
