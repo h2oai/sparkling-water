@@ -121,10 +121,10 @@ the security limitations. In this case, you can skip the certificates verificati
             hc <- H2OContext.getOrCreate(conf)
 
 
-However, the verification of certificates signed by a custom CA is supported. To achieve that the add CA certificate
+However, the verification of certificates signed by a custom CA is supported. To achieve that, add the CA certificate
 into the Java trust store on all servers of the cluster. If running  PySparkling or Rsparkling,
-set also the CA certificate path to the SW property ``spark.ext.h2o.ssl.ca.cert``. The certificate itself must cover
-all hostnames of servers where H2O nodes are running (wild card certificate, the list of all servers). If the certificate
+also set the CA certificate path to the SW property ``spark.ext.h2o.ssl.ca.cert``. The certificate itself must cover
+all hostnames for servers where H2O nodes are running (wild card certificate, the list of all servers). If the certificate
 covers only the server with Spark driver where H2O Flow UI is running, set the property
 ``spark.ext.h2o.internal.rest.verify_ssl_hostnames`` to ``false``.
 
