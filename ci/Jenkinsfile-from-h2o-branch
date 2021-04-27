@@ -34,7 +34,7 @@ node("docker") {
     pipeline = load 'ci/sparklingWaterPipeline.groovy'
     def commons = load 'ci/commons.groovy'
     sparkVersions = commons.getSupportedSparkVersions()
-    if (!p.runAllSparkVersions) {
+    if (!params.runAllSparkVersions) {
         // test PRs only on first and last supported Spark
         sparkVersions = [sparkVersions.first(), sparkVersions.last()]
     }
