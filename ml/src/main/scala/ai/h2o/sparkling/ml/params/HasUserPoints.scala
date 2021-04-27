@@ -34,8 +34,8 @@ trait HasUserPoints extends H2OAlgoParamsBase {
 
   def setUserPoints(value: Array[Array[Double]]): this.type = set(userPoints, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("user_points" -> convert2dArrayToH2OFrame(getUserPoints()))
+  private[sparkling] def getUserPointsParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("user_points" -> convert2dArrayToH2OFrame(getUserPoints()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

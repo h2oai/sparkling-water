@@ -33,9 +33,8 @@ trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
 
   def setCalibrationDataFrame(value: DataFrame): this.type = set(calibrationDataFrame, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
-      Map("calibration_frame" -> convertDataFrameToH2OFrameKey(getCalibrationDataFrame()))
+  private[sparkling] def getCalibrationDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("calibration_frame" -> convertDataFrameToH2OFrameKey(getCalibrationDataFrame()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

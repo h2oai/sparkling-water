@@ -65,12 +65,13 @@ object ParametersTemplate
          |${generateSetters(parameters)}
          |
          |  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-         |    super.getH2OAlgorithmParams(trainingFrame) ++ get${parameterSubstitutionContext.entityName}()
+         |    super.getH2OAlgorithmParams(trainingFrame) ++ get${parameterSubstitutionContext.entityName}(trainingFrame)
          |  }
          |
-         |  private[sparkling] def get${parameterSubstitutionContext.entityName}(): Map[String, Any] = {
+         |  private[sparkling] def get${parameterSubstitutionContext.entityName}(trainingFrame: H2OFrame): Map[String, Any] = {
          |      Map(
-         |${generateH2OAssignments(parameters)})
+         |${generateH2OAssignments(parameters)})${generateUsageOfExplicitFieldMaps(
+           parameterSubstitutionContext.explicitFields)}
          |  }
          |
          |  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
@@ -80,6 +81,14 @@ object ParametersTemplate
          |  }
       """.stripMargin
     }
+  }
+
+  private def generateUsageOfExplicitFieldMaps(explicitFields: Seq[ExplicitField]): String = {
+    explicitFields
+      .map { explicitField =>
+        s" +++\n      get${explicitField.implementation.substring(3)}Param(trainingFrame)"
+      }
+      .mkString("")
   }
 
   private def generateParamTag(parameterSubstitutionContext: ParameterSubstitutionContext): String = {

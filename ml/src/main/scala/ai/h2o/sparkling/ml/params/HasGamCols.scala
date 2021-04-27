@@ -34,8 +34,8 @@ trait HasGamCols extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
 
   def setGamCols(value: Array[String]): this.type = setGamCols(value.map(Array(_)))
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("gam_columns" -> getGamCols())
+  private[sparkling] def getGamColsParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("gam_columns" -> getGamCols())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
