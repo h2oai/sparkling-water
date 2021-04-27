@@ -33,8 +33,8 @@ trait HasValidationLabelCol extends H2OAlgoParamsBase with H2OAlgoCommonUtils {
 
   def setValidationLabelCol(value: String): this.type = set(validationLabelCol, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("validation_response_column" -> getValidationLabelCol())
+  private[sparkling] def getValidationLabelColParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("validation_response_column" -> getValidationLabelCol())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

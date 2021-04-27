@@ -70,8 +70,8 @@ trait HasPlugValues extends H2OAlgoParamsBase {
     }
   }
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++ Map("plug_values" -> getPlugValuesFrameKey())
+  private[sparkling] def getPlugValuesParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("plug_values" -> getPlugValuesFrameKey())
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {

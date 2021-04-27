@@ -62,11 +62,11 @@ class H2OGridSearch(override val uid: String)
 
   private var gridBinaryModels: Array[H2OBinaryModel] = _
 
-  private def getSearchCriteria(): String = {
-    val commonCriteria = getH2OGridSearchCommonCriteriaParams()
+  private def getSearchCriteria(train: H2OFrame): String = {
+    val commonCriteria = getH2OGridSearchCommonCriteriaParams(train)
     val specificCriteria = HyperSpaceSearchCriteria.Strategy.valueOf(getStrategy()) match {
-      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete => getH2OGridSearchRandomDiscreteCriteriaParams()
-      case _ => getH2OGridSearchCartesianCriteriaParams()
+      case HyperSpaceSearchCriteria.Strategy.RandomDiscrete => getH2OGridSearchRandomDiscreteCriteriaParams(train)
+      case _ => getH2OGridSearchCartesianCriteriaParams(train)
     }
 
     (commonCriteria ++ specificCriteria).map { case (key, value) => s"'$key': $value" }.mkString("{", ",", "}")
@@ -138,7 +138,7 @@ class H2OGridSearch(override val uid: String)
     val params = Map(
       "hyper_parameters" -> prepareHyperParameters(),
       "parallelism" -> getParallelism(),
-      "search_criteria" -> getSearchCriteria()) ++ getAlgoParams(algo, train, valid)
+      "search_criteria" -> getSearchCriteria(train)) ++ getAlgoParams(algo, train, valid)
     val algoName = H2OGridSearch.SupportedAlgos.toH2OAlgoName(algo)
 
     val gridId = try {

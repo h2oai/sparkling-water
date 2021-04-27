@@ -19,10 +19,12 @@
 Unit tests for PySparkling H2OAutoML
 """
 import pytest
+import os
 
+from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, substring
 
 from pysparkling.ml.algos import H2OAutoML
 from pysparkling.ml.algos.classification import H2OAutoMLClassifier
@@ -110,3 +112,37 @@ def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDat
     classificationDataset = classificationModel.transform(testingDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_have_different_values(regressionDataset, classificationDataset)
+
+
+def testLeaderboardDataFrameHasImpactOnAutoMLLeaderboard(classificationDataset):
+    [trainingDateset, testingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
+
+    def truncateModelId(df):
+        return df.withColumn("model_id", substring(col("model_id"), 1, 10))
+
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(trainingDateset)
+    defaultLeaderboard1 = truncateModelId(automl.getLeaderboard())
+
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(trainingDateset)
+    defaultLeaderboard2 = truncateModelId(automl.getLeaderboard())
+
+    automl = setParametersForTesting(H2OAutoML()).setLeaderboardDataFrame(testingDataset)
+    automl.fit(trainingDateset)
+    leaderboardWithCustomDataFrameSet = truncateModelId(automl.getLeaderboard())
+
+    unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard1, defaultLeaderboard2)
+    unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard1, leaderboardWithCustomDataFrameSet)
+
+
+def testDeserializationOfUnfittedPipelineWithAutoML(classificationDataset):
+    [trainingDateset, testingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
+
+    algo = setParametersForTesting(H2OAutoML()).setLeaderboardDataFrame(testingDataset)
+
+    pipeline = Pipeline(stages=[algo])
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/automl_pipeline"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/automl_pipeline"))
+    loadedPipeline.fit(trainingDateset)
+

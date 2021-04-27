@@ -15,26 +15,20 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.params
+package ai.h2o.sparkling.ml.utils
 
-import ai.h2o.sparkling.H2OFrame
-import ai.h2o.sparkling.ml.algos.H2OAlgoCommonUtils
+import ai.h2o.sparkling.ml.params.H2OAlgoParamsBase
 
-trait HasIgnoredCols extends H2OAlgoParamsBase {
-  private val ignoredCols =
-    new NullableStringArrayParam(this, "ignoredCols", "Names of columns to ignore for training.")
-
-  setDefault(ignoredCols -> null)
-
-  def getIgnoredCols(): Array[String] = $(ignoredCols)
-
-  def setIgnoredCols(value: Array[String]): this.type = set(ignoredCols, value)
-
-  private[sparkling] def getIgnoredColsParam(trainingFrame: H2OFrame): Map[String, Any] = {
-    Map("ignored_columns" -> getIgnoredCols())
-  }
-
-  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() + ("ignoredCols" -> "ignored_columns")
+class H2OAlgorithmReader[T <: H2OAlgoParamsBase] extends H2OReaderBase[T] {
+  override def load(path: String): T = {
+    val instance = super.load(path)
+    val parameterOverrides = instance.getParameterDeserializationOverrides()
+    for ((parameterName, transformationFunction) <- parameterOverrides) {
+      val parameter = instance.getParam(parameterName)
+      val originalValue = instance.getOrDefault(parameter)
+      val newValue = transformationFunction(originalValue)
+      instance.set(parameter, newValue)
+    }
+    instance
   }
 }

@@ -32,9 +32,8 @@ trait HasBetaConstraints extends H2OAlgoParamsBase {
 
   def setBetaConstraints(value: DataFrame): this.type = set(betaConstraints, value)
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame) ++
-      Map("beta_constraints" -> convertDataFrameToH2OFrameKey(getBetaConstraints()))
+  private[sparkling] def getBetaConstraintsParam(trainingFrame: H2OFrame): Map[String, Any] = {
+    Map("beta_constraints" -> convertDataFrameToH2OFrameKey(getBetaConstraints()))
   }
 
   override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
