@@ -6,6 +6,7 @@ properties(
         [
                 parameters(
                         [
+                                booleanParam(name: 'runAllSparkVersions', defaultValue: isPrJob(), 'Run pipeline against all Spark versions'),
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run Scala unit tests'),
                                 booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run Python unit tests'),
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
@@ -33,6 +34,10 @@ node("docker") {
     pipeline = load 'ci/sparklingWaterPipeline.groovy'
     def commons = load 'ci/commons.groovy'
     sparkVersions = commons.getSupportedSparkVersions()
+    if (p.runAllSparkVersions) {
+        // test PRs only on first and last supported Spark
+        sparkVersions = [sparkVersions.first(), sparkVersions.last()]
+    }
     testH2OBranch = commons.loadGradleProperties("gradle.properties")["testH2OBranch"]
 }
 
