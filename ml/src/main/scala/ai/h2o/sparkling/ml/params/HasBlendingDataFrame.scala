@@ -24,7 +24,7 @@ import org.apache.spark.sql.DataFrame
 trait HasBlendingDataFrame extends H2OAlgoParamsBase with Logging {
   val uid: String
 
-  private val blendingDataFrame = new NullableBigDataFrameParam(
+  private val blendingDataFrame = new NullableDataFrameParam(
     this,
     "blendingDataFrame",
     """This parameter is used for  computing the predictions that serve as the training frame for the meta-learner.
@@ -37,18 +37,6 @@ trait HasBlendingDataFrame extends H2OAlgoParamsBase with Logging {
   def getBlendingDataFrame(): DataFrame = $(blendingDataFrame)
 
   def setBlendingDataFrame(value: DataFrame): this.type = set(blendingDataFrame, value)
-
-  override private[ml] def getParameterDeserializationOverrides(): Map[String, Any => Any] = {
-    super.getParameterDeserializationOverrides() + ("blendingDataFrame",
-    (input: Any) => {
-      if (input != null) {
-        logWarning(
-          s"A pipeline stage with uid '$uid' contained the 'blendingDataFrame' property " +
-            "with a non-null value. The property was reset to null during the pipeline deserialization.")
-      }
-      null
-    })
-  }
 
   private[sparkling] def getBlendingDataFrameParam(trainingFrame: H2OFrame): Map[String, Any] = {
     Map("blending_frame" -> convertDataFrameToH2OFrameKey(getBlendingDataFrame()))
