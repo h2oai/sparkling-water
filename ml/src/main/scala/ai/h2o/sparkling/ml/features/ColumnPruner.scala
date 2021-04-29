@@ -17,10 +17,11 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.params.ColumnPrunerParams
+import ai.h2o.sparkling.ml.utils.H2OParamsReadable
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param._
-import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
+import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset}
 
@@ -60,4 +61,4 @@ class ColumnPruner(override val uid: String) extends Transformer with ColumnPrun
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 }
 
-object ColumnPruner extends DefaultParamsReadable[ColumnPruner]
+object ColumnPruner extends H2OParamsReadable[ColumnPruner]

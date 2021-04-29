@@ -17,10 +17,9 @@
 
 package ai.h2o.sparkling.ml.utils
 
-import ai.h2o.sparkling.ml.params.H2OAlgoParamsBase
 import org.apache.spark.ml.util.{MLReadable, MLReader}
 
-class H2OParamsReadable[T <: H2OAlgoParamsBase] extends MLReadable[T] {
+class H2OParamsReadable[T] extends MLReadable[T] {
 
-  override def read: MLReader[T] = new H2OAlgorithmReader[T]
+  override def read: MLReader[T] = new H2OReaderBase[T]
 }
