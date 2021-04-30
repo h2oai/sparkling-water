@@ -14,6 +14,7 @@ Machine Learning
    sw_xgboost
    sw_isolation_forest
    sw_coxph
+   sw_deep_learning
 
 **Transformers**
 
