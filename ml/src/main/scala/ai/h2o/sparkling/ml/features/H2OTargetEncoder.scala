@@ -41,35 +41,40 @@ class H2OTargetEncoder(override val uid: String)
   def this() = this(Identifiable.randomUID("H2OTargetEncoder"))
 
   override def fit(dataset: Dataset[_]): H2OTargetEncoderModel = {
-    val h2oContext = H2OContext.ensure(
-      "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val problemType = H2OTargetEncoderProblemType.valueOf(getProblemType())
-    val toConvertDF = if (problemType == H2OTargetEncoderProblemType.Regression) {
-      dataset.withColumn(getLabelCol(), col(getLabelCol()).cast(DoubleType))
+    val h2oModel = if (getInputCols().isEmpty) {
+      None
     } else {
-      dataset.toDF()
+      val h2oContext = H2OContext.ensure(
+        "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+      val problemType = H2OTargetEncoderProblemType.valueOf(getProblemType())
+      val toConvertDF = if (problemType == H2OTargetEncoderProblemType.Regression) {
+        dataset.withColumn(getLabelCol(), col(getLabelCol()).cast(DoubleType))
+      } else {
+        dataset.toDF()
+      }
+      val input = h2oContext.asH2OFrame(toConvertDF)
+      val distinctInputCols = getInputCols().flatten.distinct
+      val toCategorical = if (isLabelColCategorical(problemType, dataset)) {
+        distinctInputCols ++ Seq(getLabelCol())
+      } else {
+        distinctInputCols
+      }
+      val converted = input.convertColumnsToCategorical(toCategorical)
+      val params = Map(
+        "data_leakage_handling" -> getHoldoutStrategy(),
+        "blending" -> getBlendedAvgEnabled(),
+        "inflection_point" -> getBlendedAvgInflectionPoint(),
+        "smoothing" -> getBlendedAvgSmoothing(),
+        "response_column" -> getLabelCol(),
+        "fold_column" -> getFoldCol(),
+        "columns_to_encode" -> getInputCols(),
+        "seed" -> getNoiseSeed(),
+        "training_frame" -> converted.frameId)
+      val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
+      input.delete()
+      Some(H2OModel(targetEncoderModelId))
     }
-    val input = h2oContext.asH2OFrame(toConvertDF)
-    val distinctInputCols = getInputCols().flatten.distinct
-    val toCategorical = if (isLabelColCategorical(problemType, dataset)) {
-      distinctInputCols ++ Seq(getLabelCol())
-    } else {
-      distinctInputCols
-    }
-    val converted = input.convertColumnsToCategorical(toCategorical)
-    val params = Map(
-      "data_leakage_handling" -> getHoldoutStrategy(),
-      "blending" -> getBlendedAvgEnabled(),
-      "inflection_point" -> getBlendedAvgInflectionPoint(),
-      "smoothing" -> getBlendedAvgSmoothing(),
-      "response_column" -> getLabelCol(),
-      "fold_column" -> getFoldCol(),
-      "columns_to_encode" -> getInputCols(),
-      "seed" -> getNoiseSeed(),
-      "training_frame" -> converted.frameId)
-    val targetEncoderModelId = trainAndGetDestinationKey(s"/3/ModelBuilders/targetencoder", params)
-    input.delete()
-    val model = new H2OTargetEncoderModel(uid, H2OModel(targetEncoderModelId)).setParent(this)
+    val model = new H2OTargetEncoderModel(uid, h2oModel).setParent(this)
     copyValues(model)
   }
 
