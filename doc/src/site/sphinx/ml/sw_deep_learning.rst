@@ -44,8 +44,8 @@ the Deep Learning model in Sparkling Water in both languages. See also :ref:`par
 
         By default, the ``H2ODeepLearning`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
-        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODeepLearningClassifier``
+        If the label column is a numeric column, a regression model will be trained. If you don't want to worry about
+        column data types, you can explicitly specify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODeepLearningClassifier``
         or ``ai.h2o.sparkling.ml.algos.regression.H2ODeepLearningRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
@@ -98,8 +98,8 @@ the Deep Learning model in Sparkling Water in both languages. See also :ref:`par
 
         By default, the ``H2ODeepLearning`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
-        If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
-        column data types, you can explicitly identify the problem by using ``H2ODeepLearningClassifier`` or ``H2ODeepLearningRegressor`` instead.
+        If the label column is a numeric column, a regression model will be trained. If you don't want to worry about
+        column data types, you can explicitly specify the problem by using ``H2ODeepLearningClassifier`` or ``H2ODeepLearningRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
