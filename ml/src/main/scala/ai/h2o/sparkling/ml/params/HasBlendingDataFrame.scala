@@ -27,10 +27,10 @@ trait HasBlendingDataFrame extends H2OAlgoParamsBase with Logging {
   private val blendingDataFrame = new NullableDataFrameParam(
     this,
     "blendingDataFrame",
-    """This parameter is used for  computing the predictions that serve as the training frame for the meta-learner.
-      |If provided, this triggers blending mode on the stacked ensemble training stage. Blending mode is faster
-      |than cross-validating the base learners (though these ensembles may not perform as well as the Super Learner
-      |ensemble).""".stripMargin)
+    "This parameter is used for  computing the predictions that serve as the training frame for the meta-learner." +
+      " If provided, this triggers blending mode on the stacked ensemble training stage. Blending mode is faster" +
+      " than cross-validating the base learners (though these ensembles may not perform as well as the Super Learner" +
+      " ensemble)")
 
   setDefault(blendingDataFrame -> null)
 
