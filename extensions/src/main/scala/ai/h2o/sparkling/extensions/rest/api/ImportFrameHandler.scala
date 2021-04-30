@@ -64,7 +64,9 @@ class ImportFrameHandler extends Handler {
     convertCategoricalColumnsToOtherTypesIfNeeded(frame, categoricalColumnIndices)
 
     // Final frame created -> log the same information H2O would log after import is finished
-    ParseDataset.logParseResults(frame);
+    if (frame.numCols > 0) { // logParseResults doesn't work with empty frames
+      ParseDataset.logParseResults(frame);
+    }
 
     frame.update()
     frame.unlock()
