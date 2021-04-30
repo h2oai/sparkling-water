@@ -71,6 +71,13 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 done && cd .. && rm -rf sparkling-water
                 """
 
+  runCommand """\\
+                for pythonVersion in ${supportedPythonVersions}; \\
+                do \\
+                  . /envs/h2o_env_python\$pythonVersion/bin/activate && pip install -U setuptools; \\
+                done
+                """
+
   user("root")
 
   runCommand """\\
