@@ -22,10 +22,6 @@ In order to use https correctly, the following two options need to be specified:
 - ``spark.ext.h2o.jks.alias`` - (Optional) Alias of the SSL certificate if the Java keystore file contains more than one
   certificate.
 
-If the certificate doesn't cover all hostnames of all H2O nodes and contains just hostname of Spark driver where H2O FLOW UI
-lives, hostname verification on Spark instances (driver + executor) for connections to H2O nodes must be disabled by setting
-the property ``spark.ext.h2o.internal.rest.verify_ssl_hostnames`` to ``false``.
-
 .. content-tabs::
 
     .. tab-container:: Scala
@@ -91,8 +87,47 @@ the property ``spark.ext.h2o.internal.rest.verify_ssl_hostnames`` to ``false``.
             hc <- H2OContext.getOrCreate(conf)
 
 
-In case your certificates are self-signed or signed by an untrusted CA, the connection to the H2O cluster will fail due to
+In case your certificate is self-signed or signed by an untrusted CA, the connection to the H2O cluster will fail due to
 the security limitations. In this case, you can skip the certificates verification as follows:
+
+.. content-tabs::
+
+    .. tab-container:: Scala
+        :title: Scala
+
+        .. code:: scala
+
+            val conf = new H2OConf().setSslCertificateVerificationInInternalRestConnectionsDisabled()
+            val hc = H2OContext.getOrCreate(conf)
+
+    .. tab-container:: Python
+        :title: Python
+
+        .. code:: python
+
+            conf = H2OConf()
+            conf.setSslCertificateVerificationInInternalRestConnectionsDisabled()
+            conf.setVerifySslCertificates(False)
+            hc = H2OContext.getOrCreate(conf)
+
+    .. tab-container:: R
+        :title: R
+
+        .. code:: r
+
+            conf <- H2OConf()
+            conf$setSslCertificateVerificationInInternalRestConnectionsDisabled()
+            conf$setVerifySslCertificates(FALSE)
+            hc <- H2OContext.getOrCreate(conf)
+
+
+However, the verification of certificates signed by a custom CA is supported. To achieve that, add the CA certificate
+into the Java trust store on all servers of the cluster. If running  PySparkling or Rsparkling,
+also set the CA certificate path to the SW property ``spark.ext.h2o.ssl.ca.cert``. The certificate itself must cover
+all hostnames for servers where H2O nodes are running (wild card certificate, the list of all servers). If the certificate
+covers only the server with Spark driver where H2O Flow UI is running, set the property
+``spark.ext.h2o.internal.rest.verify_ssl_hostnames`` to ``false``.
+
 
 .. content-tabs::
 
@@ -110,8 +145,8 @@ the security limitations. In this case, you can skip the certificates verificati
         .. code:: python
 
             conf = H2OConf()
+            conf.setSslCACert("/path/to/cacert.pem")
             conf.setSslHostnameVerificationInInternalRestConnectionsDisabled()
-            conf.setVerifySslCertificates(False)
             hc = H2OContext.getOrCreate(conf)
 
     .. tab-container:: R
@@ -120,9 +155,10 @@ the security limitations. In this case, you can skip the certificates verificati
         .. code:: r
 
             conf <- H2OConf()
+            conf$setSslCACert("/path/to/cacert.pem")
             conf$setSslHostnameVerificationInInternalRestConnectionsDisabled()
-            conf$setVerifySslCertificates(FALSE)
             hc <- H2OContext.getOrCreate(conf)
+
 
 Generate the files automatically
 --------------------------------
