@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
+import java.io.File
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
@@ -31,16 +32,24 @@ import water.api.schemas3.KeyV3.FrameKeyV3
 
 import scala.collection.JavaConverters._
 
-class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OModel)
+class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: Option[H2OModel])
   extends Model[H2OTargetEncoderModel]
   with H2OTargetEncoderBase
   with MLWritable
   with RestCommunication {
 
   lazy val mojoModel: H2OTargetEncoderMOJOModel = {
-    val mojo = targetEncoderModel.downloadMojo()
     val model = new H2OTargetEncoderMOJOModel()
-    copyValues(model).setMojo(mojo)
+    copyValues(model)
+    targetEncoderModel match {
+      case Some(targetEncoderModel) =>
+        val mojo = targetEncoderModel.downloadMojo()
+        model.setMojo(mojo)
+      case None =>
+        val emptyMojo = File.createTempFile("emptyTargetEncoder", ".mojo")
+        emptyMojo.deleteOnExit()
+        model.setMojo(emptyMojo)
+    }
   }
 
   override def transform(dataset: Dataset[_]): DataFrame = {
@@ -52,53 +61,57 @@ class H2OTargetEncoderModel(override val uid: String, targetEncoderModel: H2OMod
   }
 
   def transformTrainingDataset(dataset: Dataset[_]): DataFrame = {
-    val hc = H2OContext.ensure(
-      "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
-    val temporaryColumn = getClass.getSimpleName + "_temporary_id"
-    val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
-    val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
-    val distinctInputCols = getInputCols().flatten.distinct
-    val relevantColumns = distinctInputCols ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
-    val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
-    val input = hc.asH2OFrame(relevantColumnsDF)
-
-    val toCategorical = if (getProblemType() == H2OTargetEncoderProblemType.Regression.name) {
-      distinctInputCols
+    if (getInputCols().isEmpty) {
+      dataset.toDF()
     } else {
-      distinctInputCols ++ Seq(getLabelCol())
-    }
-    input.convertColumnsToCategorical(toCategorical)
+      val hc = H2OContext.ensure(
+        "H2OContext needs to be created in order to use target encoding. Please create one as H2OContext.getOrCreate().")
+      val temporaryColumn = getClass.getSimpleName + "_temporary_id"
+      val withIdDF = dataset.withColumn(temporaryColumn, monotonically_increasing_id)
+      val flatDF = SchemaUtils.flattenDataFrame(withIdDF)
+      val distinctInputCols = getInputCols().flatten.distinct
+      val relevantColumns = distinctInputCols ++ Array(getLabelCol(), getFoldCol(), temporaryColumn).flatMap(Option(_))
+      val relevantColumnsDF = flatDF.select(relevantColumns.map(col(_)): _*)
+      val input = hc.asH2OFrame(relevantColumnsDF)
 
-    val conf = hc.getConf
-    val endpoint = RestApiUtils.getClusterEndpoint(conf)
-    val params = Map(
-      "model" -> targetEncoderModel.modelId,
-      "frame" -> input.frameId,
-      "noise" -> getNoise(),
-      "blending" -> getBlendedAvgEnabled(),
-      "inflection_point" -> getBlendedAvgInflectionPoint(),
-      "smoothing" -> getBlendedAvgSmoothing(),
-      "as_training" -> true)
-    val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
-    val output = H2OFrame(frameKeyV3.name)
-    val inOutMapping = getInOutMapping(targetEncoderModel.modelId)
-    val internalOutputColumns = getInputCols().map(i => inOutMapping.get(i.toSeq).get)
-    val distinctInternalOutputColumns = internalOutputColumns.flatten.distinct
-    val outputFrameColumns = distinctInternalOutputColumns ++ Array(temporaryColumn)
-    val outputColumnsOnlyFrame = output.subframe(outputFrameColumns)
-    val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)
-    input.delete()
-    output.delete()
-    val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
-      case (df, (to, Seq(from))) =>
-        val temporaryName = to + "_" + uid
-        val dfWithTemporaryColumn = df.withColumnRenamed(from, temporaryName)
-        createVectorColumn(dfWithTemporaryColumn, to, Array(temporaryName))
-      case (df, (to, from)) => createVectorColumn(df, to, from.toArray)
+      val toCategorical = if (getProblemType() == H2OTargetEncoderProblemType.Regression.name) {
+        distinctInputCols
+      } else {
+        distinctInputCols ++ Seq(getLabelCol())
+      }
+      input.convertColumnsToCategorical(toCategorical)
+
+      val conf = hc.getConf
+      val endpoint = RestApiUtils.getClusterEndpoint(conf)
+      val params = Map(
+        "model" -> targetEncoderModel.get.modelId,
+        "frame" -> input.frameId,
+        "noise" -> getNoise(),
+        "blending" -> getBlendedAvgEnabled(),
+        "inflection_point" -> getBlendedAvgInflectionPoint(),
+        "smoothing" -> getBlendedAvgSmoothing(),
+        "as_training" -> true)
+      val frameKeyV3 = request[FrameKeyV3](endpoint, "GET", s"/3/TargetEncoderTransform", conf, params)
+      val output = H2OFrame(frameKeyV3.name)
+      val inOutMapping = getInOutMapping(targetEncoderModel.get.modelId)
+      val internalOutputColumns = getInputCols().map(i => inOutMapping.get(i.toSeq).get)
+      val distinctInternalOutputColumns = internalOutputColumns.flatten.distinct
+      val outputFrameColumns = distinctInternalOutputColumns ++ Array(temporaryColumn)
+      val outputColumnsOnlyFrame = output.subframe(outputFrameColumns)
+      val outputColumnsOnlyDF = hc.asSparkFrame(outputColumnsOnlyFrame.frameId)
+      input.delete()
+      output.delete()
+      val renamedOutputColumnsOnlyDF = getOutputCols().zip(internalOutputColumns).foldLeft(outputColumnsOnlyDF) {
+        case (df, (to, Seq(from))) =>
+          val temporaryName = to + "_" + uid
+          val dfWithTemporaryColumn = df.withColumnRenamed(from, temporaryName)
+          createVectorColumn(dfWithTemporaryColumn, to, Array(temporaryName))
+        case (df, (to, from)) => createVectorColumn(df, to, from.toArray)
+      }
+      withIdDF
+        .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")
+        .drop(temporaryColumn)
     }
-    withIdDF
-      .join(renamedOutputColumnsOnlyDF, Seq(temporaryColumn), joinType = "left")
-      .drop(temporaryColumn)
   }
 
   private def getInOutMapping(modelId: String): Map[Seq[String], Seq[String]] = {

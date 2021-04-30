@@ -299,3 +299,33 @@ def testAutoProblemTypeOnStringTypeBehavesAsClassification(trainingDataset):
 
     unit_test_utils.assert_data_frames_have_different_values(autoResult, regressionResult)
     unit_test_utils.assert_data_frames_are_identical(autoResult, classificationResult)
+
+
+@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
+Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
+def testTargetEncoderSupportsEmptyListOfInputColumns(trainingDataset):
+    targetEncoder = H2OTargetEncoder() \
+        .setInputCols([]) \
+        .setLabelCol("CAPSULE") \
+        .setFoldCol("AGE")
+    targetEncoderModel = targetEncoder.fit(trainingDataset)
+
+    transformedByModel = targetEncoderModel.transformTrainingDataset(trainingDataset)
+    transformedByMOJOModel = targetEncoderModel.transform(trainingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(trainingDataset, transformedByModel)
+    unit_test_utils.assert_data_frames_are_identical(trainingDataset, transformedByMOJOModel)
+
+
+@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
+Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
+def testTargetEncoderMOJOModelWithEmptyColsCouldBeSavedAndLoaded(trainingDataset):
+    targetEncoder = H2OTargetEncoder(labelCol="CAPSULE", inputCols=[], outputCols=[])
+    model = targetEncoder.fit(trainingDataset)
+    path = "file://" + os.path.abspath("build/testTargetEncoderMOJOModelWithEmptyColsCouldBeSavedAndLoaded")
+    model.write().overwrite().save(path)
+    loadedModel = H2OTargetEncoderMOJOModel.load(path)
+
+    result = loadedModel.transform(trainingDataset)
+
+    unit_test_utils.assert_data_frames_are_identical(trainingDataset, result)
