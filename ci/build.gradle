@@ -36,7 +36,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   runCommand """\\
                 R -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")' && \\
-                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\                 
+                R -e 'install.packages("dbplyr", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("sparklyr", repos = "http://cran.us.r-project.org")' && \\
                 R -e 'install.packages("devtools", repos = "http://cran.us.r-project.org")'
                 """
