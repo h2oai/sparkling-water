@@ -1,6 +1,46 @@
 Change Log
 ==========
 
+v3.32.1.2-1 (2021-05-04)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.2-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.2-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.2-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.2-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.2-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.2-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.2-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.2-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.2-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.2-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.2-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.2-1-3.1/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2558 <https://0xdata.atlassian.net/browse/SW-2558>`__ - Upgrade dbplyr in SW Testing Docker Image
+   -  `SW-2556 <https://0xdata.atlassian.net/browse/SW-2556>`__ - Upgrade "setuptools" during the build of testing docker image
+
+-  Improvement
+
+   -  `SW-2555 <https://0xdata.atlassian.net/browse/SW-2555>`__ - Upgrade to H2O 3.32.1.2
+   -  `SW-2553 <https://0xdata.atlassian.net/browse/SW-2553>`__ - FinalizeFrame should log information about Frame 
+
+-  New Feature
+
+   -  `SW-2554 <https://0xdata.atlassian.net/browse/SW-2554>`__ - Expose Blending Frame on H2OAutoML
+   -  `SW-2551 <https://0xdata.atlassian.net/browse/SW-2551>`__ - Introduce Configuration Property for Setting CA Certificates in Pysparkling
+   -  `SW-2550 <https://0xdata.atlassian.net/browse/SW-2550>`__ - Add ability to use old method for number of instances recognized during launch (for IBM SC)
+   -  `SW-2545 <https://0xdata.atlassian.net/browse/SW-2545>`__ - Expose Leaderboard Frame (setLeaderboardDataFrame()) for AutoML
+   -  `SW-2537 <https://0xdata.atlassian.net/browse/SW-2537>`__ - Add Support for Spark 3.1
+
+-  Bug
+
+   -  `SW-2552 <https://0xdata.atlassian.net/browse/SW-2552>`__ - Delete Train and Validation Frame after MOJO Model is Downloaded inside H2OAutoML.fit()
+   -  `SW-2549 <https://0xdata.atlassian.net/browse/SW-2549>`__ - Fix Memory Leak of Frames in H2OAutoml
+   -  `SW-2546 <https://0xdata.atlassian.net/browse/SW-2546>`__ - Target Encoder Throws Exception on Empty List of Input Columns
+
+-  Docs
+
+   -  `SW-2548 <https://0xdata.atlassian.net/browse/SW-2548>`__ - Fix Tutorial for H2OGAM
+   -  `SW-2547 <https://0xdata.atlassian.net/browse/SW-2547>`__ - Add Tutorial for H2ODeepLearning
+
 v3.32.1.1-1 (2021-03-30)
 ------------------------
 Downloads:
