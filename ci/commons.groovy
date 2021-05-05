@@ -68,7 +68,7 @@ def withSparklingWaterDockerImage(code) {
 }
 
 def withTerraform(groovy.lang.Closure code) {
-    withDocker("hashicorp/terraform:0.12.25", code, "--entrypoint=''")
+    withDocker("hashicorp/terraform:$terraformVersion", code, "--entrypoint=''")
 }
 
 def withPacker(groovy.lang.Closure code) {
