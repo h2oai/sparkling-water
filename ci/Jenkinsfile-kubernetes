@@ -575,16 +575,16 @@ def testPythonExternalBackendAutoClientMode(registryId, master, version) {
 
 def stopEKSCluster(commons) {
     commons.withAWSCredentials {
-        dir("kubernetes/src/terraform/aws") {
-            sh "rm -f terraform.tfstate"
-            unstash "tf_state"
-            def code = {
+        def code = {
+            dir("kubernetes/src/terraform/aws") {
+                sh "rm -f terraform.tfstate"
+                unstash "tf_state"
                 commons.terraformDestroy("-var aws_region=${awsRegion()}")
             }
-            retryWithDelay(3, 600, {
-                commons.withTerraform(code, "--entrypoint='' --network host")
-            })
         }
+        retryWithDelay(3, 600, {
+            commons.withTerraform(code, "--entrypoint='' --network host")
+        })
     }
 }
 
@@ -617,18 +617,20 @@ node("docker") {
 
     stage("Start EKS & ECR") {
         commons.withAWSCredentials {
-            dir("kubernetes/src/terraform/aws") {
-                def code = {
+            def code = {
+                dir("kubernetes/src/terraform/aws") {
                     commons.terraformApply("-var aws_region=${awsRegion()}")
                     def values = commons.extractTerraformOutputs(["docker_registry_id", "cluster_name", "cluster_endpoint"])
-                    def valuesAsString = values.collect { "${it.key}=${it.value}" }.join("\n") + "\n" + "version=$sparklingVersion" + "\n"
+                    def valuesAsString = values.collect {
+                        "${it.key}=${it.value}"
+                    }.join("\n") + "\n" + "version=$sparklingVersion" + "\n"
                     writeFile file: "properties", text: valuesAsString
                     stash name: "properties", includes: "properties"
                     arch "terraform.tfstate"
                     stash name: "tf_state", includes: "terraform.tfstate"
                 }
-                commons.withTerraform(code, "--entrypoint='' --network host")
             }
+            commons.withTerraform(code, "--entrypoint='' --network host")
         }
     }
 
