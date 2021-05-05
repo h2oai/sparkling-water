@@ -67,8 +67,9 @@ def withSparklingWaterDockerImage(code) {
     }
 }
 
-def withTerraform(groovy.lang.Closure code) {
-    withDocker("hashicorp/terraform:$terraformVersion", code, "--entrypoint=''")
+def withTerraform(groovy.lang.Closure code, dockerOptions = "--entrypoint=''") {
+    def terraformVersion = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('terraformVersion') }
+    withDocker("hashicorp/terraform:$terraformVersion", code, dockerOptions)
 }
 
 def withPacker(groovy.lang.Closure code) {

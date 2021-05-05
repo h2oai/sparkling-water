@@ -582,7 +582,7 @@ def stopEKSCluster(commons) {
                 commons.terraformDestroy("-var aws_region=${awsRegion()}")
             }
             retryWithDelay(3, 600, {
-                commons.withDocker("hashicorp/terraform:$terraformVersion", code, "--entrypoint='' --network host")
+                commons.withTerraform(code, "--entrypoint='' --network host")
             })
         }
     }
@@ -627,7 +627,7 @@ node("docker") {
                     arch "terraform.tfstate"
                     stash name: "tf_state", includes: "terraform.tfstate"
                 }
-                commons.withDocker("hashicorp/terraform:$terraformVersion", code, "--entrypoint='' --network host")
+                commons.withTerraform(code, "--entrypoint='' --network host")
             }
         }
     }
