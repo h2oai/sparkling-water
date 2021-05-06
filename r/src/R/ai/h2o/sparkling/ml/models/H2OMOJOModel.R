@@ -39,11 +39,9 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
   getModelDetails = function() {
     invoke(.self$jmojo, "getModelDetails")
   },
-
   getDomainValues = function() {
     invoke(.self$jmojo, "getDomainValues")
   },
-
   getTrainingMetrics = function() {
     invoke(.self$jmojo, "getTrainingMetrics")
   },
@@ -61,6 +59,12 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
   },
   getModelCategory = function() {
     invoke(.self$jmojo, "getModelCategory")
+  },
+  getScoringHistory = function() {
+    invoke(.self$jmojo, "getScoringHistory")
+  },
+  getVariableImportances = function() {
+    invoke(.self$jmojo, "getVariableImportances")
   }
 ))
 

@@ -24,7 +24,7 @@ import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
-import ai.h2o.sparkling.ml.params.{MapStringDoubleParam, MapStringStringParam, NullableStringParam}
+import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
@@ -34,7 +34,10 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import ai.h2o.sparkling.macros.DeprecatedMethod
+import _root_.hex.genmodel.attributes.Table.ColumnType
 import org.apache.spark.expose.Logging
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
+import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -58,13 +61,24 @@ class H2OMOJOModel(override val uid: String)
     new MapStringStringParam(this, "trainingParams", "Training params")
   protected final val modelCategory: NullableStringParam =
     new NullableStringParam(this, "modelCategory", "H2O's model category")
+  protected final val scoringHistory: NullableDataFrameParam = new NullableDataFrameParam(
+    this,
+    "scoringHistory",
+    "Scoring history acquired during the model training.")
+  protected final val variableImportances: NullableDataFrameParam = new NullableDataFrameParam(
+    this,
+    "variableImportances",
+    "Variable imporanteces.")
+
   setDefault(
     modelDetails -> null,
     trainingMetrics -> Map.empty[String, Double],
     validationMetrics -> Map.empty[String, Double],
     crossValidationMetrics -> Map.empty[String, Double],
     trainingParams -> Map.empty[String, String],
-    modelCategory -> null)
+    modelCategory -> null,
+    scoringHistory -> null,
+    variableImportances -> null)
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
@@ -95,6 +109,10 @@ class H2OMOJOModel(override val uid: String)
     val columns = mojoBackend.m.getNames
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
+
+  def getScoringHistory(): DataFrame = $(scoringHistory)
+
+  def getVariableImportances(): DataFrame = $(variableImportances)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
@@ -218,6 +236,37 @@ trait H2OMOJOModelUtils {
     }
   }
 
+  private def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
+    val table = ModelJsonReader.readTable(outputJson, fieldName)
+    val columnTypes = table.getColTypes.map {
+      case ColumnType.LONG => LongType
+      case ColumnType.INT => IntegerType
+      case ColumnType.DOUBLE => DoubleType
+      case ColumnType.FLOAT => FloatType
+      case ColumnType.STRING => StringType
+    }
+    val columns = table.getColHeaders.zip(columnTypes).map {
+      case (columnName, columnType) => StructField(columnName, columnType, nullable = true)
+    }
+    val schema = StructType(columns)
+    val rows = (0 until table.rows()).map { rowId =>
+      val rowData = (0 until table.columns()).map(colId => table.getCell(colId, rowId)).toArray[Any]
+      val row: Row = new GenericRowWithSchema(rowData, schema)
+      row
+    }.asJava
+    SparkSessionUtils.active.createDataFrame(rows, schema)
+  }
+
+  protected def extractScoringHistory(modelJson: JsonObject): DataFrame = {
+    val outputJson = modelJson.get("output").getAsJsonObject
+    jsonFieldToDataFrame(outputJson, "scoring_history")
+  }
+
+  protected def extractVariableImportances(modelJson: JsonObject): DataFrame = {
+    val outputJson = modelJson.get("output").getAsJsonObject
+    jsonFieldToDataFrame(outputJson, "variable_importances")
+  }
+
   private def stringifyJSON(value: JsonElement): Option[String] = {
     value match {
       case v: JsonPrimitive => Some(v.getAsString)
@@ -259,23 +308,22 @@ object H2OMOJOModel
     model.setMojo(mojo)
     val modelJson = getModelJson(mojo)
     val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
-    val modelDetails = getModelDetails(modelJson)
-    val modelCategory = extractModelCategory(modelJson)
-    val trainingParams = extractParams(modelJson)
-    val featureTypes = extractFeatureTypes(modelJson)
+
     // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
     model.set(model.featuresCols -> mojoModel.features())
-    model.set(model.featureTypes -> featureTypes)
+    model.set(model.featureTypes -> extractFeatureTypes(modelJson))
     model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.set(model.modelDetails -> modelDetails)
+    model.set(model.modelDetails -> getModelDetails(modelJson))
     model.set(model.predictionCol -> settings.predictionCol)
     model.set(model.trainingMetrics -> trainingMetrics)
     model.set(model.validationMetrics -> validationMetrics)
     model.set(model.crossValidationMetrics -> crossValidationMetrics)
-    model.set(model.trainingParams -> trainingParams)
-    model.set(model.modelCategory -> modelCategory.toString)
+    model.set(model.trainingParams -> extractParams(modelJson))
+    model.set(model.modelCategory -> extractModelCategory(modelJson).toString)
+    model.set(model.scoringHistory -> extractScoringHistory(modelJson))
+    model.set(model.variableImportances -> extractVariableImportances(modelJson))
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withContributions -> settings.withContributions)
     model.set(model.withLeafNodeAssignments -> settings.withLeafNodeAssignments)

@@ -69,6 +69,22 @@ test_that("test getDomainValues", {
   expect_true(is.null(domainValues[["ID"]]))
 })
 
+test_that("test getScoringHistory", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  scoringHistory <- model$getScoringHistory()
+  count <- dplyr::count(scoringHistory)
+
+  expect_true(count > 0)
+})
+
+test_that("test getVariableImportances", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  variableImportances <- model$getVariableImportances()
+  count <- dplyr::count(variableImportances)
+
+  expect_true(count > 0)
+})
+
 test_that("test training params", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   params <- model$getTrainingParams()
