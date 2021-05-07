@@ -61,14 +61,10 @@ class H2OMOJOModel(override val uid: String)
     new MapStringStringParam(this, "trainingParams", "Training params")
   protected final val modelCategory: NullableStringParam =
     new NullableStringParam(this, "modelCategory", "H2O's model category")
-  protected final val scoringHistory: NullableDataFrameParam = new NullableDataFrameParam(
-    this,
-    "scoringHistory",
-    "Scoring history acquired during the model training.")
-  protected final val variableImportances: NullableDataFrameParam = new NullableDataFrameParam(
-    this,
-    "variableImportances",
-    "Variable imporanteces.")
+  protected final val scoringHistory: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
+  protected final val variableImportances: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "variableImportances", "Variable imporanteces.")
 
   setDefault(
     modelDetails -> null,
@@ -145,7 +141,7 @@ class H2OMOJOModel(override val uid: String)
   }
 }
 
-trait H2OMOJOModelUtils {
+trait H2OMOJOModelUtils extends Logging {
 
   private def removeMetaField(json: JsonElement): JsonElement = {
     if (json.isJsonObject) {
@@ -237,24 +233,30 @@ trait H2OMOJOModelUtils {
   }
 
   private def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
-    val table = ModelJsonReader.readTable(outputJson, fieldName)
-    val columnTypes = table.getColTypes.map {
-      case ColumnType.LONG => LongType
-      case ColumnType.INT => IntegerType
-      case ColumnType.DOUBLE => DoubleType
-      case ColumnType.FLOAT => FloatType
-      case ColumnType.STRING => StringType
+    try {
+      val table = ModelJsonReader.readTable(outputJson, fieldName)
+      val columnTypes = table.getColTypes.map {
+        case ColumnType.LONG => LongType
+        case ColumnType.INT => IntegerType
+        case ColumnType.DOUBLE => DoubleType
+        case ColumnType.FLOAT => FloatType
+        case ColumnType.STRING => StringType
+      }
+      val columns = table.getColHeaders.zip(columnTypes).map {
+        case (columnName, columnType) => StructField(columnName, columnType, nullable = true)
+      }
+      val schema = StructType(columns)
+      val rows = (0 until table.rows()).map { rowId =>
+        val rowData = (0 until table.columns()).map(colId => table.getCell(colId, rowId)).toArray[Any]
+        val row: Row = new GenericRowWithSchema(rowData, schema)
+        row
+      }.asJava
+      SparkSessionUtils.active.createDataFrame(rows, schema)
+    } catch {
+      case e =>
+        logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
+        null
     }
-    val columns = table.getColHeaders.zip(columnTypes).map {
-      case (columnName, columnType) => StructField(columnName, columnType, nullable = true)
-    }
-    val schema = StructType(columns)
-    val rows = (0 until table.rows()).map { rowId =>
-      val rowData = (0 until table.columns()).map(colId => table.getCell(colId, rowId)).toArray[Any]
-      val row: Row = new GenericRowWithSchema(rowData, schema)
-      row
-    }.asJava
-    SparkSessionUtils.active.createDataFrame(rows, schema)
   }
 
   protected def extractScoringHistory(modelJson: JsonObject): DataFrame = {

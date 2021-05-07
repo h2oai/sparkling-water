@@ -40,7 +40,12 @@ case class ExplicitField(
     sparkName: Option[String] = None,
     mojoImplementation: Option[String] = None)
 
-case class DeprecatedField(h2oName: String, implementation: String, sparkName: String, version: String)
+case class DeprecatedField(
+    h2oName: String,
+    implementation: String,
+    sparkName: String,
+    version: String,
+    replacement: Option[String] = None)
 
 object DefaultValueSource extends Enumeration {
   type DefaultValueSource = Value
