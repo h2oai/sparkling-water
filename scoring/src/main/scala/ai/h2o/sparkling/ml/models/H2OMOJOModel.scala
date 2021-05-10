@@ -63,8 +63,8 @@ class H2OMOJOModel(override val uid: String)
     new NullableStringParam(this, "modelCategory", "H2O's model category")
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
-  protected final val variableImportances: NullableDataFrameParam =
-    new NullableDataFrameParam(this, "variableImportances", "Variable imporanteces.")
+  protected final val featureImportances: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
 
   setDefault(
     modelDetails -> null,
@@ -74,7 +74,7 @@ class H2OMOJOModel(override val uid: String)
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
-    variableImportances -> null)
+    featureImportances -> null)
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
@@ -108,7 +108,7 @@ class H2OMOJOModel(override val uid: String)
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
-  def getVariableImportances(): DataFrame = $(variableImportances)
+  def getFeatureImportances(): DataFrame = $(featureImportances)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
@@ -264,7 +264,7 @@ trait H2OMOJOModelUtils extends Logging {
     jsonFieldToDataFrame(outputJson, "scoring_history")
   }
 
-  protected def extractVariableImportances(modelJson: JsonObject): DataFrame = {
+  protected def extractFeatureImportances(modelJson: JsonObject): DataFrame = {
     val outputJson = modelJson.get("output").getAsJsonObject
     jsonFieldToDataFrame(outputJson, "variable_importances")
   }
@@ -325,7 +325,7 @@ object H2OMOJOModel
     model.set(model.trainingParams -> extractParams(modelJson))
     model.set(model.modelCategory -> extractModelCategory(modelJson).toString)
     model.set(model.scoringHistory -> extractScoringHistory(modelJson))
-    model.set(model.variableImportances -> extractVariableImportances(modelJson))
+    model.set(model.featureImportances -> extractFeatureImportances(modelJson))
     model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
     model.set(model.withContributions -> settings.withContributions)
     model.set(model.withLeafNodeAssignments -> settings.withLeafNodeAssignments)

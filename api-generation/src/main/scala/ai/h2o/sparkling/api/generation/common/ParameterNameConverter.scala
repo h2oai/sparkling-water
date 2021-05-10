@@ -30,7 +30,7 @@ object ParameterNameConverter {
     "rand_family" -> "randomFamily",
     "rand_link" -> "randomLink",
     "calibration_frame" -> "calibrationDataFrame",
-    "variable_importances" -> "calculateVariableImportances")
+    "variable_importances" -> "calculateFeatureImportances")
 
   val conversionRules: Map[String, String] = Map("Column" -> "Col")
 

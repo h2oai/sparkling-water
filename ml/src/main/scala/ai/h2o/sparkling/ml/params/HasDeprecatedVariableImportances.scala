@@ -22,13 +22,13 @@ import org.apache.spark.expose.Logging
 
 trait HasDeprecatedVariableImportances extends Logging {
 
-  def getCalculateVariableImportances(): Boolean
+  def getCalculateFeatureImportances(): Boolean
 
-  @DeprecatedMethod("getCalculateVariableImportances", "3.36")
-  def getVariableImportances(): Boolean = getCalculateVariableImportances()
+  @DeprecatedMethod("getCalculateFeatureImportances", "3.36")
+  def getVariableImportances(): Boolean = getCalculateFeatureImportances()
 
-  def setCalculateVariableImportances(value: Boolean): this.type
+  def setCalculateFeatureImportances(value: Boolean): this.type
 
-  @DeprecatedMethod("setCalculateVariableImportances", "3.36")
-  def setVariableImportances(value: Boolean): this.type = setCalculateVariableImportances(value)
+  @DeprecatedMethod("setCalculateFeatureImportances", "3.36")
+  def setVariableImportances(value: Boolean): this.type = setCalculateFeatureImportances(value)
 }

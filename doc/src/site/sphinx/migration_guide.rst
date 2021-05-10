@@ -9,9 +9,9 @@ From 3.34 to 3.36
 - The methods ``getWithDetailedPredictionCol`` and ``setWithDetailedPredictionCol`` on all SW Algorithms and
   MOJO models were removed without replacement.
 
-- The parameter ``variableImportances`` of ``H2ODeepLearning`` has been replaced with ``calculateVariableImportances`` as
+- The parameter ``variableImportances`` of ``H2ODeepLearning`` has been replaced with ``calculateFeatureImportances`` as
   well as the methods ``getVariableImportances`` and ``setVariableImportances`` on ``H2ODeepLearning`` have been replaced
-  with ``getCalculateVariableImportances`` and ``setCalculateVariableImportances``.
+  with ``getCalculateFeatureImportances`` and ``setCalculateFeatureImportances``.
 
 From 3.32.1 to 3.34
 -------------------
