@@ -163,6 +163,14 @@ class H2OAutoML(override val uid: String)
     leaderBoard.head().getString(0)
   }
 
+  def getAllModels(): Array[H2OMOJOModel] = {
+    getLeaderboard().select("model_id").collect().map { row =>
+      val modelId = row.getString(0)
+      H2OModel(modelId)
+        .toMOJOModel(Identifiable.randomUID(modelId), H2OMOJOSettings.createFromModelParams(this))
+    }
+  }
+
   override private[sparkling] def getExcludedCols(): Seq[String] = {
     super.getExcludedCols() ++ Seq(getLabelCol(), getFoldCol(), getWeightCol())
       .flatMap(Option(_)) // Remove nulls
