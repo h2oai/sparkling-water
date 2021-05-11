@@ -247,7 +247,12 @@ trait H2OMOJOModelUtils extends Logging {
       }
       val schema = StructType(columns)
       val rows = (0 until table.rows()).map { rowId =>
-        val rowData = (0 until table.columns()).map(colId => table.getCell(colId, rowId)).toArray[Any]
+        val rowData = (0 until table.columns()).map { colId =>
+          table.getCell(colId, rowId) match {
+            case str: String if table.getColTypes()(colId) == ColumnType.INT => Integer.parseInt(str)
+            case value => value
+          }
+        }.toArray[Any]
         val row: Row = new GenericRowWithSchema(rowData, schema)
         row
       }.asJava
