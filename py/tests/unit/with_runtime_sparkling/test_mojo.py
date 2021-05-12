@@ -86,15 +86,15 @@ def testScoringHistory(gbmModel):
     assert len(scoringHistoryDF.columns) > 0
 
 
-def testVariableImportances(gbmModel):
-    featureImportancesDF = gbmModel.getVariableImportances()
+def testFeatureImportances(gbmModel):
+    featureImportancesDF = gbmModel.getFeatureImportances()
     assert featureImportancesDF.select("Variable").collect().sort() == gbmModel.getFeaturesCols().sort()
     assert len(featureImportancesDF.columns) == 4
 
 
-def testVariableImportancesAndScoringHistoryAreSameAfterSerde(gbmModel):
+def testFeatureImportancesAndScoringHistoryAreSameAfterSerde(gbmModel):
     expectedScoringHistoryDF = gbmModel.getScoringHistory()
-    expectedFeatureImportancesDF = gbmModel.getVariableImportances()
+    expectedFeatureImportancesDF = gbmModel.getFeatureImportances()
 
     filePath = "file://" + os.path.abspath("build/scoringHistoryAndFeatureImportancesSerde")
     gbmModel.write().overwrite().save(filePath)
