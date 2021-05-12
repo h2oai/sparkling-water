@@ -99,7 +99,8 @@ trait AlgorithmConfigurations {
         "HasDeprecatedVariableImportances",
         "variableImportances",
         "3.36",
-        Some("calculateFeatureImportances")))
+        Some("calculateFeatureImportances"),
+        Some("HasDeprecatedVariableImportancesOnMOJO")))
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
       ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),

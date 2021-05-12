@@ -13,6 +13,8 @@ From 3.34 to 3.36
   well as the methods ``getVariableImportances`` and ``setVariableImportances`` on ``H2ODeepLearning`` have been replaced
   with ``getCalculateFeatureImportances`` and ``setCalculateFeatureImportances``.
 
+- The method ``getVariableImportances`` of ``H2ODeepLearningMOJOModel`` has been replaced with ``getCalculateFeatureImportances``.
+
 From 3.32.1 to 3.34
 -------------------
 

@@ -233,36 +233,40 @@ trait H2OMOJOModelUtils extends Logging {
   }
 
   private def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
-    try {
-      val table = ModelJsonReader.readTable(outputJson, fieldName)
-      val columnTypes = table.getColTypes.map {
-        case ColumnType.LONG => LongType
-        case ColumnType.INT => IntegerType
-        case ColumnType.DOUBLE => DoubleType
-        case ColumnType.FLOAT => FloatType
-        case ColumnType.STRING => StringType
-      }
-      val columns = table.getColHeaders.zip(columnTypes).map {
-        case (columnName, columnType) => StructField(columnName, columnType, nullable = true)
-      }
-      val schema = StructType(columns)
-      val rows = (0 until table.rows()).map { rowId =>
-        val rowData = (0 until table.columns())
-          .map { colId =>
-            table.getCell(colId, rowId) match {
-              case str: String if table.getColTypes()(colId) == ColumnType.INT => Integer.parseInt(str)
-              case value => value
+    if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
+      null
+    } else {
+      try {
+        val table = ModelJsonReader.readTable(outputJson, fieldName)
+        val columnTypes = table.getColTypes.map {
+          case ColumnType.LONG => LongType
+          case ColumnType.INT => IntegerType
+          case ColumnType.DOUBLE => DoubleType
+          case ColumnType.FLOAT => FloatType
+          case ColumnType.STRING => StringType
+        }
+        val columns = table.getColHeaders.zip(columnTypes).map {
+          case (columnName, columnType) => StructField(columnName, columnType, nullable = true)
+        }
+        val schema = StructType(columns)
+        val rows = (0 until table.rows()).map { rowId =>
+          val rowData = (0 until table.columns())
+            .map { colId =>
+              table.getCell(colId, rowId) match {
+                case str: String if table.getColTypes()(colId) == ColumnType.INT => Integer.parseInt(str)
+                case value => value
+              }
             }
-          }
-          .toArray[Any]
-        val row: Row = new GenericRowWithSchema(rowData, schema)
-        row
-      }.asJava
-      SparkSessionUtils.active.createDataFrame(rows, schema)
-    } catch {
-      case e =>
-        logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
-        null
+            .toArray[Any]
+          val row: Row = new GenericRowWithSchema(rowData, schema)
+          row
+        }.asJava
+        SparkSessionUtils.active.createDataFrame(rows, schema)
+      } catch {
+        case e =>
+          logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
+          null
+      }
     }
   }
 

@@ -34,7 +34,8 @@ object MOJOModelTemplate
       .filter(parameter =>
         !IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
 
-    val explicitFieldImplementations = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation)
+    val explicitFieldImplementations = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
+      parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
 
     val imports = Seq(
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",

@@ -45,7 +45,8 @@ case class DeprecatedField(
     implementation: String,
     sparkName: String,
     version: String,
-    replacement: Option[String] = None)
+    replacement: Option[String] = None,
+    mojoImplementation: Option[String] = None)
 
 object DefaultValueSource extends Enumeration {
   type DefaultValueSource = Value

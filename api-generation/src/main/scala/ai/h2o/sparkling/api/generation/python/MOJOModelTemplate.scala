@@ -33,7 +33,8 @@ object MOJOModelTemplate
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
     val algorithmType = algorithmSubstitutionContext.algorithmType.replace("Algorithm", "MOJOModelParams")
-    val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation)
+    val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
+      parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
     val parents = Seq(algorithmType) ++ explicitFields
 
     val imports = Seq(
