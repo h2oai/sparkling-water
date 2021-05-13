@@ -79,7 +79,7 @@ test_that("test getScoringHistory", {
 
 test_that("test getFeatureImportances", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  featureImportances <- model$getFeautureImportances()
+  featureImportances <- model$getFeatureImportances()
   count <- dplyr::count(featureImportances)
 
   expect_true(count > 0)
