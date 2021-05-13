@@ -77,10 +77,10 @@ test_that("test getScoringHistory", {
   expect_true(count > 0)
 })
 
-test_that("test getVariableImportances", {
+test_that("test getFeatureImportances", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
-  variableImportances <- model$getVariableImportances()
-  count <- dplyr::count(variableImportances)
+  featureImportances <- model$getFeautureImportances()
+  count <- dplyr::count(featureImportances)
 
   expect_true(count > 0)
 })
