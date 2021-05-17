@@ -272,7 +272,8 @@ trait H2OMOJOModelUtils extends Logging {
 
   protected def extractScoringHistory(modelJson: JsonObject): DataFrame = {
     val outputJson = modelJson.get("output").getAsJsonObject
-    jsonFieldToDataFrame(outputJson, "scoring_history")
+    val df = jsonFieldToDataFrame(outputJson, "scoring_history")
+    if(df.columns.contains("")) df.drop("") else df
   }
 
   protected def extractFeatureImportances(modelJson: JsonObject): DataFrame = {

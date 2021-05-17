@@ -61,10 +61,12 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
     invoke(.self$jmojo, "getModelCategory")
   },
   getScoringHistory = function() {
-    invoke(.self$jmojo, "getScoringHistory")
+    outputFrame <- invoke(.self$jmojo, "getScoringHistory")
+    sdf_register(outputFrame)
   },
   getFeatureImportances = function() {
-    invoke(.self$jmojo, "getFeatureImportances")
+    outputFrame <- invoke(.self$jmojo, "getFeatureImportances")
+    sdf_register(outputFrame)
   }
 ))
 
