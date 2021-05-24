@@ -100,6 +100,13 @@ The following sections describe how to train an AutoML model in Sparkling Water 
             val leaderboard = automl.getLeaderboard("ALL")
             leaderboard.show(false)
 
+        All models from the leaderboard can be accessed and used for scoring:
+
+        .. code:: scala
+
+            val models = automl.getAllModels()
+            models.foreach(_.transform(testingDF).show(false))
+
 
     .. tab-container:: Python
         :title: Python
@@ -179,14 +186,22 @@ The following sections describe how to train an AutoML model in Sparkling Water 
         If you want to see more information about models, you can add extra columns to the leaderboard by passing column names
         to the ``getLeaderboard()`` method.
 
-        .. code:: scala
+        .. code:: python
 
             leaderboard = automl.getLeaderboard("training_time_ms", "predict_time_per_row_ms")
             leaderboard.show(truncate = False)
 
         Extra columns don't have to be specified explicitly. You can specify the addition of all possible extra columns as:
 
-        .. code:: scala
+        .. code:: python
 
             leaderboard = automl.getLeaderboard("ALL")
             leaderboard.show(truncate = False)
+
+        All models from the leaderboard can be accessed and used for scoring:
+
+        .. code:: python
+
+            models = automl.getAllModels()
+            for model in models:
+                model.transform(testingDF).show(truncate = False)
