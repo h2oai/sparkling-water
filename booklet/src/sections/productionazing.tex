@@ -198,6 +198,22 @@ returns a mapping from a column name to its domain in a form of array.
 
 The method \texttt{getModelCategory} can be used to get the model category (such as \texttt{binomial}, \texttt{multinomial} etc).
 
+\subsubsection{Obtaining Feature Types}
+
+The method \texttt{getFeatureTypes} returns a map/dictionary from a feature name to a corresponding feature type
+[\texttt{enum} (categorical), \texttt{numeric}, \texttt{string}, etc.]. These pieces helps to understand how individual
+columns of the training dataset were treated during the model training.
+
+\subsubsection{Obtaining Feature Importances}
+
+The method \texttt{getFeatureImportances} returns a data frame describing importance of each feature. The importance is expressed
+by several numbers (Relative Importance, Scaled Importance and Percentage).
+
+\subsubsection{Obtaining Scoring History}
+
+The method \texttt{getScoringHistory} returns a data frame describing how the model evolved during the training process
+according to a certain training and validation metrics.
+
 \subsubsection{Obtaining Training Params}
 
 The method \texttt{getTrainingParams} can be used to get map containing all training parameters used in the H2O. It is a map

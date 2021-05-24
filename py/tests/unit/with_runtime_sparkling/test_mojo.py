@@ -80,6 +80,33 @@ def testFeatureTypes(gbmModel):
     assert len(types) == 9
 
 
+def testScoringHistory(gbmModel):
+    scoringHistoryDF = gbmModel.getScoringHistory()
+    assert scoringHistoryDF.count() > 0
+    assert len(scoringHistoryDF.columns) > 0
+
+
+def testFeatureImportances(gbmModel):
+    featureImportancesDF = gbmModel.getFeatureImportances()
+    assert featureImportancesDF.select("Variable").collect().sort() == gbmModel.getFeaturesCols().sort()
+    assert len(featureImportancesDF.columns) == 4
+
+
+def testFeatureImportancesAndScoringHistoryAreSameAfterSerde(gbmModel):
+    expectedScoringHistoryDF = gbmModel.getScoringHistory()
+    expectedFeatureImportancesDF = gbmModel.getFeatureImportances()
+
+    filePath = "file://" + os.path.abspath("build/scoringHistoryAndFeatureImportancesSerde")
+    gbmModel.write().overwrite().save(filePath)
+    loadedModel = H2OMOJOModel.load(filePath)
+
+    loadedScoringHistoryDF = loadedModel.getScoringHistory()
+    loadedFeatureImportancesDF = loadedModel.getFeatureImportances()
+
+    unit_test_utils.assert_data_frames_are_identical(expectedScoringHistoryDF, loadedScoringHistoryDF)
+    unit_test_utils.assert_data_frames_are_identical(expectedFeatureImportancesDF, loadedFeatureImportancesDF)
+
+
 def getCurrentMetrics():
     metrics = gbmModel.getCurrentMetrics()
     assert metrics == gbmModel.getTrainingMetrics()

@@ -46,6 +46,12 @@ class H2OMOJOModelParams(H2OMOJOModelBase):
     def getModelCategory(self):
         return self._java_obj.getModelCategory()
 
+    def getScoringHistory(self):
+        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getScoringHistory())
+
+    def getFeatureImportances(self):
+        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
+
 
 class HasOffsetCol:
 
