@@ -17,6 +17,7 @@
 
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
+from ai.h2o.sparkling.ml.models.H2OMOJOModel import H2OMOJOModelFactory
 
 
 class H2OAutoMLExtras:
@@ -26,3 +27,7 @@ class H2OAutoMLExtras:
             extraColumns = extraColumns[0]
         leaderboard_java = self._java_obj.getLeaderboard(extraColumns)
         return DataFrame(leaderboard_java, SparkSession.builder.getOrCreate()._wrapped)
+
+    def getAllModels(self):
+        javaModels = self._java_obj.getAllModels()
+        return [H2OMOJOModelFactory.createSpecificMOJOModel(javaModel) for javaModel in javaModels]

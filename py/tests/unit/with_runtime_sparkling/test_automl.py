@@ -178,3 +178,11 @@ def testDeserializationOfUnfittedPipelineWithAutoML(classificationDataset):
     pipeline.write().overwrite().save("file://" + os.path.abspath("build/automl_pipeline_blendingDF"))
     loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/automl_pipeline_blendingDF"))
     loadedPipeline.fit(trainingDateset)
+
+
+def testScoringWithAllLeaderbordModels(prostateDataset):
+    [trainingDateset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 42)
+    automl = setParametersForTesting(H2OAutoML())
+    automl.fit(trainingDateset)
+    for model in automl.getAllModels():
+        model.transform(testingDataset).collect()
