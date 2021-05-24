@@ -20,14 +20,14 @@ package ai.h2o.sparkling.ml.params
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 import java.util.Base64
 
+import ai.h2o.sparkling.utils.ScalaUtils.withResource
+import ai.h2o.sparkling.utils.SparkSessionUtils
 import org.apache.spark.ml.param.{Param, Params}
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row}
 import org.json4s.JsonAST.{JNull, JString}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
-import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import ai.h2o.sparkling.utils.SparkSessionUtils
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.StructType
 
 class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid: DataFrame => Boolean)
   extends Param[DataFrame](parent, name, doc, isValid) {

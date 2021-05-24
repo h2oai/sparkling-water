@@ -41,7 +41,13 @@ trait AlgorithmTemplateBase extends PythonEntityTemplate {
         .map { param =>
           val version = param.version
           val name = param.sparkName
-          s"""        if '$name' in kwargs:
+          val valuePropagation = param.replacement match {
+            case Some(replacement) =>
+              s"""\n            if '$replacement' not in kwargs:
+                 |                kwargs['$replacement'] = kwargs['$name']""".stripMargin
+            case None => ""
+          }
+          s"""        if '$name' in kwargs:$valuePropagation
              |            del kwargs['$name']
              |            warn("The parameter '$name' is deprecated and will be removed in the version $version.")""".stripMargin
         }

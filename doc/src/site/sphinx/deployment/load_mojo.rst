@@ -341,6 +341,20 @@ The method ``getFeatureTypes`` returns a map/dictionary from a feature name to a
 [``enum`` (categorical), ``numeric``, ``string``, etc.]. These pieces helps to understand how individual columns of
 the training dataset were treated during the model training.
 
+Obtaining Feature Importances
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``getFeatureImportances`` returns a data frame describing importance of each feature. The importance is expressed
+by several numbers (Relative Importance, Scaled Importance and Percentage). `H2O-3 documentation
+<https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/docs-website/h2o-docs/variable-importance.html>`__
+describes how the numbers are calculated.
+
+
+Obtaining Scoring History
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``getScoringHistory`` returns a data frame describing how the model evolved during the training process according to
+a certain training and validation metrics.
 
 Obtaining Metrics
 ^^^^^^^^^^^^^^^^^

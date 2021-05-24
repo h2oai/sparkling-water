@@ -19,7 +19,7 @@ from py4j.java_gateway import JavaObject
 from pyspark.ml.linalg import DenseVector, DenseMatrix
 from pyspark.ml.param import TypeConverters
 from pyspark.ml.util import _jvm
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, SparkSession
 
 
 class H2OTypeConverters(object):
@@ -498,5 +498,15 @@ class H2OTypeConverters(object):
             return None
         elif isinstance(array, JavaObject):
             return [v for v in array]
+        else:
+            raise TypeError("Invalid type.")
+
+    @staticmethod
+    def scalaToPythonDataFrame(jdf):
+        if jdf is None:
+            return None
+        elif isinstance(jdf, JavaObject):
+            sqlContext = SparkSession.builder.getOrCreate()._wrapped
+            return DataFrame(jdf, sqlContext)
         else:
             raise TypeError("Invalid type.")

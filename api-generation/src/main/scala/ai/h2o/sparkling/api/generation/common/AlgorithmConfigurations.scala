@@ -93,13 +93,22 @@ trait AlgorithmConfigurations {
 
     val noDeprecation = Seq.empty
 
+    val dlDeprecations = Seq(
+      DeprecatedField(
+        "variable_importances",
+        "HasDeprecatedVariableImportances",
+        "variableImportances",
+        "3.36",
+        Some("calculateFeatureImportances"),
+        Some("HasDeprecatedVariableImportancesOnMOJO")))
+
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
       ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),
       ("H2OGBMParams", classOf[GBMV3.GBMParametersV3], classOf[GBMParameters], gbmFields, noDeprecation),
       ("H2ODRFParams", classOf[DRFV3.DRFParametersV3], classOf[DRFParameters], drfFields, noDeprecation),
       ("H2OGLMParams", classOf[GLMV3.GLMParametersV3], classOf[GLMParameters], glmFields, noDeprecation),
       ("H2OGAMParams", classOf[GAMV3.GAMParametersV3], classOf[GAMParameters], gamFields, noDeprecation),
-      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation),
+      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, dlDeprecations),
       ("H2OKMeansParams", classOf[KMeansParamsV3], classOf[KMeansParameters], kmeansFields, noDeprecation),
       ("H2OCoxPHParams", classOf[CoxPHParametersV3], classOf[CoxPHParameters], coxPHFields, noDeprecation),
       ("H2OIsolationForestParams", classOf[IFParamsV3], classOf[IsolationForestParameters], ifFields, noDeprecation))
