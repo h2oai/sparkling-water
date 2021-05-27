@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v3.32.1.3-1 (2021-05-27)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.3-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.3-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.3-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2565 <https://0xdata.atlassian.net/browse/SW-2565>`__ - Upgrade to H2O 3.32.1.3
+
+-  Engineering Story
+
+   -  `SW-2561 <https://0xdata.atlassian.net/browse/SW-2561>`__ - Fix Deployment of Testing Infrastructure for K8s Tests
+
+-  New Feature
+
+   -  `SW-2560 <https://0xdata.atlassian.net/browse/SW-2560>`__ - Expose all H2OMOJOModels from AutoML Leaderboard
+   -  `SW-2559 <https://0xdata.atlassian.net/browse/SW-2559>`__ - Expose Scoring History and Variable Importances on H2OMOJOModel
+
 v3.32.1.2-1 (2021-05-04)
 ------------------------
 Downloads:
