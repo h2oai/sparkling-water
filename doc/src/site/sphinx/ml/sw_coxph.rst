@@ -42,6 +42,10 @@ See also :ref:`parameters_H2OCoxPH`.
 
             import ai.h2o.sparkling.ml.algos.H2OCoxPH
             val estimator = new H2OCoxPH()
+                .setStartCol("start")
+                .setStopCol("stop")
+                .setTies("breslow")
+                .setLabelCol("event")
             val model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
@@ -88,7 +92,11 @@ See also :ref:`parameters_H2OCoxPH`.
         .. code:: python
 
             from pysparkling.ml import H2OCoxPH
-            estimator = H2OCoxPH()
+            estimator = H2OCoxPH()\
+                .setStartCol('start')\
+                .setStopCol('stop')\
+                .setTies('breslow')\
+                .setLabelCol('event')
             model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
