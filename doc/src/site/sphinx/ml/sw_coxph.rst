@@ -87,7 +87,7 @@ See also :ref:`parameters_H2OCoxPH`.
             testingFrame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart_test.csv")
             testingDF = hc.asSparkFrame(testingFrame)
 
-        Train the model. You can configure all the available Isolation Forest arguments using provided setters or constructor parameters.
+        Train the model. You can configure all the available CoxPH arguments using provided setters or constructor parameters.
 
         .. code:: python
 
