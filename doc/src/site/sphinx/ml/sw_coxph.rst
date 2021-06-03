@@ -32,16 +32,19 @@ See also :ref:`parameters_H2OCoxPH`.
 
             import org.apache.spark.SparkFiles
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart.csv")
-            spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart_test.csv")
-            val trainingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart.csv"))
-            val testingDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart_test.csv"))
+            val heartDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("heart.csv"))
+            val Array(trainingDF, testingDF) = heartDF.randomSplit(Array(0.8, 0.2), seed = 12345)
 
         Train the model. You can configure all the available CoxPH parameters using provided setters.
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2OCoxPH
-            val estimator = new H2OCoxPH()
+            val estimator = new H2OCoxPH().
+                setStartCol("start").
+                setStopCol("stop").
+                setTies("breslow").
+                setLabelCol("event")
             val model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
@@ -78,17 +81,21 @@ See also :ref:`parameters_H2OCoxPH`.
         .. code:: python
 
             import h2o
-            trainingFrame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart.csv")
+            heartFrame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart.csv")
+            trainingFrame, testingFrame = heartFrame.split_frame(ratios = [.8], seed = 1234)
             trainingDF = hc.asSparkFrame(trainingFrame)
-            testingFrame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/coxph_test/heart_test.csv")
             testingDF = hc.asSparkFrame(testingFrame)
 
-        Train the model. You can configure all the available Isolation Forest arguments using provided setters or constructor parameters.
+        Train the model. You can configure all the available CoxPH arguments using provided setters or constructor parameters.
 
         .. code:: python
 
             from pysparkling.ml import H2OCoxPH
-            estimator = H2OCoxPH()
+            estimator = H2OCoxPH()\
+                .setStartCol('start')\
+                .setStopCol('stop')\
+                .setTies('breslow')\
+                .setLabelCol('event')
             model = estimator.fit(trainingDF)
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
