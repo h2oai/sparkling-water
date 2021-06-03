@@ -20,7 +20,7 @@ package ai.h2o.sparkling.api.generation.common
 object IgnoredParameters {
   def deprecated(algorithm: String): Seq[String] = algorithm match {
     case "H2OGAM" => Seq("r2_stopping", "lambda_min_ratio")
-    case "H2ODeepLearning" => Seq("r2_stopping", "col_major", "max_confusion_matrix_size")
+    case "H2ODeepLearning" | "H2OAutoEncoder" => Seq("r2_stopping", "col_major", "max_confusion_matrix_size")
     case _ => Seq("r2_stopping")
   }
 
@@ -38,6 +38,24 @@ object IgnoredParameters {
       case "H2OXGBoost" => Seq("checkpoint")
       case "H2OCoxPHMOJOModel" => Seq("interaction_pairs") // Interaction pairs are not currently supported on MOJO
       case "H2OWord2Vec" => Seq("pre_trained")
+      case "H2OAutoEncoder" => Seq(
+        "pretrained_autoencoder",
+        "checkpoint",
+        "response_column",
+        "offset_column",
+        "balance_classes",
+        "class_sampling_factors",
+        "max_after_balance_size",
+        "max_confusion_matrix_size",
+        "distribution",
+        "quantile_alpha",
+        "tweedie_power",
+        "huber_alpha",
+        "classification_stop",
+        "regression_stop",
+        "autoencoder",
+        "col_major",
+        "auc_type")
       case _ => Seq.empty
     }
   }
