@@ -17,23 +17,12 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-import java.util
-
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.schemas.DeepLearningV3
 
-trait FeatureEstimatorConfigurations {
+trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
-  val defaultValuesOfCommonParameters = Map(
-    "convertUnknownCategoricalLevelsToNa" -> false,
-    "convertInvalidNumbersToNa" -> false,
-    "validationDataFrame" -> null,
-    "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String])
-
-  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
-
-  def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = super.parametersConfiguration ++ {
 
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -48,7 +37,7 @@ trait FeatureEstimatorConfigurations {
     val noDeprecation = Seq.empty
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
-      ("H2ODeepLearningParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation))
+      ("H2OAutoEncoderParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation))
 
     for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
       yield ParameterSubstitutionContext(
@@ -66,7 +55,7 @@ trait FeatureEstimatorConfigurations {
         generateParamTag = true)
   }
 
-  def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] =  super.algorithmConfiguration ++ {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OFeatureEstimator", Seq.empty))

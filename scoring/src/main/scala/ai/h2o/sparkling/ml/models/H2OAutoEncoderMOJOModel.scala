@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 package ai.h2o.sparkling.ml.models
 
 import java.io.File
@@ -81,3 +81,4 @@ case class H2OAutoEncoderMOJOUdfWrapper(mojoGetter: () => File) {
       }
     }
 }
+*/

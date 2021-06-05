@@ -19,7 +19,11 @@ package ai.h2o.sparkling.api.generation
 
 import ai.h2o.sparkling.api.generation.common._
 
-object MOJOModelAPIRunner extends APIRunnerBase with AutoMLConfiguration {
+object MOJOModelAPIRunner
+  extends APIRunnerBase
+  with AutoMLConfiguration
+  with AlgorithmConfigurations
+  with FeatureEstimatorConfigurations {
 
   private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate, "py" -> python.MOJOModelTemplate)
   private val mojoFactoryTemplates =

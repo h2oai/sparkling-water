@@ -18,7 +18,7 @@ trait Word2VecConfiguration extends AlgorithmConfigurations {
       explicitDefaultValues = explicitDefaultValues,
       typeExceptions = Map.empty,
       defaultValueSource = DefaultValueSource.Field,
-      defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+      defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters,
       generateParamTag = true)
   }
 }

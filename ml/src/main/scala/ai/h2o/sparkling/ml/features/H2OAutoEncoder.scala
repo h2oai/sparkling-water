@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.H2OContext
@@ -28,7 +28,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{DefaultParamsReadable, DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.Dataset
 
-class H2OAutoEncoder(override val uid: String)
+class H2OTempAutoEncoder(override val uid: String)
   extends Estimator[H2OAutoEncoderMOJOModel]
   with H2OAutoEncoderBase
   with H2OAutoEncoderParams
@@ -57,5 +57,6 @@ class H2OAutoEncoder(override val uid: String)
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 
-object H2OAutoEncoder extends DefaultParamsReadable[H2OAutoEncoder]
+object H2OTempAutoEncoder extends DefaultParamsReadable[H2OAutoEncoder]
 
+*/

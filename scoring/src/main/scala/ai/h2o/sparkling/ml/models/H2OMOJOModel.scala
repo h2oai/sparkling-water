@@ -46,69 +46,16 @@ class H2OMOJOModel(override val uid: String)
   extends H2OMOJOModelBase[H2OMOJOModel]
   with H2OMOJOPrediction
   with SpecificMOJOParameters
+  with H2OMOJOCommonParameters
   with Logging {
 
   H2OMOJOCache.startCleanupThread()
-  protected final val modelDetails: NullableStringParam =
-    new NullableStringParam(this, "modelDetails", "Raw details of this model.")
-  protected final val trainingMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "trainingMetrics", "Training metrics.")
-  protected final val validationMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "validationMetrics", "Validation metrics.")
-  protected final val crossValidationMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics.")
-  protected final val trainingParams: MapStringStringParam =
-    new MapStringStringParam(this, "trainingParams", "Training params")
-  protected final val modelCategory: NullableStringParam =
-    new NullableStringParam(this, "modelCategory", "H2O's model category")
-  protected final val scoringHistory: NullableDataFrameParam =
-    new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
-  protected final val featureImportances: NullableDataFrameParam =
-    new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
-
-  setDefault(
-    modelDetails -> null,
-    trainingMetrics -> Map.empty[String, Double],
-    validationMetrics -> Map.empty[String, Double],
-    crossValidationMetrics -> Map.empty[String, Double],
-    trainingParams -> Map.empty[String, String],
-    modelCategory -> null,
-    scoringHistory -> null,
-    featureImportances -> null)
-
-  def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
-
-  def getValidationMetrics(): Map[String, Double] = $(validationMetrics)
-
-  def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
-
-  def getCurrentMetrics(): Map[String, Double] = {
-    val nfolds = $(trainingParams).get("nfolds")
-    val validationFrame = $(trainingParams).get("validation_frame")
-    if (nfolds.isDefined && nfolds.get.toInt > 1) {
-      getCrossValidationMetrics()
-    } else if (validationFrame.isDefined) {
-      getValidationMetrics()
-    } else {
-      getTrainingMetrics()
-    }
-  }
-
-  def getTrainingParams(): Map[String, String] = $(trainingParams)
-
-  def getModelCategory(): String = $(modelCategory)
-
-  def getModelDetails(): String = $(modelDetails)
 
   def getDomainValues(): Map[String, Array[String]] = {
     val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     val columns = mojoBackend.m.getNames
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
-
-  def getScoringHistory(): DataFrame = $(scoringHistory)
-
-  def getFeatureImportances(): DataFrame = $(featureImportances)
 
   override protected def outputColumnName: String = getDetailedPredictionCol()
 
