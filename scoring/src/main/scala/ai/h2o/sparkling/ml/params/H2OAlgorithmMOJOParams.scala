@@ -5,7 +5,7 @@ import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param.{BooleanParam, Param, Params, StringArrayParam}
 
-trait H2OAlgorithmMOJOParams extends Params with Logging {
+trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
 
   //
   // Param definitions

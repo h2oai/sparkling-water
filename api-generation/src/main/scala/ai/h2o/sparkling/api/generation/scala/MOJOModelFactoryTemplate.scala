@@ -33,7 +33,7 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
       s"""  protected def createSpecificMOJOModel(uid: String, algorithmName: String): H2OMOJOModel = {
          |    algorithmName match {
          |${generatePatternMatchingCases(mojoSubstitutionContexts)}
-         |      case _ => new H2OMOJOModel(uid)
+         |      case _ => new H2OAlgorithmMOJOModel(uid)
          |    }
          |  }""".stripMargin
     }

@@ -28,7 +28,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionBinomial extends PredictionWithContributions with PredictionWithStageProbabilities {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
 
   private def supportsCalibratedProbabilities(predictWrapper: EasyPredictModelWrapper): Boolean = {
     // calibrateClassProbabilities returns false if model does not support calibrated probabilities,

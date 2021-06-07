@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
-trait H2OCommonParams extends H2OBaseMOJOParams with H2OAlgoParamsBase {
+trait H2OCommonParams extends H2OAlgorithmMOJOParams with H2OAlgoParamsBase {
 
   protected final val validationDataFrame = new NullableDataFrameParam(
     this,

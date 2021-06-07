@@ -69,7 +69,7 @@ trait H2OMOJOPrediction
     }
   }
 
-  override def getPredictionColSchema(): Seq[StructField] = {
+  def getPredictionColSchema(): Seq[StructField] = {
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
     predictWrapper.getModelCategory match {
       case ModelCategory.Binomial => getBinomialPredictionColSchema()
@@ -86,7 +86,7 @@ trait H2OMOJOPrediction
     }
   }
 
-  override def getDetailedPredictionColSchema(): Seq[StructField] = {
+  def getDetailedPredictionColSchema(): Seq[StructField] = {
     Seq(StructField(getDetailedPredictionCol(), getPredictionSchema(), nullable = true))
   }
 

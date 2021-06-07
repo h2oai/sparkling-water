@@ -18,13 +18,12 @@
 package ai.h2o.sparkling.ml.models
 
 import org.apache.spark.expose.Logging
-import org.apache.spark.ml.Model
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.apache.spark.sql.types.StructType
 
 class H2OFeatureMOJOModel(override val uid: String)
-  extends Model[H2OFeatureMOJOModel]
+  extends H2OMOJOModel
   with SpecificMOJOParameters
   with HasMojo
   with H2OMOJOWritable

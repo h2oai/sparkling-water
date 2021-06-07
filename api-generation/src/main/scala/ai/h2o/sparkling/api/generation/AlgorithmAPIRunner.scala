@@ -42,7 +42,6 @@ object AlgorithmAPIRunner
     generateWord2Vec(languageExtension, destinationDir)
 
     for (substitutionContext <- parametersConfiguration) {
-      println(substitutionContext.entityName)
       val content = parameterTemplates(languageExtension)(substitutionContext)
       writeResultToFile(content, substitutionContext, languageExtension, destinationDir)
     }

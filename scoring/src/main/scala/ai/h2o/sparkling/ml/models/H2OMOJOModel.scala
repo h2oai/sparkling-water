@@ -45,9 +45,9 @@ import scala.reflect.ClassTag
 
 abstract class H2OMOJOModel
   extends Model[H2OMOJOModel]
+  with H2OMOJOFlattenedInput
   with HasMojo
   with H2OMOJOWritable
-  with H2OMOJOFlattenedInput
   with H2OMOJOModelUtils
   with SpecificMOJOParameters
   with H2OBaseMOJOParams
@@ -148,6 +148,9 @@ abstract class H2OMOJOModel
     set(this.scoringHistory -> extractScoringHistory(modelJson))
     set(this.featureImportances -> extractFeatureImportances(modelJson))
   }
+
+
+  override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 }
 
 trait H2OMOJOModelUtils extends Logging {
@@ -272,7 +275,7 @@ trait H2OMOJOModelUtils extends Logging {
         }.asJava
         SparkSessionUtils.active.createDataFrame(rows, schema)
       } catch {
-        case e =>
+        case e: Throwable =>
           logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
           null
       }

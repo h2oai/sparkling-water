@@ -26,7 +26,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionClustering {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
 
   def getClusteringPredictionUDF(): UserDefinedFunction = {
     val schema = getClusteringPredictionSchema()

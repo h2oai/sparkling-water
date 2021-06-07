@@ -27,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionDimReduction {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
   def getDimReductionPredictionUDF(): UserDefinedFunction = {
     val schema = getDimReductionPredictionSchema()
     val function = (r: Row) => {

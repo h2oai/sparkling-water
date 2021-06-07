@@ -28,7 +28,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionOrdinal {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
   def getOrdinalPredictionUDF(): UserDefinedFunction = {
     val schema = getOrdinalPredictionSchema()
     val function = (r: Row, offset: Double) => {

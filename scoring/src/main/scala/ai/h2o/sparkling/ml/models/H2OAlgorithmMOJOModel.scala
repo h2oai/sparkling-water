@@ -21,8 +21,7 @@ import ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams
 import com.google.gson.JsonObject
 import hex.genmodel.MojoModel
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset}
 
 class H2OAlgorithmMOJOModel(override val uid: String)
@@ -30,21 +29,15 @@ class H2OAlgorithmMOJOModel(override val uid: String)
   with H2OMOJOPrediction
   with H2OAlgorithmMOJOParams {
 
-  override protected def outputColumnName: String = getDetailedPredictionCol()
-
   override def transform(dataset: Dataset[_]): DataFrame = {
     val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
 
     baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
   }
 
-  protected def getPredictionColSchema(): Seq[StructField]
-
-  protected def getDetailedPredictionColSchema(): Seq[StructField] = Nil
-
   override protected def inputColumnNames: Array[String] = getFeaturesCols()
 
-  override protected def outputColumnName: String = getPredictionCol()
+  override protected def outputColumnName: String = getDetailedPredictionCol()
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {

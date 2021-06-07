@@ -17,10 +17,9 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
-import org.apache.spark.expose.Logging
 import org.apache.spark.ml.param._
 
-trait H2OBaseMOJOParams extends Params with Logging {
+trait H2OBaseMOJOParams extends Params {
 
   protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(
     this,
