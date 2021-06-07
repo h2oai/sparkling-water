@@ -26,7 +26,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, struct}
 import org.apache.spark.sql.types.{DoubleType, StructType}
 
-class H2OSupervisedMOJOModel(override val uid: String) extends H2OMOJOModel(uid) with H2OSupervisedMOJOParams {
+class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOModel(uid) with H2OSupervisedMOJOParams {
 
   override private[sparkling] def setSpecificParams(mojoModel: MojoModel): Unit = {
     super.setSpecificParams(mojoModel)

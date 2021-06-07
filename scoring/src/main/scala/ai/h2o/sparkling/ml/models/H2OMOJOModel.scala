@@ -22,7 +22,7 @@ import java.io.{File, InputStream}
 import _root_.hex.genmodel.algos.tree.{SharedTreeMojoModel, TreeBackedMojoModel}
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import _root_.hex.genmodel.{GenModel, MojoReaderBackendFactory, PredictContributionsFactory}
+import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.Utils
@@ -36,20 +36,74 @@ import org.apache.spark.sql.functions._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
 import org.apache.spark.expose.Logging
+import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-class H2OMOJOModel(override val uid: String)
-  extends H2OMOJOModelBase[H2OMOJOModel]
-  with H2OMOJOPrediction
+abstract class H2OMOJOModel
+  extends Model[H2OMOJOModel]
+  with HasMojo
+  with H2OMOJOWritable
+  with H2OMOJOFlattenedInput
+  with H2OMOJOModelUtils
   with SpecificMOJOParameters
-  with H2OMOJOCommonParameters
+  with H2OBaseMOJOParams
   with Logging {
 
   H2OMOJOCache.startCleanupThread()
+  protected final val modelDetails: NullableStringParam =
+    new NullableStringParam(this, "modelDetails", "Raw details of this model.")
+  protected final val trainingMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "trainingMetrics", "Training metrics.")
+  protected final val validationMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "validationMetrics", "Validation metrics.")
+  protected final val crossValidationMetrics: MapStringDoubleParam =
+    new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics.")
+  protected final val trainingParams: MapStringStringParam =
+    new MapStringStringParam(this, "trainingParams", "Training params")
+  protected final val modelCategory: NullableStringParam =
+    new NullableStringParam(this, "modelCategory", "H2O's model category")
+  protected final val scoringHistory: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
+  protected final val featureImportances: NullableDataFrameParam =
+    new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
+
+  setDefault(
+    modelDetails -> null,
+    trainingMetrics -> Map.empty[String, Double],
+    validationMetrics -> Map.empty[String, Double],
+    crossValidationMetrics -> Map.empty[String, Double],
+    trainingParams -> Map.empty[String, String],
+    modelCategory -> null,
+    scoringHistory -> null,
+    featureImportances -> null)
+
+  def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
+
+  def getValidationMetrics(): Map[String, Double] = $(validationMetrics)
+
+  def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
+
+  def getCurrentMetrics(): Map[String, Double] = {
+    val nfolds = $(trainingParams).get("nfolds")
+    val validationFrame = $(trainingParams).get("validation_frame")
+    if (nfolds.isDefined && nfolds.get.toInt > 1) {
+      getCrossValidationMetrics()
+    } else if (validationFrame.isDefined) {
+      getValidationMetrics()
+    } else {
+      getTrainingMetrics()
+    }
+  }
+
+  def getTrainingParams(): Map[String, String] = $(trainingParams)
+
+  def getModelCategory(): String = $(modelCategory)
+
+  def getModelDetails(): String = $(modelDetails)
 
   def getDomainValues(): Map[String, Array[String]] = {
     val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
@@ -57,15 +111,9 @@ class H2OMOJOModel(override val uid: String)
     columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
   }
 
-  override protected def outputColumnName: String = getDetailedPredictionCol()
+  def getScoringHistory(): DataFrame = $(scoringHistory)
 
-  override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
-
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
-
-    baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
-  }
+  def getFeatureImportances(): DataFrame = $(featureImportances)
 
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
@@ -85,6 +133,20 @@ class H2OMOJOModel(override val uid: String)
       case _ =>
         flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
     }
+  }
+
+  private[sparkling] def setParameters(mojoModel: MojoModel, modelJson: JsonObject, settings: H2OMOJOSettings): Unit = {
+    val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
+    set(this.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
+    set(this.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
+    set(this.modelDetails -> getModelDetails(modelJson))
+    set(this.trainingMetrics -> trainingMetrics)
+    set(this.validationMetrics -> validationMetrics)
+    set(this.crossValidationMetrics -> crossValidationMetrics)
+    set(this.trainingParams -> extractParams(modelJson))
+    set(this.modelCategory -> extractModelCategory(modelJson).toString)
+    set(this.scoringHistory -> extractScoringHistory(modelJson))
+    set(this.featureImportances -> extractFeatureImportances(modelJson))
   }
 }
 
@@ -268,27 +330,7 @@ object H2OMOJOModel
     model.setSpecificParams(mojoModel)
     model.setMojo(mojo)
     val modelJson = getModelJson(mojo)
-    val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
-
-    // Reconstruct state of Spark H2O MOJO transformer based on H2O's Mojo
-    model.set(model.featuresCols -> mojoModel.features())
-    model.set(model.featureTypes -> extractFeatureTypes(modelJson))
-    model.set(model.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
-    model.set(model.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
-    model.set(model.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
-    model.set(model.modelDetails -> getModelDetails(modelJson))
-    model.set(model.predictionCol -> settings.predictionCol)
-    model.set(model.trainingMetrics -> trainingMetrics)
-    model.set(model.validationMetrics -> validationMetrics)
-    model.set(model.crossValidationMetrics -> crossValidationMetrics)
-    model.set(model.trainingParams -> extractParams(modelJson))
-    model.set(model.modelCategory -> extractModelCategory(modelJson).toString)
-    model.set(model.scoringHistory -> extractScoringHistory(modelJson))
-    model.set(model.featureImportances -> extractFeatureImportances(modelJson))
-    model.set(model.detailedPredictionCol -> settings.detailedPredictionCol)
-    model.set(model.withContributions -> settings.withContributions)
-    model.set(model.withLeafNodeAssignments -> settings.withLeafNodeAssignments)
-    model.set(model.withStageResults -> settings.withStageResults)
+    model.setParameters(mojoModel, modelJson, settings)
     model
   }
 }
@@ -353,14 +395,17 @@ object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOMod
     config.setModel(Utils.getMojoModel(mojo))
     config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
-    if (model.getWithContributions() && canGenerateContributions(config.getModel)) {
-      config.setEnableContributions(true)
-    }
-    if (model.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(config.getModel)) {
-      config.setEnableLeafAssignment(true)
-    }
-    if (model.getWithStageResults() && canGenerateStageResults(config.getModel)) {
-      config.setEnableStagedProbabilities(true)
+    if (model.isInstanceOf[H2OAlgorithmMOJOModel]) {
+      val algorithmModel = model.asInstanceOf[H2OAlgorithmMOJOModel]
+      if (algorithmModel.getWithContributions() && canGenerateContributions(config.getModel)) {
+        config.setEnableContributions(true)
+      }
+      if (algorithmModel.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(config.getModel)) {
+        config.setEnableLeafAssignment(true)
+      }
+      if (algorithmModel.getWithStageResults() && canGenerateStageResults(config.getModel)) {
+        config.setEnableStagedProbabilities(true)
+      }
     }
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)

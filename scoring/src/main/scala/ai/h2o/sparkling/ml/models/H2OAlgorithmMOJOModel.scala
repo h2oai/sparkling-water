@@ -17,24 +17,26 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.{H2OBaseMOJOParams, MapStringStringParam}
+import ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams
+import com.google.gson.JsonObject
+import hex.genmodel.MojoModel
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.ml.{Model => SparkModel}
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset}
 
-abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
-  extends SparkModel[T]
-  with H2OBaseMOJOParams
-  with HasMojo
-  with H2OMOJOWritable
-  with H2OMOJOFlattenedInput {
+class H2OAlgorithmMOJOModel(override val uid: String)
+  extends H2OMOJOModel
+  with H2OMOJOPrediction
+  with H2OAlgorithmMOJOParams {
 
-  protected final val featureTypes: MapStringStringParam =
-    new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
+  override protected def outputColumnName: String = getDetailedPredictionCol()
 
-  setDefault(featureTypes -> Map.empty[String, String])
+  override def transform(dataset: Dataset[_]): DataFrame = {
+    val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
 
-  def getFeatureTypes(): Map[String, String] = $(featureTypes)
+    baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
+  }
 
   protected def getPredictionColSchema(): Seq[StructField]
 
@@ -50,5 +52,20 @@ abstract class H2OMOJOModelBase[T <: H2OMOJOModelBase[T]]
     // in theory user can pass invalid schema with missing columns
     // and model will be able to still provide a prediction
     StructType(schema.fields ++ getDetailedPredictionColSchema() ++ getPredictionColSchema())
+  }
+
+  private[sparkling] override def setParameters(
+      mojoModel: MojoModel,
+      modelJson: JsonObject,
+      settings: H2OMOJOSettings): Unit = {
+    super.setParameters(mojoModel, modelJson, settings)
+    set(this.featuresCols -> mojoModel.features())
+    set(this.featureTypes -> extractFeatureTypes(modelJson))
+    set(this.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
+    set(this.predictionCol -> settings.predictionCol)
+    set(this.detailedPredictionCol -> settings.detailedPredictionCol)
+    set(this.withContributions -> settings.withContributions)
+    set(this.withLeafNodeAssignments -> settings.withLeafNodeAssignments)
+    set(this.withStageResults -> settings.withStageResults)
   }
 }

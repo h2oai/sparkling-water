@@ -33,7 +33,7 @@ trait H2OMOJOPrediction
   with H2OMOJOPredictionBinomial
   with H2OMOJOPredictionCoxPH
   with H2OMOJOPredictionOrdinal {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
 
   def extractPredictionColContent(): Column = {
     val predictWrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
