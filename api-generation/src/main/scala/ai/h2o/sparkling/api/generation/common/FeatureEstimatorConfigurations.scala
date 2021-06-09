@@ -58,7 +58,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
   override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] =  super.algorithmConfiguration ++ {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OFeatureEstimator", Seq.empty))
+      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
       yield AlgorithmSubstitutionContext(

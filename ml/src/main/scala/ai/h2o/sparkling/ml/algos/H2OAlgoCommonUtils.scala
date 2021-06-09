@@ -42,24 +42,24 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
   /** The list of additional columns that needs to be send to H2O-3 backend for model validation. */
   private[sparkling] def getAdditionalValidationCols(): Seq[String] = Seq.empty
 
-  private[sparkling] def getFeaturesCols(): Array[String]
+  private[sparkling] def getInputCols(): Array[String]
 
   private[sparkling] def getColumnsToCategorical(): Array[String]
 
   private[sparkling] def getSplitRatio(): Double
 
-  private[sparkling] def setFeaturesCols(value: Array[String]): this.type
+  private[sparkling] def setInputCols(value: Array[String]): this.type
 
   private[sparkling] def getValidationDataFrame(): DataFrame
 
   private[sparkling] def prepareDatasetForFitting(dataset: Dataset[_]): (H2OFrame, Option[H2OFrame]) = {
     val excludedCols = getExcludedCols()
 
-    if (getFeaturesCols().isEmpty) {
-      val features = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
-      setFeaturesCols(features)
+    if (getInputCols().isEmpty) {
+      val inputs = dataset.columns.filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
+      setInputCols(inputs)
     } else {
-      val missingColumns = getFeaturesCols()
+      val missingColumns = getInputCols()
         .filterNot(col => dataset.columns.contains(col))
 
       if (missingColumns.nonEmpty) {
@@ -69,11 +69,11 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
       }
     }
 
-    val featureColumns = getFeaturesCols().map(sanitize).map(col)
+    val featureColumns = getInputCols().map(sanitize).map(col)
 
     if (dataset.select(featureColumns: _*).distinct().count() == 1) {
-      throw new IllegalArgumentException(s"H2O could not use any of the specified features" +
-        s" columns: '${getFeaturesCols().mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
+      throw new IllegalArgumentException(s"H2O could not use any of the specified input" +
+        s" columns: '${getInputCols().mkString(", ")}' because they are all constants. H2O requires at least one non-constant column.")
     }
     val excludedColumns = excludedCols.map(sanitize).map(col)
     val additionalColumns = getAdditionalCols().map(sanitize).map(col)

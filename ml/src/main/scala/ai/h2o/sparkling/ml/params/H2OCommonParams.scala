@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
 /**
   * This trait contains parameters that are shared across all algorithms.
   */
-trait H2OCommonParams extends H2OAlgorithmMOJOParams with H2OAlgoParamsBase {
+trait H2OCommonParams extends H2OBaseMOJOParams {
 
   protected final val validationDataFrame = new NullableDataFrameParam(
     this,
@@ -53,11 +53,6 @@ trait H2OCommonParams extends H2OAlgorithmMOJOParams with H2OAlgoParamsBase {
   //
   // Getters
   //
-  override def getFeaturesCols(): Array[String] = {
-    val excludedCols = getExcludedCols()
-    $(featuresCols).filter(c => excludedCols.forall(e => c.compareToIgnoreCase(e) != 0))
-  }
-
   def getValidationDataFrame(): DataFrame = $(validationDataFrame)
 
   def getSplitRatio(): Double = $(splitRatio)
@@ -80,39 +75,6 @@ trait H2OCommonParams extends H2OAlgorithmMOJOParams with H2OAlgoParamsBase {
     setColumnsToCategorical(columnNames.asScala.toArray)
   }
 
-  // Setters for parameters which are defined on MOJO as well
-  def setPredictionCol(columnName: String): this.type = set(predictionCol, columnName)
-
-  def setDetailedPredictionCol(columnName: String): this.type = set(detailedPredictionCol, columnName)
-
-  @DeprecatedMethod(version = "3.36")
-  def setWithDetailedPredictionCol(enabled: Boolean): this.type = this
-
-  def setWithContributions(enabled: Boolean): this.type = set(withContributions, enabled)
-
-  def setWithLeafNodeAssignments(enabled: Boolean): this.type = set(withLeafNodeAssignments, enabled)
-
-  def setWithStageResults(enabled: Boolean): this.type = set(withStageResults, enabled)
-
-  def setFeaturesCol(first: String): this.type = setFeaturesCols(first)
-
-  def setFeaturesCols(first: String, others: String*): this.type = set(featuresCols, Array(first) ++ others)
-
-  def setFeaturesCols(columnNames: Array[String]): this.type = {
-    require(columnNames.length > 0, "Array with feature columns must contain at least one column.")
-    set(featuresCols, columnNames)
-  }
-
-  def setFeaturesCols(columnNames: java.util.ArrayList[String]): this.type = {
-    setFeaturesCols(columnNames.asScala.toArray)
-  }
-
   def setConvertUnknownCategoricalLevelsToNa(value: Boolean): this.type =
     set(convertUnknownCategoricalLevelsToNa, value)
-
-  def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
-
-  def setNamedMojoOutputColumns(value: Boolean): this.type = set(namedMojoOutputColumns, value)
-
-  private[sparkling] def getExcludedCols(): Seq[String]
 }

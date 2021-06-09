@@ -17,21 +17,17 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.ml.models.H2OFeatureMOJOModel
+import ai.h2o.sparkling.ml.algos.H2OEstimator
+import ai.h2o.sparkling.ml.models.{H2OFeatureEstimatorBase, H2OFeatureMOJOModel}
 import hex.Model
-import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.types.StructType
 
 import scala.reflect.ClassTag
 
 abstract class H2OFeatureEstimator[P <: Model.Parameters: ClassTag]
-  extends Estimator[H2OFeatureMOJOModel]{
+  extends H2OEstimator[P] with H2OFeatureEstimatorBase {
 
-  override def copy(extra: ParamMap): Estimator[H2OFeatureMOJOModel] = ???
-
-  override def transformSchema(schema: StructType): StructType = ???
-
-  override def fit(dataset: Dataset[_]): H2OFeatureMOJOModel = ???
+  override def fit(dataset: Dataset[_]): H2OFeatureMOJOModel = {
+    super.fit(dataset).asInstanceOf[H2OFeatureMOJOModel]
+  }
 }

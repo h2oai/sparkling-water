@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ai.h2o.sparkling.ml.params
 
-trait H2OAutoMLParams
-  extends H2OAlgorithmCommonParams
-  with H2OAutoMLBuildControlParams
-  with H2OAutoMLBuildModelsParams
-  with H2OAutoMLInputParams
-  with H2OAutoMLStoppingCriteriaParams
-  with HasMonotoneConstraints
+package ai.h2o.sparkling.ml.features
+
+import ai.h2o.sparkling.ml.params.{H2OAutoEncoderExtraParams, HasInputCols}
+import hex.Model
+
+import scala.reflect.ClassTag
+
+abstract class H2OAutoEncoderBase[P <: Model.Parameters: ClassTag]
+  extends H2OFeatureEstimator[P] with H2OAutoEncoderExtraParams with HasInputCols {
+
+}

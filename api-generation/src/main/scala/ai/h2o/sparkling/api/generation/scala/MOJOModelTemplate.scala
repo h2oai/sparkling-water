@@ -46,7 +46,8 @@ object MOJOModelTemplate
     val parents = Seq(
       algorithmSubstitutionContext.algorithmType
         .replace("Algorithm", "MOJOModel(uid)")
-        .replace("FeatureEstimator", "FeatureMOJOModel(uid)"),
+        .replace("FeatureEstimator", "FeatureMOJOModel")
+        .replaceFirst("Base$", "MOJOBase"),
       "ParameterConstructorMethods",
       "Logging") ++ explicitFieldImplementations
 

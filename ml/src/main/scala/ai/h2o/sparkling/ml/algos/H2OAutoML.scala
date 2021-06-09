@@ -176,6 +176,10 @@ class H2OAutoML(override val uid: String)
       .flatMap(Option(_)) // Remove nulls
   }
 
+  override private[sparkling] def getInputCols(): Array[String] = getFeaturesCols()
+
+  override private[sparkling] def setInputCols(value: Array[String]): this.type = setFeaturesCols(value)
+
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
 }
 

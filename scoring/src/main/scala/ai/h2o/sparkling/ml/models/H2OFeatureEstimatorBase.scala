@@ -17,31 +17,17 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.HasInputColsOnMOJO
-import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.ml.PipelineStage
 import org.apache.spark.sql.types.{StructField, StructType}
 
-abstract class H2OFeatureMOJOModel
-  extends H2OMOJOModel
-  with H2OFeatureEstimatorBase
-  with SpecificMOJOParameters
-  with HasMojo
-  with H2OMOJOWritable
-  with H2OMOJOFlattenedInput
-  with Logging {
-  override def copy(extra: ParamMap): H2OFeatureMOJOModel = defaultCopy(extra)
+trait H2OFeatureEstimatorBase extends PipelineStage {
 
-  override protected def outputColumnName: String = getClass.getSimpleName + "_temporary"
+  protected def outputSchema: Seq[StructField]
 
-  protected def mojoUDF: UserDefinedFunction
+  protected def validate(schema: StructType): Unit
 
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val outputDF = applyPredictionUdf(dataset, _ => mojoUDF)
-    outputDF
-      .select("*", s"$outputColumnName.*")
-      .drop(outputColumnName)
+  override def transformSchema(schema: StructType): StructType = {
+    validate(schema)
+    StructType(schema.fields ++ outputSchema)
   }
 }

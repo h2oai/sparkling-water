@@ -16,10 +16,8 @@
  */
 package ai.h2o.sparkling.ml.params
 
-trait H2OAutoMLParams
-  extends H2OAlgorithmCommonParams
-  with H2OAutoMLBuildControlParams
-  with H2OAutoMLBuildModelsParams
-  with H2OAutoMLInputParams
-  with H2OAutoMLStoppingCriteriaParams
-  with HasMonotoneConstraints
+trait HasInputCols extends HasInputColsOnMOJO {
+  def setInputCols(columns: Array[String]): this.type = set(inputCols -> columns)
+
+  def setInputCols(column: String, otherColumns: String*): this.type = setInputCols(Array(column) ++ otherColumns)
+}
