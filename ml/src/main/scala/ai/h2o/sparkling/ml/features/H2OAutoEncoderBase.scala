@@ -23,6 +23,6 @@ import hex.Model
 import scala.reflect.ClassTag
 
 abstract class H2OAutoEncoderBase[P <: Model.Parameters: ClassTag]
-  extends H2OFeatureEstimator[P] with H2OAutoEncoderExtraParams with HasInputCols {
-
-}
+  extends H2OFeatureEstimator[P]
+  with H2OAutoEncoderExtraParams
+  with HasInputCols {}

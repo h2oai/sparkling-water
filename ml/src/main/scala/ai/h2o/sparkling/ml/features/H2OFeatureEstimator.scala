@@ -25,7 +25,8 @@ import org.apache.spark.sql.Dataset
 import scala.reflect.ClassTag
 
 abstract class H2OFeatureEstimator[P <: Model.Parameters: ClassTag]
-  extends H2OEstimator[P] with H2OFeatureEstimatorBase {
+  extends H2OEstimator[P]
+  with H2OFeatureEstimatorBase {
 
   override def fit(dataset: Dataset[_]): H2OFeatureMOJOModel = {
     super.fit(dataset).asInstanceOf[H2OFeatureMOJOModel]

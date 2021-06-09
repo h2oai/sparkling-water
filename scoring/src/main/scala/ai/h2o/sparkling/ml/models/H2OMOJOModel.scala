@@ -149,7 +149,6 @@ abstract class H2OMOJOModel
     set(this.featureImportances -> extractFeatureImportances(modelJson))
   }
 
-
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 }
 

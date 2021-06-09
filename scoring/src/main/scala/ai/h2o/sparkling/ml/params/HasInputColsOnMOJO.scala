@@ -22,9 +22,7 @@ import hex.genmodel.MojoModel
 import org.apache.spark.expose.Logging
 
 trait HasInputColsOnMOJO extends ParameterConstructorMethods with SpecificMOJOParameters with Logging {
-  protected val inputCols = nullableStringArrayParam(
-    name = "inputCols",
-    doc = "The array of input columns")
+  protected val inputCols = nullableStringArrayParam(name = "inputCols", doc = "The array of input columns")
 
   def getInputCols(): Array[String] = $(inputCols)
 

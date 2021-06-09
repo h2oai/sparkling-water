@@ -59,4 +59,4 @@ class H2OTempAutoEncoder(override val uid: String)
 
 object H2OTempAutoEncoder extends DefaultParamsReadable[H2OAutoEncoder]
 
-*/
+ */

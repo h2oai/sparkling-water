@@ -38,24 +38,25 @@ object IgnoredParameters {
       case "H2OXGBoost" => Seq("checkpoint")
       case "H2OCoxPHMOJOModel" => Seq("interaction_pairs") // Interaction pairs are not currently supported on MOJO
       case "H2OWord2Vec" => Seq("pre_trained")
-      case "H2OAutoEncoder" => Seq(
-        "pretrained_autoencoder",
-        "checkpoint",
-        "response_column",
-        "offset_column",
-        "balance_classes",
-        "class_sampling_factors",
-        "max_after_balance_size",
-        "max_confusion_matrix_size",
-        "distribution",
-        "quantile_alpha",
-        "tweedie_power",
-        "huber_alpha",
-        "classification_stop",
-        "regression_stop",
-        "autoencoder",
-        "col_major",
-        "auc_type")
+      case "H2OAutoEncoder" =>
+        Seq(
+          "pretrained_autoencoder",
+          "checkpoint",
+          "response_column",
+          "offset_column",
+          "balance_classes",
+          "class_sampling_factors",
+          "max_after_balance_size",
+          "max_confusion_matrix_size",
+          "distribution",
+          "quantile_alpha",
+          "tweedie_power",
+          "huber_alpha",
+          "classification_stop",
+          "regression_stop",
+          "autoencoder",
+          "col_major",
+          "auc_type")
       case _ => Seq.empty
     }
   }

@@ -54,7 +54,6 @@ trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCo
 
   def setWithMSECol(flag: Boolean): this.type = set(withMSECol -> flag)
 
-
   protected override def outputSchema: Seq[StructField] = {
     val outputType = org.apache.spark.ml.linalg.SQLDataTypes.VectorType
     val nil = Nil
@@ -83,7 +82,7 @@ trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCo
     require(getOriginalCol() != null || !getWithOriginalCol(), "The original column can't be null!")
     require(getMSECol() != null || !getWithMSECol(), "The original column can't be null!")
     val fieldNames = schema.fieldNames
-    getInputCols().foreach{ inputCol =>
+    getInputCols().foreach { inputCol =>
       require(
         fieldNames.contains(inputCol),
         s"The specified input column '$inputCol' was not found in the input dataset!")

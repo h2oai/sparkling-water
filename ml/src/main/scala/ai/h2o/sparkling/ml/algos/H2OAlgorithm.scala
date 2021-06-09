@@ -28,9 +28,7 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
-  extends H2OEstimator[P]
-  with H2OAlgorithmCommonParams {
+abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag] extends H2OEstimator[P] with H2OAlgorithmCommonParams {
 
   override private[sparkling] def getInputCols(): Array[String] = getFeaturesCols()
 

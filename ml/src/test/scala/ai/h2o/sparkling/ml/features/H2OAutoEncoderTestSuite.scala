@@ -60,7 +60,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
 
     val algo = new H2ODeepLearning()
       .setSeed(1)
-      .setFeaturesCols( "CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("fake")
       .setAutoencoder(true)
       .setHidden(Array(3))
@@ -68,7 +68,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setSplitRatio(0.8)
 
     val model = algo.fit(dataset)
-    val m =model.getValidationMetrics()
-    model.transform(dataset).select("*","detailed_prediction.*").show(truncate = false)
+    val m = model.getValidationMetrics()
+    model.transform(dataset).select("*", "detailed_prediction.*").show(truncate = false)
   }
 }
