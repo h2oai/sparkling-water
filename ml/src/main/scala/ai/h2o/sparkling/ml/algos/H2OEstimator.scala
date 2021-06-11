@@ -43,10 +43,12 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
     val result = H2OModel(modelId)
-      .toMOJOModel(Identifiable.randomUID(parameters.algoName()), createMOJOSettings())
+      .toMOJOModel(createMOJOUID(), createMOJOSettings())
     deleteRegisteredH2OFrames()
     result
   }
+
+  protected def createMOJOUID(): String = Identifiable.randomUID(parameters.algoName())
 
   protected def createMOJOSettings(): H2OMOJOSettings = {
     H2OMOJOSettings(

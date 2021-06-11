@@ -26,6 +26,8 @@ trait HasInputColsOnMOJO extends ParameterConstructorMethods with SpecificMOJOPa
 
   def getInputCols(): Array[String] = $(inputCols)
 
+  setDefault(inputCols -> Array.empty[String])
+
   override private[sparkling] def setSpecificParams(h2oMojo: MojoModel): Unit = {
     super.setSpecificParams(h2oMojo)
     set(inputCols -> h2oMojo.features())

@@ -30,8 +30,9 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
       imports = Seq.empty)
 
     generateEntity(entitySubstitutionContext, "trait") {
-      s"""  protected def createSpecificMOJOModel(uid: String, algorithmName: String): H2OMOJOModel = {
-         |    algorithmName match {
+      s"""  protected def createSpecificMOJOModel(uid: String, algorithmName: String, category: hex.ModelCategory): H2OMOJOModel = {
+         |    (algorithmName, category) match {
+         |      case (_, hex.ModelCategory.AutoEncoder) => new H2OAutoEncoderMOJOModel(uid)
          |${generatePatternMatchingCases(mojoSubstitutionContexts)}
          |      case _ => new H2OAlgorithmMOJOModel(uid)
          |    }
@@ -46,7 +47,7 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
           .replace("H2O", "")
           .replace("MOJOModel", "")
           .toLowerCase
-        s"""      case "$algorithmName" => new ${mojoSubstitutionContext.entityName}(uid)"""
+        s"""      case ("$algorithmName", _) => new ${mojoSubstitutionContext.entityName}(uid)"""
       }
       .mkString("\n")
   }

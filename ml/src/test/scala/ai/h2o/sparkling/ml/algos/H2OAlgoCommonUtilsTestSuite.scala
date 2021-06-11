@@ -51,6 +51,10 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     override private[sparkling] def getExcludedCols(): Seq[String] = Nil
 
     def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame]) = prepareDatasetForFitting
+
+    override private[sparkling] def getInputCols() = Array.empty[String]
+
+    override private[sparkling] def setInputCols(value: Array[String]) = this
   }
 
   test("Columns sanitation: DAI type of columns names") {

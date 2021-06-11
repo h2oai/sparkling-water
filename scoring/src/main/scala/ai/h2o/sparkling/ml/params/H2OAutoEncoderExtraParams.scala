@@ -97,4 +97,13 @@ trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCo
       !fieldNames.contains(getMSECol()) || !getWithMSECol(),
       s"The mean square error column '${getMSECol()}' is already present in the dataset!")
   }
+
+  protected def copyExtraParams(to: H2OAutoEncoderExtraParams): Unit = {
+    to.set(to.inputCols -> getInputCols())
+    to.setOutputCol(getOutputCol())
+    to.setOriginalCol(getOriginalCol())
+    to.setWithOriginalCol(getWithOriginalCol())
+    to.setMSECol(getMSECol())
+    to.setWithMSECol(getWithMSECol())
+  }
 }
