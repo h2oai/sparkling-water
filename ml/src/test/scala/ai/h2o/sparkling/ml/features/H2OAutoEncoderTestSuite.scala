@@ -103,7 +103,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
       "Validation MSE")
 
     val scoringHistoryDF = standaloneModel.getScoringHistory()
-    scoringHistoryDF.count() shouldBe > (0L)
+    scoringHistoryDF.count() shouldBe >(0L)
     scoringHistoryDF.columns shouldEqual expectedColumns
   }
 
