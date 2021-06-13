@@ -1,7 +1,7 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.models.H2OFeatureEstimatorBase
-import org.apache.spark.ml.param.Param
+import org.apache.spark.ml.param.{BooleanParam, Param}
 import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 
 trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCol with HasInputColsOnMOJO {
@@ -11,7 +11,7 @@ trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCo
     name = "originalCol",
     doc = "Original column name. This column contains input values to the neural network of auto encoder.")
 
-  private val withOriginalCol: Param[Boolean] = new Param[Boolean](
+  private val withOriginalCol: Param[Boolean] = new BooleanParam(
     parent = this,
     name = "withOriginalCol",
     doc = "A flag identifying whether a column with input values to the neural network will be produced or not.")
@@ -21,7 +21,7 @@ trait H2OAutoEncoderExtraParams extends H2OFeatureEstimatorBase with HasOutputCo
     name = "mseCol",
     doc = "MSE column name. This column contains mean square error calculated from original and output values.")
 
-  private val withMSECol: Param[Boolean] = new Param[Boolean](
+  private val withMSECol: Param[Boolean] = new BooleanParam(
     parent = this,
     name = "withMSECol",
     doc = "A flag identifying whether a column with mean square error will be produced or not.")

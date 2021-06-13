@@ -26,7 +26,6 @@ trait H2OMOJOPrediction
   extends H2OMOJOPredictionRegression
   with H2OMOJOPredictionWordEmbedding
   with H2OMOJOPredictionAnomaly
-  with H2OMOJOPredictionAutoEncoder
   with H2OMOJOPredictionMultinomial
   with H2OMOJOPredictionDimReduction
   with H2OMOJOPredictionClustering
@@ -42,7 +41,6 @@ trait H2OMOJOPrediction
       case ModelCategory.Regression => extractRegressionPredictionColContent()
       case ModelCategory.Multinomial => extractMultinomialPredictionColContent()
       case ModelCategory.Clustering => extractClusteringPredictionColContent()
-      case ModelCategory.AutoEncoder => extractAutoEncoderPredictionColContent()
       case ModelCategory.DimReduction => extractDimReductionSimplePredictionColContent()
       case ModelCategory.WordEmbedding => extractWordEmbeddingPredictionColContent()
       case ModelCategory.AnomalyDetection => extractAnomalyPredictionColContent()
@@ -59,7 +57,6 @@ trait H2OMOJOPrediction
       case ModelCategory.Regression => getRegressionPredictionUDF()
       case ModelCategory.Multinomial => getMultinomialPredictionUDF()
       case ModelCategory.Clustering => getClusteringPredictionUDF()
-      case ModelCategory.AutoEncoder => getAutoEncoderPredictionUDF()
       case ModelCategory.DimReduction => getDimReductionPredictionUDF()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionUDF()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionUDF()
@@ -76,7 +73,6 @@ trait H2OMOJOPrediction
       case ModelCategory.Regression => getRegressionPredictionColSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionColSchema()
       case ModelCategory.Clustering => getClusteringPredictionColSchema()
-      case ModelCategory.AutoEncoder => getAutoEncoderPredictionColSchema()
       case ModelCategory.DimReduction => getDimReductionPredictionColSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionColSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionColSchema()
@@ -97,7 +93,6 @@ trait H2OMOJOPrediction
       case ModelCategory.Regression => getRegressionPredictionSchema()
       case ModelCategory.Multinomial => getMultinomialPredictionSchema()
       case ModelCategory.Clustering => getClusteringPredictionSchema()
-      case ModelCategory.AutoEncoder => getAutoEncoderPredictionSchema()
       case ModelCategory.DimReduction => getDimReductionPredictionSchema()
       case ModelCategory.WordEmbedding => getWordEmbeddingPredictionSchema()
       case ModelCategory.AnomalyDetection => getAnomalyPredictionSchema()

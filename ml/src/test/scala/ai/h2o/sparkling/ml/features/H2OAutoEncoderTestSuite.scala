@@ -17,12 +17,13 @@
 
 package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.ml.algos.H2ODeepLearning
+import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.models.{H2OAutoEncoderMOJOModel, H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.types.{DoubleType, StructField, StructType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -59,7 +60,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     algo.fit(trainingDataset)
   }
 
-  test("Standalone AutoEncoder produces output, original and mse columns") {
+  test("Standalone auto encoder can produce output, original and mse columns") {
     val scored = standaloneModel.transform(testingDataset)
     val firstRow = scored.first()
 
@@ -89,7 +90,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     validationMetrics.get("RMSE").get shouldBe (0.17871598700651006 +- 0.0001)
   }
 
-  test("Standalone AutoEncoder provide scoring history") {
+  test("Standalone autoencoder can provide scoring history") {
     val expectedColumns = Array(
       "Timestamp",
       "Duration",
@@ -107,11 +108,87 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     scoringHistoryDF.columns shouldEqual expectedColumns
   }
 
-  test("Standalone AutoEncoder provide feature importances") {
+  test("Standalone auto encoder can provide feature importances") {
     val expectedColumns = Array("Variable", "Relative Importance", "Scaled Importance", "Percentage")
 
     val featureImportancesDF = standaloneModel.getFeatureImportances()
     featureImportancesDF.count() shouldEqual standaloneModel.getInputCols().length
     featureImportancesDF.columns shouldEqual expectedColumns
+  }
+
+  test("Old auto encoder MOJO model can score and produce output, original and mse columns") {
+    val columns = (1 to 210).map(i =>  StructField("C" + i, DoubleType, nullable = false))
+
+    val df = spark.read
+      .schema(StructType(columns))
+      .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_test.csv"))
+
+    val mojoName: String = "deep_learning_auto_encoder.mojo"
+    val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
+    val settings = H2OMOJOSettings(convertInvalidNumbersToNa = false, convertUnknownCategoricalLevelsToNa = false)
+    val mojo = H2OMOJOModel.createFromMojo(mojoStream, mojoName, settings)
+    val autoEncoderMojo = mojo.asInstanceOf[H2OAutoEncoderMOJOModel]
+
+    autoEncoderMojo.setOutputCol("Output")
+    autoEncoderMojo.setOriginalCol("Original")
+    autoEncoderMojo.setWithOriginalCol(true)
+    autoEncoderMojo.setMSECol("MSE")
+    autoEncoderMojo.setWithMSECol(true)
+
+    val result = autoEncoderMojo.transform(df)
+    val firstRow =  result.first()
+
+    val output = firstRow.getAs[DenseVector]("Output")
+    output.values.length shouldBe 210
+
+    val original = firstRow.getAs[DenseVector]("Original")
+    original.values.length shouldBe 210
+
+    val mse = firstRow.getAs[Double]("MSE")
+    mse shouldBe (0.01838996923742329 +- 0.0001)
+  }
+
+  test("The auto encoder is able to transform dataset after it's saved and loaded") {
+    val autoencoder = new H2OAutoEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setOutputCol("Output")
+      .setWithOriginalCol(true)
+      .setOriginalCol("Original")
+      .setWithMSECol(true)
+      .setMSECol("MSE")
+      .setHidden(Array(3))
+      .setSplitRatio(0.8)
+      .setReproducible(true)
+
+    val pipeline = new Pipeline().setStages(Array(autoencoder))
+
+    val model = pipeline.fit(trainingDataset)
+    val expectedTestingDataset = model.transform(testingDataset)
+    val path = "build/ml/autoEncoder_save_load"
+    model.write.overwrite().save(path)
+    val loadedModel = PipelineModel.load(path)
+    val transformedTestingDataset = loadedModel.transform(testingDataset)
+
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+  }
+
+  test("A pipeline with an auto encoder transforms testing dataset without an exception") {
+    val autoEncoder = new H2OAutoEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setHidden(Array(3))
+
+    val gbm = new H2OGBM()
+      .setFeaturesCol(autoEncoder.getOutputCol())
+      .setLabelCol("CAPSULE")
+
+    val pipeline = new Pipeline().setStages(Array(autoEncoder, gbm))
+
+    val model = pipeline.fit(trainingDataset)
+    val rows = model.transform(testingDataset).groupBy("prediction").count().collect()
+    rows.foreach { row =>
+      assert(
+        row.getAs[Long]("count") > 0,
+        s"No predictions of class '${row.getAs[Int]("prediction")}'")
+    }
   }
 }
