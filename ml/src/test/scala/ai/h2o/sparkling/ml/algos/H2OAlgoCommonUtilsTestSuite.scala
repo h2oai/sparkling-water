@@ -52,7 +52,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
 
     def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame]) = prepareDatasetForFitting
 
-    override private[sparkling] def getInputCols() = Array.empty[String]
+    override private[sparkling] def getInputCols() = datasetSchema.fieldNames
 
     override private[sparkling] def setInputCols(value: Array[String]) = this
   }
@@ -86,7 +86,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
       algo.fit(datasetWithConst)
     }
     assert(
-      thrown.getMessage.startsWith("H2O could not use any of the specified features" +
+      thrown.getMessage.startsWith("H2O could not use any of the specified input" +
         " columns: 'constant' because they are all constants. H2O requires at least one non-constant column."))
   }
 }

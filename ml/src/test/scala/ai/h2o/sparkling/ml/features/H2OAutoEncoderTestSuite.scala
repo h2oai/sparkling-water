@@ -148,7 +148,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
   }
 
   test("The auto encoder is able to transform dataset after it's saved and loaded") {
-    val autoencoder = new H2OAutoEncoder()
+    val autoEncoder = new H2OAutoEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setOutputCol("Output")
       .setWithOriginalCol(true)
@@ -159,7 +159,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setSplitRatio(0.8)
       .setReproducible(true)
 
-    val pipeline = new Pipeline().setStages(Array(autoencoder))
+    val pipeline = new Pipeline().setStages(Array(autoEncoder))
 
     val model = pipeline.fit(trainingDataset)
     val expectedTestingDataset = model.transform(testingDataset)

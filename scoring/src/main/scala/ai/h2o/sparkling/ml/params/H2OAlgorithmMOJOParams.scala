@@ -30,9 +30,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   protected final val featuresCols: StringArrayParam =
     new StringArrayParam(this, "featuresCols", "Name of feature columns")
 
-  protected final val featureTypes: MapStringStringParam =
-    new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
-
   protected final val namedMojoOutputColumns: Param[Boolean] = new BooleanParam(
     this,
     "namedMojoOutputColumns",
@@ -52,7 +49,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
     detailedPredictionCol -> H2OMOJOSettings.default.detailedPredictionCol,
     withContributions -> H2OMOJOSettings.default.withContributions,
     featuresCols -> Array.empty[String],
-    featureTypes -> Map.empty[String, String],
     namedMojoOutputColumns -> H2OMOJOSettings.default.namedMojoOutputColumns,
     withLeafNodeAssignments -> H2OMOJOSettings.default.withLeafNodeAssignments,
     withStageResults -> H2OMOJOSettings.default.withStageResults)
@@ -70,8 +66,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   def getWithContributions(): Boolean = $(withContributions)
 
   def getFeaturesCols(): Array[String] = $(featuresCols)
-
-  def getFeatureTypes(): Map[String, String] = $(featureTypes)
 
   def getNamedMojoOutputColumns(): Boolean = $(namedMojoOutputColumns)
 
