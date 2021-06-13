@@ -117,7 +117,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
   }
 
   test("Old auto encoder MOJO model can score and produce output, original and mse columns") {
-    val columns = (1 to 210).map(i =>  StructField("C" + i, DoubleType, nullable = false))
+    val columns = (1 to 210).map(i => StructField("C" + i, DoubleType, nullable = false))
 
     val df = spark.read
       .schema(StructType(columns))
@@ -126,17 +126,16 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     val mojoName: String = "deep_learning_auto_encoder.mojo"
     val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
     val settings = H2OMOJOSettings(convertInvalidNumbersToNa = false, convertUnknownCategoricalLevelsToNa = false)
-    val mojo = H2OMOJOModel.createFromMojo(mojoStream, mojoName, settings)
-    val autoEncoderMojo = mojo.asInstanceOf[H2OAutoEncoderMOJOModel]
+    val mojo = H2OAutoEncoderMOJOModel.createFromMojo(mojoStream, mojoName, settings)
 
-    autoEncoderMojo.setOutputCol("Output")
-    autoEncoderMojo.setOriginalCol("Original")
-    autoEncoderMojo.setWithOriginalCol(true)
-    autoEncoderMojo.setMSECol("MSE")
-    autoEncoderMojo.setWithMSECol(true)
+    mojo.setOutputCol("Output")
+    mojo.setOriginalCol("Original")
+    mojo.setWithOriginalCol(true)
+    mojo.setMSECol("MSE")
+    mojo.setWithMSECol(true)
 
-    val result = autoEncoderMojo.transform(df)
-    val firstRow =  result.first()
+    val result = mojo.transform(df)
+    val firstRow = result.first()
 
     val output = firstRow.getAs[DenseVector]("Output")
     output.values.length shouldBe 210
@@ -186,9 +185,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     val model = pipeline.fit(trainingDataset)
     val rows = model.transform(testingDataset).groupBy("prediction").count().collect()
     rows.foreach { row =>
-      assert(
-        row.getAs[Long]("count") > 0,
-        s"No predictions of class '${row.getAs[Int]("prediction")}'")
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
   }
 }
