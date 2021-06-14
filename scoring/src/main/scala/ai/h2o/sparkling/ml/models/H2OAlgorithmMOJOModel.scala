@@ -27,8 +27,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
 class H2OAlgorithmMOJOModel(override val uid: String)
   extends H2OMOJOModel
   with H2OMOJOPrediction
-  with H2OAlgorithmMOJOParams
-  with HasFeatureTypesOnMOJO {
+  with H2OAlgorithmMOJOParams {
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())

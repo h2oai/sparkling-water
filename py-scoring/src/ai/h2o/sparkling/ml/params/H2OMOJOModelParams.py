@@ -16,11 +16,12 @@
 #
 
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
+from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
 
 
-class H2OMOJOModelParams(H2OMOJOModelBase):
+class H2OMOJOModelParams:
 
     def getModelDetails(self):
         return self._java_obj.getModelDetails()
@@ -51,6 +52,14 @@ class H2OMOJOModelParams(H2OMOJOModelBase):
 
     def getFeatureImportances(self):
         return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getFeatureImportances())
+
+
+class H2OAlgorithmMOJOModelParams(H2OMOJOModelParams, H2OAlgorithmMOJOModelBase):
+    pass
+
+
+class H2OFeatureMOJOModelParams(H2OMOJOModelParams, H2OMOJOModelBase):
+    pass
 
 
 class HasOffsetCol:

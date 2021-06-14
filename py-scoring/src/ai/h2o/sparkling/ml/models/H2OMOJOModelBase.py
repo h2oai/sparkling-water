@@ -33,20 +33,6 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
     ##
     # Getters
     ##
-    def getPredictionCol(self):
-        return self._java_obj.getPredictionCol()
-
-    def getDetailedPredictionCol(self):
-        return self._java_obj.getDetailedPredictionCol()
-
-    def getWithDetailedPredictionCol(self):
-        warnings.warn("The method will be removed without a replacement in the version 3.36."
-                      "Detailed prediction columns is always enabled.", DeprecationWarning)
-        return True
-
-    def getFeaturesCols(self):
-        return list(self._java_obj.getFeaturesCols())
-
     def getFeatureTypes(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getFeatureTypes())
 
@@ -55,15 +41,3 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
 
     def getConvertInvalidNumbersToNa(self):
         return self._java_obj.getConvertInvalidNumbersToNa()
-
-    def getNamedMojoOutputColumns(self):
-        return self._java_obj.getNamedMojoOutputColumns()
-
-    def getWithContributions(self):
-        return self._java_obj.getWithContributions()
-
-    def getWithLeafNodeAssignments(self):
-        return self._java_obj.getWithLeafNodeAssignments()
-
-    def getWithStageResults(self):
-        return self._java_obj.getWithStageResults()

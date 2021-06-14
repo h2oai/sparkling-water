@@ -19,24 +19,15 @@ from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 from pyspark.ml.param import *
 
 
-class H2OBaseMOJOParams(Params):
-    convertUnknownCategoricalLevelsToNa = Param(
+class HasOutputCol(Params):
+    outputCol = Param(
         Params._dummy(),
-        "convertUnknownCategoricalLevelsToNa",
-        "If set to 'true', the model converts unknown categorical levels to NA during making predictions.",
-        H2OTypeConverters.toBoolean())
+        "outputCol",
+        "Output columns name",
+        H2OTypeConverters.toNullableString())
 
-    convertInvalidNumbersToNa = Param(
-        Params._dummy(),
-        "convertInvalidNumbersToNa",
-        "If set to 'true', the model converts invalid numbers to NA during making predictions.",
-        H2OTypeConverters.toBoolean())
+    def getOutputCol(self):
+        return self.getOrDefault(self.outputCol)
 
-    ##
-    # Getters
-    ##
-    def getConvertUnknownCategoricalLevelsToNa(self):
-        return self.getOrDefault(self.convertUnknownCategoricalLevelsToNa)
-
-    def getConvertInvalidNumbersToNa(self):
-        return self.getOrDefault(self.convertInvalidNumbersToNa)
+    def setOutputCol(self, value):
+        return self._set(outputCol=value)
