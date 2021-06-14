@@ -24,4 +24,6 @@ trait HasFeatureTypesOnMOJO extends Params {
     new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
 
   def getFeatureTypes(): Map[String, String] = $(featureTypes)
+
+  setDefault(featureTypes -> null)
 }

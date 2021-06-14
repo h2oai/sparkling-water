@@ -70,6 +70,8 @@ abstract class H2OMOJOModel
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
+  protected final val featureTypes: MapStringStringParam =
+    new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
 
   setDefault(
     modelDetails -> null,
@@ -79,7 +81,8 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
-    featureImportances -> null)
+    featureImportances -> null,
+    featureTypes -> null)
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
@@ -115,6 +118,8 @@ abstract class H2OMOJOModel
 
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
+  def getFeatureTypes(): Map[String, String] = $(featureTypes)
+
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction,
@@ -147,6 +152,7 @@ abstract class H2OMOJOModel
     set(this.modelCategory -> extractModelCategory(modelJson).toString)
     set(this.scoringHistory -> extractScoringHistory(modelJson))
     set(this.featureImportances -> extractFeatureImportances(modelJson))
+    set(this.featureTypes -> extractFeatureTypes(modelJson))
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)

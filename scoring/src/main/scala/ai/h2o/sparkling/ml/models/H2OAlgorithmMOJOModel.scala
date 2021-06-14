@@ -54,7 +54,6 @@ class H2OAlgorithmMOJOModel(override val uid: String)
       settings: H2OMOJOSettings): Unit = {
     super.setParameters(mojoModel, modelJson, settings)
     set(this.featuresCols -> mojoModel.features())
-    set(this.featureTypes -> extractFeatureTypes(modelJson))
     set(this.namedMojoOutputColumns -> settings.namedMojoOutputColumns)
     set(this.predictionCol -> settings.predictionCol)
     set(this.detailedPredictionCol -> settings.detailedPredictionCol)
