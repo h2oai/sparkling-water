@@ -92,7 +92,7 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
 
       val validationMetrics = standaloneModel.getValidationMetrics()
       validationMetrics.get("MSE").get shouldBe (0.017766277571512626 +- 0.0001)
-      validationMetrics.get("RMSE").get shouldBe (0.133290200583211  +- 0.0001)
+      validationMetrics.get("RMSE").get shouldBe (0.133290200583211 +- 0.0001)
     }
 
     test("Standalone autoencoder can provide scoring history") {
