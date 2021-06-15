@@ -39,8 +39,9 @@ object MOJOModelTemplate
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
     val parents = Seq(algorithmType) ++ explicitFields
 
+    val module = if (algorithmType.endsWith("Base")) s"models.${algorithmType}" else "params.H2OMOJOModelParams"
     val imports = Seq(
-      s"ai.h2o.sparkling.ml.params.H2OMOJOModelParams.${algorithmType}",
+      s"ai.h2o.sparkling.ml.${module}.${algorithmType}",
       "pyspark.ml.util._jvm",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",

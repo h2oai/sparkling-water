@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos.H2OEstimator import H2OEstimator
+from ai.h2o.sparkling.ml.features.H2OFeatureEstimator import H2OFeatureEstimator
+from ai.h2o.sparkling.ml.params.H2OAutoEncoderExtraParams import H2OAutoEncoderExtraParams
 
 
-class H2OAlgorithm(H2OEstimator):
+class H2OAutoEncoderBase(H2OFeatureEstimator, H2OAutoEncoderExtraParams):
     pass

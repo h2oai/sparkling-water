@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
+
 from ai.h2o.sparkling.ml.algos.H2OEstimator import H2OEstimator
 
 
-class H2OAlgorithm(H2OEstimator):
+class H2OFeatureEstimator(H2OEstimator):
     pass

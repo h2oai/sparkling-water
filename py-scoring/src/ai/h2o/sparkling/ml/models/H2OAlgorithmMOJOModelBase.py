@@ -16,7 +16,7 @@
 #
 
 from pyspark.ml.param import *
-from ai.h2o.sparkling.ml.model.H2OMOJOModelBase import H2OMOJOModelBase
+from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 
 import warnings
 

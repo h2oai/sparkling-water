@@ -15,8 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos.H2OEstimator import H2OEstimator
+from ai.h2o.sparkling.ml.params.H2OAutoEncoderExtraParamsOnMOJO import H2OAutoEncoderExtraParamsOnMOJO
+from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 
 
-class H2OAlgorithm(H2OEstimator):
+class H2OAutoEncoderMOJOBase(H2OMOJOModelBase, H2OAutoEncoderExtraParamsOnMOJO):
     pass

@@ -15,8 +15,10 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos.H2OEstimator import H2OEstimator
+from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
 
 
-class H2OAlgorithm(H2OEstimator):
-    pass
+class HasFeatureTypesOnMOJO:
+
+    def getFeatureTypes(self):
+        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getFeatureTypes())
