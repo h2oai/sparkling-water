@@ -32,7 +32,9 @@ object MOJOModelTemplate
         !IgnoredParameters.ignoredInMOJOs(algorithmSubstitutionContext.entityName).contains(parameter.h2oName))
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
-    val algorithmType = algorithmSubstitutionContext.algorithmType.replace("Algorithm", "MOJOModelParams")
+    val algorithmType = algorithmSubstitutionContext.algorithmType
+      .replace("Algorithm", "MOJOModelParams")
+      .replaceFirst("Base$", "MOJOBase")
     val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
     val parents = Seq(algorithmType) ++ explicitFields
