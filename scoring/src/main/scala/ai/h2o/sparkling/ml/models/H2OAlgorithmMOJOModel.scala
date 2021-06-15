@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, HasFeatureTypesOnMOJO, MapStringStringParam}
+import ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams
 import com.google.gson.JsonObject
 import hex.genmodel.MojoModel
 import org.apache.spark.annotation.DeveloperApi

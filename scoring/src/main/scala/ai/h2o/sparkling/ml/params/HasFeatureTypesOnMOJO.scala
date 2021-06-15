@@ -25,5 +25,5 @@ trait HasFeatureTypesOnMOJO extends Params {
 
   def getFeatureTypes(): Map[String, String] = $(featureTypes)
 
-  setDefault(featureTypes -> null)
+  setDefault(featureTypes -> Map.empty[String, String])
 }

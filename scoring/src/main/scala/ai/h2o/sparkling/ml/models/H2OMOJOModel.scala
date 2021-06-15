@@ -51,6 +51,7 @@ abstract class H2OMOJOModel
   with H2OMOJOModelUtils
   with SpecificMOJOParameters
   with H2OBaseMOJOParams
+  with HasFeatureTypesOnMOJO
   with Logging {
 
   H2OMOJOCache.startCleanupThread()
@@ -70,8 +71,6 @@ abstract class H2OMOJOModel
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
-  protected final val featureTypes: MapStringStringParam =
-    new MapStringStringParam(this, "featureTypes", "Types of feature columns expected by the model")
 
   setDefault(
     modelDetails -> null,
@@ -81,8 +80,7 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
-    featureImportances -> null,
-    featureTypes -> null)
+    featureImportances -> null)
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
@@ -117,8 +115,6 @@ abstract class H2OMOJOModel
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
   def getFeatureImportances(): DataFrame = $(featureImportances)
-
-  def getFeatureTypes(): Map[String, String] = $(featureTypes)
 
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
