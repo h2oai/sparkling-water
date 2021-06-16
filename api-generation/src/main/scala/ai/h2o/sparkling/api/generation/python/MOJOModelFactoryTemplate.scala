@@ -27,6 +27,7 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
       "pyspark.ml.util._jvm",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
+      "ai.h2o.sparkling.ml.models.H2OMOJOModelBase.H2OMOJOModelBase",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OTreeBasedSupervisedMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OTreeBasedUnsupervisedMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OSupervisedMOJOModelParams",
@@ -73,7 +74,7 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
     }
 
     val models = s"""
-       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelBase, H2OMOJOModelFactory):
        |    pass
        |
        |

@@ -118,7 +118,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+        defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters,
         generateParamTag = true)
   }
 

@@ -30,7 +30,7 @@ object AlgorithmTemplate
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
-    val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
+    val paramClasses = Seq(s"${entityName}Params")
     val algorithmType = algorithmSubstitutionContext.algorithmType
     val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
     val mojoClassName = s"${entityName}MOJOModel"

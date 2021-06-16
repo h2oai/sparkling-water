@@ -74,11 +74,11 @@ class HasNtrees:
         return self._java_obj.getNtrees()
 
 
-class H2OUnsupervisedMOJOModelParams(H2OMOJOModelParams):
+class H2OUnsupervisedMOJOModelParams(H2OAlgorithmMOJOModelParams):
     pass
 
 
-class H2OSupervisedMOJOModelParams(H2OMOJOModelParams, HasOffsetCol):
+class H2OSupervisedMOJOModelParams(H2OAlgorithmMOJOModelParams, HasOffsetCol):
     pass
 
 
