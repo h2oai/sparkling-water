@@ -36,10 +36,31 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
     val noDeprecation = Seq.empty
 
-    val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
-      ("H2OAutoEncoderParams", classOf[DLParamsV3], classOf[DeepLearningParameters], dlFields, noDeprecation))
+    val aeDefaultValues = Map(
+      "inputCols" -> Array.empty[String],
+      "outputCol" -> "AutoEncoder__output",
+      "originalCol" -> "AutoEncoder__original",
+      "withOriginalCol" -> false,
+      "mseCol" -> "AutoEncoder__mse",
+      "withMSECol" -> false)
 
-    for ((entityName, h2oSchemaClass: Class[_], h2oParameterClass: Class[_], explicitFields, deprecatedFields) <- algorithmParameters)
+    val algorithmParameters =
+      Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
+        (
+          "H2OAutoEncoderParams",
+          classOf[DLParamsV3],
+          classOf[DeepLearningParameters],
+          dlFields,
+          noDeprecation,
+          aeDefaultValues))
+
+    for ((
+           entityName,
+           h2oSchemaClass: Class[_],
+           h2oParameterClass: Class[_],
+           explicitFields,
+           deprecatedFields,
+           extraDefaultValues) <- algorithmParameters)
       yield ParameterSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.params",
         entityName,
@@ -51,7 +72,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters ++ extraDefaultValues,
         generateParamTag = true)
   }
 

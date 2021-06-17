@@ -78,3 +78,9 @@ class H2OCommonParams(H2OBaseMOJOParams):
             prepared_array.append(arg)
 
         return self._set(columnsToCategorical=value)
+
+    def setConvertUnknownCategoricalLevelsToNa(self, value):
+        return self._set(convertUnknownCategoricalLevelsToNa=value)
+
+    def setConvertInvalidNumbersToNa(self, value):
+        return self._set(convertInvalidNumbersToNa=value)

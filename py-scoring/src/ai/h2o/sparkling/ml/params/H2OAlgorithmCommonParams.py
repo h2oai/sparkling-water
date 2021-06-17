@@ -37,12 +37,6 @@ class H2OAlgorithmCommonParams(H2OCommonParams, H2OAlgorithmMOJOParams):
     def setFeaturesCols(self, value):
         return self._set(featuresCols=value)
 
-    def setConvertUnknownCategoricalLevelsToNa(self, value):
-        return self._set(convertUnknownCategoricalLevelsToNa=value)
-
-    def setConvertInvalidNumbersToNa(self, value):
-        return self._set(convertInvalidNumbersToNa=value)
-
     def setNamedMojoOutputColumns(self, value):
         return self._set(namedMojoOutputColumns=value)
 

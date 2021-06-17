@@ -19,6 +19,7 @@ import pytest
 from pyspark.sql import SparkSession
 from pysparkling.conf import H2OConf
 from pysparkling.context import H2OContext
+from pyspark.sql.types import StructType, StructField, DoubleType
 
 from tests import unit_test_utils
 
@@ -121,3 +122,13 @@ def heartDatasetPath():
 @pytest.fixture(scope="module")
 def heartDataset(spark, heartDatasetPath):
     return spark.read.csv(heartDatasetPath, header=True, inferSchema=True)
+
+@pytest.fixture(scope="module")
+def discourdDatasetPath():
+    return "file://" + os.path.abspath("../examples/smalldata/anomaly/ecg_discord_test.csv")
+
+@pytest.fixture(scope="module")
+def discourdDataset(spark, discourdDatasetPath):
+    numbers = range(1, 211)
+    fields = list(map(lambda x: StructField("C" + str(x), DoubleType(), False), numbers))
+    return spark.read.csv(discourdDatasetPath, header=False, schema=StructType(fields))
