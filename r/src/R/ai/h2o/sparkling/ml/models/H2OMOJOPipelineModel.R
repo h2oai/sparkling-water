@@ -24,5 +24,5 @@ H2OMOJOPipelineModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSe
 }
 
 #' @export H2OMOJOPipelineModel
-H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OMOJOModelBase"), methods = list(
+H2OMOJOPipelineModel <- setRefClass("H2OMOJOPipelineModel", contains = ("H2OAlgorithmMOJOModelBase"), methods = list(
 ))

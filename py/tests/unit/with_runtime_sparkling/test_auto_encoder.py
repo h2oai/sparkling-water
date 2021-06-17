@@ -35,6 +35,8 @@ def testParamsPassedBySetters():
     assertParamsViaSetters("H2OAutoEncoder", skip=["mseCol"])
 
 
+@pytest.mark.skipif(pyspark.__version__.startswith("2.1"), reason="""Support for Spark 2.1 will be removed in SW 3.34. 
+Tests are ignored due to a bug in Vector comparison in Spark 2.1: https://issues.apache.org/jira/browse/SPARK-19425""")
 def testInitialBiasAndWeightsAffectResult(prostateDataset):
     [traningDataset, testingDataset] = prostateDataset.randomSplit([0.9, 0.1], 1)
 
@@ -111,6 +113,7 @@ def testScoringWithOldMOJO(discourdDataset):
     mojo.setWithOriginalCol(True)
     mojo.setMSECol("MSE")
     mojo.setWithMSECol(True)
+
 
     firstRow = mojo.transform(discourdDataset).first()
 

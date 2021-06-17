@@ -20,6 +20,21 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   initialize = function(jmojo) {
     .self$jmojo <- jmojo
   },
+  getConvertUnknownCategoricalLevelsToNa = function() {
+    invoke(.self$jmojo, "getConvertUnknownCategoricalLevelsToNa")
+  },
+  getConvertInvalidNumbersToNa = function() {
+    invoke(.self$jmojo, "getConvertInvalidNumbersToNa")
+  },
+  transform = function(sparkFrame) {
+    sparkFrame <- spark_dataframe(sparkFrame)
+    outputFrame <- invoke(.self$jmojo, "transform", sparkFrame)
+    sdf_register(outputFrame)
+  }
+))
+
+#' @export H2OAlgorithmMOJOModelBase
+H2OAlgorithmMOJOModelBase <- setRefClass("H2OAlgorithmMOJOModelBase", contains = ("H2OMOJOModelBase"), methods = list(
   getPredictionCol = function() {
     invoke(.self$jmojo, "getPredictionCol")
   },
@@ -28,7 +43,7 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   },
   getWithDetailedPredictionCol = function() {
     warning("The method 'getWithDetailedPredictionCol' is deprecated and will be removed without replacement in 3.36.
-    Detailed prediction columns is always enabled.")
+      Detailed prediction columns is always enabled.")
     TRUE
   },
   getWithContributions = function() {
@@ -36,12 +51,6 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   },
   getFeaturesCols = function() {
     invoke(.self$jmojo, "getFeaturesCols")
-  },
-  getConvertUnknownCategoricalLevelsToNa = function() {
-    invoke(.self$jmojo, "getConvertUnknownCategoricalLevelsToNa")
-  },
-  getConvertInvalidNumbersToNa = function() {
-    invoke(.self$jmojo, "getConvertInvalidNumbersToNa")
   },
   getNamedMojoOutputColumns = function() {
     invoke(.self$jmojo, "getNamedMojoOutputColumns")
@@ -51,10 +60,5 @@ H2OMOJOModelBase <- setRefClass("H2OMOJOModelBase", fields = list(jmojo = "ANY")
   },
   getWithStageResults = function() {
     invoke(.self$jmojo, "getWithStageResults")
-  },
-  transform = function(sparkFrame) {
-    sparkFrame <- spark_dataframe(sparkFrame)
-    outputFrame <- invoke(.self$jmojo, "transform", sparkFrame)
-    sdf_register(outputFrame)
   }
 ))

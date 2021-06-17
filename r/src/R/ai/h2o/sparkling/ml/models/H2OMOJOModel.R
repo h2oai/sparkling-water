@@ -29,13 +29,15 @@ H2OMOJOModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSettings.d
     H2OSupervisedMOJOModel(jmojo)
   } else if (className == "H2OUnsupervisedMOJOModel") {
     H2OUnsupervisedMOJOModel(jmojo)
+  } else if (className == "H2OFeatureMOJOModel") {
+    H2OFeatureMOJOModel(jmojo)
   } else {
-    H2OMOJOModel(jmojo)
+    H2OAlgorithmMOJOModel(jmojo)
   }
 }
 
 #' @export H2OMOJOModel
-H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), methods = list(
+H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getModelDetails = function() {
     invoke(.self$jmojo, "getModelDetails")
   },
@@ -70,8 +72,14 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", contains = ("H2OMOJOModelBase"), met
   }
 ))
 
+#' @export H2OFeatureMOJOModel
+H2OFeatureMOJOModel <- setRefClass("H2OFeatureMOJOModel", contains = c("H2OMOJOModel", "H2OMOJOModelBase"))
+
+#' @export H2OAlgorithmMOJOModel
+H2OAlgorithmMOJOModel <- setRefClass("H2OAlgorithmMOJOModel", contains = c("H2OMOJOModel", "H2OAlgorithmMOJOModelBase"))
+
 #' @export H2OSupervisedMOJOModel
-H2OSupervisedMOJOModel <- setRefClass("H2OSupervisedMOJOModel", contains = ("H2OMOJOModel"), methods = list(
+H2OSupervisedMOJOModel <- setRefClass("H2OSupervisedMOJOModel", contains = ("H2OAlgorithmMOJOModel"), methods = list(
   getOffsetCol = function() {
     invoke(.self$jmojo, "getOffsetCol")
   }
