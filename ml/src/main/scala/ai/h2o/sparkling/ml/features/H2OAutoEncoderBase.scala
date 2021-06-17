@@ -41,12 +41,10 @@ abstract class H2OAutoEncoderBase[P <: Model.Parameters: ClassTag]
     model
   }
 
-  private[sparkling] def getFoldCol(): String
-
   private[sparkling] def getWeightCol(): String
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ Seq(getFoldCol(), getWeightCol())
+    super.getExcludedCols() ++ Seq(getWeightCol())
       .flatMap(Option(_)) // Remove nulls
   }
 

@@ -43,6 +43,7 @@ object IgnoredParameters {
           "pretrained_autoencoder",
           "checkpoint",
           "response_column",
+          "fold_column",
           "offset_column",
           "balance_classes",
           "class_sampling_factors",
