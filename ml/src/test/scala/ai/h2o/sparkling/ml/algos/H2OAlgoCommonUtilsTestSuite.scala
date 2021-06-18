@@ -51,6 +51,10 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
     override private[sparkling] def getExcludedCols(): Seq[String] = Nil
 
     def exposedTestMethod: Dataset[_] => (H2OFrame, Option[H2OFrame]) = prepareDatasetForFitting
+
+    override private[sparkling] def getInputCols() = datasetSchema.fieldNames
+
+    override private[sparkling] def setInputCols(value: Array[String]) = this
   }
 
   test("Columns sanitation: DAI type of columns names") {
@@ -82,7 +86,7 @@ class H2OAlgoCommonUtilsTestSuite extends FunSuite with Matchers with SharedH2OT
       algo.fit(datasetWithConst)
     }
     assert(
-      thrown.getMessage.startsWith("H2O could not use any of the specified features" +
+      thrown.getMessage.startsWith("H2O could not use any of the specified input" +
         " columns: 'constant' because they are all constants. H2O requires at least one non-constant column."))
   }
 }

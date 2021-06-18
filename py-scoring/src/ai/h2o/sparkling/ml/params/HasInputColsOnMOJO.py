@@ -15,17 +15,11 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams import H2OSupervisedMOJOParams
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
-from pyspark.ml.param import *
 
 
-class H2OTreeBasedSupervisedMOJOParams(H2OSupervisedMOJOParams):
-    ntrees = Param(
-        Params._dummy(),
-        "ntrees",
-        "Number of trees representing the model",
-        H2OTypeConverters.toInt())
+class HasInputColsOnMOJO:
 
-    def getNtrees(self):
-        return self.getOrDefault(self.ntrees)
+    def getInputCols(self):
+        value = self._java_obj.getInputCols()
+        return H2OTypeConverters.scalaArrayToPythonArray(value)

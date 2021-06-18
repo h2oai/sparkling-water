@@ -158,6 +158,7 @@ def createInitialGlmDefinitionForRandomCols():
                   calcLike=True)
 
 
+@pytest.mark.skip(reason="HGLM doesn't support MOJOs yet.")
 def testRandomColsArePropagatedToInternals(semiconductorDataset):
     semiconductorDataset = semiconductorDataset.withColumn("Device", semiconductorDataset.Device.cast("string"))
 

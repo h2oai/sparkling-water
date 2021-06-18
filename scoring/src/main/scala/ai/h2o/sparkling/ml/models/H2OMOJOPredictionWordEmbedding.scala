@@ -25,7 +25,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionWordEmbedding {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
 
   def getWordEmbeddingPredictionUDF(): UserDefinedFunction = {
     val schema = getWordEmbeddingPredictionSchema()

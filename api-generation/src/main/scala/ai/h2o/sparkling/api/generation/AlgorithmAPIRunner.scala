@@ -17,12 +17,13 @@
 
 package ai.h2o.sparkling.api.generation
 
-import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, GridSearchConfiguration, SubstitutionContextBase, Word2VecConfiguration}
+import ai.h2o.sparkling.api.generation.common.{APIRunnerBase, AlgorithmConfigurations, AutoMLConfiguration, FeatureEstimatorConfigurations, GridSearchConfiguration, SubstitutionContextBase, Word2VecConfiguration}
 import ai.h2o.sparkling.api.generation.python.Word2VecTemplate
 
 object AlgorithmAPIRunner
   extends APIRunnerBase
   with AlgorithmConfigurations
+  with FeatureEstimatorConfigurations
   with GridSearchConfiguration
   with AutoMLConfiguration
   with Word2VecConfiguration {

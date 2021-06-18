@@ -22,16 +22,26 @@ import java.io._
 import ai.h2o.mojos.runtime.MojoPipeline
 import ai.h2o.mojos.runtime.api.MojoPipelineService
 import ai.h2o.mojos.runtime.frame.MojoColumn.Type
+import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams, HasFeatureTypesOnMOJO}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import ai.h2o.sparkling.sql.functions.{udf => swudf}
+import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.ml.Model
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2OMOJOPipelineModel] {
+class H2OMOJOPipelineModel(override val uid: String)
+  extends Model[H2OMOJOPipelineModel]
+  with H2OMOJOFlattenedInput
+  with HasMojo
+  with H2OMOJOWritable
+  with H2OAlgorithmMOJOParams
+  with H2OBaseMOJOParams
+  with HasFeatureTypesOnMOJO {
 
   H2OMOJOPipelineCache.startCleanupThread()
 
@@ -149,7 +159,7 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
     }
   }
 
-  override protected def getPredictionColSchema(): Seq[StructField] = {
+  protected def getPredictionColSchema(): Seq[StructField] = {
     val predictionType = getPredictionColSchemaInternal()
     Seq(StructField(getPredictionCol(), predictionType, nullable = true))
   }
@@ -164,6 +174,15 @@ class H2OMOJOPipelineModel(override val uid: String) extends H2OMOJOModelBase[H2
       val idx = getOutputSubCols().indexOf(column)
       col(s"${getPredictionCol()}.preds").getItem(idx).alias(column)
     }
+  }
+
+  override protected def inputColumnNames: Array[String] = getFeaturesCols()
+
+  override protected def outputColumnName: String = getPredictionCol()
+
+  @DeveloperApi
+  override def transformSchema(schema: StructType): StructType = {
+    StructType(schema.fields ++ getPredictionColSchema())
   }
 }
 

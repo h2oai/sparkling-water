@@ -31,26 +31,19 @@ import hex.tree.gbm.GBMModel.GBMParameters
 import hex.tree.isofor.IsolationForestModel.IsolationForestParameters
 import hex.tree.xgboost.XGBoostModel.XGBoostParameters
 
-trait AlgorithmConfigurations {
+trait AlgorithmConfigurations extends ConfigurationsBase {
 
-  val defaultValuesOfCommonParameters = Map(
+  val defaultValuesOfAlgorithmCommonParameters = Map(
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
     "withDetailedPredictionCol" -> true,
-    "convertUnknownCategoricalLevelsToNa" -> false,
-    "convertInvalidNumbersToNa" -> false,
     "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
-    "validationDataFrame" -> null,
-    "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String],
     "withLeafNodeAssignments" -> false,
-    "withStageResults" -> false)
+    "withStageResults" -> false) ++ defaultValuesOfCommonParameters
 
-  val ignoredCols = ExplicitField("ignored_columns", "HasIgnoredCols", null, None, Some("HasIgnoredColsOnMOJO"))
-
-  def parametersConfiguration: Seq[ParameterSubstitutionContext] = {
+  override def parametersConfiguration: Seq[ParameterSubstitutionContext] = super.parametersConfiguration ++ {
     val monotonicity = ExplicitField(
       "monotone_constraints",
       "HasMonotoneConstraints",
@@ -125,7 +118,7 @@ trait AlgorithmConfigurations {
         explicitDefaultValues,
         typeExceptions = Map.empty,
         defaultValueSource = DefaultValueSource.Field,
-        defaultValuesOfCommonParameters = defaultValuesOfCommonParameters,
+        defaultValuesOfCommonParameters = defaultValuesOfAlgorithmCommonParameters,
         generateParamTag = true)
   }
 
@@ -133,7 +126,7 @@ trait AlgorithmConfigurations {
     Array("H2OKMeansParams", "H2OIsolationForestParams").contains(entityName)
   }
 
-  def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
+  override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = super.algorithmConfiguration ++ {
 
     val withDistribution = "DistributionBasedH2OTrainFramePreparation"
     val withFamily = "FamilyBasedH2OTrainFramePreparation"

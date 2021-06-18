@@ -27,10 +27,13 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
       "pyspark.ml.util._jvm",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
+      "ai.h2o.sparkling.ml.models.H2OMOJOModelBase.H2OMOJOModelBase",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OTreeBasedSupervisedMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OTreeBasedUnsupervisedMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OSupervisedMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OUnsupervisedMOJOModelParams",
+      "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OAlgorithmMOJOModelParams",
+      "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OFeatureMOJOModelParams",
       "ai.h2o.sparkling.ml.params.H2OMOJOModelParams.H2OMOJOModelParams") ++
       specificMojoModels.map(mojo => s"ai.h2o.sparkling.ml.models.$mojo.$mojo")
 
@@ -60,6 +63,10 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
          |            return H2OSupervisedMOJOModel(javaModel)
          |        elif className == "H2OUnsupervisedMOJOModel":
          |            return H2OUnsupervisedMOJOModel(javaModel)
+         |        elif className == "H2OAlgorithmMOJOModel":
+         |            return H2OAlgorithmMOJOModel(javaModel)
+         |        elif className == "H2OFeatureMOJOModel":
+         |            return H2OFeatureMOJOModel(javaModel)
          |${generatePatternMatchingCases(mojoSubstitutionContexts)}
          |        else:
          |            return H2OMOJOModel(javaModel)
@@ -67,7 +74,15 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
     }
 
     val models = s"""
-       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelBase, H2OMOJOModelFactory):
+       |    pass
+       |
+       |
+       |class H2OAlgorithmMOJOModel(H2OAlgorithmMOJOModelParams, H2OMOJOModelFactory):
+       |    pass
+       |
+       |
+       |class H2OFeatureMOJOModel(H2OFeatureMOJOModelParams, H2OMOJOModelFactory):
        |    pass
        |
        |

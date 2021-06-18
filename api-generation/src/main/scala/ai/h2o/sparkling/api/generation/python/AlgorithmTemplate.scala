@@ -30,7 +30,7 @@ object AlgorithmTemplate
     val parameters = parameterSubstitutionContexts.flatMap(resolveParameters)
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
-    val paramClasses = Seq(s"${entityName}Params", "H2OCommonParams")
+    val paramClasses = Seq(s"${entityName}Params")
     val algorithmType = algorithmSubstitutionContext.algorithmType
     val parents = paramClasses ++ Seq(algorithmType) ++ algorithmSubstitutionContext.extraInheritedEntities
     val mojoClassName = s"${entityName}MOJOModel"
@@ -41,7 +41,7 @@ object AlgorithmTemplate
       "pyspark.keyword_only",
       "ai.h2o.sparkling.Initializer",
       "ai.h2o.sparkling.ml.Utils.Utils",
-      s"ai.h2o.sparkling.ml.algos.$algorithmType.$algorithmType") ++
+      s"$namespace.$algorithmType.$algorithmType") ++
       (if (constructorMethods) Seq(s"ai.h2o.sparkling.ml.models.$mojoClassName.$mojoClassName") else Seq.empty) ++
       paramClasses.map(clazz => s"ai.h2o.sparkling.ml.params.$clazz.$clazz") ++
       algorithmSubstitutionContext.extraInheritedEntities.map(clazz => s"ai.h2o.sparkling.ml.algos.$clazz.$clazz")

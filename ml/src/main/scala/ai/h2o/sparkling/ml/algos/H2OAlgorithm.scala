@@ -16,16 +16,10 @@
  */
 package ai.h2o.sparkling.ml.algos
 
-import ai.h2o.sparkling.backend.utils.RestCommunication
-import ai.h2o.sparkling.ml.internals.H2OModel
-import ai.h2o.sparkling.ml.models.{H2OBinaryModel, H2OMOJOModel, H2OMOJOSettings}
-import ai.h2o.sparkling.ml.params.H2OCommonParams
-import ai.h2o.sparkling.{H2OContext, H2OFrame}
+import ai.h2o.sparkling.ml.models.{H2OAlgorithmMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.params.H2OAlgorithmCommonParams
 import hex.Model
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.ml.Estimator
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util._
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.types.StructType
 
@@ -34,42 +28,18 @@ import scala.reflect.ClassTag
 /**
   * Base class for H2O algorithm wrapper as a Spark transformer.
   */
-abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag]
-  extends Estimator[H2OMOJOModel]
-  with H2OCommonParams
-  with H2OAlgoCommonUtils
-  with H2OTrainFramePreparation
-  with DefaultParamsWritable
-  with RestCommunication {
+abstract class H2OAlgorithm[P <: Model.Parameters: ClassTag] extends H2OEstimator[P] with H2OAlgorithmCommonParams {
 
-  protected def getModelId(): String
+  override private[sparkling] def getInputCols(): Array[String] = getFeaturesCols()
 
-  // Class tag for parameters to get runtime class
-  protected def paramTag: ClassTag[P]
-
-  protected var parameters: P = paramTag.runtimeClass.newInstance().asInstanceOf[P]
-
-  override def fit(dataset: Dataset[_]): H2OMOJOModel = {
-    val (train, valid) = prepareDatasetForFitting(dataset)
-    prepareH2OTrainFrameForFitting(train)
-    val params = getH2OAlgorithmParams(train) ++
-      Map("training_frame" -> train.frameId, "model_id" -> convertModelIdToKey(getModelId())) ++
-      valid
-        .map { fr =>
-          Map("validation_frame" -> fr.frameId)
-        }
-        .getOrElse(Map())
-    val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
-    val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
-    binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
-    val result = H2OModel(modelId)
-      .toMOJOModel(Identifiable.randomUID(parameters.algoName()), H2OMOJOSettings.createFromModelParams(this))
-    deleteRegisteredH2OFrames()
-    result
-  }
+  override private[sparkling] def setInputCols(value: Array[String]): this.type = setFeaturesCols(value)
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = schema
 
-  override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+  override def fit(dataset: Dataset[_]): H2OAlgorithmMOJOModel = {
+    super.fit(dataset).asInstanceOf[H2OAlgorithmMOJOModel]
+  }
+
+  override protected def createMOJOSettings(): H2OMOJOSettings = H2OMOJOSettings.createFromModelParams(this)
 }

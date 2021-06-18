@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
+import ai.h2o.sparkling.ml.features.H2OAutoEncoder
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.SparkSession
@@ -107,6 +108,15 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
 
   test("Test MOJO parameters on Deep Learning") {
     val algorithm = new H2ODeepLearning().setLabelCol("CAPSULE").setSeed(1)
+    val mojo = algorithm.fit(dataset)
+
+    compareParameterValues(algorithm, mojo)
+  }
+
+  test("Test MOJO parameters on Auto Encoder") {
+    val algorithm = new H2OAutoEncoder()
+      .setSeed(1)
+      .setHidden(Array(3))
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)

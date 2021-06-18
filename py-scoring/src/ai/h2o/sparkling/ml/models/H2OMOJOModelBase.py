@@ -19,12 +19,9 @@ from pyspark.ml.param import *
 from pyspark.ml.util import JavaMLWritable
 from pyspark.ml.wrapper import JavaModel
 from ai.h2o.sparkling.ml.util.H2OJavaMLReadable import H2OJavaMLReadable
-from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.params.HasFeatureTypesOnMOJO import HasFeatureTypesOnMOJO
 
-import warnings
-
-
-class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
+class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable, HasFeatureTypesOnMOJO):
 
     # Overriding the method to avoid changes on the companion Java object
     def _transfer_params_to_java(self):
@@ -33,37 +30,8 @@ class H2OMOJOModelBase(JavaModel, JavaMLWritable, H2OJavaMLReadable):
     ##
     # Getters
     ##
-    def getPredictionCol(self):
-        return self._java_obj.getPredictionCol()
-
-    def getDetailedPredictionCol(self):
-        return self._java_obj.getDetailedPredictionCol()
-
-    def getWithDetailedPredictionCol(self):
-        warnings.warn("The method will be removed without a replacement in the version 3.36."
-                      "Detailed prediction columns is always enabled.", DeprecationWarning)
-        return True
-
-    def getFeaturesCols(self):
-        return list(self._java_obj.getFeaturesCols())
-
-    def getFeatureTypes(self):
-        return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getFeatureTypes())
-
     def getConvertUnknownCategoricalLevelsToNa(self):
         return self._java_obj.getConvertUnknownCategoricalLevelsToNa()
 
     def getConvertInvalidNumbersToNa(self):
         return self._java_obj.getConvertInvalidNumbersToNa()
-
-    def getNamedMojoOutputColumns(self):
-        return self._java_obj.getNamedMojoOutputColumns()
-
-    def getWithContributions(self):
-        return self._java_obj.getWithContributions()
-
-    def getWithLeafNodeAssignments(self):
-        return self._java_obj.getWithLeafNodeAssignments()
-
-    def getWithStageResults(self):
-        return self._java_obj.getWithStageResults()

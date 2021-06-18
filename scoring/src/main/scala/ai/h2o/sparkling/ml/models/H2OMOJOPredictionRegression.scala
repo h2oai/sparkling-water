@@ -27,7 +27,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionRegression extends PredictionWithContributions {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
 
   def getRegressionPredictionUDF(): UserDefinedFunction = {
     val schema = getRegressionPredictionSchema()

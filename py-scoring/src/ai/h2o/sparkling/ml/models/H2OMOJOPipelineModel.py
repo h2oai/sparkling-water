@@ -17,13 +17,13 @@
 
 from ai.h2o.sparkling.Initializer import Initializer
 from ai.h2o.sparkling.ml.models import H2OMOJOSettings
-from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
+from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJOModelBase
 from pyspark.ml.param import *
 from pyspark.ml.util import _jvm
 from pyspark.sql.column import Column
 
 
-class H2OMOJOPipelineModel(H2OMOJOModelBase):
+class H2OMOJOPipelineModel(H2OAlgorithmMOJOModelBase):
 
     @staticmethod
     def createFromMojo(pathToMojo, settings=H2OMOJOSettings.default()):

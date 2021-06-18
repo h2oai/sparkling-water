@@ -28,7 +28,7 @@ import org.apache.spark.sql.{Column, Row}
 import scala.collection.mutable
 
 trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
-  self: H2OMOJOModel =>
+  self: H2OAlgorithmMOJOModel =>
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     val schema = getMultinomialPredictionSchema()
     val function = (r: Row, offset: Double) => {
