@@ -1,6 +1,6 @@
-Auto Encoder in Sparkling Water
-===============================
-H2O Auto Encoder in Sparkling Water is based on H2O-3's Deep Learning algorithm and can be used for encoding an arbitrary
+Autoencoder in Sparkling Water
+==============================
+Autoencoder in Sparkling Water is based on H2O-3's Deep Learning algorithm and can be used for encoding an arbitrary
 list of features to the vector numerical values and for anomaly detection. Sparkling Water provides API for
 H2O Auto Encoder in Scala and Python. The following sections describe how to train and use
 the Auto Encoder model in Sparkling Water in both languages. See also :ref:`parameters_H2OAutoEncoder`.
