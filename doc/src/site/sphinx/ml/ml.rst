@@ -21,6 +21,7 @@ Machine Learning
 .. toctree::
    :maxdepth: 2
 
+   sw_auto_encoder
    sw_target_encoder
    sw_w2v
 
