@@ -18,7 +18,8 @@
 package ai.h2o.sparkling.api.generation.common
 
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
-import hex.schemas.DeepLearningV3
+import hex.pca.PCAModel.PCAParameters
+import hex.schemas.{DeepLearningV3, PCAV3}
 
 trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
@@ -28,11 +29,15 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       ExplicitField("initial_biases", "HasInitialBiases", null),
       ExplicitField("initial_weights", "HasInitialWeights", null),
       ignoredCols)
+    val pcaFields = Seq(ignoredCols)
 
     type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
+    type PCAParamsV3 = PCAV3.PCAParametersV3
 
-    val explicitDefaultValues =
-      Map[String, Any]("max_w2" -> 3.402823e38f, "model_id" -> null)
+    val explicitDefaultValues = Map[String, Any](
+      "max_w2" -> 3.402823e38f,
+      "model_id" -> null,
+      "pca_impl" -> new PCAParameters()._pca_implementation)
 
     val noDeprecation = Seq.empty
 
@@ -43,6 +48,9 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "withOriginalCol" -> false,
       "mseCol" -> "AutoEncoder__mse",
       "withMSECol" -> false)
+    val pcaDefaultValues = Map(
+      "inputCols" -> Array.empty[String],
+      "outputCol" -> "PCA__output")
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
@@ -52,7 +60,14 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
           classOf[DeepLearningParameters],
           dlFields,
           noDeprecation,
-          aeDefaultValues))
+          aeDefaultValues),
+        (
+          "H2OPCAParams",
+          classOf[PCAParamsV3],
+          classOf[PCAParameters],
+          pcaFields,
+          noDeprecation,
+          pcaDefaultValues))
 
     for ((
            entityName,
@@ -79,7 +94,9 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
   override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = super.algorithmConfiguration ++ {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty))
+      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty),
+      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty),
+    )
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
       yield AlgorithmSubstitutionContext(

@@ -34,6 +34,7 @@ object MOJOModelTemplate
     val namespace = algorithmSubstitutionContext.namespace
     val algorithmType = algorithmSubstitutionContext.algorithmType
       .replace("Algorithm", "MOJOModelParams")
+      .replace("Estimator", "MOJOModel")
       .replaceFirst("Base$", "MOJOBase")
     val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
