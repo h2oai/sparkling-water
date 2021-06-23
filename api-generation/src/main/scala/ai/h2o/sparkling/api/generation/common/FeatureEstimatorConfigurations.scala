@@ -48,9 +48,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "withOriginalCol" -> false,
       "mseCol" -> "AutoEncoder__mse",
       "withMSECol" -> false)
-    val pcaDefaultValues = Map(
-      "inputCols" -> Array.empty[String],
-      "outputCol" -> "PCA__output")
+    val pcaDefaultValues = Map("inputCols" -> Array.empty[String], "outputCol" -> "PCA__output")
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
@@ -61,13 +59,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
           dlFields,
           noDeprecation,
           aeDefaultValues),
-        (
-          "H2OPCAParams",
-          classOf[PCAParamsV3],
-          classOf[PCAParameters],
-          pcaFields,
-          noDeprecation,
-          pcaDefaultValues))
+        ("H2OPCAParams", classOf[PCAParamsV3], classOf[PCAParameters], pcaFields, noDeprecation, pcaDefaultValues))
 
     for ((
            entityName,
@@ -95,8 +87,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty),
-      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty),
-    )
+      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
       yield AlgorithmSubstitutionContext(

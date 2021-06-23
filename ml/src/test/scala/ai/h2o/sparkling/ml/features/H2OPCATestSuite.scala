@@ -49,6 +49,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setOutputCol("Output")
       .setSplitRatio(0.8)
+      .setImputeMissing(true)
       .setK(3)
 
     algo.fit(trainingDataset)
@@ -58,16 +59,33 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
   // https://issues.apache.org/jira/browse/SPARK-19425
   if (!createSparkSession().version.startsWith("2.1")) {
 
-    test("Standalone pca model produces different results for various input rows.") {
+    test("Standalone PCA model produces different results for various input rows.") {
       val scored = standaloneModel.transform(testingDataset)
       val rows = scored.take(2)
 
       val first = rows(0).getAs[DenseVector]("Output").values.toSeq
       val second = rows(1).getAs[DenseVector]("Output").values.toSeq
 
-      first.length should be (3)
-      second.length should be (3)
+      first.length should be(3)
+      second.length should be(3)
       first should not equal second
+    }
+
+    test("Standalone PCA model can provide scoring history") {
+      val expectedColumns = Array("Timestamp", "Duration", "Iterations")
+
+      val scoringHistoryDF = standaloneModel.getScoringHistory()
+      scoringHistoryDF.show(false) // TODO: Just one iteration
+      scoringHistoryDF.count() shouldBe >(0L)
+      scoringHistoryDF.columns shouldEqual expectedColumns
+    }
+
+    test("Standalone PCA can produce training and validation metrics") {
+      val trainingMetrics = standaloneModel.getTrainingMetrics()
+      println(trainingMetrics) // TODO: Why Map(MSE -> NaN, RMSE -> NaN)?
+
+      val validationMetrics = standaloneModel.getValidationMetrics()
+      println(validationMetrics)
     }
 
     test("The PCA model is able to transform dataset after it's saved and loaded") {
@@ -75,6 +93,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
         .setSeed(1)
         .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setK(5)
+        .setImputeMissing(true)
         .setSplitRatio(0.8)
 
       val pipeline = new Pipeline().setStages(Array(pca))
@@ -89,19 +108,49 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
     }
 
-    test("A pipeline with a PCA model transforms testing dataset without an exception") {
-      val autoEncoder = new H2OPCA()
+    test(
+      "A pipeline with a PCA model sourcing data from multiple columns transforms testing dataset without an exception") {
+      val pca = new H2OPCA()
         .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setK(4)
+        .setImputeMissing(true)
 
       val gbm = new H2OGBM()
-        .setFeaturesCol(autoEncoder.getOutputCol())
+        .setFeaturesCol(pca.getOutputCol())
         .setLabelCol("CAPSULE")
 
-      val pipeline = new Pipeline().setStages(Array(autoEncoder, gbm))
+      val pipeline = new Pipeline().setStages(Array(pca, gbm))
 
       val model = pipeline.fit(trainingDataset)
-      val rows = model.transform(testingDataset).groupBy("prediction").count().collect()
+      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+      val rows = numberOfPredictionsDF.collect()
+      numberOfPredictionsDF.count() shouldBe >=(2L)
+      rows.foreach { row =>
+        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
+      }
+    }
+
+    test(
+      "A pipeline with a PCA model sourcing data from vector column transforms testing dataset without an exception") {
+      val autoEncoder = new H2OAutoEncoder()
+        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+        .setHidden(Array(100))
+
+      val pca = new H2OPCA()
+        .setInputCols(autoEncoder.getOutputCol())
+        .setK(4)
+        .setImputeMissing(true)
+
+      val gbm = new H2OGBM()
+        .setFeaturesCol(pca.getOutputCol())
+        .setLabelCol("CAPSULE")
+
+      val pipeline = new Pipeline().setStages(Array(autoEncoder, pca, gbm))
+
+      val model = pipeline.fit(trainingDataset)
+      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+      val rows = numberOfPredictionsDF.collect()
+      numberOfPredictionsDF.count() shouldBe >=(2L)
       rows.foreach { row =>
         assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
       }
