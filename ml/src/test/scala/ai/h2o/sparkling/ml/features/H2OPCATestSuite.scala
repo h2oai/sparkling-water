@@ -59,7 +59,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
   // https://issues.apache.org/jira/browse/SPARK-19425
   if (!createSparkSession().version.startsWith("2.1")) {
 
-    test("Standalone PCA model produces different results for various input rows.") {
+    test("The standalone PCA model produces different results for various input rows.") {
       val scored = standaloneModel.transform(testingDataset)
       val rows = scored.take(2)
 
@@ -71,7 +71,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       first should not equal second
     }
 
-    test("Standalone PCA model can provide scoring history") {
+    test("The standalone PCA model can provide scoring history") {
       val expectedColumns = Array("Timestamp", "Duration", "Iterations")
 
       val scoringHistoryDF = standaloneModel.getScoringHistory()
@@ -80,7 +80,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       scoringHistoryDF.columns shouldEqual expectedColumns
     }
 
-    test("Standalone PCA can produce training and validation metrics") {
+    test("The standalone PCA can produce training and validation metrics") {
       val trainingMetrics = standaloneModel.getTrainingMetrics()
       println(trainingMetrics) // TODO: Why Map(MSE -> NaN, RMSE -> NaN)?
 
@@ -130,15 +130,14 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       }
     }
 
-    test(
-      "A pipeline with a PCA model sourcing data from vector column transforms testing dataset without an exception") {
+    test("A pipeline with a PCA model sourcing data from vector column transforms testing dataset without an exception") {
       val autoEncoder = new H2OAutoEncoder()
         .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setHidden(Array(100))
 
       val pca = new H2OPCA()
         .setInputCols(autoEncoder.getOutputCol())
-        .setK(4)
+        .setK(3)
         .setImputeMissing(true)
 
       val gbm = new H2OGBM()

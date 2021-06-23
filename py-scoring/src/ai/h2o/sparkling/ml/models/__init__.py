@@ -23,6 +23,7 @@ from ai.h2o.sparkling.ml.models.H2OGBMMOJOModel import H2OGBMMOJOModel
 from ai.h2o.sparkling.ml.models.H2ODRFMOJOModel import H2ODRFMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGLMMOJOModel import H2OGLMMOJOModel
 from ai.h2o.sparkling.ml.models.H2OGAMMOJOModel import H2OGAMMOJOModel
+from ai.h2o.sparkling.ml.models.H2OPCAMOJOModel import H2OPCAMOJOModel
 from ai.h2o.sparkling.ml.models.H2ODeepLearningMOJOModel import H2ODeepLearningMOJOModel
 from ai.h2o.sparkling.ml.models.H2OAutoEncoderMOJOModel import H2OAutoEncoderMOJOModel
 from ai.h2o.sparkling.ml.models.H2OKMeansMOJOModel import H2OKMeansMOJOModel

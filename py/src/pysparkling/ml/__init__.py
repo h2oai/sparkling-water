@@ -29,7 +29,8 @@ __all__ = ["ColumnPruner", "H2OGBM", "H2ODeepLearning", "H2OAutoML", "H2OXGBoost
            "H2ODeepLearningClassifier", "H2ODRFClassifier", "H2OAutoMLRegressor", "H2OGLMRegressor", "H2OGBMRegressor",
            "H2OGAMRegressor", "H2OXGBoostRegressor", "H2ODeepLearningRegressor", "H2ODRFRegressor", "H2OBinaryModel",
            "H2OIsolationForest", "H2OKMeansMOJOModel", "H2OGLMMOJOModel", "H2OGAMMOJOModel", "H2OGBMMOJOModel", "H2OXGBoostMOJOModel",
-           "H2ODeepLearningMOJOModel", "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OWord2Vec", "H2OAutoEncoder"]
+           "H2ODeepLearningMOJOModel", "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OWord2Vec", "H2OAutoEncoder",
+           "H2OAutoEncoderMOJOModel", "H2OPCA", "H2OPCAMOJOModel"]
 
 from pysparkling.initializer import Initializer
 
