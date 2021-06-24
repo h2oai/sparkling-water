@@ -24,7 +24,7 @@ import os
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.mllib.linalg import *
 from pyspark.sql.types import *
-from pyspark.sql.functions import col, substring, length
+from pyspark.sql.functions import col, regexp_extract, length
 
 from pysparkling.ml.algos import H2OAutoML
 from pysparkling.ml.algos.classification import H2OAutoMLClassifier
@@ -115,7 +115,7 @@ def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDat
 
 
 def prepareLeaderboardForComparison(df):
-    return df.withColumn("model_id", substring(col("model_id"), 1, 20)).drop("")
+    return df.withColumn("model_id", regexp_extract(col("model_id"), "(.*)_AutoML", 1)).drop("")
 
 
 def testLeaderboardDataFrameHasImpactOnAutoMLLeaderboard(classificationDataset):
