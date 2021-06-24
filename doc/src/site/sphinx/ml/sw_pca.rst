@@ -36,7 +36,7 @@ how to train and use the Sparkling Water PCA in both languages. See also :ref:`p
 
         Create ``H2OPCA`` and set input columns, ``k`` representing a number of output features and other parameters
         (see :ref:`parameters_H2OPCA`). An input column could be of any simple type or represent multiple features
-        in form of the Spark vector type (``org.apache.spark.ml.linalg.Vector``).
+        in form of the Spark vector type (``org.apache.spark.ml.linalg.VectorUDT``).
 
         .. code:: scala
 
@@ -97,7 +97,7 @@ how to train and use the Sparkling Water PCA in both languages. See also :ref:`p
 
         Create ``H2OPCA`` and set input columns, ``k`` representing a number of output features and other parameters
         (see :ref:`parameters_H2OPCA`). An input column could be of any simple type or represent multiple features
-        in form of the Spark vector type (``org.apache.spark.ml.linalg.Vector``).
+        in form of the Spark vector type (``pyspark.ml.linalg.VectorUDT``).
 
         .. code:: python
 
