@@ -115,7 +115,7 @@ def testH2OAutoMLClassifierBehavesDiffenrentlyThanH2OAutoMLRegressor(prostateDat
 
 
 def prepareLeaderboardForComparison(df):
-    return df.withColumn("model_id", regexp_extract(col("model_id"), "(.*)_AutoML_[\d_]+((?:_.*)?)$", 1)).drop("")
+    return df.withColumn("model_id", regexp_extract(col("model_id"), "(.*)_AutoML", 1)).drop("")
 
 
 def testLeaderboardDataFrameHasImpactOnAutoMLLeaderboard(classificationDataset):
@@ -133,8 +133,6 @@ def testLeaderboardDataFrameHasImpactOnAutoMLLeaderboard(classificationDataset):
     automl.fit(trainingDateset)
     leaderboardWithCustomDataFrameSet = prepareLeaderboardForComparison(automl.getLeaderboard())
 
-    defaultLeaderboard1.show(truncate=False)
-    defaultLeaderboard2.show(truncate=False)
     unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard1, defaultLeaderboard2)
     unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard1, leaderboardWithCustomDataFrameSet)
 
