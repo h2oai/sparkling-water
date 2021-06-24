@@ -604,7 +604,7 @@ object SharedBackendConf {
     |setFlowExtraHttpHeaders(String)""".stripMargin,
     """Extra HTTP headers that will be used in communication between the front-end and back-end part of Flow UI. The
       |headers should be delimited by a new line. Don't forget to escape special characters when passing
-      |the parameter from a command line.""".stripMargin)
+      |the parameter from a command line. Example: ``"spark.ext.h2o.flow.extra.http.headers=Strict-Transport-Security:max-age=31536000"``""".stripMargin)
 
   val PROP_INTERNAL_SECURE_CONNECTIONS: BooleanOption = (
     "spark.ext.h2o.internal_secure_connections",
