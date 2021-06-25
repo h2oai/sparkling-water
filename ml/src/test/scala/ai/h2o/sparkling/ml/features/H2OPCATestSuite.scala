@@ -50,6 +50,7 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setOutputCol("Output")
       .setSplitRatio(0.8)
       .setImputeMissing(true)
+      .setPcaMethod("Power")
       .setK(3)
 
     algo.fit(trainingDataset)
@@ -72,11 +73,11 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
     }
 
     test("The standalone PCA model can provide scoring history") {
-      val expectedColumns = Array("Timestamp", "Duration", "Iterations")
+      val expectedColumns = Array("Timestamp", "Duration", "Iterations", "err", "Principal Component #")
 
       val scoringHistoryDF = standaloneModel.getScoringHistory()
-      scoringHistoryDF.show(false) // TODO: Just one iteration
-      scoringHistoryDF.count() shouldBe >(0L)
+
+      scoringHistoryDF.count() shouldBe >(10L)
       scoringHistoryDF.columns shouldEqual expectedColumns
     }
 
