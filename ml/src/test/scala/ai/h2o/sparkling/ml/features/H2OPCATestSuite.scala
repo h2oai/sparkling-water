@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.models.H2OPCAMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.ml.{Pipeline, PipelineModel}
@@ -79,6 +80,18 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
 
       scoringHistoryDF.count() shouldBe >(10L)
       scoringHistoryDF.columns shouldEqual expectedColumns
+    }
+
+    test("PCA model can be loaded from a file") {
+      val mojoName: String = "pca_prostate.mojo"
+      val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
+      val mojo = H2OPCAMOJOModel.createFromMojo(mojoStream, mojoName)
+      mojo.setOutputCol("Output")
+
+      val expected = standaloneModel.transform(testingDataset)
+      val result = mojo.transform(testingDataset)
+
+      TestUtils.assertDataFramesAreIdentical(expected, result)
     }
 
     test("The PCA model is able to transform dataset after it's saved and loaded") {

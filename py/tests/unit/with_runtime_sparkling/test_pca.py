@@ -19,7 +19,7 @@ import os
 import pytest
 import pyspark
 from pyspark.sql.types import *
-from pysparkling.ml import H2OMOJOModel, H2OAutoEncoder, H2OPCA, H2OGBM
+from pysparkling.ml import H2OPCAMOJOModel, H2OAutoEncoder, H2OPCA, H2OGBM
 from tests import unit_test_utils
 from pyspark.ml import Pipeline, PipelineModel
 
@@ -71,3 +71,17 @@ def testPCAPipelineSerialization(prostateDataset):
     result = loadedModel.transform(prostateDataset)
 
     unit_test_utils.assert_data_frames_are_identical(expectedResult, result)
+
+
+def testScoringWithOldMOJO(prostateDataset):
+    mojo = H2OPCAMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/pca_prostate.mojo"))
+    mojo.setOutputCol("Output")
+
+    firstRow = mojo.transform(prostateDataset).first()
+    print(firstRow)
+
+    assert len(firstRow["Output"]) == 3
+    assert 2.2981 < firstRow["Output"][0] < 2.2982
+    assert -0.744 < firstRow["Output"][1] < -0.743
+    assert -6.1720 < firstRow["Output"][2] < -6.1719
