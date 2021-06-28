@@ -81,14 +81,6 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       scoringHistoryDF.columns shouldEqual expectedColumns
     }
 
-    test("The standalone PCA can produce training and validation metrics") {
-      val trainingMetrics = standaloneModel.getTrainingMetrics()
-      println(trainingMetrics) // TODO: Why Map(MSE -> NaN, RMSE -> NaN)?
-
-      val validationMetrics = standaloneModel.getValidationMetrics()
-      println(validationMetrics)
-    }
-
     test("The PCA model is able to transform dataset after it's saved and loaded") {
       val pca = new H2OPCA()
         .setSeed(1)

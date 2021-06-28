@@ -145,7 +145,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
       .setK(3)
     val mojo = algorithm.fit(dataset)
 
-    val ignoredMethods = Set("getPcaImpl") // TODO: Try to figureOut why MOJO return null.
+    val ignoredMethods = Set("getPcaImpl") // PUBDEV-8217: Value of pca_impl isn't propagated to MOJO models
 
     compareParameterValues(algorithm, mojo, ignoredMethods)
   }
