@@ -34,12 +34,14 @@ object MOJOModelTemplate
     val namespace = algorithmSubstitutionContext.namespace
     val algorithmType = algorithmSubstitutionContext.algorithmType
       .replace("Algorithm", "MOJOModelParams")
+      .replace("Estimator", "MOJOModel")
       .replaceFirst("Base$", "MOJOBase")
     val explicitFields = parameterSubstitutionContext.explicitFields.flatMap(_.mojoImplementation) ++
       parameterSubstitutionContext.deprecatedFields.flatMap(_.mojoImplementation)
     val parents = Seq(algorithmType) ++ explicitFields
 
-    val module = if (algorithmType.endsWith("Base")) s"models.${algorithmType}" else "params.H2OMOJOModelParams"
+    val module =
+      if (algorithmType.endsWith("MOJOModelParams")) "params.H2OMOJOModelParams" else s"models.${algorithmType}"
     val imports = Seq(
       s"ai.h2o.sparkling.ml.${module}.${algorithmType}",
       "pyspark.ml.util._jvm",

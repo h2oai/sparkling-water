@@ -15,13 +15,9 @@
 # limitations under the License.
 #
 
-from pysparkling.ml.models import *
+from ai.h2o.sparkling.ml.params.HasInputCols import HasInputCols
+from ai.h2o.sparkling.ml.params.HasOutputCol import HasOutputCol
 
-__all__ = ["H2OMOJOModel", "H2OSupervisedMOJOModel", "H2OTreeBasedSupervisedMOJOModel", "H2OUnsupervisedMOJOModel",
-           "H2OTreeBasedUnsupervisedMOJOModel", "H2OMOJOPipelineModel", "H2OMOJOSettings", "H2OBinaryModel",
-           "H2OKMeansMOJOModel", "H2OGLMMOJOModel", "H2OGAMMOJOModel", "H2OGBMMOJOModel", "H2OXGBoostMOJOModel",
-           "H2ODeepLearningMOJOModel", "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OPCAMOJOModel"]
 
-from pysparkling.initializer import Initializer
-
-Initializer.load_sparkling_jar()
+class H2ODimReductionExtraParams(HasInputCols, HasOutputCol):
+    pass

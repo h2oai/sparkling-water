@@ -1,7 +1,7 @@
 Machine Learning
 ================
 
-**Estimators**
+**Algorithms**
 
 .. toctree::
    :maxdepth: 2
@@ -16,7 +16,7 @@ Machine Learning
    sw_coxph
    sw_deep_learning
 
-**Transformers**
+**Feature Estimators**
 
 .. toctree::
    :maxdepth: 2
@@ -24,6 +24,7 @@ Machine Learning
    sw_auto_encoder
    sw_target_encoder
    sw_w2v
+   sw_pca
 
 **Uncategorized**
 

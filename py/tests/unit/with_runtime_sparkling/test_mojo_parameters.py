@@ -16,12 +16,14 @@
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
+from pysparkling.ml import H2OAutoEncoder, H2OPCA
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OGBM(seed=1, labelCol="CAPSULE", featuresCols=features, monotoneConstraints={'AGE': 1, 'RACE': -1})
     model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model)
+    ignored=["getMonotoneConstraints"]  # Will be fixed by SW-2572
+    compareParameterValues(algorithm, model, ignored)
 
 
 def testDRFParameters(prostateDataset):
@@ -37,7 +39,8 @@ def testXGBoostParameters(prostateDataset):
                            monotoneConstraints={'AGE': 1, 'RACE': -1},
                            interactionConstraints=[['AGE', 'RACE', 'DPROS'], ['DCAPS', 'PSA']])
     model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model)
+    ignored=["getInteractionConstraints", "getMonotoneConstraints"]  # Will be fixed by SW-2573 and SW-2572
+    compareParameterValues(algorithm, model, ignored)
 
 
 def testGLMParameters(prostateDataset):
@@ -59,7 +62,7 @@ def testGAMParameters(prostateDataset):
 
 def testDeepLearningParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
-    algorithm = H2ODeepLearning(seed=1, labelCol="CAPSULE", featuresCols=features)
+    algorithm = H2ODeepLearning(seed=1, labelCol="CAPSULE", featuresCols=features, reproducible=True)
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
@@ -77,18 +80,35 @@ def testIsolationForestParameters(prostateDataset):
     model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
+
 def testCoxPHParameters(heartDataset):
     features = ['age', 'year', 'surgery', 'transplant', 'start', 'stop']
     algorithm = H2OCoxPH(labelCol="event", featuresCols=features, startCol='start', stopCol='stop')
     model = algorithm.fit(heartDataset)
     compareParameterValues(algorithm, model)
 
+
+def testAutoEncoderParameters(prostateDataset):
+    features = ["RACE", "DPROS", "DCAPS"]
+    algorithm = H2OAutoEncoder(seed=1, inputCols=features, reproducible=True, hidden=[3,])
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testPCAParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OPCA(seed=1, inputCols=features, k=3)
+    model = algorithm.fit(prostateDataset)
+    ignored = ["getPcaImpl"]  # PUBDEV-8217: Value of pca_impl isn't propagated to MOJO models
+    compareParameterValues(algorithm, model, ignored)
+
+
 def compareParameterValues(algorithm, model, ignored=[]):
     algorithmMethods = dir(algorithm)
 
     def isMethodRelevant(method):
         return method.startswith("get") and \
-            getattr(model, method).__code__.co_nlocals == 1 and \
+            getattr(model, method).__code__.co_argcount == 1 and \
             method in algorithmMethods and \
             method not in ignored
 

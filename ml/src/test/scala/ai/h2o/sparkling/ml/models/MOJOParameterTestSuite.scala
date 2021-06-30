@@ -18,7 +18,7 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.algos._
-import ai.h2o.sparkling.ml.features.H2OAutoEncoder
+import ai.h2o.sparkling.ml.features.{H2OAutoEncoder, H2OPCA}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.Estimator
 import org.apache.spark.sql.SparkSession
@@ -113,7 +113,7 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     compareParameterValues(algorithm, mojo)
   }
 
-  test("Test MOJO parameters on Auto Encoder") {
+  test("Test MOJO parameters on Autoencoder") {
     val algorithm = new H2OAutoEncoder()
       .setSeed(1)
       .setHidden(Array(3))
@@ -136,6 +136,18 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     val mojo = algorithm.fit(dataset)
 
     compareParameterValues(algorithm, mojo)
+  }
+
+  test("Test MOJO parameters on PCA") {
+    val algorithm = new H2OPCA()
+      .setSeed(1)
+      .setInputCols("DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setK(3)
+    val mojo = algorithm.fit(dataset)
+
+    val ignoredMethods = Set("getPcaImpl") // PUBDEV-8217: Value of pca_impl isn't propagated to MOJO models
+
+    compareParameterValues(algorithm, mojo, ignoredMethods)
   }
 
   protected def compareParameterValues[A <: Estimator[H2OMOJOModel]: ClassTag, M <: H2OMOJOModel: ClassTag](
