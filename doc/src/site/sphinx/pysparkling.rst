@@ -81,7 +81,6 @@ dependencies.
   $ pip install requests
   $ pip install tabulate
   $ pip install future
-  $ pip install colorama>=0.3.8
 
 These dependencies are installed automatically in case PySparkling is installed from PyPI.
 

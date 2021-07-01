@@ -65,7 +65,6 @@ function checkPythonPackages() {
     fi
     packages=$($PYTHON_BINARY -m pip list --format=freeze)
     error=0
-    checkPythonPackage "$packages" "colorama" "0.3.8"
     checkPythonPackage "$packages" "requests"
     checkPythonPackage "$packages" "tabulate"
     checkPythonPackage "$packages" "future" "0.4.0"

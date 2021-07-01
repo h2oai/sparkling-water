@@ -30,7 +30,6 @@ Perform the following steps to start Sparkling Water ``H2OContext`` on Cloud Dat
 	pip install requests==2.18.4
 	pip install tabulate
 	pip install future
-	pip install colorama
 	pip install scikit-learn==0.19.1
 	pip install https://h2o-release.s3.amazonaws.com/h2o/rel-SUBST_H2O_RELEASE_NAME/SUBST_H2O_BUILD_NUMBER/Python/h2o-SUBST_H2O_VERSION-py2.py3-none-any.whl
 	pip install --upgrade google-cloud-bigquery
