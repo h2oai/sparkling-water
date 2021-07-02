@@ -160,6 +160,16 @@ abstract class H2OMOJOModel
     set(this.featureTypes -> extractFeatureTypes(modelJson))
   }
 
+  private[sparkling] def createEasyPredictModelWrapperConfiguration(): EasyPredictModelWrapper.Config = {
+    val config = new EasyPredictModelWrapper.Config()
+    config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
+    config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
+
+    // always let H2O produce full output, filter later if required
+    config.setUseExtendedOutput(true)
+    config
+  }
+
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
 }
 
@@ -366,62 +376,10 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
 
 object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOModel] {
 
-  private def canGenerateContributions(model: GenModel): Boolean = {
-    model match {
-      case m: PredictContributionsFactory =>
-        val modelCategory = model.getModelCategory
-        if (modelCategory != ModelCategory.Regression && modelCategory != ModelCategory.Binomial) {
-          logWarning(s"""
-              | Computing contributions on MOJO of type '${m.getModelCategory}' is only supported for regression
-              | and binomial model categories!
-              |""".stripMargin)
-          false
-        } else {
-          true
-        }
-      case unsupported =>
-        logWarning(s"Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!")
-        false
-    }
-  }
-
-  private def canGenerateLeafNodeAssignments(model: GenModel): Boolean = {
-    model match {
-      case _: TreeBackedMojoModel => true
-      case _ =>
-        logWarning("Computing leaf node assignments is only available on tree based models!")
-        false
-    }
-  }
-
-  private def canGenerateStageResults(model: GenModel): Boolean = {
-    model match {
-      case _: SharedTreeMojoModel => true
-      case _ =>
-        logWarning("Computing stage results is only available on tree based models except XGBoost!")
-        false
-    }
-  }
-
   override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
-    val config = new EasyPredictModelWrapper.Config()
+    val config = model.createEasyPredictModelWrapperConfiguration()
     config.setModel(Utils.getMojoModel(mojo))
-    config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
-    config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
-    if (model.isInstanceOf[H2OAlgorithmMOJOModel]) {
-      val algorithmModel = model.asInstanceOf[H2OAlgorithmMOJOModel]
-      if (algorithmModel.getWithContributions() && canGenerateContributions(config.getModel)) {
-        config.setEnableContributions(true)
-      }
-      if (algorithmModel.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(config.getModel)) {
-        config.setEnableLeafAssignment(true)
-      }
-      if (algorithmModel.getWithStageResults() && canGenerateStageResults(config.getModel)) {
-        config.setEnableStagedProbabilities(true)
-      }
-    }
-    // always let H2O produce full output, filter later if required
-    config.setUseExtendedOutput(true)
+
     new EasyPredictModelWrapper(config)
   }
 }
