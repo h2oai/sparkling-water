@@ -158,7 +158,7 @@ class Initializer(object):
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         # Extract jar file from zip
-        if '.zip' in sw_pkg_file:
+        if '.zip' in sw_pkg_file and zipfile.is_zipfile(sw_pkg_file):
             return Initializer.__extracted_jar_path(sc)
         else:
             from pkg_resources import resource_filename
@@ -204,7 +204,7 @@ class Initializer(object):
     @staticmethod
     def getVersion():
         here = path.abspath(path.dirname(__file__))
-        if '.zip' in here:
+        if '.zip' in here and zipfile.is_zipfile(here):
             with zipfile.ZipFile(here[:-len("ai/h2o/sparkling/")], 'r') as archive:
                 version = archive.read('ai/h2o/sparkling/version.txt').decode('utf-8').strip()
         else:
