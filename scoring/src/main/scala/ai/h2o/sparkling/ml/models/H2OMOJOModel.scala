@@ -160,8 +160,8 @@ abstract class H2OMOJOModel
     set(this.featureTypes -> extractFeatureTypes(modelJson))
   }
 
-  private[sparkling] def createEasyPredictModelWrapperConfiguration(): EasyPredictModelWrapper.Config = {
-    val config = new EasyPredictModelWrapper.Config()
+  private[sparkling] def setEasyPredictModelWrapperConfiguration(
+      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
     config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
 
@@ -377,8 +377,9 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
 object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOModel] {
 
   override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
-    val config = model.createEasyPredictModelWrapperConfiguration()
+    val config = new EasyPredictModelWrapper.Config()
     config.setModel(Utils.getMojoModel(mojo))
+    model.setEasyPredictModelWrapperConfiguration(config)
 
     new EasyPredictModelWrapper(config)
   }

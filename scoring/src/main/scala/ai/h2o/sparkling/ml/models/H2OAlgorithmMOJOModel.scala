@@ -65,8 +65,9 @@ class H2OAlgorithmMOJOModel(override val uid: String)
     set(this.withStageResults -> settings.withStageResults)
   }
 
-  private[sparkling] override def createEasyPredictModelWrapperConfiguration(): EasyPredictModelWrapper.Config = {
-    val config = super.createEasyPredictModelWrapperConfiguration()
+  private[sparkling] override def setEasyPredictModelWrapperConfiguration(
+      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
+    super.setEasyPredictModelWrapperConfiguration(config)
     if (this.getWithContributions() && canGenerateContributions(config.getModel)) {
       config.setEnableContributions(true)
     }

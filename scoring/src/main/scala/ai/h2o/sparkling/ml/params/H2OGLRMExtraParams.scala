@@ -32,9 +32,7 @@ trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
     name = "withReconstructedCol",
     doc = "A flag identifying whether a column with input values to the neural network will be produced or not.")
 
-  setDefault(
-    reconstructedCol -> (uid + "__reconstructed"),
-    withReconstructedCol -> false)
+  setDefault(reconstructedCol -> (uid + "__reconstructed"), withReconstructedCol -> false)
 
   //
   // Getters
