@@ -36,14 +36,12 @@ resource "aws_s3_bucket_object" "install_pysparkling" {
 #!/bin/bash
 set -x -e
 
-sudo python3 -m pip install --upgrade colorama==0.3.9
 sudo python3 -m pip install -U requests
 sudo python3 -m pip install -U tabulate
 sudo python3 -m pip install -U future
 sudo python3 -m pip install -U six
 sudo python3 -m pip install -U scikit-learn
 
-sudo python2.7 -m pip install --upgrade colorama==0.3.9
 sudo python2.7 -m pip install -U requests
 sudo python2.7 -m pip install -U tabulate
 sudo python2.7 -m pip install -U future

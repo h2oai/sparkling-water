@@ -9,7 +9,6 @@ set -x -e
 
 ## Python installations and libraries needed on the worker roles in order to get Sparkling Water & PySparkling working
 sudo python -m pip install --upgrade pip==9.0.3
-sudo python -m pip install --upgrade colorama==0.3.9
 
 sudo ln -sf /usr/local/bin/pip2.7 /usr/bin/pip
 
