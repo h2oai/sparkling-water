@@ -24,8 +24,9 @@ trait H2OGLRMMOJOBase extends H2ODimReductionMOJOModel with H2OGLRMExtraParams {
 
   protected override def reconstructedEnabled: Boolean = getWithReconstructedCol()
 
-  private[sparkling] override def createEasyPredictModelWrapperConfiguration(): EasyPredictModelWrapper.Config = {
-    val config = super.createEasyPredictModelWrapperConfiguration()
+  private[sparkling] override def setEasyPredictModelWrapperConfiguration(
+      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
+    super.setEasyPredictModelWrapperConfiguration(config)
     config.setEnableGLRMReconstrut(getWithReconstructedCol())
     config
   }

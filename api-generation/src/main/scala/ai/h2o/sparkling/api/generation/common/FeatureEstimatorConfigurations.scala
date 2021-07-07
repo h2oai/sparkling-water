@@ -34,8 +34,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
     val glrmFields = Seq(
       ExplicitField("user_x", "HasUserX", null),
       ExplicitField("user_y", "HasUserY", null),
-      ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames"))
-    )
+      ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames")))
 
     type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
     type PCAParamsV3 = PCAV3.PCAParametersV3
