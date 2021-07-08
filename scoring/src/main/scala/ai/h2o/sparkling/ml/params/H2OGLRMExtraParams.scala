@@ -25,12 +25,12 @@ trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
   private val reconstructedCol: Param[String] = new Param[String](
     parent = this,
     name = "reconstructedCol",
-    doc = "Original column name. This column contains input values to the neural network of auto encoder.")
+    doc = "Reconstructed column name. This column contains reconstructed input values (A_hat=X*Y instead of just X).")
 
   private val withReconstructedCol: Param[Boolean] = new BooleanParam(
     parent = this,
     name = "withReconstructedCol",
-    doc = "A flag identifying whether a column with input values to the neural network will be produced or not.")
+    doc = "A flag identifying whether a column with reconstructed input values will be produced or not.")
 
   setDefault(reconstructedCol -> (uid + "__reconstructed"), withReconstructedCol -> false)
 
