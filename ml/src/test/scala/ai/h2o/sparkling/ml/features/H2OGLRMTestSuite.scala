@@ -48,6 +48,8 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
       .setSeed(1)
       .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setOutputCol("Output")
+      .setWithReconstructedCol(true)
+      .setReconstructedCol("Reconstructed")
       .setSplitRatio(0.5)
       .setK(3)
 
@@ -60,14 +62,23 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
 
     test("The standalone GLRM model produces different results for various input rows.") {
       val scored = standaloneModel.transform(testingDataset)
+      scored.show(false)
       val rows = scored.take(2)
 
-      val first = rows(0).getAs[DenseVector]("Output").values.toSeq
-      val second = rows(1).getAs[DenseVector]("Output").values.toSeq
+      val firstOutput = rows(0).getAs[DenseVector]("Output").values.toSeq
+      val secondOutput = rows(1).getAs[DenseVector]("Output").values.toSeq
 
-      first.length should be(3)
-      second.length should be(3)
-      first should not equal second
+      val firstReconstructed = rows(0).getAs[DenseVector]("Reconstructed").values.toSeq
+      val secondReconstructed = rows(1).getAs[DenseVector]("Reconstructed").values.toSeq
+
+      firstOutput.length should be(3)
+      secondOutput.length should be(3)
+
+      firstReconstructed.length should be(6)
+      secondReconstructed.length should be(6)
+
+      firstOutput should not equal secondOutput
+      firstReconstructed should not equal secondReconstructed
     }
 
     test("The standalone GLRM model can provide scoring history") {
