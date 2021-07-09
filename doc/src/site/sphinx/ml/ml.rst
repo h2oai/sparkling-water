@@ -25,6 +25,7 @@ Machine Learning
    sw_target_encoder
    sw_w2v
    sw_pca
+   sw_glrm
 
 **Uncategorized**
 

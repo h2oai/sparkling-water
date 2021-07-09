@@ -16,10 +16,10 @@
 #
 
 import os
-import pytest
-import pyspark
 from pyspark.sql.types import *
+from pyspark.sql.functions import bround, udf
 from pysparkling.ml import H2OGLRMMOJOModel, H2OAutoEncoder, H2OGLRM, H2OGBM
+from h2o.frame import H2OFrame
 from tests import unit_test_utils
 from pyspark.ml import Pipeline, PipelineModel
 
@@ -48,3 +48,107 @@ def testUsageOfGLRMInAPipeline(prostateDataset):
 
     model = pipeline.fit(prostateDataset)
     assert model.transform(prostateDataset).groupBy("prediction").count().count() > 1
+
+
+def roundPredictions(dataframe, precision):
+    to_array = udf(lambda v: v.toArray().tolist(), ArrayType(FloatType()))
+    return dataframe.select(
+        dataframe.Murder,
+        dataframe.Assault,
+        dataframe.UrbanPop,
+        dataframe.Rape,
+        bround(to_array(dataframe.output)[0], precision).alias("output0"),
+        bround(to_array(dataframe.output)[1], precision).alias("output1"),
+        bround(to_array(dataframe.output)[2], precision).alias("output2"),
+        bround(to_array(dataframe.output)[3], precision).alias("output3"))
+
+
+def getPreconfiguredAlgorithm():
+    return H2OGLRM(k=4,
+                   transform="Standardize",
+                   loss="Quadratic",
+                   gammaX=0.5,
+                   gammaY=0.3,
+                   seed=42,
+                   outputCol="output",
+                   recoverSvd=True)
+
+
+def testPipelineSerialization(arrestsDataset):
+    [traningDataset, testingDataset] = arrestsDataset.randomSplit([0.9, 0.1], 42)
+    algo = getPreconfiguredAlgorithm()
+
+    pipeline = Pipeline(stages=[algo])
+    pipeline.write().overwrite().save("file://" + os.path.abspath("build/glrm_pipeline"))
+    loadedPipeline = Pipeline.load("file://" + os.path.abspath("build/glrm_pipeline"))
+    model = loadedPipeline.fit(traningDataset)
+    expected = roundPredictions(model.transform(testingDataset), 7)
+
+    model.write().overwrite().save("file://" + os.path.abspath("build/glrm_pipeline_model"))
+    loadedModel = PipelineModel.load("file://" + os.path.abspath("build/glrm_pipeline_model"))
+    result = roundPredictions(loadedModel.transform(testingDataset), 7)
+
+    unit_test_utils.assert_data_frames_are_identical(expected, result)
+
+
+def testUserXHasEffectOnTrainedModel(spark, arrestsDataset):
+    referenceAlgo = getPreconfiguredAlgorithm()
+    referenceModel = referenceAlgo.fit(arrestsDataset)
+    reference = roundPredictions(referenceModel.transform(arrestsDataset), 7)
+
+    column = [5.412, 65.24, -7.54, -0.032, 2.212, 92.24, -17.54, 23.268, 0.312, 123.24, 14.46, 9.768, 1.012, 19.24,
+              -15.54, -1.732, 5.412, 65.24, -7.54, -0.032, 2.212, 92.24, -17.54, 23.268, 0.312, 123.24, 14.46,
+              9.76, 1.012, 19.24, -15.54, -1.732, 5.412, 65.24, -7.54, -0.032, 2.212, 92.24, -17.54, 23.268, 0.312,
+              123.24, 14.46, 9.768, 1.012, 19.24, -15.54, -1.732, 5.412, 65.24]
+    userXData = map(lambda value: (value, value, value, value), column)
+    userXDataFrame = spark.createDataFrame(userXData, ['a', 'b', 'c', 'd'])
+    algo = getPreconfiguredAlgorithm()
+    algo.setUserX(userXDataFrame)
+    algo.setInit("User")
+    model = algo.fit(arrestsDataset)
+    result = roundPredictions(model.transform(arrestsDataset), 7)
+
+    unit_test_utils.assert_data_frames_have_different_values(reference, result)
+
+
+def testUserYHasEffectOnTrainedModel(spark, arrestsDataset):
+    referenceAlgo = getPreconfiguredAlgorithm()
+    referenceModel = referenceAlgo.fit(arrestsDataset)
+    reference = roundPredictions(referenceModel.transform(arrestsDataset), 7)
+
+    userYData = [(5.412,  65.24,  -7.54, -0.032),
+                 (2.212,  92.24, -17.54, 23.268),
+                 (0.312, 123.24,  14.46,  9.768),
+                 (1.012,  19.24, -15.54, -1.732)]
+    userYDataFrame = spark.createDataFrame(userYData, ['a', 'b', 'c', 'd'])
+    algo = getPreconfiguredAlgorithm()
+    algo.setUserY(userYDataFrame)
+    algo.setInit("User")
+    model = algo.fit(arrestsDataset)
+    result = roundPredictions(model.transform(arrestsDataset), 7)
+
+    unit_test_utils.assert_data_frames_have_different_values(reference, result)
+
+
+def testLossByColHasEffectOnTrainedModel(arrestsDataset):
+    referenceAlgo = getPreconfiguredAlgorithm()
+    referenceModel = referenceAlgo.fit(arrestsDataset)
+    reference = roundPredictions(referenceModel.transform(arrestsDataset), 7)
+
+    algo = getPreconfiguredAlgorithm()
+    algo.setLossByCol(["absolute", "huber"])
+    algo.setLossByColNames(["Murder", "Rape"])
+    model = algo.fit(arrestsDataset)
+    result = roundPredictions(model.transform(arrestsDataset), 7)
+
+    unit_test_utils.assert_data_frames_have_different_values(reference, result)
+
+
+def testRepresentationFrameIsAccessible(hc, arrestsDataset):
+    representationName="myFrame"
+    algo = getPreconfiguredAlgorithm().setRepresentationName(representationName)
+    algo.fit(arrestsDataset)
+    frame = H2OFrame.get_frame(representationName, full_cols=-1, light=True)
+    df = hc.asSparkFrame(frame)
+    assert (df.count() == arrestsDataset.count())
+    assert (len(df.columns) == algo.getK())
