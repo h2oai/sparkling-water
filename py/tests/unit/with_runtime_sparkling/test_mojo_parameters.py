@@ -110,7 +110,6 @@ def testGLRMParameters(prostateDataset):
     compareParameterValues(algorithm, model)
 
 
-
 def compareParameterValues(algorithm, model, ignored=[]):
     algorithmMethods = dir(algorithm)
 
