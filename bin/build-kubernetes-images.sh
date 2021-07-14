@@ -36,7 +36,11 @@ if [ "$1" = "external-backend" ]; then
   exit 0
 fi
 
-(cd "$SPARK_HOME" && ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile build)
+(cd "$SPARK_HOME" && \
+ TMP_SPARK_R_DOCKERFILE=$(mktemp) && \
+ sed  "s/apt-key adv --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'/apt-key adv --keyserver keyserver.ubuntu.com --recv-key FCAE2A0E115C3D8A/g" ./kubernetes/dockerfiles/spark/bindings/R/Dockerfile >> "$TMP_SPARK_R_DOCKERFILE" && \
+ ./bin/docker-image-tool.sh -t "$INSTALLED_SPARK_FULL_VERSION" -p ./kubernetes/dockerfiles/spark/bindings/python/Dockerfile -R "$TMP_SPARK_R_DOCKERFILE" build && \
+ rm "$TMP_SPARK_R_DOCKERFILE")
 
 if [ "$1" = "scala" ]; then
   cp "$K8DIR/Dockerfile-Scala" "$WORKDIR"
