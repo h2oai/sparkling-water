@@ -72,9 +72,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 """
 
   runCommand """\\
-                for pythonVersion in ${supportedPythonVersions}; \\
+                for pythonVersion in ${h2oPythonEnvironments}; \\
                 do \\
-                  . /envs/h2o_env_python\$pythonVersion/bin/activate && pip install -U setuptools; \\
+                  . /envs/h2o_env_python\$pythonVersion/bin/activate && pip install colorama && pip install -U setuptools; \\
                 done
                 """
 
