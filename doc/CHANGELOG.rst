@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+v3.32.1.4-1 (2021-07-15)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.4-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.4-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.4-1-3.1/index.html>`__
+
+-  Bug
+
+   -  `SW-2577 <https://0xdata.atlassian.net/browse/SW-2577>`__ - Fix Building of RSparkling Docker Images
+
+-  Engineering Story
+
+   -  `SW-2576 <https://0xdata.atlassian.net/browse/SW-2576>`__ - Upgrade to H2O 3.32.1.4
+   -  `SW-2575 <https://0xdata.atlassian.net/browse/SW-2575>`__ - Upgrade Spark in Testing Docker Image to 3.0.3
+   -  `SW-2571 <https://0xdata.atlassian.net/browse/SW-2571>`__ - Get AutoML Python Tests Alligned with PUBDEV-8175
+   -  `SW-2568 <https://0xdata.atlassian.net/browse/SW-2568>`__ - Upgrade Spark in Testing Docker Image to 3.1.2 and 2.4.8
+
+-  Docs
+
+   -  `SW-2569 <https://0xdata.atlassian.net/browse/SW-2569>`__ - Add example of spark.ext.h2o.flow.extra.http.headers 
+   -  `SW-2567 <https://0xdata.atlassian.net/browse/SW-2567>`__ - Fix CoxPH example for Scala and Python
+
 v3.32.1.3-1 (2021-05-27)
 ------------------------
 Downloads:
