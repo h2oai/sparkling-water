@@ -25,7 +25,22 @@ import water.api.schemas3.{JobV3, JobsV3}
 
 private[sparkling] class H2OJob private (val id: String) extends Logging {
   private val conf = H2OContext.ensure("H2OContext needs to be running!").getConf
-
+  
+  def cancel(): Unit = {
+    val job = H2OJob.cancelJob(conf, id)
+    val status = H2OJobStatus.fromString(job.status)
+    status match {
+      case H2OJobStatus.DONE =>
+        logInfo(s"H2O Job $id finished successfully.")
+      case H2OJobStatus.FAILED => throw new Exception(s"""H2O Job $id has failed!
+                                                         |Exception: ${job.exception}
+                                                         |StackTrace: ${job.stacktrace}""".stripMargin)
+      case H2OJobStatus.CANCELLED => logInfo(s"H2O Job $id has been cancelled successfully!")
+      case H2OJobStatus.RUNNING => logInfo(s"H2O Job $id still running")
+      case _ => throw new RuntimeException(s"Job state '$status' is not handled at this moment.")
+    }
+  }
+  
   def waitForFinish(): Unit = {
     while (true) {
       val job = H2OJob.verifyAndGetJob(conf, id)
@@ -57,6 +72,15 @@ private[sparkling] object H2OJob extends RestCommunication {
   private def verifyAndGetJob(conf: H2OConf, jobId: String): JobV3 = {
     val endpoint = getClusterEndpoint(conf)
     val jobs = query[JobsV3](endpoint, s"/3/Jobs/$jobId", conf)
+    if (jobs.jobs.length == 0) {
+      throw new IllegalArgumentException(s"Job $jobId does not exist!")
+    }
+    jobs.jobs(0)
+  }
+
+  private def cancelJob(conf: H2OConf, jobId: String): JobV3 = {
+    val endpoint = getClusterEndpoint(conf)
+    val jobs = update[JobsV3](endpoint, s"/3/Jobs/$jobId/cancel", conf)
     if (jobs.jobs.length == 0) {
       throw new IllegalArgumentException(s"Job $jobId does not exist!")
     }
