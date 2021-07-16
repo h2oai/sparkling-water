@@ -28,6 +28,7 @@ import ai.h2o.sparkling.backend.converters.{CategoricalDomainBuilder, TimeZoneCo
 import ai.h2o.sparkling.extensions.serde.{ChunkAutoBufferWriter, ExpectedTypes, SerdeUtils}
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
 import ai.h2o.sparkling.utils.SparkSessionUtils
+import org.apache.spark.expose.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -84,23 +85,38 @@ private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numR
   def close(): Unit = chunkWriter.close()
 }
 
-private[backend] object Writer {
+private[backend] object Writer extends Logging {
 
   type SparkJob = (TaskContext, Iterator[Row]) => (Int, Long)
   type UploadPlan = Map[Int, NodeDesc]
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
+    logInfo(s"Converting RDD '${rdd.name}' to H2OFrame '${metadata.frameId}' ...")
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
     val partitionSizes = getNonEmptyPartitionSizes(rdd)
     val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
+    logInfo(s"Non-empty partitions for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}': $nonEmptyPartitions")
 
     val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
-    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
-    val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, nonEmptyPartitions)
-    val res = new Array[Long](nonEmptyPartitions.size)
+    logInfo(s"Upload plan for H2OFrame '${metadata.frameId}' and RDD '${rdd.name}' : $uploadPlan")
+
+    val (partitions, rddToExecute) = if (metadata.conf.isLocalityOptimizationEnabled) {
+      val optimizationPair = LocalityOptimizer.reshufflePartitions(nonEmptyPartitions, uploadPlan, rdd)
+      logInfo(
+        s"Reshuffled partitions for H2OFrame '${metadata.frameId}' " +
+          s"and RDD ${rdd.name}: ${optimizationPair._1}")
+      optimizationPair
+    } else {
+      (nonEmptyPartitions, rdd)
+    }
+
+    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, partitions, partitionSizes)
+    val rows = SparkSessionUtils.active.sparkContext.runJob(rddToExecute, operation, partitions)
+    val res = new Array[Long](partitions.size)
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
     H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)
+    logInfo(s"Conversion of RDD ${rdd.name} to H2OFrame ${metadata.frameId} has successfully finished.")
     H2OFrame(metadata.frameId)
   }
 
@@ -110,6 +126,7 @@ private[backend] object Writer {
       partitions: Seq[Int],
       partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = partitions.indexOf(context.partitionId())
+    logInfo(s"Converting partition ${context.partitionId()} ...")
     val numRows = partitionSizes(context.partitionId())
     val domainBuilder = new CategoricalDomainBuilder(metadata.expectedTypes)
     val h2oNode = uploadPlan(chunkIdx)
