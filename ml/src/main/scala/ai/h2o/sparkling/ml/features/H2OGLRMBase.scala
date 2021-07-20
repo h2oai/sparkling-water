@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.params
+package ai.h2o.sparkling.ml.features
 
-import ai.h2o.sparkling.H2OFrame
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.ml.models.H2OGLRMMOJOModel
+import ai.h2o.sparkling.ml.params.{H2OGLRMExtraParams, HasInputCols}
+import hex.Model
+import org.apache.spark.sql.Dataset
 
-trait HasUserX extends H2OAlgoParamsBase {
-  private val userX = new NullableDataFrameParam(this, "userX", "User-specified initial matrix X.")
+import scala.reflect.ClassTag
 
-  setDefault(userX -> null)
+abstract class H2OGLRMBase[P <: Model.Parameters: ClassTag]
+  extends H2ODimReductionEstimator[P]
+  with H2OGLRMExtraParams
+  with HasInputCols {
 
-  def getUserX(): DataFrame = $(userX)
-
-  def setUserX(value: DataFrame): this.type = set(userX, value)
-
-  private[sparkling] def getUserXParam(trainingFrame: H2OFrame): Map[String, Any] = {
-    Map("user_x" -> convertDataFrameToH2OFrameKey(getUserX()))
-  }
-
-  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("userX" -> "user_x")
+  override def fit(dataset: Dataset[_]): H2OGLRMMOJOModel = {
+    val model = super.fit(dataset).asInstanceOf[H2OGLRMMOJOModel]
+    copyExtraParams(model)
+    model
   }
 }

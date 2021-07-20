@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.features.H2OTargetEncoder import H2OTargetEncoder
-from ai.h2o.sparkling.ml.features.H2OAutoEncoder import H2OAutoEncoder
-from ai.h2o.sparkling.ml.features.ColumnPruner import ColumnPruner
-from ai.h2o.sparkling.ml.features.H2OWord2Vec import H2OWord2Vec
-from ai.h2o.sparkling.ml.features.H2OPCA import H2OPCA
-from ai.h2o.sparkling.ml.features.H2OGLRM import H2OGLRM
+from ai.h2o.sparkling.ml.models.H2ODimReductionMOJOModel import H2ODimReductionMOJOModel
+from ai.h2o.sparkling.ml.params.H2OGLRMExtraParamsOnMOJO import H2OGLRMExtraParamsOnMOJO
+
+
+class H2OGLRMMOJOBase(H2ODimReductionMOJOModel, H2OGLRMExtraParamsOnMOJO):
+    pass

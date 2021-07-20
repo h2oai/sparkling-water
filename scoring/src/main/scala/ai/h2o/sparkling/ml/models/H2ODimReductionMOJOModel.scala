@@ -29,12 +29,20 @@ trait H2ODimReductionMOJOModel extends H2OFeatureMOJOModel with H2ODimReductionE
 
   override protected def inputColumnNames: Array[String] = getInputCols()
 
+  protected def reconstructedEnabled: Boolean = false
+
   protected override def mojoUDF: UserDefinedFunction = {
     val schema = StructType(outputSchema)
     val function = (r: Row) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val pred = model.predictDimReduction(RowConverter.toH2ORowData(r))
-      val rowData = Array[Any](new DenseVector(pred.dimensions).compressed)
+      val output = new DenseVector(pred.dimensions).compressed
+      val rowData = if (reconstructedEnabled) {
+        val reconstructed = new DenseVector(pred.reconstructed).compressed
+        Array[Any](output, reconstructed)
+      } else {
+        Array[Any](output)
+      }
       new GenericRowWithSchema(rowData, schema)
     }
     udf(function, schema)

@@ -15,25 +15,20 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.params
+package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.H2OFrame
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.ml.params.H2OGLRMExtraParams
+import hex.genmodel.easy.EasyPredictModelWrapper
 
-trait HasUserX extends H2OAlgoParamsBase {
-  private val userX = new NullableDataFrameParam(this, "userX", "User-specified initial matrix X.")
+trait H2OGLRMMOJOBase extends H2ODimReductionMOJOModel with H2OGLRMExtraParams {
 
-  setDefault(userX -> null)
+  protected override def reconstructedEnabled: Boolean = getWithReconstructedCol()
 
-  def getUserX(): DataFrame = $(userX)
-
-  def setUserX(value: DataFrame): this.type = set(userX, value)
-
-  private[sparkling] def getUserXParam(trainingFrame: H2OFrame): Map[String, Any] = {
-    Map("user_x" -> convertDataFrameToH2OFrameKey(getUserX()))
-  }
-
-  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("userX" -> "user_x")
+  private[sparkling] override def setEasyPredictModelWrapperConfiguration(
+      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
+    super.setEasyPredictModelWrapperConfiguration(config)
+    config.setGLRMIterNumber(getMaxScoringIterations())
+    config.setEnableGLRMReconstrut(getWithReconstructedCol())
+    config
   }
 }
