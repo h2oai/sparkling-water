@@ -30,7 +30,7 @@ trait H2OMOJOPredictionAnomaly {
   def getAnomalyPredictionUDF(): UserDefinedFunction = {
     val schema = getAnomalyPredictionSchema()
     val function = (r: Row) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val pred = model.predictAnomalyDetection(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.score
@@ -54,7 +54,7 @@ trait H2OMOJOPredictionAnomaly {
   }
 
   def getAnomalyPredictionSchema(): StructType = {
-    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val model = loadEasyPredictModelWrapper()
     val scoreField = StructField("score", predictionColType, nullable = false)
     val normalizedScoreField = StructField("normalizedScore", predictionColType, nullable = false)
     val baseFields = scoreField :: normalizedScoreField :: Nil

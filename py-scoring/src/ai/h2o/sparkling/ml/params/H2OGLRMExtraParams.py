@@ -33,14 +33,26 @@ class H2OGLRMExtraParams(H2ODimReductionExtraParams):
         "A flag identifying whether a column with reconstructed input values will be produced or not.",
         H2OTypeConverters.toBoolean())
 
+    maxScoringIterations = Param(
+        Params._dummy(),
+        "maxScoringIterations",
+        "The maximum number of iterations used in MOJO scoring to update X.",
+        H2OTypeConverters.toInt())
+
     def getReconstructedCol(self):
         return self.getOrDefault(self.reconstructedCol)
 
     def getWithReconstructedCol(self):
         return self.getOrDefault(self.withReconstructedCol)
 
+    def getMaxScoringIterations(self):
+        return self.getOrDefault(self.maxScoringIterations)
+
     def setReconstructedCol(self, value):
         return self._set(reconstructedCol=value)
 
     def setWithReconstructedCol(self, value):
         return self._set(withReconstructedCol=value)
+
+    def setMaxScoringIterations(self, value):
+        return self._set(maxScoringIterations=value)

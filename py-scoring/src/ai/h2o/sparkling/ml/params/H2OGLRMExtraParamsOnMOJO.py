@@ -26,10 +26,17 @@ class H2OGLRMExtraParamsOnMOJO(H2ODimReductionExtraParamsOnMOJO):
     def getWithReconstructedlCol(self):
         return self._java_obj.getWithReconstructedCol()
 
+    def getMaxScoringIterations(self):
+        return self._java_obj.getMaxScoringIterations()
+
     def setReconstructedCol(self, value):
         self._java_obj.setReconstructedCol(value)
         return self
 
     def setWithReconstructedCol(self, value):
         self._java_obj.setWithReconstructedCol(value)
+        return self
+
+    def setMaxScoringIterations(self, value):
+        self._java_obj.setMaxScoringIterations(value)
         return self

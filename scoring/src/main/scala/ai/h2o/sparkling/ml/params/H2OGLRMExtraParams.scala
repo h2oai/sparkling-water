@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.params
 
-import org.apache.spark.ml.param.{BooleanParam, Param}
+import org.apache.spark.ml.param.{BooleanParam, IntParam, Param}
 import org.apache.spark.sql.types.{StructField, StructType}
 
 trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
@@ -32,7 +32,12 @@ trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
     name = "withReconstructedCol",
     doc = "A flag identifying whether a column with reconstructed input values will be produced or not.")
 
-  setDefault(reconstructedCol -> (uid + "__reconstructed"), withReconstructedCol -> false)
+  private val maxScoringIterations: Param[Int] = new IntParam(
+    parent = this,
+    name = "maxScoringIterations",
+    doc = "The maximum number of iterations  used in MOJO scoring to update X")
+
+  setDefault(reconstructedCol -> (uid + "__reconstructed"), withReconstructedCol -> false, maxScoringIterations -> 100)
 
   //
   // Getters
@@ -41,12 +46,16 @@ trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
 
   def getWithReconstructedCol(): Boolean = $(withReconstructedCol)
 
+  def getMaxScoringIterations(): Int = $(maxScoringIterations)
+
   //
   // Setters
   //
   def setReconstructedCol(name: String): this.type = set(reconstructedCol -> name)
 
   def setWithReconstructedCol(flag: Boolean): this.type = set(withReconstructedCol -> flag)
+
+  def setMaxScoringIterations(value: Int): this.type = set(maxScoringIterations -> value)
 
   protected override def outputSchema: Seq[StructField] = {
     val outputType = org.apache.spark.ml.linalg.SQLDataTypes.VectorType
@@ -77,5 +86,6 @@ trait H2OGLRMExtraParams extends H2ODimReductionExtraParams {
     val toGLRM = to.asInstanceOf[H2OGLRMExtraParams]
     toGLRM.setReconstructedCol(getReconstructedCol())
     toGLRM.setWithReconstructedCol(getWithReconstructedCol())
+    toGLRM.setMaxScoringIterations(getMaxScoringIterations())
   }
 }

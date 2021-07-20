@@ -59,7 +59,8 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "inputCols" -> Array.empty[String],
       "outputCol" -> "GLRM__output",
       "reconstructedCol" -> "GLRM__reconstructed",
-      "withReconstructedCol" -> false)
+      "withReconstructedCol" -> false,
+      "maxScoringIterations" -> 100)
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](

@@ -107,9 +107,9 @@ abstract class H2OMOJOModel
   def getModelDetails(): String = $(modelDetails)
 
   def getDomainValues(): Map[String, Array[String]] = {
-    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    val columns = mojoBackend.m.getNames
-    columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
+    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val columns = mojo.getNames
+    columns.map(col => col -> mojo.getDomainValues(col)).toMap
   }
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
@@ -164,10 +164,17 @@ abstract class H2OMOJOModel
       config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
     config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
     config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
-
     // always let H2O produce full output, filter later if required
     config.setUseExtendedOutput(true)
     config
+  }
+
+  private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
+    val config = new EasyPredictModelWrapper.Config()
+    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    config.setModel(mojo)
+    setEasyPredictModelWrapperConfiguration(config)
+    new EasyPredictModelWrapper(config)
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
@@ -374,13 +381,6 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
   }
 }
 
-object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOModel] {
-
-  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
-    val config = new EasyPredictModelWrapper.Config()
-    config.setModel(Utils.getMojoModel(mojo))
-    model.setEasyPredictModelWrapperConfiguration(config)
-
-    new EasyPredictModelWrapper(config)
-  }
+object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel, H2OMOJOModel] {
+  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): MojoModel = Utils.getMojoModel(mojo)
 }
