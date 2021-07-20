@@ -144,6 +144,18 @@ def testLossByColHasEffectOnTrainedModel(arrestsDataset):
     unit_test_utils.assert_data_frames_have_different_values(reference, result)
 
 
+def testIterationNumberHasEffectOnScoring(arrestsDataset):
+    referenceAlgo = getPreconfiguredAlgorithm()
+    model = referenceAlgo.fit(arrestsDataset)
+    reference1 = roundPredictions(model.transform(arrestsDataset), 7)
+    reference2 = roundPredictions(model.transform(arrestsDataset), 7)
+    unit_test_utils.assert_data_frames_are_identical(reference1, reference2)
+
+    model.setMaxScoringIterations(5)
+    result = roundPredictions(model.transform(arrestsDataset), 7)
+    unit_test_utils.assert_data_frames_have_different_values(reference1, result)
+
+
 def testRepresentationFrameIsAccessible(hc, arrestsDataset):
     representationName="myFrame"
     algo = getPreconfiguredAlgorithm().setRepresentationName(representationName)

@@ -27,6 +27,7 @@ trait H2OGLRMMOJOBase extends H2ODimReductionMOJOModel with H2OGLRMExtraParams {
   private[sparkling] override def setEasyPredictModelWrapperConfiguration(
       config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
     super.setEasyPredictModelWrapperConfiguration(config)
+    config.setGLRMIterNumber(getMaxScoringIterations())
     config.setEnableGLRMReconstrut(getWithReconstructedCol())
     config
   }
