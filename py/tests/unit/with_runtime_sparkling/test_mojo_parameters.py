@@ -22,8 +22,7 @@ def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2OGBM(seed=1, labelCol="CAPSULE", featuresCols=features, monotoneConstraints={'AGE': 1, 'RACE': -1})
     model = algorithm.fit(prostateDataset)
-    ignored=["getMonotoneConstraints"]  # Will be fixed by SW-2572
-    compareParameterValues(algorithm, model, ignored)
+    compareParameterValues(algorithm, model)
 
 
 def testDRFParameters(prostateDataset):
@@ -39,8 +38,7 @@ def testXGBoostParameters(prostateDataset):
                            monotoneConstraints={'AGE': 1, 'RACE': -1},
                            interactionConstraints=[['AGE', 'RACE', 'DPROS'], ['DCAPS', 'PSA']])
     model = algorithm.fit(prostateDataset)
-    ignored=["getMonotoneConstraints"]  # Will be fixed by SW-2572
-    compareParameterValues(algorithm, model, ignored)
+    compareParameterValues(algorithm, model)
 
 
 def testGLMParameters(prostateDataset):
