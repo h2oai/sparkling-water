@@ -502,6 +502,15 @@ class H2OTypeConverters(object):
             raise TypeError("Invalid type.")
 
     @staticmethod
+    def scala2DArrayToPython2DArray(array):
+        if array is None:
+            return None
+        elif isinstance(array, JavaObject):
+            return [H2OTypeConverters.scalaArrayToPythonArray(v) for v in array]
+        else:
+            raise TypeError("Invalid type.")
+
+    @staticmethod
     def scalaToPythonDataFrame(jdf):
         if jdf is None:
             return None
