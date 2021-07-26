@@ -50,7 +50,7 @@ object SparkDataFrameConverter extends Logging {
     val elemMaxSizes = collectMaxElementSizes(rdd, schema)
     val vecIndices = collectVectorLikeTypes(schema).toArray
     val flattenSchema = expandedSchema(schema, elemMaxSizes)
-    val colNames = flattenSchema.map(_.name).toArray
+    val colNames = flattenSchema.map(field => "\"" + field.name + "\"").toArray
     val maxVecSizes = vecIndices.map(elemMaxSizes(_))
 
     val expectedTypes = DataTypeConverter.determineExpectedTypes(schema)
