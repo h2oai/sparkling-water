@@ -747,7 +747,7 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     (flattenDF, maxElementSizes, expandedSchema)
   }
 
-  test("The converion of DataFrame to H2OFrame and back with columns named \"na\" and \"null\"") {
+  test("The conversion of DataFrame to H2OFrame and back with columns named \"na\" and \"null\"") {
     val dfInput = sc.parallelize(1 to 6).map(v => (v, v * v)).toDF("na", "null")
     val hf = hc.asH2OFrame(dfInput)
     val dfOutput = hc.asSparkFrame(hf)
