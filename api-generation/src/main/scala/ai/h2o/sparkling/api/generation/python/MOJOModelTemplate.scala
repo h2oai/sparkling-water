@@ -73,6 +73,7 @@ object MOJOModelTemplate
   }
 
   private def generateValueConversion(parameter: Parameter): String = parameter.dataType match {
+    case x if x.isArray && x.getComponentType.isArray() => "H2OTypeConverters.scala2DArrayToPython2DArray(value)"
     case x if x.isArray => "H2OTypeConverters.scalaArrayToPythonArray(value)"
     case _ => "value"
   }
