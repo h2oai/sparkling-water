@@ -490,7 +490,7 @@ class H2OTypeConverters(object):
         if value is None:
             return None
         else:
-            H2OTypeConverters.scalaMapStringStringToDictStringAny(value)
+            return H2OTypeConverters.scalaMapStringStringToDictStringAny(value)
 
     @staticmethod
     def scalaArrayToPythonArray(array):
