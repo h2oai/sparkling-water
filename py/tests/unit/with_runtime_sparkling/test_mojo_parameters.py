@@ -39,7 +39,7 @@ def testXGBoostParameters(prostateDataset):
                            monotoneConstraints={'AGE': 1, 'RACE': -1},
                            interactionConstraints=[['AGE', 'RACE', 'DPROS'], ['DCAPS', 'PSA']])
     model = algorithm.fit(prostateDataset)
-    ignored=["getInteractionConstraints", "getMonotoneConstraints"]  # Will be fixed by SW-2573 and SW-2572
+    ignored=["getMonotoneConstraints"]  # Will be fixed by SW-2572
     compareParameterValues(algorithm, model, ignored)
 
 
