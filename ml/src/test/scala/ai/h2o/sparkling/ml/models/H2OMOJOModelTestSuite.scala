@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.algos.{H2ODeepLearning, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
+import _root_.hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.junit.runner.RunWith
@@ -391,5 +392,30 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     assert(model.getCrossValidationMetrics().nonEmpty)
     assert(model.getCurrentMetrics().nonEmpty)
     assert(model.getCrossValidationMetrics() == model.getCurrentMetrics())
+  }
+
+  test("Exposed hex mojo model gives the same prediction as SW model") {
+    val gbm = configureGBMForProstateDF()
+
+    val model = gbm.fit(prostateDataFrame)
+    val hexModel = model.getHexMojoModel()
+    val config = new EasyPredictModelWrapper.Config()
+    config.setModel(hexModel)
+    val wrapper = new EasyPredictModelWrapper(config)
+
+    val rowWithPrediction = model.transform(prostateDataFrame).first()
+    val rowData = new RowData()
+    rowData.put("ID", rowWithPrediction.get(0).toString())
+    rowData.put("AGE", rowWithPrediction.get(2).toString())
+    rowData.put("RACE", rowWithPrediction.get(3).toString())
+    rowData.put("DPROS", rowWithPrediction.get(4).toString())
+    rowData.put("DCAPS", rowWithPrediction.get(5).toString())
+    rowData.put("PSA", rowWithPrediction.get(6).toString())
+    rowData.put("VOL", rowWithPrediction.get(7).toString())
+    rowData.put("GLEASON", rowWithPrediction.get(8).toString())
+
+    val prediction = wrapper.predictBinomial(rowData)
+    prediction.classProbabilities(0) shouldEqual rowWithPrediction.getStruct(9).getStruct(1).get(0)
+    prediction.classProbabilities(1) shouldEqual rowWithPrediction.getStruct(9).getStruct(1).get(1)
   }
 }

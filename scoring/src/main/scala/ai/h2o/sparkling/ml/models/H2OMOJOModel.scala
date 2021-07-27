@@ -116,6 +116,11 @@ abstract class H2OMOJOModel
 
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
+  def getHexMojoModel(): _root_.hex.genmodel.MojoModel = {
+    val wrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    wrapper.m.asInstanceOf[_root_.hex.genmodel.MojoModel]
+  }
+
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
       udfConstructor: Array[String] => UserDefinedFunction,
