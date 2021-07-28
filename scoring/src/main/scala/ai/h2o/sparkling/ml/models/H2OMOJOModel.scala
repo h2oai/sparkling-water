@@ -117,8 +117,8 @@ abstract class H2OMOJOModel
   def getFeatureImportances(): DataFrame = $(featureImportances)
 
   /**
-    * The method returns an internal H2O-3 mojo model, which can be subsequently used with [[EasyPredictModelWrapper]]
-    * to perform predictions on individual rows.
+    * The method returns an internal H2O-3 mojo model, which can be subsequently used with
+    * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
     */
   def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = {
     val wrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
