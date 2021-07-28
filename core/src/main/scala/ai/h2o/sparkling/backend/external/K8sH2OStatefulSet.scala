@@ -105,7 +105,7 @@ trait K8sH2OStatefulSet extends K8sUtils {
                   |spec:
                   |  serviceName: ${conf.externalK8sH2OServiceName}
                   |  podManagementPolicy: "Parallel"
-                  |  replicas: 2
+                  |  replicas: ${conf.clusterSize.get}
                   |  selector:
                   |    matchLabels:
                   |      ${convertLabel(conf.externalK8sH2OLabel)}
