@@ -398,9 +398,9 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     val gbm = configureGBMForProstateDF()
 
     val model = gbm.fit(prostateDataFrame)
-    val hexModel = model.getHexMojoModel()
+    val h2o3model = model.unwrapMojoModel()
     val config = new EasyPredictModelWrapper.Config()
-    config.setModel(hexModel)
+    config.setModel(h2o3model)
     val wrapper = new EasyPredictModelWrapper(config)
 
     val rowWithPrediction = model.transform(prostateDataFrame).first()
