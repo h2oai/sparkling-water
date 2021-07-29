@@ -18,8 +18,9 @@
 package ai.h2o.sparkling.api.generation.common
 
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
+import hex.glrm.GLRMModel.GLRMParameters
 import hex.pca.PCAModel.PCAParameters
-import hex.schemas.{DeepLearningV3, PCAV3}
+import hex.schemas.{DeepLearningV3, GLRMV3, PCAV3}
 
 trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
@@ -30,9 +31,14 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       ExplicitField("initial_weights", "HasInitialWeights", null),
       ignoredCols)
     val pcaFields = Seq(ignoredCols)
+    val glrmFields = Seq(
+      ExplicitField("user_x", "HasUserX", null),
+      ExplicitField("user_y", "HasUserY", null),
+      ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames")))
 
     type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
     type PCAParamsV3 = PCAV3.PCAParametersV3
+    type GLRMParamsV3 = GLRMV3.GLRMParametersV3
 
     val explicitDefaultValues = Map[String, Any](
       "max_w2" -> 3.402823e38f,
@@ -49,6 +55,12 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "mseCol" -> "AutoEncoder__mse",
       "withMSECol" -> false)
     val pcaDefaultValues = Map("inputCols" -> Array.empty[String], "outputCol" -> "PCA__output")
+    val glrmDefaultValues = Map(
+      "inputCols" -> Array.empty[String],
+      "outputCol" -> "GLRM__output",
+      "reconstructedCol" -> "GLRM__reconstructed",
+      "withReconstructedCol" -> false,
+      "maxScoringIterations" -> 100)
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
@@ -59,7 +71,8 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
           dlFields,
           noDeprecation,
           aeDefaultValues),
-        ("H2OPCAParams", classOf[PCAParamsV3], classOf[PCAParameters], pcaFields, noDeprecation, pcaDefaultValues))
+        ("H2OPCAParams", classOf[PCAParamsV3], classOf[PCAParameters], pcaFields, noDeprecation, pcaDefaultValues),
+        ("H2OGLRMParams", classOf[GLRMParamsV3], classOf[GLRMParameters], glrmFields, noDeprecation, glrmDefaultValues))
 
     for ((
            entityName,
@@ -87,7 +100,8 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
     val algorithms = Seq[(String, Class[_], String, Seq[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty),
-      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty))
+      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty),
+      ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Seq.empty))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
       yield AlgorithmSubstitutionContext(

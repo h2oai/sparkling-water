@@ -32,7 +32,7 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
   def getMultinomialPredictionUDF(): UserDefinedFunction = {
     val schema = getMultinomialPredictionSchema()
     val function = (r: Row, offset: Double) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val pred = model.predictMultinomial(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.label
@@ -62,7 +62,7 @@ trait H2OMOJOPredictionMultinomial extends PredictionWithStageProbabilities {
   def getMultinomialPredictionSchema(): StructType = {
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
 
-    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val model = loadEasyPredictModelWrapper()
     val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
     val probabilitiesField =
       StructField("probabilities", StructType(classFields), nullable = false)

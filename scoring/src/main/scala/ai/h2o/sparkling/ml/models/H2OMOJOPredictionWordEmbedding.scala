@@ -30,7 +30,7 @@ trait H2OMOJOPredictionWordEmbedding {
   def getWordEmbeddingPredictionUDF(): UserDefinedFunction = {
     val schema = getWordEmbeddingPredictionSchema()
     val function = (r: Row) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val colIdx = model.m.getColIdx(getFeaturesCols().head)
       val pred = if (r.isNullAt(colIdx)) {
         null

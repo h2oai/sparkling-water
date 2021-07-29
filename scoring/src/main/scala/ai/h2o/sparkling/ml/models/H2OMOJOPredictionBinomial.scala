@@ -40,7 +40,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
   def getBinomialPredictionUDF(): UserDefinedFunction = {
     val schema = getBinomialPredictionSchema()
     val function = (r: Row, offset: Double) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = self.loadEasyPredictModelWrapper()
       val resultBuilder = mutable.ArrayBuffer[Any]()
       val pred = model.predictBinomial(RowConverter.toH2ORowData(r), offset)
       resultBuilder += pred.label
@@ -75,7 +75,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
     val labelField = StructField("label", predictionColType, nullable = predictionColNullable)
     val baseFields = labelField :: Nil
 
-    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val model = loadEasyPredictModelWrapper()
     val classFields = model.getResponseDomainValues.map(StructField(_, DoubleType, nullable = false))
     val probabilitiesField = StructField("probabilities", StructType(classFields), nullable = false)
     val detailedPredictionFields = baseFields :+ probabilitiesField
@@ -103,7 +103,7 @@ trait H2OMOJOPredictionBinomial extends PredictionWithContributions with Predict
       assignmentFields
     }
 
-    val fields = if (supportsCalibratedProbabilities(H2OMOJOCache.getMojoBackend(uid, getMojo, this))) {
+    val fields = if (supportsCalibratedProbabilities(model)) {
       val calibratedProbabilitiesField =
         StructField("calibratedProbabilities", StructType(classFields), nullable = false)
       stageProbabilityFields :+ calibratedProbabilitiesField

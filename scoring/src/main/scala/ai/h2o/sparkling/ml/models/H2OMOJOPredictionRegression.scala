@@ -32,7 +32,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def getRegressionPredictionUDF(): UserDefinedFunction = {
     val schema = getRegressionPredictionSchema()
     val function = (r: Row, offset: Double) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val pred = model.predictRegression(RowConverter.toH2ORowData(r), offset)
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
@@ -60,7 +60,7 @@ trait H2OMOJOPredictionRegression extends PredictionWithContributions {
   def getRegressionPredictionSchema(): StructType = {
     val valueField = StructField("value", DoubleType, nullable = false)
     val baseSchema = valueField :: Nil
-    val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val model = loadEasyPredictModelWrapper()
     val withContributionsSchema = if (model.getEnableContributions()) {
       val contributionsField = StructField("contributions", getContributionsSchema(model), nullable = false)
       baseSchema :+ contributionsField

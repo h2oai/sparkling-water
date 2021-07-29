@@ -107,9 +107,9 @@ abstract class H2OMOJOModel
   def getModelDetails(): String = $(modelDetails)
 
   def getDomainValues(): Map[String, Array[String]] = {
-    val mojoBackend = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    val columns = mojoBackend.m.getNames
-    columns.map(col => col -> mojoBackend.m.getDomainValues(col)).toMap
+    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    val columns = mojo.getNames
+    columns.map(col => col -> mojo.getDomainValues(col)).toMap
   }
 
   def getScoringHistory(): DataFrame = $(scoringHistory)
@@ -120,10 +120,7 @@ abstract class H2OMOJOModel
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
     * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
     */
-  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = {
-    val wrapper = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
-    wrapper.m.asInstanceOf[_root_.hex.genmodel.MojoModel]
-  }
+  def unwrapMojoModel(): _root_.hex.genmodel.MojoModel = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
 
   protected override def applyPredictionUdfToFlatDataFrame(
       flatDataFrame: DataFrame,
@@ -158,6 +155,23 @@ abstract class H2OMOJOModel
     set(this.scoringHistory -> extractScoringHistory(modelJson))
     set(this.featureImportances -> extractFeatureImportances(modelJson))
     set(this.featureTypes -> extractFeatureTypes(modelJson))
+  }
+
+  private[sparkling] def setEasyPredictModelWrapperConfiguration(
+      config: EasyPredictModelWrapper.Config): EasyPredictModelWrapper.Config = {
+    config.setConvertUnknownCategoricalLevelsToNa(this.getConvertUnknownCategoricalLevelsToNa())
+    config.setConvertInvalidNumbersToNa(this.getConvertInvalidNumbersToNa())
+    // always let H2O produce full output, filter later if required
+    config.setUseExtendedOutput(true)
+    config
+  }
+
+  private[sparkling] def loadEasyPredictModelWrapper(): EasyPredictModelWrapper = {
+    val config = new EasyPredictModelWrapper.Config()
+    val mojo = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+    config.setModel(mojo)
+    setEasyPredictModelWrapperConfiguration(config)
+    new EasyPredictModelWrapper(config)
   }
 
   override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
@@ -364,64 +378,6 @@ abstract class H2OSpecificMOJOLoader[T <: ai.h2o.sparkling.ml.models.HasMojo: Cl
   }
 }
 
-object H2OMOJOCache extends H2OMOJOBaseCache[EasyPredictModelWrapper, H2OMOJOModel] {
-
-  private def canGenerateContributions(model: GenModel): Boolean = {
-    model match {
-      case m: PredictContributionsFactory =>
-        val modelCategory = model.getModelCategory
-        if (modelCategory != ModelCategory.Regression && modelCategory != ModelCategory.Binomial) {
-          logWarning(s"""
-              | Computing contributions on MOJO of type '${m.getModelCategory}' is only supported for regression
-              | and binomial model categories!
-              |""".stripMargin)
-          false
-        } else {
-          true
-        }
-      case unsupported =>
-        logWarning(s"Computing contributions is not allowed on MOJO of type '${unsupported.getClass}'!")
-        false
-    }
-  }
-
-  private def canGenerateLeafNodeAssignments(model: GenModel): Boolean = {
-    model match {
-      case _: TreeBackedMojoModel => true
-      case _ =>
-        logWarning("Computing leaf node assignments is only available on tree based models!")
-        false
-    }
-  }
-
-  private def canGenerateStageResults(model: GenModel): Boolean = {
-    model match {
-      case _: SharedTreeMojoModel => true
-      case _ =>
-        logWarning("Computing stage results is only available on tree based models except XGBoost!")
-        false
-    }
-  }
-
-  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): EasyPredictModelWrapper = {
-    val config = new EasyPredictModelWrapper.Config()
-    config.setModel(Utils.getMojoModel(mojo))
-    config.setConvertUnknownCategoricalLevelsToNa(model.getConvertUnknownCategoricalLevelsToNa())
-    config.setConvertInvalidNumbersToNa(model.getConvertInvalidNumbersToNa())
-    if (model.isInstanceOf[H2OAlgorithmMOJOModel]) {
-      val algorithmModel = model.asInstanceOf[H2OAlgorithmMOJOModel]
-      if (algorithmModel.getWithContributions() && canGenerateContributions(config.getModel)) {
-        config.setEnableContributions(true)
-      }
-      if (algorithmModel.getWithLeafNodeAssignments() && canGenerateLeafNodeAssignments(config.getModel)) {
-        config.setEnableLeafAssignment(true)
-      }
-      if (algorithmModel.getWithStageResults() && canGenerateStageResults(config.getModel)) {
-        config.setEnableStagedProbabilities(true)
-      }
-    }
-    // always let H2O produce full output, filter later if required
-    config.setUseExtendedOutput(true)
-    new EasyPredictModelWrapper(config)
-  }
+object H2OMOJOCache extends H2OMOJOBaseCache[MojoModel, H2OMOJOModel] {
+  override def loadMojoBackend(mojo: File, model: H2OMOJOModel): MojoModel = Utils.getMojoModel(mojo)
 }

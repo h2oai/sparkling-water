@@ -16,7 +16,7 @@
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
-from pysparkling.ml import H2OAutoEncoder, H2OPCA
+from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
@@ -99,6 +99,13 @@ def testPCAParameters(prostateDataset):
     model = algorithm.fit(prostateDataset)
     ignored = ["getPcaImpl"]  # PUBDEV-8217: Value of pca_impl isn't propagated to MOJO models
     compareParameterValues(algorithm, model, ignored)
+
+
+def testGLRMParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2OGLRM(seed=1, inputCols=features, k=3)
+    model = algorithm.fit(prostateDataset)
+    compareParameterValues(algorithm, model)
 
 
 def compareParameterValues(algorithm, model, ignored=[]):

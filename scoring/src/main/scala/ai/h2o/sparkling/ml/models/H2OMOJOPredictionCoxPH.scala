@@ -32,7 +32,7 @@ trait H2OMOJOPredictionCoxPH {
   def getCoxPHPredictionUDF(): UserDefinedFunction = {
     val schema = getCoxPHPredictionSchema()
     val function = (r: Row) => {
-      val model = H2OMOJOCache.getMojoBackend(uid, getMojo, this)
+      val model = loadEasyPredictModelWrapper()
       val pred = model.predictCoxPH(RowConverter.toH2ORowData(r))
       val resultBuilder = mutable.ArrayBuffer[Any]()
       resultBuilder += pred.value
