@@ -38,6 +38,9 @@ class H2OMOJOModelParams:
     def getCrossValidationMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCrossValidationMetrics())
 
+    def getCrossValidationMetricsSummary(self):
+        return H2OTypeConverters.scalaToPythonDataFrame(self._java_obj.getCrossValidationMetricsSummary())
+
     def getCurrentMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCurrentMetrics())
 

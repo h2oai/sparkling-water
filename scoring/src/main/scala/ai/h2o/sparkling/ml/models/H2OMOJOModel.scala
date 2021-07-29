@@ -69,6 +69,11 @@ abstract class H2OMOJOModel
     new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics represented as a map.")
   protected final val crossValidationMetricsObject: NullableMetricsParam =
     new NullableMetricsParam(this, "crossValidationMetricsObject", "Cross Validation metrics in strongly typed object.")
+  protected final val crossValidationMetricsSummary: NullableDataFrameParam = new NullableDataFrameParam(
+    parent = this,
+    name = "crossValidationMetricsSummary",
+    doc = "Cross validation metrics summary contains information about performance of individual folds" +
+      "according to various model metrics.")
   protected final val trainingParams: MapStringStringParam =
     new MapStringStringParam(this, "trainingParams", "Training params")
   protected final val modelCategory: NullableStringParam =
@@ -76,7 +81,7 @@ abstract class H2OMOJOModel
   protected final val scoringHistory: NullableDataFrameParam =
     new NullableDataFrameParam(this, "scoringHistory", "Scoring history acquired during the model training.")
   protected final val featureImportances: NullableDataFrameParam =
-    new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
+    new NullableDataFrameParam(this, "featureImportances", "Feature importances.")
 
   private[sparkling] final val numberOfCrossValidationModels: IntParam =
     new IntParam(this, "numberOfCrossValidationModels", "Number of cross validation models.")
@@ -90,6 +95,7 @@ abstract class H2OMOJOModel
     validationMetricsObject -> null,
     crossValidationMetrics -> Map.empty[String, Double],
     crossValidationMetricsObject -> null,
+    crossValidationMetricsSummary -> null,
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
@@ -162,6 +168,8 @@ abstract class H2OMOJOModel
       getTrainingMetricsObject()
     }
   }
+
+  def getCrossValidationMetricsSummary(): DataFrame = $(crossValidationMetricsSummary)
 
   def getTrainingParams(): Map[String, String] = $(trainingParams)
 
@@ -245,6 +253,7 @@ abstract class H2OMOJOModel
     set(
       this.crossValidationMetricsObject ->
         extractMetricsObject(outputJson, "cross_validation_metrics", mojoModel._algoName, modelCategory))
+    set(this.crossValidationMetricsSummary -> extractCrossValidationMetricsSummary(modelJson))
     set(this.trainingParams -> extractParams(modelJson))
     set(this.modelCategory -> modelCategory.toString)
     set(this.scoringHistory -> extractScoringHistory(outputJson))
@@ -412,6 +421,11 @@ trait H2OMOJOModelUtils extends Logging {
 
   protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {
     jsonFieldToDataFrame(outputJson, "variable_importances")
+  }
+
+  protected def extractCrossValidationMetricsSummary(modelJson: JsonObject): DataFrame = {
+    val outputJson = modelJson.get("output").getAsJsonObject
+    jsonFieldToDataFrame(outputJson, "cross_validation_metrics_summary")
   }
 
   private def stringifyJSON(value: JsonElement): Option[String] = {

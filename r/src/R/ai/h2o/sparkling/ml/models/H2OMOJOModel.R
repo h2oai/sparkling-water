@@ -53,6 +53,9 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getCrossValidationMetrics = function() {
     invoke(.self$jmojo, "getCrossValidationMetrics")
   },
+  getCrossValidationMetricsSummary = function() {
+    invoke(.self$jmojo, "getCrossValidationMetricsSummary")
+  },
   getCurrentMetrics = function() {
     invoke(.self$jmojo, "getCurrentMetrics")
   },
