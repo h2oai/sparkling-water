@@ -32,8 +32,6 @@ pipeline(params) { p ->
     runPyIntegTests = "true"
     buildAgainstH2OBranch = "false"
     h2oBranch = testH2OBranch
-    hadoopVersion = "2.7"
-    driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
     uploadNightlyDockerImages = "false"
     backendMode = "both"

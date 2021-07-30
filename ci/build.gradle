@@ -19,7 +19,7 @@ task copyFiles(type: Copy) {
 
 task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
-  from 'harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:84'
+  from testingBaseImage
 
   environmentVariable("LANG", "'C.UTF-8'")
   runCommand "locale"
@@ -102,7 +102,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda config --add channels conda-forge
                 """
 
-  environmentVariable("HIVE_HOME", "/usr/hdp/2.2.9.0-3393/hive")
+  environmentVariable("HIVE_HOME", "/usr/lib/hive")
   runCommand "pip install awscli --upgrade --user"
 }
 

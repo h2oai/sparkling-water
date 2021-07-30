@@ -51,8 +51,6 @@ pipeline(params) { p ->
     runPyIntegTests = "${p.runPyIntegTests}"
     buildAgainstH2OBranch = "true"
     h2oBranch = testH2OBranch
-    hadoopVersion = "2.7"
-    driverHadoopVersion = "hdp2.2"
     uploadNightly = "false"
     uploadNightlyDockerImages = "false"
     backendMode = "${p.backendMode}"

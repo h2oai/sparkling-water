@@ -27,13 +27,14 @@ node('mr-0xc10') {
     def commons = load 'ci/commons.groovy'
     def currentVersion = commons.getDockerImageVersion()
     def nextVersion = currentVersion + 1
+    def testingBaseImage = commons.getTestingBaseImage()
 
     stage("Build Docker Image") {
         internalH2ODockerLogin()
         sh "./gradlew :sparkling-water-ci:createDockerFile"
         dir("ci/build/docker") {
             sh """
-            docker pull harbor.h2o.ai/opsh2oai/h2o-3-hadoop-hdp-2.2:84
+            docker pull $testingBaseImage
             docker build --no-cache -t harbor.h2o.ai/opsh2oai/sparkling_water_tests:${nextVersion} -f Dockerfile .
            """
         }
