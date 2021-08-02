@@ -432,11 +432,11 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
     val expectedColumns = Seq("", "mean", "sd", "cv_1_valid", "cv_2_valid", "cv_3_valid")
     crossValidationModelSummary.columns.toList shouldEqual expectedColumns
-    crossValidationModelSummary.count() shouldBe > (0L)
+    crossValidationModelSummary.count() shouldBe >(0L)
 
     val row = crossValidationModelSummary.first()
     for (columnId <- 1 to 5) {
-      row.getString(columnId).toDouble shouldBe > (0.0)
+      row.getString(columnId).toDouble shouldBe >(0.0)
     }
   }
 
