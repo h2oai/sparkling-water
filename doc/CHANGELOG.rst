@@ -1,6 +1,37 @@
 Change Log
 ==========
 
+v3.32.1.5-1 (2021-08-06)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.5-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.5-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.5-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.5-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.5-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.5-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.5-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.5-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.5-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.5-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.5-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.5-1-3.1/index.html>`__
+
+-  New Feature
+
+   -  `SW-2595 <https://0xdata.atlassian.net/browse/SW-2595>`__ - Add 'mean_per_class_error' to model trainings map
+   -  `SW-2582 <https://0xdata.atlassian.net/browse/SW-2582>`__ - Expose H2O-3 Mojo Model on H2OMOJOModel in Scala
+
+-  Improvement
+
+   -  `SW-2594 <https://0xdata.atlassian.net/browse/SW-2594>`__ - Upgrade to H2O 3.32.1.5
+
+-  Bug
+
+   -  `SW-2581 <https://0xdata.atlassian.net/browse/SW-2581>`__ - SW K8s External Backend Won't Start If Number of Nodes is Greater than 2
+   -  `SW-2580 <https://0xdata.atlassian.net/browse/SW-2580>`__ - Conversion Method asH2OFrame Throws Exception When an Input Contains a Column Named "na" or "null" 
+   -  `SW-2573 <https://0xdata.atlassian.net/browse/SW-2573>`__ - Fix interactionConstraints on H2OXGBoostMOJOModel in Python API
+   -  `SW-2572 <https://0xdata.atlassian.net/browse/SW-2572>`__ - Fix getMonotoneConstraints() on H2OGBM and H2OXGBoost MOJO model.
+
+-  Docs
+
+   -  `SW-2578 <https://0xdata.atlassian.net/browse/SW-2578>`__ - Fix Link in Overivew of Examples
+
 v3.32.1.4-1 (2021-07-15)
 ------------------------
 Downloads:
