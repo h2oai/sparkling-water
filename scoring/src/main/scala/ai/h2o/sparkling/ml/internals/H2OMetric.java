@@ -20,6 +20,8 @@ package ai.h2o.sparkling.ml.internals;
 public enum H2OMetric {
   AUTO(true),
   MeanResidualDeviance(false),
+  MAE(false),
+  RMSLE(false),
   R2(true),
   ResidualDeviance(false),
   ResidualDegreesOfFreedom(false),
