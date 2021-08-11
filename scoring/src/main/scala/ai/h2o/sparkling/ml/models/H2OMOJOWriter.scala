@@ -37,6 +37,18 @@ private[models] class H2OMOJOWriter(instance: Params, val mojoPath: String) exte
     withResource(fs.create(qualifiedOutputPath)) { out =>
       Files.copy(new File(mojoPath).toPath, out)
     }
+    if (instance.isInstanceOf[H2OMOJOModel]) {
+      val cvModels = instance.asInstanceOf[H2OMOJOModel].getCrossValidationModels()
+      if (cvModels != null) {
+        val cvPath = new Path(path, H2OMOJOProps.crossValidationDirectoryName)
+        for (i <- 0 until cvModels.length) {
+          val cvModelPath = new Path(cvPath, i.toString)
+          val writer = new H2OMOJOWriter(cvModels(0), cvModels(0).getMojo().getAbsolutePath)
+          writer.saveImpl(cvModelPath.toString)
+        }
+      }
+    }
+
     logInfo(s"Saved to: $qualifiedOutputPath")
   }
 

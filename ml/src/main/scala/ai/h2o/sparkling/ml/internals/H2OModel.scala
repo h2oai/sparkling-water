@@ -50,9 +50,35 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
       .getAsJsonObject()
   }
 
+  private def getCrossValidationModels(parentUid: String, settings: H2OMOJOSettings): Array[H2OMOJOModel] = {
+    val cvModelsJson = getDetails()
+      .getAsJsonObject("output")
+      .get("cross_validation_models")
+
+    if (cvModelsJson.isJsonNull) {
+      null
+    } else {
+      val cvModelsArray = cvModelsJson.getAsJsonArray()
+      val result = new Array[H2OMOJOModel](cvModelsArray.size())
+      for (i <- 0 until cvModelsArray.size()) {
+        val cvModelnName = cvModelsArray
+          .get(i)
+          .getAsJsonObject
+          .getAsJsonPrimitive("name")
+          .getAsString
+        val cvModel = H2OModel(cvModelnName).toMOJOModel(s"${parentUid}_cv_$i", settings)
+        result(i) = cvModel
+      }
+      result
+    }
+  }
+
   private[sparkling] def toMOJOModel(uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
     val mojo = downloadMojo()
-    H2OMOJOModel.createFromMojo(mojo, uid, settings)
+    val result = H2OMOJOModel.createFromMojo(mojo, uid, settings)
+    val cvModels = getCrossValidationModels(uid, settings)
+    result.setCrossValidationModels(cvModels)
+    result
   }
 }
 
