@@ -141,16 +141,6 @@ abstract class H2OMOJOModel
     this
   }
 
-  override protected def outputColumnName: String = getDetailedPredictionCol()
-
-  override def copy(extra: ParamMap): H2OMOJOModel = defaultCopy(extra)
-
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val baseDf = applyPredictionUdf(dataset, _ => getPredictionUDF())
-
-    baseDf.withColumn(getPredictionCol(), extractPredictionColContent())
-  }
-
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with
     * [[EasyPredictModelWrapper]] to perform predictions on individual rows.
