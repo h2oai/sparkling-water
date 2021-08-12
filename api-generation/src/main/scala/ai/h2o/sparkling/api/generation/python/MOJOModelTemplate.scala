@@ -46,6 +46,7 @@ object MOJOModelTemplate
     val imports = Seq(
       s"ai.h2o.sparkling.ml.${module}.${algorithmType}",
       "pyspark.ml.util._jvm",
+      "py4j.java_gateway.JavaObject",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
       "ai.h2o.sparkling.ml.params.H2OTypeConverters.H2OTypeConverters") ++
@@ -60,6 +61,17 @@ object MOJOModelTemplate
          |        Initializer.load_sparkling_jar()
          |        javaModel = _jvm().ai.h2o.sparkling.ml.models.${entityName}.createFromMojo(pathToMojo, settings.toJavaObject())
          |        return ${entityName}(javaModel)
+         |
+         |
+         |    def getCrossValidationModels(self):
+         |        cvModels = self._java_obj.getCrossValidationModelsAsArray()
+         |        if cvModels is None:
+         |            return None
+         |        elif isinstance(cvModels, JavaObject):
+         |            return [${entityName}(v) for v in cvModels]
+         |        else:
+         |            raise TypeError("Invalid type.")
+         |
          |""".stripMargin ++
         generateGetterMethods(parameters)
     }

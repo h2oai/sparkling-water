@@ -133,6 +133,8 @@ abstract class H2OMOJOModel
     }
   }
 
+  private[sparkling] def getCrossValidationModelsAsArray(): Array[H2OMOJOModel] = crossValidationModels
+
   private[sparkling] def setCrossValidationModels(models: Array[H2OMOJOModel]): this.type = {
     crossValidationModels = models
     if (models != null) {
