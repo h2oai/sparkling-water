@@ -376,9 +376,10 @@ was used, this method returns the training metrics.
 
 Obtaining Cross Validation Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the model was trained with SW API (i.e. the model wasn't loaded with the method ```H2OMOJOModel.createFromMojo()``) and cross-validation
+If the model was trained with SW API (i.e. the model wasn't loaded with the method ``H2OMOJOModel.createFromMojo()``) and cross-validation
 was enabled during the training phase, a user can access the sequence cross-validation models by calling the method ``getCrossValidationModels()``.
 The returned models are regular Sparkling Water MOJO models with model metrics and other important information.
+*[This feature is not available in SW R API.]*
 
 Obtaining Leaf Node Assignments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
