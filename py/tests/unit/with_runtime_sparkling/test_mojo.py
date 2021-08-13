@@ -197,6 +197,15 @@ def testMojoModelCouldBeSavedAndLoaded(gbmModel, prostateDataset):
     unit_test_utils.assert_data_frames_are_identical(expected, result)
 
 
+def testGetCrossValidationSummaru():
+    mojo = H2OMOJOModel.createFromMojo(
+        "file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
+    summary = mojo.getCrossValidationMetricsSummary()
+
+    assert summary.columns == ["SW metric", "H2O metric", "mean", "sd", "cv_1_valid", "cv_2_valid", "cv_3_valid"]
+    assert summary.count() > 0
+
+
 def testCrossValidationModelsAreAvailableAfterSavingAndLoading(prostateDataset):
     path = "file://" + os.path.abspath("build/testCrossValidationModelsAreAvialableAfterSavingAndLoading")
     nfolds = 3

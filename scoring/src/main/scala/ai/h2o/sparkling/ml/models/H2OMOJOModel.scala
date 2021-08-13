@@ -425,7 +425,25 @@ trait H2OMOJOModelUtils extends Logging {
 
   protected def extractCrossValidationMetricsSummary(modelJson: JsonObject): DataFrame = {
     val outputJson = modelJson.get("output").getAsJsonObject
-    jsonFieldToDataFrame(outputJson, "cross_validation_metrics_summary")
+    val rawSummaryDF = jsonFieldToDataFrame(outputJson, "cross_validation_metrics_summary")
+
+    if (rawSummaryDF != null) {
+      // Convert columns to Float for older mojos returning everything as a string columns.
+      val columns = rawSummaryDF.columns.filter(_ != "")
+      val typedSummaryDF = columns.foldLeft(rawSummaryDF)((df, cn) => df.withColumn(cn, col(cn).cast(FloatType)))
+
+      // Convert H2O Metric names to SW names
+      val conversionMap = H2OMetric.values().map(i => i.name().toLowerCase -> i.name()).toMap
+      val nameConversion = (value: String) => conversionMap.get(value.replace("_", ""))
+      val nameConversionUDF = udf[Option[String], String](nameConversion)
+      val withSWNamesDF = typedSummaryDF
+        .select(nameConversionUDF(col("")) as "SW metric", col("*"))
+        .withColumnRenamed("", "H2O metric")
+
+      withSWNamesDF
+    } else {
+      null
+    }
   }
 
   private def stringifyJSON(value: JsonElement): Option[String] = {

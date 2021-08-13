@@ -90,6 +90,16 @@ test_that("test getFeatureImportances", {
   expect_equal(count, expectedCount)
 })
 
+test_that("test getCrossValidationMetricsSummary", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/gbm_cv.mojo")))
+  summary <- model$getCrossValidationMetricsSummary()
+
+  numberOfRecordsFrame <- dplyr::tally(summary)
+  count <- as.double(dplyr::collect(numberOfRecordsFrame)[[1]])
+
+  expect_true(count > 0)
+})
+
 test_that("test training params", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   params <- model$getTrainingParams()
