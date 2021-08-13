@@ -66,18 +66,20 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
           .getAsJsonObject
           .getAsJsonPrimitive("name")
           .getAsString
-        val cvModel = H2OModel(cvModelnName).toMOJOModel(s"${parentUid}_cv_$i", settings)
+        val cvModel = H2OModel(cvModelnName).toMOJOModel(s"${parentUid}_cv_$i", settings, false)
         result(i) = cvModel
       }
       result
     }
   }
 
-  private[sparkling] def toMOJOModel(uid: String, settings: H2OMOJOSettings): H2OMOJOModel = {
+  private[sparkling] def toMOJOModel(uid: String, settings: H2OMOJOSettings, withCVModels: Boolean): H2OMOJOModel = {
     val mojo = downloadMojo()
     val result = H2OMOJOModel.createFromMojo(mojo, uid, settings)
-    val cvModels = getCrossValidationModels(uid, settings)
-    result.setCrossValidationModels(cvModels)
+    if (withCVModels) {
+      val cvModels = getCrossValidationModels(uid, settings)
+      result.setCrossValidationModels(cvModels)
+    }
     result
   }
 }

@@ -44,7 +44,8 @@ class H2OAutoML(override val uid: String)
   with H2OAlgoCommonUtils
   with DefaultParamsWritable
   with H2OAutoMLParams
-  with RestCommunication {
+  with RestCommunication
+  with SupportsCrossValidation {
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
@@ -94,7 +95,10 @@ class H2OAutoML(override val uid: String)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
 
     val result = H2OModel(leaderModelId)
-      .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this))
+      .toMOJOModel(
+        Identifiable.randomUID(algoName),
+        H2OMOJOSettings.createFromModelParams(this),
+        getGenerateCrossValidationModels())
     deleteRegisteredH2OFrames()
     result
   }
@@ -167,12 +171,15 @@ class H2OAutoML(override val uid: String)
     getLeaderboard().select("model_id").collect().map { row =>
       val modelId = row.getString(0)
       H2OModel(modelId)
-        .toMOJOModel(Identifiable.randomUID(modelId), H2OMOJOSettings.createFromModelParams(this))
+        .toMOJOModel(
+          Identifiable.randomUID(modelId),
+          H2OMOJOSettings.createFromModelParams(this),
+          getGenerateCrossValidationModels())
     }
   }
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ Seq(getLabelCol(), getFoldCol(), getWeightCol())
+    super.getExcludedCols() ++ Seq(getLabelCol(), getWeightCol())
       .flatMap(Option(_)) // Remove nulls
   }
 

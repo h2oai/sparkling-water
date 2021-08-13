@@ -121,8 +121,14 @@ class H2OGridSearch(override val uid: String)
       (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
+    val withCrossValidationModels = if (getAlgo().hasParam("generateCrossValidationModels")) {
+      getAlgo().getOrDefault(getAlgo().getParam("generateCrossValidationModels")).asInstanceOf[Boolean]
+    } else {
+      false
+    }
     grid.model_ids.map { modelId =>
-      val mojoModel = H2OModel(modelId.name).toMOJOModel(Identifiable.randomUID(algoName), modelSettings)
+      val mojoModel = H2OModel(modelId.name)
+        .toMOJOModel(Identifiable.randomUID(algoName), modelSettings, withCrossValidationModels)
       (modelId.name, mojoModel)
     }
   }

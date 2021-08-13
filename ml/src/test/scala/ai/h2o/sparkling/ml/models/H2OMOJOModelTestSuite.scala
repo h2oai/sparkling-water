@@ -421,7 +421,9 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   {
     def numberOfFolds = 3
-    lazy val gbm = configureGBMForProstateDF().setNfolds(numberOfFolds)
+    lazy val gbm = configureGBMForProstateDF()
+      .setNfolds(numberOfFolds)
+      .setGenerateCrossValidationModels(true)
     def trainedModel = gbm.fit(prostateDataFrame)
 
     lazy val model = {
@@ -500,6 +502,15 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
     test("Cross validation models are null when simple validation is used") {
       val gbm = configureGBMForProstateDF().setSplitRatio(0.8)
+      val model = gbm.fit(prostateDataFrame)
+
+      val cvModels = model.getCrossValidationModels()
+
+      cvModels should be(null)
+    }
+
+    test("Cross validation models are null if generating of them is disabled") {
+      val gbm = configureGBMForProstateDF()
       val model = gbm.fit(prostateDataFrame)
 
       val cvModels = model.getCrossValidationModels()
