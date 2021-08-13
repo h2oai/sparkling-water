@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithmWithFoldColumn import H2OSupervisedAlgorithmWithFoldColumn
+from ai.h2o.sparkling.ml.algos.H2OSupervisedAlgorithm import H2OSupervisedAlgorithm
 
 
-class H2OTreeBasedSupervisedAlgorithm(H2OSupervisedAlgorithmWithFoldColumn):
+class H2OSupervisedAlgorithmWithFoldColumn(H2OSupervisedAlgorithm):
     pass

@@ -45,7 +45,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
       namespace = "ai.h2o.sparkling.ml.algos",
       "H2OAutoML",
       null,
-      "H2OSupervisedAlgorithm",
+      "H2OSupervisedAlgorithmWithFoldColumn",
       Seq("H2OAutoMLExtras"),
       false)
   }

@@ -33,6 +33,7 @@ object MOJOModelTemplate
     val entityName = algorithmSubstitutionContext.entityName
     val namespace = algorithmSubstitutionContext.namespace
     val algorithmType = algorithmSubstitutionContext.algorithmType
+      .replace("WithFoldColumn", "")
       .replace("Algorithm", "MOJOModelParams")
       .replace("Estimator", "MOJOModel")
       .replaceFirst("Base$", "MOJOBase")
