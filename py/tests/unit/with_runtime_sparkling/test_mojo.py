@@ -197,7 +197,7 @@ def testMojoModelCouldBeSavedAndLoaded(gbmModel, prostateDataset):
     unit_test_utils.assert_data_frames_are_identical(expected, result)
 
 
-def testGetCrossValidationSummaru():
+def testGetCrossValidationSummary():
     mojo = H2OMOJOModel.createFromMojo(
         "file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
     summary = mojo.getCrossValidationMetricsSummary()
