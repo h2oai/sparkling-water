@@ -35,6 +35,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
+import ai.h2o.sparkling.ml.metrics.H2OMetrics
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -58,11 +59,17 @@ abstract class H2OMOJOModel
   protected final val modelDetails: NullableStringParam =
     new NullableStringParam(this, "modelDetails", "Raw details of this model.")
   protected final val trainingMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "trainingMetrics", "Training metrics.")
+    new MapStringDoubleParam(this, "trainingMetrics", "Training metrics represented as a map.")
+  protected final val trainingMetricsObject: NullableMetricsParam =
+    new NullableMetricsParam(this, "trainingMetricsObject", "Training metrics in strongly typed object.")
   protected final val validationMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "validationMetrics", "Validation metrics.")
+    new MapStringDoubleParam(this, "validationMetrics", "Validation metrics represented as a map.")
+  protected final val validationMetricsObject: NullableMetricsParam =
+    new NullableMetricsParam(this, "validationMetricsObject", "Validation metrics in strongly typed object.")
   protected final val crossValidationMetrics: MapStringDoubleParam =
-    new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics.")
+    new MapStringDoubleParam(this, "crossValidationMetrics", "Cross Validation metrics represented as a map.")
+  protected final val crossValidationMetricsObject: NullableMetricsParam =
+    new NullableMetricsParam(this, "crossValidationMetricsObject", "Cross Validation metrics in strongly typed object.")
   protected final val trainingParams: MapStringStringParam =
     new MapStringStringParam(this, "trainingParams", "Training params")
   protected final val modelCategory: NullableStringParam =
@@ -79,8 +86,11 @@ abstract class H2OMOJOModel
   setDefault(
     modelDetails -> null,
     trainingMetrics -> Map.empty[String, Double],
+    trainingMetricsObject -> null,
     validationMetrics -> Map.empty[String, Double],
+    validationMetricsObject -> null,
     crossValidationMetrics -> Map.empty[String, Double],
+    crossValidationMetricsObject -> null,
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
@@ -89,9 +99,15 @@ abstract class H2OMOJOModel
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
+  def getTrainingMetricsObject(): H2OMetrics = $(trainingMetricsObject)
+
   def getValidationMetrics(): Map[String, Double] = $(validationMetrics)
 
+  def getValidationMetricsObject(): H2OMetrics = $(validationMetricsObject)
+
   def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
+
+  def getCrossValidationMetricsObject(): H2OMetrics = $(crossValidationMetricsObject)
 
   def getCurrentMetrics(): Map[String, Double] = {
     val nfolds = $(trainingParams).get("nfolds")
@@ -102,6 +118,18 @@ abstract class H2OMOJOModel
       getValidationMetrics()
     } else {
       getTrainingMetrics()
+    }
+  }
+
+  def getCurrentMetricsObject(): H2OMetrics = {
+    val nfolds = $(trainingParams).get("nfolds")
+    val validationFrame = $(trainingParams).get("validation_frame")
+    if (nfolds.isDefined && nfolds.get.toInt > 1) {
+      getCrossValidationMetricsObject()
+    } else if (validationFrame.isDefined) {
+      getValidationMetricsObject()
+    } else {
+      getTrainingMetricsObject()
     }
   }
 
@@ -170,18 +198,21 @@ abstract class H2OMOJOModel
   }
 
   private[sparkling] def setParameters(mojoModel: MojoModel, modelJson: JsonObject, settings: H2OMOJOSettings): Unit = {
-    val (trainingMetrics, validationMetrics, crossValidationMetrics) = extractAllMetrics(modelJson)
+    val outputJson = modelJson.get("output").getAsJsonObject
     set(this.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     set(this.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     set(this.modelDetails -> getModelDetails(modelJson))
-    set(this.trainingMetrics -> trainingMetrics)
-    set(this.validationMetrics -> validationMetrics)
-    set(this.crossValidationMetrics -> crossValidationMetrics)
+    set(this.trainingMetrics -> extractMetrics(outputJson, "training_metrics"))
+    set(this.trainingMetricsObject -> extractMetricsObject(outputJson, "training_metrics"))
+    set(this.validationMetrics -> extractMetrics(outputJson, "validation_metrics"))
+    set(this.validationMetricsObject -> extractMetricsObject(outputJson, "validation_metrics"))
+    set(this.crossValidationMetrics -> extractMetrics(outputJson, "cross_validation_metrics"))
+    set(this.crossValidationMetricsObject -> extractMetricsObject(outputJson, "cross_validation_metrics"))
     set(this.trainingParams -> extractParams(modelJson))
-    set(this.modelCategory -> extractModelCategory(modelJson).toString)
-    set(this.scoringHistory -> extractScoringHistory(modelJson))
-    set(this.featureImportances -> extractFeatureImportances(modelJson))
-    set(this.featureTypes -> extractFeatureTypes(modelJson))
+    set(this.modelCategory -> extractModelCategory(outputJson).toString)
+    set(this.scoringHistory -> extractScoringHistory(outputJson))
+    set(this.featureImportances -> extractFeatureImportances(outputJson))
+    set(this.featureTypes -> extractFeatureTypes(outputJson))
   }
 
   private[sparkling] def setEasyPredictModelWrapperConfiguration(
@@ -256,13 +287,14 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
-  protected def extractAllMetrics(
-      modelJson: JsonObject): (Map[String, Double], Map[String, Double], Map[String, Double]) = {
-    val json = modelJson.get("output").getAsJsonObject
-    val trainingMetrics = extractMetrics(json, "training_metrics")
-    val validationMetrics = extractMetrics(json, "validation_metrics")
-    val crossValidationMetrics = extractMetrics(json, "cross_validation_metrics")
-    (trainingMetrics, validationMetrics, crossValidationMetrics)
+  protected def extractMetricsObject(json: JsonObject, metricType: String): H2OMetrics = {
+    val groupJson = json.get(metricType)
+    if (groupJson.isJsonNull) {
+      null
+    } else {
+      val metricGroup = groupJson.getAsJsonObject()
+      H2OMetrics.loadMetrics(metricGroup)
+    }
   }
 
   protected def extractParams(modelJson: JsonObject): Map[String, String] = {
@@ -278,15 +310,13 @@ trait H2OMOJOModelUtils extends Logging {
       .toMap
   }
 
-  protected def extractModelCategory(modelJson: JsonObject): H2OModelCategory.Value = {
-    val json = modelJson.get("output").getAsJsonObject
-    H2OModelCategory.fromString(json.get("model_category").getAsString)
+  protected def extractModelCategory(outputJson: JsonObject): H2OModelCategory.Value = {
+    H2OModelCategory.fromString(outputJson.get("model_category").getAsString)
   }
 
-  protected def extractFeatureTypes(modelJson: JsonObject): Map[String, String] = {
-    val output = modelJson.get("output").getAsJsonObject
-    val names = output.getAsJsonArray("names").asScala.map(_.getAsString)
-    val columnTypesJsonArray = output.getAsJsonArray("column_types")
+  protected def extractFeatureTypes(outputJson: JsonObject): Map[String, String] = {
+    val names = outputJson.getAsJsonArray("names").asScala.map(_.getAsString)
+    val columnTypesJsonArray = outputJson.getAsJsonArray("column_types")
     if (columnTypesJsonArray != null) {
       val types = columnTypesJsonArray.asScala.map(_.getAsString)
       names.zip(types).toMap
@@ -333,14 +363,12 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
-  protected def extractScoringHistory(modelJson: JsonObject): DataFrame = {
-    val outputJson = modelJson.get("output").getAsJsonObject
+  protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
     val df = jsonFieldToDataFrame(outputJson, "scoring_history")
     if (df != null && df.columns.contains("")) df.drop("") else df
   }
 
-  protected def extractFeatureImportances(modelJson: JsonObject): DataFrame = {
-    val outputJson = modelJson.get("output").getAsJsonObject
+  protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {
     jsonFieldToDataFrame(outputJson, "variable_importances")
   }
 
