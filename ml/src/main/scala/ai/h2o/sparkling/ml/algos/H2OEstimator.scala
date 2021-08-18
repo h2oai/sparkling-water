@@ -42,8 +42,8 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
     val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
     val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
-    val withCrossValidationModels = if (hasParam("generateCrossValidationModels")) {
-      getOrDefault(getParam("generateCrossValidationModels")).asInstanceOf[Boolean]
+    val withCrossValidationModels = if (hasParam("keepCrossValidationModels")) {
+      getOrDefault(getParam("keepCrossValidationModels")).asInstanceOf[Boolean]
     } else {
       false
     }

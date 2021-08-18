@@ -121,8 +121,8 @@ class H2OGridSearch(override val uid: String)
       (classOf[GridSchemaV99], "scoring_history"))
     val grid = query[GridSchemaV99](endpoint, s"/99/Grids/$gridId", conf, Map.empty, skippedFields)
     val modelSettings = H2OMOJOSettings.createFromModelParams(getAlgo())
-    val withCrossValidationModels = if (getAlgo().hasParam("generateCrossValidationModels")) {
-      getAlgo().getOrDefault(getAlgo().getParam("generateCrossValidationModels")).asInstanceOf[Boolean]
+    val withCrossValidationModels = if (getAlgo().hasParam("keepCrossValidationModels")) {
+      getAlgo().getOrDefault(getAlgo().getParam("keepCrossValidationModels")).asInstanceOf[Boolean]
     } else {
       false
     }

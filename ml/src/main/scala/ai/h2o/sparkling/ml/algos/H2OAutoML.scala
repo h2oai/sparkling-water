@@ -98,7 +98,7 @@ class H2OAutoML(override val uid: String)
       .toMOJOModel(
         Identifiable.randomUID(algoName),
         H2OMOJOSettings.createFromModelParams(this),
-        getGenerateCrossValidationModels())
+        getKeepCrossValidationModels())
     deleteRegisteredH2OFrames()
     result
   }
@@ -174,7 +174,7 @@ class H2OAutoML(override val uid: String)
         .toMOJOModel(
           Identifiable.randomUID(modelId),
           H2OMOJOSettings.createFromModelParams(this),
-          getGenerateCrossValidationModels())
+          getKeepCrossValidationModels())
     }
   }
 

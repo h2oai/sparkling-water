@@ -24,18 +24,6 @@ trait SupportsCrossValidation extends Params with H2OAlgoCommonUtils {
 
   def setFoldCol(value: String): this.type
 
-  protected final val generateCrossValidationModels = new BooleanParam(
-    this,
-    "generateCrossValidationModels",
-    "A flag indicating whether cross-validation models will be generated and appended to " +
-      "the result model if cross-validation is applied")
-
-  setDefault(generateCrossValidationModels -> false)
-
-  def getGenerateCrossValidationModels(): Boolean = $(generateCrossValidationModels)
-
-  def setGenerateCrossValidationModels(value: Boolean): this.type = set(generateCrossValidationModels, value)
-
   override private[sparkling] def getExcludedCols(): Seq[String] = {
     super.getExcludedCols() ++ Seq(getFoldCol())
       .flatMap(Option(_)) // Remove nulls
