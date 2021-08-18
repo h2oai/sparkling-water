@@ -25,10 +25,6 @@ trait MetricsConfigurations {
       ("H2OBinomialMetrics", classOf[ModelMetricsBinomialV3[_, _]], Seq("H2OMetrics")))
 
     for ((entityName, metricClass: Class[_], parents) <- metrics)
-      yield ModelMetricsSubstitutionContext(
-        namespace = "ai.h2o.sparkling.ml.metrics",
-        entityName,
-        metricClass,
-        parents)
+      yield ModelMetricsSubstitutionContext(namespace = "ai.h2o.sparkling.ml.metrics", entityName, metricClass, parents)
   }
 }
