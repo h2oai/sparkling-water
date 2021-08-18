@@ -148,9 +148,13 @@ trait AlgorithmConfigurations {
       ("H2OXGBoost", classOf[XGBoostParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
       ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
       ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
-      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
-      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithm", Seq(withFamily)),
-      ("H2ODeepLearning", classOf[DeepLearningParameters], "H2OSupervisedAlgorithm", Seq(withDistribution)),
+      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithmWithFoldColumn", Seq(withFamily)),
+      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithmWithFoldColumn", Seq(withFamily)),
+      (
+        "H2ODeepLearning",
+        classOf[DeepLearningParameters],
+        "H2OSupervisedAlgorithmWithFoldColumn",
+        Seq(withDistribution)),
       ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
       ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq.empty),
       ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))

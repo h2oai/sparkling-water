@@ -44,7 +44,9 @@ object MOJOModelTemplate
       explicitFieldImplementations.map(explicitField => s"ai.h2o.sparkling.ml.params.$explicitField")
 
     val parents = Seq(
-      algorithmSubstitutionContext.algorithmType.replace("Algorithm", "MOJOModel(uid)"),
+      algorithmSubstitutionContext.algorithmType
+        .replace("WithFoldColumn", "")
+        .replace("Algorithm", "MOJOModel(uid)"),
       "ParameterConstructorMethods",
       "Logging") ++ explicitFieldImplementations
 
