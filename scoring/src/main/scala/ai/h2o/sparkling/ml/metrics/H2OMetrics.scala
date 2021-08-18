@@ -20,5 +20,11 @@ package ai.h2o.sparkling.ml.metrics
 import com.google.gson.JsonObject
 
 trait H2OMetrics {
-  def loadMetrics(json: JsonObject): H2OMetrics
+  def setMetrics(json: JsonObject): Unit
+}
+
+object H2OMetrics {
+  def loadMetrics(json: JsonObject): H2OMetrics = {
+    ??? // TODO
+  }
 }

@@ -27,7 +27,7 @@ object ModelMetricsTemplate
   def apply(substitutionContext: ModelMetricsSubstitutionContext): String = {
     val metrics = resolveMetrics(substitutionContext)
 
-    val imports = Seq.empty
+    val imports = Seq("com.google.gson.JsonObject")
 
     val entitySubstitutionContext = EntitySubstitutionContext(
       substitutionContext.namespace,
@@ -37,7 +37,9 @@ object ModelMetricsTemplate
 
     generateEntity(entitySubstitutionContext, "class") {
       s"""
-      |  
+      |  def setMetrics(json: JsonObject): Unit= {
+      |     ???
+      |  }
       """.stripMargin
     }
   }

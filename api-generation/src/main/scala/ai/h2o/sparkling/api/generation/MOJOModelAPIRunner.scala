@@ -23,11 +23,13 @@ object MOJOModelAPIRunner
   extends APIRunnerBase
   with AutoMLConfiguration
   with AlgorithmConfigurations
-  with FeatureEstimatorConfigurations {
+  with FeatureEstimatorConfigurations
+  with MetricsConfigurations {
 
   private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate, "py" -> python.MOJOModelTemplate)
   private val mojoFactoryTemplates =
     Map("scala" -> scala.MOJOModelFactoryTemplate, "py" -> python.MOJOModelFactoryTemplate)
+  private val metricsTemplates = Map("scala" -> scala.ModelMetricsTemplate)
 
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
@@ -48,5 +50,11 @@ object MOJOModelAPIRunner
     val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
     val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
     writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
+
+    if (languageExtension == "scala")
+    for (metricsContext <- metricsConfiguration) {
+      val content = metricsTemplates(languageExtension)(metricsContext)
+      writeResultToFile(content, metricsContext, languageExtension, destinationDir)
+    }
   }
 }
