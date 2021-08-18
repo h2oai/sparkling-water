@@ -44,8 +44,7 @@ class H2OAutoML(override val uid: String)
   with H2OAlgoCommonUtils
   with DefaultParamsWritable
   with H2OAutoMLParams
-  with RestCommunication
-  with SupportsCrossValidation {
+  with RestCommunication {
 
   def this() = this(Identifiable.randomUID(classOf[H2OAutoML].getSimpleName))
 
@@ -179,7 +178,7 @@ class H2OAutoML(override val uid: String)
   }
 
   override private[sparkling] def getExcludedCols(): Seq[String] = {
-    super.getExcludedCols() ++ Seq(getLabelCol(), getWeightCol())
+    super.getExcludedCols() ++ Seq(getLabelCol(), getFoldCol(), getWeightCol())
       .flatMap(Option(_)) // Remove nulls
   }
 

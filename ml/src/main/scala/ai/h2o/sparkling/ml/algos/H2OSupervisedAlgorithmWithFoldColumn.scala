@@ -24,9 +24,11 @@ import hex.Model
 
 import scala.reflect.ClassTag
 
-abstract class H2OSupervisedAlgorithmWithFoldColumn[P <: Model.Parameters: ClassTag]
-  extends H2OSupervisedAlgorithm[P]
-  with SupportsCrossValidation {
+abstract class H2OSupervisedAlgorithmWithFoldColumn[P <: Model.Parameters: ClassTag] extends H2OSupervisedAlgorithm[P] {
+
+  def getFoldCol(): String
+
+  def setFoldCol(value: String): this.type
 
   @DeveloperApi
   override def transformSchema(schema: StructType): StructType = {
@@ -38,5 +40,10 @@ abstract class H2OSupervisedAlgorithmWithFoldColumn[P <: Model.Parameters: Class
       getWeightCol() == null || getWeightCol() != getFoldCol(),
       "Specified weight column cannot be the same as the fold column!")
     transformedSchema
+  }
+
+  override private[sparkling] def getExcludedCols(): Seq[String] = {
+    super.getExcludedCols() ++ Seq(getFoldCol())
+      .flatMap(Option(_)) // Remove nulls
   }
 }
