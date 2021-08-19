@@ -79,4 +79,5 @@ trait H2OCommonParams extends H2OBaseMOJOParams {
     set(convertUnknownCategoricalLevelsToNa, value)
 
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
+
 }

@@ -418,4 +418,104 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     prediction.classProbabilities(0) shouldEqual rowWithPrediction.getStruct(9).getStruct(1).get(0)
     prediction.classProbabilities(1) shouldEqual rowWithPrediction.getStruct(9).getStruct(1).get(1)
   }
+
+  {
+    def numberOfFolds = 3
+    lazy val gbm = configureGBMForProstateDF()
+      .setNfolds(numberOfFolds)
+      .setKeepCrossValidationModels(true)
+    def trainedModel = gbm.fit(prostateDataFrame)
+
+    lazy val model = {
+      val path = "ml/build/model_with_cv_models"
+      trainedModel.write.overwrite().save(path)
+      H2OGBMMOJOModel.load(path)
+    }
+
+    test("Cross validation models are able to score") {
+      val cvModels = model.getCrossValidationModels()
+      cvModels.length shouldEqual numberOfFolds
+
+      val result = model.transform(prostateDataFrame)
+      val cvResult = cvModels(0).transform(prostateDataFrame)
+
+      result.schema shouldEqual cvResult.schema
+      result.count() shouldEqual cvResult.count()
+      cvResult.show(truncate = false)
+    }
+
+    test("Cross validation models can provide training and validation metrics") {
+      val cvModels = model.getCrossValidationModels()
+      cvModels.length shouldEqual numberOfFolds
+      val firstCVModel = cvModels(0)
+
+      firstCVModel.getTrainingMetrics() should not be (null)
+      firstCVModel.getTrainingMetrics() should not be (Map.empty)
+      firstCVModel.getValidationMetrics() should not be (null)
+      firstCVModel.getValidationMetrics() should not be (Map.empty)
+      firstCVModel.getCrossValidationMetrics() should be(Map.empty)
+
+      firstCVModel.getTrainingMetrics().keySet shouldEqual model.getTrainingMetrics().keySet
+      for ((k, v) <- firstCVModel.getTrainingMetrics()) {
+        assert(v != Double.NaN && v != 0, s"The training metric $k has value '$v'")
+      }
+
+      firstCVModel.getValidationMetrics().keySet shouldEqual model.getCrossValidationMetrics().keySet
+      for ((k, v) <- firstCVModel.getValidationMetrics()) {
+        assert(v != Double.NaN && v != 0, s"The validation metric $k has value '$v'")
+      }
+    }
+
+    test("Cross validation models can provide scoring history") {
+      val cvModels = model.getCrossValidationModels()
+      cvModels.length shouldEqual numberOfFolds
+      val cvScoringHistory = cvModels(0).getScoringHistory()
+
+      cvScoringHistory.columns shouldEqual Array(
+        "Timestamp",
+        "Duration",
+        "Number of Trees",
+        "Training RMSE",
+        "Training LogLoss",
+        "Training AUC",
+        "Training pr_auc",
+        "Training Lift",
+        "Training Classification Error",
+        "Validation RMSE",
+        "Validation LogLoss",
+        "Validation AUC",
+        "Validation pr_auc",
+        "Validation Lift",
+        "Validation Classification Error")
+      cvScoringHistory.count() shouldBe >(0L)
+    }
+
+    test("Cross validation models can provide feature importances") {
+      val cvModels = model.getCrossValidationModels()
+      cvModels.length shouldEqual numberOfFolds
+      val featureImportances = cvModels(0).getFeatureImportances()
+
+      featureImportances.columns shouldEqual Array("Variable", "Relative Importance", "Scaled Importance", "Percentage")
+      featureImportances.count() shouldBe >(0L)
+      featureImportances.count() shouldEqual gbm.getFeaturesCols().length
+    }
+
+    test("Cross validation models are null when simple validation is used") {
+      val gbm = configureGBMForProstateDF().setSplitRatio(0.8)
+      val model = gbm.fit(prostateDataFrame)
+
+      val cvModels = model.getCrossValidationModels()
+
+      cvModels should be(null)
+    }
+
+    test("Cross validation models are null if generating of them is disabled") {
+      val gbm = configureGBMForProstateDF().setKeepCrossValidationModels(true)
+      val model = gbm.fit(prostateDataFrame)
+
+      val cvModels = model.getCrossValidationModels()
+
+      cvModels should be(null)
+    }
+  }
 }

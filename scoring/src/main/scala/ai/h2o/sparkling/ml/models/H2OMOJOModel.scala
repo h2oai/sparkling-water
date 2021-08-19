@@ -29,7 +29,7 @@ import ai.h2o.sparkling.ml.utils.Utils
 import ai.h2o.sparkling.utils.SparkSessionUtils
 import com.google.gson._
 import hex.ModelCategory
-import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.param.{IntParam, ParamMap}
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
@@ -72,6 +72,10 @@ abstract class H2OMOJOModel
   protected final val featureImportances: NullableDataFrameParam =
     new NullableDataFrameParam(this, "featureImportances", "Feature imporanteces.")
 
+  private[sparkling] final val numberOfCrossValidationModels: IntParam =
+    new IntParam(this, "numberOfCrossValidationModels", "Number of cross validation models.")
+  protected var crossValidationModels: Array[H2OMOJOModel] = null
+
   setDefault(
     modelDetails -> null,
     trainingMetrics -> Map.empty[String, Double],
@@ -80,7 +84,8 @@ abstract class H2OMOJOModel
     trainingParams -> Map.empty[String, String],
     modelCategory -> null,
     scoringHistory -> null,
-    featureImportances -> null)
+    featureImportances -> null,
+    numberOfCrossValidationModels -> 0)
 
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
@@ -115,6 +120,26 @@ abstract class H2OMOJOModel
   def getScoringHistory(): DataFrame = $(scoringHistory)
 
   def getFeatureImportances(): DataFrame = $(featureImportances)
+
+  def getCrossValidationModels(): Seq[this.type] = {
+    if (crossValidationModels == null) {
+      null
+    } else {
+      val result = new Array[this.type](crossValidationModels.length)
+      for (i <- 0 until crossValidationModels.length) {
+        result(i) = crossValidationModels(i).asInstanceOf[this.type]
+      }
+      result
+    }
+  }
+
+  private[sparkling] def setCrossValidationModels(models: Array[H2OMOJOModel]): this.type = {
+    crossValidationModels = models
+    if (models != null) {
+      set(numberOfCrossValidationModels, models.length)
+    }
+    this
+  }
 
   /**
     * The method returns an internal H2O-3 mojo model, which can be subsequently used with

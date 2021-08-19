@@ -74,7 +74,7 @@ class H2OWord2Vec(override val uid: String)
     train.delete()
     val settings = H2OMOJOSettings(predictionCol = getOutputCol)
     H2OModel(modelId)
-      .toMOJOModel(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName), settings)
+      .toMOJOModel(Identifiable.randomUID(classOf[H2OWord2Vec].getSimpleName), settings, false)
   }
 
   @DeveloperApi

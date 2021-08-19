@@ -49,5 +49,5 @@ private[models] trait HasMojo {
     this
   }
 
-  protected def getMojo(): File = new File(SparkFiles.get(mojoFileName))
+  private[sparkling] def getMojo(): File = new File(SparkFiles.get(mojoFileName))
 }

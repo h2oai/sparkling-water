@@ -367,12 +367,20 @@ There are several methods to obtain metrics from the MOJO model. All return a ma
 - ``getValidationMetrics`` - obtain validation metrics
 - ``getCrossValidationMetrics`` - obtain cross validation metrics
 
-We also have method ``getCurrentMetrics`` which gets one of the metrics above based on the following algorithm:
+There is also the method ``getCurrentMetrics`` which gets one of the metrics above based on the following algorithm:
 
 If cross-validation was used, ie, ``setNfolds`` was called and the value was higher than zero, this method returns cross-validation
 metrics. If cross-validation was not used, but the validation frame was used, the method returns validation metrics. The validation
 frame is used if ``setSplitRatio`` was called with the value lower than one. If neither cross-validation nor validation frame
 was used, this method returns the training metrics.
+
+Obtaining Cross Validation Models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If the model was trained with SW API (i.e. the model wasn't loaded with the method ``H2OMOJOModel.createFromMojo()``),
+the algorithm parameter ``keepCrossValidationModels`` was set to ``true`` and cross-validation was enabled during
+the training phase, a user can access the sequence cross-validation models by calling the method ``getCrossValidationModels()``.
+The returned models are regular Sparkling Water MOJO models with model metrics and other important information.
+*[This feature is not available in SW R API.]*
 
 Obtaining Leaf Node Assignments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

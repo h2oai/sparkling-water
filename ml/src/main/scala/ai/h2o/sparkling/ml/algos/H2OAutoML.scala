@@ -94,7 +94,10 @@ class H2OAutoML(override val uid: String)
     binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
 
     val result = H2OModel(leaderModelId)
-      .toMOJOModel(Identifiable.randomUID(algoName), H2OMOJOSettings.createFromModelParams(this))
+      .toMOJOModel(
+        Identifiable.randomUID(algoName),
+        H2OMOJOSettings.createFromModelParams(this),
+        getKeepCrossValidationModels())
     deleteRegisteredH2OFrames()
     result
   }
@@ -167,7 +170,10 @@ class H2OAutoML(override val uid: String)
     getLeaderboard().select("model_id").collect().map { row =>
       val modelId = row.getString(0)
       H2OModel(modelId)
-        .toMOJOModel(Identifiable.randomUID(modelId), H2OMOJOSettings.createFromModelParams(this))
+        .toMOJOModel(
+          Identifiable.randomUID(modelId),
+          H2OMOJOSettings.createFromModelParams(this),
+          getKeepCrossValidationModels())
     }
   }
 
