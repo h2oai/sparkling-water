@@ -25,6 +25,7 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
     val specificMojoModels = mojoSubstitutionContexts.map(_.entityName)
     val imports = Seq(
       "pyspark.ml.util._jvm",
+      "py4j.java_gateway.JavaObject",
       "ai.h2o.sparkling.Initializer.Initializer",
       "ai.h2o.sparkling.ml.models.H2OMOJOSettings.H2OMOJOSettings",
       "ai.h2o.sparkling.ml.models.H2OMOJOModelBase.H2OMOJOModelBase",
@@ -74,31 +75,42 @@ object MOJOModelFactoryTemplate extends ((Seq[AlgorithmSubstitutionContext]) => 
     }
 
     val models = s"""
-       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelBase, H2OMOJOModelFactory):
+       |class WithCVModels(H2OMOJOModelFactory):
+       |    def getCrossValidationModels(self):
+       |        cvModels = self._java_obj.getCrossValidationModelsAsArray()
+       |        if cvModels is None:
+       |            return None
+       |        elif isinstance(cvModels, JavaObject):
+       |            return [createSpecificMOJOModel(v) for v in cvModels]
+       |        else:
+       |            raise TypeError("Invalid type.")
+       |
+       |
+       |class H2OMOJOModel(H2OMOJOModelParams, H2OMOJOModelBase, WithCVModels):
        |    pass
        |
        |
-       |class H2OAlgorithmMOJOModel(H2OAlgorithmMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OAlgorithmMOJOModel(H2OAlgorithmMOJOModelParams, WithCVModels):
        |    pass
        |
        |
-       |class H2OFeatureMOJOModel(H2OFeatureMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OFeatureMOJOModel(H2OFeatureMOJOModelParams, WithCVModels):
        |    pass
        |
        |
-       |class H2OUnsupervisedMOJOModel(H2OUnsupervisedMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OUnsupervisedMOJOModel(H2OUnsupervisedMOJOModelParams, WithCVModels):
        |    pass
        |
        |
-       |class H2OSupervisedMOJOModel(H2OSupervisedMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OSupervisedMOJOModel(H2OSupervisedMOJOModelParams, WithCVModels):
        |    pass
        |
        |
-       |class H2OTreeBasedUnsupervisedMOJOModel(H2OTreeBasedUnsupervisedMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OTreeBasedUnsupervisedMOJOModel(H2OTreeBasedUnsupervisedMOJOModelParams, WithCVModels):
        |    pass
        |
        |
-       |class H2OTreeBasedSupervisedMOJOModel(H2OTreeBasedSupervisedMOJOModelParams, H2OMOJOModelFactory):
+       |class H2OTreeBasedSupervisedMOJOModel(H2OTreeBasedSupervisedMOJOModelParams, WithCVModels):
        |    pass
        |""".stripMargin
 

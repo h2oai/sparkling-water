@@ -195,3 +195,34 @@ def testMojoModelCouldBeSavedAndLoaded(gbmModel, prostateDataset):
     result = loadedModel.transform(prostateDataset).drop("detailed_prediction")
 
     unit_test_utils.assert_data_frames_are_identical(expected, result)
+
+
+def testCrossValidationModelsAreAvailableAfterSavingAndLoading(prostateDataset):
+    path = "file://" + os.path.abspath("build/testCrossValidationModelsAreAvialableAfterSavingAndLoading")
+    nfolds = 3
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+                 nfolds=nfolds, keepCrossValidationModels=True)
+    model = gbm.fit(prostateDataset)
+    model.write().overwrite().save(path)
+    loadedModel = H2OMOJOModel.load(path)
+    cvModels = loadedModel.getCrossValidationModels()
+
+    assert len(cvModels) == nfolds
+
+    result = loadedModel.transform(prostateDataset)
+    cvResult = cvModels[0].transform(prostateDataset)
+
+    assert cvResult.schema == result.schema
+    assert cvResult.count() == result.count()
+    assert 0 < cvModels[0].getTrainingMetrics()['AUC'] < 1
+    assert 0 < cvModels[0].getValidationMetrics()['AUC'] < 1
+    assert cvModels[0].getCrossValidationMetrics() == {}
+    assert cvModels[0].getModelDetails() == model.getCrossValidationModels()[0].getModelDetails()
+
+
+def testCrossValidationModelsAreNoneIfKeepCrossValidationModelsIsFalse(prostateDataset):
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+                 nfolds=3, keepCrossValidationModels=False)
+    model = gbm.fit(prostateDataset)
+
+    assert model.getCrossValidationModels() is None
