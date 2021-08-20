@@ -27,20 +27,85 @@ object ModelMetricsTemplate
   def apply(substitutionContext: ModelMetricsSubstitutionContext): String = {
     val metrics = resolveMetrics(substitutionContext)
 
-    val imports = Seq("com.google.gson.JsonObject")
+    val imports = Seq("com.google.gson.JsonObject", "org.apache.spark.sql.DataFrame")
+    val parameters = "(override val uid: String)"
 
     val entitySubstitutionContext = EntitySubstitutionContext(
       substitutionContext.namespace,
       substitutionContext.entityName,
       substitutionContext.parentEntities,
-      imports)
+      imports,
+      parameters)
 
     generateEntity(entitySubstitutionContext, "class") {
-      s"""
-      |  def setMetrics(json: JsonObject): Unit= {
-      |     ???
-      |  }
-      """.stripMargin
+      s"""${generateParameterDefinitions(metrics)}
+         |
+         |  /// Getters
+         |${generateGetters(metrics)}
+         |
+         |  def setMetrics(json: JsonObject, context: String): Unit = {
+         |${generateValueAssignments(metrics)}
+         |  }""".stripMargin
     }
+  }
+
+  private def resolveComment(metric: Metric): String = {
+    if (metric.comment.endsWith(".")) metric.comment else metric.comment + "."
+  }
+
+  private def resolveMetricType(metric: Metric): String = metric.dataType match {
+    case x if x.isPrimitive => x.getSimpleName.capitalize
+    case x if x.getSimpleName == "String" => "String"
+    case x if x.getSimpleName == "TwoDimTableV3" => "DataFrame"
+    case x if x.getSimpleName == "ConfusionMatrixV3" => "DataFrame"
+  }
+
+  private def generateGetters(metrics: Seq[Metric]): String = {
+    metrics.map { metric =>
+      val metricType = resolveMetricType(metric)
+      s"""  /**
+         |    * ${resolveComment(metric)}
+         |    */
+         |  def get${metric.swMetricName}(): $metricType = $$(${metric.swFieldName})""".stripMargin
+    }.mkString("\n\n")
+  }
+
+  private def generateParameterDefinitions(metrics: Seq[Metric]): String = {
+    metrics.map { metric =>
+      val metricType = resolveMetricType(metric)
+      val prefix = if (metric.dataType.isPrimitive) {
+        metric.dataType.getSimpleName
+      } else {
+        s"nullable${metricType.capitalize}"
+      }
+      val constructorMethod = prefix + "Param"
+      val comment = resolveComment(metric)
+      s"""  protected val ${metric.swFieldName} = ${constructorMethod}(
+         |    name = "${metric.swFieldName}",
+         |    doc = \"\"\"$comment\"\"\")""".stripMargin
+    }.mkString("\n\n")
+  }
+
+  private def generateValueExtraction(metric: Metric): String = metric.dataType match {
+    case x if x.isPrimitive => s"""json.get("${metric.h2oName}").getAs${x.getSimpleName.capitalize}()"""
+    case x if x.getSimpleName == "String" => s"""json.get("${metric.h2oName}").getAsString()"""
+    case x if x.getSimpleName == "TwoDimTableV3" => s"""jsonFieldToDataFrame(json, "${metric.h2oName}")"""
+    case x if x.getSimpleName == "ConfusionMatrixV3" =>
+      s"""jsonFieldToDataFrame(json.getAsJsonObject("${metric.h2oName}"), "table")"""
+  }
+
+  private def generateValueAssignments(metrics: Seq[Metric]): String = {
+    metrics.map { metric =>
+      s"""    if (json.has("${metric.h2oName}")) {
+         |      try {
+         |        set("${metric.swFieldName}", ${generateValueExtraction(metric)})
+         |      } catch {
+         |        case e: Throwable =>
+         |          logError("Unsuccessful try to extract '${metric.h2oName}' from " + context, e)
+         |      }
+         |    } else {
+         |      logWarning("The metric '${metric.h2oName}' in " + context + " does not exist.")
+         |    }""".stripMargin
+    }.mkString("\n\n")
   }
 }

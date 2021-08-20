@@ -18,12 +18,22 @@
 package ai.h2o.sparkling.api.generation.common
 
 object MetricNameConverter {
-  val h2oToSWExceptions: Map[String, String] = Map.empty[String, String]
+  val h2oToSWExceptions: Map[String, (String, String)] = Map(
+    "cm" -> ("confusionMatrix", "ConfusionMatrix"),
+    "AUC" -> ("auc", "AUC"),
+    "RMSE" -> ("rmse", "RMSE"),
+    "MSE" -> ("mse", "MSE"),
+    "Gini" -> ("gini", "Gini"),
+    "AIC" -> ("aic", "AIC"),
+    "pr_auc" -> ("prauc", "PRAUC"),
+    "mae" -> ("mae", "MAE"),
+    "rmsle" -> ("rmsle", "RMSLE"))
 
-  def convertFromH2OToSW(parameterName: String): String = {
+  def convertFromH2OToSW(parameterName: String): (String, String) = {
+
     val parts = parameterName.split("_")
     val capitalizedParts = parts.head +: parts.tail.map(_.capitalize)
     val regularValue = capitalizedParts.mkString
-    h2oToSWExceptions.getOrElse(parameterName, regularValue)
+    h2oToSWExceptions.getOrElse(parameterName, (regularValue, regularValue.capitalize))
   }
 }

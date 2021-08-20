@@ -17,14 +17,29 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-import water.api.schemas3.ModelMetricsBinomialV3
+import water.api.{ModelMetricsAnomalyV3, ModelMetricsGLRMV99, ModelMetricsPCAV3, ModelMetricsSVDV99}
+import water.api.schemas3._
 
 trait MetricsConfigurations {
   def metricsConfiguration: Seq[ModelMetricsSubstitutionContext] = {
     val metrics = Seq[(String, Class[_], Seq[String])](
-      ("H2OBinomialMetrics", classOf[ModelMetricsBinomialV3[_, _]], Seq("H2OMetrics")))
+      ("H2OBinomialMetrics", classOf[ModelMetricsBinomialV3[_, _]], Seq("H2OMetrics")),
+      ("H2OBinomialGLMMetrics", classOf[ModelMetricsBinomialGLMV3], Seq("H2OMetrics")),
+      ("H2ORegressionMetrics", classOf[ModelMetricsRegressionV3[_, _]], Seq("H2OMetrics")),
+      ("H2ORegressionGLMMetrics", classOf[ModelMetricsRegressionGLMV3], Seq("H2OMetrics")),
+      ("H2ORegressionCoxPHMetrics", classOf[ModelMetricsRegressionCoxPHV3], Seq("H2OMetrics")),
+      ("H2OMultinomialMetrics", classOf[ModelMetricsMultinomialV3[_, _]], Seq("H2OMetrics")),
+      ("H2OMultinomialGLMMetrics", classOf[ModelMetricsMultinomialGLMV3], Seq("H2OMetrics")),
+      ("H2OOrdinalMetrics", classOf[ModelMetricsOrdinalV3[_, _]], Seq("H2OMetrics")),
+      ("H2OOrdinalGLMMetrics", classOf[ModelMetricsOrdinalGLMV3], Seq("H2OMetrics")),
+      ("H2OAnomalyMetrics", classOf[ModelMetricsAnomalyV3], Seq("H2OMetrics")),
+      ("H2OClusteringMetrics", classOf[ModelMetricsClusteringV3], Seq("H2OMetrics")),
+      ("H2OAutoEncoderMetrics", classOf[ModelMetricsAutoEncoderV3], Seq("H2OMetrics")),
+      ("H2OGLRMMetrics", classOf[ModelMetricsGLRMV99], Seq("H2OMetrics")),
+      ("H2OPCAMetrics", classOf[ModelMetricsPCAV3], Seq("H2OMetrics")))
 
-    for ((entityName, metricClass: Class[_], parents) <- metrics)
+
+      for ((entityName, metricClass: Class[_], parents) <- metrics)
       yield ModelMetricsSubstitutionContext(namespace = "ai.h2o.sparkling.ml.metrics", entityName, metricClass, parents)
   }
 }

@@ -325,7 +325,7 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
-  private def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
+  protected def jsonFieldToDataFrame(outputJson: JsonObject, fieldName: String): DataFrame = {
     if (outputJson == null || !outputJson.has(fieldName) || outputJson.get(fieldName).isJsonNull) {
       null
     } else {
@@ -347,6 +347,7 @@ trait H2OMOJOModelUtils extends Logging {
             .map { colId =>
               table.getCell(colId, rowId) match {
                 case str: String if table.getColTypes()(colId) == ColumnType.INT => Integer.parseInt(str)
+                case str: String if table.getColTypes()(colId) == ColumnType.FLOAT => java.lang.Float.parseFloat(str)
                 case value => value
               }
             }
