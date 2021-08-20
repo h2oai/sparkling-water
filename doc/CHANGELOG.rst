@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+v3.32.1.6-1 (2021-08-20)
+------------------------
+Downloads:
+
+   - for Spark 2.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.6-1-2.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.1/3.32.1.6-1-2.1/index.html>`__
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.6-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.32.1.6-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.6-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.32.1.6-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.6-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.32.1.6-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.6-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.32.1.6-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.6-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.32.1.6-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2601 <https://0xdata.atlassian.net/browse/SW-2601>`__ - Upgrade to H2O 3.32.1.6
+
+-  Bug
+
+   -  `SW-2598 <https://0xdata.atlassian.net/browse/SW-2598>`__ - Fix Version Check in sparkling-env.sh Script
+   -  `SW-2597 <https://0xdata.atlassian.net/browse/SW-2597>`__ - Algorithms Supporting Cross-validation Must Remove Fold Column from the List of Features
+
+-  New Feature
+
+   -  `SW-2596 <https://0xdata.atlassian.net/browse/SW-2596>`__ - Add RMSLE and MAE to model metric maps
+
 v3.32.1.5-1 (2021-08-06)
 ------------------------
 Downloads:
