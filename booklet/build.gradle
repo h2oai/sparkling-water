@@ -2,6 +2,7 @@ description = "Sparkling Water Booklet"
 
 dependencies {
   implementation("org.scala-lang:scala-library:${scalaVersion}")
+  implementation("org.scala-lang:scala-reflect:${scalaVersion}")
   implementation(project(':sparkling-water-utils'))
   implementation(project(':sparkling-water-core'))
   implementation("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
