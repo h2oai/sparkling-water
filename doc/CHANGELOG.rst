@@ -21,6 +21,10 @@ Downloads:
    -  `SW-2598 <https://0xdata.atlassian.net/browse/SW-2598>`__ - Fix Version Check in sparkling-env.sh Script
    -  `SW-2597 <https://0xdata.atlassian.net/browse/SW-2597>`__ - Algorithms Supporting Cross-validation Must Remove Fold Column from the List of Features
 
+-  Engineering Story
+
+  -  `SW-2602 <https://0xdata.atlassian.net/browse/SW-2602>`__ - Fix booklet build for Spark 2.4
+
 -  New Feature
 
    -  `SW-2596 <https://0xdata.atlassian.net/browse/SW-2596>`__ - Add RMSLE and MAE to model metric maps
