@@ -15,26 +15,31 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.ml.metrics
 
-import water.api.API
+trait H2OGLMMetrics extends H2OMetrics {
+  /**
+    * residual deviance.
+    */
+  def getResidualDeviance(): Double
 
-trait MetricResolver {
-  def resolveMetrics(substitutionContext: ModelMetricsSubstitutionContext): Seq[Metric] = {
-    val h2oSchemaClass = substitutionContext.h2oSchemaClass
+  /**
+    * null deviance.
+    */
+  def getNullDeviance(): Double
 
-    val parameters =
-      for (field <- h2oSchemaClass.getDeclaredFields
-           if field.getAnnotation(classOf[API]) != null && !IgnoredMetricFields.all().contains(field.getName))
-      yield {
-        val (swFieldName, swMetricName) = MetricNameConverter.convertFromH2OToSW(field.getName)
-        Metric(
-          swFieldName,
-          swMetricName,
-          field.getName,
-          field.getType,
-          field.getAnnotation(classOf[API]).help())
-      }
-    parameters
-  }
+  /**
+    * AIC.
+    */
+  def getAIC(): Double
+
+  /**
+    * null DOF.
+    */
+  def getNullDegreesOfFreedom(): Long
+
+  /**
+    * residual DOF.
+    */
+  def getResidualDegreesOfFreedom(): Long
 }

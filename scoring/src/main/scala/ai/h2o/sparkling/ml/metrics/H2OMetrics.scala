@@ -17,51 +17,42 @@
 
 package ai.h2o.sparkling.ml.metrics
 
+import ai.h2o.sparkling.ml.internals.H2OModelCategory
 import ai.h2o.sparkling.ml.models.H2OMOJOModelUtils
 import ai.h2o.sparkling.ml.params.ParameterConstructorMethods
 import com.google.gson.JsonObject
 import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.ParamMap
 
 trait H2OMetrics extends ParameterConstructorMethods with H2OMOJOModelUtils with Logging {
-  /// Getters
-  /**
-    * The time in mS since the epoch for the start of this scoring run.
-    */
-  def getScoringTime(): Long
 
-  /**
-    * The Mean Squared Error of the prediction for this scoring run.
-    */
-  def getMSE(): Double
-
-  /**
-    * The Root Mean Squared Error of the prediction for this scoring run.
-    */
-  def getRMSE(): Double
-
-  /**
-    * Number of observations.
-    */
-  def getNobs(): Long
-
-  /**
-    * Name of custom metric.
-    */
-  def getCustomMetricName(): String
-
-  /**
-    * Value of custom metric.
-    */
-  def getCustomMetricValue(): Double
-
-  def setMetrics(json: JsonObject, context: String): Unit
-
-  override def copy(extra: ParamMap): this.type = defaultCopy(extra)
+  def setMetrics(json: JsonObject, context: String): Unit = {}
 }
 
 object H2OMetrics {
-  def loadMetrics(json: JsonObject): H2OMetrics = {
-    ??? // TODO
+  def loadMetrics(
+      json: JsonObject,
+      metricsType: String,
+      algoName: String,
+      modelCategory: H2OModelCategory.Value): H2OMetrics = {
+
+    val metricsObject = modelCategory match {
+      case H2OModelCategory.Binomial if algoName == "glm" => new H2OBinomialGLMMetrics()
+      case H2OModelCategory.Binomial => new H2OBinomialMetrics()
+      case H2OModelCategory.Multinomial if algoName == "glm" => new H2OMultinomialGLMMetrics()
+      case H2OModelCategory.Multinomial => new H2OMultinomialMetrics()
+      case H2OModelCategory.Ordinal if algoName == "glm" => new H2OOrdinalGLMMetrics()
+      case H2OModelCategory.Ordinal => new H2OOrdinalMetrics()
+      case H2OModelCategory.Regression if algoName == "glm" => new H2ORegressionGLMMetrics()
+      case H2OModelCategory.Regression => new H2ORegressionMetrics()
+      case H2OModelCategory.Clustering => new H2OClusteringMetrics()
+      case H2OModelCategory.AnomalyDetection => new H2OAnomalyMetrics()
+      case H2OModelCategory.AutoEncoder => new H2OAutoEncoderMetrics()
+      case H2OModelCategory.CoxPH => new H2ORegressionCoxPHMetrics()
+      case _ if algoName == "glrm" => new H2OGLRMMetrics()
+      case _ if algoName == "pca" => new H2OPCAMetrics()
+      case _ => new H2OCommonMetrics()
+    }
+    metricsObject.setMetrics(json, s"${algoName}.mojo_details.output.${metricsType}")
+    metricsObject
   }
 }

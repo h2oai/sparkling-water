@@ -199,17 +199,21 @@ abstract class H2OMOJOModel
 
   private[sparkling] def setParameters(mojoModel: MojoModel, modelJson: JsonObject, settings: H2OMOJOSettings): Unit = {
     val outputJson = modelJson.get("output").getAsJsonObject
+    val modelCategory = extractModelCategory(outputJson)
     set(this.convertUnknownCategoricalLevelsToNa -> settings.convertUnknownCategoricalLevelsToNa)
     set(this.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     set(this.modelDetails -> getModelDetails(modelJson))
     set(this.trainingMetrics -> extractMetrics(outputJson, "training_metrics"))
-    set(this.trainingMetricsObject -> extractMetricsObject(outputJson, "training_metrics"))
+    set(this.trainingMetricsObject ->
+      extractMetricsObject(outputJson, "training_metrics", mojoModel._algoName, modelCategory))
     set(this.validationMetrics -> extractMetrics(outputJson, "validation_metrics"))
-    set(this.validationMetricsObject -> extractMetricsObject(outputJson, "validation_metrics"))
+    set(this.validationMetricsObject ->
+      extractMetricsObject(outputJson, "validation_metrics", mojoModel._algoName, modelCategory))
     set(this.crossValidationMetrics -> extractMetrics(outputJson, "cross_validation_metrics"))
-    set(this.crossValidationMetricsObject -> extractMetricsObject(outputJson, "cross_validation_metrics"))
+    set(this.crossValidationMetricsObject ->
+      extractMetricsObject(outputJson, "cross_validation_metrics", mojoModel._algoName, modelCategory))
     set(this.trainingParams -> extractParams(modelJson))
-    set(this.modelCategory -> extractModelCategory(outputJson).toString)
+    set(this.modelCategory -> modelCategory.toString)
     set(this.scoringHistory -> extractScoringHistory(outputJson))
     set(this.featureImportances -> extractFeatureImportances(outputJson))
     set(this.featureTypes -> extractFeatureTypes(outputJson))
@@ -287,13 +291,17 @@ trait H2OMOJOModelUtils extends Logging {
     }
   }
 
-  protected def extractMetricsObject(json: JsonObject, metricType: String): H2OMetrics = {
+  protected def extractMetricsObject(
+      json: JsonObject,
+      metricType: String,
+      algoName: String,
+      modelCategory: H2OModelCategory.Value): H2OMetrics = {
     val groupJson = json.get(metricType)
     if (groupJson.isJsonNull) {
       null
     } else {
       val metricGroup = groupJson.getAsJsonObject()
-      H2OMetrics.loadMetrics(metricGroup)
+      H2OMetrics.loadMetrics(metricGroup, metricType, algoName, modelCategory)
     }
   }
 

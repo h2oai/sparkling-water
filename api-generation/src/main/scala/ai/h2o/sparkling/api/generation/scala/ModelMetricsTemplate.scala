@@ -27,7 +27,11 @@ object ModelMetricsTemplate
   def apply(substitutionContext: ModelMetricsSubstitutionContext): String = {
     val metrics = resolveMetrics(substitutionContext)
 
-    val imports = Seq("com.google.gson.JsonObject", "org.apache.spark.sql.DataFrame")
+    val imports = Seq(
+      "com.google.gson.JsonObject",
+      "org.apache.spark.sql.DataFrame",
+      "org.apache.spark.ml.param.ParamMap",
+      "org.apache.spark.ml.util.Identifiable")
     val parameters = "(override val uid: String)"
 
     val entitySubstitutionContext = EntitySubstitutionContext(
@@ -38,14 +42,20 @@ object ModelMetricsTemplate
       parameters)
 
     generateEntity(entitySubstitutionContext, "class") {
-      s"""${generateParameterDefinitions(metrics)}
+      s"""def this() = this(Identifiable.randomUID("${substitutionContext.entityName}"))
+         |
+         |${generateParameterDefinitions(metrics)}
          |
          |  /// Getters
          |${generateGetters(metrics)}
          |
-         |  def setMetrics(json: JsonObject, context: String): Unit = {
+         |  override def setMetrics(json: JsonObject, context: String): Unit = {
+         |    super.setMetrics(json, context)
+         |
          |${generateValueAssignments(metrics)}
-         |  }""".stripMargin
+         |  }
+         |
+         |  override def copy(extra: ParamMap): this.type = defaultCopy(extra)""".stripMargin
     }
   }
 
