@@ -17,26 +17,27 @@
 
 package ai.h2o.sparkling.api.generation.common
 
-import water.api.{ModelMetricsAnomalyV3, ModelMetricsGLRMV99, ModelMetricsPCAV3, ModelMetricsSVDV99}
+import water.api.{ModelMetricsAnomalyV3, ModelMetricsGLRMV99, ModelMetricsPCAV3}
 import water.api.schemas3._
 
 trait MetricsConfigurations {
   def metricsConfiguration: Seq[ModelMetricsSubstitutionContext] = {
     val metrics = Seq[(String, Class[_], Seq[String])](
-      ("H2OBinomialMetrics", classOf[ModelMetricsBinomialV3[_, _]], Seq("H2OMetrics")),
-      ("H2OBinomialGLMMetrics", classOf[ModelMetricsBinomialGLMV3], Seq("H2OMetrics")),
-      ("H2ORegressionMetrics", classOf[ModelMetricsRegressionV3[_, _]], Seq("H2OMetrics")),
-      ("H2ORegressionGLMMetrics", classOf[ModelMetricsRegressionGLMV3], Seq("H2OMetrics")),
-      ("H2ORegressionCoxPHMetrics", classOf[ModelMetricsRegressionCoxPHV3], Seq("H2OMetrics")),
-      ("H2OMultinomialMetrics", classOf[ModelMetricsMultinomialV3[_, _]], Seq("H2OMetrics")),
-      ("H2OMultinomialGLMMetrics", classOf[ModelMetricsMultinomialGLMV3], Seq("H2OMetrics")),
-      ("H2OOrdinalMetrics", classOf[ModelMetricsOrdinalV3[_, _]], Seq("H2OMetrics")),
-      ("H2OOrdinalGLMMetrics", classOf[ModelMetricsOrdinalGLMV3], Seq("H2OMetrics")),
-      ("H2OAnomalyMetrics", classOf[ModelMetricsAnomalyV3], Seq("H2OMetrics")),
-      ("H2OClusteringMetrics", classOf[ModelMetricsClusteringV3], Seq("H2OMetrics")),
-      ("H2OAutoEncoderMetrics", classOf[ModelMetricsAutoEncoderV3], Seq("H2OMetrics")),
-      ("H2OGLRMMetrics", classOf[ModelMetricsGLRMV99], Seq("H2OMetrics")),
-      ("H2OPCAMetrics", classOf[ModelMetricsPCAV3], Seq("H2OMetrics")))
+      ("H2OCommonMetrics", classOf[ModelMetricsBaseV3[_, _]], Seq("H2OMetrics")),
+      ("H2OBinomialMetrics", classOf[ModelMetricsBinomialV3[_, _]], Seq("H2OCommonMetrics")),
+      ("H2OBinomialGLMMetrics", classOf[ModelMetricsBinomialGLMV3], Seq("H2OBinomialMetrics", "H2OGLMMetrics")),
+      ("H2ORegressionMetrics", classOf[ModelMetricsRegressionV3[_, _]], Seq("H2OCommonMetrics")),
+      ("H2ORegressionGLMMetrics", classOf[ModelMetricsRegressionGLMV3], Seq("H2ORegressionMetrics", "H2OGLMMetrics")),
+      ("H2ORegressionCoxPHMetrics", classOf[ModelMetricsRegressionCoxPHV3], Seq("H2ORegressionMetrics")),
+      ("H2OMultinomialMetrics", classOf[ModelMetricsMultinomialV3[_, _]], Seq("H2OCommonMetrics")),
+      ("H2OMultinomialGLMMetrics", classOf[ModelMetricsMultinomialGLMV3], Seq("H2OMultinomialMetrics", "H2OGLMMetrics")),
+      ("H2OOrdinalMetrics", classOf[ModelMetricsOrdinalV3[_, _]], Seq("H2OCommonMetrics")),
+      ("H2OOrdinalGLMMetrics", classOf[ModelMetricsOrdinalGLMV3], Seq("H2OOrdinalMetrics", "H2OGLMMetrics")),
+      ("H2OAnomalyMetrics", classOf[ModelMetricsAnomalyV3], Seq("H2OCommonMetrics")),
+      ("H2OClusteringMetrics", classOf[ModelMetricsClusteringV3], Seq("H2OCommonMetrics")),
+      ("H2OAutoEncoderMetrics", classOf[ModelMetricsAutoEncoderV3], Seq("H2OCommonMetrics")),
+      ("H2OGLRMMetrics", classOf[ModelMetricsGLRMV99], Seq("H2OCommonMetrics")),
+      ("H2OPCAMetrics", classOf[ModelMetricsPCAV3], Seq("H2OCommonMetrics")))
 
 
       for ((entityName, metricClass: Class[_], parents) <- metrics)
