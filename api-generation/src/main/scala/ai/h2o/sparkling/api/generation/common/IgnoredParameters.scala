@@ -57,7 +57,12 @@ object IgnoredParameters {
           "regression_stop",
           "autoencoder",
           "col_major",
-          "auc_type")
+          "auc_type",
+          "nfolds",
+          "fold_assignment",
+          "keep_cross_validation_models",
+          "keep_cross_validation_predictions",
+          "keep_cross_validation_fold_assignment")
       case _ => Seq.empty
     }
   }
