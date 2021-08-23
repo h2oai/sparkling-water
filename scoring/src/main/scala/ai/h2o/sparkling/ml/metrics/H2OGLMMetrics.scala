@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.metrics
 
 trait H2OGLMMetrics extends H2OMetrics {
+
   /**
     * residual deviance.
     */

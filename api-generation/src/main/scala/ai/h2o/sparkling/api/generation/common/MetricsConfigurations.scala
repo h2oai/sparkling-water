@@ -30,7 +30,10 @@ trait MetricsConfigurations {
       ("H2ORegressionGLMMetrics", classOf[ModelMetricsRegressionGLMV3], Seq("H2ORegressionMetrics", "H2OGLMMetrics")),
       ("H2ORegressionCoxPHMetrics", classOf[ModelMetricsRegressionCoxPHV3], Seq("H2ORegressionMetrics")),
       ("H2OMultinomialMetrics", classOf[ModelMetricsMultinomialV3[_, _]], Seq("H2OCommonMetrics")),
-      ("H2OMultinomialGLMMetrics", classOf[ModelMetricsMultinomialGLMV3], Seq("H2OMultinomialMetrics", "H2OGLMMetrics")),
+      (
+        "H2OMultinomialGLMMetrics",
+        classOf[ModelMetricsMultinomialGLMV3],
+        Seq("H2OMultinomialMetrics", "H2OGLMMetrics")),
       ("H2OOrdinalMetrics", classOf[ModelMetricsOrdinalV3[_, _]], Seq("H2OCommonMetrics")),
       ("H2OOrdinalGLMMetrics", classOf[ModelMetricsOrdinalGLMV3], Seq("H2OOrdinalMetrics", "H2OGLMMetrics")),
       ("H2OAnomalyMetrics", classOf[ModelMetricsAnomalyV3], Seq("H2OCommonMetrics")),
@@ -39,8 +42,7 @@ trait MetricsConfigurations {
       ("H2OGLRMMetrics", classOf[ModelMetricsGLRMV99], Seq("H2OCommonMetrics")),
       ("H2OPCAMetrics", classOf[ModelMetricsPCAV3], Seq("H2OCommonMetrics")))
 
-
-      for ((entityName, metricClass: Class[_], parents) <- metrics)
+    for ((entityName, metricClass: Class[_], parents) <- metrics)
       yield ModelMetricsSubstitutionContext(namespace = "ai.h2o.sparkling.ml.metrics", entityName, metricClass, parents)
   }
 }

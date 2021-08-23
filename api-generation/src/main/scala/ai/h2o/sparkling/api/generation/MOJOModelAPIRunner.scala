@@ -52,9 +52,9 @@ object MOJOModelAPIRunner
     writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
 
     if (languageExtension == "scala")
-    for (metricsContext <- metricsConfiguration) {
-      val content = metricsTemplates(languageExtension)(metricsContext)
-      writeResultToFile(content, metricsContext, languageExtension, destinationDir)
-    }
+      for (metricsContext <- metricsConfiguration) {
+        val content = metricsTemplates(languageExtension)(metricsContext)
+        writeResultToFile(content, metricsContext, languageExtension, destinationDir)
+      }
   }
 }

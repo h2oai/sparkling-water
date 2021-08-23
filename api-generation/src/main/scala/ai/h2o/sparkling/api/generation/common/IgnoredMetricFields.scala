@@ -18,14 +18,15 @@
 package ai.h2o.sparkling.api.generation.common
 
 object IgnoredMetricFields {
-  def all(): Set[String] = Set(
-    "__meta",
-    "domain",
-    "model",
-    "model_checksum",
-    "frame",
-    "frame_checksum",
-    "description",
-    "model_category",
-    "predictions")
+  def all(): Set[String] =
+    Set(
+      "__meta",
+      "domain",
+      "model",
+      "model_checksum",
+      "frame",
+      "frame_checksum",
+      "description",
+      "model_category",
+      "predictions")
 }
