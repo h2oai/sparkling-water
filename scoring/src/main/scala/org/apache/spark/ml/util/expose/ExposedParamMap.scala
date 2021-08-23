@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package org.apache.spark.ml.util.expose
 
-import org.apache.spark.expose.Logging
-import org.apache.spark.ml.util._
-import org.apache.spark.ml.util.expose.DefaultParamsReader
+import org.apache.spark.ml.param.{ParamMap, Params}
 
-private[ml] class H2OReaderBase[T] extends MLReader[T] with H2OParamsReader[T] with Logging {
+trait ExposedParamMap {
+  self: Params =>
 
-  override def load(path: String): T = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    load(metadata)
-  }
+  def getParamMap(): ParamMap = self.paramMap
+
+  def getDefaultParamMap(): ParamMap = self.defaultParamMap
 }

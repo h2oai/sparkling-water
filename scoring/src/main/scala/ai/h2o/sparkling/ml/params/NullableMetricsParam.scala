@@ -18,20 +18,27 @@
 package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
-import org.apache.spark.ml.param.{Param, Params}
-import org.json4s.JsonAST.{JNull, JString}
+import ai.h2o.sparkling.ml.utils.H2OParamsReader
+import org.apache.spark.ml.param.{Param, ParamPair, Params}
+import org.apache.spark.ml.util.expose.DefaultParamsReader.Metadata
+import org.json4s._
+import org.json4s.JsonDSL._
+import org.json4s.JsonAST.JNull
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
 class NullableMetricsParam(parent: Params, name: String, doc: String, isValid: H2OMetrics => Boolean)
-  extends Param[H2OMetrics](parent, name, doc, isValid) {
+  extends Param[H2OMetrics](parent, name, doc, isValid) with H2OParamsReader[H2OMetrics] {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, (_: H2OMetrics) => true)
 
-  override def jsonEncode(dataFrame: H2OMetrics): String = {
-    val ast = if (dataFrame == null) {
+  override def jsonEncode(metrics: H2OMetrics): String = {
+    val ast = if (metrics == null) {
       JNull
     } else {
-      ??? // TODO
+      val params = metrics.getParamMap().toSeq
+      val jsonParams = render(params.map { case ParamPair(p, v) => p.name -> parse(p.jsonEncode(v)) }.toList)
+      val metadataAst = ("class" -> metrics.getClass.getName) ~ ("uid" -> metrics.uid) ~ ("paramMap" -> jsonParams)
+      metadataAst
     }
     compact(render(ast))
   }
@@ -40,10 +47,13 @@ class NullableMetricsParam(parent: Params, name: String, doc: String, isValid: H
     parse(json) match {
       case JNull =>
         null
-      case JString(data) =>
-        ??? // TODO
-      case _ =>
-        throw new IllegalArgumentException(s"Cannot decode $json to H2OMetrics.")
+      case ast =>
+        implicit val format = DefaultFormats
+        val className = (ast \ "class").extract[String]
+        val uid = (ast \ "uid").extract[String]
+        val params = ast \ "paramMap"
+        val metadata = Metadata(className, uid, params, json)
+        load(metadata)
     }
   }
 }

@@ -22,8 +22,9 @@ import ai.h2o.sparkling.ml.models.H2OMOJOModelUtils
 import ai.h2o.sparkling.ml.params.ParameterConstructorMethods
 import com.google.gson.JsonObject
 import org.apache.spark.expose.Logging
+import org.apache.spark.ml.util.expose.ExposedParamMap
 
-trait H2OMetrics extends ParameterConstructorMethods with H2OMOJOModelUtils with Logging {
+trait H2OMetrics extends ParameterConstructorMethods with H2OMOJOModelUtils with Logging with ExposedParamMap {
 
   def setMetrics(json: JsonObject, context: String): Unit = {}
 }
