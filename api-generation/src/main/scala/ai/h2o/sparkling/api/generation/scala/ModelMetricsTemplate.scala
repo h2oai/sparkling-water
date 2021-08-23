@@ -71,29 +71,33 @@ object ModelMetricsTemplate
   }
 
   private def generateGetters(metrics: Seq[Metric]): String = {
-    metrics.map { metric =>
-      val metricType = resolveMetricType(metric)
-      s"""  /**
+    metrics
+      .map { metric =>
+        val metricType = resolveMetricType(metric)
+        s"""  /**
          |    * ${resolveComment(metric)}
          |    */
          |  def get${metric.swMetricName}(): $metricType = $$(${metric.swFieldName})""".stripMargin
-    }.mkString("\n\n")
+      }
+      .mkString("\n\n")
   }
 
   private def generateParameterDefinitions(metrics: Seq[Metric]): String = {
-    metrics.map { metric =>
-      val metricType = resolveMetricType(metric)
-      val prefix = if (metric.dataType.isPrimitive) {
-        metric.dataType.getSimpleName
-      } else {
-        s"nullable${metricType.capitalize}"
-      }
-      val constructorMethod = prefix + "Param"
-      val comment = resolveComment(metric)
-      s"""  protected val ${metric.swFieldName} = ${constructorMethod}(
+    metrics
+      .map { metric =>
+        val metricType = resolveMetricType(metric)
+        val prefix = if (metric.dataType.isPrimitive) {
+          metric.dataType.getSimpleName
+        } else {
+          s"nullable${metricType.capitalize}"
+        }
+        val constructorMethod = prefix + "Param"
+        val comment = resolveComment(metric)
+        s"""  protected val ${metric.swFieldName} = ${constructorMethod}(
          |    name = "${metric.swFieldName}",
          |    doc = \"\"\"$comment\"\"\")""".stripMargin
-    }.mkString("\n\n")
+      }
+      .mkString("\n\n")
   }
 
   private def generateValueExtraction(metric: Metric): String = metric.dataType match {
@@ -105,8 +109,9 @@ object ModelMetricsTemplate
   }
 
   private def generateValueAssignments(metrics: Seq[Metric]): String = {
-    metrics.map { metric =>
-      s"""    if (json.has("${metric.h2oName}")) {
+    metrics
+      .map { metric =>
+        s"""    if (json.has("${metric.h2oName}")) {
          |      try {
          |        set("${metric.swFieldName}", ${generateValueExtraction(metric)})
          |      } catch {
@@ -116,6 +121,7 @@ object ModelMetricsTemplate
          |    } else {
          |      logWarning("The metric '${metric.h2oName}' in " + context + " does not exist.")
          |    }""".stripMargin
-    }.mkString("\n\n")
+      }
+      .mkString("\n\n")
   }
 }
