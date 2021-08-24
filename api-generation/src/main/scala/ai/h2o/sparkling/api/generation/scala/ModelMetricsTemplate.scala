@@ -102,7 +102,8 @@ object ModelMetricsTemplate
 
   private def generateValueExtraction(metric: Metric): String = metric.dataType match {
     case x if x.isPrimitive => s"""json.get("${metric.h2oName}").getAs${x.getSimpleName.capitalize}()"""
-    case x if x.getSimpleName == "String" => s"""json.get("${metric.h2oName}").getAsString()"""
+    case x if x.getSimpleName == "String" =>
+      s"""if (json.get("${metric.h2oName}").isJsonNull) null else json.get("${metric.h2oName}").getAsString()"""
     case x if x.getSimpleName == "TwoDimTableV3" => s"""jsonFieldToDataFrame(json, "${metric.h2oName}")"""
     case x if x.getSimpleName == "ConfusionMatrixV3" =>
       s"""jsonFieldToDataFrame(json.getAsJsonObject("${metric.h2oName}"), "table")"""
