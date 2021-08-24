@@ -27,7 +27,8 @@ import org.json4s.JsonAST.JNull
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
 class NullableMetricsParam(parent: Params, name: String, doc: String, isValid: H2OMetrics => Boolean)
-  extends Param[H2OMetrics](parent, name, doc, isValid) with H2OParamsReader[H2OMetrics] {
+  extends Param[H2OMetrics](parent, name, doc, isValid)
+  with H2OParamsReader[H2OMetrics] {
 
   def this(parent: Params, name: String, doc: String) = this(parent, name, doc, (_: H2OMetrics) => true)
 
