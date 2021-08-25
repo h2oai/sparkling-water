@@ -41,7 +41,8 @@ object MOJOModelTemplate
       "ai.h2o.sparkling.ml.params.ParameterConstructorMethods",
       "hex.genmodel.MojoModel",
       "org.apache.spark.expose.Logging") ++
-      explicitFieldImplementations.map(explicitField => s"ai.h2o.sparkling.ml.params.$explicitField")
+      explicitFieldImplementations.map(explicitField => s"ai.h2o.sparkling.ml.params.$explicitField") ++
+      algorithmSubstitutionContext.specificMetricsClass.map(metrics => s"ai.h2o.sparkling.ml.metrics.$metrics")
 
     val parents = Seq(
       algorithmSubstitutionContext.algorithmType
@@ -84,7 +85,8 @@ object MOJOModelTemplate
          |      case e: Throwable => logError("An error occurred during a try to access H2O MOJO parameters.", e)
          |    }
          |  }
-      """.stripMargin
+         |
+         |${generateMetricsOverrides(algorithmSubstitutionContext.specificMetricsClass)}""".stripMargin
     }
 
     val mojoObject = s"object $entityName extends H2OSpecificMOJOLoader[$entityName]"
@@ -136,5 +138,24 @@ object MOJOModelTemplate
     val rawPrefix = resolveParameterConstructorMethodType(dataType, defaultValue)
     val finalPrefix = if (defaultValue == null || dataType.isEnum) s"nullable${rawPrefix.capitalize}" else rawPrefix
     finalPrefix + "Param"
+  }
+
+  protected def generateMetricsOverrides(metricsClass: Option[String]): String = metricsClass match {
+    case None => ""
+    case Some(metrics) =>
+      s"""  override def getTrainingMetricsObject(): $metrics = {
+         |    val value = super.getTrainingMetricsObject()
+         |    if (value == null) null else value.asInstanceOf[$metrics]
+         |  }
+         |
+         |  override def getValidationMetricsObject(): $metrics = {
+         |    val value = super.getValidationMetricsObject()
+         |    if (value == null) null else value.asInstanceOf[$metrics]
+         |  }
+         |
+         |  override def getCrossValidationMetricsObject(): $metrics = {
+         |    val value = super.getCrossValidationMetricsObject()
+         |    if (value == null) null else value.asInstanceOf[$metrics]
+         |  }""".stripMargin
   }
 }
