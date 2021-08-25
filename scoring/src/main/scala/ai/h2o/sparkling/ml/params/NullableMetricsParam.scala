@@ -19,7 +19,7 @@ package ai.h2o.sparkling.ml.params
 
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
 import ai.h2o.sparkling.ml.utils.H2OParamsReader
-import org.apache.spark.ml.param.{Param, ParamPair, Params}
+import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.ml.util.expose.DefaultParamsReader.Metadata
 import org.json4s._
 import org.json4s.JsonDSL._

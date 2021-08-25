@@ -131,28 +131,33 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     val withDistribution = "DistributionBasedH2OTrainFramePreparation"
     val withFamily = "FamilyBasedH2OTrainFramePreparation"
 
-    val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OXGBoost", classOf[XGBoostParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
-      ("H2OGBM", classOf[GBMParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
-      ("H2ODRF", classOf[DRFParameters], "H2OTreeBasedSupervisedAlgorithm", Seq(withDistribution)),
-      ("H2OGLM", classOf[GLMParameters], "H2OSupervisedAlgorithmWithFoldColumn", Seq(withFamily)),
-      ("H2OGAM", classOf[GAMParameters], "H2OSupervisedAlgorithmWithFoldColumn", Seq(withFamily)),
-      (
-        "H2ODeepLearning",
-        classOf[DeepLearningParameters],
-        "H2OSupervisedAlgorithmWithFoldColumn",
-        Seq(withDistribution)),
-      ("H2OKMeans", classOf[KMeansParameters], "H2OUnsupervisedAlgorithm", Seq("H2OKMeansExtras")),
-      ("H2OCoxPH", classOf[CoxPHParameters], "H2OSupervisedAlgorithm", Seq.empty),
-      ("H2OIsolationForest", classOf[IsolationForestParameters], "H2OTreeBasedUnsupervisedAlgorithm", Seq.empty))
+    val treeSupervised = "H2OTreeBasedSupervisedAlgorithm"
+    val supervised = "H2OSupervisedAlgorithm"
+    val cvSupervised = "H2OSupervisedAlgorithmWithFoldColumn"
+    val unsupervised = "H2OUnsupervisedAlgorithm"
+    val treeUnsupervised = "H2OTreeBasedUnsupervisedAlgorithm"
 
-    for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
+    type IFParameters = IsolationForestParameters
+
+    val algorithms = Seq[(String, Class[_], String, Seq[String], Option[String])](
+      ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), None),
+      ("H2OGBM", classOf[GBMParameters], treeSupervised, Seq(withDistribution), None),
+      ("H2ODRF", classOf[DRFParameters], treeSupervised, Seq(withDistribution), None),
+      ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), Some("H2OGLMMetrics")),
+      ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), None),
+      ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), None),
+      ("H2OKMeans", classOf[KMeansParameters], unsupervised, Seq("H2OKMeansExtras"), Some("H2OClusteringMetrics")),
+      ("H2OCoxPH", classOf[CoxPHParameters], supervised, Seq.empty, Some("H2ORegressionCoxPHMetrics")),
+      ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")))
+
+    for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.algos",
         entityName,
         h2oParametersClass,
         algorithmType,
-        extraParents)
+        extraParents,
+        specificMetricsClass = metricsClass)
   }
 
   def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {
