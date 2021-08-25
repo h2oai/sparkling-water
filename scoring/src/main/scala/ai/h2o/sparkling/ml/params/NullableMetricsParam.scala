@@ -36,8 +36,12 @@ class NullableMetricsParam(parent: Params, name: String, doc: String, isValid: H
     val ast = if (metrics == null) {
       JNull
     } else {
-      val params = metrics.params.filter(p => metrics.isSet(p)).map{ p => metrics.getParam(p.name) }
-      val jsonParams = render(params.map { p => p.name -> parse(p.jsonEncode(metrics.getOrDefault(p))) }.toList)
+      val params = metrics.params.filter(p => metrics.isSet(p)).map { p =>
+        metrics.getParam(p.name)
+      }
+      val jsonParams = render(params.map { p =>
+        p.name -> parse(p.jsonEncode(metrics.getOrDefault(p)))
+      }.toList)
       val metadataAst = ("class" -> metrics.getClass.getName) ~ ("uid" -> metrics.uid) ~ ("paramMap" -> jsonParams)
       metadataAst
     }
