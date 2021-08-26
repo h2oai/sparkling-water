@@ -18,10 +18,11 @@
 package ai.h2o.sparkling.ml.algos
 
 import ai.h2o.sparkling.ml.internals.H2OModel
+import ai.h2o.sparkling.ml.metrics.{H2ORegressionCoxPHMetrics, MetricsAssertions}
+import ai.h2o.sparkling.ml.models.H2OCoxPHMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.IntegerType
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -105,5 +106,31 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
     predictions.count() shouldBe dataset.count()
     predictions.filter("prediction is not null").count() shouldBe dataset.count()
     predictions.first().getDouble(0) shouldBe (0.20032351116082292 +- 0.0001)
+  }
+
+  private def assertMetrics(model: H2OCoxPHMOJOModel): Unit = {
+    assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assert(model.getValidationMetricsObject() == null)
+    assert(model.getValidationMetrics() == Map())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics(metricsObject: H2ORegressionCoxPHMetrics, metrics: Map[String, Double]): Unit = {
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+  }
+
+  test("test metric objects") {
+    val algo = new H2OCoxPH()
+      .setStartCol("start")
+      .setStopCol("stop")
+      .setLabelCol("event")
+      .setIgnoredCols(Array("id"))
+    val model = algo.fit(dataset)
+    assertMetrics(model)
+
+    model.write.overwrite().save("ml/build/coxph_model_metrics")
+    val loadedModel = H2OCoxPHMOJOModel.load("ml/build/coxph_model_metrics")
+    assertMetrics(loadedModel)
   }
 }
