@@ -29,6 +29,7 @@ public enum H2OMetric {
   NullDegreesOfFreedom(false),
   AIC(true),
   AUC(true),
+  PRAUC(true),
   Gini(true),
   F1(true),
   F2(true),
@@ -46,7 +47,19 @@ public enum H2OMetric {
   Betweenss(true),
   TotWithinss(false),
   Totss(false),
-  MeanPerClassError(false);
+  MeanPerClassError(false),
+  ScoringTime(false),
+  Nobs(true),
+  MeanNormalizedScore(false),
+  MeanScore(false),
+  Concordance(true),
+  Concordant(true),
+  Discordant(false),
+  TiedY(true),
+  NumErr(false),
+  NumCnt(true),
+  CatErr(false),
+  CatCnt(true);
 
   public boolean higherTheBetter() {
     return higherTheBetter;

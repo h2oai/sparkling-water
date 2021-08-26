@@ -27,7 +27,13 @@ object MetricNameConverter {
     "AIC" -> ("aic", "AIC"),
     "pr_auc" -> ("prauc", "PRAUC"),
     "mae" -> ("mae", "MAE"),
-    "rmsle" -> ("rmsle", "RMSLE"))
+    "rmsle" -> ("rmsle", "RMSLE"),
+    "multinomial_auc_table" -> ("multinomialAUCTable", "MultinomialAUCTable"),
+    "multinomial_aucpr_table" -> ("multinomialPRAUCTable", "MultinomialPRAUCTable"),
+    "numerr" -> ("numErr", "NumErr"),
+    "numcnt" -> ("numCnt", "NumCnt"),
+    "caterr" -> ("catErr", "CatErr"),
+    "catcnt" -> ("catCnt", "CatCnt"))
 
   def convertFromH2OToSW(parameterName: String): (String, String) = {
 

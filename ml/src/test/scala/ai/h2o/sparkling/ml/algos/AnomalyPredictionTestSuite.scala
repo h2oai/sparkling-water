@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.metrics.{H2OAnomalyMetrics, MetricsAssertions}
+import ai.h2o.sparkling.ml.models.H2OIsolationForestMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -123,5 +125,27 @@ class AnomalyPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
 
     assert(schema == expectedSchema)
     assert(schema == expectedSchemaByTransform)
+  }
+
+  private def assertMetrics(model: H2OIsolationForestMOJOModel): Unit = {
+    assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assert(model.getValidationMetricsObject() == null)
+    assert(model.getValidationMetrics() == Map())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics(metricsObject: H2OAnomalyMetrics, metrics: Map[String, Double]): Unit = {
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+  }
+
+  test("test anomaly metric objects") {
+    val algo = new H2OIsolationForest().setSeed(42)
+    val model = algo.fit(dataset)
+    assertMetrics(model)
+
+    model.write.overwrite().save("ml/build/anomaly_model_metrics")
+    val loadedModel = H2OIsolationForestMOJOModel.load("ml/build/anomaly_model_metrics")
+    assertMetrics(loadedModel)
   }
 }

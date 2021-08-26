@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.metrics._
+import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
@@ -136,5 +138,52 @@ class MultinomialPredictionTestSuite extends FunSuite with Matchers with SharedH
     assert(domainValues("sepal_wid") == null)
     assert(domainValues("petal_len") == null)
     assert(domainValues("petal_wid") == null)
+  }
+
+  private def assertMetrics[T](model: H2OMOJOModel): Unit = {
+    assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assertMetrics[T](model.getValidationMetricsObject(), model.getValidationMetrics())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics[T](metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {
+    metricsObject.isInstanceOf[T] should be(true)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+    val multinomialObject = metricsObject.asInstanceOf[H2OMultinomialMetrics]
+    multinomialObject.getConfusionMatrix().count() > 0
+    multinomialObject.getConfusionMatrix().columns.length > 0
+    multinomialObject.getHitRatioTable().count() > 0
+    multinomialObject.getHitRatioTable().columns.length > 0
+  }
+
+  test("test multinomial metric objects") {
+    val algo = new H2OGBM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(dataset)
+    assertMetrics[H2OMultinomialMetrics](model)
+
+    model.write.overwrite().save("ml/build/gbm_multinomial_model_metrics")
+    val loadedModel = H2OGBMMOJOModel.load("ml/build/gbm_multinomial_model_metrics")
+    assertMetrics[H2OMultinomialMetrics](loadedModel)
+  }
+
+  test("test multinomial glm metric objects") {
+    val algo = new H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(dataset)
+    assertMetrics[H2OMultinomialGLMMetrics](model)
+
+    model.write.overwrite().save("ml/build/glm_multinomial_model_metrics")
+    val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_multinomial_model_metrics")
+    assertMetrics[H2OMultinomialGLMMetrics](loadedModel)
   }
 }

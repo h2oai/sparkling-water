@@ -18,7 +18,8 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
-import ai.h2o.sparkling.ml.models.{H2OAutoEncoderMOJOModel, H2OMOJOModel, H2OMOJOSettings}
+import ai.h2o.sparkling.ml.metrics.{H2OAutoEncoderMetrics, MetricsAssertions}
+import ai.h2o.sparkling.ml.models.{H2OAutoEncoderMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.linalg.DenseVector
@@ -193,5 +194,24 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
         assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
       }
     }
+  }
+
+  private def assertMetrics(model: H2OAutoEncoderMOJOModel): Unit = {
+    assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assertMetrics(model.getValidationMetricsObject(), model.getValidationMetrics())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics(metricsObject: H2OAutoEncoderMetrics, metrics: Map[String, Double]): Unit = {
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+  }
+
+  test("test metric objects") {
+    assertMetrics(standaloneModel)
+
+    standaloneModel.write.overwrite().save("ml/build/ae_model_metrics")
+    val loadedModel = H2OAutoEncoderMOJOModel.load("ml/build/ae_model_metrics")
+    assertMetrics(loadedModel)
   }
 }

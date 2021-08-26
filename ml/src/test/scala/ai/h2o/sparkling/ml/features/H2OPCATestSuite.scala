@@ -18,6 +18,7 @@
 package ai.h2o.sparkling.ml.features
 
 import ai.h2o.sparkling.ml.algos.H2OGBM
+import ai.h2o.sparkling.ml.metrics.{H2OPCAMetrics, MetricsAssertions}
 import ai.h2o.sparkling.ml.models.H2OPCAMOJOModel
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.ml.linalg.DenseVector
@@ -160,5 +161,24 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
         assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
       }
     }
+  }
+
+  private def assertMetrics(model: H2OPCAMOJOModel): Unit = {
+    assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assertMetrics(model.getValidationMetricsObject(), model.getValidationMetrics())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics(metricsObject: H2OPCAMetrics, metrics: Map[String, Double]): Unit = {
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+  }
+
+  test("test metric objects") {
+    assertMetrics(standaloneModel)
+
+    standaloneModel.write.overwrite().save("ml/build/pca_model_metrics")
+    val loadedModel = H2OPCAMOJOModel.load("ml/build/pca_model_metrics")
+    assertMetrics(loadedModel)
   }
 }
