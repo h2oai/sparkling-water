@@ -18,6 +18,7 @@
 from ai.h2o.sparkling.ml.models.H2OMOJOModelBase import H2OMOJOModelBase
 from ai.h2o.sparkling.ml.models.H2OAlgorithmMOJOModelBase import H2OAlgorithmMOJOModelBase
 from ai.h2o.sparkling.ml.params.H2OTypeConverters import H2OTypeConverters
+from ai.h2o.sparkling.ml.metrics.H2OMetricsFactory import H2OMetricsFactory
 from pyspark.ml.param import *
 
 
@@ -32,14 +33,26 @@ class H2OMOJOModelParams:
     def getTrainingMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingMetrics())
 
+    def getTrainingMetricsObject(self):
+        return H2OMetricsFactory.fromJavaObject(self._java_obj.getTrainingMetricsObject())
+
     def getValidationMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getValidationMetrics())
+
+    def getValidationMetricsObject(self):
+        return H2OMetricsFactory.fromJavaObject(self._java_obj.getValidationMetricsObject())
 
     def getCrossValidationMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCrossValidationMetrics())
 
+    def getCrossValidationMetricsObject(self):
+        return H2OMetricsFactory.fromJavaObject(self._java_obj.getCrossValidationMetricsObject())
+
     def getCurrentMetrics(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getCurrentMetrics())
+
+    def getCurrentMetricsObject(self):
+        return H2OMetricsFactory.fromJavaObject(self._java_obj.getCurrentMetricsObject())
 
     def getTrainingParams(self):
         return H2OTypeConverters.scalaMapStringStringToDictStringAny(self._java_obj.getTrainingParams())
