@@ -63,7 +63,7 @@ def testModelCategory(gbmModel):
 def testTrainingMetrics(gbmModel):
     metrics = gbmModel.getTrainingMetrics()
     assert metrics is not None
-    assert len(metrics) is 7
+    assert len(metrics) is 10
 
 
 def testFeatureTypes(gbmModel):
