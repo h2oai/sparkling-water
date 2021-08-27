@@ -17,10 +17,16 @@
 
 package ai.h2o.sparkling.api.generation.python
 
-import ai.h2o.sparkling.api.generation.common.EntitySubstitutionContext
+import ai.h2o.sparkling.api.generation.common.{EntitySubstitutionContext, ModelMetricsSubstitutionContext}
 
-trait PythonEntityTemplate {
-  protected def generateEntity(properties: EntitySubstitutionContext)(content: String): String = {
+object MetricsInitTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) with PythonEntityTemplate {
+
+  def apply(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
+    val metricClasses = metricSubstitutionContexts.map(_.entityName)
+    val imports = metricClasses.map(metricClass => s"ai.h2o.sparkling.ml.metrics.$metricClass.$metricClass")
+
+    val entitySubstitutionContext = EntitySubstitutionContext(null, null, null, imports)
+
     s"""#
        |# Licensed to the Apache Software Foundation (ASF) under one or more
        |# contributor license agreements.  See the NOTICE file distributed with
@@ -38,40 +44,7 @@ trait PythonEntityTemplate {
        |# limitations under the License.
        |#
        |
-       |${generateImports(properties)}
-       |
-       |
-       |class ${properties.entityName}${referencesToInheritedClasses(properties)}:
-       |
-       |$content
+       |${generateImports(entitySubstitutionContext)}
        |""".stripMargin
-  }
-
-  protected def generateImports(substitutionContext: EntitySubstitutionContext): String = {
-    substitutionContext.imports
-      .map { i =>
-        val parts = i.split('.')
-        val namespace = parts.take(parts.length - 1).mkString(".")
-        val clazz = parts.last
-        s"from $namespace import $clazz"
-      }
-      .mkString("\n")
-  }
-
-  private def referencesToInheritedClasses(substitutionContext: EntitySubstitutionContext): String = {
-    if (substitutionContext.inheritedEntities.isEmpty) {
-      ""
-    } else {
-      substitutionContext.inheritedEntities.mkString("(", ", ", ")")
-    }
-  }
-
-  protected def stringify(value: Any): String = value match {
-    case a: Array[_] => s"[${a.map(stringify).mkString(", ")}]"
-    case b: Boolean => b.toString.capitalize
-    case s: String => s""""$s""""
-    case v if v == null => "None"
-    case v: Enum[_] => s""""$v""""
-    case v => v.toString
   }
 }
