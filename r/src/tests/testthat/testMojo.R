@@ -108,7 +108,7 @@ test_that("test training metrics", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetrics()
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
-  expect_equal(length(metrics), 7)
+  expect_equal(length(metrics), 9)
 })
 
 test_that("test current metrics", {
