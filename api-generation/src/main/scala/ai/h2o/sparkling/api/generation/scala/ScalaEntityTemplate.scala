@@ -41,12 +41,12 @@ trait ScalaEntityTemplate {
        |package ${properties.namespace}
        |
        |${generateImports(properties)}
-       |
+       |${properties.annotations.map(annotation => s"\n$annotation").mkString("")}
        |$entityType ${properties.entityName}${properties.parameters}${referencesToInheritedClasses(properties)} {
        |
        |$content
        |}
-    """.stripMargin
+       |""".stripMargin
   }
 
   private def generateImports(substitutionContext: EntitySubstitutionContext): String = {

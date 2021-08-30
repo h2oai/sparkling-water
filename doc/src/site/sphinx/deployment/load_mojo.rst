@@ -361,20 +361,34 @@ a certain training and validation metrics.
 Obtaining Metrics
 ^^^^^^^^^^^^^^^^^
 
-There are several methods to obtain metrics from the MOJO model. All return a map from the metric name to its double value.
+There are two sets of methods to obtain metrics from the MOJO model.
 
-- ``getTrainingMetrics`` - obtain training metrics
-- ``getValidationMetrics`` - obtain validation metrics
-- ``getCrossValidationMetrics`` - obtain cross validation metrics
-- ``getCrossValidationMetricsSummary`` - It returns data frame with information about performance of individual folds
-  according to various model metrics.
+1. The first set of methods return a map from the metric name to its double value.
 
-There is also the method ``getCurrentMetrics`` which gets one of the metrics above based on the following algorithm:
+- ``getTrainingMetrics()`` - to obtain training metrics
+- ``getValidationMetrics()`` - to obtain validation metrics
+- ``getCrossValidationMetrics()`` - to obtain metrics combined from cross-validation holdouts
+
+There is also the method ``getCurrentMetrics()`` which gets one of the metrics above based on the following algorithm:
 
 If cross-validation was used, ie, ``setNfolds`` was called and the value was higher than zero, this method returns cross-validation
 metrics. If cross-validation was not used, but the validation frame was used, the method returns validation metrics. The validation
 frame is used if ``setSplitRatio`` was called with the value lower than one. If neither cross-validation nor validation frame
 was used, this method returns the training metrics.
+
+2. The second set of methods returns typed instances. The instances make individual metrics available via getter methods and
+the metrics could be also of a complex type. (see :ref:`metrics` for details)
+
+- ``getTrainingMetricsObject()`` - to obtain training metrics
+- ``getValidationMetricsObject()`` - to obtain validation metrics
+- ``getCrossValidationMetricsObject()`` - to obtain metrics combined from cross-validation holdouts
+
+There is also the  method ``getCurrentMetricsObject()`` working a similar way as ``getCurrentMetrics()``.
+
+Obtaining Cross Validation Metrics Summary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``getCrossValidationMetricsSummary`` method returns data frame with information about performance of individual folds
+according to various model metrics.
 
 Obtaining Cross Validation Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

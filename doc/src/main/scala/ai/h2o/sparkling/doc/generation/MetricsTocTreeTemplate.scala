@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.doc.generation
 
-case class ModelMetricsSubstitutionContext(
-    entityName: String,
-    h2oSchemaClass: Class[_],
-    parentEntities: Seq[String],
-    classDescription: String)
-  extends SubstitutionContextBase {
-
-  val namespace = "ai.h2o.sparkling.ml.metrics"
+object MetricsTocTreeTemplate {
+  def apply(metrics: Seq[Class[_]]): String = {
+    val items = metrics.map(metric => s"   metrics_${metric.getSimpleName}").mkString("\n")
+    s""".. _metrics:
+       |
+       |Metric Classes
+       |==============
+       |
+       |.. toctree::
+       |   :maxdepth: 1
+       |
+       |$items
+       |""".stripMargin
+  }
 }
