@@ -58,7 +58,7 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/pyspark --jars license.sig --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+            SUBST_PYTHON_PATH_WORKAROUND./bin/pyspark --jars license.sig --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
 
         .. code:: bash
 

@@ -40,7 +40,7 @@ directly and add the dependencies manually.
 
         .. code:: bash
 
-            ./bin/pyspark --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
+            SUBST_PYTHON_PATH_WORKAROUND./bin/pyspark --py-files py/h2o_pysparkling_scoring_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip
 
         If there is a need to train H2O-3/SW models at the same time when we score with existing MOJO models, use
         ``py/h2o_pysparkling_SUBST_SPARK_MAJOR_VERSION-SUBST_SW_VERSION.zip`` instead.

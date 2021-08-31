@@ -54,6 +54,7 @@ task substitute() {
           .replaceAll("SUBST_H2O_DRIVERS_LIST", getSupportedHadoopDistributions(h2oMajorName, h2oBuild))
           .replaceAll("SUBST_EXECUTOR_MEMORY_OVERHEAD", executorOverheadMemoryOption)
           .replaceAll("SUBST_DRIVER_MEMORY_OVERHEAD", driverOverheadMemoryOption)
+          .replaceAll("SUBST_PYTHON_PATH_WORKAROUND", getPythonPathWorkaround())
         file(it).write(contents, 'UTF-8')
       }
     }
