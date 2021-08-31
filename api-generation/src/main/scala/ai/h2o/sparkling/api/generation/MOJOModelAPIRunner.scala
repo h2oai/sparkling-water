@@ -29,41 +29,48 @@ object MOJOModelAPIRunner
   private val mojoTemplates = Map("scala" -> scala.MOJOModelTemplate, "py" -> python.MOJOModelTemplate)
   private val mojoFactoryTemplates =
     Map("scala" -> scala.MOJOModelFactoryTemplate, "py" -> python.MOJOModelFactoryTemplate)
-  private val metricsTemplates = Map("scala" -> scala.ModelMetricsTemplate, "py" -> python.ModelMetricsTemplate)
+  private val metricsTemplates =
+    Map("scala" -> scala.ModelMetricsTemplate, "py" -> python.ModelMetricsTemplate, "R" -> r.ModelMetricsTemplate)
+  private val metricsBaseTemplates =
+    Map("py" -> python.MetricsFactoryTemplate, "R" -> r.MetricsFactoryTemplate)
 
   def main(args: Array[String]): Unit = {
     val languageExtension = args(0)
     val destinationDir = args(1)
 
-    val mojoConfiguration = algorithmConfiguration.map { algorithmContext =>
-      algorithmContext.copy(
-        namespace = "ai.h2o.sparkling.ml.models",
-        entityName = algorithmContext.entityName + "MOJOModel")
-    }
+    if (languageExtension != "R") {
+      val mojoConfiguration = algorithmConfiguration.map { algorithmContext =>
+        algorithmContext.copy(
+          namespace = "ai.h2o.sparkling.ml.models",
+          entityName = algorithmContext.entityName + "MOJOModel")
+      }
 
-    for ((mojoContext, parameterContext) <- mojoConfiguration.zip(parametersConfiguration)) {
-      val content = mojoTemplates(languageExtension)(mojoContext, parameterContext)
-      writeResultToFile(content, mojoContext, languageExtension, destinationDir)
-    }
+      for ((mojoContext, parameterContext) <- mojoConfiguration.zip(parametersConfiguration)) {
+        val content = mojoTemplates(languageExtension)(mojoContext, parameterContext)
+        writeResultToFile(content, mojoContext, languageExtension, destinationDir)
+      }
 
-    val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
-    val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
-    val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
-    writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
+      val entityName = if (languageExtension == "py") "H2OMOJOModel" else "H2OMOJOModelFactory"
+      val mojoFactoryContext = mojoConfiguration.head.copy(entityName = entityName)
+      val content = mojoFactoryTemplates(languageExtension)(mojoConfiguration)
+      writeResultToFile(content, mojoFactoryContext, languageExtension, destinationDir)
+    }
 
     for (metricsContext <- metricsConfiguration) {
       val content = metricsTemplates(languageExtension)(metricsContext)
       writeResultToFile(content, metricsContext, languageExtension, destinationDir)
     }
 
-    if (languageExtension == "py") {
+    if (languageExtension != "scala") {
       val metricsFactoryContext = metricsConfiguration.head.copy(entityName = "H2OMetricsFactory")
-      val content = python.MetricsBaseTemplate(metricsConfiguration)
+      val content = metricsBaseTemplates(languageExtension)(metricsConfiguration)
       writeResultToFile(content, metricsFactoryContext, languageExtension, destinationDir)
 
-      val metricsInitContext = metricsConfiguration.head.copy(entityName = "__init__")
-      val initContent = python.MetricsInitTemplate(metricsConfiguration :+ metricsFactoryContext)
-      writeResultToFile(initContent, metricsInitContext, languageExtension, destinationDir)
+      if (languageExtension == "py") {
+        val metricsInitContext = metricsConfiguration.head.copy(entityName = "__init__")
+        val initContent = python.MetricsInitTemplate(metricsConfiguration :+ metricsFactoryContext)
+        writeResultToFile(initContent, metricsInitContext, languageExtension, destinationDir)
+      }
     }
   }
 }

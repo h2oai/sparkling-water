@@ -409,7 +409,8 @@ trait H2OMOJOModelUtils extends Logging {
           val row: Row = new GenericRowWithSchema(rowData, schema)
           row
         }.asJava
-        SparkSessionUtils.active.createDataFrame(rows, schema)
+        val dataFrame = SparkSessionUtils.active.createDataFrame(rows, schema)
+        if (dataFrame.columns.contains("")) dataFrame.withColumnRenamed("", "-") else dataFrame
       } catch {
         case e: Throwable =>
           logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
@@ -420,7 +421,7 @@ trait H2OMOJOModelUtils extends Logging {
 
   protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
     val df = jsonFieldToDataFrame(outputJson, "scoring_history")
-    if (df != null && df.columns.contains("")) df.drop("") else df
+    if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
   protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {

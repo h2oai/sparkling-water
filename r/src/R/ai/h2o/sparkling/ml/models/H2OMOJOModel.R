@@ -16,6 +16,7 @@
 #
 
 source(file.path("R", "H2OMOJOModelBase.R"))
+source(file.path("R", "H2OMetricsFactory.R"))
 
 H2OMOJOModel.createFromMojo <- function(pathToMojo, settings = H2OMOJOSettings.default()) {
   sc <- spark_connection_find()[[1]]
@@ -47,18 +48,34 @@ H2OMOJOModel <- setRefClass("H2OMOJOModel", methods = list(
   getTrainingMetrics = function() {
     invoke(.self$jmojo, "getTrainingMetrics")
   },
+  getTrainingMetricsObject = function() {
+    metrics <- invoke(.self$jmojo, "getTrainingMetricsObject")
+    H2OMetricsFactory.fromJavaObject(metrics)
+  },
   getValidationMetrics = function() {
     invoke(.self$jmojo, "getValidationMetrics")
+  },
+  getValidationMetricsObject = function() {
+    metrics <- invoke(.self$jmojo, "getValidationMetricsObject")
+    H2OMetricsFactory.fromJavaObject(metrics)
   },
   getCrossValidationMetrics = function() {
     invoke(.self$jmojo, "getCrossValidationMetrics")
   },
-  getCrossValidationMetricsSummary = function() {
-    outputFrame <- invoke(.self$jmojo, "getCrossValidationMetricsSummary")
-    sdf_register(outputFrame)
+  getCrossValidationMetricsObject = function() {
+    metrics <- invoke(.self$jmojo, "getCrossValidationMetricsObject")
+    H2OMetricsFactory.fromJavaObject(metrics)
   },
   getCurrentMetrics = function() {
     invoke(.self$jmojo, "getCurrentMetrics")
+  },
+  getCurrentMetricsObject = function() {
+    metrics <- invoke(.self$jmojo, "getCurrentMetricsObject")
+    H2OMetricsFactory.fromJavaObject(metrics)
+  },
+  getCrossValidationMetricsSummary = function() {
+    outputFrame <- invoke(.self$jmojo, "getCrossValidationMetricsSummary")
+    sdf_register(outputFrame)
   },
   getTrainingParams = function() {
     invoke(.self$jmojo, "getTrainingParams")
