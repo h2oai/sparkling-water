@@ -19,7 +19,7 @@ package ai.h2o.sparkling.api.generation.python
 
 import ai.h2o.sparkling.api.generation.common.{EntitySubstitutionContext, ModelMetricsSubstitutionContext}
 
-object MetricsBaseTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) with PythonEntityTemplate {
+object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) => String) with PythonEntityTemplate {
 
   def apply(metricSubstitutionContexts: Seq[ModelMetricsSubstitutionContext]): String = {
     val metricClasses = metricSubstitutionContexts.map(_.entityName)

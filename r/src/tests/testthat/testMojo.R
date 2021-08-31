@@ -85,6 +85,7 @@ test_that("test getFeatureImportances", {
   expectedCount <- length(model$getFeaturesCols())
 
   numberOfRecordsFrame <- dplyr::tally(featureImportances)
+  print(dplyr::collect(featureImportances))
   count <- as.double(dplyr::collect(numberOfRecordsFrame)[[1]])
 
   expect_equal(count, expectedCount)
@@ -109,6 +110,13 @@ test_that("test training metrics", {
   metrics <- model$getTrainingMetrics()
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
   expect_equal(length(metrics), 9)
+})
+
+test_that("test training metrics object", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  metrics <- model$getTrainingMetricsObject()
+  aucValue <- metrics$getAUC()
+  expect_equal(as.character(aucValue), "0.896878869021911")
 })
 
 test_that("test current metrics", {
