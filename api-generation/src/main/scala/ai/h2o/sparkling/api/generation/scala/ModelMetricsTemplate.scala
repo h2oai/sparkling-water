@@ -72,9 +72,12 @@ object ModelMetricsTemplate
   }
 
   private def generateDefaults(metrics: Seq[Metric]): String = {
-    metrics.filter(!_.dataType.isPrimitive).map { metric =>
-      s"\n  setDefault(${metric.swFieldName} -> null)"
-    }.mkString("")
+    metrics
+      .filter(!_.dataType.isPrimitive)
+      .map { metric =>
+        s"\n  setDefault(${metric.swFieldName} -> null)"
+      }
+      .mkString("")
   }
 
   private def generateGetters(metrics: Seq[Metric]): String = {
