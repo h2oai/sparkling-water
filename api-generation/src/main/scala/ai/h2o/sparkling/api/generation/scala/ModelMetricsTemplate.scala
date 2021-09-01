@@ -45,6 +45,7 @@ object ModelMetricsTemplate
       s"""def this() = this(Identifiable.randomUID("${substitutionContext.entityName}"))
          |
          |${generateParameterDefinitions(metrics)}
+         |${generateDefaults(metrics)}
          |
          |  /// Getters
          |${generateGetters(metrics)}
@@ -68,6 +69,12 @@ object ModelMetricsTemplate
     case x if x.getSimpleName == "String" => "String"
     case x if x.getSimpleName == "TwoDimTableV3" => "DataFrame"
     case x if x.getSimpleName == "ConfusionMatrixV3" => "DataFrame"
+  }
+
+  private def generateDefaults(metrics: Seq[Metric]): String = {
+    metrics.filter(!_.dataType.isPrimitive).map { metric =>
+      s"\n  setDefault(${metric.swFieldName} -> null)"
+    }.mkString("")
   }
 
   private def generateGetters(metrics: Seq[Metric]): String = {
