@@ -45,9 +45,8 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
        |$imports
        |
        |H2OMetricsFactory.fromJavaObject <- function(javaObject) {
-       |  className <- invoke(invoke(javaObject, "getClass"), "getSimpleName")
-       |  if (FALSE) {
-       |    FALSE
+       |  if (is.null(javaObject)) {
+       |    NULL
        |${generateCases(metricSubstitutionContexts)}
        |  } else {
        |    rsparkling.H2OCommonMetrics(javaObject)
@@ -60,7 +59,7 @@ object MetricsFactoryTemplate extends ((Seq[ModelMetricsSubstitutionContext]) =>
     metricSubstitutionContexts
       .map { metricSubstitutionContext =>
         val metricsObjectName = metricSubstitutionContext.entityName
-        s"""  } else if (className == "$metricsObjectName") {
+        s"""  } else if (invoke(invoke(javaObject, "getClass"), "getSimpleName") == "$metricsObjectName") {
            |    rsparkling.$metricsObjectName(javaObject)""".stripMargin
       }
       .mkString("\n")

@@ -85,7 +85,6 @@ test_that("test getFeatureImportances", {
   expectedCount <- length(model$getFeaturesCols())
 
   numberOfRecordsFrame <- dplyr::tally(featureImportances)
-  print(dplyr::collect(featureImportances))
   count <- as.double(dplyr::collect(numberOfRecordsFrame)[[1]])
 
   expect_equal(count, expectedCount)
@@ -116,7 +115,26 @@ test_that("test training metrics object", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetricsObject()
   aucValue <- metrics$getAUC()
+  scoringTime <- metrics$getScoringTime()
+
+  thresholdsAndScores <- metrics$getThresholdsAndMetricScores()
+  thresholdsAndScoresFrame <- dplyr::tally(thresholdsAndScores)
+  thresholdsAndScoresCount <- as.double(dplyr::collect(thresholdsAndScoresFrame)[[1]])
+
+  gainsLiftTable <- metrics$getGainsLiftTable()
+  gainsLiftTableFrame <- dplyr::tally(gainsLiftTable)
+  gainsLiftTableCount <- as.double(dplyr::collect(gainsLiftTableFrame)[[1]])
+
   expect_equal(as.character(aucValue), "0.896878869021911")
+  expect_true(scoringTime > 0)
+  expect_true(thresholdsAndScoresCount > 0)
+  expect_true(gainsLiftTableCount > 0)
+})
+
+test_that("test null cross validation metrics object", {
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  cvObject <- model$getCrossValidationMetricsObject()
+  expect_true(is.null(cvObject))
 })
 
 test_that("test current metrics", {
