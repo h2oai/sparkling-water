@@ -59,6 +59,15 @@ def getH2OBuild(h2oBuild) {
     }
 }
 
+def getPythonPathWorkaround() {
+    if(sparkMajorVersion < "2.4") {
+        return "export PYTHONPATH=\"py/h2o_pysparkling_scoring_${sparkMajorVersion}-${version}.zip:\\\$PYTHONPATH\"" +
+                " # This line is needed only if the Spark distribution contains the bug SPARK-21945.\n"
+    } else {
+        return ""
+    }
+}
+
 def getBuildInfo(h2oMajorName, h2oBuild) {
     if (project.hasProperty("buildAgainstH2OBranch")) {
         // We are building against H2O published to Maven local
@@ -238,4 +247,5 @@ ext {
     getSparkSpecificSourceDir = this.&getSparkSpecificSourceDir
     getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
     getS3Path = this.&getS3Path
+    getPythonPathWorkaround = this.&getPythonPathWorkaround
 }
