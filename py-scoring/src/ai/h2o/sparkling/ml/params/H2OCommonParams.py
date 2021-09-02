@@ -45,6 +45,13 @@ class H2OCommonParams(H2OBaseMOJOParams):
         "List of columns to convert to categorical before modelling",
         H2OTypeConverters.toListString())
 
+    keepBinaryModels = Param(
+        Params._dummy(),
+        "keepBinaryModels",
+        "If set to true, all binary models created during execution of the ``fit`` method will be kept in " +
+        "DKV of H2O-3 cluster.",
+        H2OTypeConverters.toBoolean())
+
     ##
     # Getters
     ##
@@ -56,6 +63,9 @@ class H2OCommonParams(H2OBaseMOJOParams):
 
     def getColumnsToCategorical(self):
         return self.getOrDefault(self.columnsToCategorical)
+
+    def getKeepBinaryModels(self):
+        return self.getOrDefault(self.keepBinaryModels)
 
     ##
     # Setters
@@ -84,3 +94,6 @@ class H2OCommonParams(H2OBaseMOJOParams):
 
     def setConvertInvalidNumbersToNa(self, value):
         return self._set(convertInvalidNumbersToNa=value)
+
+    def setKeepBinaryModels(self, value):
+        return self._set(keepBinaryModels=value)

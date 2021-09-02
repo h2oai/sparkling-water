@@ -42,13 +42,19 @@ trait H2OCommonParams extends H2OBaseMOJOParams {
   protected final val columnsToCategorical =
     new StringArrayParam(this, "columnsToCategorical", "List of columns to convert to categorical before modelling")
 
+  protected final val keepBinaryModels = new BooleanParam(
+    this,
+    "keepBinaryModels",
+    "If set to true, all binary models created during execution of the ``fit`` method will be kept in DKV of H2O-3 cluster.")
+
   //
   // Default values
   //
   setDefault(
     validationDataFrame -> null,
     splitRatio -> 1.0, // Use whole frame as training frame
-    columnsToCategorical -> Array.empty[String])
+    columnsToCategorical -> Array.empty[String],
+    keepBinaryModels -> false)
 
   //
   // Getters
@@ -58,6 +64,8 @@ trait H2OCommonParams extends H2OBaseMOJOParams {
   def getSplitRatio(): Double = $(splitRatio)
 
   def getColumnsToCategorical(): Array[String] = $(columnsToCategorical)
+
+  def getKeepBinaryModels(): Boolean = $(keepBinaryModels)
 
   //
   // Setters
@@ -80,4 +88,5 @@ trait H2OCommonParams extends H2OBaseMOJOParams {
 
   def setConvertInvalidNumbersToNa(value: Boolean): this.type = set(convertInvalidNumbersToNa, value)
 
+  def setKeepBinaryModels(value: Boolean): this.type = set(keepBinaryModels, value)
 }

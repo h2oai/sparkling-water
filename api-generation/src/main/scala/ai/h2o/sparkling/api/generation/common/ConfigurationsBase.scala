@@ -25,7 +25,8 @@ trait ConfigurationsBase {
     "convertInvalidNumbersToNa" -> false,
     "validationDataFrame" -> null,
     "splitRatio" -> 1.0,
-    "columnsToCategorical" -> Array.empty[String])
+    "columnsToCategorical" -> Array.empty[String],
+    "keepBinaryModels" -> false)
 
   def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = Seq.empty
 

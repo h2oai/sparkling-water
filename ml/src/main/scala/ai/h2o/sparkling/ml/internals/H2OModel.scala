@@ -50,26 +50,43 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
       .getAsJsonObject()
   }
 
-  private def getCrossValidationModels(parentUid: String, settings: H2OMOJOSettings): Array[H2OMOJOModel] = {
+  private[sparkling] def delete(): Unit = delete(endpoint,s"/3/Models/${this.modelId}", conf)
+
+  private[sparkling] def tryDelete(): Unit =  try {
+    getCrossValidationModels.foreach(_.foreach(_.tryDelete()))
+    delete()
+  } catch {
+    case e: Throwable => logWarning(s"Unsuccessful try to delete model '${this.modelId}'", e)
+  }
+
+  private def getCrossValidationModels(): Option[Array[H2OModel]] = {
     val cvModelsJson = getDetails()
       .getAsJsonObject("output")
       .get("cross_validation_models")
 
     if (cvModelsJson.isJsonNull) {
-      null
+      None
     } else {
       val cvModelsArray = cvModelsJson.getAsJsonArray()
-      val result = new Array[H2OMOJOModel](cvModelsArray.size())
+      val result = new Array[H2OModel](cvModelsArray.size())
       for (i <- 0 until cvModelsArray.size()) {
         val cvModelnName = cvModelsArray
           .get(i)
           .getAsJsonObject
           .getAsJsonPrimitive("name")
           .getAsString
-        val cvModel = H2OModel(cvModelnName).toMOJOModel(s"${parentUid}_cv_$i", settings, false)
-        result(i) = cvModel
+        result(i) = H2OModel(cvModelnName)
       }
-      result
+      Some(result)
+    }
+  }
+
+  private def getCrossValidationMOJOModels(parentUid: String, settings: H2OMOJOSettings): Array[H2OMOJOModel] = {
+    getCrossValidationModels() match {
+      case None => null
+      case Some(models) => models.zipWithIndex.map {
+        case (model, i) => model.toMOJOModel(s"${parentUid}_cv_$i", settings, false)
+      }
     }
   }
 
@@ -77,7 +94,7 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
     val mojo = downloadMojo()
     val result = H2OMOJOModel.createFromMojo(mojo, uid, settings)
     if (withCVModels) {
-      val cvModels = getCrossValidationModels(uid, settings)
+      val cvModels = getCrossValidationMOJOModels(uid, settings)
       result.setCrossValidationModels(cvModels)
     }
     result

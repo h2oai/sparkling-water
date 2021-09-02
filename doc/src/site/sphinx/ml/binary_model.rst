@@ -28,12 +28,12 @@ The binary model class contains methods used to work with binary models.
             spark.sparkContext.addFile("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
             val sparkDF = spark.read.option("header", "true").option("inferSchema", "true").csv(SparkFiles.get("prostate.csv"))
 
-        Train the model.
+        Select algorithm, set the parameter ``keepBinaryModels`` to ``true``, train the model.
 
         .. code:: scala
 
             import ai.h2o.sparkling.ml.algos.H2OXGBoostClassifier
-            val estimator = new H2OXGBoostClassifier().setLabelCol("CAPSULE")
+            val estimator = new H2OXGBoostClassifier().setLabelCol("CAPSULE").setKeepBinaryModels(true)
             val mojoModel = estimator.fit(sparkDF)
 
     .. tab-container:: Python
@@ -52,12 +52,12 @@ The binary model class contains methods used to work with binary models.
             frame = h2o.import_file("https://raw.githubusercontent.com/h2oai/sparkling-water/master/examples/smalldata/prostate/prostate.csv")
             sparkDF = hc.asSparkFrame(frame)
 
-        Train the model.
+        Select algorithm, set the parameter ``keepBinaryModels`` to ``True``, train the model.
 
         .. code:: python
 
             from pysparkling.ml import H2OXGBoostClassifier
-            estimator = H2OXGBoost(labelCol = "CAPSULE")
+            estimator = H2OXGBoost(labelCol = "CAPSULE", keepBinaryModels = True)
             mojoModel = estimator.fit(sparkDF)
 
 To obtain the binary model once the model training has finished, run:
