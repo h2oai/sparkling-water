@@ -24,7 +24,8 @@ def testModelIsLoadedOnBackend(prostateDataset):
     algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                   labelCol="AGE",
                   seed=1,
-                  splitRatio=0.8)
+                  splitRatio=0.8,
+                  keepBinaryModels=True)
     algo.fit(prostateDataset)
     algo.getBinaryModel().write("build/binary.model")
     swBinaryModel = H2OBinaryModel.read("build/binary.model")
@@ -36,7 +37,8 @@ def testModelIsLoadedOnBackendWhenTrainedOnGLM(prostateDataset):
     algo = H2OGLM(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                   labelCol="AGE",
                   seed=1,
-                  splitRatio=0.8)
+                  splitRatio=0.8,
+                  keepBinaryModels=True)
     algo.fit(prostateDataset)
     swBinaryModel = algo.getBinaryModel()
     h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
@@ -47,7 +49,8 @@ def testModelIsLoadedOnBackendWhenTrainedOnGLMClassifier(prostateDataset):
     algo = H2OGLMClassifier(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                             labelCol="AGE",
                             seed=1,
-                            splitRatio=0.8)
+                            splitRatio=0.8,
+                            keepBinaryModels=True)
     algo.fit(prostateDataset)
     swBinaryModel = algo.getBinaryModel()
     h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
@@ -58,7 +61,8 @@ def testModelIsLoadedOnBackendWhenTrainedOnGLMRegressor(prostateDataset):
     algo = H2OGLMRegressor(featuresCols=["CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"],
                            labelCol="AGE",
                            seed=1,
-                           splitRatio=0.8)
+                           splitRatio=0.8,
+                           keepBinaryModels=True)
     algo.fit(prostateDataset)
     swBinaryModel = algo.getBinaryModel()
     h2oBinaryModel = h2o.get_model(swBinaryModel.modelId)
