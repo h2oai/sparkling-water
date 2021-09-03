@@ -89,8 +89,9 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     val thrown = intercept[IllegalArgumentException] {
       gbm.getBinaryModel()
     }
-    assert(thrown.getMessage == "Algorithm needs to be fit first with the `keepBinaryModels` parameter " +
-      "set to true in order to access binary model.")
+    assert(
+      thrown.getMessage == "Algorithm needs to be fit first with the `keepBinaryModels` parameter " +
+        "set to true in order to access binary model.")
   }
 
   test("Binary model is available in H2O after training Grid in SW") {
@@ -100,7 +101,6 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
           .setLabelCol("AGE")
           .setKeepBinaryModels(true))
-
       .setHyperParameters(Map("ntrees" -> Array(10, 20).map(_.asInstanceOf[AnyRef])))
     grid.fit(dataset)
     val binaryModel = grid.getBinaryModel()

@@ -50,14 +50,15 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
       .getAsJsonObject()
   }
 
-  private[sparkling] def delete(): Unit = delete(endpoint,s"/3/Models/${this.modelId}", conf)
+  private[sparkling] def delete(): Unit = delete(endpoint, s"/3/Models/${this.modelId}", conf)
 
-  private[sparkling] def tryDelete(): Unit =  try {
-    getCrossValidationModels.foreach(_.foreach(_.tryDelete()))
-    delete()
-  } catch {
-    case e: Throwable => logWarning(s"Unsuccessful try to delete model '${this.modelId}'", e)
-  }
+  private[sparkling] def tryDelete(): Unit =
+    try {
+      getCrossValidationModels.foreach(_.foreach(_.tryDelete()))
+      delete()
+    } catch {
+      case e: Throwable => logWarning(s"Unsuccessful try to delete model '${this.modelId}'", e)
+    }
 
   private def getCrossValidationModels(): Option[Array[H2OModel]] = {
     val cvModelsJson = getDetails()
@@ -84,9 +85,10 @@ private[sparkling] class H2OModel private (val modelId: String) extends RestComm
   private def getCrossValidationMOJOModels(parentUid: String, settings: H2OMOJOSettings): Array[H2OMOJOModel] = {
     getCrossValidationModels() match {
       case None => null
-      case Some(models) => models.zipWithIndex.map {
-        case (model, i) => model.toMOJOModel(s"${parentUid}_cv_$i", settings, false)
-      }
+      case Some(models) =>
+        models.zipWithIndex.map {
+          case (model, i) => model.toMOJOModel(s"${parentUid}_cv_$i", settings, false)
+        }
     }
   }
 

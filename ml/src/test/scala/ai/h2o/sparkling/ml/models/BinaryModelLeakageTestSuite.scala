@@ -35,12 +35,13 @@ class BinaryModelLeakageTestSuite extends FunSuite with Matchers with SharedH2OT
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
 
-  private def referenceAlgo: H2OGBM = new H2OGBM()
-    .setSeed(1)
-    .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-    .setLabelCol("AGE")
-    .setKeepCrossValidationModels(true)
-    .setNfolds(3)
+  private def referenceAlgo: H2OGBM =
+    new H2OGBM()
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+      .setKeepCrossValidationModels(true)
+      .setNfolds(3)
 
   test("A regular algorithm with cross validation doesn't leave any model in DKV by default") {
     referenceAlgo.fit(dataset)
