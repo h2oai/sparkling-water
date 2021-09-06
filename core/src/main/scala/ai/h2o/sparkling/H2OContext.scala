@@ -482,14 +482,9 @@ object H2OContext extends Logging {
     getOrCreate(Option(instantiatedContext.get()).map(_.getConf).getOrElse(new H2OConf()))
   }
 
-  private def isSparkVersionDeprecated(): Boolean = {
-    SparkSessionUtils.active.version.startsWith("2.1.")
-  }
-
   private def logStartingInfo(conf: H2OConf): Unit = {
     logInfo("Sparkling Water version: " + BuildInfo.SWVersion)
-    val deprecationSuffix = if (isSparkVersionDeprecated) " (deprecated)" else ""
-    logInfo("Spark version: " + SparkSessionUtils.active.version + deprecationSuffix)
+    logInfo("Spark version: " + SparkSessionUtils.active.version)
     logInfo("Integrated H2O version: " + BuildInfo.H2OVersion)
     logInfo("The following Spark configuration is used: \n    " + conf.getAll.mkString("\n    "))
   }
@@ -507,11 +502,6 @@ object H2OContext extends Logging {
         s"You are trying to use Sparkling Water built for Spark ${BuildInfo.buildSparkMajorVersion}," +
           s" but your Spark is of version ${sc.version}. Please make sure to use correct Sparkling Water for your" +
           s" Spark and re-run the application.")
-    }
-    if (isSparkVersionDeprecated) {
-      logWarning(
-        s"Apache Spark ${SparkSessionUtils.active.version} is deprecated and " +
-          "the support will be removed in the Sparkling Water version 3.34.")
     }
   }
 }

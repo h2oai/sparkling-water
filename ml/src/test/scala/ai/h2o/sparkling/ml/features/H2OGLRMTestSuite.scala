@@ -56,84 +56,79 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
     algo.fit(trainingDataset)
   }
 
-  // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
-  // https://issues.apache.org/jira/browse/SPARK-19425
-  if (!createSparkSession().version.startsWith("2.1")) {
+  test("The standalone GLRM model produces different results for various input rows.") {
+    val scored = standaloneModel.transform(testingDataset)
+    scored.show(false)
+    val rows = scored.take(2)
 
-    test("The standalone GLRM model produces different results for various input rows.") {
-      val scored = standaloneModel.transform(testingDataset)
-      scored.show(false)
-      val rows = scored.take(2)
+    val firstOutput = rows(0).getAs[DenseVector]("Output").values.toSeq
+    val secondOutput = rows(1).getAs[DenseVector]("Output").values.toSeq
 
-      val firstOutput = rows(0).getAs[DenseVector]("Output").values.toSeq
-      val secondOutput = rows(1).getAs[DenseVector]("Output").values.toSeq
+    val firstReconstructed = rows(0).getAs[DenseVector]("Reconstructed").values.toSeq
+    val secondReconstructed = rows(1).getAs[DenseVector]("Reconstructed").values.toSeq
 
-      val firstReconstructed = rows(0).getAs[DenseVector]("Reconstructed").values.toSeq
-      val secondReconstructed = rows(1).getAs[DenseVector]("Reconstructed").values.toSeq
+    firstOutput.length should be(3)
+    secondOutput.length should be(3)
 
-      firstOutput.length should be(3)
-      secondOutput.length should be(3)
+    firstReconstructed.length should be(6)
+    secondReconstructed.length should be(6)
 
-      firstReconstructed.length should be(6)
-      secondReconstructed.length should be(6)
+    firstOutput should not equal secondOutput
+    firstReconstructed should not equal secondReconstructed
+  }
 
-      firstOutput should not equal secondOutput
-      firstReconstructed should not equal secondReconstructed
+  test("The standalone GLRM model can provide scoring history") {
+    val expectedColumns = Array("Timestamp", "Duration", "Iterations", "Step Size", "Objective")
+
+    val scoringHistoryDF = standaloneModel.getScoringHistory()
+
+    scoringHistoryDF.count() shouldBe >(10L)
+    scoringHistoryDF.columns shouldEqual expectedColumns
+  }
+
+  test(
+    "A pipeline with a GLRM model sourcing data from multiple columns transforms testing dataset without an exception") {
+    val glrm = new H2OGLRM()
+      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setK(4)
+
+    val gbm = new H2OGBM()
+      .setFeaturesCol(glrm.getOutputCol())
+      .setLabelCol("CAPSULE")
+
+    val pipeline = new Pipeline().setStages(Array(glrm, gbm))
+
+    val model = pipeline.fit(trainingDataset)
+    val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+    val rows = numberOfPredictionsDF.collect()
+    numberOfPredictionsDF.count() shouldBe >=(2L)
+    rows.foreach { row =>
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
+  }
 
-    test("The standalone GLRM model can provide scoring history") {
-      val expectedColumns = Array("Timestamp", "Duration", "Iterations", "Step Size", "Objective")
+  test(
+    "A pipeline with a GLRM model sourcing data from vector column transforms testing dataset without an exception") {
+    val autoEncoder = new H2OAutoEncoder()
+      .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setHidden(Array(100))
 
-      val scoringHistoryDF = standaloneModel.getScoringHistory()
+    val glrm = new H2OGLRM()
+      .setInputCols(autoEncoder.getOutputCol())
+      .setK(3)
 
-      scoringHistoryDF.count() shouldBe >(10L)
-      scoringHistoryDF.columns shouldEqual expectedColumns
-    }
+    val gbm = new H2OGBM()
+      .setFeaturesCol(glrm.getOutputCol())
+      .setLabelCol("CAPSULE")
 
-    test(
-      "A pipeline with a GLRM model sourcing data from multiple columns transforms testing dataset without an exception") {
-      val glrm = new H2OGLRM()
-        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setK(4)
+    val pipeline = new Pipeline().setStages(Array(autoEncoder, glrm, gbm))
 
-      val gbm = new H2OGBM()
-        .setFeaturesCol(glrm.getOutputCol())
-        .setLabelCol("CAPSULE")
-
-      val pipeline = new Pipeline().setStages(Array(glrm, gbm))
-
-      val model = pipeline.fit(trainingDataset)
-      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
-      val rows = numberOfPredictionsDF.collect()
-      numberOfPredictionsDF.count() shouldBe >=(2L)
-      rows.foreach { row =>
-        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
-      }
-    }
-
-    test(
-      "A pipeline with a GLRM model sourcing data from vector column transforms testing dataset without an exception") {
-      val autoEncoder = new H2OAutoEncoder()
-        .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-        .setHidden(Array(100))
-
-      val glrm = new H2OGLRM()
-        .setInputCols(autoEncoder.getOutputCol())
-        .setK(3)
-
-      val gbm = new H2OGBM()
-        .setFeaturesCol(glrm.getOutputCol())
-        .setLabelCol("CAPSULE")
-
-      val pipeline = new Pipeline().setStages(Array(autoEncoder, glrm, gbm))
-
-      val model = pipeline.fit(trainingDataset)
-      val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
-      val rows = numberOfPredictionsDF.collect()
-      numberOfPredictionsDF.count() shouldBe >=(2L)
-      rows.foreach { row =>
-        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
-      }
+    val model = pipeline.fit(trainingDataset)
+    val numberOfPredictionsDF = model.transform(testingDataset).groupBy("prediction").count()
+    val rows = numberOfPredictionsDF.collect()
+    numberOfPredictionsDF.count() shouldBe >=(2L)
+    rows.foreach { row =>
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
   }
 }

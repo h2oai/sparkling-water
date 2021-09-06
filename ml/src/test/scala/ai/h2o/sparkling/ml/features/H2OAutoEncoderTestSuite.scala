@@ -61,137 +61,132 @@ class H2OAutoEncoderTestSuite extends FunSuite with Matchers with SharedH2OTestC
     algo.fit(trainingDataset)
   }
 
-  // Support for Spark 2.1 will be removed in SW 3.34. Tests are ignored due to a bug in Vector comparison in Spark 2.1:
-  // https://issues.apache.org/jira/browse/SPARK-19425
-  if (!createSparkSession().version.startsWith("2.1")) {
+  test("Standalone auto encoder can produce output, original and mse columns") {
+    val scored = standaloneModel.transform(testingDataset)
+    val firstRow = scored.first()
 
-    test("Standalone auto encoder can produce output, original and mse columns") {
-      val scored = standaloneModel.transform(testingDataset)
-      val firstRow = scored.first()
+    val output = firstRow.getAs[DenseVector]("Output")
+    output.values.length shouldBe 3
+    output.values(0) shouldBe (1.1249999999999996 +- 0.0001)
+    output.values(1) shouldBe (16.512416666666667 +- 0.0001)
+    output.values(2) shouldBe (23.01268813674309 +- 0.0001)
 
-      val output = firstRow.getAs[DenseVector]("Output")
-      output.values.length shouldBe 3
-      output.values(0) shouldBe (1.1249999999999996 +- 0.0001)
-      output.values(1) shouldBe (16.512416666666667 +- 0.0001)
-      output.values(2) shouldBe (23.01268813674309 +- 0.0001)
+    val original = firstRow.getAs[DenseVector]("Original")
+    original.values.length shouldBe 3
+    original.values(0) shouldBe (1.0 +- 0.0001)
+    original.values(1) shouldBe (3.4 +- 0.0001)
+    original.values(2) shouldBe (30.8 +- 0.0001)
 
-      val original = firstRow.getAs[DenseVector]("Original")
-      original.values.length shouldBe 3
-      original.values(0) shouldBe (1.0 +- 0.0001)
-      original.values(1) shouldBe (3.4 +- 0.0001)
-      original.values(2) shouldBe (30.8 +- 0.0001)
+    val mse = firstRow.getAs[Double]("MSE")
+    mse shouldBe (0.011028919003303739 +- 0.0001)
+  }
 
-      val mse = firstRow.getAs[Double]("MSE")
-      mse shouldBe (0.011028919003303739 +- 0.0001)
-    }
+  test("Standalone AutoEncoder can produce training and validation metrics") {
+    val trainingMetrics = standaloneModel.getTrainingMetrics()
+    trainingMetrics.get("MSE").get shouldBe (0.030036871130634916 +- 0.0001)
+    trainingMetrics.get("RMSE").get shouldBe (0.1733114858589439 +- 0.0001)
 
-    test("Standalone AutoEncoder can produce training and validation metrics") {
-      val trainingMetrics = standaloneModel.getTrainingMetrics()
-      trainingMetrics.get("MSE").get shouldBe (0.030036871130634916 +- 0.0001)
-      trainingMetrics.get("RMSE").get shouldBe (0.1733114858589439 +- 0.0001)
+    val validationMetrics = standaloneModel.getValidationMetrics()
+    validationMetrics.get("MSE").get shouldBe (0.017766277571512626 +- 0.0001)
+    validationMetrics.get("RMSE").get shouldBe (0.133290200583211 +- 0.0001)
+  }
 
-      val validationMetrics = standaloneModel.getValidationMetrics()
-      validationMetrics.get("MSE").get shouldBe (0.017766277571512626 +- 0.0001)
-      validationMetrics.get("RMSE").get shouldBe (0.133290200583211 +- 0.0001)
-    }
+  test("Standalone autoencoder can provide scoring history") {
+    val expectedColumns = Array(
+      "Timestamp",
+      "Duration",
+      "Training Speed",
+      "Epochs",
+      "Iterations",
+      "Samples",
+      "Training RMSE",
+      "Training MSE",
+      "Validation RMSE",
+      "Validation MSE")
 
-    test("Standalone autoencoder can provide scoring history") {
-      val expectedColumns = Array(
-        "Timestamp",
-        "Duration",
-        "Training Speed",
-        "Epochs",
-        "Iterations",
-        "Samples",
-        "Training RMSE",
-        "Training MSE",
-        "Validation RMSE",
-        "Validation MSE")
+    val scoringHistoryDF = standaloneModel.getScoringHistory()
+    scoringHistoryDF.count() shouldBe >(0L)
+    scoringHistoryDF.columns shouldEqual expectedColumns
+  }
 
-      val scoringHistoryDF = standaloneModel.getScoringHistory()
-      scoringHistoryDF.count() shouldBe >(0L)
-      scoringHistoryDF.columns shouldEqual expectedColumns
-    }
+  test("Standalone auto encoder can provide feature importances") {
+    val expectedColumns = Array("Variable", "Relative Importance", "Scaled Importance", "Percentage")
 
-    test("Standalone auto encoder can provide feature importances") {
-      val expectedColumns = Array("Variable", "Relative Importance", "Scaled Importance", "Percentage")
+    val featureImportancesDF = standaloneModel.getFeatureImportances()
+    featureImportancesDF.count() shouldEqual standaloneModel.getInputCols().length
+    featureImportancesDF.columns shouldEqual expectedColumns
+  }
 
-      val featureImportancesDF = standaloneModel.getFeatureImportances()
-      featureImportancesDF.count() shouldEqual standaloneModel.getInputCols().length
-      featureImportancesDF.columns shouldEqual expectedColumns
-    }
+  test("Old auto encoder MOJO model can score and produce output, original and mse columns") {
+    val columns = (1 to 210).map(i => StructField("C" + i, DoubleType, nullable = false))
 
-    test("Old auto encoder MOJO model can score and produce output, original and mse columns") {
-      val columns = (1 to 210).map(i => StructField("C" + i, DoubleType, nullable = false))
+    val df = spark.read
+      .schema(StructType(columns))
+      .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_test.csv"))
 
-      val df = spark.read
-        .schema(StructType(columns))
-        .csv(TestUtils.locate("smalldata/anomaly/ecg_discord_test.csv"))
+    val mojoName: String = "deep_learning_auto_encoder.mojo"
+    val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
+    val settings = H2OMOJOSettings(convertInvalidNumbersToNa = false, convertUnknownCategoricalLevelsToNa = false)
+    val mojo = H2OAutoEncoderMOJOModel.createFromMojo(mojoStream, mojoName, settings)
 
-      val mojoName: String = "deep_learning_auto_encoder.mojo"
-      val mojoStream = this.getClass.getClassLoader.getResourceAsStream(mojoName)
-      val settings = H2OMOJOSettings(convertInvalidNumbersToNa = false, convertUnknownCategoricalLevelsToNa = false)
-      val mojo = H2OAutoEncoderMOJOModel.createFromMojo(mojoStream, mojoName, settings)
+    mojo.setOutputCol("Output")
+    mojo.setOriginalCol("Original")
+    mojo.setWithOriginalCol(true)
+    mojo.setMSECol("MSE")
+    mojo.setWithMSECol(true)
 
-      mojo.setOutputCol("Output")
-      mojo.setOriginalCol("Original")
-      mojo.setWithOriginalCol(true)
-      mojo.setMSECol("MSE")
-      mojo.setWithMSECol(true)
+    val result = mojo.transform(df)
+    val firstRow = result.first()
 
-      val result = mojo.transform(df)
-      val firstRow = result.first()
+    val output = firstRow.getAs[DenseVector]("Output")
+    output.values.length shouldBe 210
 
-      val output = firstRow.getAs[DenseVector]("Output")
-      output.values.length shouldBe 210
+    val original = firstRow.getAs[DenseVector]("Original")
+    original.values.length shouldBe 210
 
-      val original = firstRow.getAs[DenseVector]("Original")
-      original.values.length shouldBe 210
+    val mse = firstRow.getAs[Double]("MSE")
+    mse shouldBe (0.01838996923742329 +- 0.0001)
+  }
 
-      val mse = firstRow.getAs[Double]("MSE")
-      mse shouldBe (0.01838996923742329 +- 0.0001)
-    }
+  test("The auto encoder is able to transform dataset after it's saved and loaded") {
+    val autoEncoder = new H2OAutoEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setOutputCol("Output")
+      .setWithOriginalCol(true)
+      .setOriginalCol("Original")
+      .setWithMSECol(true)
+      .setMSECol("MSE")
+      .setHidden(Array(3))
+      .setSplitRatio(0.8)
+      .setReproducible(true)
 
-    test("The auto encoder is able to transform dataset after it's saved and loaded") {
-      val autoEncoder = new H2OAutoEncoder()
-        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setOutputCol("Output")
-        .setWithOriginalCol(true)
-        .setOriginalCol("Original")
-        .setWithMSECol(true)
-        .setMSECol("MSE")
-        .setHidden(Array(3))
-        .setSplitRatio(0.8)
-        .setReproducible(true)
+    val pipeline = new Pipeline().setStages(Array(autoEncoder))
 
-      val pipeline = new Pipeline().setStages(Array(autoEncoder))
+    val model = pipeline.fit(trainingDataset)
+    val expectedTestingDataset = model.transform(testingDataset)
+    val path = "build/ml/autoEncoder_save_load"
+    model.write.overwrite().save(path)
+    val loadedModel = PipelineModel.load(path)
+    val transformedTestingDataset = loadedModel.transform(testingDataset)
 
-      val model = pipeline.fit(trainingDataset)
-      val expectedTestingDataset = model.transform(testingDataset)
-      val path = "build/ml/autoEncoder_save_load"
-      model.write.overwrite().save(path)
-      val loadedModel = PipelineModel.load(path)
-      val transformedTestingDataset = loadedModel.transform(testingDataset)
+    TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
+  }
 
-      TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
-    }
+  test("A pipeline with an auto encoder transforms testing dataset without an exception") {
+    val autoEncoder = new H2OAutoEncoder()
+      .setInputCols(Array("RACE", "DPROS", "DCAPS"))
+      .setHidden(Array(3))
 
-    test("A pipeline with an auto encoder transforms testing dataset without an exception") {
-      val autoEncoder = new H2OAutoEncoder()
-        .setInputCols(Array("RACE", "DPROS", "DCAPS"))
-        .setHidden(Array(3))
+    val gbm = new H2OGBM()
+      .setFeaturesCol(autoEncoder.getOutputCol())
+      .setLabelCol("CAPSULE")
 
-      val gbm = new H2OGBM()
-        .setFeaturesCol(autoEncoder.getOutputCol())
-        .setLabelCol("CAPSULE")
+    val pipeline = new Pipeline().setStages(Array(autoEncoder, gbm))
 
-      val pipeline = new Pipeline().setStages(Array(autoEncoder, gbm))
-
-      val model = pipeline.fit(trainingDataset)
-      val rows = model.transform(testingDataset).groupBy("prediction").count().collect()
-      rows.foreach { row =>
-        assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
-      }
+    val model = pipeline.fit(trainingDataset)
+    val rows = model.transform(testingDataset).groupBy("prediction").count().collect()
+    rows.foreach { row =>
+      assert(row.getAs[Long]("count") > 0, s"No predictions of class '${row.getAs[Int]("prediction")}'")
     }
   }
 }
