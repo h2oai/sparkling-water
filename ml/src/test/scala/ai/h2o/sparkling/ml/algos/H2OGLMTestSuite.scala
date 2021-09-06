@@ -90,6 +90,7 @@ class H2OGLMTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       .setSeed(1)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
+      .setKeepBinaryModels(true)
 
     H2OModel.modelExists(key1) shouldBe false
 
