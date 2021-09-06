@@ -112,8 +112,7 @@ class H2OTargetEncoderMultinomialTestSuite extends FunSuite with Matchers with S
     TestUtils.assertDataFramesAreIdentical(expectedTestingDataset, transformedTestingDataset)
   }
 
-  test(
-    "TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
+  test("TargetEncoderModel with disabled noise and TargetEncoderMOJOModel transform the training dataset the same way") {
     val targetEncoder = new H2OTargetEncoder()
       .setInputCols(Array("RACE", "DPROS", "DCAPS"))
       .setLabelCol("AGE")

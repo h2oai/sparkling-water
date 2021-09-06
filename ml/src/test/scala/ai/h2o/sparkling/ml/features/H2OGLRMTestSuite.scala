@@ -107,8 +107,7 @@ class H2OGLRMTestSuite extends FunSuite with Matchers with SharedH2OTestContext 
     }
   }
 
-  test(
-    "A pipeline with a GLRM model sourcing data from vector column transforms testing dataset without an exception") {
+  test("A pipeline with a GLRM model sourcing data from vector column transforms testing dataset without an exception") {
     val autoEncoder = new H2OAutoEncoder()
       .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setHidden(Array(100))
