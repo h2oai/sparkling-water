@@ -124,7 +124,9 @@ object MOJOModelTemplate
            |          set("$swName", convertedValue)
            |        }
            |      } catch {
-           |        case e: Throwable => logError("An error occurred during setting up the '$swName' parameter.", e)
+           |        case e: Throwable =>
+           |          logWarning("An error occurred during setting up the '$swName' parameter. The method " +
+           |          "get${swName.capitalize}() on the MOJO model object won't be able to provide the actual value.", e)
            |      }""".stripMargin
       }
       .mkString("\n\n")
