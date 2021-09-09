@@ -123,15 +123,20 @@ object ModelMetricsTemplate
     metrics
       .map { metric =>
         s"""    if (json.has("${metric.h2oName}")) {
-         |      try {
-         |        set("${metric.swFieldName}", ${generateValueExtraction(metric)})
-         |      } catch {
-         |        case e: Throwable =>
-         |          logError("Unsuccessful try to extract '${metric.h2oName}' from " + context, e)
-         |      }
-         |    } else {
-         |      logWarning("The metric '${metric.h2oName}' in " + context + " does not exist.")
-         |    }""".stripMargin
+           |      try {
+           |        set("${metric.swFieldName}", ${generateValueExtraction(metric)})
+           |      } catch {
+           |        case e: Throwable if System.getProperty("spark.testing", "false") != "true" =>
+           |          logError("Unsuccessful try to extract '${metric.h2oName}' from " + context, e)
+           |      }
+           |    } else {
+           |      val message = "The metric '${metric.h2oName}' in " + context + " does not exist."
+           |      if (System.getProperty("spark.testing", "false") != "true") {
+           |        logWarning(message)
+           |      } else {
+           |        throw new AssertionError(message)
+           |      }
+           |    }""".stripMargin
       }
       .mkString("\n\n")
   }
