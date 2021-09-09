@@ -159,12 +159,13 @@ def testBlendingDataFrameHasImpactOnAutoMLStackedEnsambleModels(classificationDa
     automl = setParametersForTesting(H2OAutoML())
     automl.fit(trainingDateset)
     defaultLeaderboard = separateEnsembleModels(prepareLeaderboardForComparison(automl.getLeaderboard()))
+    automl.getLeaderboard().show(truncate=False)
 
     automl = setParametersForTesting(H2OAutoML()).setBlendingDataFrame(blendingDataset)
     automl.fit(trainingDateset)
     leaderboardWithBlendingFrameSet = separateEnsembleModels(prepareLeaderboardForComparison(automl.getLeaderboard()))
 
-    assert defaultLeaderboard[0].count() == 2
+    assert defaultLeaderboard[0].count() == 3
     unit_test_utils.assert_data_frames_have_different_values(defaultLeaderboard[0], leaderboardWithBlendingFrameSet[0])
     unit_test_utils.assert_data_frames_are_identical(defaultLeaderboard[1], leaderboardWithBlendingFrameSet[1])
 
