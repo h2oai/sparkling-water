@@ -26,7 +26,6 @@ object IgnoredMetricFields {
       "model_checksum",
       "frame",
       "frame_checksum",
-      "description",
       "model_category",
       "predictions")
 }
