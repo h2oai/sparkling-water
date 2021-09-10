@@ -25,7 +25,7 @@ trait MetricResolver {
 
     val parameters =
       for (field <- h2oSchemaClass.getDeclaredFields
-           if field.getAnnotation(classOf[API]) != null && !IgnoredMetricFields.all().contains(field.getName))
+           if field.getAnnotation(classOf[API]) != null && !MetricFieldExceptions.ignored().contains(field.getName))
         yield {
           val (swFieldName, swMetricName) = MetricNameConverter.convertFromH2OToSW(field.getName)
           Metric(swFieldName, swMetricName, field.getName, field.getType, field.getAnnotation(classOf[API]).help())
