@@ -97,18 +97,44 @@ abstract class H2OMOJOModel
     featureImportances -> null,
     numberOfCrossValidationModels -> 0)
 
+  /**
+    * Returns a map of all metrics of the Double type calculated on the training dataset.
+    */
   def getTrainingMetrics(): Map[String, Double] = $(trainingMetrics)
 
+  /**
+    * Returns an object holding all metrics of the Double type and also more complex performance information
+    * calculated on the training dataset.
+    */
   def getTrainingMetricsObject(): H2OMetrics = $(trainingMetricsObject)
 
+  /**
+    * Returns a map of all metrics of the Double type calculated on the validation dataset.
+    */
   def getValidationMetrics(): Map[String, Double] = $(validationMetrics)
 
+  /**
+    * Returns an object holding all metrics of the Double type and also more complex performance information
+    * calculated on the validation dataset.
+    */
   def getValidationMetricsObject(): H2OMetrics = $(validationMetricsObject)
 
+  /**
+    * Returns a map of all combined cross-validation holdout metrics of the Double Type.
+    */
   def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
 
+  /**
+    * Returns an object holding all metrics of the Double type and also more complex performance information
+    * combined from cross-validation holdouts.
+    */
   def getCrossValidationMetricsObject(): H2OMetrics = $(crossValidationMetricsObject)
 
+  /**
+    * Returns a map of all metrics of the Double type. If the nfolds parameter was set, the metrics were combined from
+    * cross-validation holdouts. If cross validations wasn't enabled, the metrics were calculated from a validation
+    * dataset. If the validation dataset wasn't available, the metrics were calculated from the training dataset.
+    */
   def getCurrentMetrics(): Map[String, Double] = {
     val nfolds = $(trainingParams).get("nfolds")
     val validationFrame = $(trainingParams).get("validation_frame")
@@ -121,6 +147,11 @@ abstract class H2OMOJOModel
     }
   }
 
+  /**
+    * Returns a map of all metrics of the Double type. If the nfolds parameter was set, the object was combined from
+    * cross-validation holdouts. If cross validations wasn't enabled, the object was calculated from a validation
+    * dataset. If the validation dataset wasn't available, the object was calculated from the training dataset.
+    */
   def getCurrentMetricsObject(): H2OMetrics = {
     val nfolds = $(trainingParams).get("nfolds")
     val validationFrame = $(trainingParams).get("validation_frame")
