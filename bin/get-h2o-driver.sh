@@ -14,7 +14,7 @@ Download H2O driver for external H2O backend mode of Sparkling Water.
  $0 <HADOOP_VERSION>
 
  Parameters:
-    HADOOP_VERSION - Hadoop version (e.g., hdp2.6) or "standalone" - see list below
+    HADOOP_VERSION - Hadoop version (e.g., hdp2.1) or "standalone" - see list below
 
  Hadoop distributions supported by H2O:
     ${AVAILABLE_H2O_DRIVERS}

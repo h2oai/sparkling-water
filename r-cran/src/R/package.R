@@ -11,11 +11,10 @@ spark_dependencies <- function(spark_version, scala_version, ...) {
 
   stop(paste0('You are using RSParkling installed from CRAN which is not maintained anymore. Please install latest RSparkling as:
 
-  For Spark 3.1 -> ', getLink("3.1"), '
-  For Spark 3.0 -> ', getLink("3.0"), '
   For Spark 2.4 -> ', getLink("2.4"), '
   For Spark 2.3 -> ', getLink("2.3"), '
-  For Spark 2.2 -> ', getLink("2.2")))
+  For Spark 2.2 -> ', getLink("2.2"), '
+  For Spark 2.1 -> ', getLink("2.1")))
   spark_dependency(jars = c())
 }
 

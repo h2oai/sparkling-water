@@ -68,6 +68,13 @@ class H2OContext(object):
         :return:  instance of H2OContext
         """
 
+        # Workaround for bug in Spark 2.1 as SparkSession created in PySpark is not seen in Java
+        # and call SparkSession.builder.getOrCreate on Java side creates a new session, which is not
+        # desirable
+        activeSession = SparkSession._instantiatedSession
+        jvm = activeSession.sparkContext._jvm
+        jvm.org.apache.spark.sql.SparkSession.setDefaultSession(activeSession._jsparkSession)
+
         if conf is not None:
             selected_conf = conf
         else:

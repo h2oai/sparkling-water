@@ -33,7 +33,13 @@ class Utils(object):
 
     @staticmethod
     def getInputKwargs(instance):
-        return instance._input_kwargs
+        spark_version = SparkSession.builder.getOrCreate().version
+
+        if spark_version == "2.1.0":
+            return instance.__init__._input_kwargs
+        else:
+            # on newer versions we need to use the following variant
+            return instance._input_kwargs
 
     @staticmethod
     def methodDeprecationWarning(old, new=None):
