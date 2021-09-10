@@ -19,10 +19,9 @@ package ai.h2o.sparkling.ml.models
 
 import java.io.{File, InputStream}
 
-import _root_.hex.genmodel.algos.tree.{SharedTreeMojoModel, TreeBackedMojoModel}
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
-import _root_.hex.genmodel.{GenModel, MojoModel, MojoReaderBackendFactory, PredictContributionsFactory}
+import _root_.hex.genmodel.{MojoModel, MojoReaderBackendFactory}
 import ai.h2o.sparkling.ml.internals.{H2OMetric, H2OModelCategory}
 import ai.h2o.sparkling.ml.params._
 import ai.h2o.sparkling.ml.utils.Utils
