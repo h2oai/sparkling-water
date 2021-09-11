@@ -73,9 +73,15 @@ object ModelMetricsTemplate
 
   private def generateDefaults(metrics: Seq[Metric]): String = {
     metrics
-      .filter(!_.dataType.isPrimitive)
-      .map { metric =>
-        s"\n  setDefault(${metric.swFieldName} -> null)"
+      .flatMap {
+        case metric if metric.dataType.getSimpleName == "double" =>
+          Some(s"\n  setDefault(${metric.swFieldName} -> Double.NaN)")
+        case metric if metric.dataType.getSimpleName == "float" =>
+          Some(s"\n  setDefault(${metric.swFieldName} -> Float.NaN)")
+        case metric if metric.dataType.getSimpleName == "long" =>
+          None
+        case metric if !metric.dataType.isPrimitive =>
+          Some(s"\n  setDefault(${metric.swFieldName} -> null)")
       }
       .mkString("")
   }
