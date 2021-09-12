@@ -95,7 +95,7 @@ test_that("test training params", {
   params <- model$getTrainingParams()
   expect_equal(params[["distribution"]], "bernoulli")
   expect_equal(params[["ntrees"]], "2")
-  expect_equal(length(params), 42)
+  expect_equal(length(params), 44)
 })
 
 test_that("test model category", {
@@ -108,7 +108,7 @@ test_that("test training metrics", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetrics()
   expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
-  expect_equal(length(metrics), 7)
+  expect_equal(length(metrics), 10)
 })
 
 test_that("test current metrics", {

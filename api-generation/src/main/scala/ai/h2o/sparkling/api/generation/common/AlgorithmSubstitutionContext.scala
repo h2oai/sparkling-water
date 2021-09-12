@@ -22,6 +22,7 @@ case class AlgorithmSubstitutionContext(
     entityName: String,
     h2oSchemaClass: Class[_],
     algorithmType: String,
-    extraInheritedEntities: Seq[String],
-    constructorMethods: Boolean = true)
+    extraInheritedEntities: Seq[String] = Seq.empty,
+    constructorMethods: Boolean = true,
+    specificMetricsClass: Option[String] = None)
   extends SubstitutionContextBase

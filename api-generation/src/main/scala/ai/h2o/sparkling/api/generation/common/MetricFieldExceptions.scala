@@ -15,16 +15,11 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package ai.h2o.sparkling.api.generation.common
 
-import org.apache.spark.expose.Logging
-import org.apache.spark.ml.util._
-import org.apache.spark.ml.util.expose.DefaultParamsReader
+object MetricFieldExceptions {
+  def ignored(): Set[String] =
+    Set("__meta", "domain", "model", "model_checksum", "frame", "frame_checksum", "model_category", "predictions")
 
-private[ml] class H2OReaderBase[T] extends MLReader[T] with H2OParamsReader[T] with Logging {
-
-  override def load(path: String): T = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    load(metadata)
-  }
+  def optional(): Set[String] = Set("custom_metric_name", "custom_metric_value", "mean_score", "mean_normalized_score")
 }

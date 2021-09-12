@@ -17,6 +17,8 @@
 
 package ai.h2o.sparkling.ml.algos
 
+import ai.h2o.sparkling.ml.metrics.{H2OMetrics, H2OOrdinalGLMMetrics, H2OOrdinalMetrics, MetricsAssertions}
+import ai.h2o.sparkling.ml.models.{H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -83,5 +85,27 @@ class OrdinalPredictionTestSuite extends FunSuite with Matchers with SharedH2OTe
     assert(model.getModelDetails().contains(""""model_category": "Ordinal""""))
     assert(schema == expectedSchema)
     assert(schema == expectedSchemaByTransform)
+  }
+
+  private def assertMetrics[T](model: H2OMOJOModel): Unit = {
+    assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    assertMetrics(model.getValidationMetricsObject(), model.getValidationMetrics())
+    assert(model.getCrossValidationMetricsObject() == null)
+    assert(model.getCrossValidationMetrics() == Map())
+  }
+
+  private def assertMetrics(metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {
+    metricsObject.isInstanceOf[H2OOrdinalGLMMetrics] should be(true)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(metricsObject, metrics)
+  }
+
+  test("test ordinal glm metric objects") {
+    val algo = createAlgorithm()
+    val model = algo.fit(dataset)
+    assertMetrics[H2OOrdinalMetrics](model)
+
+    model.write.overwrite().save("ml/build/glm_ordinal_model_metrics")
+    val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_ordinal_model_metrics")
+    assertMetrics[H2OOrdinalGLMMetrics](loadedModel)
   }
 }

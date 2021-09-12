@@ -98,17 +98,17 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
   override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = super.algorithmConfiguration ++ {
 
-    val algorithms = Seq[(String, Class[_], String, Seq[String])](
-      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Seq.empty),
-      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Seq.empty),
-      ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Seq.empty))
+    val algorithms = Seq[(String, Class[_], String, Option[String])](
+      ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Some("H2OAutoEncoderMetrics")),
+      ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Some("H2OPCAMetrics")),
+      ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Some("H2OGLRMMetrics")))
 
-    for ((entityName, h2oParametersClass: Class[_], algorithmType, extraParents) <- algorithms)
+    for ((entityName, h2oParametersClass: Class[_], algorithmType, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(
         namespace = "ai.h2o.sparkling.ml.features",
         entityName,
         h2oParametersClass,
         algorithmType,
-        extraParents)
+        specificMetricsClass = metricsClass)
   }
 }

@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.ml.utils
+package ai.h2o.sparkling.api.generation.common
 
-import org.apache.spark.expose.Logging
-import org.apache.spark.ml.util._
-import org.apache.spark.ml.util.expose.DefaultParamsReader
+import water.api.API
 
-private[ml] class H2OReaderBase[T] extends MLReader[T] with H2OParamsReader[T] with Logging {
+trait MetricResolver {
+  def resolveMetrics(substitutionContext: ModelMetricsSubstitutionContext): Seq[Metric] = {
+    val h2oSchemaClass = substitutionContext.h2oSchemaClass
 
-  override def load(path: String): T = {
-    val metadata = DefaultParamsReader.loadMetadata(path, sc)
-    load(metadata)
+    val parameters =
+      for (field <- h2oSchemaClass.getDeclaredFields
+           if field.getAnnotation(classOf[API]) != null && !MetricFieldExceptions.ignored().contains(field.getName))
+        yield {
+          val (swFieldName, swMetricName) = MetricNameConverter.convertFromH2OToSW(field.getName)
+          Metric(swFieldName, swMetricName, field.getName, field.getType, field.getAnnotation(classOf[API]).help())
+        }
+    parameters
   }
 }
