@@ -34,6 +34,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
+import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
@@ -169,6 +170,10 @@ abstract class H2OMOJOModel
     }
   }
 
+  /**
+    * Returns data frame with information about performance of individual folds
+    * according to various model metrics
+    */
   def getCrossValidationMetricsSummary(): DataFrame = $(crossValidationMetricsSummary)
 
   def getTrainingParams(): Map[String, String] = $(trainingParams)
@@ -434,11 +439,14 @@ trait H2OMOJOModelUtils extends Logging {
 
       // Convert H2O Metric names to SW names
       val conversionMap = H2OMetric.values().map(i => i.name().toLowerCase -> i.name()).toMap
-      val nameConversion = (value: String) => conversionMap.get(value.replace("_", ""))
-      val nameConversionUDF = udf[Option[String], String](nameConversion)
+
+      val nameConversion = (value: String) => conversionMap.getOrElse(
+        value.replace("_", ""),
+        MetricNameConverter.convertFromH2OToSW(value)._2)
+      val nameConversionUDF = udf[String, String](nameConversion)
       val withSWNamesDF = typedSummaryDF
-        .select(nameConversionUDF(col("")) as "SW metric", col("*"))
-        .withColumnRenamed("", "H2O metric")
+        .select(nameConversionUDF(col("")) as "metric", col("*"))
+        .drop("")
 
       withSWNamesDF
     } else {
