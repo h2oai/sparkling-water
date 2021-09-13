@@ -235,3 +235,29 @@ def testCrossValidationModelsAreNoneIfKeepCrossValidationModelsIsFalse(prostateD
     model = gbm.fit(prostateDataset)
 
     assert model.getCrossValidationModels() is None
+
+
+def testMetricObjects(prostateDataset):
+    gbm = H2OGBM(ntrees=2, seed=42, distribution="bernoulli", labelCol="capsule",
+                 nfolds=3, keepCrossValidationModels=False)
+    model = gbm.fit(prostateDataset)
+
+    def compareMetricValues(metricsObject, metricsMap):
+        for metric in metricsMap:
+            metricValue = metricsMap[metric]
+            objectValue = getattr(metricsObject, "get" + metric)()
+            assert(metricValue == objectValue)
+        assert metricsObject.getConfusionMatrix().count() > 0
+        assert len(metricsObject.getConfusionMatrix().columns) > 0
+        assert metricsObject.getGainsLiftTable().count() > 0
+        assert len(metricsObject.getGainsLiftTable().columns) > 0
+        assert metricsObject.getMaxCriteriaAndMetricScores().count() > 0
+        assert len(metricsObject.getMaxCriteriaAndMetricScores().columns) > 0
+        assert metricsObject.getThresholdsAndMetricScores().count() > 0
+        assert len(metricsObject.getThresholdsAndMetricScores().columns) > 0
+
+    compareMetricValues(model.getTrainingMetricsObject(), model.getTrainingMetrics())
+    compareMetricValues(model.getCrossValidationMetricsObject(), model.getCrossValidationMetrics())
+    compareMetricValues(model.getCurrentMetricsObject(), model.getCurrentMetrics())
+    assert model.getValidationMetricsObject() is None
+    assert model.getValidationMetrics() == {}
