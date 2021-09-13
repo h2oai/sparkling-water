@@ -366,6 +366,8 @@ There are several methods to obtain metrics from the MOJO model. All return a ma
 - ``getTrainingMetrics`` - obtain training metrics
 - ``getValidationMetrics`` - obtain validation metrics
 - ``getCrossValidationMetrics`` - obtain cross validation metrics
+- ``getCrossValidationMetricsSummary`` - It returns data frame with information about performance of individual folds
+  according to various model metrics.
 
 There is also the method ``getCurrentMetrics`` which gets one of the metrics above based on the following algorithm:
 

@@ -419,6 +419,27 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
     prediction.classProbabilities(1) shouldEqual rowWithPrediction.getStruct(9).getStruct(1).get(1)
   }
 
+  test("getCrossValidationMetricsSummary returns a non-empty data frame when cross validation enabled") {
+    val estimator = new H2OGLM()
+      .setSeed(1)
+      .setNfolds(3)
+      .setSplitRatio(0.8)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = estimator.fit(prostateDataFrame)
+
+    val crossValidationModelSummary = model.getCrossValidationMetricsSummary()
+
+    val expectedColumns = Seq("SW metric", "H2O metric", "mean", "sd", "cv_1_valid", "cv_2_valid", "cv_3_valid")
+    crossValidationModelSummary.columns.toList shouldEqual expectedColumns
+    crossValidationModelSummary.count() shouldBe >(0L)
+
+    val row = crossValidationModelSummary.first()
+    for (columnId <- 2 to 6) {
+      row.getFloat(columnId) shouldBe >(0.0f)
+    }
+  }
+
   {
     def numberOfFolds = 3
     lazy val gbm = configureGBMForProstateDF()
