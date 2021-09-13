@@ -29,7 +29,9 @@ trait H2OAlgoCommonUtils extends EstimatorCommonUtils with H2OFrameLifecycle {
 
   def getBinaryModel(): H2OBinaryModel = {
     if (binaryModel.isEmpty) {
-      throw new IllegalArgumentException("Algorithm needs to be fit first in order to access binary model features.")
+      throw new IllegalArgumentException(
+        "Algorithm needs to be fit first with the `keepBinaryModels` parameter " +
+          "set to true in order to access binary model.")
     }
     binaryModel.get
   }

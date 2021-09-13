@@ -50,6 +50,8 @@ class H2OAutoML(override val uid: String)
 
   private var amlKeyOption: Option[String] = None
 
+  private var allModels: Option[Array[H2OMOJOModel]] = None
+
   private def getInputSpec(train: H2OFrame, valid: Option[H2OFrame]): Map[String, Any] = {
     getH2OAutoMLInputParams(train) ++
       Map("training_frame" -> train.frameId) ++
@@ -90,16 +92,18 @@ class H2OAutoML(override val uid: String)
 
     val algoName = getLeaderboard().select("model_id").head().getString(0)
     val leaderModelId = getLeaderModelId(autoMLId)
-    val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
-    binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
 
-    val result = H2OModel(leaderModelId)
-      .toMOJOModel(
-        Identifiable.randomUID(algoName),
-        H2OMOJOSettings.createFromModelParams(this),
-        getKeepCrossValidationModels())
+    setAllModels()
+
+    if (getKeepBinaryModels()) {
+      val downloadedModel = downloadBinaryModel(leaderModelId, H2OContext.ensure().getConf)
+      binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(leaderModelId)))
+    } else {
+      deleteBinaryModels()
+    }
+
     deleteRegisteredH2OFrames()
-    result
+    getAllModels()(0)
   }
 
   private def determineIncludedAlgos(): Array[String] = {
@@ -166,14 +170,28 @@ class H2OAutoML(override val uid: String)
     leaderBoard.head().getString(0)
   }
 
-  def getAllModels(): Array[H2OMOJOModel] = {
-    getLeaderboard().select("model_id").collect().map { row =>
+  private def setAllModels(): Unit = {
+    val models = getLeaderboard().select("model_id").collect().map { row =>
       val modelId = row.getString(0)
       H2OModel(modelId)
         .toMOJOModel(
           Identifiable.randomUID(modelId),
           H2OMOJOSettings.createFromModelParams(this),
           getKeepCrossValidationModels())
+    }
+    allModels = Some(models)
+  }
+
+  def getAllModels(): Array[H2OMOJOModel] = allModels match {
+    case Some(models) => models
+    case None => throw new RuntimeException("The 'fit' method must be called at first!")
+  }
+
+  private def deleteBinaryModels(): Unit = {
+    getLeaderboard().select("model_id").collect().foreach { row =>
+      val modelId = row.getString(0)
+      val model = H2OModel(modelId)
+      model.tryDelete()
     }
   }
 

@@ -41,6 +41,7 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     .setSeed(1)
     .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
     .setLabelCol("AGE")
+    .setKeepBinaryModels(true)
 
   private val outputPath = "ml/build/binary.model"
 
@@ -88,7 +89,9 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     val thrown = intercept[IllegalArgumentException] {
       gbm.getBinaryModel()
     }
-    assert(thrown.getMessage == "Algorithm needs to be fit first in order to access binary model features.")
+    assert(
+      thrown.getMessage == "Algorithm needs to be fit first with the `keepBinaryModels` parameter " +
+        "set to true in order to access binary model.")
   }
 
   test("Binary model is available in H2O after training Grid in SW") {
@@ -96,7 +99,8 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
       .setAlgo(
         new H2OGBM()
           .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
-          .setLabelCol("AGE"))
+          .setLabelCol("AGE")
+          .setKeepBinaryModels(true))
       .setHyperParameters(Map("ntrees" -> Array(10, 20).map(_.asInstanceOf[AnyRef])))
     grid.fit(dataset)
     val binaryModel = grid.getBinaryModel()
@@ -108,6 +112,7 @@ class BinaryModelTestSuite extends FunSuite with Matchers with SharedH2OTestCont
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
       .setMaxModels(3)
+      .setKeepBinaryModels(true)
     automl.fit(dataset)
     val binaryModel = automl.getBinaryModel()
     assert(H2OBinaryModel.exists(binaryModel.modelId))

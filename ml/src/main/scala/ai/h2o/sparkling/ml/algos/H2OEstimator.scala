@@ -40,16 +40,21 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
         }
         .getOrElse(Map())
     val modelId = trainAndGetDestinationKey(s"/3/ModelBuilders/${parameters.algoName().toLowerCase}", params)
-    val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
-    binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
+    val model = H2OModel(modelId)
     val withCrossValidationModels = if (hasParam("keepCrossValidationModels")) {
       getOrDefault(getParam("keepCrossValidationModels")).asInstanceOf[Boolean]
     } else {
       false
     }
-    val result = H2OModel(modelId)
-      .toMOJOModel(createMOJOUID(), createMOJOSettings(), withCrossValidationModels)
+
+    val result = model.toMOJOModel(createMOJOUID(), createMOJOSettings(), withCrossValidationModels)
     deleteRegisteredH2OFrames()
+    if (getKeepBinaryModels()) {
+      val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
+      binaryModel = Some(H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId)))
+    } else {
+      model.tryDelete()
+    }
     result
   }
 

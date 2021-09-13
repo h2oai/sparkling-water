@@ -158,7 +158,9 @@ def testIterationNumberHasEffectOnScoring(arrestsDataset):
 
 def testRepresentationFrameIsAccessible(hc, arrestsDataset):
     representationName="myFrame"
-    algo = getPreconfiguredAlgorithm().setRepresentationName(representationName)
+    algo = getPreconfiguredAlgorithm()
+    algo.setRepresentationName(representationName)
+    algo.setKeepBinaryModels(True)
     algo.fit(arrestsDataset)
     frame = H2OFrame.get_frame(representationName, full_cols=-1, light=True)
     df = hc.asSparkFrame(frame)

@@ -73,6 +73,7 @@ class H2OCoxPHTestSuite extends FunSuite with Matchers with SharedH2OTestContext
       .setStartCol("start")
       .setStopCol("stop")
       .setLabelCol("event")
+      .setKeepBinaryModels(true)
 
     H2OModel.modelExists(key1) shouldBe false
 

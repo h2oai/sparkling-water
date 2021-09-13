@@ -60,7 +60,7 @@ class H2OGridSearch(override val uid: String)
 
   private var gridModels: Array[H2OMOJOModel] = _
 
-  private var gridBinaryModels: Array[H2OBinaryModel] = _
+  private var gridBinaryModels: Array[H2OBinaryModel] = Array.empty
 
   private def getSearchCriteria(train: H2OFrame): String = {
     val commonCriteria = getH2OGridSearchCommonCriteriaParams(train)
@@ -166,10 +166,15 @@ class H2OGridSearch(override val uid: String)
     }
     val sortedGridModels = sortGridModels(algoName, unsortedGridModels)
     gridModels = sortedGridModels.map(_._2)
-    gridBinaryModels = sortedGridModels.map {
-      case (modelId, _) =>
-        val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
-        H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId))
+
+    if (algo.getKeepBinaryModels()) {
+      gridBinaryModels = sortedGridModels.map {
+        case (modelId, _) =>
+          val downloadedModel = downloadBinaryModel(modelId, H2OContext.ensure().getConf)
+          H2OBinaryModel.read("file://" + downloadedModel.getAbsolutePath, Some(modelId))
+      }
+    } else {
+      sortedGridModels.map { case (modelId, _) => H2OModel(modelId).tryDelete() }
     }
     algo.deleteRegisteredH2OFrames()
     deleteRegisteredH2OFrames()
@@ -178,7 +183,9 @@ class H2OGridSearch(override val uid: String)
 
   def getBinaryModel(): H2OBinaryModel = {
     if (gridBinaryModels.isEmpty) {
-      throw new IllegalArgumentException("Algorithm needs to be fit first in order to access binary model features.")
+      throw new IllegalArgumentException(
+        "Algorithm needs to be fit first with the 'keepBinaryModels' parameter " +
+          "set to true in order to access binary model.")
     }
     gridBinaryModels.head
   }

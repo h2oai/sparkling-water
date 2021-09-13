@@ -53,6 +53,8 @@ From 3.32.1 to 3.34
 
 - The support for Apache Spark 2.1.x has been removed.
 
+- Binary models could be downloaded only if the algorithm parameter ``keepBinaryModels`` was set to ``true``.
+
 From 3.32 to 3.32.1
 -------------------
 
