@@ -22,5 +22,6 @@ case class EntitySubstitutionContext(
     entityName: String,
     inheritedEntities: Seq[String],
     imports: Seq[String],
-    parameters: String = "")
+    parameters: String = "",
+    annotations: Seq[String] = Seq.empty)
   extends SubstitutionContextBase

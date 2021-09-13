@@ -34,12 +34,15 @@ object ModelMetricsTemplate
       "org.apache.spark.ml.util.Identifiable")
     val parameters = "(override val uid: String)"
 
+    val annotations = Seq(s"""@MetricsDescription(description = "${substitutionContext.classDescription}")""")
+
     val entitySubstitutionContext = EntitySubstitutionContext(
       substitutionContext.namespace,
       substitutionContext.entityName,
       substitutionContext.parentEntities,
       imports,
-      parameters)
+      parameters,
+      annotations)
 
     generateEntity(entitySubstitutionContext, "class") {
       s"""def this() = this(Identifiable.randomUID("${substitutionContext.entityName}"))

@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.ml.metrics;
 
-case class ModelMetricsSubstitutionContext(
-    entityName: String,
-    h2oSchemaClass: Class[_],
-    parentEntities: Seq[String],
-    classDescription: String)
-  extends SubstitutionContextBase {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  val namespace = "ai.h2o.sparkling.ml.metrics"
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface MetricsDescription {
+  public String description() default "";
 }
