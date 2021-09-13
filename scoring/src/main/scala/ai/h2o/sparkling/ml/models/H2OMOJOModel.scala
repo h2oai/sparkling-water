@@ -125,7 +125,7 @@ abstract class H2OMOJOModel
   def getValidationMetricsObject(): H2OMetrics = $(validationMetricsObject)
 
   /**
-    * Returns a map of all combined cross-validation holdout metrics of the Double Type.
+    * Returns a map of all combined cross-validation holdout metrics of the Double type.
     */
   def getCrossValidationMetrics(): Map[String, Double] = $(crossValidationMetrics)
 
@@ -153,9 +153,10 @@ abstract class H2OMOJOModel
   }
 
   /**
-    * Returns a map of all metrics of the Double type. If the nfolds parameter was set, the object was combined from
-    * cross-validation holdouts. If cross validations wasn't enabled, the object was calculated from a validation
-    * dataset. If the validation dataset wasn't available, the object was calculated from the training dataset.
+    * Returns an object holding all metrics of the Double type and also more complex performance information.
+    * If the nfolds parameter was set, the object was combined from cross-validation holdouts. If cross validations
+    * wasn't enabled, the object was calculated from a validation dataset. If the validation dataset wasn't available,
+    * the object was calculated from the training dataset.
     */
   def getCurrentMetricsObject(): H2OMetrics = {
     val nfolds = $(trainingParams).get("nfolds")
@@ -169,6 +170,9 @@ abstract class H2OMOJOModel
     }
   }
 
+  /**
+    * Returns a data frame with information about performance of individual folds according to various model metrics.
+    */
   def getCrossValidationMetricsSummary(): DataFrame = $(crossValidationMetricsSummary)
 
   def getTrainingParams(): Map[String, String] = $(trainingParams)
