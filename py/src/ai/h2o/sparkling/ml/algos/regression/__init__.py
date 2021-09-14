@@ -22,3 +22,4 @@ from ai.h2o.sparkling.ml.algos.regression.H2OGLMRegressor import H2OGLMRegressor
 from ai.h2o.sparkling.ml.algos.regression.H2OGAMRegressor import H2OGAMRegressor
 from ai.h2o.sparkling.ml.algos.regression.H2OAutoMLRegressor import H2OAutoMLRegressor
 from ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor import H2ODRFRegressor
+from ai.h2o.sparkling.ml.algos.regression.H2ORuleFitRegressor import H2ORuleFitRegressor

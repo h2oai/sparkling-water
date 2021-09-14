@@ -90,7 +90,9 @@ def testRuleFitParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
     algorithm = H2ORuleFit(seed=1, labelCol="CAPSULE", featuresCols=features)
     model = algorithm.fit(prostateDataset)
-    compareParameterValues(algorithm, model)
+
+    ingored = ["getFeaturesCols"]
+    compareParameterValues(algorithm, model, ingored)
 
 
 def testAutoEncoderParameters(prostateDataset):

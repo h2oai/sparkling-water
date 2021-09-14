@@ -85,7 +85,7 @@ object ParametersTemplate {
         }
 
         s"""${param.name}
-           |  ${param.doc.replace("\n ", "\n\n  - ")}
+           |  ${param.doc.replace(" \n", "").replace("\n ", "\n\n  - ")}
            |
            |  ${generateDefaultValue(defaultValue)}
            |  ${generateMOJOComment(param.name, mojoModelInstanceOption)}
