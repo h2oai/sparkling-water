@@ -435,7 +435,7 @@ trait H2OMOJOModelUtils extends Logging {
 
     if (rawSummaryDF != null) {
       // Convert columns to Float for older mojos returning everything as a string columns.
-      val columns = rawSummaryDF.columns.filter(_ != "")
+      val columns = rawSummaryDF.columns.filter(_ != "-")
       val typedSummaryDF = columns.foldLeft(rawSummaryDF)((df, cn) => df.withColumn(cn, col(cn).cast(FloatType)))
 
       // Convert H2O Metric names to SW names
