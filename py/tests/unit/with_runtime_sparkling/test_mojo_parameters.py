@@ -16,7 +16,7 @@
 
 from pysparkling.ml import H2OGBM, H2ODRF, H2OXGBoost, H2OGLM, H2OGAM, H2OCoxPH
 from pysparkling.ml import H2ODeepLearning, H2OKMeans, H2OIsolationForest
-from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM
+from pysparkling.ml import H2OAutoEncoder, H2OPCA, H2OGLRM, H2ORuleFit
 
 def testGBMParameters(prostateDataset):
     features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
@@ -83,6 +83,13 @@ def testCoxPHParameters(heartDataset):
     features = ['age', 'year', 'surgery', 'transplant', 'start', 'stop']
     algorithm = H2OCoxPH(labelCol="event", featuresCols=features, startCol='start', stopCol='stop')
     model = algorithm.fit(heartDataset)
+    compareParameterValues(algorithm, model)
+
+
+def testRuleFitParameters(prostateDataset):
+    features = ['AGE', 'RACE', 'DPROS', 'DCAPS', 'PSA']
+    algorithm = H2ORuleFit(seed=1, labelCol="CAPSULE", featuresCols=features)
+    model = algorithm.fit(prostateDataset)
     compareParameterValues(algorithm, model)
 
 

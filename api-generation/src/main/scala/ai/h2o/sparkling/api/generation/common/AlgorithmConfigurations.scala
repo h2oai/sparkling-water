@@ -73,10 +73,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     val coxPHFields = Seq(ignoredCols, interactionPairs)
     val ifFields = Seq(calibrationDataFrame, validationLabelCol)
 
-    val ruleFitFields = Seq(
-      ExplicitField("offset_column", "HasUnsupportedOffsetCol", null),
-      ExplicitField("fold_column", "HasUnsupportedFoldCol", null),
-      ignoredCols)
+    val ruleFitFields = Seq(ExplicitField("offset_column", "HasUnsupportedOffsetCol", null), ignoredCols)
 
     val dlFields = Seq(
       ExplicitField("initial_biases", "HasInitialBiases", null),
@@ -154,7 +151,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2OGLM", classOf[GLMParameters], cvSupervised, Seq(withFamily), Some("H2OGLMMetrics")),
       ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), None),
-      ("H2ORuleFit", classOf[RuleFitParameters], "H2OSupervisedAlgorithm", Seq(withDistribution), None),
+      ("H2ORuleFit", classOf[RuleFitParameters], supervised, Seq(withDistribution), None),
       ("H2OKMeans", classOf[KMeansParameters], unsupervised, Seq("H2OKMeansExtras"), Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, Seq.empty, Some("H2ORegressionCoxPHMetrics")),
       ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, Seq.empty, Some("H2OAnomalyMetrics")))
