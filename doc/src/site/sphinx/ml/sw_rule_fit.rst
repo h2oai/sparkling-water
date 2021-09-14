@@ -1,10 +1,17 @@
-.. _drf:
+.. _rule_fit:
 
-Train DRF Model in Sparkling Water
-----------------------------------
+Train RuleFit Model in Sparkling Water
+--------------------------------------
 
-Sparkling Water provides API for H2O DRF in Scala and Python.
-The following sections describe how to train the DRF model in Sparkling Water in both languages. See also :ref:`parameters_H2ODRF`.
+RuleFit algorithm combines tree ensembles and linear models to take advantage of both methods:
+- the accuracy of a tree ensemble
+- the interpretability of a linear model
+
+The general algorithm fits a tree ensemble to the data, builds a rule ensemble by traversing each tree, evaluates the rules on
+the data to build a rule feature set, and fits a sparse linear model (LASSO) to the rule feature set joined with the original feature set.
+
+Sparkling Water provides API for H2O RuleFit in Scala and Python. The following sections describe how to train the RuleFit model
+in Sparkling Water in both languages. See also :ref:`parameters_H2ORuleFit`.
 
 .. content-tabs::
 
@@ -39,15 +46,15 @@ The following sections describe how to train the DRF model in Sparkling Water in
 
         .. code:: scala
 
-            import ai.h2o.sparkling.ml.algos.H2ODRF
-            val estimator = new H2ODRF().setLabelCol("CAPSULE")
+            import ai.h2o.sparkling.ml.algos.H2ORuleFit
+            val estimator = new H2ORuleFit().setLabelCol("CAPSULE")
             val model = estimator.fit(trainingDF)
 
-        By default, the ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2ORuleFit`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
         If the label column is a numeric column, a regression model will be trained. If you don't want be worried about
-        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2ODRFClassifier``
-        or ``ai.h2o.sparkling.ml.algos.regression.H2ODRFRegressor`` instead.
+        column data types, you can explicitly identify the problem by using ``ai.h2o.sparkling.ml.algos.classification.H2OH2ORuleFitClassifier``
+        or ``ai.h2o.sparkling.ml.algos.regression.H2OH2ORuleFitRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
@@ -92,14 +99,14 @@ The following sections describe how to train the DRF model in Sparkling Water in
 
         .. code:: python
 
-            from pysparkling.ml import H2ODRF
-            estimator = H2ODRF(labelCol = "CAPSULE")
+            from pysparkling.ml import H2ORuleFit
+            estimator = H2ORuleFit(labelCol = "CAPSULE")
             model = estimator.fit(trainingDF)
 
-        By default, the ``H2ODRF`` algorithm distinguishes between a classification and regression problem based on the type of
+        By default, the ``H2ORuleFit`` algorithm distinguishes between a classification and regression problem based on the type of
         the label column of the training dataset. If the label column is a string column, a classification model will be trained.
         If the label column is a numeric column, a regression model will be trained. If you don't want to be worried about
-        column data types, you can explicitly identify the problem by using ``H2ODRFClassifier`` or ``H2ODRFRegressor`` instead.
+        column data types, you can explicitly identify the problem by using ``H2ORuleFitClassifier`` or ``H2ORuleFitRegressor`` instead.
 
         You can also get raw model details by calling the *getModelDetails()* method available on the model as:
 
