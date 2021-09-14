@@ -441,9 +441,8 @@ trait H2OMOJOModelUtils extends Logging {
       // Convert H2O Metric names to SW names
       val conversionMap = H2OMetric.values().map(i => i.name().toLowerCase -> i.name()).toMap
 
-      val nameConversion = (value: String) => conversionMap.getOrElse(
-        value.replace("_", ""),
-        MetricNameConverter.convertFromH2OToSW(value)._2)
+      val nameConversion = (value: String) =>
+        conversionMap.getOrElse(value.replace("_", ""), MetricNameConverter.convertFromH2OToSW(value)._2)
       val nameConversionUDF = udf[String, String](nameConversion)
       val withSWNamesDF = typedSummaryDF
         .select(nameConversionUDF(col("-")) as "metric", col("*"))
