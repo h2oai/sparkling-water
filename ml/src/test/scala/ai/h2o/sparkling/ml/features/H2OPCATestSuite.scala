@@ -121,10 +121,12 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
         .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setK(4)
         .setImputeMissing(true)
+        .setSeed(42)
 
       val gbm = new H2OGBM()
         .setFeaturesCol(pca.getOutputCol())
         .setLabelCol("CAPSULE")
+        .setSeed(42)
 
       val pipeline = new Pipeline().setStages(Array(pca, gbm))
 
@@ -141,15 +143,18 @@ class H2OPCATestSuite extends FunSuite with Matchers with SharedH2OTestContext {
       val autoEncoder = new H2OAutoEncoder()
         .setInputCols("RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
         .setHidden(Array(100))
+        .setSeed(42)
 
       val pca = new H2OPCA()
         .setInputCols(autoEncoder.getOutputCol())
         .setK(3)
         .setImputeMissing(true)
+        .setSeed(42)
 
       val gbm = new H2OGBM()
         .setFeaturesCol(pca.getOutputCol())
         .setLabelCol("CAPSULE")
+        .setSeed(42)
 
       val pipeline = new Pipeline().setStages(Array(autoEncoder, pca, gbm))
 
