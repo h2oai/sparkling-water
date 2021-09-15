@@ -34,6 +34,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
 import ai.h2o.sparkling.macros.DeprecatedMethod
 import _root_.hex.genmodel.attributes.Table.ColumnType
+import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
@@ -409,7 +410,8 @@ trait H2OMOJOModelUtils extends Logging {
           val row: Row = new GenericRowWithSchema(rowData, schema)
           row
         }.asJava
-        SparkSessionUtils.active.createDataFrame(rows, schema)
+        val dataFrame = SparkSessionUtils.active.createDataFrame(rows, schema)
+        if (dataFrame.columns.contains("")) dataFrame.withColumnRenamed("", "-") else dataFrame
       } catch {
         case e: Throwable =>
           logError(s"Unsuccessful try to extract '$fieldName' as a data frame from JSON representation.", e)
@@ -420,7 +422,7 @@ trait H2OMOJOModelUtils extends Logging {
 
   protected def extractScoringHistory(outputJson: JsonObject): DataFrame = {
     val df = jsonFieldToDataFrame(outputJson, "scoring_history")
-    if (df != null && df.columns.contains("")) df.drop("") else df
+    if (df != null && df.columns.contains("-")) df.drop("-") else df
   }
 
   protected def extractFeatureImportances(outputJson: JsonObject): DataFrame = {
@@ -433,16 +435,18 @@ trait H2OMOJOModelUtils extends Logging {
 
     if (rawSummaryDF != null) {
       // Convert columns to Float for older mojos returning everything as a string columns.
-      val columns = rawSummaryDF.columns.filter(_ != "")
+      val columns = rawSummaryDF.columns.filter(_ != "-")
       val typedSummaryDF = columns.foldLeft(rawSummaryDF)((df, cn) => df.withColumn(cn, col(cn).cast(FloatType)))
 
       // Convert H2O Metric names to SW names
       val conversionMap = H2OMetric.values().map(i => i.name().toLowerCase -> i.name()).toMap
-      val nameConversion = (value: String) => conversionMap.get(value.replace("_", ""))
-      val nameConversionUDF = udf[Option[String], String](nameConversion)
+
+      val nameConversion = (value: String) =>
+        conversionMap.getOrElse(value.replace("_", ""), MetricNameConverter.convertFromH2OToSW(value)._2)
+      val nameConversionUDF = udf[String, String](nameConversion)
       val withSWNamesDF = typedSummaryDF
-        .select(nameConversionUDF(col("")) as "SW metric", col("*"))
-        .withColumnRenamed("", "H2O metric")
+        .select(nameConversionUDF(col("-")) as "metric", col("*"))
+        .drop("-")
 
       withSWNamesDF
     } else {

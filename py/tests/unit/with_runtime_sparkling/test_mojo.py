@@ -202,7 +202,7 @@ def testGetCrossValidationSummary():
         "file://" + os.path.abspath("../ml/src/test/resources/gbm_cv.mojo"))
     summary = mojo.getCrossValidationMetricsSummary()
 
-    assert summary.columns == ["SW metric", "H2O metric", "mean", "sd", "cv_1_valid", "cv_2_valid", "cv_3_valid"]
+    assert summary.columns == ["metric", "mean", "sd", "cv_1_valid", "cv_2_valid", "cv_3_valid"]
     assert summary.count() > 0
 
 
