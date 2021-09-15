@@ -138,6 +138,16 @@ class MOJOParameterTestSuite extends FunSuite with SharedH2OTestContext with Mat
     compareParameterValues(algorithm, mojo)
   }
 
+  test("Test MOJO parameters on RuleFit") {
+    val algorithm = new H2ORuleFit()
+      .setLabelCol("CAPSULE")
+      .setSeed(1)
+    val mojo = algorithm.fit(dataset)
+
+    val ignored = Set("getFeaturesCols")
+    compareParameterValues(algorithm, mojo, ignored)
+  }
+
   test("Test MOJO parameters on PCA") {
     val algorithm = new H2OPCA()
       .setSeed(1)

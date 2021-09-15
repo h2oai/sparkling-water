@@ -21,7 +21,7 @@ from ai.h2o.sparkling.ml.models import H2OSupervisedMOJOModel, H2OTreeBasedSuper
 from ai.h2o.sparkling.ml.models import H2OTreeBasedUnsupervisedMOJOModel
 from ai.h2o.sparkling.ml.models import H2OKMeansMOJOModel, H2OGLMMOJOModel, H2OGAMMOJOModel, H2OGBMMOJOModel
 from ai.h2o.sparkling.ml.models import H2ODeepLearningMOJOModel, H2OAutoEncoderMOJOModel, H2ODRFMOJOModel
-from ai.h2o.sparkling.ml.models import H2OCoxPHMOJOModel, H2OGLRMMOJOModel
+from ai.h2o.sparkling.ml.models import H2OCoxPHMOJOModel, H2OGLRMMOJOModel, H2ORuleFitMOJOModel
 from ai.h2o.sparkling.ml.models import H2OXGBoostMOJOModel, H2OIsolationForestMOJOModel, H2OPCAMOJOModel
 
 __all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel", "H2OAlgorithmMOJOModel", "H2OFeatureMOJOModel",
@@ -29,4 +29,4 @@ __all__ = ["H2OMOJOSettings", "H2OMOJOPipelineModel", "H2OMOJOModel", "H2OAlgori
            "H2OTreeBasedUnsupervisedMOJOModel", "H2OKMeansMOJOModel", "H2OGLMMOJOModel", "H2OGAMMOJOModel",
            "H2OGBMMOJOModel", "H2OXGBoostMOJOModel", "H2ODeepLearningMOJOModel", "H2OAutoEncoderMOJOModel",
            "H2ODRFMOJOModel", "H2OIsolationForestMOJOModel", "H2OCoxPHMOJOModel", "H2OBinaryModel", "H2OPCAMOJOModel",
-           "H2OGLRMMOJOModel"]
+           "H2OGLRMMOJOModel", "H2ORuleFitMOJOModel"]
