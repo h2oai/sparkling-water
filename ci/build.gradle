@@ -50,7 +50,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                     rm -rf spark-${version}-bin-hadoop2.7.tgz
                     """
     if (version.startsWith("2.4")) {
-      runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:11-jre-slim/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
+      runCommand "sed -i 's/openjdk:8-jdk-slim/openjdk:8-jdk-slim-buster/g' /home/jenkins/spark-${version}-bin-hadoop2.7/kubernetes/dockerfiles/spark/Dockerfile"
     }
     def first = version.split("\\.")[0]
     def second = version.split("\\.")[1]
