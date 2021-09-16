@@ -39,11 +39,13 @@ def testUsageOfPCAInAPipeline(prostateDataset):
     pca = H2OPCA() \
         .setInputCols(["RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"]) \
         .setK(3) \
-        .setImputeMissing(True)
+        .setImputeMissing(True) \
+        .setSeed(42)
 
     gbm = H2OGBM() \
         .setFeaturesCols([pca.getOutputCol()]) \
-        .setLabelCol("CAPSULE")
+        .setLabelCol("CAPSULE") \
+        .setSeed(42)
 
     pipeline = Pipeline(stages=[pca, gbm])
 
