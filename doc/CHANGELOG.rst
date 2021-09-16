@@ -1,6 +1,57 @@
 Change Log
 ==========
 
+v3.34.0.1-1 (2021-09-16)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/mn-SW-2614/3.34.0.1-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/mn-SW-2614/3.34.0.1-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/mn-SW-2614/3.34.0.1-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/mn-SW-2614/3.34.0.1-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/mn-SW-2614/3.34.0.1-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/mn-SW-2614/3.34.0.1-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/mn-SW-2614/3.34.0.1-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/mn-SW-2614/3.34.0.1-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/mn-SW-2614/3.34.0.1-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/mn-SW-2614/3.34.0.1-1-3.1/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2614 <https://0xdata.atlassian.net/browse/SW-2614>`__ - Stop Creating Changelog PR during Release
+   -  `SW-2613 <https://0xdata.atlassian.net/browse/SW-2613>`__ - Fix Deletion of K8s Images in Release Pipeline
+   -  `SW-2612 <https://0xdata.atlassian.net/browse/SW-2612>`__ - Change K8s Base Image for Spark 2.4 to openjdk:11-jre-slim
+   -  `SW-2574 <https://0xdata.atlassian.net/browse/SW-2574>`__ - Remove Python Dependency on Colorama
+   -  `SW-2245 <https://0xdata.atlassian.net/browse/SW-2245>`__ - Remove deprecated setClientExtraProperties, setNodeExtraProperties, clientExtraProperties, nodeExtraProperties and related spark options
+   -  `SW-2243 <https://0xdata.atlassian.net/browse/SW-2243>`__ - Remove deprecated setClientBasePort, setNodeBasePort, clientBasePort, nodeBasePort and related Spark configuration
+   -  `SW-2241 <https://0xdata.atlassian.net/browse/SW-2241>`__ - Remove Deprecated spark.ext.h2o.client.flow.dir Option
+   -  `SW-2238 <https://0xdata.atlassian.net/browse/SW-2238>`__ - Remove deprecated setH2OClientLogDir, setH2ONodeLogDir, h2oClientLogDir, h2oNodeLogDir and related spark options
+
+-  Improvement
+
+   -  `SW-2610 <https://0xdata.atlassian.net/browse/SW-2610>`__ - Upgrade to H2O 3.34.0.1
+   -  `SW-2609 <https://0xdata.atlassian.net/browse/SW-2609>`__ - Update AutoML Tests to Consider 3 StackEnsemble Models in Leaderboard
+   -  `SW-2608 <https://0xdata.atlassian.net/browse/SW-2608>`__ - Remove Support for Spark 2.1
+   -  `SW-2603 <https://0xdata.atlassian.net/browse/SW-2603>`__ - Remove Cross-validation-related Parameters from AutoEncoder 
+   -  `SW-2566 <https://0xdata.atlassian.net/browse/SW-2566>`__ - Delete Binary Models after MOJO Download
+   -  `SW-2451 <https://0xdata.atlassian.net/browse/SW-2451>`__ - Remove Deprecated Parameter `distribution` on H2OGLM
+   -  `SW-2446 <https://0xdata.atlassian.net/browse/SW-2446>`__ - Remove Deprecated  Parameter `weightCol` on H2OKmeans
+   -  `SW-2340 <https://0xdata.atlassian.net/browse/SW-2340>`__ - Remove deprecated mapperXmx getter an setter in favor of externalH2OMemory
+   -  `SW-2232 <https://0xdata.atlassian.net/browse/SW-2232>`__ - Remove deprecated setH2OClientLogLevel, setH2ONodeLogLevel, h2oClientLogLevel, h2oNodeLogLevel and related spark configurations
+   -  `SW-2230 <https://0xdata.atlassian.net/browse/SW-2230>`__ - Remove deprecated setClientIcedDir, setNodeIcedDir, clientIcedDir and nodeIcedDir and related spark option
+
+-  New Feature
+
+   -  `SW-2591 <https://0xdata.atlassian.net/browse/SW-2591>`__ - Expose Cross Validation MOJO Models on H2OMOJOModel in Python
+   -  `SW-2590 <https://0xdata.atlassian.net/browse/SW-2590>`__ - Expose Cross Validation MOJO Models on H2OMOJOModel in Scala
+   -  `SW-2589 <https://0xdata.atlassian.net/browse/SW-2589>`__ - Expose Model Metrics as Objects on H2OMOJOModel in R API
+   -  `SW-2588 <https://0xdata.atlassian.net/browse/SW-2588>`__ - Expose Model Metrics as Objects on H2OMOJOModel in Python API
+   -  `SW-2586 <https://0xdata.atlassian.net/browse/SW-2586>`__ - Expose Model Metrics as Objects on H2OMOJOModel in Scala API
+   -  `SW-2583 <https://0xdata.atlassian.net/browse/SW-2583>`__ - Expose "cross_validation_metrics_summary" on H2OMOJOModel
+   -  `SW-2562 <https://0xdata.atlassian.net/browse/SW-2562>`__ - Expose AutoEncoder as SW Estimator
+   -  `SW-2461 <https://0xdata.atlassian.net/browse/SW-2461>`__ - Add H2O RuleFit to Algo API
+   -  `SW-2030 <https://0xdata.atlassian.net/browse/SW-2030>`__ - Expose PCA as SW Feature Estimator
+   -  `SW-2029 <https://0xdata.atlassian.net/browse/SW-2029>`__ - Add H2O GLRM to Algo API
+
+-  Docs
+
+   -  `SW-2587 <https://0xdata.atlassian.net/browse/SW-2587>`__ - Generate Documentation for All Possible Metrics Classes on H2OMOJOModel
+
 v3.32.1.7-1 (2021-09-08)
 ------------------------
 Downloads:
