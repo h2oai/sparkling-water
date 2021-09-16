@@ -186,7 +186,7 @@ def prepareReleaseNotes(sparkMajorVersions, commons) {
 
             wget https://github.com/github/hub/releases/download/v2.5.1/hub-linux-amd64-2.5.1.tgz
             tar -xvf hub-linux-amd64-2.5.1.tgz
-            ./hub-linux-amd64-2.5.1/bin/hub pull-request -m "Update ChangeLog"
+            ./hub-linux-amd64-2.5.1/bin/hub pull-request -m "Update ChangeLog "
             git checkout ${env.BRANCH_NAME}
             """
         }
