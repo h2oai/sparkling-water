@@ -56,7 +56,7 @@ shadowJar {
   mergeServiceFiles()
 
   relocate 'javassist', 'ai.h2o.javassist'
-  relocate 'com.google.common', 'ai.h2o.com.google.common'
+  relocate 'com.google', 'ai.h2o.com.google'
   relocate 'org.eclipse.jetty', 'ai.h2o.org.eclipse.jetty'
   relocate 'org.eclipse.jetty.orbit', 'ai.h2o.org.eclipse.jetty.orbit'
   relocate 'scala.compat.java8', 'ai.h2o.scala.compat.java8'
