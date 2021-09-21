@@ -17,8 +17,6 @@ shadowJar {
   mergeServiceFiles()
 }
 
-artifacts {
-  api shadowJar
-}
-
 build.dependsOn shadowJar
+
+defineStandardPublication().call()
