@@ -36,6 +36,7 @@ if (project.hasProperty("doRelease")) {
 ext {
   // Published projects
   publishedProjects = [
+    project(':sparkling-water-api-generation'),
     project(':sparkling-water-repl'),
     project(':sparkling-water-core'),
     project(':sparkling-water-examples'),

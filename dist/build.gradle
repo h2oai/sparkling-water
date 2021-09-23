@@ -126,6 +126,7 @@ def distTaskDependencies = [
   ":sparkling-water-py:distPython",
   ":sparkling-water-py-scoring:distPython",
   ":sparkling-water-r:createCranRepo",
+  ":sparkling-water-api-generation:publish",
   ":sparkling-water-core:publish",
   ":sparkling-water-doc:publish",
   ":sparkling-water-repl:publish",
