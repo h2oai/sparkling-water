@@ -20,7 +20,7 @@ task copyFiles(type: Copy) {
 task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
-  
+
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
@@ -97,7 +97,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda update anaconda anaconda-client conda-build -y && \\
                 conda config --add channels conda-forge
                 """
-  
+
   runCommand "pip install awscli --upgrade --user"
 }
 
