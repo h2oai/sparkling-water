@@ -20,11 +20,7 @@ task copyFiles(type: Copy) {
 task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   destFile = outputFile
   from testingBaseImage
-
-  environmentVariable("LANG", "'C.UTF-8'")
-  runCommand "locale"
-  runCommand "rm -rf /etc/hadoop/conf/yarn-site.xml"
-  copyFile("conf/yarn-site.xml", "/etc/hadoop/conf/yarn-site.xml")
+  
   runCommand "rm /etc/startup/70_start_slapd"
 
   // Install Terraform
@@ -101,8 +97,7 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 conda update anaconda anaconda-client conda-build -y && \\
                 conda config --add channels conda-forge
                 """
-
-  environmentVariable("HIVE_HOME", "/usr/lib/hive")
+  
   runCommand "pip install awscli --upgrade --user"
 }
 
