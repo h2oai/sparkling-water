@@ -57,7 +57,7 @@ def testAuthFailsWhenUsernamePasswordNotSpecified(spark):
     with pytest.raises(Exception):
         H2OContext.getOrCreate(conf)
     # No app should be running
-    assert "Total number of applications (application-types: [] and states: [SUBMITTED, ACCEPTED, RUNNING]):0" in listYarnApps()
+    assert noYarnApps()
     conf.setUserName("user")
     conf.setPassword("pass")
     context = H2OContext.getOrCreate(conf)
