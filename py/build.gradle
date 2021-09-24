@@ -28,13 +28,15 @@ python {
   if (project.hasProperty("pythonPath")) {
     pythonPath project.findProperty("pythonPath").toString()
   }
+  def pythonMajorVersion = getPythonVersion().substring(0, 1)
+  def numpyVersion = numpyVersions.get(pythonMajorVersion)
 
   pip "pytz:2019.1" // Needed in Integration tests, but not PySparkling dependency
   pip "pytest:4.6.9" // For running tests
   pip "tabulate:0.8.3"
   pip "requests:2.21.0"
   pip "future:0.17.1"
-  pip "numpy:1.16.5"
+  pip "numpy:${numpyVersion}"
   pip "pyspark:${sparkVersion}"
   if (project.hasProperty("pythonEnvBasePath")) {
     // for CI as we use pre-cached environment
@@ -86,7 +88,6 @@ def h2oPythonWheelPackageLocation() {
   }
 }
 
-
 static def downloadH2OWheel(String url, File out) {
   if (!out.parentFile.exists()) {
     out.parentFile.mkdirs()
@@ -136,6 +137,7 @@ def copyPySetup() {
         .replaceAll("SUBST_SPARK_VERSION", sparkVersion)
         .replaceAll("SUBST_SW_VERSION", version.substring(0, version.lastIndexOf("-")).replace("-", "_"))
         .replaceAll("SUBST_SPARK_MAJOR_VERSION", sparkMajorVersion)
+        .replaceAll("SUBST_PYTHON_VERSIONS", convertSupportedPythonVersionsToPyPiDefinitions(supportedPythonVersions))
     }
     into pkgDir
   }
