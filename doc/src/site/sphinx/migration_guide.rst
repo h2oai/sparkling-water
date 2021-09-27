@@ -15,6 +15,11 @@ From 3.34 to 3.36
 
 - The method ``getVariableImportances`` of ``H2ODeepLearningMOJOModel`` has been replaced with ``getCalculateFeatureImportances``.
 
+- The parameter ``autoencoder`` and methods ``getAutoencoder``, ``setAutoencoder`` on ``H2ODeepLearning`` have been
+  removed without replacement.
+
+- The method ``getAutoencoder`` of ``H2ODeepLearningMOJOModel`` has been removed without replacement.
+
 From 3.32.1 to 3.34
 -------------------
 
