@@ -31,6 +31,11 @@ def listYarnApps():
     return str(subprocess.check_output("yarn application -list", shell=True))
 
 
+def noYarnApps():
+    exp = "Total number of applications (application-types: [], states: [SUBMITTED, ACCEPTED, RUNNING] and tags: []):0"
+    return exp in listYarnApps()
+
+
 def yarnLogs(appId):
     return str(subprocess.check_output("yarn logs -applicationId " + appId, shell=True))
 

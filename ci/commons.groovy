@@ -40,6 +40,11 @@ def getSupportedSparkVersions() {
     return sparkVersions
 }
 
+def getTestingBaseImage() {
+    def versionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('testingBaseImage') }
+    return versionLine.split("=")[1]
+}
+
 def getSupportedPythonVersions(sparkVersion) {
     def versionLine = readFile("gradle-spark${sparkVersion}.properties")
         .split("\n")
