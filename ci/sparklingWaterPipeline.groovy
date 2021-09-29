@@ -4,6 +4,14 @@
 // Utility methods for the pipeline
 //
 
+def getDriverHadoopVersion() {
+    return "cdh6.3"
+}
+
+def getHadoopMajorVersion() {
+    return "3"
+}
+
 def getS3Path(config) {
     return sh(script: "${getGradleCommand(config)} -q s3path", returnStdout: true).trim()
 }
@@ -83,13 +91,13 @@ def withSharedSetup(sparkMajorVersion, config, code) {
                 def kubernetesBoundaryVersion = kubernetesBoundaryVersionLine.split("=")[1]
                 config.put("kubernetesSupported", config.commons.isKubernetesSupported(kubernetesBoundaryVersion, sparkMajorVersion))
                 if (config.buildAgainstH2OBranch.toBoolean()) {
-                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar")
+                    config.put("driverJarPath", "${env.WORKSPACE}/h2o-3/h2o-hadoop-${getHadoopMajorVersion()}/h2o-${getDriverHadoopVersion()}-assembly/build/libs/h2odriver.jar")
                 } else {
                     def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
                     def majorVersion = majorVersionLine.split("=")[1]
                     def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
                     def buildVersion = buildVersionLine.split("=")[1]
-                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar")
+                    config.put("driverJarPath", "${env.WORKSPACE}/.gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${getDriverHadoopVersion()}.jar")
                 }
                 config.put("sparkHome", "/home/jenkins/spark-${config.sparkVersion}-bin-hadoop2.7")
                 def customEnv = [
@@ -175,21 +183,21 @@ def prepareSparklingEnvironmentStage(config) {
                             git checkout ${config.h2oBranch}
                             . /envs/h2o_env_python2.7/bin/activate
                             export BUILD_HADOOP=true
-                            export H2O_TARGET=${config.driverHadoopVersion}
+                            export H2O_TARGET=${getDriverHadoopVersion()}
                             ./gradlew build --parallel -x check -Duser.name=ec2-user
                             ./gradlew publishToMavenLocal --parallel -Dmaven.repo.local=${env.WORKSPACE}/.m2 -Duser.name=ec2-user -Dhttp.socketTimeout=600000 -Dhttp.connectionTimeout=600000
                             ./gradlew :h2o-r:buildPKG -Duser.name=ec2-user
                             cd ..
                             """
                     })
-                    stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz, h2o-3/h2o-hadoop-2/h2o-${config.driverHadoopVersion}-assembly/build/libs/h2odriver.jar"
+                    stash name: "shared", excludes: "h2o-3/h2o-py/h2o/**/*.pyc, h2o-3/h2o-py/h2o/**/h2o.jar", includes: "h2o-3/build/h2o.jar, h2o-3/h2o-dist/buildinfo.json, h2o-3/gradle.properties, .m2/**, h2o-3/h2o-py/h2o/**, h2o-3/h2o-r/h2o_*.99999.tar.gz, h2o-3/h2o-hadoop-${getHadoopMajorVersion()}/h2o-${getDriverHadoopVersion()}-assembly/build/libs/h2odriver.jar"
                 } else {
-                    sh "./gradlew -PhadoopDist=${config.driverHadoopVersion} downloadH2ODriverJar"
+                    sh "./gradlew -PhadoopDist=${getDriverHadoopVersion()} downloadH2ODriverJar"
                     def majorVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oMajorVersion') }
                     def majorVersion = majorVersionLine.split("=")[1]
                     def buildVersionLine = readFile("gradle.properties").split("\n").find() { line -> line.startsWith('h2oBuild') }
                     def buildVersion = buildVersionLine.split("=")[1]
-                    stash name: "shared", includes: ".gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${config.driverHadoopVersion}.jar"
+                    stash name: "shared", includes: ".gradle/h2oDriverJars/h2odriver-${majorVersion}.${buildVersion}-${getDriverHadoopVersion()}.jar"
                 }
             }
         }
