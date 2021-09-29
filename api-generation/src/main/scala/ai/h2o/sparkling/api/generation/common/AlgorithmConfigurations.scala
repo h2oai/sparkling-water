@@ -97,7 +97,14 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
         "variableImportances",
         "3.36",
         Some("calculateFeatureImportances"),
-        Some("HasDeprecatedVariableImportancesOnMOJO")))
+        Some("HasDeprecatedVariableImportancesOnMOJO")),
+      DeprecatedField(
+        "autoencoder",
+        "HasDeprecatedAutoencoder",
+        "autoencoder",
+        "3.36",
+        None,
+        Some("HasDeprecatedAutoencoderOnMOJO")))
 
     val algorithmParameters = Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField])](
       ("H2OXGBoostParams", classOf[XGBParamsV3], classOf[XGBoostParameters], xgboostFields, noDeprecation),
