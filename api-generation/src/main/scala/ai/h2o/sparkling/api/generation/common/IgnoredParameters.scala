@@ -32,7 +32,7 @@ object IgnoredParameters {
         Seq(
           "plug_values", // According to MK the parameter doesn't make much sense for GAM
           "interaction_pairs") // Interaction pairs are not currently supported on MOJO
-      case "H2ODeepLearning" => Seq("pretrained_autoencoder", "checkpoint")
+      case "H2ODeepLearning" => Seq("pretrained_autoencoder", "checkpoint", "autoencoder")
       case "H2OGBM" => Seq("checkpoint")
       case "H2ODRF" => Seq("checkpoint")
       case "H2OXGBoost" => Seq("checkpoint")
