@@ -63,7 +63,7 @@ class SparklingWaterJettyHelper(hc: H2OContext, conf: H2OConf, h2oHttpView: H2OH
     holder.setInitParameter("idleTimeout", conf.restApiTimeout.toString)
     holder.setInitParameter("timeout", conf.restApiTimeout.toString)
     holder.setInitParameter("requestBufferSize", conf.flowProxyRequestMaxSize().toString)
-    holder.setInitParameter("responseBufferSize", conf.flowProxyRequestMaxSize().toString)
+    holder.setInitParameter("responseBufferSize", conf.flowProxyResponseMaxSize().toString)
     handler
   }
 
