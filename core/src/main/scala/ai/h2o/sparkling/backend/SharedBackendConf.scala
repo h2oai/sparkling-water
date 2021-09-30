@@ -564,7 +564,7 @@ object SharedBackendConf {
 
   val PROP_FLOW_PROXY_REQUEST_MAX_SIZE: IntOption = (
     "spark.ext.h2o.flow.proxy.request.maxSize",
-    16384,
+    32 * 1024,
     "setFlowProxyRequestMaxSize(Integer)",
     "The maximum size of a request coming to flow UI proxy running on the Spark driver. " +
     "The request is forwarded to Flow UI on H2O leader node."
@@ -572,7 +572,7 @@ object SharedBackendConf {
 
   val PROP_FLOW_PROXY_RESPONSE_MAX_SIZE: IntOption = (
     "spark.ext.h2o.flow.proxy.response.maxSize",
-    16384,
+    32 * 1024,
     "setFlowProxyResponseMaxSize(Integer)",
     "The maximum size of a response coming from flow UI proxy running on the Spark driver. " +
     "The content for the response comes from Flow UI H2O leader node."
