@@ -106,6 +106,12 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
 
   def flowExtraHttpHeaders: Option[String] = sparkConf.getOption(PROP_FLOW_EXTRA_HTTP_HEADERS._1)
 
+  def flowProxyRequestMaxSize(): Int =
+    sparkConf.getInt(PROP_FLOW_PROXY_REQUEST_MAX_SIZE._1, PROP_FLOW_PROXY_REQUEST_MAX_SIZE._2)
+
+  def flowProxyResponseMaxSize(): Int =
+    sparkConf.getInt(PROP_FLOW_PROXY_RESPONSE_MAX_SIZE._1, PROP_FLOW_PROXY_RESPONSE_MAX_SIZE._2)
+
   def isInternalSecureConnectionsEnabled: Boolean =
     sparkConf.getBoolean(PROP_INTERNAL_SECURE_CONNECTIONS._1, PROP_INTERNAL_SECURE_CONNECTIONS._2)
 
@@ -270,6 +276,10 @@ trait SharedBackendConf extends SharedBackendConfExtensions {
     val stringRepresentation = headers.map(header => s"${header._1}: ${header._2}").mkString("\n")
     setFlowExtraHttpHeaders(stringRepresentation)
   }
+
+  def setFlowProxyRequestMaxSize(value : Int): H2OConf = set(PROP_FLOW_PROXY_REQUEST_MAX_SIZE._1, value.toString)
+
+  def setFlowProxyResponseMaxSize(value : Int): H2OConf = set(PROP_FLOW_PROXY_RESPONSE_MAX_SIZE._1, value.toString)
 
   def setInternalSecureConnectionsEnabled(): H2OConf = set(PROP_INTERNAL_SECURE_CONNECTIONS._1, value = true)
 
@@ -551,6 +561,22 @@ object SharedBackendConf {
     """Extra HTTP headers that will be used in communication between the front-end and back-end part of Flow UI. The
       |headers should be delimited by a new line. Don't forget to escape special characters when passing
       |the parameter from a command line. Example: ``"spark.ext.h2o.flow.extra.http.headers=Strict-Transport-Security:max-age=31536000"``""".stripMargin)
+
+  val PROP_FLOW_PROXY_REQUEST_MAX_SIZE: IntOption = (
+    "spark.ext.h2o.flow.proxy.request.maxSize",
+    16384,
+    "setFlowProxyRequestMaxSize(Integer)",
+    "The maximum request size coming to flow UI proxy running on the Spark driver. " +
+    "The request is forwarded to Flow UI on H2O leader node."
+  )
+
+  val PROP_FLOW_PROXY_RESPONSE_MAX_SIZE: IntOption = (
+    "spark.ext.h2o.flow.proxy.response.maxSize",
+    16384,
+    "setFlowProxyResponseMaxSize(Integer)",
+    "The maximum response size coming from flow UI proxy running on the Spark driver. " +
+    "The content for the response comes from Flow UI H2O leader node."
+  )
 
   val PROP_INTERNAL_SECURE_CONNECTIONS: BooleanOption = (
     "spark.ext.h2o.internal_secure_connections",
