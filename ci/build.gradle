@@ -70,12 +70,12 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
 
   runCommand """\\
                 cd /envs && \\
-                pip install -U virtualenv && \\
+                pip install virtualenv && \\
                 for pythonVersion in ${pythonEnvironments}; \\
                 do \\
                   virtualenv --python python\$pythonVersion sw_env_python\$pythonVersion && \\
                   . /envs/sw_env_python\$pythonVersion/bin/activate && \\
-                  pip install -U setuptools && \\
+                  pip install setuptools && \\
                   pip install twine; \\
                 done
                 """
