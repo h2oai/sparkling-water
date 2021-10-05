@@ -149,7 +149,7 @@ def testDeserializationOfUnfittedPipelineWithAutoML(classificationDataset):
 
 
 def testBlendingDataFrameHasImpactOnAutoMLStackedEnsambleModels(classificationDataset):
-    [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.9, 0.1], 42)
+    [trainingDateset, blendingDataset] = classificationDataset.randomSplit([0.8, 0.2], 42)
 
     def separateEnsembleModels(df):
         stackedEnsembleDF = df.filter(df.model_id.startswith('StackedEnsemble'))
