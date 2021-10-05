@@ -33,19 +33,20 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
 
-private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, numRows: Int, chunkId: Int)
+private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, chunkId: Int)
   extends Closeable {
 
   private val outputStream = H2OChunk.putChunk(
     nodeDesc,
     metadata.conf,
     metadata.frameId,
-    numRows,
     chunkId,
     metadata.expectedTypes,
     metadata.maxVectorSizes)
 
   private val chunkWriter = new ChunkAutoBufferWriter(outputStream)
+
+  def setHasNext(data: Boolean): Unit = put(data)
 
   def put(data: Boolean): Unit = chunkWriter.writeBoolean(data)
 
@@ -91,13 +92,12 @@ private[backend] object Writer {
 
   def convert(rdd: H2OAwareRDD[Row], colNames: Array[String], metadata: WriterMetadata): H2OFrame = {
     H2OFrame.initializeFrame(metadata.conf, metadata.frameId, colNames)
-    val partitionSizes = getNonEmptyPartitionSizes(rdd)
-    val nonEmptyPartitions = getNonEmptyPartitions(partitionSizes)
+    val numPartitions = rdd.getNumPartitions
 
-    val uploadPlan = getUploadPlan(metadata.conf, nonEmptyPartitions.length)
-    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan, nonEmptyPartitions, partitionSizes)
-    val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation, nonEmptyPartitions)
-    val res = new Array[Long](nonEmptyPartitions.size)
+    val uploadPlan = getUploadPlan(metadata.conf, numPartitions)
+    val operation: SparkJob = perDataFramePartition(metadata, uploadPlan)
+    val rows = SparkSessionUtils.active.sparkContext.runJob(rdd, operation)
+    val res = new Array[Long](numPartitions)
     rows.foreach { case (chunkIdx, numRows) => res(chunkIdx) = numRows }
     val types = SerdeUtils.expectedTypesToVecTypes(metadata.expectedTypes, metadata.maxVectorSizes)
     H2OFrame.finalizeFrame(metadata.conf, metadata.frameId, res, types)
@@ -106,17 +106,18 @@ private[backend] object Writer {
 
   private def perDataFramePartition(
       metadata: WriterMetadata,
-      uploadPlan: UploadPlan,
-      partitions: Seq[Int],
-      partitionSizes: Map[Int, Int])(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
-    val chunkIdx = partitions.indexOf(context.partitionId())
-    val numRows = partitionSizes(context.partitionId())
+      uploadPlan: UploadPlan)(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
+    val chunkIdx = context.partitionId()
+    var numRows = 0
     val domainBuilder = new CategoricalDomainBuilder(metadata.expectedTypes)
     val h2oNode = uploadPlan(chunkIdx)
-    withResource(new Writer(h2oNode, metadata, numRows, chunkIdx)) { writer =>
+    withResource(new Writer(h2oNode, metadata, chunkIdx)) { writer =>
       it.foreach { row =>
+        writer.setHasNext(true)
         sparkRowToH2ORow(row, writer, metadata, domainBuilder)
+        numRows += 1
       }
+      writer.setHasNext(false)
     }
     H2OChunk.putChunkCategoricalDomains(h2oNode, metadata.conf, metadata.frameId, chunkIdx, domainBuilder.getDomains())
     (chunkIdx, numRows)
@@ -161,30 +162,16 @@ private[backend] object Writer {
     }
   }
 
-  private def getNonEmptyPartitionSizes[T](rdd: RDD[T]): Map[Int, Int] = {
-    rdd
-      .mapPartitionsWithIndex {
-        case (idx, it) =>
-          if (it.nonEmpty) {
-            Iterator.single((idx, it.size))
-          } else {
-            Iterator.empty
-          }
-      }
-      .collect()
-      .toMap
-  }
-
-  private def getNonEmptyPartitions(partitionSizes: Map[Int, Int]): Seq[Int] = {
-    partitionSizes.keys.toSeq.sorted
-  }
-
   private def getUploadPlan(conf: H2OConf, numberOfPartitions: Int): UploadPlan = {
     val endpoint = getClusterEndpoint(conf)
     val parameters = Map("number_of_chunks" -> numberOfPartitions)
     val rawPlan = query[UploadPlanV3](endpoint, Paths.UPLOAD_PLAN, conf, parameters)
     rawPlan.layout.map { chunkAssignment =>
-      chunkAssignment.chunk_id -> NodeDesc(chunkAssignment.node_idx.toString, chunkAssignment.ip, chunkAssignment.port)
+      chunkAssignment.chunk_id -> NodeDesc(
+        chunkAssignment.node_idx.toString,
+        chunkAssignment.ip,
+        chunkAssignment.port,
+        chunkAssignment.cpus_allowed)
     }.toMap
   }
 }
