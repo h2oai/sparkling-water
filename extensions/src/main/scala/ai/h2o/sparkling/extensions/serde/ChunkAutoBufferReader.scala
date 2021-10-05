@@ -31,7 +31,6 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
 
   def readChunk(
       frameName: String,
-      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int]): Unit = {
@@ -39,8 +38,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
     val startPositions = getStartPositions(elementSizes)
     val chunks = ChunkUtils.createNewChunks(frameName, vecTypes, chunkId)
-    var rowIdx = 0
-    while (rowIdx < numRows) {
+    while (readHasNext()) {
       var typeIdx = 0
       while (typeIdx < expectedTypes.length) {
         expectedTypes(typeIdx) match {
@@ -60,7 +58,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
         }
         typeIdx += 1
       }
-      rowIdx += 1
+      //rowIdx += 1
     }
     ChunkUtils.closeNewChunks(chunks)
   }
@@ -141,6 +139,8 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
       case _ => 1
     }
   }
+
+  def readHasNext() = readBoolean()
 
   def readBoolean(): Boolean = {
     val data = buffer.getZ

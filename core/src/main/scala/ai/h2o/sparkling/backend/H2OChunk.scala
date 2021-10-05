@@ -58,7 +58,6 @@ private[sparkling] object H2OChunk extends RestCommunication {
       node: NodeDesc,
       conf: H2OConf,
       frameName: String,
-      numRows: Int,
       chunkId: Int,
       expectedTypes: Array[ExpectedType],
       maxVecSizes: Array[Int]): OutputStream = {
@@ -67,7 +66,6 @@ private[sparkling] object H2OChunk extends RestCommunication {
 
     val parameters = Map(
       "frame_name" -> frameName,
-      "num_rows" -> numRows,
       "chunk_id" -> chunkId,
       "expected_types" -> expectedTypesString,
       "maximum_vector_sizes" -> maxVecSizesString,

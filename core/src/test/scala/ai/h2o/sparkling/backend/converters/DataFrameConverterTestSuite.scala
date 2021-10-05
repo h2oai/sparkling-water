@@ -252,6 +252,17 @@ class DataFrameConverterTestSuite extends FunSuite with SharedH2OTestContext {
     h2oFrame.delete()
   }
 
+  test("DataFrame is evaluated only once during conversion to H2OFrame") {
+    val numberOfEvaluationsAccumulator = spark.sparkContext.longAccumulator("NumberOfEvaluationsAccumulator")
+    val baseDF = spark.range(1000).repartition(1)
+    val finalDF = baseDF.mapPartitions { partitions => numberOfEvaluationsAccumulator.add(1); partitions }
+
+    val h2oFrame = hc.asH2OFrame(finalDF)
+    h2oFrame.delete()
+
+    numberOfEvaluationsAccumulator.value shouldEqual 1
+  }
+
   test("DataFrame[FloatField] to H2OFrame[Numeric]") {
     val values = Seq(Float.MinValue, Float.MaxValue, -33.33.toFloat, 200.001.toFloat, -5000.34.toFloat)
     val df = sc.parallelize(values).map(v => FloatField(v)).toDF
