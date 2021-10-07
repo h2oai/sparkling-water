@@ -108,20 +108,19 @@ class Initializer(object):
     def __extracted_jar_path(sc):
 
         if Initializer.__extracted_jar_dir is None:
-            zip_file = Initializer.__get_pysparkling_zip_path()
+            zip_file = Initializer.__get_pysparkling_package_path()
             if sc is None:
                 Initializer.__extracted_jar_dir = tempfile.mkdtemp()
                 atexit.register(Initializer.__removeTmpDir)
             else:
                 Initializer.__extracted_jar_dir = sc._temp_dir
-            import zipfile
             with zipfile.ZipFile(zip_file) as fzip:
                 fzip.extract(BackingJar.getRelativePath(), path=Initializer.__extracted_jar_dir)
 
         return os.path.abspath("{}/{}".format(Initializer.__extracted_jar_dir, BackingJar.getRelativePath()))
 
     @staticmethod
-    def __get_pysparkling_zip_path():
+    def __get_pysparkling_package_path():
         import sparkling_water
         sw_pkg_file = sparkling_water.__file__
         return sw_pkg_file[:-len('/sparkling_water/__init__.py')]
@@ -137,7 +136,7 @@ class Initializer(object):
         try:
             import h2o
             sw_h2o_version = h2o.__version__
-            zip_file_name = os.path.basename(Initializer.__get_pysparkling_zip_path())
+            zip_file_name = os.path.basename(Initializer.__get_pysparkling_package_path())
             path_without_sw = [i for i in sys.path if os.path.basename(i) != zip_file_name]
             command_sys_path = "import sys; sys.path = " + str(path_without_sw).replace("'", "\"") + ";"
             command_import_h2o = "import h2o; print(h2o.__version__)"
@@ -155,10 +154,9 @@ class Initializer(object):
 
     @staticmethod
     def __get_sw_jar(sc):
-        import sparkling_water
-        sw_pkg_file = sparkling_water.__file__
+        packagePath = Initializer.__get_pysparkling_package_path()
         # Extract jar file from zip
-        if '.zip' in sw_pkg_file:
+        if zipfile.is_zipfile(packagePath):
             return Initializer.__extracted_jar_path(sc)
         else:
             from pkg_resources import resource_filename
@@ -203,12 +201,13 @@ class Initializer(object):
 
     @staticmethod
     def getVersion():
-        here = path.abspath(path.dirname(__file__))
-        if '.zip' in here:
-            with zipfile.ZipFile(here[:-len("ai/h2o/sparkling/")], 'r') as archive:
-                version = archive.read('ai/h2o/sparkling/version.txt').decode('utf-8').strip()
+        packagePath = Initializer.__get_pysparkling_package_path()
+        versionFile = 'ai/h2o/sparkling/version.txt'
+        if zipfile.is_zipfile(packagePath):
+            with zipfile.ZipFile(packagePath, 'r') as archive:
+                version = archive.read(versionFile).decode('utf-8').strip()
         else:
-            with open(path.join(here, 'version.txt'), encoding='utf-8') as f:
+            with open(path.join(packagePath, versionFile), encoding='utf-8') as f:
                 version = f.read().strip()
 
         pySparklingVersionComponents = VersionComponents.parseFromSparklingWaterVersion(version)
