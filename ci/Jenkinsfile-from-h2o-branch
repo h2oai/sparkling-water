@@ -9,6 +9,7 @@ properties(
                                 booleanParam(name: 'runAllSparkVersions', defaultValue: !isPrJob(), description: 'Run pipeline against all Spark versions'),
                                 booleanParam(name: 'runUnitTests', defaultValue: true, description: 'Run Scala unit tests'),
                                 booleanParam(name: 'runPyUnitTests', defaultValue: true, description: 'Run Python unit tests'),
+                                booleanParam(name: 'runUnitTestsForAllPythonVersions', defaultValue: false, description: 'Run unit tests against all Python versions, otherwise just oldest and newest supported python version.'),
                                 booleanParam(name: 'runRUnitTests', defaultValue: true, description: 'Run R unit tests'),
                                 booleanParam(name: 'runIntegTests', defaultValue: false, description: 'Run Scala integration tests'),
                                 booleanParam(name: 'runPyIntegTests', defaultValue: false, description: 'Run Python integration tests'),
@@ -46,6 +47,7 @@ pipeline(params) { p ->
     sparkMajorVersions = sparkVersions
     runUnitTests = "${p.runUnitTests}"
     runPyUnitTests = "${p.runPyUnitTests}"
+    runUnitTestsForAllPythonVersions = "${p.runUnitTestsForAllPythonVersions}"
     runRUnitTests = "${p.runRUnitTests}"
     runIntegTests = "${p.runIntegTests}"
     runPyIntegTests = "${p.runPyIntegTests}"

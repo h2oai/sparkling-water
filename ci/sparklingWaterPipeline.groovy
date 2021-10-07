@@ -283,8 +283,15 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
+        def allPythonVersions = config.commons.getSupportedPythonVersions(config.sparkMajorVersion)
+        def pythonVersions
+        if (config.runUnitTestsForAllPythonVersions.toBoolean()) {
+            pythonVersions = [allPythonVersions.first(), allPythonVersions.last()]
+        } else {
+            pythonVersions = allPythonVersions
+        }
         for (pythonProject in ["py", "py-scoring"]) {
-            for (pythonVersion in config.commons.getSupportedPythonVersions(config.sparkMajorVersion)) {
+            for (pythonVersion in pythonVersions) {
                 stage("QA: PyUnit Tests ${pythonVersion} - ${pythonProject} - ${config.backendMode}") {
                     if (config.runPyUnitTests.toBoolean()) {
                         try {
