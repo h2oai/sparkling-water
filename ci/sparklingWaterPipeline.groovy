@@ -286,9 +286,9 @@ def pyUnitTests() {
         def allPythonVersions = config.commons.getSupportedPythonVersions(config.sparkMajorVersion)
         def pythonVersions
         if (config.runUnitTestsForAllPythonVersions.toBoolean()) {
-            pythonVersions = [allPythonVersions.first(), allPythonVersions.last()]
-        } else {
             pythonVersions = allPythonVersions
+        } else {
+            pythonVersions = [allPythonVersions.first(), allPythonVersions.last()]
         }
         for (pythonProject in ["py", "py-scoring"]) {
             for (pythonVersion in pythonVersions) {
