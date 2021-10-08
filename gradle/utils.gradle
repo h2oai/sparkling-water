@@ -112,6 +112,14 @@ def getSparkSpecificResourceDir(sparkMajorVersion) {
     }
 }
 
+def convertSupportedPythonVersionsToPyPiDefinitions(pythonVersions) {
+    def versions = pythonVersions.split(" ")
+    def versionDefinitions = versions.collect {
+        "        'Programming Language :: Python :: ${it}',"
+    }
+    return String.join("\n", versionDefinitions)
+}
+
 def buildingAgainstMasterOrRel() {
     def h2oBranch = project.property("buildAgainstH2OBranch")
     return h2oBranch == "master" || h2oBranch == "rel-${h2oMajorName}"
@@ -248,4 +256,5 @@ ext {
     getSparkSpecificResourceDir = this.&getSparkSpecificResourceDir
     getS3Path = this.&getS3Path
     getPythonPathWorkaround = this.&getPythonPathWorkaround
+    convertSupportedPythonVersionsToPyPiDefinitions = this.&convertSupportedPythonVersionsToPyPiDefinitions
 }
