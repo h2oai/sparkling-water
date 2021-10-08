@@ -365,6 +365,8 @@ def publishToPipy() {
 }
 
 def publishCondaArtifact(arch, pkgName) {
+    sh "conda uninstall anaconda-client -y"
+    sh "pip install -U git+https://github.com/Anaconda-Server/anaconda-client"
     retryWithDelay(3, 120, {
         sh "yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}"
         sh "anaconda upload --force ../../../dist/build/dist/py/conda/${arch}/${pkgName}"
