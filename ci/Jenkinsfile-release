@@ -365,8 +365,6 @@ def publishToPipy() {
 }
 
 def publishCondaArtifact(arch, pkgName) {
-    sh "conda uninstall anaconda-client -y"
-    sh "pip install -U git+https://github.com/Anaconda-Server/anaconda-client"
     retryWithDelay(3, 120, {
         sh "yes | anaconda login --username ${ANACONDA_USERNAME} --password ${ANACONDA_PASSWORD}"
         sh "anaconda upload --force ../../../dist/build/dist/py/conda/${arch}/${pkgName}"
@@ -386,6 +384,8 @@ def publishToConda() {
     return { params ->
         stage('Publish to Conda') {
             if (params.buildConda.toBoolean() && params.publishConda.toBoolean()) {
+                sh "conda uninstall anaconda-client -y"
+                sh "pip install -U git+https://github.com/Anaconda-Server/anaconda-client"
                 def packages = [
                     [path: "py/build/conda", name: "h2o_pysparkling_${params.spark}"],
                     [path: "py-scoring/build/conda", name: "h2o_pysparkling_scoring_${params.spark}"]]
