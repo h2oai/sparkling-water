@@ -1,6 +1,38 @@
 Change Log
 ==========
 
+v3.34.0.3-1 (2021-10-08)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.3-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.3-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.3-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.3-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.3-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.3-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.3-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.3-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.3-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.3-1-3.1/index.html>`__
+
+-  Engineering Story
+
+   -  `SW-2624 <https://0xdata.atlassian.net/browse/SW-2624>`__ - Upgrade SW Version to 3.34.0.3-1-SNAPSHOT
+   -  `SW-2621 <https://0xdata.atlassian.net/browse/SW-2621>`__ - Fix Tests to Consider More Stacked Ensemble Models in AutoML Leaderboard
+   -  `SW-2616 <https://0xdata.atlassian.net/browse/SW-2616>`__ - Enable Publishing of api-generation Project
+   -  `SW-2615 <https://0xdata.atlassian.net/browse/SW-2615>`__ - Change K8s Base Image for Spark 3.0, 3.1 to openjdk:11-jre-slim-buster
+   -  `SW-2585 <https://0xdata.atlassian.net/browse/SW-2585>`__ - Migrate SW Automated Tests to CDH 6.3
+
+-  Improvement
+
+   -  `SW-2623 <https://0xdata.atlassian.net/browse/SW-2623>`__ - Upgrade to H2O 3.34.0.3
+   -  `SW-2618 <https://0xdata.atlassian.net/browse/SW-2618>`__ - Deprecate autoencoder Parameter on H2ODeepLearning
+
+-  Bug
+
+   -  `SW-2620 <https://0xdata.atlassian.net/browse/SW-2620>`__ - Improve Zip Archive Check in Pysparkling Initializer
+
+-  New Feature
+
+   -  `SW-2619 <https://0xdata.atlassian.net/browse/SW-2619>`__ - Make Maximum Size of Requests and Responses on Flow UI Proxy Configurable
+   -  `SW-2617 <https://0xdata.atlassian.net/browse/SW-2617>`__ - Add Support for Python 3.7, 3.8
+
 v3.34.0.1-1 (2021-09-16)
 ------------------------
 Downloads:
