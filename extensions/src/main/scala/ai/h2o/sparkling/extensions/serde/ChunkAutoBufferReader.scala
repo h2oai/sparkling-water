@@ -29,11 +29,7 @@ final class ChunkAutoBufferReader(val inputStream: InputStream) extends Closeabl
   private val buffer = new AutoBuffer(inputStream)
   private var isLastNAVar: Boolean = false
 
-  def readChunk(
-      frameName: String,
-      chunkId: Int,
-      expectedTypes: Array[ExpectedType],
-      maxVecSizes: Array[Int]): Unit = {
+  def readChunk(frameName: String, chunkId: Int, expectedTypes: Array[ExpectedType], maxVecSizes: Array[Int]): Unit = {
     val vecTypes = SerdeUtils.expectedTypesToVecTypes(expectedTypes, maxVecSizes)
     val elementSizes = getElementSizes(expectedTypes, maxVecSizes)
     val startPositions = getStartPositions(elementSizes)

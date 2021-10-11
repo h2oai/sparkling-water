@@ -33,8 +33,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{ExposeUtils, TaskContext, ml, mllib}
 
-private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, chunkId: Int)
-  extends Closeable {
+private[backend] class Writer(nodeDesc: NodeDesc, metadata: WriterMetadata, chunkId: Int) extends Closeable {
 
   private val outputStream = H2OChunk.putChunk(
     nodeDesc,
@@ -104,9 +103,9 @@ private[backend] object Writer {
     H2OFrame(metadata.frameId)
   }
 
-  private def perDataFramePartition(
-      metadata: WriterMetadata,
-      uploadPlan: UploadPlan)(context: TaskContext, it: Iterator[Row]): (Int, Long) = {
+  private def perDataFramePartition(metadata: WriterMetadata, uploadPlan: UploadPlan)(
+      context: TaskContext,
+      it: Iterator[Row]): (Int, Long) = {
     val chunkIdx = context.partitionId()
     var numRows = 0
     val domainBuilder = new CategoricalDomainBuilder(metadata.expectedTypes)
