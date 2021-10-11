@@ -111,9 +111,10 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 """
   environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
   runCommand """\\
-                conda install anaconda anaconda-client conda-build conda-verify -y && \\
+                conda install conda-build conda-verify -y && \\
                 conda update conda -y && \\
-                conda update anaconda anaconda-client conda-build conda-verify -y && \\
+                conda update conda-build conda-verify -y && \\
+                pip install git+https://github.com/Anaconda-Server/anaconda-client && \\
                 conda config --add channels conda-forge
                 """
 
