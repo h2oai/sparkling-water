@@ -187,11 +187,7 @@ final class ChunkServlet extends ServletBase {
       withResource(request.getInputStream) { inputStream =>
         withResource(Compression.decompress(parameters.compression, inputStream)) { decompressed =>
           withResource(new ChunkAutoBufferReader(decompressed)) { reader =>
-            reader.readChunk(
-              parameters.frameName,
-              parameters.chunkId,
-              parameters.expectedTypes,
-              parameters.maxVecSizes)
+            reader.readChunk(parameters.frameName, parameters.chunkId, parameters.expectedTypes, parameters.maxVecSizes)
           }
         }
       }
