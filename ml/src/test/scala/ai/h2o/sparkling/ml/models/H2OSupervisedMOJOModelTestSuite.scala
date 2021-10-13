@@ -113,9 +113,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2OXGBoost())
   }
 
-  // TODO: Enable test once PUBDEV-7067 is resolved.
-  // GLMMojoModel doesn't support offsets, and throws an UnsupportedOperationException if a non-zero offset value is set.
-  ignore("The original MOJO and deserialized MOJO return the same result - GLM") {
+  test("The original MOJO and deserialized MOJO return the same result - GLM") {
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2OGLM())
   }
 
@@ -123,8 +121,7 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2ODeepLearning())
   }
 
-  private def testMOJOWithSetOffsetColumnReturnsDifferentResult(
-      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testMOJOWithSetOffsetColumnTakesItIntoAccount(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -134,41 +131,44 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
     val model = algo.fit(trainingDataset)
 
-    def extractResult(model: H2OSupervisedMOJOModel): Array[Any] = {
+    final case class ResultWithOffset(id: Int, offset: Double, prediction: Double)
+
+    def extractResult(model: H2OSupervisedMOJOModel): Array[ResultWithOffset] = {
       model
         .transform(testingDataset)
         .sort("ID")
-        .select("prediction")
+        .select("ID", offsetColumn, "prediction")
         .collect()
-        .map((r: Row) => r.get(0))
+        .map(row => ResultWithOffset(row.getInt(0), row.getDouble(1), row.getDouble(2)))
     }
 
-    val resultWithOffset = extractResult(model)
+    val resultsWithOffsetSet = extractResult(model)
 
     model.set(model.offsetCol, null)
-    val resultWithoutOffset = extractResult(model)
+    val resultsWithoutOffsetSet = extractResult(model)
 
-    resultWithOffset should not equal resultWithoutOffset
+    resultsWithOffsetSet should not equal resultsWithoutOffsetSet
+    resultsWithOffsetSet.zip(resultsWithoutOffsetSet).foreach { case (resultWithOffset, resultWithoutOffset) =>
+      resultWithOffset.prediction - resultWithOffset.offset shouldBe resultWithoutOffset.prediction +- 0.0001
+    }
   }
 
-  test("The MOJO model with set offsetColumn returns a different result - GBM") {
-    testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2OGBM())
+  test("The MOJO model with set offsetColumn takes it into account - GBM") {
+    testMOJOWithSetOffsetColumnTakesItIntoAccount(new H2OGBM())
   }
 
-  test("The MOJO model with set offsetColumn returns a different result - XGBoost") {
-    testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2OXGBoost())
+  test("The MOJO model with set offsetColumn takes it into account - XGBoost") {
+    testMOJOWithSetOffsetColumnTakesItIntoAccount(new H2OXGBoost())
   }
 
-  // TODO: Enable test once PUBDEV-7067 is resolved.
-  // GLMMojoModel doesn't support offsets, and throws an UnsupportedOperationException if a non-zero offset value is set.
-  ignore("The MOJO model with set offsetColumn returns a different result - GLM") {
-    testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2OGLM())
+  test("The MOJO model with set offsetColumn takes it into account - GLM") {
+    testMOJOWithSetOffsetColumnTakesItIntoAccount(new H2OGLM())
   }
 
   // TODO: Enable test once PUBDEV-7067 is resolved.
   // Setting offset on DeepLearningMojoModel doesn't take effect.
-  ignore("The MOJO model with set offsetColumn returns a different result - DeepLearning") {
-    testMOJOWithSetOffsetColumnReturnsDifferentResult(new H2ODeepLearning())
+  ignore("The MOJO model with set offsetColumn takes it into account - DeepLearning") {
+    testMOJOWithSetOffsetColumnTakesItIntoAccount(new H2ODeepLearning())
   }
 
   test("Load K-means as supervised model fails") {
