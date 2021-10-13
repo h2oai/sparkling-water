@@ -63,7 +63,11 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     persistedDF
   }
 
-  private def loadRegularDataFrame(): DataFrame = {
+  protected def loadRegularDataFrame(): DataFrame = {
+    if (context.datasetDetails.isVirtual) {
+      throw new IllegalArgumentException("Virtual datasets are not supported!")
+    }
+
     context.spark.read
       .option("header", "true")
       .option("inferSchema", "true")
