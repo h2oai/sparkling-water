@@ -121,7 +121,8 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     testDeserializedMOJOAndOriginalMOJOReturnSameResult(new H2ODeepLearning())
   }
 
-  private def testMOJOWithSetOffsetColumnTakesItIntoAccount(algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
+  private def testMOJOWithSetOffsetColumnTakesItIntoAccount(
+      algo: H2OSupervisedAlgorithm[_ <: Model.Parameters]): Unit = {
     val offsetColumn = "PSA"
     algo
       .setSeed(1)
@@ -148,8 +149,9 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
     val resultsWithoutOffsetSet = extractResult(model)
 
     resultsWithOffsetSet should not equal resultsWithoutOffsetSet
-    resultsWithOffsetSet.zip(resultsWithoutOffsetSet).foreach { case (resultWithOffset, resultWithoutOffset) =>
-      resultWithOffset.prediction - resultWithOffset.offset shouldBe resultWithoutOffset.prediction +- 0.0001
+    resultsWithOffsetSet.zip(resultsWithoutOffsetSet).foreach {
+      case (resultWithOffset, resultWithoutOffset) =>
+        resultWithOffset.prediction - resultWithOffset.offset shouldBe resultWithoutOffset.prediction +- 0.0001
     }
   }
 
