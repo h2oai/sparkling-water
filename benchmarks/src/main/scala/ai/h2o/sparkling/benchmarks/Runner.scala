@@ -122,7 +122,7 @@ object Runner extends RestApiUtils {
 
     def isBenchmark(clazz: Class[_]) = {
       val isAbstract = Modifier.isAbstract(clazz.getModifiers)
-      val inheritsFromBenchmarkBase = classOf[BenchmarkBase[_]].isAssignableFrom(clazz)
+      val inheritsFromBenchmarkBase = classOf[BenchmarkBase[_, _]].isAssignableFrom(clazz)
       !isAbstract && inheritsFromBenchmarkBase
     }
 
@@ -147,7 +147,7 @@ object Runner extends RestApiUtils {
       benchmarkClasses: Seq[Class[_]],
       algorithms: Seq[AlgorithmBundle],
       workingDir: URI): Seq[BenchmarkBatch] = {
-    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_]].isAssignableFrom(clazz)
+    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_, _]].isAssignableFrom(clazz)
 
     val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _, workingDir))
     benchmarkClasses.map { benchmarkClass =>
@@ -157,7 +157,7 @@ object Runner extends RestApiUtils {
         benchmarkContexts.map(Array(_))
       }
       val benchmarkInstances = parameterSets.map { parameterSet =>
-        benchmarkClass.getConstructors()(0).newInstance(parameterSet: _*).asInstanceOf[BenchmarkBase[_]]
+        benchmarkClass.getConstructors()(0).newInstance(parameterSet: _*).asInstanceOf[BenchmarkBase[_, _]]
       }
       BenchmarkBatch(benchmarkClass.getSimpleName, benchmarkInstances)
     }
@@ -183,7 +183,7 @@ object Runner extends RestApiUtils {
     println(s"Benchmark batch '${batch.name}' has finished.")
   }
 
-  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
+  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_, _]])
 
   private case class Settings(
       datasetSpecificationsFile: String,
