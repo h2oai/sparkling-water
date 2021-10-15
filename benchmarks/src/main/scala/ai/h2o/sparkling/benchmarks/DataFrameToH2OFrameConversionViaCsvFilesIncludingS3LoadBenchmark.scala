@@ -17,26 +17,10 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import java.net.URI
-import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.{DataFrame, SaveMode}
 
-class DataFrameToH2OFrameConversionViaParquetFilesBenchmark(context: BenchmarkContext)
-  extends BenchmarkBase[DataFrame](context) {
+class DataFrameToH2OFrameConversionViaCsvFilesIncludingS3LoadBenchmark(context: BenchmarkContext)
+  extends DataFrameToH2OFrameConversionViaCsvFilesBenchmark(context) {
 
-  var h2OFrame: H2OFrame = null
-
-  override protected def initialize(): DataFrame = loadDataToDataFrame()
-
-  override protected def body(dataFrame: DataFrame): Unit = {
-    val className = this.getClass.getSimpleName
-    dataFrame.write.mode(SaveMode.Overwrite).parquet(className)
-    val uri = new URI(className)
-    h2OFrame = H2OFrame(uri)
-  }
-
-  override protected def cleanUp(dataFrame: DataFrame): Unit = {
-    removeFromCache(dataFrame)
-    h2OFrame.delete()
-  }
+  override protected def initialize(): DataFrame = loadRegularDataFrame()
 }

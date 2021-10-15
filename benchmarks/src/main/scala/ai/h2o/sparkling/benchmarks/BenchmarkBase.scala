@@ -170,4 +170,4 @@ case class DatasetDetails(
     minValue: Option[Int],
     maxValue: Option[Int])
 
-case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails)
+case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails, workingDir: URI)
