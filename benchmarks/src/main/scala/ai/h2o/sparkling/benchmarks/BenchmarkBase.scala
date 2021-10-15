@@ -32,7 +32,7 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
 
-abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
+abstract class BenchmarkBase[TInput, TOutput](context: BenchmarkContext) {
   private var lastMeasurementId = 1
   private val measurements = new ArrayBuffer[Measurement]()
 
@@ -47,9 +47,9 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   protected def initialize(): TInput
 
-  protected def body(input: TInput): Unit
+  protected def body(input: TInput): TOutput
 
-  protected def cleanUp(input: TInput): Unit = {}
+  protected def cleanUp(input: TInput, output: TOutput): Unit = {}
 
   def loadDataToDataFrame(): DataFrame = {
     val df = if (context.datasetDetails.isVirtual) {
@@ -113,12 +113,12 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   def run(): Unit = {
     val input = initialize()
     val startedAtNanos = System.nanoTime()
-    body(input)
+    val output = body(input)
     val elapsedAtNanos = System.nanoTime() - startedAtNanos
     val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
     val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
     measurements.append(Measurement(1, "time", duration))
-    cleanUp(input)
+    cleanUp(input, output)
   }
 
   def exportMeasurements(outputStream: OutputStream): Unit = {
@@ -132,8 +132,8 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   }
 }
 
-abstract class AlgorithmBenchmarkBase[TInput](context: BenchmarkContext, algorithm: AlgorithmBundle)
-  extends BenchmarkBase[TInput](context) {
+abstract class AlgorithmBenchmarkBase[TInput, TOutput](context: BenchmarkContext, algorithm: AlgorithmBundle)
+  extends BenchmarkBase[TInput, TOutput](context) {
 
   override protected def getResultHeader(): String = {
     s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm._1}'"

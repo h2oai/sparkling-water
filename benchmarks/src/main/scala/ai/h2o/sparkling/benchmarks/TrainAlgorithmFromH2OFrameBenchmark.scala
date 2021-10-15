@@ -21,7 +21,7 @@ import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
 
 class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-  extends AlgorithmBenchmarkBase[H2OFrame](context, algorithmBundle)
+  extends AlgorithmBenchmarkBase[H2OFrame, Unit](context, algorithmBundle)
   with EstimatorCommonUtils {
 
   override protected def initialize(): H2OFrame = loadDataToH2OFrame()
@@ -33,4 +33,6 @@ class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBu
       "response_column" -> context.datasetDetails.labelCol)
     trainAndGetDestinationKey(s"/3/ModelBuilders/$name", newParams)
   }
+
+  override protected def cleanUp(frame: H2OFrame, output: Unit): Unit = frame.delete()
 }

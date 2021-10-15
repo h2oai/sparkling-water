@@ -22,21 +22,19 @@ import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.{DataFrame, SaveMode}
 
 class DataFrameToH2OFrameConversionViaCsvFilesBenchmark(context: BenchmarkContext)
-  extends BenchmarkBase[DataFrame](context) {
-
-  var h2OFrame: H2OFrame = null
+  extends BenchmarkBase[DataFrame, H2OFrame](context) {
 
   override protected def initialize(): DataFrame = loadDataToDataFrame()
 
-  override protected def body(dataFrame: DataFrame): Unit = {
+  override protected def body(dataFrame: DataFrame): H2OFrame = {
     val className = this.getClass.getSimpleName
     val destination = context.workingDir.resolve(className)
     dataFrame.write.mode(SaveMode.Overwrite).csv(destination.toString)
-    h2OFrame = H2OFrame(destination)
+    H2OFrame(destination)
   }
 
-  override protected def cleanUp(dataFrame: DataFrame): Unit = {
+  override protected def cleanUp(dataFrame: DataFrame, h2oFrame: H2OFrame): Unit = {
     removeFromCache(dataFrame)
-    h2OFrame.delete()
+    h2oFrame.delete()
   }
 }

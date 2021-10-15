@@ -20,7 +20,7 @@ package ai.h2o.sparkling.benchmarks
 import org.apache.spark.sql.DataFrame
 
 class TrainAlgorithmFromDataFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-  extends AlgorithmBenchmarkBase[DataFrame](context, algorithmBundle) {
+  extends AlgorithmBenchmarkBase[DataFrame, Unit](context, algorithmBundle) {
 
   override protected def initialize(): DataFrame = loadDataToDataFrame()
 
@@ -28,4 +28,6 @@ class TrainAlgorithmFromDataFrameBenchmark(context: BenchmarkContext, algorithmB
     val initializedAlgorithm = algorithmBundle.swAlgorithm.setLabelCol(context.datasetDetails.labelCol)
     initializedAlgorithm.fit(trainingDataFrame)
   }
+
+  override protected def cleanUp(dataFrame: DataFrame, none: Unit): Unit = removeFromCache(dataFrame)
 }
