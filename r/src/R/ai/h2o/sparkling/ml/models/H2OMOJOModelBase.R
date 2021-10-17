@@ -41,11 +41,6 @@ H2OAlgorithmMOJOModelBase <- setRefClass("H2OAlgorithmMOJOModelBase", contains =
   getDetailedPredictionCol = function() {
     invoke(.self$jmojo, "getDetailedPredictionCol")
   },
-  getWithDetailedPredictionCol = function() {
-    warning("The method 'getWithDetailedPredictionCol' is deprecated and will be removed without replacement in 3.36.
-      Detailed prediction columns is always enabled.")
-    TRUE
-  },
   getWithContributions = function() {
     invoke(.self$jmojo, "getWithContributions")
   },

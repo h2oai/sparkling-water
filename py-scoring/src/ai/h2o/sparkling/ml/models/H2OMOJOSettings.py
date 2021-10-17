@@ -24,7 +24,6 @@ class H2OMOJOSettings(JavaWrapper):
     def __init__(self,
                  predictionCol="prediction",
                  detailedPredictionCol="detailed_prediction",
-                 withDetailedPredictionCol=True,
                  convertUnknownCategoricalLevelsToNa=False,
                  convertInvalidNumbersToNa=False,
                  namedMojoOutputColumns=True,

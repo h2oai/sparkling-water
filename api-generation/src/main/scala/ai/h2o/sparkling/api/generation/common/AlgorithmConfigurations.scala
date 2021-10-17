@@ -39,7 +39,6 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     "featuresCols" -> Array.empty[String],
     "predictionCol" -> "prediction",
     "detailedPredictionCol" -> "detailed_prediction",
-    "withDetailedPredictionCol" -> true,
     "namedMojoOutputColumns" -> true,
     "withContributions" -> false,
     "withLeafNodeAssignments" -> false,

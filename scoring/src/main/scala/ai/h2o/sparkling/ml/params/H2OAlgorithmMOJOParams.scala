@@ -1,9 +1,8 @@
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.macros.DeprecatedMethod
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.{BooleanParam, Param, Params, StringArrayParam}
+import org.apache.spark.ml.param.{BooleanParam, Param, StringArrayParam}
 
 trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
 
@@ -16,11 +15,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
     this,
     "detailedPredictionCol",
     "Column containing additional prediction details, its content depends on the model type.")
-
-  protected final val withDetailedPredictionCol = new BooleanParam(
-    this,
-    "withDetailedPredictionCol",
-    "Enables or disables generating additional prediction column, but with more details")
 
   protected final val withContributions = new BooleanParam(
     this,
@@ -59,9 +53,6 @@ trait H2OAlgorithmMOJOParams extends H2OBaseMOJOParams with Logging {
   def getPredictionCol(): String = $(predictionCol)
 
   def getDetailedPredictionCol(): String = $(detailedPredictionCol)
-
-  @DeprecatedMethod(version = "3.36")
-  def getWithDetailedPredictionCol(): Boolean = true
 
   def getWithContributions(): Boolean = $(withContributions)
 

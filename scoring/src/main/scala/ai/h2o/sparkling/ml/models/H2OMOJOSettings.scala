@@ -17,12 +17,11 @@
 
 package ai.h2o.sparkling.ml.models
 
-import ai.h2o.sparkling.ml.params.{H2OAlgorithmMOJOParams, H2OBaseMOJOParams}
+import ai.h2o.sparkling.ml.params.H2OAlgorithmMOJOParams
 
 case class H2OMOJOSettings(
     predictionCol: String = "prediction",
     detailedPredictionCol: String = "detailed_prediction",
-    withDetailedPredictionCol: Boolean = true,
     convertUnknownCategoricalLevelsToNa: Boolean = false,
     convertInvalidNumbersToNa: Boolean = false,
     namedMojoOutputColumns: Boolean = true,
