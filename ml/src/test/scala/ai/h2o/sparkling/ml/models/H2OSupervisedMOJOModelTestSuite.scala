@@ -21,11 +21,12 @@ import ai.h2o.sparkling.ml.algos._
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import hex.Model
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
 import ai.h2o.sparkling.ml.ParameterSetters._
+import org.apache.spark.sql.functions.lit
 
 @RunWith(classOf[JUnitRunner])
 class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with SharedH2OTestContext {
@@ -132,26 +133,27 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
     val model = algo.fit(trainingDataset)
 
-    final case class ResultWithOffset(id: Int, offset: Double, prediction: Double)
+    final case class ResultWithOffset(offset: Double, prediction: Double)
 
-    def extractResult(model: H2OSupervisedMOJOModel): Array[ResultWithOffset] = {
+    def extractResultAndOffset(model: H2OSupervisedMOJOModel, testingDataset: Dataset[Row]): Array[(Double, Double)] = {
+      val idColumn = "ID"
       model
         .transform(testingDataset)
-        .sort("ID")
-        .select("ID", offsetColumn, "prediction")
+        .sort(idColumn)
+        .select("prediction", offsetColumn)
         .collect()
-        .map(row => ResultWithOffset(row.getInt(0), row.getDouble(1), row.getDouble(2)))
+        .map(row => (row.getDouble(0), row.getDouble(1)))
     }
 
-    val resultsWithOffsetSet = extractResult(model)
+    val testingDatasetWithOffsetZeroed = testingDataset.withColumn(offsetColumn, lit(0d))
 
-    model.set(model.offsetCol, null)
-    val resultsWithoutOffsetSet = extractResult(model)
+    val resultsWithOffset = extractResultAndOffset(model, testingDataset)
+    val resultsWithoutOffset = extractResultAndOffset(model, testingDatasetWithOffsetZeroed)
 
-    resultsWithOffsetSet should not equal resultsWithoutOffsetSet
-    resultsWithOffsetSet.zip(resultsWithoutOffsetSet).foreach {
-      case (resultWithOffset, resultWithoutOffset) =>
-        resultWithOffset.prediction - resultWithOffset.offset shouldBe resultWithoutOffset.prediction +- 0.0001
+    resultsWithOffset should not equal resultsWithoutOffset
+    resultsWithOffset.zip(resultsWithoutOffset).foreach {
+      case ((resultWithOffset, offset), (resultWithoutOffset, _)) =>
+        resultWithOffset - offset shouldEqual resultWithoutOffset +- 0.0001
     }
   }
 
