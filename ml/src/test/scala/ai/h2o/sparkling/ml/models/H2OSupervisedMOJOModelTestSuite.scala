@@ -133,8 +133,6 @@ class H2OSupervisedMOJOModelTestSuite extends FunSuite with Matchers with Shared
 
     val model = algo.fit(trainingDataset)
 
-    final case class ResultWithOffset(offset: Double, prediction: Double)
-
     def extractResultAndOffset(model: H2OSupervisedMOJOModel, testingDataset: Dataset[Row]): Array[(Double, Double)] = {
       val idColumn = "ID"
       model
