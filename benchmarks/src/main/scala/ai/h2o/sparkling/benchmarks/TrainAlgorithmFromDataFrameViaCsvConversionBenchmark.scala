@@ -19,20 +19,30 @@ package ai.h2o.sparkling.benchmarks
 
 import ai.h2o.sparkling.H2OFrame
 import ai.h2o.sparkling.ml.utils.EstimatorCommonUtils
+import org.apache.spark.sql.{DataFrame, SaveMode}
 
-class TrainAlgorithmFromH2OFrameBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
-  extends AlgorithmBenchmarkBase[H2OFrame, Unit](context, algorithmBundle)
+class TrainAlgorithmFromDataFrameViaCsvConversionBenchmark(context: BenchmarkContext, algorithmBundle: AlgorithmBundle)
+  extends AlgorithmBenchmarkBase[DataFrame, H2OFrame](context, algorithmBundle)
   with EstimatorCommonUtils {
 
-  override protected def initialize(): H2OFrame = loadDataToH2OFrame()
+  override protected def initialize(): DataFrame = loadDataToDataFrame()
 
-  override protected def body(trainingFrame: H2OFrame): Unit = {
+  override protected def body(trainingDataFrame: DataFrame): H2OFrame = {
+    val className = this.getClass.getSimpleName
+    val destination = context.workingDir.resolve(className)
+    trainingDataFrame.write.mode(SaveMode.Overwrite).csv(destination.toString)
+    val trainingFrame = H2OFrame(destination)
+
     val (name, params) = algorithmBundle.h2oAlgorithm
     val newParams = params ++ Map(
       "training_frame" -> trainingFrame.frameId,
       "response_column" -> context.datasetDetails.labelCol)
     trainAndGetMOJOModel(s"/3/ModelBuilders/$name", newParams)
+    trainingFrame
   }
 
-  override protected def cleanUp(frame: H2OFrame, output: Unit): Unit = frame.delete()
+  override protected def cleanUp(dataFrame: DataFrame, frame: H2OFrame): Unit = {
+    removeFromCache(dataFrame)
+    frame.delete()
+  }
 }
