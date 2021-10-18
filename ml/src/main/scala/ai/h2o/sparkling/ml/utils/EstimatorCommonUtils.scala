@@ -49,10 +49,7 @@ trait EstimatorCommonUtils extends RestCommunication {
       endpointSuffix: String,
       params: Map[String, Any],
       encodeParamsAsJson: Boolean = false): H2OMOJOModel = {
-    val modelKey = trainAndGetDestinationKey(
-      endpointSuffix,
-      params,
-      encodeParamsAsJson)
+    val modelKey = trainAndGetDestinationKey(endpointSuffix, params, encodeParamsAsJson)
     val mojo = H2OModel(modelKey)
     mojo.toMOJOModel(modelKey + "_uid", H2OMOJOSettings(), false)
   }
