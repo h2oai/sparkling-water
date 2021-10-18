@@ -96,12 +96,12 @@ object Runner extends RestApiUtils {
     val (keys, values) = args.zipWithIndex.partition { case (_, idx) => idx % 2 == 0 }
     val map = keys.map(_._1).zip(values.map(_._1)).toMap
     Settings(
-      map.getOrElse("-s", defaultDatasetSpecificationsFile),
-      map.get("-b"),
-      map.get("-d"),
-      map.get("-a"),
-      map.get("-o"),
-      map.get("-w"))
+      datasetSpecificationsFile = map.getOrElse("-s", defaultDatasetSpecificationsFile),
+      benchmark = map.get("-b"),
+      dataset = map.get("-d"),
+      algorithm = map.get("-a"),
+      outputDir = map.get("-o"),
+      workingDir = map.get("-w"))
   }
 
   private def loadDatasetDetails(datasetSpecificationsFile: String): Seq[DatasetDetails] = {
