@@ -53,7 +53,6 @@ class H2OMOJOSettings(JavaWrapper):
         self._java_obj = self._new_java_obj("ai.h2o.sparkling.ml.models.H2OMOJOSettings",
                                             self.predictionCol,
                                             self.detailedPredictionCol,
-                                            True,
                                             self.convertUnknownCategoricalLevelsToNa,
                                             self.convertInvalidNumbersToNa,
                                             self.namedMojoOutputColumns,
