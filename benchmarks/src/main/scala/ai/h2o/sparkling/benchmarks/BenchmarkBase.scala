@@ -22,6 +22,7 @@ import java.net.URI
 
 import _root_.hex.Model
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
@@ -34,7 +35,7 @@ import scala.concurrent.duration._
 
 abstract class BenchmarkBase[TInput, TOutput](context: BenchmarkContext) {
   private var lastMeasurementId = 1
-  private val measurements = new ArrayBuffer[Measurement]()
+  protected val measurements = new ArrayBuffer[Measurement]()
 
   protected def addMeasurement(name: String, value: Any): Unit = {
     lastMeasurementId = lastMeasurementId + 1
@@ -132,11 +133,39 @@ abstract class BenchmarkBase[TInput, TOutput](context: BenchmarkContext) {
   }
 }
 
-abstract class AlgorithmBenchmarkBase[TInput, TOutput](context: BenchmarkContext, algorithm: AlgorithmBundle)
-  extends BenchmarkBase[TInput, TOutput](context) {
+abstract class AlgorithmBenchmarkBase[TInput, TIntermediate](context: BenchmarkContext, algorithm: AlgorithmBundle)
+  extends BenchmarkBase[TInput, H2OMOJOModel](context) {
 
   override protected def getResultHeader(): String = {
     s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm._1}'"
+  }
+
+  def convertInput(input: TInput): TIntermediate
+
+  def train(input: TIntermediate): H2OMOJOModel
+
+  def body(input: TInput): H2OMOJOModel = {
+    val intermediate  = convertInput(input)
+    train(intermediate)
+  }
+
+  protected def cleanUp(input: TInput, intermediate: TIntermediate): Unit = {}
+
+  override def run(): Unit = {
+    val input = initialize()
+    val startedAtNanos = System.nanoTime()
+    val intermediate = convertInput(input)
+    val model = train(intermediate)
+    val elapsedAtNanos = System.nanoTime() - startedAtNanos
+    val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
+    val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
+    measurements.append(Measurement(1, "time", duration))
+    measurements.append(Measurement(2, "category", model.getModelCategory()))
+    measurements.append(Measurement(3, "training metrics", model.getTrainingMetrics()))
+    measurements.append(Measurement(4, "feature types", model.getFeatureTypes()))
+
+    cleanUp(input, intermediate)
+    cleanUp(input, model)
   }
 }
 
