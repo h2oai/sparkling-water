@@ -310,9 +310,8 @@ object H2OFrame extends RestCommunication {
 
   def apply(uri: URI): H2OFrame = {
     val scheme = uri.getScheme
-    val file = new File(uri)
-    if ((scheme == null || scheme == "file") && file.isFile) {
-      apply(file)
+    if ((scheme == null || scheme == "file") && new File(uri).isFile) {
+      apply(new File(uri))
     } else {
       val conf = H2OContext.ensure().getConf
       val endpoint = RestApiUtils.getClusterEndpoint(conf)
