@@ -32,7 +32,7 @@ class TrainAlgorithmFromDataFrameViaCsvConversionBenchmark(context: BenchmarkCon
     val className = this.getClass.getSimpleName
     val destination = context.workingDir.resolve(className)
     input.write.mode(SaveMode.Overwrite).csv(destination.toString)
-    H2OFrame(destination)
+    H2OFrame(destination, input.columns)
   }
 
   override protected def train(trainingFrame: H2OFrame): H2OMOJOModel = {
@@ -43,7 +43,7 @@ class TrainAlgorithmFromDataFrameViaCsvConversionBenchmark(context: BenchmarkCon
     trainAndGetMOJOModel(s"/3/ModelBuilders/$name", newParams)
   }
 
-  override protected def cleanUp(dataFrame: DataFrame, frame: H2OFrame): Unit = {
+  override protected def cleanUpData(dataFrame: DataFrame, frame: H2OFrame): Unit = {
     removeFromCache(dataFrame)
     frame.delete()
   }

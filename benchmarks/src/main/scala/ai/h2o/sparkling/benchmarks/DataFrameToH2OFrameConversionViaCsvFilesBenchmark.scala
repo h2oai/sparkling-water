@@ -30,7 +30,7 @@ class DataFrameToH2OFrameConversionViaCsvFilesBenchmark(context: BenchmarkContex
     val className = this.getClass.getSimpleName
     val destination = context.workingDir.resolve(className)
     dataFrame.write.mode(SaveMode.Overwrite).csv(destination.toString)
-    H2OFrame(destination)
+    H2OFrame(destination, dataFrame.columns)
   }
 
   override protected def cleanUp(dataFrame: DataFrame, h2oFrame: H2OFrame): Unit = {

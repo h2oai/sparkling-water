@@ -140,16 +140,16 @@ abstract class AlgorithmBenchmarkBase[TInput, TIntermediate](context: BenchmarkC
     s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm._1}'"
   }
 
-  def convertInput(input: TInput): TIntermediate
+  protected def convertInput(input: TInput): TIntermediate
 
-  def train(input: TIntermediate): H2OMOJOModel
+  protected def train(input: TIntermediate): H2OMOJOModel
 
-  def body(input: TInput): H2OMOJOModel = {
-    val intermediate  = convertInput(input)
+  protected override def body(input: TInput): H2OMOJOModel = {
+    val intermediate = convertInput(input)
     train(intermediate)
   }
 
-  protected def cleanUp(input: TInput, intermediate: TIntermediate): Unit = {}
+  protected def cleanUpData(input: TInput, intermediate: TIntermediate): Unit = {}
 
   override def run(): Unit = {
     val input = initialize()
@@ -164,7 +164,7 @@ abstract class AlgorithmBenchmarkBase[TInput, TIntermediate](context: BenchmarkC
     measurements.append(Measurement(3, "training metrics", model.getTrainingMetrics()))
     measurements.append(Measurement(4, "feature types", model.getFeatureTypes()))
 
-    cleanUp(input, intermediate)
+    cleanUpData(input, intermediate)
     cleanUp(input, model)
   }
 }
