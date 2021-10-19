@@ -404,7 +404,7 @@ object H2OFrame extends RestCommunication {
       conf: H2OConf,
       unparsedFrameIds: Array[String],
       columnNames: Array[String]): H2OFrame = {
-    val parseSetupParams =  Map("source_frames" -> unparsedFrameIds, "column_names" -> columnNames)
+    val parseSetupParams = Map("source_frames" -> unparsedFrameIds, "column_names" -> columnNames)
     val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, parseSetupParams)
     val params = Map(
       "source_frames" -> unparsedFrameIds,
