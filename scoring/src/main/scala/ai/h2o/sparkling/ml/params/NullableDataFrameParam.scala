@@ -21,7 +21,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 import java.util.Base64
 
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import ai.h2o.sparkling.utils.SparkSessionUtils
+import ai.h2o.sparkling.utils.{CompatibilityObjectInputStream, SparkSessionUtils}
 import org.apache.spark.ml.param.{Param, Params}
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
@@ -60,7 +60,7 @@ class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid:
       case JString(data) =>
         val bytes = Base64.getDecoder().decode(data)
         withResource(new ByteArrayInputStream(bytes)) { byteStream =>
-          withResource(new ObjectInputStream(byteStream)) { objectStream =>
+          withResource(new CompatibilityObjectInputStream(byteStream)) { objectStream =>
             val schema = objectStream.readObject().asInstanceOf[StructType]
             val rows = objectStream.readObject().asInstanceOf[java.util.List[Row]]
             SparkSessionUtils.active.createDataFrame(rows, schema)

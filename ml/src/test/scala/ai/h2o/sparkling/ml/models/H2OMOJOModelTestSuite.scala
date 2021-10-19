@@ -35,6 +35,18 @@ class H2OMOJOModelTestSuite extends FunSuite with SharedH2OTestContext with Matc
 
   import spark.implicits._
 
+  test("H2OMOJOModel saved with scala 2.11 behaves the same way as H2OMOJOModel saved with scala 2.12") {
+    val model11 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.11")
+    val model12 = H2OMOJOModel.load("ml/src/test/resources/sw_mojo_scala_2.12")
+
+    TestUtils.assertDataFramesAreIdentical(model11.transform(prostateDataFrame), model12.transform(prostateDataFrame))
+    TestUtils.assertDataFramesAreIdentical(model11.getFeatureImportances(), model12.getFeatureImportances())
+    TestUtils.assertDataFramesAreIdentical(
+      model11.getCrossValidationMetricsSummary(),
+      model12.getCrossValidationMetricsSummary())
+    model11.getTrainingMetrics().-("ScoringTime") shouldEqual model12.getTrainingMetrics().-("ScoringTime")
+  }
+
   test("[MOJO] Export and Import - binomial model") {
     val (inputDf, model) = binomialModelFixture()
     testModelReload("binomial_model_import_export", inputDf, model)
