@@ -174,7 +174,7 @@ def testRandomColsArePropagatedToInternals(semiconductorDataset):
 def testRandomColsMustBeWithinTrainingDataset(semiconductorDataset):
     glm = createInitialGlmDefinitionForRandomCols()
     glm.setRandomCols(["someColumn"])
-    with pytest.raises(AnalysisException, match=r".*cannot resolve '`someColumn`' given input columns.*"):
+    with pytest.raises(AnalysisException, match=r".*cannot resolve '.?someColumn.?' given input columns.*"):
         glm.fit(semiconductorDataset)
 
 
