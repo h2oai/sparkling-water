@@ -79,7 +79,7 @@ ext {
   rProjects = [project(':sparkling-water-r'), project(':sparkling-water-r-cran')]
   docProjects = [project(':sparkling-water-doc')]
 
-  supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.10']
+  supportedScalaBaseVersions = ['2.11': '2.11.12', '2.12' : '2.12.14']
   scalaTestVersions = ['2.11': '2.2.1', '2.12': '3.0.8']
   numpyVersions = ['2': '1.16.6', '3': '1.19.5']
 }
