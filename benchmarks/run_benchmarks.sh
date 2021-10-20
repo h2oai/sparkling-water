@@ -29,7 +29,7 @@ if [ -z "$aws_instance_type" ]; then
     aws_instance_type="m5.2xlarge"
 fi
 if [ -z "$aws_core_instance_count" ]; then
-    aws_core_instance_count=2
+    aws_core_instance_count=4
 fi
 if [ -z "$aws_emr_timeout" ]; then
     aws_emr_timeout="4 hours"
