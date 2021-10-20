@@ -60,8 +60,7 @@ def testCalibrationDataFrameCauseGenerationOfCalibratedProbabilities(prostateDat
                   seed=1,
                   splitRatio=0.8,
                   calibrateModel=True,
-                  calibrationDataFrame=calibrationDataset,
-                  withDetailedPredictionCol=True)
+                  calibrationDataFrame=calibrationDataset)
     model = algo.fit(trainingDataset)
     result = model.transform(testingDataset).cache()
     probabilities = result.select("ID", "detailed_prediction.probabilities.0", "detailed_prediction.probabilities.1")
