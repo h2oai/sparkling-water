@@ -62,7 +62,7 @@ object SparkDataFrameConverter extends Logging {
 
     val optimizedRdd = if (conf.isNumberOfPartitionsOptimizationEnabled()) {
       val optimalSize = h2oNodes.foldLeft(0)((accumulator, node) => accumulator + node.allowedCpus)
-      flatDataFrame.rdd.repartition(optimalSize)
+      rdd.repartition(optimalSize)
     } else {
       rdd
     }
