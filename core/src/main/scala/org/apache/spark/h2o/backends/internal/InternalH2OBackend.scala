@@ -152,7 +152,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val launcherArgs = toH2OArgs(args)
     initializeH2OKerberizedHiveSupport(conf)
     H2OStarter.start(launcherArgs, true)
-    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
+    NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT, H2O.SELF._heartbeat._cpus_allowed)
   }
 
   private def registerNewExecutorListener(hc: H2OContext): Unit = {

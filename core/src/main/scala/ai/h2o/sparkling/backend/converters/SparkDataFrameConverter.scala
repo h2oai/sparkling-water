@@ -45,7 +45,7 @@ object SparkDataFrameConverter extends Logging {
     // we are dealing with Dataset[Row]
     val flatDataFrame = flattenDataFrame(df)
     val schema = flatDataFrame.schema
-    val rdd = flatDataFrame.rdd // materialized the data frame
+    val rdd = flatDataFrame.rdd
 
     val elemMaxSizes = collectMaxElementSizes(rdd, schema)
     val vecIndices = collectVectorLikeTypes(schema).toArray
@@ -56,7 +56,16 @@ object SparkDataFrameConverter extends Logging {
     val expectedTypes = DataTypeConverter.determineExpectedTypes(schema)
 
     val uniqueFrameId = frameKeyName.getOrElse("frame_rdd_" + rdd.id + scala.util.Random.nextInt())
-    val metadata = WriterMetadata(hc.getConf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
-    Writer.convert(new H2OAwareRDD(hc.getH2ONodes(), rdd), colNames, metadata)
+    val conf = hc.getConf
+    val h2oNodes = hc.getNodes(hc.getClusterInfo(conf))
+    val metadata = WriterMetadata(conf, uniqueFrameId, expectedTypes, maxVecSizes, SparkTimeZone.current())
+
+    val optimizedRdd = if (conf.isNumberOfPartitionsOptimizationEnabled()) {
+      val optimalSize = h2oNodes.foldLeft(0)((accumulator, node) => accumulator + node.allowedCpus)
+      flatDataFrame.rdd.repartition(optimalSize)
+    } else {
+      rdd
+    }
+    Writer.convert(new H2OAwareRDD(h2oNodes, optimizedRdd), colNames, metadata)
   }
 }

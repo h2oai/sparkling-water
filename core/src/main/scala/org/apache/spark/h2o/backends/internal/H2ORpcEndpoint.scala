@@ -61,7 +61,11 @@ class H2ORpcEndpoint(override val rpcEnv: RpcEnv) extends ThreadSafeRpcEndpoint 
       context.reply(H2O.CLOUD.size())
     case GetLeaderNodeMsg =>
       val reply = if (H2O.SELF.isLeaderNode) {
-        Some(NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT))
+        Some(NodeDesc(
+          SparkEnv.get.executorId,
+          H2O.SELF_ADDRESS.getHostAddress,
+          H2O.API_PORT,
+          H2O.SELF._heartbeat._cpus_allowed))
       } else {
         None
       }

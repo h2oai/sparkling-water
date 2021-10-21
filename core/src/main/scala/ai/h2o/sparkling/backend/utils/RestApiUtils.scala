@@ -63,7 +63,7 @@ trait RestApiUtils extends RestCommunication {
         val splits = node.ip_port.split(":")
         val ip = splits(0)
         val port = splits(1).toInt
-        NodeDesc(idx.toString, ip, port)
+        NodeDesc(idx.toString, ip, port, node.cpus_allowed)
     }
   }
 
