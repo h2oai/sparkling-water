@@ -283,14 +283,21 @@ def unitTests() {
 
 def pyUnitTests() {
     return { config ->
+        def allPythonVersions = config.commons.getSupportedPythonVersions(config.sparkMajorVersion)
+        def pythonVersions
+        if (config.runUnitTestsForAllPythonVersions.toBoolean()) {
+            pythonVersions = allPythonVersions
+        } else {
+            pythonVersions = [allPythonVersions.first(), allPythonVersions.last()]
+        }
         for (pythonProject in ["py", "py-scoring"]) {
-            for (pythonVersion in config.commons.getSupportedPythonVersions(config.sparkMajorVersion)) {
+            for (pythonVersion in pythonVersions) {
                 stage("QA: PyUnit Tests ${pythonVersion} - ${pythonProject} - ${config.backendMode}") {
                     if (config.runPyUnitTests.toBoolean()) {
                         try {
                             config.commons.withDAICredentials {
                                 sh "${getGradleCommand(config)} :sparkling-water-${pythonProject}:test " +
-                                   "-PpythonPath=/envs/h2o_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}"
+                                   "-PpythonPath=/envs/sw_env_python${pythonVersion}/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -x integTest -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}"
                             }
                         } finally {
                             arch '**/build/*tests.log,**/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr, **/build/**/*log*, **/build/reports/'
@@ -358,7 +365,7 @@ def pyIntegTests() {
             if (config.runPyIntegTests.toBoolean()) {
                 try {
                     sh """
-                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/envs/h2o_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
+                    ${getGradleCommand(config)} sparkling-water-py:integTest -PpythonPath=/envs/sw_env_python3.6/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python -PsparkHome=${env.SPARK_HOME} -PbackendMode=${config.backendMode}
                     """
                 } finally {
                     arch '**/build/*tests.log, **/*.log, **/out.*, **/*py.out.txt, **/stdout, **/stderr,**/build/**/*log*, py/build/py_*_report.txt,**/build/reports/'

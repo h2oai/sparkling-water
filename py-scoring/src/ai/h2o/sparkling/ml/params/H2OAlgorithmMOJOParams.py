@@ -34,12 +34,6 @@ class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
         "Column containing additional prediction details, its content depends on the model type.",
         H2OTypeConverters.toString())
 
-    withDetailedPredictionCol = Param(
-        Params._dummy(),
-        "withDetailedPredictionCol",
-        "Enables or disables generating additional prediction column, but with more details",
-        H2OTypeConverters.toBoolean())
-
     withContributions = Param(
         Params._dummy(),
         "withContributions",
@@ -78,11 +72,6 @@ class H2OAlgorithmMOJOParams(H2OBaseMOJOParams):
 
     def getDetailedPredictionCol(self):
         return self.getOrDefault(self.detailedPredictionCol)
-
-    def getWithDetailedPredictionCol(self):
-        warnings.warn("The method will be removed without a replacement in the version 3.36."
-                      "Detailed prediction columns is always enabled.", DeprecationWarning)
-        return True
 
     def getWithContributions(self):
         return self.getOrDefault(self.withContributions)

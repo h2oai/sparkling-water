@@ -54,6 +54,32 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
   }
 
   def branchName = getGitBranch()
+
+  user("root")
+
+  runCommand """\\
+                chmod 777 /envs && \\
+                for pythonVersion in ${pythonEnvironments}; \\
+                do \\
+                  apt-get install -y python\$pythonVersion && \\
+                  if [ \$pythonVersion = "3.8" ] ; then apt-get install -y python\$pythonVersion-distutils; fi \\
+                done
+                """
+
+  user("jenkins")
+
+  runCommand """\\
+                cd /envs && \\
+                pip install virtualenv && \\
+                for pythonVersion in ${pythonEnvironments}; \\
+                do \\
+                  virtualenv --python python\$pythonVersion sw_env_python\$pythonVersion && \\
+                  . /envs/sw_env_python\$pythonVersion/bin/activate && \\
+                  pip install setuptools && \\
+                  pip install twine; \\
+                done
+                """
+
   runCommand """\\
                 cd /home/jenkins && \\
                 git clone https://github.com/h2oai/sparkling-water.git && \\
@@ -64,16 +90,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                   ./gradlew -Pspark=\$sparkMajor --refresh-dependencies resolveDependencies && \\
                   for pythonVersion in ${supportedPythonVersions}; \\
                   do \\
-                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/h2o_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
+                    ./gradlew -Pspark=\$sparkMajor :sparkling-water-py:pipInstall -PpythonPath=/envs/sw_env_python\$pythonVersion/bin -PpythonEnvBasePath=/home/jenkins/.gradle/python; \\
                   done; \\ 
                 done && cd .. && rm -rf sparkling-water
-                """
-
-  runCommand """\\
-                for pythonVersion in ${h2oPythonEnvironments}; \\
-                do \\
-                  . /envs/h2o_env_python\$pythonVersion/bin/activate && pip install colorama && pip install -U setuptools; \\
-                done
                 """
 
   user("root")
@@ -92,9 +111,9 @@ task createDockerfile(type: Dockerfile, dependsOn: copyFiles) {
                 """
   environmentVariable("PATH", "\"/home/jenkins/miniconda/bin:\${PATH}\"")
   runCommand """\\
-                conda install anaconda anaconda-client conda-build -y && \\
+                conda install anaconda-client conda-build conda-verify -y && \\
                 conda update conda -y && \\
-                conda update anaconda anaconda-client conda-build -y && \\
+                conda update anaconda-client conda-build conda-verify -y && \\
                 conda config --add channels conda-forge
                 """
 

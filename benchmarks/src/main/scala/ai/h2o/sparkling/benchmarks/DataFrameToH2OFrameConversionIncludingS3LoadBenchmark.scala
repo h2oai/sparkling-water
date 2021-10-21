@@ -17,13 +17,10 @@
 
 package ai.h2o.sparkling.benchmarks
 
-import ai.h2o.sparkling.H2OFrame
+import org.apache.spark.sql.DataFrame
 
-class H2OFrameToDataFrameConversionBenchmark(context: BenchmarkContext) extends BenchmarkBase[H2OFrame, Unit](context) {
+class DataFrameToH2OFrameConversionIncludingS3LoadBenchmark(context: BenchmarkContext)
+  extends DataFrameToH2OFrameConversionBenchmark(context) {
 
-  override protected def initialize(): H2OFrame = loadDataToH2OFrame()
-
-  override protected def body(frame: H2OFrame): Unit = context.hc.asSparkFrame(frame).foreach(_ => {})
-
-  override protected def cleanUp(frame: H2OFrame, none: Unit): Unit = frame.delete()
+  override protected def initialize(): DataFrame = loadRegularDataFrame()
 }

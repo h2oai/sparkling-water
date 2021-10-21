@@ -19,6 +19,7 @@ package ai.h2o.sparkling.benchmarks
 
 import java.io.{File, FileOutputStream, InputStreamReader}
 import java.lang.reflect.Modifier
+import java.net.URI
 
 import ai.h2o.sparkling.H2OContext
 import ai.h2o.sparkling.backend.utils.RestApiUtils
@@ -33,6 +34,7 @@ import scala.collection.JavaConverters._
 object Runner extends RestApiUtils {
   val defaultDatasetSpecificationsFile = "datasets.json"
   val defaultOutputDir = new File("benchmarks", "output")
+  val defaultWorkingDir = new URI("hdfs:///user/hadoop/")
 
   val spark = SparkSession
     .builder()
@@ -75,7 +77,12 @@ object Runner extends RestApiUtils {
       case None => defaultOutputDir
     }
 
-    val batches = createBatches(filteredDatasetDetails, filteredBenchmarks, filteredAlgorithms)
+    val workingDir = settings.workingDir match {
+      case Some(dir) => new URI(dir)
+      case None => defaultWorkingDir
+    }
+
+    val batches = createBatches(filteredDatasetDetails, filteredBenchmarks, filteredAlgorithms, workingDir)
     batches.foreach(batch => executeBatch(batch, outputDir))
 
     hc.stop(stopSparkContext = true)
@@ -84,15 +91,17 @@ object Runner extends RestApiUtils {
   private def processArguments(args: Array[String]): Settings = {
     require(
       args.length % 2 == 0,
-      "Wrong arguments. Example: -s datasetSpecificationFile -b benchmarkName -d datasetName -a algorithmName -o outputDir")
+      "Wrong arguments. Example: -s datasetSpecificationFile " +
+        "-b benchmarkName -d datasetName -a algorithmName -o outputDir -w workingDir")
     val (keys, values) = args.zipWithIndex.partition { case (_, idx) => idx % 2 == 0 }
     val map = keys.map(_._1).zip(values.map(_._1)).toMap
     Settings(
-      map.getOrElse("-s", defaultDatasetSpecificationsFile),
-      map.get("-b"),
-      map.get("-d"),
-      map.get("-a"),
-      map.get("-o"))
+      datasetSpecificationsFile = map.getOrElse("-s", defaultDatasetSpecificationsFile),
+      benchmark = map.get("-b"),
+      dataset = map.get("-d"),
+      algorithm = map.get("-a"),
+      outputDir = map.get("-o"),
+      workingDir = map.get("-w"))
   }
 
   private def loadDatasetDetails(datasetSpecificationsFile: String): Seq[DatasetDetails] = {
@@ -113,7 +122,7 @@ object Runner extends RestApiUtils {
 
     def isBenchmark(clazz: Class[_]) = {
       val isAbstract = Modifier.isAbstract(clazz.getModifiers)
-      val inheritsFromBenchmarkBase = classOf[BenchmarkBase[_]].isAssignableFrom(clazz)
+      val inheritsFromBenchmarkBase = classOf[BenchmarkBase[_, _]].isAssignableFrom(clazz)
       !isAbstract && inheritsFromBenchmarkBase
     }
 
@@ -136,10 +145,11 @@ object Runner extends RestApiUtils {
   private def createBatches(
       datasetDetails: Seq[DatasetDetails],
       benchmarkClasses: Seq[Class[_]],
-      algorithms: Seq[AlgorithmBundle]): Seq[BenchmarkBatch] = {
-    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_]].isAssignableFrom(clazz)
+      algorithms: Seq[AlgorithmBundle],
+      workingDir: URI): Seq[BenchmarkBatch] = {
+    def isAlgorithmBenchmark(clazz: Class[_]): Boolean = classOf[AlgorithmBenchmarkBase[_, _]].isAssignableFrom(clazz)
 
-    val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _))
+    val benchmarkContexts = datasetDetails.map(BenchmarkContext(spark, hc, _, workingDir))
     benchmarkClasses.map { benchmarkClass =>
       val parameterSets = if (isAlgorithmBenchmark(benchmarkClass)) {
         for (context <- benchmarkContexts; algorithm <- algorithms) yield Array(context, algorithm.newInstance())
@@ -147,7 +157,7 @@ object Runner extends RestApiUtils {
         benchmarkContexts.map(Array(_))
       }
       val benchmarkInstances = parameterSets.map { parameterSet =>
-        benchmarkClass.getConstructors()(0).newInstance(parameterSet: _*).asInstanceOf[BenchmarkBase[_]]
+        benchmarkClass.getConstructors()(0).newInstance(parameterSet: _*).asInstanceOf[BenchmarkBase[_, _]]
       }
       BenchmarkBatch(benchmarkClass.getSimpleName, benchmarkInstances)
     }
@@ -173,12 +183,13 @@ object Runner extends RestApiUtils {
     println(s"Benchmark batch '${batch.name}' has finished.")
   }
 
-  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_]])
+  private case class BenchmarkBatch(name: String, benchmarks: Seq[BenchmarkBase[_, _]])
 
   private case class Settings(
       datasetSpecificationsFile: String,
       benchmark: Option[String],
       dataset: Option[String],
       algorithm: Option[String],
-      outputDir: Option[String])
+      outputDir: Option[String],
+      workingDir: Option[String])
 }

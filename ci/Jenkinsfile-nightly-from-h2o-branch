@@ -24,6 +24,7 @@ pipeline(params) { p ->
     sparkMajorVersions = sparkVersions
     runUnitTests = "true"
     runPyUnitTests = "true"
+    runUnitTestsForAllPythonVersions = "true"
     runRUnitTests = "true"
     runIntegTests = "true"
     runPyIntegTests = "true"
