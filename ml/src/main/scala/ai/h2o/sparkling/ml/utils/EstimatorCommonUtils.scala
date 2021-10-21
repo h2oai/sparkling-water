@@ -21,6 +21,7 @@ import java.io.File
 import ai.h2o.sparkling.backend.H2OJob
 import ai.h2o.sparkling.backend.utils.{RestApiUtils, RestCommunication}
 import ai.h2o.sparkling.ml.internals.H2OModel
+import ai.h2o.sparkling.ml.models.{H2OMOJOModel, H2OMOJOSettings}
 import ai.h2o.sparkling.{H2OConf, H2OContext}
 import hex.schemas.ModelBuilderSchema
 import org.apache.spark.expose
@@ -42,6 +43,15 @@ trait EstimatorCommonUtils extends RestCommunication {
     val jobId = modelBuilder.job.key.name
     H2OJob(jobId).waitForFinish()
     modelBuilder.job.dest.name
+  }
+
+  protected def trainAndGetMOJOModel(
+      endpointSuffix: String,
+      params: Map[String, Any],
+      encodeParamsAsJson: Boolean = false): H2OMOJOModel = {
+    val modelKey = trainAndGetDestinationKey(endpointSuffix, params, encodeParamsAsJson)
+    val mojo = H2OModel(modelKey)
+    mojo.toMOJOModel(modelKey + "_uid", H2OMOJOSettings(), false)
   }
 
   private[sparkling] def downloadBinaryModel(modelId: String, conf: H2OConf): File = {

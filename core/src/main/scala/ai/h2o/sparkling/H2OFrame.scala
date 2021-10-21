@@ -288,7 +288,9 @@ object H2OFrame extends RestCommunication {
     getFrame(conf, frameId)
   }
 
-  def apply(file: File): H2OFrame = {
+  def apply(file: File): H2OFrame = apply(file: File, null)
+
+  def apply(file: File, columnNames: Array[String]): H2OFrame = {
     val conf = H2OContext.ensure().getConf
     val endpoint = getClusterEndpoint(conf)
     val content = withResource(
@@ -305,20 +307,21 @@ object H2OFrame extends RestCommunication {
     val gson = new Gson()
     val unparsedFrameId =
       gson.fromJson(content, classOf[JsonElement]).getAsJsonObject.getAsJsonPrimitive("destination_frame").getAsString
-    parse(endpoint, conf, unparsedFrameId)
+    parse(endpoint, conf, Array(unparsedFrameId), columnNames)
   }
 
-  def apply(uri: URI): H2OFrame = {
+  def apply(uri: URI): H2OFrame = apply(uri: URI, null)
+
+  def apply(uri: URI, columnNames: Array[String]): H2OFrame = {
     val scheme = uri.getScheme
-    if (scheme == null || scheme == "file") {
-      apply(new File(uri))
+    if ((scheme == null || scheme == "file") && new File(uri).isFile) {
+      apply(new File(uri), columnNames)
     } else {
       val conf = H2OContext.ensure().getConf
       val endpoint = RestApiUtils.getClusterEndpoint(conf)
       val params = Map("paths" -> Array(uri.toString))
       val importFilesV3 = RestApiUtils.update[ImportFilesMultiV3](endpoint, "/3/ImportFilesMulti", conf, params)
-      val frameId = importFilesV3.destination_frames.head
-      parse(endpoint, conf, frameId)
+      parse(endpoint, conf, importFilesV3.destination_frames, columnNames)
     }
   }
 
@@ -396,10 +399,15 @@ object H2OFrame extends RestCommunication {
     update[FinalizeFrameV3](endpoint, Paths.FINALIZE_FRAME, conf, parameters)
   }
 
-  private def parse(endpoint: URI, conf: H2OConf, unparsedFrameId: String): H2OFrame = {
-    val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, Map("source_frames" -> unparsedFrameId))
+  private def parse(
+      endpoint: URI,
+      conf: H2OConf,
+      unparsedFrameIds: Array[String],
+      columnNames: Array[String]): H2OFrame = {
+    val parseSetupParams = Map("source_frames" -> unparsedFrameIds, "column_names" -> columnNames)
+    val parseSetup = update[ParseSetupV3](endpoint, "/3/ParseSetup", conf, parseSetupParams)
     val params = Map(
-      "source_frames" -> unparsedFrameId,
+      "source_frames" -> unparsedFrameIds,
       "destination_frame" -> parseSetup.destination_frame,
       "parse_type" -> parseSetup.parse_type,
       "separator" -> parseSetup.separator,
