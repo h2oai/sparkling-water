@@ -22,6 +22,7 @@ import java.net.URI
 
 import _root_.hex.Model
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM, H2OSupervisedAlgorithm}
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.functions._
@@ -32,9 +33,9 @@ import org.apache.spark.storage.StorageLevel
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
 
-abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
+abstract class BenchmarkBase[TInput, TOutput](context: BenchmarkContext) {
   private var lastMeasurementId = 1
-  private val measurements = new ArrayBuffer[Measurement]()
+  protected val measurements = new ArrayBuffer[Measurement]()
 
   protected def addMeasurement(name: String, value: Any): Unit = {
     lastMeasurementId = lastMeasurementId + 1
@@ -47,9 +48,9 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
 
   protected def initialize(): TInput
 
-  protected def body(input: TInput): Unit
+  protected def body(input: TInput): TOutput
 
-  protected def cleanUp(input: TInput): Unit = {}
+  protected def cleanUp(input: TInput, output: TOutput): Unit = {}
 
   def loadDataToDataFrame(): DataFrame = {
     val df = if (context.datasetDetails.isVirtual) {
@@ -63,7 +64,11 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
     persistedDF
   }
 
-  private def loadRegularDataFrame(): DataFrame = {
+  protected def loadRegularDataFrame(): DataFrame = {
+    if (context.datasetDetails.isVirtual) {
+      throw new IllegalArgumentException("Virtual datasets are not supported!")
+    }
+
     context.spark.read
       .option("header", "true")
       .option("inferSchema", "true")
@@ -109,12 +114,12 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   def run(): Unit = {
     val input = initialize()
     val startedAtNanos = System.nanoTime()
-    body(input)
+    val output = body(input)
     val elapsedAtNanos = System.nanoTime() - startedAtNanos
     val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
     val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
     measurements.append(Measurement(1, "time", duration))
-    cleanUp(input)
+    cleanUp(input, output)
   }
 
   def exportMeasurements(outputStream: OutputStream): Unit = {
@@ -128,11 +133,39 @@ abstract class BenchmarkBase[TInput](context: BenchmarkContext) {
   }
 }
 
-abstract class AlgorithmBenchmarkBase[TInput](context: BenchmarkContext, algorithm: AlgorithmBundle)
-  extends BenchmarkBase[TInput](context) {
+abstract class AlgorithmBenchmarkBase[TInput, TIntermediate](context: BenchmarkContext, algorithm: AlgorithmBundle)
+  extends BenchmarkBase[TInput, H2OMOJOModel](context) {
 
   override protected def getResultHeader(): String = {
     s"${super.getResultHeader()} and algorithm '${algorithm.h2oAlgorithm._1}'"
+  }
+
+  protected def convertInput(input: TInput): TIntermediate
+
+  protected def train(input: TIntermediate): H2OMOJOModel
+
+  protected override def body(input: TInput): H2OMOJOModel = {
+    val intermediate = convertInput(input)
+    train(intermediate)
+  }
+
+  protected def cleanUpData(input: TInput, intermediate: TIntermediate): Unit = {}
+
+  override def run(): Unit = {
+    val input = initialize()
+    val startedAtNanos = System.nanoTime()
+    val intermediate = convertInput(input)
+    val model = train(intermediate)
+    val elapsedAtNanos = System.nanoTime() - startedAtNanos
+    val durationAtNanos = Duration.fromNanos(elapsedAtNanos)
+    val duration = Duration(durationAtNanos.toMillis, MILLISECONDS)
+    measurements.append(Measurement(1, "time", duration))
+    measurements.append(Measurement(2, "category", model.getModelCategory()))
+    measurements.append(Measurement(3, "training metrics", model.getTrainingMetrics()))
+    measurements.append(Measurement(4, "feature types", model.getFeatureTypes()))
+
+    cleanUpData(input, intermediate)
+    cleanUp(input, model)
   }
 }
 
@@ -166,4 +199,4 @@ case class DatasetDetails(
     minValue: Option[Int],
     maxValue: Option[Int])
 
-case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails)
+case class BenchmarkContext(spark: SparkSession, hc: H2OContext, datasetDetails: DatasetDetails, workingDir: URI)
