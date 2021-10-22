@@ -45,14 +45,14 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
   }
 
   override def createSettings(): Settings = {
-    val settings = new Settings(echo)
+    val result = new Settings(echo)
 
     // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
     // ( instead of using java class path right away)
     // This solves problem explained here: https://gist.github.com/harrah/404272
     val classLoader = classTag[H2OInterpreter].runtimeClass.getClassLoader
-    val isAppClassPathSet = isTheClassLoaderAppClassPathSet(classLoader)
-    if (isAppClassPathSet) settings.embeddedDefaults(classLoader)
+    val isAppClassPathSet = isTheClassLoaderAppClassPathSet(classLoader, result)
+    if (isAppClassPathSet) result.embeddedDefaults(classLoader)
     val useJavaCpArg = if (!isAppClassPathSet) Some("-usejavacp") else None
 
     val conf = sparkContext.getConf
@@ -66,16 +66,16 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
       "-classpath",
       jars) ++ useJavaCpArg
 
-    settings.processArguments(interpArguments, processAll = true)
+    result.processArguments(interpArguments, processAll = true)
 
-    settings
+    result
   }
 
-  private def isTheClassLoaderAppClassPathSet(runtimeClassLoader: ClassLoader): Boolean = {
-    val getClassPathMethod =
-      settings.getClass.getSuperclass.getDeclaredMethod("getClasspath", classOf[String], classOf[ClassLoader])
-    getClassPathMethod.setAccessible(true)
-    getClassPathMethod.invoke(settings, "app", runtimeClassLoader).asInstanceOf[Option[String]].isDefined
+  private def isTheClassLoaderAppClassPathSet(runtimeClassLoader: ClassLoader, inputSettings: Settings): Boolean = {
+    val methodGetClasspath =
+      inputSettings.getClass.getSuperclass.getDeclaredMethod("getClasspath", classOf[String], classOf[ClassLoader])
+    methodGetClasspath.setAccessible(true)
+    methodGetClasspath.invoke(inputSettings, "app", runtimeClassLoader).asInstanceOf[Option[String]].isDefined
   }
 
   private def getJarsForShell(conf: SparkConf): String = {
