@@ -46,35 +46,36 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
 
   override def createSettings(): Settings = {
     val settings = new Settings(echo)
-    // prevent each repl line from being run in a new thread
-    settings.Yreplsync.value = true
 
     // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
     // ( instead of using java class path right away)
     // This solves problem explained here: https://gist.github.com/harrah/404272
-    settings.usejavacp.value = true
-    val loader = classTag[H2OInterpreter].runtimeClass.getClassLoader
-    val method =
-      settings.getClass.getSuperclass.getDeclaredMethod("getClasspath", classOf[String], classOf[ClassLoader])
-    method.setAccessible(true)
-    if (method.invoke(settings, "app", loader).asInstanceOf[Option[String]].isDefined) {
-      settings.usejavacp.value = false
-      settings.embeddedDefaults(loader)
-    }
+    val classLoader = classTag[H2OInterpreter].runtimeClass.getClassLoader
+    val isAppClassPathSet = isTheClassLoaderAppClassPathSet(classLoader)
+    if (isAppClassPathSet) settings.embeddedDefaults(classLoader)
+    val useJavaCpArg = if (!isAppClassPathSet) Some("-usejavacp") else None
 
     val conf = sparkContext.getConf
     val jars = getJarsForShell(conf)
 
     val interpArguments = List(
+      "-Yrepl-sync", // prevent each repl line from being run in a new thread
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
       "-Yrepl-outdir",
       s"${H2OInterpreter.classOutputDirectory.getAbsolutePath}",
       "-classpath",
-      jars)
+      jars) ++ useJavaCpArg
 
     settings.processArguments(interpArguments, processAll = true)
 
     settings
+  }
+
+  private def isTheClassLoaderAppClassPathSet(runtimeClassLoader: ClassLoader): Boolean = {
+    val getClassPathMethod =
+      settings.getClass.getSuperclass.getDeclaredMethod("getClasspath", classOf[String], classOf[ClassLoader])
+    getClassPathMethod.setAccessible(true)
+    getClassPathMethod.invoke(settings, "app", runtimeClassLoader).asInstanceOf[Option[String]].isDefined
   }
 
   private def getJarsForShell(conf: SparkConf): String = {
@@ -90,5 +91,5 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
 }
 
 object H2OInterpreter {
-  def classOutputDirectory = H2OIMain.classOutputDirectory
+  def classOutputDirectory: File = H2OIMain.classOutputDirectory
 }
