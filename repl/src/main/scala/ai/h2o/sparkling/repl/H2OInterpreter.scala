@@ -23,9 +23,9 @@ package ai.h2o.sparkling.repl
 
 import java.io.File
 import java.net.URI
-
 import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.io.Source
 import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.reflect._
 import scala.tools.nsc._
@@ -34,7 +34,7 @@ import scala.tools.nsc._
   * H2O Interpreter which is use to interpret scala code
   *
   * @param sparkContext spark context
-  * @param hc H2OContext
+  * @param hc           H2OContext
   * @param sessionId    session ID for interpreter
   */
 class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
@@ -51,7 +51,7 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
     // ( instead of using java class path right away)
     // This solves problem explained here: https://gist.github.com/harrah/404272
     val classLoader = classTag[H2OInterpreter].runtimeClass.getClassLoader
-    val isAppClassPathSet = isTheClassLoaderAppClassPathSet(classLoader, result)
+    val isAppClassPathSet = getClassLoaderAppClassPath(classLoader).isDefined
     if (isAppClassPathSet) result.embeddedDefaults(classLoader)
     val useJavaCpArg = if (!isAppClassPathSet) Some("-usejavacp") else None
 
@@ -71,12 +71,12 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
     result
   }
 
-  private def isTheClassLoaderAppClassPathSet(runtimeClassLoader: ClassLoader, inputSettings: Settings): Boolean = {
-    val methodGetClasspath =
-      inputSettings.getClass.getSuperclass.getDeclaredMethod("getClasspath", classOf[String], classOf[ClassLoader])
-    methodGetClasspath.setAccessible(true)
-    methodGetClasspath.invoke(inputSettings, "app", runtimeClassLoader).asInstanceOf[Option[String]].isDefined
-  }
+  private def getClassLoaderAppClassPath(runtimeClassLoader: ClassLoader): Option[String] =
+    for {
+      classLoader <- Option(runtimeClassLoader)
+      appClassPathResource <- Option(classLoader.getResource("app.class.path"))
+      appClassPath = Source.fromURL(appClassPathResource)
+    } yield appClassPath.mkString
 
   private def getJarsForShell(conf: SparkConf): String = {
     val localJars = conf.getOption("spark.repl.local.jars")
