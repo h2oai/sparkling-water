@@ -13,6 +13,13 @@ ScalaCompileOptions.metaClass.useCompileDaemon = false
 
 configurations {
     scalaCompilerPlugin
+    all {
+        resolutionStrategy {
+            force "org.scala-lang:scala-compiler:${scalaVersion}"
+            force "org.scala-lang:scala-library:${scalaVersion}"
+            force "org.scala-lang:scala-reflect:${scalaVersion}"
+        }
+    }
 }
 
 dependencies {
