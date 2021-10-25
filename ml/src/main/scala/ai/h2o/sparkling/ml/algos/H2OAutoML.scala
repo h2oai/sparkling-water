@@ -105,8 +105,9 @@ class H2OAutoML(override val uid: String)
     deleteRegisteredH2OFrames()
     getAllModels().headOption match {
       case Some(model) => model
-      case None => throw new RuntimeException(
-        "No model has been trained! Try to modify values of early stopping parameters and call them method again.")
+      case None =>
+        throw new RuntimeException(
+          "No model has been trained! Try to modify values of early stopping parameters and call the method again.")
     }
   }
 
