@@ -21,13 +21,12 @@
   */
 package ai.h2o.sparkling.repl
 
-import java.io.File
-import java.net.URI
 import org.apache.spark.{SparkConf, SparkContext}
 
+import java.io.File
+import java.net.URI
 import scala.io.Source
 import scala.language.{existentials, implicitConversions, postfixOps}
-import scala.reflect._
 import scala.tools.nsc._
 
 /**
@@ -44,27 +43,24 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
     H2OIMain.createInterpreter(sparkContext, settings, responseWriter, sessionId)
   }
 
-  override def createSettings(): Settings = {
+  override def createSettings(classLoader: ClassLoader): Settings = {
     val result = new Settings(echo)
 
     // Check if app.class.path resource on given classloader is set. In case it exists, set it as classpath
     // ( instead of using java class path right away)
     // This solves problem explained here: https://gist.github.com/harrah/404272
-    val classLoader = classTag[H2OInterpreter].runtimeClass.getClassLoader
-    val isAppClassPathSet = getClassLoaderAppClassPath(classLoader).isDefined
-    if (isAppClassPathSet) result.embeddedDefaults(classLoader)
-    val useJavaCpArg = if (!isAppClassPathSet) Some("-usejavacp") else None
-
-    val conf = sparkContext.getConf
-    val jars = getJarsForShell(conf)
+    val appClassPath = getClassLoaderAppClassPath(classLoader)
+    val useJavaCpArg = if (appClassPath.isEmpty) Some("-usejavacp") else None
+    val classPathArg =
+      appClassPath
+        .orElse(getReplLocalJars(sparkContext.getConf))
+        .map(classPathValue => List[String]("-classpath", classPathValue))
 
     val interpArguments = List(
       "-Yrepl-sync", // prevent each repl line from being run in a new thread
       "-Yrepl-class-based", // ensure that lines in REPL are wrapped in the classes instead of objects
       "-Yrepl-outdir",
-      s"${H2OInterpreter.classOutputDirectory.getAbsolutePath}",
-      "-classpath",
-      jars) ++ useJavaCpArg
+      s"${H2OInterpreter.classOutputDirectory.getAbsolutePath}") ++ useJavaCpArg ++ classPathArg.getOrElse(List.empty)
 
     result.processArguments(interpArguments, processAll = true)
 
@@ -78,15 +74,13 @@ class H2OInterpreter(sparkContext: SparkContext, hc: Any, sessionId: Int)
       appClassPath = Source.fromURL(appClassPathResource)
     } yield appClassPath.mkString
 
-  private def getJarsForShell(conf: SparkConf): String = {
+  private def getReplLocalJars(conf: SparkConf): Option[String] = {
     val localJars = conf.getOption("spark.repl.local.jars")
-    val jarPaths = localJars.getOrElse("").split(",")
-    jarPaths
-      .map { path =>
-        // Remove file:///, file:// or file:/ scheme if exists for each jar
-        if (path.startsWith("file:")) new File(new URI(path)).getPath else path
-      }
-      .mkString(File.pathSeparator)
+    val jarPaths = localJars.map(_.split(",").toSeq)
+    jarPaths.map(_.map { path =>
+      // Remove file:///, file:// or file:/ scheme if exists for each jar
+      if (path.startsWith("file:")) new File(new URI(path)).getPath else path
+    }.mkString(File.pathSeparator))
   }
 }
 
