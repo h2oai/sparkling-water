@@ -107,7 +107,7 @@ class H2OAutoML(override val uid: String)
       case Some(model) => model
       case None =>
         throw new RuntimeException(
-          "No model has been trained! Try to modify values of early stopping parameters and call the method again.")
+          "No model has been trained! Try to increase the value of the maxRuntimeSecs parameter and call the method again.")
     }
   }
 
