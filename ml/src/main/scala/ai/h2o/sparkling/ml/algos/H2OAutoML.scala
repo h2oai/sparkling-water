@@ -103,7 +103,12 @@ class H2OAutoML(override val uid: String)
     }
 
     deleteRegisteredH2OFrames()
-    getAllModels()(0)
+    getAllModels().headOption match {
+      case Some(model) => model
+      case None =>
+        throw new RuntimeException(
+          "No model has been trained! Try to increase the value of the maxRuntimeSecs parameter and call the method again.")
+    }
   }
 
   private def determineIncludedAlgos(): Array[String] = {
