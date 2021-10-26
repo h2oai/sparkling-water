@@ -162,7 +162,9 @@ class H2OGridSearch(override val uid: String)
     }
     val unsortedGridModels = getGridModels(gridId, algoName)
     if (unsortedGridModels.isEmpty) {
-      throw new IllegalArgumentException("No model returned.")
+      throw new RuntimeException(
+        "No model has been trained! Review the defined hyper-parameter space or try to increase " +
+          "the value of the maxRuntimeSecs parameter and call the method again.")
     }
     val sortedGridModels = sortGridModels(algoName, unsortedGridModels)
     gridModels = sortedGridModels.map(_._2)
