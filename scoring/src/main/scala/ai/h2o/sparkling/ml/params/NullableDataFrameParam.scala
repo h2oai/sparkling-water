@@ -17,38 +17,30 @@
 
 package ai.h2o.sparkling.ml.params
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.ByteArrayInputStream
 import java.util.Base64
 
 import ai.h2o.sparkling.utils.ScalaUtils.withResource
-import ai.h2o.sparkling.utils.{CompatibilityObjectInputStream, SparkSessionUtils}
-import org.apache.spark.ml.param.{Param, Params}
-import org.apache.spark.sql.catalyst.expressions.GenericRow
+import ai.h2o.sparkling.utils.{CompatibilityObjectInputStream, DataFrameSerializer, SparkSessionUtils}
+import org.apache.spark.ml.param.Param
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row}
-import org.json4s.JsonAST.{JNull, JString}
+import org.json4s.JsonAST.{JField, JNull, JObject, JString, JValue}
 import org.json4s.jackson.JsonMethods.{compact, parse, render}
 
-class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid: DataFrame => Boolean)
+class NullableDataFrameParam(parent: H2OBaseMOJOParams, name: String, doc: String, isValid: DataFrame => Boolean)
   extends Param[DataFrame](parent, name, doc, isValid) {
 
-  def this(parent: Params, name: String, doc: String) = this(parent, name, doc, (_: DataFrame) => true)
+  def this(parent: H2OBaseMOJOParams, name: String, doc: String) = this(parent, name, doc, (_: DataFrame) => true)
 
   override def jsonEncode(dataFrame: DataFrame): String = {
     val ast = if (dataFrame == null) {
       JNull
     } else {
-      withResource(new ByteArrayOutputStream()) { byteStream =>
-        withResource(new ObjectOutputStream(byteStream)) { objectStream =>
-          objectStream.writeObject(dataFrame.schema)
-          val rowsWithoutSchema = dataFrame.collect().map(row => new GenericRow(row.toSeq.toArray))
-          val rowsAsList = java.util.Arrays.asList(rowsWithoutSchema: _*)
-          objectStream.writeObject(rowsAsList)
-          objectStream.flush()
-          val serialized = byteStream.toByteArray
-          JString(Base64.getEncoder().encodeToString(serialized))
-        }
-      }
+      val serializerClassName = parent.getDataFrameSerializer()
+      val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+      val serializedValue = serializer.serialize(dataFrame)
+      JObject(JField("serializer", JString(serializerClassName)), JField("value", serializedValue))
     }
     compact(render(ast))
   }
@@ -57,6 +49,12 @@ class NullableDataFrameParam(parent: Params, name: String, doc: String, isValid:
     parse(json) match {
       case JNull =>
         null
+      case JObject(fields) =>
+        val fieldsMap = fields.toMap[String, JValue]
+        val serializerClassName = fieldsMap("serializer").asInstanceOf[JString].values
+        val serializer = Class.forName(serializerClassName).newInstance().asInstanceOf[DataFrameSerializer]
+        val serializedValue = fieldsMap("value").values
+        serializer.deserialize(serializedValue)
       case JString(data) =>
         val bytes = Base64.getDecoder().decode(data)
         withResource(new ByteArrayInputStream(bytes)) { byteStream =>
