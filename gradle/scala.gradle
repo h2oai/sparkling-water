@@ -15,13 +15,16 @@ configurations {
     scalaCompilerPlugin
 }
 
-configurations.findAll {it.name != "scalaCompilerPlugin"}.each {
-        it.resolutionStrategy {
-            force "org.scala-lang:scala-compiler:${scalaVersion}"
-            force "org.scala-lang:scala-library:${scalaVersion}"
-            force "org.scala-lang:scala-reflect:${scalaVersion}"
+//forcing the scala version but not messing with the incremental compiler because it will not accept it
+configurations
+        .findAll { conf -> !conf.name.contains("scalaCompilerPlugin") && conf.name != "zinc" }
+        .each {conf ->
+            conf.resolutionStrategy {
+                force "org.scala-lang:scala-compiler:${scalaVersion}"
+                force "org.scala-lang:scala-library:${scalaVersion}"
+                force "org.scala-lang:scala-reflect:${scalaVersion}"
+            }
         }
-}
 
 dependencies {
     scalaCompilerPlugin "org.scalamacros:paradise_${scalaVersion}:2.1.1"
