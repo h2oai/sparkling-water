@@ -32,9 +32,9 @@ class JSONDataFrameSerializer extends DataFrameSerializer {
   }
 
   def deserialize(input: JValue): DataFrame = {
-    val objMap = input.asInstanceOf[JObject].values
-    val schema = DataTypeExtensions.jsonToDateType(objMap("schema").asInstanceOf[JValue]).asInstanceOf[StructType]
-    val rows = objMap("schema").asInstanceOf[JArray].arr.map(JSONRowConverter.jsonValueToRow(_, schema)).asJava
+    val objMap = input.asInstanceOf[JObject].obj.toMap
+    val schema = DataTypeExtensions.jsonToDateType(objMap("schema")).asInstanceOf[StructType]
+    val rows = objMap("rows").asInstanceOf[JArray].arr.map(JSONRowConverter.jsonValueToRow(_, schema)).asJava
     SparkSessionUtils.active.createDataFrame(rows, schema)
   }
 }

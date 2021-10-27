@@ -247,17 +247,26 @@ abstract class H2OMOJOModel
     set(this.convertInvalidNumbersToNa -> settings.convertInvalidNumbersToNa)
     set(this.modelDetails -> getModelDetails(modelJson))
     set(this.trainingMetrics -> extractMetrics(outputJson, "training_metrics"))
-    set(
-      this.trainingMetricsObject ->
-        extractMetricsObject(outputJson, "training_metrics", mojoModel._algoName, modelCategory))
+    set(this.trainingMetricsObject ->
+      extractMetricsObject(outputJson, "training_metrics", mojoModel._algoName, modelCategory, getDataFrameSerializer))
     set(this.validationMetrics -> extractMetrics(outputJson, "validation_metrics"))
     set(
       this.validationMetricsObject ->
-        extractMetricsObject(outputJson, "validation_metrics", mojoModel._algoName, modelCategory))
+        extractMetricsObject(
+          outputJson,
+          "validation_metrics",
+          mojoModel._algoName,
+          modelCategory,
+          getDataFrameSerializer))
     set(this.crossValidationMetrics -> extractMetrics(outputJson, "cross_validation_metrics"))
     set(
       this.crossValidationMetricsObject ->
-        extractMetricsObject(outputJson, "cross_validation_metrics", mojoModel._algoName, modelCategory))
+        extractMetricsObject(
+          outputJson,
+          "cross_validation_metrics",
+          mojoModel._algoName,
+          modelCategory,
+          getDataFrameSerializer))
     set(this.crossValidationMetricsSummary -> extractCrossValidationMetricsSummary(modelJson))
     set(this.trainingParams -> extractParams(modelJson))
     set(this.modelCategory -> modelCategory.toString)
@@ -342,13 +351,14 @@ trait H2OMOJOModelUtils extends Logging {
       json: JsonObject,
       metricType: String,
       algoName: String,
-      modelCategory: H2OModelCategory.Value): H2OMetrics = {
+      modelCategory: H2OModelCategory.Value,
+      dataFrameSerializerGetter: () => String): H2OMetrics = {
     val groupJson = json.get(metricType)
     if (groupJson.isJsonNull) {
       null
     } else {
       val metricGroup = groupJson.getAsJsonObject()
-      H2OMetrics.loadMetrics(metricGroup, metricType, algoName, modelCategory)
+      H2OMetrics.loadMetrics(metricGroup, metricType, algoName, modelCategory, dataFrameSerializerGetter)
     }
   }
 

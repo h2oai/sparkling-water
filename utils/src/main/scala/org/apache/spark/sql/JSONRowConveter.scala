@@ -21,12 +21,11 @@ import java.sql.{Date, Timestamp}
 import java.time.{Instant, LocalDate}
 import java.util.Base64
 
-import org.apache.spark.sql.catalyst.CatalystTypeConverters
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.catalyst.util.{DateFormatter, DateTimeUtils, TimestampFormatter}
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
-import org.json4s.JsonAST.{JArray, JBool, JDecimal, JDouble, JField, JLong, JNull, JObject, JString, JValue}
+import org.json4s.JsonAST.{JArray, JBool, JDecimal, JDouble, JField, JInt, JLong, JNull, JObject, JString, JValue}
 
 import scala.collection.mutable
 
@@ -71,9 +70,6 @@ object JSONRowConverter {
           new JObject("key" -> valueToJson(k, keyType) :: "value" -> valueToJson(v, valueType) :: Nil)
       }.toList)
     case (r: Row, s: StructType) => rowToJsonValue(r, s)
-    case (v: Any, udt: UserDefinedType[Any @unchecked]) =>
-      val dataType = udt.sqlType
-      valueToJson(CatalystTypeConverters.convertToScala(udt.serialize(v), dataType), dataType)
     case _ =>
       throw new IllegalArgumentException(
         s"Failed to convert value $value " +
@@ -83,33 +79,38 @@ object JSONRowConverter {
   private def jsonToValue(value: Any, dataType: DataType): Any = (value, dataType) match {
     case (JNull, _) => null
     case (JBool(b), _) => b
+    case (JInt(b), ByteType) => b.toByte
     case (JLong(b), ByteType) => b.toByte
+    case (JInt(s), ShortType) => s.toShort
     case (JLong(s), ShortType) => s.toShort
+    case (JInt(i), IntegerType) => i.toInt
     case (JLong(i), IntegerType) => i.toInt
+    case (JInt(l), LongType) => l.toLong
     case (JLong(l), LongType) => l
     case (JDouble(f), FloatType) => f.toFloat
+    case (JString("NaN"), FloatType) => Float.NaN
     case (JDouble(d), DoubleType) => d
+    case (JString("NaN"), DoubleType) => Double.NaN
     case (JDecimal(d), _) => d
     case (JString(s), StringType) => s
     case (JString(b), BinaryType) => Base64.getDecoder.decode(b)
-    case (JLong(d), DateType) => LocalDate.ofEpochDay(d)
-    case (JLong(i), TimestampType) => Instant.ofEpochMilli(i)
+    case (JInt(d), DateType) => Date.valueOf(LocalDate.ofEpochDay(d.toLong))
+    case (JLong(d), DateType) => Date.valueOf(LocalDate.ofEpochDay(d))
+    case (JInt(i), TimestampType) => Timestamp.from(Instant.ofEpochMilli(i.toLong))
+    case (JLong(i), TimestampType) => Timestamp.from(Instant.ofEpochMilli(i))
     case (JArray(a), ArrayType(elementType, _)) => a.map(jsonToValue(_, elementType)).toArray
-    case (o: JObject, MapType(StringType, valueType, _)) => o.values.mapValues(jsonToValue(_, valueType))
+    case (o: JObject, MapType(StringType, valueType, _)) => o.obj.toMap.mapValues(jsonToValue(_, valueType))
     case (JArray(a), MapType(keyType, valueType, _)) =>
       a.map {
         case o: JObject =>
-          val objMap = o.values
+          val objMap = o.obj.toMap
           jsonToValue(objMap("key"), keyType) -> jsonToValue(objMap("value"), valueType)
       }.toMap
     case (r: Row, s: StructType) => rowToJsonValue(r, s)
-    case (v: Any, udt: UserDefinedType[Any @unchecked]) =>
-      val dataType = udt.sqlType
-      udt.deserialize(CatalystTypeConverters.convertToCatalyst(jsonToValue(v, dataType)))
     case _ =>
       throw new IllegalArgumentException(
         s"Failed to convert value $value " +
-          s"(class of ${value.getClass}}) with the type of $dataType to JSON.")
+          s"(class of ${value.getClass}}) with the type of $dataType from JSON.")
   }
 
   def rowToJsonValue(row: Row, schema: StructType): JValue = {
@@ -125,7 +126,7 @@ object JSONRowConverter {
   }
 
   def jsonValueToRow(value: JValue, schema: StructType): Row = {
-    val fields = value.asInstanceOf[JObject].values
+    val fields = value.asInstanceOf[JObject].obj.toMap
     var i = 0
     val len = schema.length
     val values = new Array[Any](schema.length)

@@ -17,24 +17,18 @@
 
 package ai.h2o.sparkling.ml.params
 
-import ai.h2o.sparkling.H2OFrame
-import org.apache.spark.sql.DataFrame
+import ai.h2o.sparkling.ml.models.H2OMOJOSettings
+import org.apache.spark.ml.param.{Param, Params}
 
-trait HasUserY extends H2OAlgoParamsBase with HasDataFrameSerializer {
+trait HasDataFrameSerializer extends Params {
+  protected final val dataFrameSerializer = new Param[String](
+    this,
+    "dataFrameSerializer",
+    "A full name of a serializer used for serialization and deserialization of Spark DataFrames " +
+      "to a JSON value within NullableDataFrameParam.")
 
-  private val userY = new NullableDataFrameParam(this, "userY", "User-specified initial matrix Y.")
+  setDefault(dataFrameSerializer -> H2OMOJOSettings.default.dataFrameSerializer)
 
-  setDefault(userY -> null)
+  def getDataFrameSerializer(): String = $(dataFrameSerializer)
 
-  def getUserY(): DataFrame = $(userY)
-
-  def setUserY(value: DataFrame): this.type = set(userY, value)
-
-  private[sparkling] def getUserYParam(trainingFrame: H2OFrame): Map[String, Any] = {
-    Map("user_y" -> convertDataFrameToH2OFrameKey(getUserY()))
-  }
-
-  override private[sparkling] def getSWtoH2OParamNameMap(): Map[String, String] = {
-    super.getSWtoH2OParamNameMap() ++ Map("userY" -> "user_y")
-  }
 }
