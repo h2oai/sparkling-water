@@ -22,17 +22,12 @@ import java.time.{Instant, LocalDate}
 import java.util.Base64
 
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.catalyst.util.{DateFormatter, DateTimeUtils, TimestampFormatter}
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
-import org.json4s.JsonAST.{JArray, JBool, JDecimal, JDouble, JField, JInt, JLong, JNull, JObject, JString, JValue}
+import org.json4s.JsonAST.{JArray, JBool, JDecimal, JDouble, JField, JInt, JNull, JObject, JString, JValue}
 
 import scala.collection.mutable
 
 object JSONRowConverter {
-  lazy val zoneId = DateTimeUtils.getZoneId(SQLConf.get.sessionLocalTimeZone)
-  lazy val dateFormatter = DateFormatter.apply(zoneId)
-  lazy val timestampFormatter = TimestampFormatter(zoneId)
 
   private def iteratorToJsonArray(iterator: Iterator[_], elementType: DataType): JArray = {
     JArray(iterator.map(valueToJson(_, elementType)).toList)
@@ -41,10 +36,10 @@ object JSONRowConverter {
   private def valueToJson(value: Any, dataType: DataType): JValue = (value, dataType) match {
     case (null, _) => JNull
     case (b: Boolean, _) => JBool(b)
-    case (b: Byte, _) => JLong(b)
-    case (s: Short, _) => JLong(s)
-    case (i: Int, _) => JLong(i)
-    case (l: Long, _) => JLong(l)
+    case (b: Byte, _) => JInt(BigInt(b))
+    case (s: Short, _) => JInt(BigInt(s))
+    case (i: Int, _) => JInt(i)
+    case (l: Long, _) => JInt(l)
     case (f: Float, _) => JDouble(f)
     case (d: Double, _) => JDouble(d)
     case (d: BigDecimal, _) => JDecimal(d)
@@ -52,10 +47,10 @@ object JSONRowConverter {
     case (d: Decimal, _) => JDecimal(d.toBigDecimal)
     case (s: String, _) => JString(s)
     case (b: Array[Byte], BinaryType) => JString(Base64.getEncoder.encodeToString(b))
-    case (d: LocalDate, _) => JLong(d.toEpochDay)
-    case (d: Date, _) => JLong(d.toLocalDate.toEpochDay)
-    case (i: Instant, _) => JLong(i.toEpochMilli)
-    case (t: Timestamp, _) => JLong(t.toInstant.toEpochMilli)
+    case (d: LocalDate, _) => JInt(d.toEpochDay)
+    case (d: Date, _) => JInt(d.toLocalDate.toEpochDay)
+    case (i: Instant, _) => JInt(i.toEpochMilli)
+    case (t: Timestamp, _) => JInt(t.toInstant.toEpochMilli)
     case (a: Array[_], ArrayType(elementType, _)) =>
       iteratorToJsonArray(a.iterator, elementType)
     case (s: Seq[_], ArrayType(elementType, _)) =>
@@ -80,13 +75,9 @@ object JSONRowConverter {
     case (JNull, _) => null
     case (JBool(b), _) => b
     case (JInt(b), ByteType) => b.toByte
-    case (JLong(b), ByteType) => b.toByte
     case (JInt(s), ShortType) => s.toShort
-    case (JLong(s), ShortType) => s.toShort
     case (JInt(i), IntegerType) => i.toInt
-    case (JLong(i), IntegerType) => i.toInt
     case (JInt(l), LongType) => l.toLong
-    case (JLong(l), LongType) => l
     case (JDouble(f), FloatType) => f.toFloat
     case (JString(s), FloatType) => s.toFloat
     case (JDouble(d), DoubleType) => d
@@ -96,9 +87,7 @@ object JSONRowConverter {
     case (JString(s), StringType) => s
     case (JString(b), BinaryType) => Base64.getDecoder.decode(b)
     case (JInt(d), DateType) => Date.valueOf(LocalDate.ofEpochDay(d.toLong))
-    case (JLong(d), DateType) => Date.valueOf(LocalDate.ofEpochDay(d))
     case (JInt(i), TimestampType) => Timestamp.from(Instant.ofEpochMilli(i.toLong))
-    case (JLong(i), TimestampType) => Timestamp.from(Instant.ofEpochMilli(i))
     case (JArray(a), ArrayType(elementType, _)) => a.map(jsonToValue(_, elementType)).toArray
     case (o: JObject, MapType(StringType, valueType, _)) => o.obj.toMap.mapValues(jsonToValue(_, valueType))
     case (JArray(a), MapType(keyType, valueType, _)) =>
