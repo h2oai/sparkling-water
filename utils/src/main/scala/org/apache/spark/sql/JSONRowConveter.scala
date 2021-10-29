@@ -88,10 +88,11 @@ object JSONRowConverter {
     case (JInt(l), LongType) => l.toLong
     case (JLong(l), LongType) => l
     case (JDouble(f), FloatType) => f.toFloat
-    case (JString("NaN"), FloatType) => Float.NaN
+    case (JString(s), FloatType) => s.toFloat
     case (JDouble(d), DoubleType) => d
-    case (JString("NaN"), DoubleType) => Double.NaN
-    case (JDecimal(d), _) => d
+    case (JString(s), DoubleType) => s.toDouble
+    case (JDecimal(d), _: DecimalType) => d
+    case (JString(s), _: DecimalType) => BigDecimal(s)
     case (JString(s), StringType) => s
     case (JString(b), BinaryType) => Base64.getDecoder.decode(b)
     case (JInt(d), DateType) => Date.valueOf(LocalDate.ofEpochDay(d.toLong))
