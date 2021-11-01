@@ -70,7 +70,7 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val frame = dataset_heart
       .withColumn("w1", abs(col("year")))
       .withColumn("w2", abs(col("age")))
-    frame.show()
+
     testGridSearch(coxPH, hyperParams, frame)
   }
 
@@ -148,7 +148,6 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
       .csv(TestUtils.locate("smalldata/prostate/prostate_anomaly_validation.csv"))
 
     val isolationForest = new H2OIsolationForest()
-      .setValidationDataFrame(validationDataset)
       .setValidationLabelCol("isAnomaly")
     val hyperParams: mutable.HashMap[String, Array[AnyRef]] = mutable.HashMap()
     hyperParams += "ntrees" -> Array(10, 20, 30).map(_.asInstanceOf[AnyRef])
@@ -161,6 +160,10 @@ class H2OGridSearchTestSuite extends FunSuite with Matchers with SharedH2OTestCo
     val pipeline = new Pipeline().setStages(Array(stage))
     pipeline.write.overwrite().save(s"ml/build/grid_isolation_forest_pipeline")
     val loadedPipeline = Pipeline.load(s"ml/build/grid_isolation_forest_pipeline")
+
+    // Validation dataset is not serialized
+    loadedPipeline.getStages(0).asInstanceOf[H2OGridSearch].getAlgo().setValidationDataFrame(validationDataset)
+
     val model = loadedPipeline.fit(dataset)
 
     model.write.overwrite().save(s"ml/build/grid_isolation_forest_pipeline_model")
