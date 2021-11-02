@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import java.net.InetAddress
+
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, ReflectionUtils, SharedBackendUtils}
@@ -39,6 +41,17 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
       })
   }
 
+  private def resolveWorkerIPAddress(): String = {
+    val hostname = getHostname(SparkEnv.get)
+    translateHostnameToIp(hostname)
+  }
+
+  private[sparkling] def setSelfAddressToH2ONode(conf: H2OConf): Unit = {
+    if (conf.nodeNetworkMask.isEmpty) {
+      water.H2O.SELF_ADDRESS = InetAddress.getByName(resolveWorkerIPAddress())
+    }
+  }
+
   /**
     * Produce arguments for H2O node based on provided configuration and environment
     *
@@ -47,11 +60,7 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
     * @return array of H2O launcher command line arguments
     */
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
-    val ip = {
-      val hostname = getHostname(SparkEnv.get)
-      translateHostnameToIp(hostname)
-    }
-
+    val ip = resolveWorkerIPAddress()
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))

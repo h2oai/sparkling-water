@@ -151,6 +151,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
     initializeH2OKerberizedHiveSupport(conf)
+    setSelfAddressToH2ONode(conf)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
