@@ -92,9 +92,9 @@ object JSONRowConverter {
     case (o: JObject, MapType(StringType, valueType, _)) => o.obj.toMap.mapValues(jsonToValue(_, valueType))
     case (JArray(a), MapType(keyType, valueType, _)) =>
       a.map { v =>
-          val o = v.asInstanceOf[JObject]
-          val objMap = o.obj.toMap
-          jsonToValue(objMap("key"), keyType) -> jsonToValue(objMap("value"), valueType)
+        val o = v.asInstanceOf[JObject]
+        val objMap = o.obj.toMap
+        jsonToValue(objMap("key"), keyType) -> jsonToValue(objMap("value"), valueType)
       }.toMap
     case (r: Row, s: StructType) => rowToJsonValue(r, s)
     case _ =>
