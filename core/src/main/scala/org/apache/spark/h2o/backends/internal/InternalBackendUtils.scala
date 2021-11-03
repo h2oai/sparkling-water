@@ -41,14 +41,9 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
       })
   }
 
-  private def resolveWorkerIPAddress(): String = {
-    val hostname = getHostname(SparkEnv.get)
-    translateHostnameToIp(hostname)
-  }
-
-  private[sparkling] def setSelfAddressToH2ONode(conf: H2OConf): Unit = {
-    if (conf.nodeNetworkMask.isEmpty) {
-      water.H2O.SELF_ADDRESS = InetAddress.getByName(resolveWorkerIPAddress())
+  def setSelfAddressToH2ONode(h2oArgs: Seq[String]): Unit = {
+    for (Seq(first, second) <- h2oArgs.sliding(2) if first == "-ip") {
+      water.H2O.SELF_ADDRESS = InetAddress.getByName(second)
     }
   }
 
@@ -60,7 +55,11 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
     * @return array of H2O launcher command line arguments
     */
   def getH2OWorkerArgs(conf: H2OConf): Seq[String] = {
-    val ip = resolveWorkerIPAddress()
+    val ip = {
+      val hostname = getHostname(SparkEnv.get)
+      translateHostnameToIp(hostname)
+    }
+
     new ArgumentBuilder()
       .add(getH2OCommonArgs(conf))
       .add(getH2OSecurityArgs(conf))
