@@ -53,6 +53,9 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
   def spreadRddRetriesTimeout: Int =
     sparkConf.getInt(PROP_SPREADRDD_RETRIES_TIMEOUT._1, PROP_SPREADRDD_RETRIES_TIMEOUT._2)
 
+  def isDirectIpConfigurationEnabled: Boolean =
+    sparkConf.getBoolean(PROP_DIRECT_IP_CONFIGURATION._1, PROP_DIRECT_IP_CONFIGURATION._2)
+
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
 
@@ -78,6 +81,10 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
   }
 
   def setSpreadRddRetriesTimeout(timeout: Int): H2OConf = set(PROP_SPREADRDD_RETRIES_TIMEOUT._1, timeout.toString)
+
+  def setDirectIpConfigurationEnabled(): H2OConf = set(PROP_DIRECT_IP_CONFIGURATION._1, true)
+
+  def setDirectIpConfigurationDisabled(): H2OConf = set(PROP_DIRECT_IP_CONFIGURATION._1, false)
 }
 
 object InternalBackendConf {
@@ -145,4 +152,13 @@ object InternalBackendConf {
       |mechanism. That means that as long as the timeout hasn't expired, we keep
       |trying to discover new executors. This option might be useful in environments
       |where Spark executors might join the cloud with some delays.""".stripMargin)
+
+  val PROP_DIRECT_IP_CONFIGURATION: BooleanOption = (
+    "spark.ext.h2o.direct.configuration.ip",
+    true,
+    """setDirectIpConfigurationEnabled()
+      |setDirectIpConfigurationDisabled()""".stripMargin,
+    """If the property is disabled, Spark executor doesn't assign its IP address to H2O node directly. The IP address is
+      |suggested to H2O node and its bootstrap logic performs additional network interface availability checks before
+      |the IP is assigned to the node.""".stripMargin)
 }
