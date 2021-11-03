@@ -17,29 +17,26 @@
 
 package ai.h2o.sparkling.ml.models
 
-import org.apache.spark.expose.Logging
-import org.apache.spark.ml.param.ParamMap
+import ai.h2o.sparkling.ml.params.H2OWord2VecExtraParams
+import ai.h2o.sparkling.sql.functions.udf
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.types.StructType
 
-abstract class H2OFeatureMOJOModel
-  extends H2OMOJOModel
-  with H2OFeatureEstimatorBase
-  with SpecificMOJOParameters
-  with HasMojo
-  with H2OMOJOWritable
-  with H2OMOJOFlattenedInput
-  with Logging {
-  override def copy(extra: ParamMap): H2OFeatureMOJOModel = defaultCopy(extra)
+trait H2OWord2VecMOJOBase extends H2OFeatureMOJOModel with H2OWord2VecExtraParams {
 
-  override protected def outputColumnName: String = getClass.getSimpleName + "_temporary"
+  override protected def inputColumnNames: Array[String] = Array(getInputCol())
 
-  protected def mojoUDF: UserDefinedFunction
-
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val outputDF = applyPredictionUdf(dataset, _ => mojoUDF)
-    outputDF
-      .select("*", s"$outputColumnName.*")
-      .drop(outputColumnName)
+  protected override def mojoUDF: UserDefinedFunction = {
+    val schema = StructType(outputSchema)
+    val function = (r: Row) => {
+      val model = loadEasyPredictModelWrapper()
+      val pred = model.predictWord2Vec(RowConverter.toH2ORowData(r))
+      val output = pred.wordEmbeddings.values.toArray
+      new GenericRowWithSchema(Array[Any](output), schema)
+    }
+    udf(function, schema)
   }
+
 }

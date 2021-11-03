@@ -20,7 +20,8 @@ package ai.h2o.sparkling.api.generation.common
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters
 import hex.glrm.GLRMModel.GLRMParameters
 import hex.pca.PCAModel.PCAParameters
-import hex.schemas.{DeepLearningV3, GLRMV3, PCAV3}
+import hex.schemas.{DeepLearningV3, GLRMV3, PCAV3, Word2VecV3}
+import hex.word2vec.Word2VecModel.Word2VecParameters
 
 trait FeatureEstimatorConfigurations extends ConfigurationsBase {
 
@@ -35,10 +36,12 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       ExplicitField("user_x", "HasUserX", null),
       ExplicitField("user_y", "HasUserY", null),
       ExplicitField("loss_by_col_idx", "HasLossByColNames", null, Some("lossByColNames")))
+    val word2VecFields = Seq(ExplicitField("pre_trained", "HasPreTrained", null))
 
     type DLParamsV3 = DeepLearningV3.DeepLearningParametersV3
     type PCAParamsV3 = PCAV3.PCAParametersV3
     type GLRMParamsV3 = GLRMV3.GLRMParametersV3
+    type Word2VecParamsV3 = Word2VecV3.Word2VecParametersV3
 
     val explicitDefaultValues = Map[String, Any](
       "max_w2" -> 3.402823e38f,
@@ -61,6 +64,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "reconstructedCol" -> "GLRM__reconstructed",
       "withReconstructedCol" -> false,
       "maxScoringIterations" -> 100)
+    val word2VecDefaultValues = Map("inputCols" -> Array.empty[String], "outputCol" -> "Word2Vec__output")
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
@@ -72,7 +76,14 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
           noDeprecation,
           aeDefaultValues),
         ("H2OPCAParams", classOf[PCAParamsV3], classOf[PCAParameters], pcaFields, noDeprecation, pcaDefaultValues),
-        ("H2OGLRMParams", classOf[GLRMParamsV3], classOf[GLRMParameters], glrmFields, noDeprecation, glrmDefaultValues))
+        ("H2OGLRMParams", classOf[GLRMParamsV3], classOf[GLRMParameters], glrmFields, noDeprecation, glrmDefaultValues),
+        (
+          "Word2VecParamsV3",
+          classOf[Word2VecParamsV3],
+          classOf[Word2VecParameters],
+          word2VecFields,
+          noDeprecation,
+          word2VecDefaultValues))
 
     for ((
            entityName,
@@ -101,7 +112,8 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
     val algorithms = Seq[(String, Class[_], String, Option[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Some("H2OAutoEncoderMetrics")),
       ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Some("H2OPCAMetrics")),
-      ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Some("H2OGLRMMetrics")))
+      ("H2OGLRM", classOf[GLRMParameters], "H2OGLRMBase", Some("H2OGLRMMetrics")),
+      ("H2OWord2Vec", classOf[Word2VecParameters], "H2OWord2VecBase", Some("H2OCommonMetrics")))
 
     for ((entityName, h2oParametersClass: Class[_], algorithmType, metricsClass) <- algorithms)
       yield AlgorithmSubstitutionContext(
