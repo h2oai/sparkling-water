@@ -321,6 +321,8 @@ We can configure the output and format of predictions via the H2OMOJOSettings. T
   has finished. By default, it is disabled.
 - ``withStageResults`` - When enabled, a user can obtain the stage results for tree-based models. By default,
   it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
+- ``dataFrameSerializer`` - A full name of a serializer used for serialization and deserialization of Spark DataFrames
+  to a JSON value within ``NullableDataFrameParam``.
 
 Methods available on MOJO Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
