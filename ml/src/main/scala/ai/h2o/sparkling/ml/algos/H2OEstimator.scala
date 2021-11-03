@@ -63,7 +63,8 @@ abstract class H2OEstimator[P <: Model.Parameters: ClassTag]
   protected def createMOJOSettings(): H2OMOJOSettings = {
     H2OMOJOSettings(
       convertUnknownCategoricalLevelsToNa = this.getConvertUnknownCategoricalLevelsToNa(),
-      convertInvalidNumbersToNa = this.getConvertInvalidNumbersToNa())
+      convertInvalidNumbersToNa = this.getConvertInvalidNumbersToNa(),
+      dataFrameSerializer = this.dataFrameSerializer())
   }
 
   override def copy(extra: ParamMap): this.type = defaultCopy(extra)
