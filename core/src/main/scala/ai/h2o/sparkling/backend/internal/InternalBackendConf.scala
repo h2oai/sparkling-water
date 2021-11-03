@@ -56,6 +56,10 @@ trait InternalBackendConf extends SharedBackendConf with InternalBackendConfExte
   /** Setters */
   def setNumH2OWorkers(numWorkers: Int): H2OConf = set(PROP_CLUSTER_SIZE._1, numWorkers.toString)
 
+  def setExtraClusterNodesEnabled(): H2OConf = set(PROP_EXTRA_CLUSTER_NODES._1, true)
+
+  def setExtraClusterNodesDisabled(): H2OConf = set(PROP_EXTRA_CLUSTER_NODES._1, false)
+
   def setDrddMulFactor(factor: Int): H2OConf = set(PROP_DUMMY_RDD_MUL_FACTOR._1, factor.toString)
 
   def setNumRddRetries(retries: Int): H2OConf = set(PROP_SPREADRDD_RETRIES._1, retries.toString)
