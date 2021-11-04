@@ -35,19 +35,19 @@ def test_h2o_mojo_pipeline_predictions(prostateDataset):
 
     normalSelection = preds.select("prediction.preds").take(5)
 
-    assert normalSelection[0][0][0] == 65.36320409515132
-    assert normalSelection[1][0][0] == 64.96902128114817
-    assert normalSelection[2][0][0] == 64.96721023747583
-    assert normalSelection[3][0][0] == 65.78772654671035
-    assert normalSelection[4][0][0] == 66.11327967814829
+    assert normalSelection[0][0][0] == 65.36339431549945
+    assert normalSelection[1][0][0] == 64.98931238070139
+    assert normalSelection[2][0][0] == 64.95047899851251
+    assert normalSelection[3][0][0] == 65.78738866816514
+    assert normalSelection[4][0][0] == 66.11292243968764
 
     udfSelection = preds.select(mojo.selectPredictionUDF("AGE")).take(5)
 
-    assert udfSelection[0][0] == 65.36320409515132
-    assert udfSelection[1][0] == 64.96902128114817
-    assert udfSelection[2][0] == 64.96721023747583
-    assert udfSelection[3][0] == 65.78772654671035
-    assert udfSelection[4][0] == 66.11327967814829
+    assert udfSelection[0][0] == 65.36339431549945
+    assert udfSelection[1][0] == 64.98931238070139
+    assert udfSelection[2][0] == 64.95047899851251
+    assert udfSelection[3][0] == 65.78738866816514
+    assert udfSelection[4][0] == 66.11292243968764
 
 
 def test_h2o_mojo_pipeline_predictions_with_named_cols(prostateDataset):
@@ -57,11 +57,11 @@ def test_h2o_mojo_pipeline_predictions_with_named_cols(prostateDataset):
 
     preds = mojo.transform(prostateDataset).repartition(1).select(mojo.selectPredictionUDF("AGE")).take(5)
 
-    assert preds[0][0] == 65.36320409515132
-    assert preds[1][0] == 64.96902128114817
-    assert preds[2][0] == 64.96721023747583
-    assert preds[3][0] == 65.78772654671035
-    assert preds[4][0] == 66.11327967814829
+    assert preds[0][0] == 65.36339431549945
+    assert preds[1][0] == 64.98931238070139
+    assert preds[2][0] == 64.95047899851251
+    assert preds[3][0] == 65.78738866816514
+    assert preds[4][0] == 66.11292243968764
 
 
 def test_feature_types_on_h2o_mojo_pipeline():
@@ -99,11 +99,11 @@ def test_mojo_dai_pipeline_serialize(prostateDataset):
 
     preds = loadedModel.transform(prostateDataset).repartition(1).select(mojo.selectPredictionUDF("AGE")).take(5)
 
-    assert preds[0][0] == 65.36320409515132
-    assert preds[1][0] == 64.96902128114817
-    assert preds[2][0] == 64.96721023747583
-    assert preds[3][0] == 65.78772654671035
-    assert preds[4][0] == 66.11327967814829
+    assert preds[0][0] == 65.36339431549945
+    assert preds[1][0] == 64.98931238070139
+    assert preds[2][0] == 64.95047899851251
+    assert preds[3][0] == 65.78738866816514
+    assert preds[4][0] == 66.11292243968764
 
 
 def testMojoPipelineProtoBackendWithoutError(spark):
