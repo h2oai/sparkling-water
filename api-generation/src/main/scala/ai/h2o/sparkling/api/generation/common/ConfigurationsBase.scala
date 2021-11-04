@@ -26,7 +26,8 @@ trait ConfigurationsBase {
     "validationDataFrame" -> null,
     "splitRatio" -> 1.0,
     "columnsToCategorical" -> Array.empty[String],
-    "keepBinaryModels" -> false)
+    "keepBinaryModels" -> false,
+    "dataFrameSerializer" -> "ai.h2o.sparkling.utils.JSONDataFrameSerializer")
 
   def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = Seq.empty
 

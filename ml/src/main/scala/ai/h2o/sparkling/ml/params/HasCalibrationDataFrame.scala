@@ -20,7 +20,8 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
 
-trait HasCalibrationDataFrame extends H2OAlgoParamsBase {
+trait HasCalibrationDataFrame extends H2OAlgoParamsBase with HasDataFrameSerializer {
+
   private val calibrationDataFrame = new NullableDataFrameParam(
     this,
     "calibrationDataFrame",

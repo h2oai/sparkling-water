@@ -27,7 +27,7 @@ import scala.collection.JavaConverters._
   */
 trait H2OCommonParams extends H2OBaseMOJOParams {
 
-  protected final val validationDataFrame = new NullableDataFrameParam(
+  protected final val validationDataFrame = new NonSerializableNullableDataFrameParam(
     this,
     "validationDataFrame",
     "A data frame dedicated for a validation of the trained model. If the parameters is not set," +

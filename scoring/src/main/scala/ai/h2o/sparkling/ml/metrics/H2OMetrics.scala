@@ -19,13 +19,31 @@ package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.internals.H2OModelCategory
 import ai.h2o.sparkling.ml.models.H2OMOJOModelUtils
-import ai.h2o.sparkling.ml.params.ParameterConstructorMethods
+import ai.h2o.sparkling.ml.params.{HasDataFrameSerializer, NullableDataFrameParam, ParameterConstructorMethods}
 import com.google.gson.JsonObject
 import org.apache.spark.expose.Logging
 
-trait H2OMetrics extends ParameterConstructorMethods with H2OMOJOModelUtils with Logging {
+trait H2OMetrics extends ParameterConstructorMethods with H2OMOJOModelUtils with Logging with HasDataFrameSerializer {
+
+  @transient private var dataFrameSerializerGetter: () => String = null
+
+  protected def setDataFrameSerializerGetter(getterMethod: () => String): Unit = {
+    dataFrameSerializerGetter = getterMethod
+  }
+
+  override def getDataFrameSerializer(): String = {
+    if (dataFrameSerializerGetter != null) {
+      dataFrameSerializerGetter()
+    } else {
+      super.getDataFrameSerializer()
+    }
+  }
 
   def setMetrics(json: JsonObject, context: String): Unit = {}
+
+  protected def nullableDataFrameParam(name: String, doc: String): NullableDataFrameParam = {
+    new NullableDataFrameParam(this, name, doc)
+  }
 }
 
 object H2OMetrics {
@@ -33,7 +51,8 @@ object H2OMetrics {
       json: JsonObject,
       metricsType: String,
       algoName: String,
-      modelCategory: H2OModelCategory.Value): H2OMetrics = {
+      modelCategory: H2OModelCategory.Value,
+      dataFrameSerializerGetter: () => String): H2OMetrics = {
 
     val metricsObject = modelCategory match {
       case H2OModelCategory.Binomial if algoName == "glm" => new H2OBinomialGLMMetrics()
@@ -53,6 +72,7 @@ object H2OMetrics {
       case _ => new H2OCommonMetrics()
     }
     metricsObject.setMetrics(json, s"${algoName}.mojo_details.output.${metricsType}")
+    metricsObject.setDataFrameSerializerGetter(dataFrameSerializerGetter)
     metricsObject
   }
 }
