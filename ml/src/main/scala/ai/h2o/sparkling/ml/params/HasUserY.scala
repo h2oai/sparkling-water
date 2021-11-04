@@ -20,7 +20,8 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.sql.DataFrame
 
-trait HasUserY extends H2OAlgoParamsBase {
+trait HasUserY extends H2OAlgoParamsBase with HasDataFrameSerializer {
+
   private val userY = new NullableDataFrameParam(this, "userY", "User-specified initial matrix Y.")
 
   setDefault(userY -> null)

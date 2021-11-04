@@ -21,7 +21,8 @@ import ai.h2o.sparkling.H2OFrame
 import org.apache.spark.expose.Logging
 import org.apache.spark.sql.DataFrame
 
-trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging {
+trait HasLeaderboardDataFrame extends H2OAlgoParamsBase with Logging with HasDataFrameSerializer {
+
   val uid: String
 
   private val leaderboardDataFrame = new NullableDataFrameParam(

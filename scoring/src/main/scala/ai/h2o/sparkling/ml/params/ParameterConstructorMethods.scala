@@ -91,8 +91,4 @@ trait ParameterConstructorMethods extends Params {
   protected def nullableStringArrayArrayParam(name: String, doc: String): NullableStringArrayArrayParam = {
     new NullableStringArrayArrayParam(this, name, doc)
   }
-
-  protected def nullableDataFrameParam(name: String, doc: String): NullableDataFrameParam = {
-    new NullableDataFrameParam(this, name, doc)
-  }
 }

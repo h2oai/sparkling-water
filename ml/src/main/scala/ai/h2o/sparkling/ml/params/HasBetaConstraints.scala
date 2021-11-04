@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.{H2OContext, H2OFrame}
 import org.apache.spark.sql.DataFrame
 
-trait HasBetaConstraints extends H2OAlgoParamsBase {
+trait HasBetaConstraints extends H2OAlgoParamsBase with HasDataFrameSerializer {
   private val betaConstraints = new NullableDataFrameParam(
     this,
     "betaConstraints",

@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.params
 import ai.h2o.sparkling.ml.models.H2OMOJOSettings
 import org.apache.spark.ml.param._
 
-trait H2OBaseMOJOParams extends Params {
+trait H2OBaseMOJOParams extends Params with HasDataFrameSerializer {
 
   protected final val convertUnknownCategoricalLevelsToNa = new BooleanParam(
     this,
@@ -34,9 +34,12 @@ trait H2OBaseMOJOParams extends Params {
 
   setDefault(
     convertUnknownCategoricalLevelsToNa -> H2OMOJOSettings.default.convertUnknownCategoricalLevelsToNa,
-    convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa)
+    convertInvalidNumbersToNa -> H2OMOJOSettings.default.convertInvalidNumbersToNa,
+    dataFrameSerializer -> H2OMOJOSettings.default.dataFrameSerializer)
 
   def getConvertUnknownCategoricalLevelsToNa(): Boolean = $(convertUnknownCategoricalLevelsToNa)
 
   def getConvertInvalidNumbersToNa(): Boolean = $(convertInvalidNumbersToNa)
+
+  def setDataFrameSerializer(fullClassName: String): this.type = set(dataFrameSerializer, fullClassName)
 }
