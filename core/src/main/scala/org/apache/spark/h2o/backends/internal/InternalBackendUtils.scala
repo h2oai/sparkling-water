@@ -17,6 +17,8 @@
 
 package org.apache.spark.h2o.backends.internal
 
+import java.net.InetAddress
+
 import ai.h2o.sparkling.H2OConf
 import ai.h2o.sparkling.backend.SharedBackendConf
 import ai.h2o.sparkling.backend.utils.{ArgumentBuilder, ReflectionUtils, SharedBackendUtils}
@@ -37,6 +39,12 @@ private[backends] trait InternalBackendUtils extends SharedBackendUtils {
           throw new IllegalArgumentException(s"Unsupported argument: $opt")
         }
       })
+  }
+
+  def setSelfAddressToH2ONode(h2oArgs: Seq[String]): Unit = {
+    for (Seq(first, second) <- h2oArgs.sliding(2) if first == "-ip") {
+      water.H2O.SELF_ADDRESS = InetAddress.getByName(second)
+    }
   }
 
   /**
