@@ -143,6 +143,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val args = getH2OWorkerAsClientArgs(conf)
     val launcherArgs = toH2OArgs(args)
     initializeH2OKerberizedHiveSupport(conf)
+    if (conf.isDirectIpConfigurationEnabled) setSelfAddressToH2ONode(launcherArgs)
     H2OStarter.start(launcherArgs, true)
     conf.set(ExternalBackendConf.PROP_EXTERNAL_CLUSTER_REPRESENTATIVE._1, H2O.getIpPortString)
   }
@@ -151,6 +152,7 @@ object InternalH2OBackend extends InternalBackendUtils {
     val args = getH2OWorkerArgs(conf)
     val launcherArgs = toH2OArgs(args)
     initializeH2OKerberizedHiveSupport(conf)
+    if (conf.isDirectIpConfigurationEnabled) setSelfAddressToH2ONode(launcherArgs)
     H2OStarter.start(launcherArgs, true)
     NodeDesc(SparkEnv.get.executorId, H2O.SELF_ADDRESS.getHostAddress, H2O.API_PORT)
   }
