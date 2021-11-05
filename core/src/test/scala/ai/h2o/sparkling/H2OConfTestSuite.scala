@@ -16,17 +16,22 @@
  */
 package ai.h2o.sparkling
 
+import java.lang.reflect.Modifier
+
+import ai.h2o.sparkling.backend.SharedBackendConf
+import ai.h2o.sparkling.backend.external.ExternalBackendConf
+import ai.h2o.sparkling.backend.internal.InternalBackendConf
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 
 /**
   * Test passing parameters via SparkConf.
   */
 @RunWith(classOf[JUnitRunner])
-class H2OConfTestSuite extends FunSuite with SparkTestContext {
+class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
 
   override def createSparkSession(): SparkSession = sparkSession("local[*]", createConf())
 
@@ -62,5 +67,50 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext {
       .set("spark.ext.h2o.nthreads", "7")
       .set("spark.ext.h2o.client.web.port", "13321")
       .set("spark.ext.h2o.dummy.rdd.mul.factor", "2")
+  }
+
+  private def testExistenceOfGettersAndSetters(
+      clazz: Class[_],
+      gettersAssignedToSameProperty: Seq[Set[String]] = Seq.empty): Int = {
+    val methods = clazz.getDeclaredMethods()
+    val (propertyMethods, otherMethods) = methods.partition(_.getName.startsWith("PROP"))
+    val (setterMethods, getterMethods) = otherMethods
+      .filter { method =>
+        val modifiers = method.getModifiers()
+        !Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)
+      }
+      .partition(m => m.getReturnType.getSimpleName == "H2OConf")
+
+    val numberOfProperties = propertyMethods.length
+    val gettersWithoutGroupItems = getterMethods.map(_.getName).diff(gettersAssignedToSameProperty.flatten)
+    val numberOfGetters = gettersWithoutGroupItems.length + gettersAssignedToSameProperty.length
+    val (booleanSetterMethods, otherSetterMethods) = setterMethods.partition(_.getParameterTypes().length == 0)
+    val numberOfSetters = booleanSetterMethods.length / 2 + otherSetterMethods.map(_.getName).distinct.length
+
+    booleanSetterMethods.length % 2 shouldEqual 0
+    getterMethods.length shouldEqual gettersWithoutGroupItems.length + gettersAssignedToSameProperty.flatten.length
+    numberOfProperties shouldEqual numberOfGetters
+    numberOfProperties shouldEqual numberOfSetters
+
+    numberOfProperties
+  }
+
+  test("Test parity between properties and getters/setters on InternalBackendConf") {
+    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[InternalBackendConf])
+    numberOfProperties shouldEqual 8
+  }
+
+  test("Test parity between properties and getters/setters on ExternalBackendConf") {
+    val getterGroups = Seq(
+      Set("h2oCluster", "h2oClusterHost", "h2oClusterPort"),
+      Set("isAutoClusterStartUsed", "isManualClusterStartUsed", "clusterStartMode"))
+    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[ExternalBackendConf], getterGroups)
+    numberOfProperties shouldEqual 30
+  }
+
+  test("Test parity between properties and getters/setters on SharedBackendConf") {
+    val getterGroups = Seq(Set("backendClusterMode", "runsInExternalClusterMode", "runsInInternalClusterMode"))
+    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[SharedBackendConf], getterGroups)
+    numberOfProperties shouldEqual 55
   }
 }
