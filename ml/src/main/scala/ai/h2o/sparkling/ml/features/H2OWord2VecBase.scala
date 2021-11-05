@@ -5,7 +5,8 @@ import ai.h2o.sparkling.ml.models.H2OWord2VecMOJOModel
 import ai.h2o.sparkling.ml.params.H2OWord2VecExtraParams
 import hex.Model
 import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.functions.{col, explode, size}
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions.{col, explode, size, udf}
 
 import scala.reflect.ClassTag
 
@@ -13,17 +14,20 @@ abstract class H2OWord2VecBase[P <: Model.Parameters: ClassTag]
   extends H2OFeatureEstimator[P]
   with H2OWord2VecExtraParams {
 
-  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] = {
-    super.getH2OAlgorithmParams(trainingFrame)
-  }
+  private val appendEmptyStringUdf: UserDefinedFunction = udf[Seq[String], Seq[String]](_ :+ "")
 
   override def fit(dataset: Dataset[_]): H2OWord2VecMOJOModel = {
     val inputCol: String = getInputCol()
     val ds = dataset
       .filter(col(inputCol).isNotNull)
       .filter(size(col(inputCol)) =!= 0)
+      .withColumn(inputCol, appendEmptyStringUdf(col(inputCol)))
       .withColumn(inputCol, explode(col(inputCol)))
       .select(inputCol)
+
+    if (ds.count() == 0) {
+      throw new IllegalArgumentException("Empty DataFrame as an input for the H2OWord2Vec is not supported.")
+    }
 
     val model = super.fit(ds).asInstanceOf[H2OWord2VecMOJOModel]
     copyExtraParams(model)
@@ -31,9 +35,12 @@ abstract class H2OWord2VecBase[P <: Model.Parameters: ClassTag]
     model
   }
 
-  private[sparkling] def getInputCols(): Array[String] = Array(getInputCol())
-
   override def getColumnsToString(): Array[String] = getInputCols()
+
+  override private[sparkling] def getH2OAlgorithmParams(trainingFrame: H2OFrame): Map[String, Any] =
+    super.getH2OAlgorithmParams(trainingFrame)
+
+  private[sparkling] def getInputCols(): Array[String] = Array(getInputCol())
 
   private[sparkling] def setInputCols(cols: Array[String]) = {
     require(cols.length == 1, "Word2Vec supports only one input column")

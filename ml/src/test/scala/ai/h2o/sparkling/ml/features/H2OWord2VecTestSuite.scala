@@ -39,6 +39,8 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     .csv(TestUtils.locate("smalldata/craigslistJobTitles.csv"))
 
   private lazy val Array(trainingDataset, testingDataset) = dataset.randomSplit(Array(0.9, 0.1), 42)
+  private val vectorSize = 101
+  private val outputColumnName = "Word2VecOutput"
 
   def getPipeline(): Pipeline = {
     val tokenizer = new RegexTokenizer()
@@ -51,6 +53,8 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
     val w2v = new H2OWord2Vec()
       .setSentSampleRate(0)
       .setEpochs(10)
+      .setVecSize(vectorSize)
+      .setOutputCol(outputColumnName)
       .setInputCol(stopWordsRemover.getOutputCol)
 
     val gbm = new H2OGBM()
@@ -75,8 +79,14 @@ class H2OWord2VecTestSuite extends FunSuite with Matchers with SharedH2OTestCont
   test("Basic Word2Vec") {
     val model = getPipeline().fit(trainingDataset)
     val result = model.transform(testingDataset)
-    import spark.implicits._
-    result.select("prediction").map(row => row.getString(0)).take(3)
+
+    result.count() shouldEqual testingDataset.count()
+    TestUtils.assertDataFramesAreIdentical(result.select("category"), testingDataset.select("category"))
+    result
+      .select(outputColumnName)
+      .collect()
+      .map(_.getAs[mutable.WrappedArray[Float]](0))
+      .foreach(_ should have size vectorSize)
   }
 
   test("Word2Vec on empty dataset") {

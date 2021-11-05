@@ -24,6 +24,8 @@ import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.mutable
+
 trait H2OWord2VecMOJOBase extends H2OFeatureMOJOModel with H2OWord2VecExtraParams {
 
   override protected def inputColumnNames: Array[String] = Array(getInputCol())
@@ -32,9 +34,15 @@ trait H2OWord2VecMOJOBase extends H2OFeatureMOJOModel with H2OWord2VecExtraParam
     val schema = StructType(outputSchema)
     val function = (r: Row) => {
       val model = loadEasyPredictModelWrapper()
-      val pred = model.predictWord2Vec(RowConverter.toH2ORowData(r))
-      val output = pred.wordEmbeddings.values.toArray
-      new GenericRowWithSchema(Array[Any](output), schema)
+      val colIdx = model.m.getColIdx(getInputCol())
+      val pred = if (r.isNullAt(colIdx)) {
+        null
+      } else {
+        model.predictWord2Vec(r.getSeq[String](colIdx).toArray)
+      }
+      val resultBuilder = mutable.ArrayBuffer[Any]()
+      resultBuilder += pred
+      new GenericRowWithSchema(resultBuilder.toArray, schema)
     }
     udf(function, schema)
   }

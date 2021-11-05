@@ -40,8 +40,8 @@ trait H2OWord2VecExtraParams extends H2OFeatureEstimatorBase with HasOutputCol w
   }
 
   override protected def outputSchema: Seq[StructField] = {
-    val outputType = ArrayType(ArrayType(FloatType))
-    val outputField = StructField(getOutputCol(), outputType, nullable = false)
+    val outputType = ArrayType(FloatType, containsNull = false)
+    val outputField = StructField(getOutputCol(), outputType, nullable = true)
     Seq(outputField)
   }
 
