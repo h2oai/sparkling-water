@@ -185,6 +185,7 @@ We can configure the output and format of predictions via the \texttt{H2OMOJOSet
     \item \texttt{withContributions} - Enables or disables computing Shapley values. Shapley values are generated as a sub-column for the detailed prediction column.
     \item \texttt{withLeafNodeAssignments} - When enabled, a user can obtain the leaf node assignments after the model training has finished. By default, it is disabled.
     \item \texttt{withStageResults} - When enabled, a user can obtain the stage results for tree-based models. By default, it is disabled and also it's not supported by XGBoost although it's a tree-based algorithm.
+    \item \texttt{dataFrameSerializer} - A full name of a serializer used for serialization and deserialization of Spark DataFrames to a JSON value within \texttt{NullableDataFrameParam}
 \end{itemize}
 
 \subsection{Methods available on MOJO Model}
