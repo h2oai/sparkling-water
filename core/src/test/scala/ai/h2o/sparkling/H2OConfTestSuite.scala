@@ -70,10 +70,14 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
   }
 
   private def testExistenceOfGettersAndSetters(
-      clazz: Class[_],
+      traitClass: Class[_],
+      objectClass: Class[_],
       gettersAssignedToSameProperty: Seq[Set[String]] = Seq.empty): Int = {
-    val methods = clazz.getDeclaredMethods()
-    val (propertyMethods, otherMethods) = methods.partition(_.getName.startsWith("PROP"))
+    val methods = traitClass.getDeclaredMethods()
+    val propertyMethods = objectClass.getDeclaredMethods().filter { method =>
+      method.getName.startsWith("PROP") && method.getReturnType.getSimpleName == "Tuple4"
+    }
+    val otherMethods = methods.filter(!_.getName.startsWith("PROP"))
     val (setterMethods, getterMethods) = otherMethods
       .filter { method =>
         val modifiers = method.getModifiers()
@@ -96,7 +100,8 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
   }
 
   test("Test parity between properties and getters/setters on InternalBackendConf") {
-    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[InternalBackendConf])
+    val numberOfProperties =
+      testExistenceOfGettersAndSetters(classOf[InternalBackendConf], InternalBackendConf.getClass)
     numberOfProperties shouldEqual 8
   }
 
@@ -104,13 +109,15 @@ class H2OConfTestSuite extends FunSuite with SparkTestContext with Matchers {
     val getterGroups = Seq(
       Set("h2oCluster", "h2oClusterHost", "h2oClusterPort"),
       Set("isAutoClusterStartUsed", "isManualClusterStartUsed", "clusterStartMode"))
-    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[ExternalBackendConf], getterGroups)
+    val numberOfProperties =
+      testExistenceOfGettersAndSetters(classOf[ExternalBackendConf], ExternalBackendConf.getClass, getterGroups)
     numberOfProperties shouldEqual 30
   }
 
   test("Test parity between properties and getters/setters on SharedBackendConf") {
     val getterGroups = Seq(Set("backendClusterMode", "runsInExternalClusterMode", "runsInInternalClusterMode"))
-    val numberOfProperties = testExistenceOfGettersAndSetters(classOf[SharedBackendConf], getterGroups)
+    val numberOfProperties =
+      testExistenceOfGettersAndSetters(classOf[SharedBackendConf], SharedBackendConf.getClass, getterGroups)
     numberOfProperties shouldEqual 55
   }
 }
