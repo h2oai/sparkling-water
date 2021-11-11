@@ -15,10 +15,20 @@ configurations {
     scalaCompilerPlugin
 }
 
+//forcing the scala version but not messing with the incremental compiler because it will not accept it
+configurations
+        .findAll { conf -> !conf.name.contains("scalaCompilerPlugin") && conf.name != "zinc" }
+        .each {conf ->
+            conf.resolutionStrategy {
+                force "org.scala-lang:scala-compiler:${scalaVersion}"
+                force "org.scala-lang:scala-library:${scalaVersion}"
+                force "org.scala-lang:scala-reflect:${scalaVersion}"
+            }
+        }
+
 dependencies {
     scalaCompilerPlugin "org.scalamacros:paradise_${scalaVersion}:2.1.1"
 }
-
 
 // Activate Zinc compiler and configure scalac
 tasks.withType(ScalaCompile) {
@@ -66,7 +76,7 @@ task scaladocJar(type: Jar, dependsOn: scaladoc) {
     from scaladoc
 }
 
-task javadocJar (type: Jar, dependsOn: scaladoc) {
+task javadocJar(type: Jar, dependsOn: scaladoc) {
     archiveClassifier = 'javadoc'
     from scaladoc
 }
