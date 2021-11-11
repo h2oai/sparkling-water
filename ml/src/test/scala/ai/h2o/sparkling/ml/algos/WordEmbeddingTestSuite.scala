@@ -32,25 +32,17 @@ class WordEmbeddingTestSuite extends FunSuite with Matchers with SharedH2OTestCo
 
   override protected lazy val dataset: DataFrame = {
     Seq(
-      "Lorem ipsum dolor sit amet, consectetuer adipiscing elit",
-      "Curabitur vitae diam non enim vestibulum interdum",
-      "Fusce suscipit libero eget elit",
-      "Nunc auctor").toDF("text")
+      Seq(
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit",
+        "Curabitur vitae diam non enim vestibulum interdum",
+        "Fusce suscipit libero eget elit",
+        "Nunc auctor")).toDF("Words")
   }
 
   override protected def mojoName: String = "word2vec.mojo"
 
-  private def predictionColType = {
-    ArrayType(FloatType, containsNull = false)
-  }
-
-  override protected def expectedDetailedPredictionCol: StructField = {
-    val wordEmbeddingsField = StructField("wordEmbeddings", predictionColType, nullable = true)
-    StructField("detailed_prediction", StructType(wordEmbeddingsField :: Nil), nullable = true)
-  }
-
   override protected def expectedPredictionCol: StructField = {
     val predictionColType = ArrayType(FloatType, containsNull = false)
-    StructField("prediction", predictionColType, nullable = true)
+    StructField("word2vec.mojo__output", predictionColType, nullable = true)
   }
 }

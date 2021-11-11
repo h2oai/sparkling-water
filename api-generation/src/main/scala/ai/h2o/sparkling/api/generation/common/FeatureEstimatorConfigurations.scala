@@ -64,7 +64,7 @@ trait FeatureEstimatorConfigurations extends ConfigurationsBase {
       "reconstructedCol" -> "GLRM__reconstructed",
       "withReconstructedCol" -> false,
       "maxScoringIterations" -> 100)
-    val word2VecDefaultValues = Map("inputCols" -> Array.empty[String], "outputCol" -> "Word2Vec__output")
+    val word2VecDefaultValues = Map("inputCol" -> null, "outputCol" -> "Word2Vec__output")
 
     val algorithmParameters =
       Seq[(String, Class[_], Class[_], Seq[ExplicitField], Seq[DeprecatedField], Map[String, Any])](
