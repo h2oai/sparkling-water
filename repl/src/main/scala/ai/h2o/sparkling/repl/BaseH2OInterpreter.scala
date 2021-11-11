@@ -29,6 +29,7 @@ import scala.Predef.{println => _}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.language.{existentials, implicitConversions, postfixOps}
+import scala.reflect.classTag
 import scala.tools.nsc._
 import scala.tools.nsc.interpreter.{Results => IR, _}
 
@@ -110,7 +111,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   }
 
   private def initializeInterpreter(): Unit = {
-    settings = createSettings()
+    settings = createSettings(classTag[BaseH2OInterpreter].runtimeClass.getClassLoader)
     intp = createInterpreter()
     val spark = SparkSessionUtils.active
     addThunk(intp.beQuietDuring {
@@ -142,7 +143,7 @@ private[repl] abstract class BaseH2OInterpreter(val sparkContext: SparkContext, 
   /**
     * Initialize the compiler settings
     */
-  protected def createSettings(): Settings
+  protected def createSettings(classLoader: ClassLoader): Settings
 
   /**
     * Run all thunks after the interpreter has been initialized and throw exception if anything went wrong
