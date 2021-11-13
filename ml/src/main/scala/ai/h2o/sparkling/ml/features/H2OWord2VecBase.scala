@@ -13,10 +13,8 @@ abstract class H2OWord2VecBase[P <: Model.Parameters: ClassTag]
   extends H2OFeatureEstimator[P]
   with H2OWord2VecExtraParams {
 
-  private val SentenceDelimiter = ""
-
   override def fit(dataset: Dataset[_]): H2OWord2VecMOJOModel = {
-    val appendSentenceDelimiter: UserDefinedFunction = udf[Seq[String], Seq[String]](_ :+ SentenceDelimiter)
+    val appendSentenceDelimiter: UserDefinedFunction = udf[Seq[String], Seq[String]](_ :+ "")
     val inputCol: String = getInputCol()
     val ds = dataset
       .filter(col(inputCol).isNotNull)
