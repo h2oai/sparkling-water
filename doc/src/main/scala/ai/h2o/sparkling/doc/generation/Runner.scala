@@ -98,6 +98,7 @@ object Runner {
       }
     } else {
       val metricClasses = getParamClasses("ai.h2o.sparkling.ml.metrics")
+        .filter(_.getSimpleName.endsWith("Metrics"))
       writeResultToFile(MetricsTocTreeTemplate(metricClasses), "metrics", destinationDir)
       for (metricClass <- metricClasses) {
         val content = MetricsTemplate(metricClass)

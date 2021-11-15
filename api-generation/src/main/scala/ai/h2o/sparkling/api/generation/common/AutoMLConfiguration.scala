@@ -52,7 +52,7 @@ class AutoMLConfiguration extends SingleAlgorithmConfiguration {
         null,
         "H2OSupervisedAlgorithmWithFoldColumn",
         Seq("H2OAutoMLExtras"),
-        false))
+        constructorMethods = false))
   }
 
   override def problemSpecificAlgorithmConfiguration: Seq[ProblemSpecificAlgorithmSubstitutionContext] = {

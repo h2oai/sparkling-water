@@ -115,6 +115,7 @@ class FeatureEstimatorConfigurations extends MultipleAlgorithmsConfiguration {
 
   override def algorithmConfiguration: Seq[AlgorithmSubstitutionContext] = {
 
+    def none = Seq.empty[String]
     val algorithms = Seq[(String, Class[_], String, Option[String])](
       ("H2OAutoEncoder", classOf[DeepLearningParameters], "H2OAutoEncoderBase", Some("H2OAutoEncoderMetrics")),
       ("H2OPCA", classOf[PCAParameters], "H2ODimReductionEstimator", Some("H2OPCAMetrics")),

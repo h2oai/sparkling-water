@@ -20,6 +20,7 @@ package ai.h2o.sparkling.ml.models
 import ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams
 import hex.ModelCategory
 import hex.genmodel.MojoModel
+import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.UserDefinedFunction
@@ -66,6 +67,15 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
       case _ =>
         flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
     }
+  }
+
+  override private[sparkling] def getActualValuesExtractor(): (RowData, EasyPredictModelWrapper) => Array[Double] = {
+    (rowData: RowData, wrapper: EasyPredictModelWrapper) =>
+      {
+        val responseColumn = wrapper.m._responseColumn
+        val encodedActualValue = wrapper.extractRawDataValue(rowData, responseColumn)
+        Array[Double](encodedActualValue)
+      }
   }
 }
 

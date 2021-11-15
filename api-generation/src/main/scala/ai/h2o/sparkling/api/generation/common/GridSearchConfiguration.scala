@@ -71,6 +71,6 @@ class GridSearchConfiguration extends SingleAlgorithmConfiguration {
         null,
         "H2OAlgorithm",
         Seq("H2OGridSearchExtras"),
-        false))
+        constructorMethods = false))
   }
 }

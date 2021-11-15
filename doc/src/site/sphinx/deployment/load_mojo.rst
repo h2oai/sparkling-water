@@ -362,8 +362,8 @@ Obtaining Scoring History
 The method ``getScoringHistory`` returns a data frame describing how the model evolved during the training process according to
 a certain training and validation metrics.
 
-Obtaining Metrics
-^^^^^^^^^^^^^^^^^
+Obtaining Pre-calculated Metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are two sets of methods to obtain metrics from the MOJO model.
 
@@ -388,6 +388,15 @@ the metrics could be also of a complex type. (see :ref:`metrics` for details)
 - ``getCrossValidationMetricsObject()`` - to obtain metrics combined from cross-validation holdouts
 
 There is also the  method ``getCurrentMetricsObject()`` working a similar way as ``getCurrentMetrics()``.
+
+Calculation of Metrics on Arbitrary Dataset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The below two methods calculate metrics on a provided dataset.
+
+- ``getMetrics(dataFrame)`` - Returns a map with basic metrics of double type
+
+- ``getMetricsObject(dataFrame)`` - Returns an object with basic and more complex metrics available via getter methods.
+  (see :ref:`metrics` for details)
 
 Obtaining Cross Validation Metrics Summary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

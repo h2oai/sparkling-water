@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-package ai.h2o.sparkling.api.generation.common
+package ai.h2o.sparkling.ml.metrics
 
-case class AlgorithmSubstitutionContext(
-    namespace: String,
-    entityName: String,
-    h2oSchemaClass: Class[_],
-    algorithmType: String,
-    extraInheritedEntities: Seq[String] = Seq.empty,
-    extraInheritedEntitiesOnMOJO: Seq[String] = Seq.empty,
-    constructorMethods: Boolean = true,
-    specificMetricsClass: Option[String] = None)
-  extends SubstitutionContextBase
+import ai.h2o.sparkling.ml.models.H2OGLRMMOJOModel
+import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+
+trait GLRMMetricCalculation {
+  self: H2OGLRMMOJOModel =>
+
+  private[sparkling] def getPredictionGetter(): (EasyPredictModelWrapper, RowData, Double) => Array[Double] = {
+    (wrapper: EasyPredictModelWrapper, rowData: RowData, offset: Double) =>
+      {
+        val vpa = wrapper.predictDimReduction(rowData)
+        vpa.reconstructed
+      }
+  }
+}

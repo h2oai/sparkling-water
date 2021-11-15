@@ -115,6 +115,34 @@ test_that("test model category", {
   expect_equal(category, "Binomial")
 })
 
+test_that("test metrics calculation", {
+  path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
+  dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
+  dataset <- dplyr::rename(dataset, capsule = CAPSULE)
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  metrics <- model$getMetrics(dataset)
+  expect_equal(as.character(metrics[["AUC"]]), "0.896878869021911")
+  expect_equal(length(metrics), 10)
+})
+
+test_that("test metrics object calculation", {
+  path <- paste0("file://", locate("smalldata/prostate/prostate.csv"))
+  dataset <- spark_read_csv(sc, path = path, infer_schema = TRUE, header = TRUE)
+  dataset <- dplyr::rename(dataset, capsule = CAPSULE)
+  model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
+  metrics <- model$getMetricsObject(dataset)
+  aucValue <- metrics$getAUC()
+  scoringTime <- metrics$getScoringTime()
+
+  thresholdsAndScores <- metrics$getThresholdsAndMetricScores()
+  thresholdsAndScoresFrame <- dplyr::tally(thresholdsAndScores)
+  thresholdsAndScoresCount <- as.double(dplyr::collect(thresholdsAndScoresFrame)[[1]])
+
+  expect_equal(as.character(aucValue), "0.896878869021911")
+  expect_true(scoringTime > 0)
+  expect_true(thresholdsAndScoresCount > 0)
+})
+
 test_that("test training metrics", {
   model <- H2OMOJOModel.createFromMojo(paste0("file://", normalizePath("../../../../../ml/src/test/resources/binom_model_prostate.mojo")))
   metrics <- model$getTrainingMetrics()

@@ -17,13 +17,18 @@
 
 package ai.h2o.sparkling.ml.metrics
 
+import ai.h2o.sparkling.ml.models.H2OMOJOModel
+import org.apache.spark.sql.DataFrame
 import org.scalatest.Matchers
 
 object MetricsAssertions extends Matchers {
-  def assertMetricsObjectAgainstMetricsMap(metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {
+  def assertMetricsObjectAgainstMetricsMap(
+      metricsObject: H2OMetrics,
+      metrics: Map[String, Double],
+      ignoredGetters: Set[String] = Set("getCustomMetricValue")): Unit = {
     for (getter <- metricsObject.getClass.getMethods
          if getter.getName.startsWith("get")
-         if getter.getName != "getCustomMetricValue"
+         if !ignoredGetters.contains("getCustomMetricValue")
          if getter.getParameterCount == 0
          if getter.getReturnType.isPrimitive) {
       val value = getter.invoke(metricsObject)
@@ -36,5 +41,58 @@ object MetricsAssertions extends Matchers {
         value shouldEqual metricValue
       }
     }
+  }
+
+  def assertEqual(
+      expected: Map[String, Double],
+      actual: Map[String, Double],
+      ignored: Set[String] = Set("ScoringTime"),
+      tolerance: Double = 0.0,
+      skipExtraMetrics: Boolean = false): Unit = {
+    val expectedKeys = expected.keySet
+    val actualKeys = actual.keySet
+
+    if (!skipExtraMetrics) {
+      expectedKeys shouldEqual actualKeys
+    }
+
+    for (key <- actualKeys.diff(ignored)) {
+      if (expected(key).isNaN && actual(key).isNaN) {
+        // Values are equal
+      } else if (tolerance > 0.0) {
+        expected(key) shouldBe (actual(key) +- tolerance)
+      } else {
+        expected(key) shouldBe actual(key)
+      }
+    }
+  }
+
+  def assertEssentialMetrics(
+      model: H2OMOJOModel,
+      trainingDataset: DataFrame,
+      validationDataset: DataFrame,
+      trainingMetricsTolerance: Double = 0.0,
+      validationMetricsTolerance: Double = 0.0,
+      skipExtraMetrics: Boolean = false): Unit = {
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(
+      expectedTrainingMetrics,
+      trainingMetrics,
+      tolerance = trainingMetricsTolerance,
+      skipExtraMetrics = skipExtraMetrics)
+    MetricsAssertions.assertEqual(
+      expectedValidationMetrics,
+      validationMetrics,
+      tolerance = validationMetricsTolerance,
+      skipExtraMetrics = skipExtraMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }

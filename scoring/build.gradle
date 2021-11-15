@@ -26,6 +26,11 @@ dependencies {
   api("ai.h2o:h2o-genmodel-ext-xgboost:${h2oVersion}")
   api(project(":sparkling-water-utils"))
 
+  // Required for model metrics calculation
+  implementation("ai.h2o:h2o-core:${h2oVersion}")
+  implementation("ai.h2o:h2o-algos:${h2oVersion}")
+  implementation(project(":sparkling-water-extensions"))
+
   compileOnly(project(':sparkling-water-api-generation'))
   compileOnly("ai.h2o:h2o-ext-xgboost:${h2oVersion}")
   compileOnly("org.apache.spark:spark-core_${scalaBaseVersion}:${sparkVersion}")
