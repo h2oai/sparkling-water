@@ -41,6 +41,7 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     // to do binomial classification
     .filter('class =!= "Iris-virginica")
 
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())
@@ -81,15 +82,25 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
 
   test("test calculation of binomial metric objects on arbitrary dataset") {
     val algo = new H2OGBM()
-      .setSplitRatio(0.8)
+      .setValidationDataFrame(validationDataset)
       .setSeed(1)
       .setFeaturesCols("sepal_len", "sepal_wid")
       .setColumnsToCategorical("class")
       .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
 
-    val model = algo.fit(dataset)
-    val metrics = model.getMetricsObject(dataset)
-    metrics shouldNot be (null)
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 
   test("test binomial glm metric objects") {
@@ -106,5 +117,28 @@ class BinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OTest
     model.write.overwrite().save("ml/build/glm_binomial_model_metrics")
     val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_binomial_model_metrics")
     assertMetrics[H2OBinomialGLMMetrics](loadedModel)
+  }
+
+  test("test calculation of binomial glm metric objects on arbitrary dataset") {
+    val algo = new H2OGLM()
+      .setValidationDataFrame(validationDataset)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }

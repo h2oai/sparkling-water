@@ -17,12 +17,10 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
