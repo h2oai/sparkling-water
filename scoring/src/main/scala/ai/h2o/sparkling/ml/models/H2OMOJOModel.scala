@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.models
 
-import java.io.{File, InputStream}
+import java.io.{BufferedReader, File, InputStream}
 import _root_.hex.genmodel.attributes.ModelJsonReader
 import _root_.hex.genmodel.easy.EasyPredictModelWrapper
 import _root_.hex.genmodel.{MojoModel, MojoReaderBackendFactory}
@@ -35,6 +35,7 @@ import _root_.hex.genmodel.attributes.Table.ColumnType
 import ai.h2o.sparkling.api.generation.common.MetricNameConverter
 import ai.h2o.sparkling.ml.metrics.H2OMetrics
 import org.apache.spark.SparkFiles
+import ai.h2o.sparkling.ml.metrics.{H2OMetrics, MetricCalculation}
 import org.apache.spark.expose.Logging
 import org.apache.spark.ml.Model
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
@@ -55,6 +56,7 @@ abstract class H2OMOJOModel
   with SpecificMOJOParameters
   with H2OBaseMOJOParams
   with HasFeatureTypesOnMOJO
+  with MetricCalculation
   with Logging {
 
   H2OMOJOCache.startCleanupThread()
@@ -233,6 +235,11 @@ abstract class H2OMOJOModel
   }
 
   private[sparkling] def getCrossValidationModelsAsArray(): Array[H2OMOJOModel] = crossValidationModels
+
+  private[sparkling] def getDetailsReader(): BufferedReader = {
+    val reader = MojoReaderBackendFactory.createReaderBackend(getMojo().getAbsolutePath)
+    reader.getTextFile(ModelJsonReader.MODEL_DETAILS_FILE)
+  }
 
   private[sparkling] def setCrossValidationModels(models: Array[H2OMOJOModel]): this.type = {
     crossValidationModels = models

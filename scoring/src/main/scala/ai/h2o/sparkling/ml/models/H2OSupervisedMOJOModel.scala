@@ -18,10 +18,18 @@
 package ai.h2o.sparkling.ml.models
 
 import ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams
-import hex.ModelCategory
+import hex.{Distribution, DistributionFactory, ModelCategory, MultinomialAucType}
+import hex.ModelMetrics.IndependentMetricBuilder
+import hex.ModelMetricsBinomial.GenericIndependentMetricBuilderBinomial
+import hex.ModelMetricsMultinomial.GenericIndependentMetricBuilderMultinomial
+import hex.ModelMetricsOrdinal.GenericIndependentMetricBuilderOrdinal
+import hex.ModelMetricsRegression.GenericIndependentMetricBuilderRegression
+import hex.generic.GenericModelParameters
 import hex.genmodel.MojoModel
+import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import hex.genmodel.utils.DistributionFamily
 import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{col, lit, struct}
 import org.apache.spark.sql.types.{DoubleType, StructType}
@@ -66,6 +74,56 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
       case _ =>
         flatDataFrame.withColumn(outputColumnName, udf(struct(args: _*)))
     }
+  }
+
+  override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
+    val distributionParam = getParam("distribution")
+    val distributionString = getOrDefault(distributionParam).toString
+    val distributionFamily = DistributionFamily.valueOf(distributionString)
+
+    val genericParameters = new GenericModelParameters()
+    genericParameters._distribution = distributionFamily
+
+    if (hasParam("huberAlpha")) {
+      val huberAlphaParam = getParam("huberAlpha")
+      genericParameters._huber_alpha = getOrDefault(huberAlphaParam).asInstanceOf[Double]
+    }
+    if (hasParam("quantileAlpha")) {
+      val quantileAlphaParam = getParam("quantileAlpha")
+      genericParameters._quantile_alpha = getOrDefault(quantileAlphaParam).asInstanceOf[Double]
+    }
+    if (hasParam("tweediePower")) {
+      val tweediePowerParam = getParam("tweediePower")
+      genericParameters._tweedie_power = getOrDefault(tweediePowerParam).asInstanceOf[Double]
+    }
+    if (hasParam("customDistributionFunc")) {
+      val customDistributionFuncParam = getParam("customDistributionFunc")
+      genericParameters._custom_distribution_func = getOrDefault(customDistributionFuncParam).asInstanceOf[String]
+    }
+    val distribution = DistributionFactory.getDistribution(genericParameters)
+
+    val responseColumn = wrapper.m._responseColumn
+    val numberOfClasses = wrapper.m.nclasses()
+    val responseDomain = wrapper.m.getDomainValues(responseColumn)
+    ModelCategory.valueOf(getModelCategory()) match {
+      case ModelCategory.Binomial => new GenericIndependentMetricBuilderBinomial(responseDomain, distributionFamily)
+      case ModelCategory.Multinomial =>
+        new GenericIndependentMetricBuilderMultinomial(numberOfClasses, responseDomain, MultinomialAucType.NONE) // TODO: AUC
+      case ModelCategory.Regression => new GenericIndependentMetricBuilderRegression(distribution)
+      case ModelCategory.Ordinal => new GenericIndependentMetricBuilderOrdinal(numberOfClasses, responseDomain)
+    }
+  }
+
+  override private[sparkling] def extractActualValues(row: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
+    val responseColumn = wrapper.m._responseColumn
+    val actualValue = row.get(responseColumn)
+    val actualValueRowData = new RowData()
+    actualValueRowData.put(responseColumn, actualValue)
+    val actualValueArray = new Array[Double](1)
+    val encodedActualValue = wrapper.fillRawData(actualValueRowData, actualValueArray)(0)
+    val result = new Array[Float](1)
+    result(0) = encodedActualValue.toFloat
+    result
   }
 }
 
