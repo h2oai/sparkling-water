@@ -17,6 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
+import ai.h2o.sparkling.ml.algos
 import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
@@ -35,6 +36,8 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
+
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())
@@ -68,6 +71,29 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     assertMetrics[H2OMultinomialMetrics](loadedModel)
   }
 
+  test("test calculation of multinomial metric objects on arbitrary dataset") {
+    val algo = new H2OGBM()
+      .setValidationDataFrame(validationDataset)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+  }
+
   test("test multinomial glm metric objects") {
     val algo = new H2OGLM()
       .setSplitRatio(0.8)
@@ -81,5 +107,28 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
     model.write.overwrite().save("ml/build/glm_multinomial_model_metrics")
     val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_multinomial_model_metrics")
     assertMetrics[H2OMultinomialGLMMetrics](loadedModel)
+  }
+
+  test("test calculation of multinomial glm metric objects on arbitrary dataset") {
+    val algo = new H2OGLM()
+      .setValidationDataFrame(validationDataset)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }

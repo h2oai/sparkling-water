@@ -20,10 +20,13 @@ package ai.h2o.sparkling.ml.metrics
 import org.scalatest.Matchers
 
 object MetricsAssertions extends Matchers {
-  def assertMetricsObjectAgainstMetricsMap(metricsObject: H2OMetrics, metrics: Map[String, Double]): Unit = {
+  def assertMetricsObjectAgainstMetricsMap(
+      metricsObject: H2OMetrics,
+      metrics: Map[String, Double],
+      ignoredGetters: Set[String] = Set("getCustomMetricValue")): Unit = {
     for (getter <- metricsObject.getClass.getMethods
          if getter.getName.startsWith("get")
-         if getter.getName != "getCustomMetricValue"
+         if !ignoredGetters.contains("getCustomMetricValue")
          if getter.getParameterCount == 0
          if getter.getReturnType.isPrimitive) {
       val value = getter.invoke(metricsObject)
@@ -34,6 +37,27 @@ object MetricsAssertions extends Matchers {
         assert(value.asInstanceOf[Double].isNaN)
       } else {
         value shouldEqual metricValue
+      }
+    }
+  }
+
+  def assertEqual(
+      expected: Map[String, Double],
+      actual: Map[String, Double],
+      ignored: Set[String] = Set("ScoringTime"),
+      tolerance: Double = 0.0): Unit = {
+    val expectedKeys = expected.keySet
+    val actualKeys = actual.keySet
+
+    expectedKeys shouldEqual actualKeys
+
+    for (key <- expectedKeys.diff(ignored)) {
+      if (expected(key).isNaN && actual(key).isNaN) {
+        // Values are equal
+      } else if (tolerance > 0.0) {
+        expected(key) shouldBe (actual(key) +- tolerance)
+      } else {
+        expected(key) shouldBe actual(key)
       }
     }
   }

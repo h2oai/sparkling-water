@@ -18,11 +18,9 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.algos
-import ai.h2o.sparkling.ml.algos.H2OGBM
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -36,6 +34,8 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     .option("header", "true")
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/prostate/prostate.csv"))
+
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
 
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics[T](model.getTrainingMetricsObject(), model.getTrainingMetrics())
@@ -53,9 +53,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     val algo = new algos.H2OGBM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithContributions(true)
-      .setWithLeafNodeAssignments(true)
-      .setWithStageResults(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
     val model = algo.fit(dataset)
@@ -66,37 +63,34 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     assertMetrics[H2ORegressionMetrics](loadedModel)
   }
 
+
   test("test calculation of regression metric objects on arbitrary dataset") {
-    val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
     val algo = new algos.H2OGBM()
       .setValidationDataFrame(validationDataset)
       .setSeed(1)
-      .setWithContributions(true)
-      .setWithLeafNodeAssignments(true)
-      .setWithStageResults(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
 
-    val trainingMetrics = model.getMetricsObject(trainingDataset)
-    val expectedTrainingMetrics = model.getTrainingMetricsObject()
 
-    val validationMetrics = model.getMetricsObject(validationDataset)
-    val expectedValidationMetrics = model.getValidationMetricsObject()
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
 
-    trainingMetrics shouldNot be (null)
-    expectedTrainingMetrics shouldNot be (null)
-    validationMetrics shouldNot be (null)
-    expectedValidationMetrics shouldNot be (null)
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 
   test("test regression glm metric objects") {
     val algo = new algos.H2OGLM()
       .setSplitRatio(0.8)
       .setSeed(1)
-      .setWithContributions(true)
-      .setWithLeafNodeAssignments(true)
-      .setWithStageResults(true)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
     val model = algo.fit(dataset)
@@ -105,5 +99,28 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     model.write.overwrite().save("ml/build/glm_regression_model_metrics")
     val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_regression_model_metrics")
     assertMetrics[H2ORegressionGLMMetrics](loadedModel)
+  }
+
+  test("test calculation of regression glm metric objects on arbitrary dataset") {
+    val algo = new algos.H2OGLM()
+      .setSplitRatio(0.8)
+      .setSeed(1)
+      .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
+      .setLabelCol("AGE")
+    val model = algo.fit(trainingDataset)
+
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }
