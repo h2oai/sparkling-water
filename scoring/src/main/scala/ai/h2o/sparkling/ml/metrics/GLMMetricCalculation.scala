@@ -18,11 +18,13 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.models.H2OGLMMOJOModel
+import com.google.gson.{GsonBuilder, JsonObject}
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.MultinomialAucType
 import hex.genmodel.easy.EasyPredictModelWrapper
 import hex.glm.{GLMModel, IndependentGLMMetricBuilder}
 import hex.glm.GLMModel.GLMWeightsFun
+import collection.JavaConverters._
 
 trait GLMMetricCalculation {
   self: H2OGLMMOJOModel =>
@@ -40,8 +42,19 @@ trait GLMMetricCalculation {
 
     val responseColumn = wrapper.m._responseColumn
     val responseDomain = wrapper.m.getDomainValues(responseColumn)
-    val ymu = null // TODO
-    val rank = 0 // TODO
+
+    val gson = new GsonBuilder().create().fromJson(getModelDetails(), classOf[JsonObject])
+    if (!gson.has("rank")) {
+      throw new UnsupportedOperationException(
+        s"Calculation of metrics is not supported since the MOJO model doesn't have 'rank' field on model output.")
+    }
+    if (!gson.has("ymu")) {
+      throw new UnsupportedOperationException(
+        s"Calculation of metrics is not supported since the MOJO model doesn't have 'ymu' field on model output.")
+    }
+
+    val rank = gson.getAsJsonPrimitive("rank").getAsInt
+    val ymu = gson.getAsJsonArray("ymu").iterator().asScala.map(_.getAsDouble).toArray
 
     new IndependentGLMMetricBuilder(responseDomain, ymu, glmf, rank, true, intercept, aucType, hglm)
   }

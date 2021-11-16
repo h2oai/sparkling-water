@@ -103,7 +103,7 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
 
   test("test calculation of regression glm metric objects on arbitrary dataset") {
     val algo = new algos.H2OGLM()
-      .setSplitRatio(0.8)
+      .setValidationDataFrame(validationDataset)
       .setSeed(1)
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")

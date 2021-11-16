@@ -35,6 +35,8 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/insurance.csv"))
 
+  private lazy val Array(trainingDataset, validationDataset) = dataset.randomSplit(Array(0.8, 0.2))
+
   private def assertMetrics[T](model: H2OMOJOModel): Unit = {
     assertMetrics(model.getTrainingMetricsObject(), model.getTrainingMetrics())
     assertMetrics(model.getValidationMetricsObject(), model.getValidationMetrics())
@@ -60,5 +62,29 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     model.write.overwrite().save("ml/build/glm_ordinal_model_metrics")
     val loadedModel = H2OGLMMOJOModel.load("ml/build/glm_ordinal_model_metrics")
     assertMetrics[H2OOrdinalGLMMetrics](loadedModel)
+  }
+
+  test("test calculation of ordinal glm metric objects on arbitrary dataset") {
+    val algo = new H2OGLM()
+      .setValidationDataFrame(validationDataset)
+      .setFeaturesCols("District", "Group", "Claims")
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+    val model = algo.fit(trainingDataset)
+
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
   }
 }
