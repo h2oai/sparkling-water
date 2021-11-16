@@ -47,7 +47,7 @@ trait AutoMLConfiguration extends AlgorithmConfigurations {
       null,
       "H2OSupervisedAlgorithmWithFoldColumn",
       Seq("H2OAutoMLExtras"),
-      false)
+      constructorMethods = false)
   }
 
   def problemSpecificAutoMLAlgorithmContext: ProblemSpecificAlgorithmSubstitutionContext = {

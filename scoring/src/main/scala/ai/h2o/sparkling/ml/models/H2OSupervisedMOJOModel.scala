@@ -102,13 +102,21 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
     }
     val distribution = DistributionFactory.getDistribution(genericParameters)
 
+    val aucType = if (hasParam("aucType")) {
+      val aucTypeParam = getParam("aucType")
+      MultinomialAucType.valueOf(getOrDefault(aucTypeParam).asInstanceOf[String])
+    } else {
+      MultinomialAucType.NONE
+    }
+
+
     val responseColumn = wrapper.m._responseColumn
     val numberOfClasses = wrapper.m.nclasses()
     val responseDomain = wrapper.m.getDomainValues(responseColumn)
     ModelCategory.valueOf(getModelCategory()) match {
       case ModelCategory.Binomial => new GenericIndependentMetricBuilderBinomial(responseDomain, distributionFamily)
       case ModelCategory.Multinomial =>
-        new GenericIndependentMetricBuilderMultinomial(numberOfClasses, responseDomain, MultinomialAucType.NONE) // TODO: AUC
+        new GenericIndependentMetricBuilderMultinomial(numberOfClasses, responseDomain, aucType)
       case ModelCategory.Regression => new GenericIndependentMetricBuilderRegression(distribution)
       case ModelCategory.Ordinal => new GenericIndependentMetricBuilderOrdinal(numberOfClasses, responseDomain)
     }
