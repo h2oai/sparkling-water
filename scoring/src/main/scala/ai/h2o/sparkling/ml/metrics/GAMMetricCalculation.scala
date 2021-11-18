@@ -18,12 +18,14 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.models.H2OGAMMOJOModel
+import com.google.gson.{GsonBuilder, JsonObject}
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.MultinomialAucType
-import hex.gam.IndependentMetricBuilderGAM
+import hex.gam.IndependentGAMMetricBuilder
 import hex.genmodel.easy.EasyPredictModelWrapper
 import hex.glm.GLMModel.GLMWeightsFun
 import hex.glm.GLMModel
+import collection.JavaConverters._
 
 trait GAMMetricCalculation {
   self: H2OGAMMOJOModel =>
@@ -41,9 +43,20 @@ trait GAMMetricCalculation {
     val responseColumn = wrapper.m._responseColumn
     val nClasses = wrapper.m.nclasses()
     val responseDomain = wrapper.m.getDomainValues(responseColumn)
-    val ymu = null // TODO
-    val rank = 0 // TODO
 
-    new IndependentMetricBuilderGAM(responseDomain, ymu, glmf, rank, true, intercept, nClasses, aucType)
+    val gson = new GsonBuilder().create().fromJson(getModelDetails(), classOf[JsonObject])
+    if (!gson.has("rank")) {
+      throw new UnsupportedOperationException(
+        s"Calculation of metrics is not supported since the MOJO model doesn't have 'rank' field on model output.")
+    }
+    if (!gson.has("ymu")) {
+      throw new UnsupportedOperationException(
+        s"Calculation of metrics is not supported since the MOJO model doesn't have 'ymu' field on model output.")
+    }
+
+    val rank = gson.getAsJsonPrimitive("rank").getAsInt
+    val ymu = gson.getAsJsonArray("ymu").iterator().asScala.map(_.getAsDouble).toArray
+
+    new IndependentGAMMetricBuilder(responseDomain, ymu, glmf, rank, true, intercept, nClasses, aucType)
   }
 }

@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.algos.{H2OGBM, H2OGLM}
+import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGBM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGBMMOJOModel, H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
@@ -125,6 +125,30 @@ class MultinomialMetricsTestSuite extends FunSuite with Matchers with SharedH2OT
 
     MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
     MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+  }
+
+  test("test calculation of multinomial gam metric objects on arbitrary dataset") {
+    val algo = new H2OGAM()
+      .setValidationDataFrame(validationDataset)
+      .setSeed(1)
+      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len")
+      .setGamCols(Array("petal_len"))
+      .setColumnsToCategorical("class")
+      .setLabelCol("class")
+    val model = algo.fit(trainingDataset)
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.0001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics, tolerance = 0.00000001)
     val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
     MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)

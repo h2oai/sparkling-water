@@ -17,7 +17,7 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.algos.H2OGLM
+import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
 import org.apache.spark.sql.SparkSession
@@ -68,6 +68,31 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
     val algo = new H2OGLM()
       .setValidationDataFrame(validationDataset)
       .setFeaturesCols("District", "Group", "Claims")
+      .setLabelCol("Age")
+      .setSeed(1)
+      .setFamily("ordinal")
+    val model = algo.fit(trainingDataset)
+
+
+    val trainingMetrics = model.getMetrics(trainingDataset)
+    val trainingMetricsObject = model.getMetricsObject(trainingDataset)
+    val validationMetrics = model.getMetrics(validationDataset)
+    val validationMetricsObject = model.getMetricsObject(validationDataset)
+    val expectedTrainingMetrics = model.getTrainingMetrics()
+    val expectedValidationMetrics = model.getValidationMetrics()
+
+    MetricsAssertions.assertEqual(expectedTrainingMetrics, trainingMetrics, tolerance = 0.00001)
+    MetricsAssertions.assertEqual(expectedValidationMetrics, validationMetrics)
+    val ignoredGetters = Set("getCustomMetricValue", "getScoringTime")
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(trainingMetricsObject, trainingMetrics, ignoredGetters)
+    MetricsAssertions.assertMetricsObjectAgainstMetricsMap(validationMetricsObject, validationMetrics, ignoredGetters)
+  }
+
+  test("test calculation of ordinal gam metric objects on arbitrary dataset") {
+    val algo = new H2OGAM()
+      .setValidationDataFrame(validationDataset)
+      .setFeaturesCols("District", "Group")
+      .setGamCols(Array("Claims"))
       .setLabelCol("Age")
       .setSeed(1)
       .setFamily("ordinal")
