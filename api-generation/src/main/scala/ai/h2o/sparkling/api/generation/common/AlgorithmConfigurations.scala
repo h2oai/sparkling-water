@@ -164,6 +164,7 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
     val none = Seq.empty
     val glmMOJOParents = Seq("GLMMetricCalculation")
     val gamMOJOParents = Seq("GAMMetricCalculation")
+    val kmeansMOJOParents = Seq("KmeansMetricCalculation")
 
     val algorithms = Seq[(String, Class[_], String, Seq[String], Seq[String], Option[String])](
       ("H2OXGBoost", classOf[XGBoostParameters], treeSupervised, Seq(withDistribution), none, None),
@@ -173,7 +174,13 @@ trait AlgorithmConfigurations extends ConfigurationsBase {
       ("H2OGAM", classOf[GAMParameters], cvSupervised, Seq(withFamily), gamMOJOParents, None),
       ("H2ODeepLearning", classOf[DeepLearningParameters], cvSupervised, Seq(withDistribution), none, None),
       ("H2ORuleFit", classOf[RuleFitParameters], supervised, Seq(withDistribution), none, None),
-      ("H2OKMeans", classOf[KMeansParameters], unsupervised, Seq("H2OKMeansExtras"), none, Some("H2OClusteringMetrics")),
+      (
+        "H2OKMeans",
+        classOf[KMeansParameters],
+        unsupervised,
+        Seq("H2OKMeansExtras"),
+        kmeansMOJOParents,
+        Some("H2OClusteringMetrics")),
       ("H2OCoxPH", classOf[CoxPHParameters], supervised, none, none, Some("H2ORegressionCoxPHMetrics")),
       ("H2OIsolationForest", classOf[IFParameters], treeUnsupervised, none, none, Some("H2OAnomalyMetrics")))
 

@@ -73,7 +73,6 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)
     val validationMetrics = model.getMetrics(validationDataset)
@@ -97,7 +96,6 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setSeed(1)
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
-
 
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)

@@ -21,6 +21,7 @@ import ai.h2o.sparkling.ml.params.H2OSupervisedMOJOParams
 import hex.{Distribution, DistributionFactory, ModelCategory, MultinomialAucType}
 import hex.ModelMetrics.IndependentMetricBuilder
 import hex.ModelMetricsBinomial.GenericIndependentMetricBuilderBinomial
+import hex.ModelMetricsClustering.IndependentMetricBuilderClustering
 import hex.ModelMetricsMultinomial.GenericIndependentMetricBuilderMultinomial
 import hex.ModelMetricsOrdinal.GenericIndependentMetricBuilderOrdinal
 import hex.ModelMetricsRegression.GenericIndependentMetricBuilderRegression
@@ -108,7 +109,6 @@ class H2OSupervisedMOJOModel(override val uid: String) extends H2OAlgorithmMOJOM
     } else {
       MultinomialAucType.NONE
     }
-
 
     val responseColumn = wrapper.m._responseColumn
     val numberOfClasses = wrapper.m.nclasses()

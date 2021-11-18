@@ -59,7 +59,7 @@ trait MetricCalculation {
     validateDataFrameForMetricCalculation(dataFrame)
 
     val filledMetricsBuilder = dataFrame.rdd
-      .mapPartitions[IndependentMetricBuilder[_]]{ rows =>
+      .mapPartitions[IndependentMetricBuilder[_]] { rows =>
         val wrapper = loadEasyPredictModelWrapper()
         val model = wrapper.m
         val metricBuilder = makeMetricBuilder(wrapper)
@@ -72,7 +72,7 @@ trait MetricCalculation {
         }
         Iterator.single(metricBuilder)
       }
-      .reduce((f, s) => {f.reduce(s.asInstanceOf); f})
+      .reduce((f, s) => { f.reduce(s.asInstanceOf); f })
 
     val metrics = filledMetricsBuilder.makeModelMetrics()
     val schema = metricsToSchema(metrics)
@@ -84,14 +84,17 @@ trait MetricCalculation {
     val schema = SchemaServer.schema(3, metrics)
     schema match {
       case s: ModelMetricsBinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomialGLM])
-      case s: ModelMetricsBinomialV3[ModelMetricsBinomial, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomial])
+      case s: ModelMetricsBinomialV3[ModelMetricsBinomial, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsBinomial])
       case s: ModelMetricsMultinomialGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomialGLM])
-      case s: ModelMetricsMultinomialV3[ModelMetricsMultinomial, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomial])
+      case s: ModelMetricsMultinomialV3[ModelMetricsMultinomial, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsMultinomial])
       case s: ModelMetricsOrdinalGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinalGLM])
       case s: ModelMetricsOrdinalV3[ModelMetricsOrdinal, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsOrdinal])
       case s: ModelMetricsRegressionCoxPHV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionCoxPH])
       case s: ModelMetricsRegressionGLMV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegressionGLM])
-      case s: ModelMetricsRegressionV3[ModelMetricsRegression, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegression])
+      case s: ModelMetricsRegressionV3[ModelMetricsRegression, _] =>
+        s.fillFromImpl(metrics.asInstanceOf[ModelMetricsRegression])
       case s: ModelMetricsClusteringV3 => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsClustering])
       case s: ModelMetricsHGLMV3[ModelMetricsHGLM, _] => s.fillFromImpl(metrics.asInstanceOf[ModelMetricsHGLM])
       case s: ModelMetricsAutoEncoderV3 => s.fillFromImpl(metrics)

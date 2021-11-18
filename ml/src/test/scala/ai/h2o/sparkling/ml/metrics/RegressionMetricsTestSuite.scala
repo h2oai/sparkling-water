@@ -63,7 +63,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
     assertMetrics[H2ORegressionMetrics](loadedModel)
   }
 
-
   test("test calculation of regression metric objects on arbitrary dataset") {
     val algo = new algos.H2OGBM()
       .setValidationDataFrame(validationDataset)
@@ -71,7 +70,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setFeaturesCols("CAPSULE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON")
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
-
 
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)
@@ -109,7 +107,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
 
-
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)
     val validationMetrics = model.getMetrics(validationDataset)
@@ -132,7 +129,6 @@ class RegressionMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
       .setGamCols(Array(Array("PSA")))
       .setLabelCol("AGE")
     val model = algo.fit(trainingDataset)
-
 
     val trainingMetrics = model.getMetrics(trainingDataset)
     val trainingMetricsObject = model.getMetricsObject(trainingDataset)

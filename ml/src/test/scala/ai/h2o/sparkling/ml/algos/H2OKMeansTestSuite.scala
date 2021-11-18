@@ -41,21 +41,6 @@ class H2OKMeansTestSuite extends FunSuite with Matchers with SharedH2OTestContex
     .option("inferSchema", "true")
     .csv(TestUtils.locate("smalldata/iris/iris_wheader.csv"))
 
-  test("H2OKmeans custom metrics") {
-    val algo = new H2OKMeans()
-      .setSplitRatio(0.8)
-      .setSeed(1)
-      .setK(3)
-      .setUserPoints(Array(Array(4.9, 3.0, 1.4, 0.2), Array(5.6, 2.5, 3.9, 1.1), Array(6.5, 3.0, 5.2, 2.0)))
-      .setFeaturesCols("sepal_len", "sepal_wid", "petal_len", "petal_wid")
-
-    val model = algo.fit(dataset)
-    val h2omojo = model.unwrapMojoModel()
-    val mojoModel: MojoModel = null
-    val easy: EasyPredictModelWrapper = null
-
-  }
-
   test("H2OKMeans Pipeline serialization and deserialization") {
     val algo = new H2OKMeans()
       .setSplitRatio(0.8)
