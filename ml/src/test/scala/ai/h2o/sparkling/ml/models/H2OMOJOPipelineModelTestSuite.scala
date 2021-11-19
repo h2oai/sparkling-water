@@ -277,19 +277,19 @@ class H2OMOJOPipelineModelTestSuite extends FunSuite with SparkTestContext with 
   }
 
   private def assertPredictedValues(preds: Array[Row]): Unit = {
-    assert(preds(0).getSeq[Double](0).head == 65.36320409515132)
-    assert(preds(1).getSeq[Double](0).head == 64.96902128114817)
-    assert(preds(2).getSeq[Double](0).head == 64.96721023747583)
-    assert(preds(3).getSeq[Double](0).head == 65.78772654671035)
-    assert(preds(4).getSeq[Double](0).head == 66.11327967814829)
+    assert(preds(0).getSeq[Double](0).head == 65.36339431549945)
+    assert(preds(1).getSeq[Double](0).head == 64.98931238070139)
+    assert(preds(2).getSeq[Double](0).head == 64.95047899851251)
+    assert(preds(3).getSeq[Double](0).head == 65.78738866816514)
+    assert(preds(4).getSeq[Double](0).head == 66.11292243968764)
   }
 
   private def assertPredictedValuesForNamedCols(preds: Array[Row]): Unit = {
-    assert(preds(0).getDouble(0) == 65.36320409515132)
-    assert(preds(1).getDouble(0) == 64.96902128114817)
-    assert(preds(2).getDouble(0) == 64.96721023747583)
-    assert(preds(3).getDouble(0) == 65.78772654671035)
-    assert(preds(4).getDouble(0) == 66.11327967814829)
+    assert(preds(0).getDouble(0) == 65.36339431549945)
+    assert(preds(1).getDouble(0) == 64.98931238070139)
+    assert(preds(2).getDouble(0) == 64.95047899851251)
+    assert(preds(3).getDouble(0) == 65.78738866816514)
+    assert(preds(4).getDouble(0) == 66.11292243968764)
   }
 
   private def testTransformAndTransformSchemaAreAligned(mojoSettings: H2OMOJOSettings): Unit = {
