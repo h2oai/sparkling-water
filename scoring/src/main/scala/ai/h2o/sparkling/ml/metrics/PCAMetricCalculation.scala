@@ -17,18 +17,17 @@
 
 package ai.h2o.sparkling.ml.metrics
 
-import ai.h2o.sparkling.ml.models.H2OAutoEncoderMOJOModel
-import hex.{ModelMetrics, ModelMetricsAutoEncoder}
+import ai.h2o.sparkling.ml.models.H2OPCAMOJOModel
+import hex.ModelMetrics
 import hex.ModelMetrics.IndependentMetricBuilder
-import hex.ModelMetricsUnsupervised.IndependentMetricBuilderUnsupervised
-import hex.genmodel.algos.deeplearning.DeeplearningMojoModel
 import hex.genmodel.easy.{EasyPredictModelWrapper, RowData}
+import hex.pca.ModelMetricsPCA
 
-trait AutoEncoderMetricCalculation {
-  self: H2OAutoEncoderMOJOModel =>
+trait PCAMetricCalculation {
+  self: H2OPCAMOJOModel =>
 
   override private[sparkling] def makeMetricBuilder(wrapper: EasyPredictModelWrapper): IndependentMetricBuilder[_] = {
-    new SWAutoEncoderMetricBuilder(wrapper.m.asInstanceOf[DeeplearningMojoModel])
+    new SWPCAMetricBuilder()
   }
 
   override private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
@@ -37,24 +36,12 @@ trait AutoEncoderMetricCalculation {
   }
 }
 
-class SWAutoEncoderMetricBuilder(@transient mojoModel: DeeplearningMojoModel)
-    extends IndependentMetricBuilderUnsupervised[SWAutoEncoderMetricBuilder] {
-  private var recError: Double = 0.0
+// Builder calculates just dummy object as H2O runtime
+class SWPCAMetricBuilder extends IndependentMetricBuilder[SWPCAMetricBuilder] {
 
-  def this() = this(null)
-
-  override def perRow(prediction: Array[Double], original: Array[Float]): Array[Double] = {
-    recError += mojoModel.calculateReconstructionErrorPerRowData(original.map(_.toDouble), prediction)
-    _count += 1
-    prediction
-  }
-
-  override def reduce(mb: SWAutoEncoderMetricBuilder): Unit = {
-    super.reduce(mb)
-    recError += mb.recError
-  }
+  override def perRow(prediction: Array[Double], original: Array[Float]): Array[Double] = prediction
 
   override def makeModelMetrics(): ModelMetrics = {
-    new ModelMetricsAutoEncoder(null, null, _count, recError / _count, _customMetric)
+    new ModelMetricsPCA(null, null, _customMetric)
   }
 }
