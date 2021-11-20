@@ -1,6 +1,36 @@
 Change Log
 ==========
 
+v3.34.0.4-1 (2021-11-19)
+------------------------
+Downloads:
+
+   - for Spark 2.2: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.4-1-2.2/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.2/3.34.0.4-1-2.2/index.html>`__
+   - for Spark 2.3: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.4-1-2.3/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.3/3.34.0.4-1-2.3/index.html>`__
+   - for Spark 2.4: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.4-1-2.4/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-2.4/3.34.0.4-1-2.4/index.html>`__
+   - for Spark 3.0: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.4-1-3.0/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.0/3.34.0.4-1-3.0/index.html>`__
+   - for Spark 3.1: `http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.4-1-3.1/index.html <http://h2o-release.s3.amazonaws.com/sparkling-water/spark-3.1/3.34.0.4-1-3.1/index.html>`__
+
+-  Improvement
+
+   -  `SW-2649 <https://0xdata.atlassian.net/browse/SW-2649>`__ - Upgrade to H2O 3.34.0.4
+   -  `SW-2644 <https://0xdata.atlassian.net/browse/SW-2644>`__ - Deprecate Apache Spark 2.2
+   -  `SW-2642 <https://0xdata.atlassian.net/browse/SW-2642>`__ - Add Missing Scala  Setters for 'spark.ext.h2o.extra.cluster.nodes' Property
+   -  `SW-2641 <https://0xdata.atlassian.net/browse/SW-2641>`__ - Upgrade MOJO runtime to 2.7.5
+   -  `SW-2640 <https://0xdata.atlassian.net/browse/SW-2640>`__ - InternalBackend Should Set IP Address Explicitly to H2O Node
+   -  `SW-2638 <https://0xdata.atlassian.net/browse/SW-2638>`__ - Improve Exception when AutoML Does Not Return Any Model after Its Training Phase
+
+-  Bug
+
+   -  `SW-2636 <https://0xdata.atlassian.net/browse/SW-2636>`__ - Sparkling water compiled with Scala 2.12.10 doesn't work running on Scala 2.12.13+
+   -  `SW-2632 <https://0xdata.atlassian.net/browse/SW-2632>`__ - Make H2OMOJOModel.load Independent on Scala Version
+
+-  Engineering Story
+
+   -  `SW-2627 <https://0xdata.atlassian.net/browse/SW-2627>`__ - Activate the MOJOModel offset tests (and maybe improve those?)
+   -  `SW-2626 <https://0xdata.atlassian.net/browse/SW-2626>`__ - Add More Benchmarks for conversion from Dataframe to H2OFrame
+   -  `SW-2625 <https://0xdata.atlassian.net/browse/SW-2625>`__ - Remove anaconda Package from Testing Image
+
 v3.34.0.3-1 (2021-10-08)
 ------------------------
 Downloads:
