@@ -31,14 +31,16 @@ trait AutoEncoderMetricCalculation {
     new SWAutoEncoderMetricBuilder(wrapper.m.asInstanceOf[DeeplearningMojoModel])
   }
 
-  override private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
+  override private[sparkling] def extractActualValues(
+      rowData: RowData,
+      wrapper: EasyPredictModelWrapper): Array[Float] = {
     val rawData = new Array[Double](wrapper.m.nfeatures())
     wrapper.fillRawData(rowData, rawData).map(_.toFloat)
   }
 }
 
 class SWAutoEncoderMetricBuilder(@transient mojoModel: DeeplearningMojoModel)
-    extends IndependentMetricBuilderUnsupervised[SWAutoEncoderMetricBuilder] {
+  extends IndependentMetricBuilderUnsupervised[SWAutoEncoderMetricBuilder] {
   private var recError: Double = 0.0
 
   def this() = this(null)

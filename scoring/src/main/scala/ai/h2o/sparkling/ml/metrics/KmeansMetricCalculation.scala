@@ -32,12 +32,14 @@ trait KmeansMetricCalculation {
     new IndependentMetricBuilderClustering(model.nfeatures(), getK(), model._centers, model._modes)
   }
 
-  override private[sparkling] def extractActualValues(rowData: RowData, wrapper: EasyPredictModelWrapper): Array[Float] = {
+  override private[sparkling] def extractActualValues(
+      rowData: RowData,
+      wrapper: EasyPredictModelWrapper): Array[Float] = {
     val model = wrapper.m.asInstanceOf[KMeansMojoModel]
     val rawData = new Array[Double](wrapper.m.nfeatures())
     wrapper.fillRawData(rowData, rawData)
     if (model._standardize) {
-      GenModel.Kmeans_preprocessData(rawData,model._means, model._mults, model._modes)
+      GenModel.Kmeans_preprocessData(rawData, model._means, model._mults, model._modes)
     }
     rawData.map(_.toFloat)
   }
