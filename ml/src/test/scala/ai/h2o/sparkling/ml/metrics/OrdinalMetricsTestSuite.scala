@@ -20,7 +20,7 @@ package ai.h2o.sparkling.ml.metrics
 import ai.h2o.sparkling.ml.algos.{H2OGAM, H2OGLM}
 import ai.h2o.sparkling.ml.models.{H2OGLMMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -73,7 +73,7 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,
@@ -90,10 +90,46 @@ class OrdinalMetricsTestSuite extends FunSuite with Matchers with SharedH2OTestC
       .setFamily("ordinal")
     val model = algo.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance = 0.00001)
+  }
+
+  private def assertMetrics(
+      model: H2OMOJOModel,
+      trainingDataset: DataFrame,
+      validationDataset: DataFrame,
+      trainingMetricsTolerance: Double = 0.0,
+      validationMetricsTolerance: Double = 0.0): Unit = {
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance,
+      validationMetricsTolerance)
+
+    val trainingMetricObject = model.getTrainingMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
+    val expectedTrainingMetricObject = model.getMetricsObject(trainingDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    TestUtils.assertDataFramesAreIdentical(
+      trainingMetricObject.getConfusionMatrix(),
+      expectedTrainingMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      trainingMetricObject.getHitRatioTable(),
+      expectedTrainingMetricObject.getHitRatioTable(),
+      "K",
+      Map("Hit Ratio" -> trainingMetricsTolerance))
+
+    val validationMetricObject = model.getValidationMetricsObject().asInstanceOf[H2OOrdinalGLMMetrics]
+    val expectedValidationMetricObject = model.getMetricsObject(validationDataset).asInstanceOf[H2OOrdinalGLMMetrics]
+    TestUtils.assertDataFramesAreIdentical(
+      validationMetricObject.getConfusionMatrix(),
+      expectedValidationMetricObject.getConfusionMatrix())
+    TestUtils.assertDataFramesAreEqual(
+      validationMetricObject.getHitRatioTable(),
+      expectedValidationMetricObject.getHitRatioTable(),
+      "K",
+      Map("Hit Ratio" -> validationMetricsTolerance))
   }
 }

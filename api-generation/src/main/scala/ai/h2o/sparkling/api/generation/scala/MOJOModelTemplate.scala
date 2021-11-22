@@ -215,6 +215,11 @@ object MOJOModelTemplate
          |  override def getCrossValidationMetricsObject(): $metrics = {
          |    val value = super.getCrossValidationMetricsObject()
          |    if (value == null) null else value.asInstanceOf[$metrics]
+         |  }
+         |
+         |  override def getMetricsObject(dataFrame: org.apache.spark.sql.DataFrame): $metrics = {
+         |    val value = super.getMetricsObject(dataFrame)
+         |    if (value == null) null else value.asInstanceOf[$metrics]
          |  }""".stripMargin
   }
 }

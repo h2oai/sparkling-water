@@ -55,13 +55,13 @@ object H2OMetrics {
       dataFrameSerializerGetter: () => String): H2OMetrics = {
 
     val metricsObject = modelCategory match {
-      case H2OModelCategory.Binomial if algoName == "glm" => new H2OBinomialGLMMetrics()
+      case H2OModelCategory.Binomial if Set("glm", "gam").contains(algoName) => new H2OBinomialGLMMetrics()
       case H2OModelCategory.Binomial => new H2OBinomialMetrics()
-      case H2OModelCategory.Multinomial if algoName == "glm" => new H2OMultinomialGLMMetrics()
+      case H2OModelCategory.Multinomial if Set("glm", "gam").contains(algoName) => new H2OMultinomialGLMMetrics()
       case H2OModelCategory.Multinomial => new H2OMultinomialMetrics()
-      case H2OModelCategory.Ordinal if algoName == "glm" => new H2OOrdinalGLMMetrics()
+      case H2OModelCategory.Ordinal if Set("glm", "gam").contains(algoName)=> new H2OOrdinalGLMMetrics()
       case H2OModelCategory.Ordinal => new H2OOrdinalMetrics()
-      case H2OModelCategory.Regression if algoName == "glm" => new H2ORegressionGLMMetrics()
+      case H2OModelCategory.Regression if Set("glm", "gam").contains(algoName) => new H2ORegressionGLMMetrics()
       case H2OModelCategory.Regression => new H2ORegressionMetrics()
       case H2OModelCategory.Clustering => new H2OClusteringMetrics()
       case H2OModelCategory.AnomalyDetection => new H2OAnomalyMetrics()

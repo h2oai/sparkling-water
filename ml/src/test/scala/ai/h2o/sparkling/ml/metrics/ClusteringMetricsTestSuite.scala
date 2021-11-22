@@ -18,8 +18,9 @@
 package ai.h2o.sparkling.ml.metrics
 
 import ai.h2o.sparkling.ml.algos.H2OKMeans
+import ai.h2o.sparkling.ml.models.{H2OKMeansMOJOModel, H2OMOJOModel}
 import ai.h2o.sparkling.{SharedH2OTestContext, TestUtils}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSuite, Matchers}
@@ -46,10 +47,34 @@ class ClusteringMetricsTestSuite extends FunSuite with Matchers with SharedH2OTe
 
     val model = algorithm.fit(trainingDataset)
 
-    MetricsAssertions.assertEssentialMetrics(
+    assertMetrics(
       model,
       trainingDataset,
       validationDataset,
       trainingMetricsTolerance = 0.00001)
+  }
+
+  private def assertMetrics(
+      model: H2OKMeansMOJOModel,
+      trainingDataset: DataFrame,
+      validationDataset: DataFrame,
+      trainingMetricsTolerance: Double = 0.0,
+      validationMetricsTolerance: Double = 0.0): Unit = {
+    MetricsAssertions.assertEssentialMetrics(
+      model,
+      trainingDataset,
+      validationDataset,
+      trainingMetricsTolerance,
+      validationMetricsTolerance)
+    TestUtils.assertDataFramesAreEqual(
+      model.getTrainingMetricsObject().getCentroidStats(),
+      model.getMetricsObject(trainingDataset).getCentroidStats(),
+      "Centroid",
+      Map("Size" -> trainingMetricsTolerance, "Within Cluster Sum of Squares" -> trainingMetricsTolerance))
+    TestUtils.assertDataFramesAreEqual(
+      model.getValidationMetricsObject().getCentroidStats(),
+      model.getMetricsObject(validationDataset).getCentroidStats(),
+      "Centroid",
+      Map("Size" -> validationMetricsTolerance, "Within Cluster Sum of Squares" -> validationMetricsTolerance))
   }
 }
